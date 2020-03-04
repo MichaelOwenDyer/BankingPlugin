@@ -22,8 +22,6 @@ public class Account {
 	private final BankingPlugin plugin;
 	private boolean created;
 
-	// This is a test comment.
-	
 	private int id;
 	private final OfflinePlayer owner;
 	private final Location location;
