@@ -24,13 +24,12 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Michael/.m2/repository/org/codemc/worldguardwrapper/worldguardwrapper/1.1.6-SNAPSHOT/worldguardwrapper-1.1.6-SNAPSHOT.jar">
+	<classpathentry kind="lib" path="C:/Users/Michael/.m2/repository/com/sk89q/worldguard/worldguard-bukkit/7.0.2/worldguard-bukkit-7.0.2.jar">
 		<attributes>
-			<attribute name="module" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
-			<attribute name="maven.groupId" value="org.codemc.worldguardwrapper"/>
-			<attribute name="maven.artifactId" value="worldguardwrapper"/>
-			<attribute name="maven.version" value="1.1.6-SNAPSHOT"/>
+			<attribute name="maven.groupId" value="com.sk89q.worldguard"/>
+			<attribute name="maven.artifactId" value="worldguard-bukkit"/>
+			<attribute name="maven.version" value="7.0.2"/>
 			<attribute name="maven.scope" value="compile"/>
 		</attributes>
 	</classpathentry>

@@ -141,15 +141,16 @@ public class BankingPlugin extends JavaPlugin {
 		
         accountUtils = new AccountUtils(this);
 		bankUtils = new BankUtils(this);
+
 		accountCommand = new AccountCommand(this);
+		controlCommand = new ControlCommand(this);
+		bankCommand = new BankCommand(this);
 
 		debug("Breakpoint!");
 
-		database = new SQLite(this);
-		debug("Database initialized.");
-
         loadExternalPlugins();
         checkForUpdates();
+		initDatabase();
         registerListeners();
         registerExternalListeners();
 		initializeBanking();
@@ -163,8 +164,6 @@ public class BankingPlugin extends JavaPlugin {
         	}, time);
         }
 
-		controlCommand = new ControlCommand(this);
-		bankCommand = new BankCommand(this);
 		
 	}
 
@@ -235,6 +234,12 @@ public class BankingPlugin extends JavaPlugin {
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
     
+	private void initDatabase() {
+
+		database = new SQLite(this);
+		debug("Database initialized.");
+	}
+
     // URLs NOT YET CHANGED
     // DO NOT USE
     private void checkForUpdates() {
@@ -299,7 +304,7 @@ public class BankingPlugin extends JavaPlugin {
 	 * Initializes banks
 	 */
 	private void initializeBanking() {
-		debug("Initializing banks...");
+		debug("Initializing banks and accounts...");
 		bankUtils.reload(false, true, new Callback<Integer[]>(this) {
 			@Override
 			public void onResult(Integer[] result) {

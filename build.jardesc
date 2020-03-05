@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="C:/Users/Michael/Desktop/Spigot/plugins/BankingPlugin.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/BankingPlugin/build.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <javaElement handleIdentifier="=BankingPlugin/src=/optional=/true=/=/maven.pomderived=/true=/"/>
+        <file path="/BankingPlugin/config.yml"/>
+        <file path="/BankingPlugin/.classpath"/>
+        <file path="/BankingPlugin/.gitignore"/>
+        <file path="/BankingPlugin/.project"/>
+        <file path="/BankingPlugin/plugin.yml"/>
+        <folder path="/BankingPlugin/bin"/>
+        <folder path="/BankingPlugin/target"/>
+        <file path="/BankingPlugin/README.md"/>
+        <file path="/BankingPlugin/pom.xml"/>
+    </selectedElements>
+</jardesc>
