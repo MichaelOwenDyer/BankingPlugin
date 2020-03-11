@@ -143,10 +143,8 @@ public class BankingPlugin extends JavaPlugin {
 		bankUtils = new BankUtils(this);
 
 		accountCommand = new AccountCommand(this);
-		controlCommand = new ControlCommand(this);
 		bankCommand = new BankCommand(this);
-
-		debug("Breakpoint!");
+		controlCommand = new ControlCommand(this);
 
         loadExternalPlugins();
         checkForUpdates();
@@ -163,8 +161,6 @@ public class BankingPlugin extends JavaPlugin {
         		}
         	}, time);
         }
-
-		
 	}
 
 	@Override

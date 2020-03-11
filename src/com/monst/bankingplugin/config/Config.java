@@ -389,7 +389,7 @@ public class Config {
         defaultAccountLimit = (short) config.getInt("default-limits.account");
 		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-values.create-bank");
         wgAllowCreateAccountDefault = config.getBoolean("worldguard-default-flag-values.create-account");
-        databaseTablePrefix = config.getString("database.table-prefix");
+		databaseTablePrefix = config.getString("table-prefix");
         
     }
 

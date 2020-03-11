@@ -327,34 +327,60 @@ public abstract class Database {
 						plugin.getLogger().info("Updating database finished");
 					}
 
+					plugin.debug("Starting table creation");
+
 					// Create banks table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableBanks());
+					} catch (SQLException e) {
+						plugin.getLogger().severe("Could not create banks table");
+						plugin.debug("Could not create table 1");
+						plugin.debug(e);
 					}
 
 					// Create accounts table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableAccounts());
+					} catch (SQLException e) {
+						plugin.getLogger().severe("Could not create banks table");
+						plugin.debug("Could not create table 2");
+						plugin.debug(e);
 					}
 
 					// Create transaction log table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableTransactionLog());
+					} catch (SQLException e) {
+						plugin.getLogger().severe("Could not create banks table");
+						plugin.debug("Could not create table 3");
+						plugin.debug(e);
 					}
 
 					// Create interest log table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableInterestLog());
+					} catch (SQLException e) {
+						plugin.getLogger().severe("Could not create banks table");
+						plugin.debug("Could not create table 4");
+						plugin.debug(e);
 					}
 
 					// Create logout table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableLogout());
+					} catch (SQLException e) {
+						plugin.getLogger().severe("Could not create banks table");
+						plugin.debug("Could not create table 5");
+						plugin.debug(e);
 					}
 
 					// Create fields table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableFields());
+					} catch (SQLException e) {
+						plugin.getLogger().severe("Could not create banks table");
+						plugin.debug("Could not create table 6");
+						plugin.debug(e);
 					}
 
 					// Clean up economy log

@@ -103,15 +103,11 @@ public class AccountInteractListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onInteractCreate(PlayerInteractEvent e) {
 		
-		plugin.getServer().broadcastMessage("PlayerInteractEvent!");
-		
 		Player p = e.getPlayer();
 		Block b = e.getClickedBlock();
 		Account account = accountUtils.getAccount(b.getLocation());
 		ClickType clickType = ClickType.getPlayerClickType(p);
 
-		if (account == null)
-			return;
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
 			return;
 

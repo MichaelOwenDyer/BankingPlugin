@@ -151,7 +151,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 			} else {
 				plugin.debug("WorldEdit is not enabled");
 				p.sendMessage(Messages.WORLDEDIT_NOT_ENABLED);
-				return false;
+				return true;
 			}
 		} else if (args.length == 5) {
 			if (!bankUtils.isUniqueName(args[1])) {

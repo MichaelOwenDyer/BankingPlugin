@@ -23,6 +23,7 @@ public class ControlCommand extends GenericCommand {
         
         this.name = Config.mainCommandNameControl;
         this.desc = Messages.COMMAND_DESC_CONTROL;
+		this.pluginCommand = super.createPluginCommand();
         this.executor = new ControlCommandExecutor(plugin);
 
 		addSubCommand(new ControlSubCommand("reload", false, executor, tabCompleter) {

@@ -167,9 +167,8 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 		}
 
 		plugin.debug(p.getName() + " can now click a chest to create an account");
-		p.sendMessage(Messages.CLICK_CHEST_CREATE + "Hello");
+		p.sendMessage(Messages.CLICK_CHEST_CREATE);
 		ClickType.setPlayerClickType(p, new ClickType(EnumClickType.CREATE));
-		plugin.getServer().broadcastMessage("Clicktype being set!");
 	}
 
 	/**

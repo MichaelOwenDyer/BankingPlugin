@@ -135,7 +135,7 @@ public class SQLite extends Database {
 			+ "executor TEXT NOT NULL,"
 			+ "executor_uuid_if_different TEXT,"
             
-			+ "transaction_type TEXT NOT NULL CHECK,"
+			+ "transaction_type TEXT NOT NULL,"
             + "amount TEXT NOT NULL,"
             + "new_balance TEXT NOT NULL,"
             

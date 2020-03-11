@@ -8,8 +8,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 
-// this is a test change
-
 public class AccountCommand extends GenericCommand {
 
 	private static boolean commandCreated = false;
