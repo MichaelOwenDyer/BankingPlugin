@@ -644,9 +644,9 @@ public abstract class Database {
 	 *                 given (as {@code int})
 	 */
 	public void addBank(final Bank bank, final Callback<Integer> callback) {
-		final String queryNoId = "REPLACE INTO " + tableBanks 
-				+ " (id,name,world,selection_type,minY,maxY,points) VALUES(?,?,?,?,?,?,?)";
 		final String queryWithId = "REPLACE INTO " + tableBanks
+				+ " (id,name,world,selection_type,minY,maxY,points) VALUES(?,?,?,?,?,?,?)";
+		final String queryNoId = "REPLACE INTO " + tableBanks
 				+ " (name,world,selection_type,minY,maxY,points) VALUES(?,?,?,?,?,?)";
 
 		new BukkitRunnable() {
@@ -688,6 +688,9 @@ public abstract class Database {
 						sb.append(max.getBlockX() + "," + max.getBlockY() + "," + max.getBlockZ());
 						sb.append(" | ");
 						sb.append(min.getBlockX() + "," + min.getBlockY() + "," + min.getBlockZ());
+
+						ps.setInt(i + 4, -1);
+						ps.setInt(i + 5, -1);
 
 						ps.setString(i + 6, sb.toString());
 					} else {

@@ -225,6 +225,8 @@ public class BankingPlugin extends JavaPlugin {
 		Plugin worldEditPlugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
 		if (worldEditPlugin instanceof WorldEditPlugin)
 			worldEdit = (WorldEditPlugin) worldEditPlugin;
+		else
+			debug("Could not find WorldEdit!");
 
 		if (hasWorldGuard())
             WorldGuardWrapper.getInstance().registerEvents(this);

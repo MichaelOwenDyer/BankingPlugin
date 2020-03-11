@@ -375,16 +375,16 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 			addUnconfirmedCommand(p, args);
 			if (request instanceof Bank) {
 				int accounts = ((Bank) request).getAccounts().size();
-				p.sendMessage(Messages.getWithValue(Messages.ABOUT_TO_DELETE_BANKS, new int[] { 1, accounts })
-						+ Messages.EXECUTE_AGAIN_TO_CONFIRM);
-				return false;
+				p.sendMessage(Messages.getWithValues(Messages.ABOUT_TO_DELETE_BANKS, new Object[] { 1, accounts }));
+				p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+				return true;
 			} else {
 				List<Bank> toRemove = bankUtils.toRemoveList(request.toString(), args);
 				int banks = toRemove.size();
 				int accounts = toRemove.stream().mapToInt(bank -> bank.getAccounts().size()).sum();
-				p.sendMessage(Messages.getWithValue(Messages.ABOUT_TO_DELETE_BANKS, new int[] { banks, accounts })
-						+ Messages.EXECUTE_AGAIN_TO_CONFIRM);
-			return false;
+				p.sendMessage(Messages.getWithValues(Messages.ABOUT_TO_DELETE_BANKS, new Object[] { banks, accounts }));
+				p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+				return true;
 			}
 		}
 	}

@@ -3,4 +3,4 @@ main: com.monst.bankingplugin.BankingPlugin
 version: 1.0.0
 api-version: 1.15
 author: monst
-depend: [Vault, WorldEdit, GriefPrevention, Essentials]
+depend: [Vault, WorldEdit, GriefPrevention]
