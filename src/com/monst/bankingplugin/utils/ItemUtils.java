@@ -7,7 +7,8 @@ import org.bukkit.inventory.ItemStack;
 public class ItemUtils {
 
     public static boolean isTransparent(Block block) {
-        return block.getType().isTransparent();
+		return (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST
+				|| block.getType().isTransparent());
     }
 
     /**

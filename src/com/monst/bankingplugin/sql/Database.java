@@ -438,9 +438,9 @@ public abstract class Database {
 	 */
 	public void addAccount(final Account account, final Callback<Integer> callback) {
 		final String queryNoId = "REPLACE INTO " + tableAccounts
-				+ " (bank_id,owner,size,balance,prev_balance,multiplier_stage,offline_payout_remaining,until_payout,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+				+ " (bank_id,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		final String queryWithId = "REPLACE INTO " + tableAccounts
-				+ " (id,bank_id,owner,size,balance,prev_balance,multiplier_stage,offline_payout_remaining,until_payout,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				+ " (id,bank_id,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		new BukkitRunnable() {
 			@Override
@@ -463,13 +463,14 @@ public abstract class Database {
 					ps.setString(i + 5, account.getPrevBalance().toString());
 
 					ps.setInt(i + 6, account.getStatus().getMultiplierStage());
-					ps.setInt(i + 7, account.getStatus().getRemainingOfflinePayouts());
-					ps.setInt(i + 8, account.getStatus().getRemainingUntilFirstPayout());
+					ps.setInt(i + 7, account.getStatus().getRemainingUntilFirstPayout());
+					ps.setInt(i + 8, account.getStatus().getRemainingOfflinePayouts());
+					ps.setInt(i + 9, account.getStatus().getRemainingOfflineUntilReset());
 
-					ps.setString(i + 3, account.getLocation().getWorld().getName());
-					ps.setInt(i + 6, account.getLocation().getBlockX());
-					ps.setInt(i + 7, account.getLocation().getBlockY());
-					ps.setInt(i + 8, account.getLocation().getBlockZ());
+					ps.setString(i + 10, account.getLocation().getWorld().getName());
+					ps.setInt(i + 11, account.getLocation().getBlockX());
+					ps.setInt(i + 12, account.getLocation().getBlockY());
+					ps.setInt(i + 13, account.getLocation().getBlockZ());
 
 					ps.executeUpdate();
 
@@ -494,7 +495,7 @@ public abstract class Database {
 						callback.callSyncError(e);
 					}
 
-					plugin.getLogger().severe("Failed to account to database (#" + account.getID() + ")");
+					plugin.getLogger().severe("Failed to add account to database (#" + account.getID() + ")");
 					plugin.debug("Failed to add account to database (#" + account.getID() + ")");
 					plugin.debug(e);
 				}
@@ -702,13 +703,13 @@ public abstract class Database {
 					ps.executeUpdate();
 
 					if (!bank.hasID()) {
-						int accountId = -1;
+						int bankId = -1;
 						ResultSet rs = ps.getGeneratedKeys();
 						if (rs.next()) {
-							accountId = rs.getInt(1);
+							bankId = rs.getInt(1);
 						}
 
-						bank.setID(accountId);
+						bank.setID(bankId);
 					}
 
 					if (callback != null) {

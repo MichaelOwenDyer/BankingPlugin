@@ -18,6 +18,7 @@ import org.bukkit.event.world.StructureGrowEvent;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.AccountUtils;
+import com.monst.bankingplugin.utils.ItemUtils;
 
 public class AccountTamperingListener implements Listener {
 
@@ -31,6 +32,9 @@ public class AccountTamperingListener implements Listener {
 	public void onAccountBlocked(BlockPlaceEvent e) {
         Block b = e.getBlockPlaced();
         Block below = b.getRelative(BlockFace.DOWN);
+
+		if (ItemUtils.isTransparent(b))
+			return;
 
         if (accountUtils.isAccount(below.getLocation())) {
             e.setCancelled(true);

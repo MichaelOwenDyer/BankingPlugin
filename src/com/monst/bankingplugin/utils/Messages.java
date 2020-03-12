@@ -1,8 +1,10 @@
 package com.monst.bankingplugin.utils;
 
+import org.bukkit.ChatColor;
+
 public class Messages {
 	
-	public static final String BANK_CREATED = "Bank created!";
+	public static final String BANK_CREATED = ChatColor.GREEN + "Bank created!";
 	public static final String ACCOUNT_CREATED = "Account created!";
 	public static final String BANK_ALREADY_EXISTS = "A bank by that name already exists!";
 	public static final String CHEST_ALREADY_ACCOUNT = "That chest is already an account.";
@@ -42,20 +44,16 @@ public class Messages {
 	// public static final String BANK_LIMIT_REACHED = "You are not allowed to create any more banks!";
 	public static final String ACCOUNT_LIMIT = "You own |/| allowed accounts.";
 	public static final String ACCOUNT_LIMIT_REACHED = "You are not allowed to create any more accounts!";
-	public static final String ACCOUNT_INFO_BANK = "Bank: \t\t";
-	public static final String ACCOUNT_INFO_OWNER = "Account owner: \t";
-	public static final String ACCOUNT_INFO_BALANCE = "Balance: \t";
-	public static final String ACCOUNT_INFO_ID = "Unique ID: \t";
-	public static final String ACCOUNT_INFO_MULTIPLIER = "Current multiplier: \t";
+	public static final String ACCOUNT_INFO_MULTIPLIER = "Current multiplier: ";
 	public static final String ACCOUNT_COMMAND_SCHEDULED = "Your command has been scheduled to execute in | seconds. Use | to cancel.";
 	public static final String BANK_COMMAND_SCHEDULED = "Your command has been scheduled to execute in | seconds. Use | to cancel.";
 	public static final String SCHEDULED_COMMAND_CANCELLED = "Your scheduled command has been cancelled.";
 	public static final String SCHEDULED_COMMAND_NOT_EXIST = "You do not have a currently scheduled command.";
 	public static final String PLAYER_COMMAND_ONLY = "Only players can use this command.";
-	public static final String ABOUT_TO_DELETE_ACCOUNTS = "You are about to delete | accounts. ";
-	public static final String ABOUT_TO_DELETE_BANKS = "You are about to delete | banks and | accounts. ";
-	public static final String DELETED_ACCOUNTS = "Your command has been executed and | accounts were removed.";
-	public static final String DELETED_BANKS = "Your command has been executed and | banks were removed.";
+	public static final String ABOUT_TO_REMOVE_ACCOUNTS = "You are about to delete | accounts. ";
+	public static final String ABOUT_TO_REMOVE_BANKS = "You are about to delete | banks and | accounts. ";
+	public static final String ACCOUNTS_REMOVED = "Your command has been executed and | accounts were removed.";
+	public static final String BANKS_REMOVED = "Your command has been executed and | banks were removed.";
 	public static final String EXECUTE_AGAIN_TO_CONFIRM = "Execute command again to confirm.";
 	
 	public static final String NO_PERMISSION = "You do not have permission to ";

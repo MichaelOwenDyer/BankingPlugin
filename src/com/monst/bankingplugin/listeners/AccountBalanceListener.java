@@ -1,8 +1,10 @@
 package com.monst.bankingplugin.listeners;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -64,6 +66,7 @@ public class AccountBalanceListener implements Listener {
 		if (accountUtils.isAccount(loc)) {
 			Account account = accountUtils.getAccount(loc);
 			BigDecimal valueOnClose = accountUtils.appraiseAccountContents(account);
+			valueOnClose = valueOnClose.setScale(2, RoundingMode.HALF_EVEN);
 
 			BigDecimal difference = valueOnClose.subtract(account.getBalance());
 			if (difference.compareTo(BigDecimal.ZERO) == 0)
@@ -73,7 +76,7 @@ public class AccountBalanceListener implements Listener {
 			account.getStatus().setBalance(valueOnClose);
 
 			executor.sendMessage(getTransactionMessage(executor, account, difference));
-			executor.sendMessage(getNewBalanceMessage(executor, account, difference));
+			executor.sendMessage(getNewBalanceMessage(executor, account, valueOnClose));
 		}
 	}
 
@@ -86,9 +89,9 @@ public class AccountBalanceListener implements Listener {
 			difference.abs();
 
 		if (transactionType)
-			sb.append("deposited $" + difference.toString() + " into ");
+			sb.append("deposited " + ChatColor.GREEN + "$" + difference.toString() + ChatColor.WHITE + " into ");
 		else
-			sb.append("withdrawn $" + difference.toString() + " from ");
+			sb.append("withdrawn " + ChatColor.RED + "$" + difference.abs().toString() + ChatColor.WHITE + " from ");
 		
 		if (executor.getUniqueId().equals(account.getOwner().getUniqueId()))
 			sb.append("your account.");
@@ -100,7 +103,7 @@ public class AccountBalanceListener implements Listener {
 
 	private String getNewBalanceMessage(Player executor, Account account, BigDecimal balance) {
 		if (executor.getUniqueId().equals(account.getOwner().getUniqueId()))
-			return "Your new balance is $" + balance.toString() + ".";
+			return "Your new balance is " + ChatColor.GREEN + "$" + balance.toString() + ChatColor.WHITE + ".";
 		else
 			return account.getOwner().getName() + "'s new balance is $" + balance.toString() + ".";
 	}

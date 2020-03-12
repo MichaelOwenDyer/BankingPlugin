@@ -117,7 +117,7 @@ public class SQLite extends Database {
     			+ "y INTEGER NOT NULL,"
     			+ "z INTEGER NOT NULL)";
     	
-		// id,bank_id,owner,size,balance,prev_balance,multiplier_stage,until_payout,remaining_offline_payout,remaining_offline_until_reset,world,x,y,z
+		// id,bank_id,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z
 		// ?,?,?,?,?,?,?,?,?,?,?,?,?,?
     }
 

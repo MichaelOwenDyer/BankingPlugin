@@ -2,6 +2,7 @@ package com.monst.bankingplugin;
 
 import java.math.BigDecimal;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -139,7 +140,7 @@ public class Account {
 	
 	@Override
 	public String toString() {
-		return "Account ID: " + id + "\n"
+		return ChatColor.GRAY + "Unique ID: " + id + "\n"
 				+ "Owner: " + owner.getName() + "\n"
 				+ "Bank: " + bank.getName();
 	}

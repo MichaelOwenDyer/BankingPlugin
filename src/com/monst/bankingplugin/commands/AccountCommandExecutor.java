@@ -399,7 +399,7 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			@Override
 			public void run() {
 				int count = accountUtils.removeAll(p, request.toString(), args);
-				p.sendMessage(Messages.getWithValue(Messages.DELETED_ACCOUNTS, count));
+				p.sendMessage(Messages.getWithValue(Messages.ACCOUNTS_REMOVED, count));
 			}
 		}.runTaskLater(BankingPlugin.getInstance(), ticks));
 		p.sendMessage(Messages.getWithValues(Messages.ACCOUNT_COMMAND_SCHEDULED,
@@ -413,7 +413,7 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			return true;
 		} else {
 			addUnconfirmedCommand(p, args);
-			p.sendMessage(Messages.getWithValue(Messages.ABOUT_TO_DELETE_ACCOUNTS,
+			p.sendMessage(Messages.getWithValue(Messages.ABOUT_TO_REMOVE_ACCOUNTS,
 					accountUtils.toRemoveList(p, request.toString(), args).size()) + Messages.EXECUTE_AGAIN_TO_CONFIRM);
 			return false;
 		}

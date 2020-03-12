@@ -414,11 +414,14 @@ public class AccountUtils {
 		Essentials essentials = plugin.getEssentials();
 		BigDecimal sum = BigDecimal.ZERO;
 		for (ItemStack items : account.getInventoryHolder().getInventory().getContents()) {
+			if (items == null)
+				continue;
 			if (Config.blacklist.contains(items.getType().toString()))
 				continue;
-			sum.add(essentials.getWorth().getPrice(essentials, items));
+			sum = sum.add(essentials.getWorth().getPrice(essentials, items));
 		}
-		return sum.setScale(2, RoundingMode.HALF_EVEN);
+		sum.setScale(2, RoundingMode.HALF_EVEN);
+		return sum;
 	}
 
 	public boolean payInsurance(Account account, BigDecimal loss) {

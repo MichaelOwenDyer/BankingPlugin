@@ -34,12 +34,12 @@ import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.ClickType.InfoClickType;
 import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
-import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 public class AccountInteractListener implements Listener {
@@ -101,7 +101,7 @@ public class AccountInteractListener implements Listener {
 	 * @param PlayerInteractEvent
 	 */
 	@EventHandler(priority = EventPriority.HIGH)
-	public void onInteractCreate(PlayerInteractEvent e) {
+	public void onAccountInteract(PlayerInteractEvent e) {
 		
 		Player p = e.getPlayer();
 		Block b = e.getClickedBlock();
@@ -112,6 +112,8 @@ public class AccountInteractListener implements Listener {
 			return;
 
 		if (clickType != null) {
+			if (clickType.getClickType() != ClickType.EnumClickType.CREATE && account == null)
+				return;
 			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK))
 				return;
 
@@ -129,15 +131,17 @@ public class AccountInteractListener implements Listener {
 					ClickType.removePlayerClickType(p);
 				break;
 			case INFO:
-				info(p, account);
+				boolean verbose = ((InfoClickType) clickType).isVerbose();
+				info(p, account, verbose);
 				ClickType.removePlayerClickType(p);
 				break;
 			}
 			e.setCancelled(true);
 		} else {
+			if (account == null)
+				return;
 			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK))
 				return;
-			
 			if (p.isSneaking() && Utils.hasAxeInHand(p) && e.getAction() == Action.LEFT_CLICK_BLOCK)
 				return;
 
@@ -147,13 +151,13 @@ public class AccountInteractListener implements Listener {
 				ItemStack item = Utils.getItemInMainHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account);
+					info(p, account, false);
 					return;
 				}
 				item = Utils.getItemInOffHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account);
+					info(p, account, false);
 					return;
 				}
 			}
@@ -346,7 +350,7 @@ public class AccountInteractListener implements Listener {
 	 *                 information
 	 * @param account  Account from which the information will be retrieved
 	 */
-	private void info(Player executor, Account account) {
+	private void info(Player executor, Account account, boolean verbose) {
 		boolean executorIsOwner = executor.getUniqueId().equals(account.getOwner().getUniqueId());
 		if (!executorIsOwner && !executor.hasPermission(Permissions.ACCOUNT_INFO_OTHER)) {
 			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_INFO_OTHER);
@@ -359,7 +363,7 @@ public class AccountInteractListener implements Listener {
 			plugin.debug(executor.getName() + " is retrieving " + account.getOwner().getName() + "'s account info (#"
 					+ account.getID() + ")");
 
-		AccountInfoEvent event = new AccountInfoEvent(executor, account);
+		AccountInfoEvent event = new AccountInfoEvent(executor, account, verbose);
 		Bukkit.getPluginManager().callEvent(event);
 
 		if (event.isCancelled()) {
@@ -367,27 +371,11 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		String ownerName = account.getOwner().getName();
-		if (ownerName == null)
-			ownerName = account.getOwner().getUniqueId().toString();
-
-		String bank = Messages.ACCOUNT_INFO_BANK + account.getBank().getName();
-		String owner = Messages.ACCOUNT_INFO_OWNER + ChatColor.GOLD + ownerName;
-		// TODO: Format balance nicely?
-		String balance = Messages.ACCOUNT_INFO_BALANCE + ChatColor.GREEN + account.getBalance().toString();
-		String multiplier = Messages.ACCOUNT_INFO_MULTIPLIER + ChatColor.GREEN
-				+ account.getStatus().getRealMultiplier() + ChatColor.GRAY + " (Stage "
-				+ account.getStatus().getMultiplierStage() + " of " + Config.interestMultipliers.size() + ")";
-		String id = Messages.ACCOUNT_INFO_ID + ChatColor.DARK_RED + account.getID();
-
 		executor.sendMessage(" ");
-		executor.sendMessage(bank);
-		if (!executorIsOwner)
-			executor.sendMessage(owner);
-		executor.sendMessage(balance);
-		if (Config.enableInterestMultipliers)
-			executor.sendMessage(multiplier);
-		executor.sendMessage(id);
+		if (verbose) 
+			executor.sendMessage(account.toStringVerbose());
+		else
+			executor.sendMessage(account.toString());
 		executor.sendMessage(" ");
 	}
 

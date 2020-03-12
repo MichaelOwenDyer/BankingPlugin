@@ -8,8 +8,9 @@ import com.monst.bankingplugin.Account;
 public class AccountInfoEvent extends AccountEvent implements Cancellable {
 	
 	private boolean cancelled;
+	private boolean verbose;
 
-	public AccountInfoEvent(Player player, Account account) {
+	public AccountInfoEvent(Player player, Account account, boolean verbose) {
 		super(player, account);
 	}
 
@@ -21,6 +22,10 @@ public class AccountInfoEvent extends AccountEvent implements Cancellable {
 	@Override
 	public void setCancelled(boolean cancel) {
 		cancelled = cancel;		
+	}
+
+	public boolean isVerbose() {
+		return verbose;
 	}
 
 }

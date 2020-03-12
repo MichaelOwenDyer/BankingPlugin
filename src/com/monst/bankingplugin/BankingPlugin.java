@@ -228,6 +228,15 @@ public class BankingPlugin extends JavaPlugin {
 		else
 			debug("Could not find WorldEdit!");
 
+		Plugin essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("Essentials");
+		if (essentialsPlugin instanceof Essentials)
+			essentials = (Essentials) essentialsPlugin;
+		else {
+			essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("EssentialsX");
+			if (essentialsPlugin instanceof Essentials)
+				essentials = (Essentials) essentialsPlugin;
+		}
+
 		if (hasWorldGuard())
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
