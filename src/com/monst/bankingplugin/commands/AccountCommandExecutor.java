@@ -152,7 +152,7 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			int limit = accountUtils.getAccountLimit(p);
 			if (limit != -1) {
 				if (accountUtils.getNumberOfAccounts(p) >= limit) {
-					p.sendMessage(Messages.getWithValue(Messages.ACCOUNT_LIMIT_REACHED, limit));
+					p.sendMessage(Messages.ACCOUNT_LIMIT_REACHED);
 					plugin.debug(p.getName() + " has reached their account limit");
 					return;
 				}

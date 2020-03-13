@@ -4,13 +4,13 @@ import org.bukkit.ChatColor;
 
 public class Messages {
 	
-	public static final String BANK_CREATED = ChatColor.GREEN + "Bank created!";
-	public static final String ACCOUNT_CREATED = "Account created!";
+	public static final String BANK_CREATED = ChatColor.GOLD + "Bank created!";
+	public static final String ACCOUNT_CREATED = ChatColor.GOLD + "Account created!";
 	public static final String BANK_ALREADY_EXISTS = "A bank by that name already exists!";
 	public static final String CHEST_ALREADY_ACCOUNT = "That chest is already an account.";
 	public static final String CHEST_BLOCKED = "Chest is blocked!";
-	public static final String ACCOUNT_REMOVED = "The account has been removed!";
-	public static final String BANK_REMOVED = "The bank has been removed!";
+	public static final String ACCOUNT_REMOVED = ChatColor.GREEN + "The account has been removed!";
+	public static final String BANK_REMOVED = ChatColor.GREEN + "The bank has been removed!";
 	public static final String ACCOUNT_REMOVED_REFUND = "The account has been removed and your account has been refunded.";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = "The account could not be removed because it is not empty.";
 	public static final String ACCOUNT_OPENED = "You have opened |'s account chest.";
@@ -21,12 +21,10 @@ public class Messages {
 	public static final String NOT_STANDING_IN_BANK = "You must be standing in the bank you want to remove.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = "You do not have sufficient funds to create an account.";
 	//public static final String BANK_CREATE_INSUFFICIENT_FUNDS = "You do not have sufficient funds to create a bank.";
-	public static final String DEPOSIT_SUCCESS = "Your deposit was successful.";
-	public static final String WITHDRAWAL_SUCCESS = "Your withdrawal was successful.";
 	public static final String INTEREST_EARNED = "You have earned interest on your account!";
 	public static final String MULTIPLIER_INCREASED = "Your account multiplier has increased to |.";
 	public static final String MULTIPLIER_DECREASED = "Your account multiplier has decreased to |.";
-	public static final String ERROR_OCCURRED = "An error occurred! ";
+	public static final String ERROR_OCCURRED = ChatColor.RED + "An error occurred! ";
 	public static final String PLAYER_NOT_FOUND = "No player was found under the name \"|\".";
 	public static final String BANK_NOT_FOUND = "No bank was found under the identifier \"|\".";
 	public static final String NO_ACCOUNTS_FOUND = "No accounts found under those criteria!";
@@ -43,7 +41,7 @@ public class Messages {
 	public static final String RELOADED_BANKS = "Successfully reloaded | banks and | accounts.";
 	// public static final String BANK_LIMIT_REACHED = "You are not allowed to create any more banks!";
 	public static final String ACCOUNT_LIMIT = "You own |/| allowed accounts.";
-	public static final String ACCOUNT_LIMIT_REACHED = "You are not allowed to create any more accounts!";
+	public static final String ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create any more accounts!!";
 	public static final String ACCOUNT_INFO_MULTIPLIER = "Current multiplier: ";
 	public static final String ACCOUNT_COMMAND_SCHEDULED = "Your command has been scheduled to execute in | seconds. Use | to cancel.";
 	public static final String BANK_COMMAND_SCHEDULED = "Your command has been scheduled to execute in | seconds. Use | to cancel.";

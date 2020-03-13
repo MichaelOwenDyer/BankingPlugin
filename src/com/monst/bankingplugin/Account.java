@@ -49,8 +49,10 @@ public class Account {
 	}
 
 	public boolean create(boolean showConsoleMessages) {
-		if (created)
+		if (created) {
+			plugin.debug("Account was already created! (#" + id + ")");
 			return false;
+		}
 
 		plugin.debug("Creating account (#" + id + ")");
 
@@ -140,22 +142,25 @@ public class Account {
 	
 	@Override
 	public String toString() {
-		return ChatColor.GRAY + "Unique ID: " + id + "\n"
-				+ "Owner: " + owner.getName() + "\n"
-				+ "Bank: " + bank.getName();
+		return ChatColor.GRAY + "Unique ID: " + ChatColor.WHITE + id + "\n"
+				+ ChatColor.GRAY + "Owner: " + ChatColor.GOLD + owner.getName() + "\n"
+				+ ChatColor.GRAY + "Bank: " + ChatColor.AQUA + bank.getName() + ChatColor.GRAY;
 	}
 
 	public String toStringVerbose() {
 		String balance = "$" + status.getBalance().toString();
 		String multiplier = status.getRealMultiplier() + " (Stage " + status.getMultiplierStage() + " of " + Config.interestMultipliers.size() + ")";
-		String payingInterest = status.getRemainingUntilFirstPayout() == 0 ? "True" : "False (" + status.getRemainingUntilFirstPayout() + " payouts to go";
+		String interestRate = "" + ChatColor.GREEN + (Config.baselineInterestRate * status.getRealMultiplier() * 100)
+				+ "%" + ChatColor.GRAY + " (" + Config.baselineInterestRate + " x " + status.getRealMultiplier() + ")";
+		String payingInterest = status.getRemainingUntilFirstPayout() == 0 ? ChatColor.GREEN + "true" : ChatColor.RED + "false " + ChatColor.GRAY + "(" + status.getRemainingUntilFirstPayout() + " payouts to go";
 		String loc = location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
 		String size = isDoubleChest() ? "Double" : "Single";
 		return toString() + "\n"
-				+ "Balance: " + balance + "\n"
-				+ "Multiplier: " + multiplier + "\n"
+				+ "Balance: " + ChatColor.GREEN + balance + "\n"
+				+ ChatColor.GRAY + "Multiplier: " + multiplier + "\n"
+				+ "Interest rate: " + interestRate + "\n"
 				+ "Paying interest: " + payingInterest + "\n"
-				+ "Location: " + loc + "\n"
+				+ ChatColor.GRAY + "Location: " + loc + "\n"
 				+ "Size: " + size;
 	}
 

@@ -12,8 +12,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -32,7 +34,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent.TransactionType;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.utils.AccountStatus;
-import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.sk89q.worldedit.BlockVector2D;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
@@ -394,9 +395,7 @@ public abstract class Database {
 						ResultSet rsAccounts = s.executeQuery("SELECT COUNT(id) FROM " + tableAccounts);
 						if (rsAccounts.next()) {
 							accounts = rsAccounts.getInt(1);
-
 							plugin.debug("Initialized database with " + accounts + " account entries");
-
 						} else {
 							throw new SQLException("Count result set has no account entries");
 						}
@@ -405,15 +404,13 @@ public abstract class Database {
 						ResultSet rsBanks = s.executeQuery("SELECT COUNT(id) FROM " + tableBanks);
 						if (rsBanks.next()) {
 							banks = rsBanks.getInt(1);
-
 							plugin.debug("Initialized database with " + banks + " bank entries");
-
 						} else {
 							throw new SQLException("Count result set has no bank entries");
 						}
 
 						if (callback != null) {
-							callback.callSyncResult(new Integer[] { accounts, banks });
+							callback.callSyncResult(new Integer[] { banks, accounts });
 						}
 					}
 				} catch (SQLException e) {
@@ -536,107 +533,7 @@ public abstract class Database {
 			}
 		}.runTaskAsynchronously(plugin);
 	}
-
-	/**
-	 * Get all accounts from the database
-	 * 
-	 * @param showConsoleMessages Whether console messages (errors or warnings)
-	 *                            should be shown
-	 * @param callback            Callback that - if succeeded - returns a read-only
-	 *                            collection of all accounts (as
-	 *                            {@code Collection<Account>})
-	 */
-	public void getAccounts(final boolean showConsoleMessages, final Callback<Collection<Account>> callback) {
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				ArrayList<Account> accounts = new ArrayList<>();
-
-				try (Connection con = dataSource.getConnection();
-						PreparedStatement psAccounts = con.prepareStatement("SELECT * FROM " + tableAccounts + "")) {
-					ResultSet rsAccounts = psAccounts.executeQuery();
-
-					while (rsAccounts.next()) {
-
-						int accountId = rsAccounts.getInt("id");
-
-						plugin.debug("Getting account from database... (#" + accountId + ")");
-
-						String worldName = rsAccounts.getString("world");
-						World world = Bukkit.getWorld(worldName);
-
-						if (world == null) {
-							WorldNotFoundException e = new WorldNotFoundException(worldName);
-							if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
-								plugin.getLogger().warning(e.getMessage());
-								notFoundWorlds.add(worldName);
-							}
-							plugin.debug("Failed to get account (#" + accountId + ")");
-							plugin.debug(e);
-							continue;
-						}
-
-						Bank bank = null;
-						int bankId = rsAccounts.getInt("bank_id");
-						BankUtils bankUtils = plugin.getBankUtils();
-						bank = bankUtils.getBankByID(bankId);
-						if (bank == null) {
-							plugin.debug("Failed to associate bank with account (#" + accountId + ")");
-							continue;
-						}
-
-						AccountStatus status;
-						try {
-							int multiplierStage = rsAccounts.getInt("multiplier_stage");
-							int remainingUntilPayout = rsAccounts.getInt("remaining_until_payout");
-							int remainingOfflinePayouts = rsAccounts.getInt("remaining_offline_payouts");
-							int remainingOfflineUntilReset = rsAccounts.getInt("remaining_offline_until_reset");
-
-							BigDecimal balance = BigDecimal
-									.valueOf(Double.parseDouble(rsAccounts.getString("balance")));
-							BigDecimal prevBalance = BigDecimal
-									.valueOf(Double.parseDouble(rsAccounts.getString("prev_balance")));
-
-							status = new AccountStatus(multiplierStage, remainingUntilPayout, remainingOfflinePayouts,
-									remainingOfflineUntilReset, balance, prevBalance);
-
-						} catch (SQLException e) {
-							plugin.getLogger().severe("Failed to create account status (#" + accountId + ")");
-							plugin.debug("Failed to create account status");
-							plugin.debug(e);
-							continue;
-						}
-
-						int x = rsAccounts.getInt("x");
-						int y = rsAccounts.getInt("y");
-						int z = rsAccounts.getInt("z");
-						Location location = new Location(world, x, y, z);
-						OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rsAccounts.getString("owner")));
-
-						plugin.debug("Initializing account... (#" + accountId + ")");
-
-						Account account = new Account(accountId, plugin, owner, bank, location, status);
-						accounts.add(account);
-						bank.addAccount(account);
-					}
-
-					if (callback != null) {
-						callback.callSyncResult(Collections.unmodifiableCollection(accounts));
-					}
-				} catch (SQLException e) {
-					if (callback != null) {
-						callback.callSyncError(e);
-					}
-
-					plugin.getLogger().severe("Failed to get accounts from database");
-					plugin.debug("Failed to get accounts from database");
-					plugin.debug(e);
-				}
-
-			}
-		}.runTaskAsynchronously(plugin);
-	}
-
+	
 	/**
 	 * Add a bank to the database
 	 * 
@@ -773,11 +670,11 @@ public abstract class Database {
 	 *                            collection of all banks (as
 	 *                            {@code Collection<Account>})
 	 */
-	public void getBanks(final boolean showConsoleMessages, final Callback<Collection<Bank>> callback) {
+	public void getBanksAndAccounts(final boolean showConsoleMessages, final Callback<Map<Bank, Collection<Account>>> callback) {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				ArrayList<Bank> banks = new ArrayList<>();
+				Map<Bank, Collection<Account>> banksAndAccounts = new HashMap<>();
 
 				try (Connection con = dataSource.getConnection();
 						PreparedStatement psBanks = con.prepareStatement("SELECT * FROM " + tableBanks + "")) {
@@ -845,11 +742,21 @@ public abstract class Database {
 
 						Bank bank = new Bank(bankId, plugin, name, selection);
 
-						banks.add(bank);
+						getAccountsByBank(bank, showConsoleMessages, new Callback<Collection<Account>>(plugin) {
+							@Override
+							public void onResult(Collection<Account> result) {
+								banksAndAccounts.put(bank, result);
+							}
+							@Override
+							public void onError(Throwable throwable) {
+								if (callback != null)
+									callback.callSyncError(throwable);
+							}
+						});
 					}
 
 					if (callback != null) {
-						callback.callSyncResult(Collections.unmodifiableCollection(banks));
+						callback.callSyncResult(Collections.unmodifiableMap(banksAndAccounts));
 					}
 				} catch (SQLException e) {
 					if (callback != null) {
@@ -858,6 +765,100 @@ public abstract class Database {
 
 					plugin.getLogger().severe("Failed to get banks from database");
 					plugin.debug("Failed to get banks from database");
+					plugin.debug(e);
+				}
+
+			}
+		}.runTaskAsynchronously(plugin);
+	}
+
+	/**
+	 * Get all accounts from the database under a certain bank
+	 * 
+	 * @param bank                The bank to get the accounts of
+	 * @param showConsoleMessages Whether console messages (errors or warnings)
+	 *                            should be shown
+	 * @param callback            Callback that - if succeeded - returns a read-only
+	 *                            collection of all accounts (as
+	 *                            {@code Collection<Account>})
+	 */
+	private void getAccountsByBank(Bank bank, final boolean showConsoleMessages,
+			final Callback<Collection<Account>> callback) {
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				ArrayList<Account> accounts = new ArrayList<>();
+
+				try (Connection con = dataSource.getConnection();
+						PreparedStatement ps = con
+								.prepareStatement("SELECT * FROM " + tableAccounts + " WHERE bank_id = ?")) {
+					ps.setInt(1, bank.getID());
+					ResultSet rsAccounts = ps.executeQuery();
+
+					while (rsAccounts.next()) {
+
+						int accountId = rsAccounts.getInt("id");
+
+						plugin.debug("Getting account from database... (#" + accountId + " at bank " + bank.getName() + " #" + bank.getID() + ")");
+
+						String worldName = rsAccounts.getString("world");
+						World world = Bukkit.getWorld(worldName);
+
+						if (world == null) {
+							WorldNotFoundException e = new WorldNotFoundException(worldName);
+							if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
+								plugin.getLogger().warning(e.getMessage());
+								notFoundWorlds.add(worldName);
+							}
+							plugin.debug("Failed to get account (#" + accountId + ")");
+							plugin.debug(e);
+							continue;
+						}
+
+						AccountStatus status;
+						try {
+							int multiplierStage = rsAccounts.getInt("multiplier_stage");
+							int remainingUntilPayout = rsAccounts.getInt("remaining_until_payout");
+							int remainingOfflinePayouts = rsAccounts.getInt("remaining_offline_payouts");
+							int remainingOfflineUntilReset = rsAccounts.getInt("remaining_offline_until_reset");
+
+							BigDecimal balance = BigDecimal
+									.valueOf(Double.parseDouble(rsAccounts.getString("balance")));
+							BigDecimal prevBalance = BigDecimal
+									.valueOf(Double.parseDouble(rsAccounts.getString("prev_balance")));
+
+							status = new AccountStatus(multiplierStage, remainingUntilPayout, remainingOfflinePayouts,
+									remainingOfflineUntilReset, balance, prevBalance);
+
+						} catch (SQLException e) {
+							plugin.getLogger().severe("Failed to create account status (#" + accountId + ")");
+							plugin.debug("Failed to create account status");
+							plugin.debug(e);
+							continue;
+						}
+
+						int x = rsAccounts.getInt("x");
+						int y = rsAccounts.getInt("y");
+						int z = rsAccounts.getInt("z");
+						Location location = new Location(world, x, y, z);
+						OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rsAccounts.getString("owner")));
+
+						plugin.debug("Initializing account... (#" + accountId + ")");
+
+						Account account = new Account(accountId, plugin, owner, bank, location, status);
+						accounts.add(account);
+					}
+
+					if (callback != null) {
+						callback.callSyncResult(Collections.unmodifiableCollection(accounts));
+					}
+				} catch (SQLException e) {
+					if (callback != null) {
+						callback.callSyncError(e);
+					}
+
+					plugin.getLogger().severe("Failed to get accounts from database");
+					plugin.debug("Failed to get accounts from database");
 					plugin.debug(e);
 				}
 

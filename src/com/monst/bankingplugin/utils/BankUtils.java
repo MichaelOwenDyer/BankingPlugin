@@ -302,16 +302,32 @@ public class BankUtils {
 					plugin.debug("Removed bank (#" + bank.getID() + ")");
 				}
 				
-				plugin.getDatabase().getBanks(showConsoleMessages, new Callback<Collection<Bank>>(plugin) {
+				plugin.getDatabase().getBanksAndAccounts(showConsoleMessages, new Callback<Map<Bank, Collection<Account>>>(plugin) {
 					@Override
-					public void onResult(Collection<Bank> result) {
+					public void onResult(Map<Bank, Collection<Account>> result) {
 
-						for (Bank bank : result)
+						for (Bank bank : result.keySet())
 							if (bank.create(showConsoleMessages)) {
 								addBank(bank, false);
 								postReload[0]++;
+								for (Account account : result.get(bank)) {
+									if (account.create(showConsoleMessages)) {
+										accountUtils.addAccount(account, false);
+										bank.addAccount(account);
+										postReload[1]++;
+									} else
+										plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");
+								}
 							} else
-								plugin.debug("Could not re-create bank during reload! (#" + bank.getID() + ")");
+								plugin.debug("Could not re-create bank from database! (#" + bank.getID() + ")");
+
+								if (preReload[0] != postReload[0])
+									plugin.debug("Number of banks changed during reload. Was: " + preReload[0]
+											+ ", is: " + postReload[0]);
+								if (preReload[1] != postReload[1])
+									plugin.debug("Number of accounts changed during reload. Was: " + preReload[1]
+											+ ", is: " + postReload[1]);
+
 					}
 					
 					@Override
@@ -320,34 +336,6 @@ public class BankUtils {
 							callback.callSyncError(throwable);
 					}
 				});
-
-				plugin.getDatabase().getAccounts(showConsoleMessages, new Callback<Collection<Account>>(plugin) {
-                    @Override
-					public void onResult(Collection<Account> result) {
-						for (Account account : result)
-							if (account.create(showConsoleMessages)) {
-								accountUtils.addAccount(account, false);
-								postReload[1]++;
-							} else
-								plugin.debug("Could not re-create account during reload! (#" + account.getID() + ")");
-
-						if (preReload[0] != postReload[0])
-							plugin.debug("Number of banks changed during reload. Was: " + preReload[0] + ", is: "
-									+ postReload[0]);
-						if (preReload[1] != postReload[1])
-							plugin.debug("Number of accounts changed during reload. Was: " + preReload[1] + ", is: "
-									+ postReload[1]);
-
-                        if (callback != null) 
-							callback.callSyncResult(new Integer[] { postReload[0], postReload[1] });
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        if (callback != null) 
-                        	callback.callSyncError(throwable);
-                    }
-                });
             }
 
             @Override

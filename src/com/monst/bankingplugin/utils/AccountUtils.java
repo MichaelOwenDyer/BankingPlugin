@@ -262,25 +262,29 @@ public class AccountUtils {
 			Player p = (Player) sender;
 			switch (request) {
 			case "":
-				list = getPlayerAccountsCopy(p).stream().map(Account::toString).collect(Collectors.joining("\n"));
+				list = getPlayerAccountsCopy(p).stream().distinct().map(Account::toString)
+						.collect(Collectors.joining("\n"));
 				break;
 			case "-d":
-				list = getPlayerAccountsCopy(p).stream().map(Account::toStringVerbose)
+				list = getPlayerAccountsCopy(p).stream().distinct().map(Account::toStringVerbose)
 						.collect(Collectors.joining("\n"));
 				break;
 			case "-a":
-				list = getAccountsCopy().stream().map(Account::toString).collect(Collectors.joining("\n"));
+				list = getAccountsCopy().stream().distinct().map(Account::toString).collect(Collectors.joining("\n"));
 				break;
 			case "-a -d":
-				list = getAccountsCopy().stream().map(Account::toStringVerbose).collect(Collectors.joining("\n"));
+				list = getAccountsCopy().stream().distinct().map(Account::toStringVerbose)
+						.collect(Collectors.joining("\n"));
 				break;
 			case "name":
 				OfflinePlayer ownerA = Bukkit.getOfflinePlayer(args[1]);
-				list = getPlayerAccountsCopy(ownerA).stream().map(Account::toString).collect(Collectors.joining("\n"));
+				list = getPlayerAccountsCopy(ownerA).stream().distinct().map(Account::toString)
+						.collect(Collectors.joining("\n"));
 				break;
 			case "name -d":
 				OfflinePlayer ownerB = Bukkit.getOfflinePlayer(args[1]);
-				list = getPlayerAccountsCopy(ownerB).stream().map(Account::toString).collect(Collectors.joining("\n"));
+				list = getPlayerAccountsCopy(ownerB).stream().distinct().map(Account::toString)
+						.collect(Collectors.joining("\n"));
 				break;
 			default:
 				return Messages.ERROR_OCCURRED;
@@ -404,24 +408,23 @@ public class AccountUtils {
 	}
 
 	public BigDecimal appraiseAccountContents(Account account) {
-		if (!locatedAccounts.contains(account)) {
-			plugin.debug("Account being appraised was not listed in the database! (#" + account.getID() + ")");
-			plugin.getLogger()
-					.severe("Account being appraised was not listed in the database! (#" + account.getID() + ")");
-			return account.getBalance();
-		}
 
 		Essentials essentials = plugin.getEssentials();
 		BigDecimal sum = BigDecimal.ZERO;
+		sum.setScale(2, RoundingMode.HALF_EVEN);
 		for (ItemStack items : account.getInventoryHolder().getInventory().getContents()) {
 			if (items == null)
 				continue;
 			if (Config.blacklist.contains(items.getType().toString()))
 				continue;
-			sum = sum.add(essentials.getWorth().getPrice(essentials, items));
+			BigDecimal value = essentials.getWorth().getPrice(essentials, items);
+			if (value == null) {
+				plugin.debug("An item without value (" + items.getType().toString() + ") was placed into account (#" + account.getID() + ")");
+				continue;
+			}
+			sum = sum.add(value);
 		}
-		sum.setScale(2, RoundingMode.HALF_EVEN);
-		return sum;
+		return sum.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
 	public boolean payInsurance(Account account, BigDecimal loss) {

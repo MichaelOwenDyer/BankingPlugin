@@ -189,7 +189,7 @@ default-limits:
   # If you don't want the players to have a limit by default
   # set the value to -1.
 # bank: 1
-  account: 2
+  account: -1
 
 # Set whether the custom WorldGuard flags should be allowed by default.
 worldguard-default-flag-values:

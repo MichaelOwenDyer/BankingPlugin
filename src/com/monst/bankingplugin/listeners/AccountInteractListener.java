@@ -57,13 +57,103 @@ public class AccountInteractListener implements Listener {
 	}
 
 	/**
+	 * Checks every inventory interact event for an account create attempt, and
+	 * handles the creation.
+	 * 
+	 * @param PlayerInteractEvent
+	 */
+	@EventHandler(priority = EventPriority.HIGH)
+	public void onAccountInteract(PlayerInteractEvent e) {
+		
+		Player p = e.getPlayer();
+		Block b = e.getClickedBlock();
+		Account account = accountUtils.getAccount(b.getLocation());
+		ClickType clickType = ClickType.getPlayerClickType(p);
+
+		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
+			return;
+
+		if (clickType != null) {
+
+			if (clickType.getClickType() != ClickType.EnumClickType.CREATE && account == null)
+				return;
+			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK))
+				return;
+
+			switch (clickType.getClickType()) {
+
+			case CREATE:
+
+				if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
+					plugin.debug(p.getName() + " does not have permission to create an account on the selected chest.");
+				} else
+					tryCreate(p, b);
+				ClickType.removePlayerClickType(p);
+				e.setCancelled(true);
+				break;
+
+			case REMOVE:
+
+				if (confirmRemove(p, account))
+					ClickType.removePlayerClickType(p);
+				else
+					e.setCancelled(true);
+				break;
+
+			case INFO:
+
+				boolean verbose = ((InfoClickType) clickType).isVerbose();
+				info(p, account, verbose);
+				ClickType.removePlayerClickType(p);
+				e.setCancelled(true);
+				break;
+			}
+
+		} else {
+
+			if (account == null)
+				return;
+			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK))
+				return;
+			if (p.isSneaking() && Utils.hasAxeInHand(p) && e.getAction() == Action.LEFT_CLICK_BLOCK)
+				return;
+
+			// Handles account info requests using config info item
+			ItemStack infoItem = Config.accountInfoItem;
+
+			if (infoItem != null) {
+				ItemStack item = Utils.getItemInMainHand(p);
+				if (item != null && infoItem.getType() == item.getType()) {
+					e.setCancelled(true);
+					info(p, account, false);
+					return;
+				}
+				item = Utils.getItemInOffHand(p);
+				if (item != null && infoItem.getType() == item.getType()) {
+					e.setCancelled(true);
+					info(p, account, false);
+					return;
+				}
+			}
+
+			if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !p.isSneaking()) {
+				e.setCancelled(true); // peek method handles the chest opening instead
+				tryPeek(p, account, true);
+			}
+		}
+		// Unnecessary
+		// ClickType.removePlayerClickType(p);
+	}
+
+	/**
 	 * Prevents unauthorized players from editing other players' accounts
 	 * 
 	 * @param InventoryClickEvent e
 	 */
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onInventoryClick(InventoryClickEvent e) {
-		
+
 		Inventory chestInv = e.getInventory();
 
 		if (!(chestInv.getHolder() instanceof Chest || chestInv.getHolder() instanceof DoubleChest)) {
@@ -86,87 +176,13 @@ public class AccountInteractListener implements Listener {
 		if (e.getWhoClicked() instanceof Player) {
 			Player executor = (Player) e.getWhoClicked();
 			if (!executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
-				plugin.debug(executor.getName() + " does not have permission to edit " + owner.getName() + "'s account"); 
+				plugin.debug(
+						executor.getName() + " does not have permission to edit " + owner.getName() + "'s account");
 				executor.sendMessage(Messages.getWithValue(Messages.NO_PERMISSION_ACCOUNT_EDIT_OTHER, owner.getName()));
 				e.setCancelled(true);
 			}
-				
+
 		}
-	}
-
-	/**
-	 * Checks every inventory interact event for an account create attempt, and
-	 * handles the creation.
-	 * 
-	 * @param PlayerInteractEvent
-	 */
-	@EventHandler(priority = EventPriority.HIGH)
-	public void onAccountInteract(PlayerInteractEvent e) {
-		
-		Player p = e.getPlayer();
-		Block b = e.getClickedBlock();
-		Account account = accountUtils.getAccount(b.getLocation());
-		ClickType clickType = ClickType.getPlayerClickType(p);
-
-		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
-			return;
-
-		if (clickType != null) {
-			if (clickType.getClickType() != ClickType.EnumClickType.CREATE && account == null)
-				return;
-			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK))
-				return;
-
-			switch (clickType.getClickType()) {
-			case CREATE:
-				if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
-					plugin.debug(p.getName() + " does not have permission to create an account on the selected chest.");
-				} else
-					tryCreate(p, b);
-				ClickType.removePlayerClickType(p);
-				break;
-			case REMOVE:
-				if (confirmRemove(p, account))
-					ClickType.removePlayerClickType(p);
-				break;
-			case INFO:
-				boolean verbose = ((InfoClickType) clickType).isVerbose();
-				info(p, account, verbose);
-				ClickType.removePlayerClickType(p);
-				break;
-			}
-			e.setCancelled(true);
-		} else {
-			if (account == null)
-				return;
-			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK))
-				return;
-			if (p.isSneaking() && Utils.hasAxeInHand(p) && e.getAction() == Action.LEFT_CLICK_BLOCK)
-				return;
-
-			// Handles account info requests using config info item
-			ItemStack infoItem = Config.accountInfoItem;
-			if (infoItem != null) {
-				ItemStack item = Utils.getItemInMainHand(p);
-				if (item != null && infoItem.getType() == item.getType()) {
-					e.setCancelled(true);
-					info(p, account, false);
-					return;
-				}
-				item = Utils.getItemInOffHand(p);
-				if (item != null && infoItem.getType() == item.getType()) {
-					e.setCancelled(true);
-					info(p, account, false);
-					return;
-				}
-			}
-			if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-				e.setCancelled(true); // peek method handles the chest opening instead
-				tryPeek(p, account, true);
-			}
-		}
-		ClickType.removePlayerClickType(p);
 	}
 
 	/**

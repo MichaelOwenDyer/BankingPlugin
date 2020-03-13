@@ -152,16 +152,9 @@ public class BankingPlugin extends JavaPlugin {
         registerListeners();
         registerExternalListeners();
 		initializeBanking();
+		scheduleInterestPoints();
         
-        for (Double time : Config.interestPayoutTimes) {
-        	scheduleRepeatAtTime(new Runnable() {
-        		@Override
-				public void run() {
-					Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(instance));
-        		}
-        	}, time);
         }
-	}
 
 	@Override
 	public void onDisable() {
@@ -333,6 +326,21 @@ public class BankingPlugin extends JavaPlugin {
 				getServer().getPluginManager().disablePlugin(BankingPlugin.this);
 			}
 		});
+	}
+
+	public void scheduleInterestPoints() {
+		for (Double time : Config.interestPayoutTimes) {
+			int id = scheduleRepeatAtTime(new Runnable() {
+				@Override
+				public void run() {
+					Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(instance));
+				}
+			}, time);
+			if (id != -1) {
+				debug("Interest payout scheduled (task #" + id + ")");
+			} else
+				debug("Interest payout scheduling failed!");
+		}
 	}
 
 	private int scheduleRepeatAtTime(Runnable task, double time) {

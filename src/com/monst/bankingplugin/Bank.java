@@ -38,15 +38,16 @@ public class Bank {
 		this.name = name;
 		this.world = selection.getWorld();
 		this.selection = selection;
+		accounts = new HashSet<>();
 	}
 	
 	public boolean create(boolean showConsoleMessages) {
-		if (created)
+		if (created) {
+			plugin.debug("Bank was already created! (#" + id + ")");
 			return false;
+		}
 		
 		plugin.debug("Creating bank (#" + id + ")");
-
-		accounts = new HashSet<>();
 
 		created = true;
 		return true;
@@ -94,8 +95,7 @@ public class Bank {
 	}
 	
 	public void addAccount(Account account) {
-		if (created)
-			accounts.add(account);
+		accounts.add(account);
 	}
 	
 	public void addAccount(Collection<Account> newAccounts) {

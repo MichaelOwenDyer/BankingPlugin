@@ -162,7 +162,7 @@ public class AccountStatus {
 	 * @param newBalance the new (positive) balance of the account.
 	 */
 	public void setBalance(BigDecimal newBalance) {
-		if (newBalance != null && newBalance.signum() == 1)
+		if (newBalance != null && newBalance.signum() >= 0)
 			this.balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
 	}
 	
