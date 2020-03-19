@@ -29,7 +29,7 @@ import com.monst.bankingplugin.listeners.AccountInteractListener;
 import com.monst.bankingplugin.listeners.AccountTamperingListener;
 import com.monst.bankingplugin.listeners.ChestProtectListener;
 import com.monst.bankingplugin.listeners.InterestEventListener;
-import com.monst.bankingplugin.listeners.NotifyPlayerOnJoinListener;
+import com.monst.bankingplugin.listeners.PlayerJoinListener;
 import com.monst.bankingplugin.listeners.WorldGuardListener;
 import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.sql.SQLite;
@@ -147,7 +147,7 @@ public class BankingPlugin extends JavaPlugin {
 		controlCommand = new ControlCommand(this);
 
         loadExternalPlugins();
-        checkForUpdates();
+		// checkForUpdates();
 		initDatabase();
         registerListeners();
         registerExternalListeners();
@@ -179,6 +179,11 @@ public class BankingPlugin extends JavaPlugin {
 		for (Account account : accountUtils.getAccountsCopy()) {
 			accountUtils.removeAccount(account, false);
 			debug("Removed account (#" + account.getID() + ")");
+		}
+
+		for (Bank bank : bankUtils.getBanksCopy()) {
+			bankUtils.removeBank(bank, false);
+			debug("Removed bank (\"" + bank.getName() + "\" (#" + bank.getID() + "))");
 		}
 
 		if (database != null) {
@@ -218,16 +223,20 @@ public class BankingPlugin extends JavaPlugin {
 		Plugin worldEditPlugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
 		if (worldEditPlugin instanceof WorldEditPlugin)
 			worldEdit = (WorldEditPlugin) worldEditPlugin;
-		else
+		else {
 			debug("Could not find WorldEdit!");
+		}
 
 		Plugin essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("Essentials");
-		if (essentialsPlugin instanceof Essentials)
+		if (essentialsPlugin instanceof Essentials) {
 			essentials = (Essentials) essentialsPlugin;
-		else {
+			debug("Hooked with Essentials.");
+		} else {
 			essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("EssentialsX");
-			if (essentialsPlugin instanceof Essentials)
+			if (essentialsPlugin instanceof Essentials) {
 				essentials = (Essentials) essentialsPlugin;
+				debug("Hooked with EssentialsX.");
+			}
 		}
 
 		if (hasWorldGuard())
@@ -286,7 +295,7 @@ public class BankingPlugin extends JavaPlugin {
     	getServer().getPluginManager().registerEvents(new AccountInteractListener(this), this);
     	getServer().getPluginManager().registerEvents(new AccountTamperingListener(this), this);
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
-		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
+		getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
 		getServer().getPluginManager().registerEvents(new ChestProtectListener(this), this);
 
 		if (hasWorldGuard())
@@ -304,10 +313,9 @@ public class BankingPlugin extends JavaPlugin {
 	 * Initializes banks
 	 */
 	private void initializeBanking() {
-		debug("Initializing banks and accounts...");
-		bankUtils.reload(false, true, new Callback<Integer[]>(this) {
+		bankUtils.reload(false, true, new Callback<int[]>(this) {
 			@Override
-			public void onResult(Integer[] result) {
+			public void onResult(int[] result) {
 				Bukkit.getServer().getPluginManager().callEvent(new BankInitializedEvent(result[0]));
 				getLogger().info("Initialized " + result[0] + " banks");
 				debug("Initialized " + result[0] + " banks");
@@ -330,20 +338,19 @@ public class BankingPlugin extends JavaPlugin {
 
 	public void scheduleInterestPoints() {
 		for (Double time : Config.interestPayoutTimes) {
-			int id = scheduleRepeatAtTime(new Runnable() {
+			int id = scheduleRepeatAtTime(time, new Runnable() {
 				@Override
 				public void run() {
 					Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(instance));
 				}
-			}, time);
-			if (id != -1) {
-				debug("Interest payout scheduled (task #" + id + ")");
-			} else
-				debug("Interest payout scheduling failed!");
+			});
+
+			if (id == -1)
+				debug("Interest payout scheduling failed! (" + time + ")");
 		}
 	}
 
-	private int scheduleRepeatAtTime(Runnable task, double time) {
+	private int scheduleRepeatAtTime(double time, Runnable task) {
 		// 24 hours/day * 60 minutes/hour * 60 seconds/minute *  20 ticks/second = 1728000 ticks/day
 		final long ticksInADay = 1728000L;
 		
@@ -355,9 +362,9 @@ public class BankingPlugin extends JavaPlugin {
 		int hour = (int) time;
 		int minute = (int) ((time - hour) * 60);
 		
-		if (cal.get(Calendar.HOUR) >= hour)
-			if (cal.get(Calendar.MINUTE) >= minute)
-				cal.add(Calendar.DATE, 1);
+		if ((hour < cal.get(Calendar.HOUR_OF_DAY))
+				|| (hour == cal.get(Calendar.HOUR_OF_DAY) && minute <= cal.get(Calendar.MINUTE)))
+			cal.add(Calendar.DATE, 1);
 		cal.set(Calendar.HOUR_OF_DAY, hour);
 		cal.set(Calendar.MINUTE, minute);
 		cal.set(Calendar.SECOND, 0);

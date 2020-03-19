@@ -40,35 +40,35 @@ public class BankCommand extends GenericCommand {
                         }
                     }
                 }
-				return receiveCreateMessage ? Messages.COMMAND_DESC_BANK_CREATE : "";
+				return receiveCreateMessage ? Messages.COMMAND_USAGE_BANK_CREATE : "";
             }
         });
 
 		addSubCommand(new BankSubCommand("remove", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_REMOVE) ? Messages.COMMAND_DESC_BANK_REMOVE : "";
+				return sender.hasPermission(Permissions.BANK_REMOVE) ? Messages.COMMAND_USAGE_BANK_REMOVE : "";
             }
 		});
 
 		addSubCommand(new BankSubCommand("info", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_DESC_BANK_INFO;
+				return Messages.COMMAND_USAGE_BANK_INFO;
 			}
 		});
 
 		addSubCommand(new BankSubCommand("list", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-                return Messages.COMMAND_DESC_BANK_LIST;
+                return Messages.COMMAND_USAGE_BANK_LIST;
             }
         });
 
         addSubCommand(new BankSubCommand("removeall", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_REMOVE_ALL) ? Messages.COMMAND_DESC_BANK_REMOVEALL : "";
+				return sender.hasPermission(Permissions.BANK_REMOVEALL) ? Messages.COMMAND_USAGE_BANK_REMOVEALL : "";
             }
         });
 

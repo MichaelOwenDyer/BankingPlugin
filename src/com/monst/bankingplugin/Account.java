@@ -24,6 +24,9 @@ public class Account {
 	private boolean created;
 
 	private int id;
+
+	private String nickname;
+
 	private final OfflinePlayer owner;
 	private final Location location;
 	private final Bank bank;
@@ -101,6 +104,7 @@ public class Account {
 						+ getBalance().toString() + " but was: $" + checkedBalance);
 			}
 			setBalance(checkedBalance);
+			plugin.getDatabase().addAccount(this, null);
 
 		} else if (checkedBalance.compareTo(getBalance()) == -1) {
 			plugin.debug("Unexpected account value (#" + id + ")! Expected: $" + getBalance().toString() + " but was: $"
@@ -149,17 +153,17 @@ public class Account {
 
 	public String toStringVerbose() {
 		String balance = "$" + status.getBalance().toString();
-		String multiplier = status.getRealMultiplier() + " (Stage " + status.getMultiplierStage() + " of " + Config.interestMultipliers.size() + ")";
+		String multiplier = status.getRealMultiplier() + "x (Stage " + (status.getMultiplierStage() + 1) + " of " + Config.interestMultipliers.size() + ")";
 		String interestRate = "" + ChatColor.GREEN + (Config.baselineInterestRate * status.getRealMultiplier() * 100)
 				+ "%" + ChatColor.GRAY + " (" + Config.baselineInterestRate + " x " + status.getRealMultiplier() + ")";
-		String payingInterest = status.getRemainingUntilFirstPayout() == 0 ? ChatColor.GREEN + "true" : ChatColor.RED + "false " + ChatColor.GRAY + "(" + status.getRemainingUntilFirstPayout() + " payouts to go";
+		if (status.getRemainingUntilFirstPayout() != 0)
+			interestRate = interestRate.concat(ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)");
 		String loc = location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
 		String size = isDoubleChest() ? "Double" : "Single";
 		return toString() + "\n"
 				+ "Balance: " + ChatColor.GREEN + balance + "\n"
 				+ ChatColor.GRAY + "Multiplier: " + multiplier + "\n"
 				+ "Interest rate: " + interestRate + "\n"
-				+ "Paying interest: " + payingInterest + "\n"
 				+ ChatColor.GRAY + "Location: " + loc + "\n"
 				+ "Size: " + size;
 	}

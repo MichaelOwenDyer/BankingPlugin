@@ -57,7 +57,7 @@ public class ChestProtectListener implements Listener {
 				plugin.debug(String.format("%s tries to break %s's account (#%d)", p.getName(),
 						account.getOwner().getName(), account.getID()));
 				if (account.getOwner().getUniqueId().equals(p.getUniqueId())
-						|| p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
+						|| p.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
 					removeAndCreateNew(account, b, p);
 					return;
                 }
@@ -157,13 +157,13 @@ public class ChestProtectListener implements Listener {
 
 		AccountExtendEvent event = new AccountExtendEvent(p, account, b.getLocation());
         Bukkit.getPluginManager().callEvent(event);
-		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_EXTEND_PROTECTED)) {
+		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_OTHER_EXTEND_PROTECTED)) {
             e.setCancelled(true);
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED);
             return;
         }
 
-		if (!p.getUniqueId().equals(account.getOwner().getUniqueId()) && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)) {
+		if (!p.getUniqueId().equals(account.getOwner().getUniqueId()) && !p.hasPermission(Permissions.ACCOUNT_OTHER_EXTEND)) {
             e.setCancelled(true);
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_OTHER);
             return;

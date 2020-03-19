@@ -41,42 +41,42 @@ public class AccountCommand extends GenericCommand {
 						}
 					}
 				}
-				return receiveCreateMessage ? Messages.COMMAND_DESC_ACCOUNT_CREATE : "";
+				return receiveCreateMessage ? Messages.COMMAND_USAGE_ACCOUNT_CREATE : "";
 			}
 		});
 
 		addSubCommand(new AccountSubCommand("remove", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_DESC_ACCOUNT_REMOVE;
+				return Messages.COMMAND_USAGE_ACCOUNT_REMOVE;
 			}
 		});
 
 		addSubCommand(new AccountSubCommand("info", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_DESC_ACCOUNT_INFO;
+				return Messages.COMMAND_USAGE_ACCOUNT_INFO;
 			}
 		});
 
 		addSubCommand(new AccountSubCommand("list", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_DESC_ACCOUNT_LIST;
+				return Messages.COMMAND_USAGE_ACCOUNT_LIST;
 			}
 		});
 
 		addSubCommand(new AccountSubCommand("limits", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_DESC_ACCOUNT_LIMITS;
+				return Messages.COMMAND_USAGE_ACCOUNT_LIMITS;
 			}
 		});
 
 		addSubCommand(new AccountSubCommand("removeall", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) ? Messages.COMMAND_DESC_ACCOUNT_REMOVEALL : "";
+				return sender.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE) ? Messages.COMMAND_USAGE_ACCOUNT_REMOVEALL : "";
 			}
 		});
 

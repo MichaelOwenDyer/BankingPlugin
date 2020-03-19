@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,10 +27,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Account.TransactionType;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountTransactionEvent.TransactionType;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.Callback;
@@ -97,186 +96,6 @@ public abstract class Database {
 		}
 	}
 
-	private boolean update() throws SQLException {
-		String queryGetTable = getQueryGetTable();
-
-		try (Connection con = dataSource.getConnection()) {
-			boolean needsUpdate1 = false; // update "transaction_log" to "economy_logs" and update "accounts" with
-											// prefixes
-			boolean needsUpdate2 = false; // create field table and set database version
-
-			try (PreparedStatement ps = con.prepareStatement(queryGetTable)) {
-				ps.setString(1, "account_log");
-				ResultSet rs = ps.executeQuery();
-				if (rs.next()) {
-					needsUpdate1 = true;
-				}
-			}
-
-			try (PreparedStatement ps = con.prepareStatement(queryGetTable)) {
-				ps.setString(1, tableFields);
-				ResultSet rs = ps.executeQuery();
-				if (!rs.next()) {
-					needsUpdate2 = true;
-				}
-			}
-
-			if (needsUpdate1) {
-				String queryRenameTableBanks = "ALTER TABLE banks RENAME TO backup_banks"; // for backup
-				String queryRenameTableAccounts = "ALTER TABLE accounts RENAME TO backup_accounts"; // for backup
-				String queryRenameTableTransactionLog = "ALTER TABLE transaction_log RENAME TO backup_transaction_log"; // for backup
-				String queryRenameTableInterestLog = "ALTER TABLE interest_log RENAME TO backup_interest_log"; // for backup
-				String queryRenameTableLogouts = "ALTER TABLE player_logout RENAME TO " + tableLogouts;
-
-				plugin.getLogger().info("Updating database... (#1)");
-
-				// Rename banks table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableBanks);
-				}
-
-				// Rename accounts table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableAccounts);
-				}
-
-				// Rename transaction log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableTransactionLog);
-				}
-
-				// Rename interest log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableInterestLog);
-				}
-
-				// Rename logout table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableLogouts);
-				}
-
-				// Create new banks table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableBanks());
-				}
-
-				// Create new accounts table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableAccounts());
-				}
-
-				// Create new transaction log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableTransactionLog());
-				}
-
-				// Create new interest log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableInterestLog());
-				}
-
-				// TODO: Check table conversion, make sure extra steps in ShopChest unnecessary for this
-				// TODO: Recheck queries, practically all tables have changed
-
-				// Convert banks table
-				try (Statement s = con.createStatement()) {
-					ResultSet rs = s.executeQuery("SELECT id FROM backup_banks");
-					while (rs.next()) {
-
-						String insertQuery = "INSERT INTO " + tableBanks
-								+ " SELECT id,name,world,selection_type,minY,maxY,points FROM backup_banks"
-								+ " WHERE id = ?";
-						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
-							ps.setInt(1, rs.getInt("id"));
-							ps.executeUpdate();
-						}
-					}
-				}
-
-				// Convert accounts table
-				try (Statement s = con.createStatement()) {
-					ResultSet rs = s.executeQuery("SELECT id FROM backup_accounts");
-					while (rs.next()) {
-
-						String insertQuery = "INSERT INTO " + tableAccounts
-								+ " SELECT id,bank_id,owner,size,balance,prev_balance,multiplier_stage,"
-								+ "until_payout,remaining_offline_payout,remaining_offline_until_reset,"
-								+ "world,x,y,z FROM backup_accounts WHERE id = ?";
-						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
-							ps.setInt(1, rs.getInt("id"));
-							ps.executeUpdate();
-						}
-					}
-				}
-
-				// Convert transaction log table
-				try (Statement s = con.createStatement()) {
-					ResultSet rs = s.executeQuery(
-							"SELECT id FROM backup_transaction_log");
-					while (rs.next()) {
-						
-						String timestamp = rs.getString("timestamp");
-						long time = 0L;
-						try {
-							time = dateFormat.parse(timestamp).getTime();
-						} catch (ParseException e) {
-							plugin.debug("Failed to parse timestamp '" + timestamp + "': Time is set to 0");
-							plugin.debug(e);
-						}
-
-						String insertQuery = "INSERT INTO " + tableTransactionLog
-								+ " SELECT id,account_id,bank_id,timestamp,time,owner_name,"
-								+ "owner_uuid,executor_name,executor_uuid,transaction_type,"
-								+ "amount,new_balance,world,x,y,z FROM backup_transaction_log WHERE id = ?";
-						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
-							ps.setInt(1, rs.getInt("id"));
-							ps.executeUpdate();
-						}
-					}
-				}
-				
-				// Convert interest log table
-				try (Statement s = con.createStatement()) {
-					ResultSet rs = s.executeQuery("SELECT id FROM backup_interest_log");
-					while (rs.next()) {
-
-						String insertQuery = "INSERT INTO " + tableInterestLog
-								+ " SELECT id,account_id,bank_id,owner_name,owner_uuid,base_amount,"
-								+ "multiplier,amount,timestamp,time FROM backup_interest_log WHERE id = ?";
-						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
-							ps.setInt(1, rs.getInt("id"));
-							ps.executeUpdate();
-						}
-					}
-				}
-			}
-
-			if (needsUpdate2) {
-				plugin.getLogger().info("Updating database... (#2)");
-
-				// Create fields table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableFields());
-				}
-
-				setDatabaseVersion(2);
-			}
-
-			int databaseVersion = getDatabaseVersion();
-
-			if (databaseVersion < 3) {
-				// plugin.getLogger().info("Updating database... (#3)");
-
-				// Update database structure...
-
-				// setDatabaseVersion(3);
-			}
-
-			int newDatabaseVersion = getDatabaseVersion();
-			return needsUpdate1 || needsUpdate2 || newDatabaseVersion > databaseVersion;
-		}
-	}
-
 	/**
 	 * <p>
 	 * (Re-)Connects to the the database and initializes it.
@@ -288,7 +107,7 @@ public abstract class Database {
 	 * @param callback Callback that - if succeeded - returns the amount of shops
 	 *                 that were found (as {@code int})
 	 */
-	public void connect(final Callback<Integer[]> callback) {
+	public void connect(final Callback<int[]> callback) {
 		if (!Config.databaseTablePrefix.matches("^([a-zA-Z0-9\\-\\_]+)?$")) {
 			// Only letters, numbers dashes and underscores are allowed
 			plugin.getLogger().severe("Database table prefix contains illegal letters, using 'bankingplugin_' prefix.");
@@ -333,55 +152,31 @@ public abstract class Database {
 					// Create banks table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableBanks());
-					} catch (SQLException e) {
-						plugin.getLogger().severe("Could not create banks table");
-						plugin.debug("Could not create table 1");
-						plugin.debug(e);
 					}
 
 					// Create accounts table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableAccounts());
-					} catch (SQLException e) {
-						plugin.getLogger().severe("Could not create banks table");
-						plugin.debug("Could not create table 2");
-						plugin.debug(e);
 					}
 
 					// Create transaction log table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableTransactionLog());
-					} catch (SQLException e) {
-						plugin.getLogger().severe("Could not create banks table");
-						plugin.debug("Could not create table 3");
-						plugin.debug(e);
 					}
 
 					// Create interest log table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableInterestLog());
-					} catch (SQLException e) {
-						plugin.getLogger().severe("Could not create banks table");
-						plugin.debug("Could not create table 4");
-						plugin.debug(e);
 					}
 
 					// Create logout table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableLogout());
-					} catch (SQLException e) {
-						plugin.getLogger().severe("Could not create banks table");
-						plugin.debug("Could not create table 5");
-						plugin.debug(e);
 					}
 
 					// Create fields table
 					try (Statement s = con.createStatement()) {
 						s.executeUpdate(getQueryCreateTableFields());
-					} catch (SQLException e) {
-						plugin.getLogger().severe("Could not create banks table");
-						plugin.debug("Could not create table 6");
-						plugin.debug(e);
 					}
 
 					// Clean up economy log
@@ -410,7 +205,7 @@ public abstract class Database {
 						}
 
 						if (callback != null) {
-							callback.callSyncResult(new Integer[] { banks, accounts });
+							callback.callSyncResult(new int[] { banks, accounts });
 						}
 					}
 				} catch (SQLException e) {
@@ -738,7 +533,7 @@ public abstract class Database {
 							selection = new CuboidSelection(world, min, max);
 						}
 
-						plugin.debug("Initializing bank... (#" + bankId + ")");
+						plugin.debug("Initializing bank \"" + name + "\"... (#" + bankId + ")");
 
 						Bank bank = new Bank(bankId, plugin, name, selection);
 
@@ -784,86 +579,79 @@ public abstract class Database {
 	 */
 	private void getAccountsByBank(Bank bank, final boolean showConsoleMessages,
 			final Callback<Collection<Account>> callback) {
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				ArrayList<Account> accounts = new ArrayList<>();
+		ArrayList<Account> accounts = new ArrayList<>();
 
-				try (Connection con = dataSource.getConnection();
-						PreparedStatement ps = con
-								.prepareStatement("SELECT * FROM " + tableAccounts + " WHERE bank_id = ?")) {
-					ps.setInt(1, bank.getID());
-					ResultSet rsAccounts = ps.executeQuery();
+		try (Connection con = dataSource.getConnection();
+				PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableAccounts + " WHERE bank_id = ?")) {
+			ps.setInt(1, bank.getID());
+			ResultSet rsAccounts = ps.executeQuery();
 
-					while (rsAccounts.next()) {
+			while (rsAccounts.next()) {
 
-						int accountId = rsAccounts.getInt("id");
+				int accountId = rsAccounts.getInt("id");
 
-						plugin.debug("Getting account from database... (#" + accountId + " at bank " + bank.getName() + " #" + bank.getID() + ")");
+				plugin.debug("Getting account from database... (#" + accountId + ")");
 
-						String worldName = rsAccounts.getString("world");
-						World world = Bukkit.getWorld(worldName);
+				String worldName = rsAccounts.getString("world");
+				World world = Bukkit.getWorld(worldName);
 
-						if (world == null) {
-							WorldNotFoundException e = new WorldNotFoundException(worldName);
-							if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
-								plugin.getLogger().warning(e.getMessage());
-								notFoundWorlds.add(worldName);
-							}
-							plugin.debug("Failed to get account (#" + accountId + ")");
-							plugin.debug(e);
-							continue;
-						}
-
-						AccountStatus status;
-						try {
-							int multiplierStage = rsAccounts.getInt("multiplier_stage");
-							int remainingUntilPayout = rsAccounts.getInt("remaining_until_payout");
-							int remainingOfflinePayouts = rsAccounts.getInt("remaining_offline_payouts");
-							int remainingOfflineUntilReset = rsAccounts.getInt("remaining_offline_until_reset");
-
-							BigDecimal balance = BigDecimal
-									.valueOf(Double.parseDouble(rsAccounts.getString("balance")));
-							BigDecimal prevBalance = BigDecimal
-									.valueOf(Double.parseDouble(rsAccounts.getString("prev_balance")));
-
-							status = new AccountStatus(multiplierStage, remainingUntilPayout, remainingOfflinePayouts,
-									remainingOfflineUntilReset, balance, prevBalance);
-
-						} catch (SQLException e) {
-							plugin.getLogger().severe("Failed to create account status (#" + accountId + ")");
-							plugin.debug("Failed to create account status");
-							plugin.debug(e);
-							continue;
-						}
-
-						int x = rsAccounts.getInt("x");
-						int y = rsAccounts.getInt("y");
-						int z = rsAccounts.getInt("z");
-						Location location = new Location(world, x, y, z);
-						OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rsAccounts.getString("owner")));
-
-						plugin.debug("Initializing account... (#" + accountId + ")");
-
-						Account account = new Account(accountId, plugin, owner, bank, location, status);
-						accounts.add(account);
+				if (world == null) {
+					WorldNotFoundException e = new WorldNotFoundException(worldName);
+					if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
+						plugin.getLogger().warning(e.getMessage());
+						notFoundWorlds.add(worldName);
 					}
-
-					if (callback != null) {
-						callback.callSyncResult(Collections.unmodifiableCollection(accounts));
-					}
-				} catch (SQLException e) {
-					if (callback != null) {
-						callback.callSyncError(e);
-					}
-
-					plugin.getLogger().severe("Failed to get accounts from database");
-					plugin.debug("Failed to get accounts from database");
+					plugin.debug("Failed to get account (#" + accountId + ")");
 					plugin.debug(e);
+					continue;
 				}
 
+				AccountStatus status;
+				try {
+					int multiplierStage = rsAccounts.getInt("multiplier_stage");
+					int remainingUntilPayout = rsAccounts.getInt("remaining_until_payout");
+					int remainingOfflinePayouts = rsAccounts.getInt("remaining_offline_payouts");
+					int remainingOfflineUntilReset = rsAccounts.getInt("remaining_offline_until_reset");
+
+					BigDecimal balance = BigDecimal.valueOf(Double.parseDouble(rsAccounts.getString("balance")));
+					BigDecimal prevBalance = BigDecimal
+							.valueOf(Double.parseDouble(rsAccounts.getString("prev_balance")));
+
+					status = new AccountStatus(multiplierStage, remainingUntilPayout, remainingOfflinePayouts,
+							remainingOfflineUntilReset, balance, prevBalance);
+
+				} catch (SQLException e) {
+					plugin.getLogger().severe("Failed to create account status (#" + accountId + ")");
+					plugin.debug("Failed to create account status");
+					plugin.debug(e);
+					continue;
+				}
+
+				int x = rsAccounts.getInt("x");
+				int y = rsAccounts.getInt("y");
+				int z = rsAccounts.getInt("z");
+				Location location = new Location(world, x, y, z);
+				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rsAccounts.getString("owner")));
+
+				plugin.debug("Initializing account... (#" + accountId + " at bank \"" + bank.getName() + "\" (#"
+						+ bank.getID() + "))");
+
+				Account account = new Account(accountId, plugin, owner, bank, location, status);
+				accounts.add(account);
 			}
-		}.runTaskAsynchronously(plugin);
+
+			if (callback != null) {
+				callback.callSyncResult(Collections.unmodifiableCollection(accounts));
+			}
+		} catch (SQLException e) {
+			if (callback != null) {
+				callback.callSyncError(e);
+			}
+
+			plugin.getLogger().severe("Failed to get accounts from database");
+			plugin.debug("Failed to get accounts from database");
+			plugin.debug(e);
+		}
 	}
 
 	/**
@@ -901,6 +689,7 @@ public abstract class Database {
 							ps.setString(8, executor.getUniqueId().toString());
 						} else {
 							ps.setString(7, "OWNER");
+							ps.setString(8, "OWNER");
 						}
 						ps.setString(9, type.toString());
 						ps.setString(10, amount.toString());
@@ -973,14 +762,14 @@ public abstract class Database {
 							callback.callSyncResult(null);
 						}
 
-						plugin.debug("Logged transaction to database");
+						plugin.debug("Logged interest to database");
 					} catch (SQLException e) {
 						if (callback != null) {
 							callback.callSyncError(e);
 						}
 
-						plugin.getLogger().severe("Failed to log banking transaction to database");
-						plugin.debug("Failed to log banking transaction to database");
+						plugin.getLogger().severe("Failed to log interest to database");
+						plugin.debug("Failed to log interest to database");
 						plugin.debug(e);
 					}
 				}
@@ -1196,6 +985,179 @@ public abstract class Database {
 				}
 			}
 		}.runTaskAsynchronously(plugin);
+	}
+
+	private boolean update() throws SQLException {
+		String queryGetTable = getQueryGetTable();
+
+		try (Connection con = dataSource.getConnection()) {
+			boolean needsUpdate1 = false; // update "transaction_log" to "economy_logs" and update "accounts" with
+											// prefixes
+			boolean needsUpdate2 = false; // create field table and set database version
+
+			try (PreparedStatement ps = con.prepareStatement(queryGetTable)) {
+				ps.setString(1, "account_log");
+				ResultSet rs = ps.executeQuery();
+				if (rs.next()) {
+					needsUpdate1 = true;
+				}
+			}
+
+			try (PreparedStatement ps = con.prepareStatement(queryGetTable)) {
+				ps.setString(1, tableFields);
+				ResultSet rs = ps.executeQuery();
+				if (!rs.next()) {
+					needsUpdate2 = true;
+				}
+			}
+
+			if (needsUpdate1) {
+				String queryRenameTableBanks = "ALTER TABLE banks RENAME TO backup_banks"; // for backup
+				String queryRenameTableAccounts = "ALTER TABLE accounts RENAME TO backup_accounts"; // for backup
+				String queryRenameTableTransactionLog = "ALTER TABLE transaction_log RENAME TO backup_transaction_log"; // for
+																														// backup
+				String queryRenameTableInterestLog = "ALTER TABLE interest_log RENAME TO backup_interest_log"; // for
+																												// backup
+				String queryRenameTableLogouts = "ALTER TABLE player_logout RENAME TO " + tableLogouts;
+
+				plugin.getLogger().info("Updating database... (#1)");
+
+				// Rename banks table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(queryRenameTableBanks);
+				}
+
+				// Rename accounts table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(queryRenameTableAccounts);
+				}
+
+				// Rename transaction log table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(queryRenameTableTransactionLog);
+				}
+
+				// Rename interest log table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(queryRenameTableInterestLog);
+				}
+
+				// Rename logout table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(queryRenameTableLogouts);
+				}
+
+				// Create new banks table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(getQueryCreateTableBanks());
+				}
+
+				// Create new accounts table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(getQueryCreateTableAccounts());
+				}
+
+				// Create new transaction log table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(getQueryCreateTableTransactionLog());
+				}
+
+				// Create new interest log table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(getQueryCreateTableInterestLog());
+				}
+
+				// TODO: Check table conversion, make sure extra steps in ShopChest unnecessary
+				// for this
+				// TODO: Recheck queries, practically all tables have changed
+
+				// Convert banks table
+				try (Statement s = con.createStatement()) {
+					ResultSet rs = s.executeQuery("SELECT id FROM backup_banks");
+					while (rs.next()) {
+
+						String insertQuery = "INSERT INTO " + tableBanks
+								+ " SELECT id,name,world,selection_type,minY,maxY,points FROM backup_banks"
+								+ " WHERE id = ?";
+						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
+							ps.setInt(1, rs.getInt("id"));
+							ps.executeUpdate();
+						}
+					}
+				}
+
+				// Convert accounts table
+				try (Statement s = con.createStatement()) {
+					ResultSet rs = s.executeQuery("SELECT id FROM backup_accounts");
+					while (rs.next()) {
+
+						String insertQuery = "INSERT INTO " + tableAccounts
+								+ " SELECT id,bank_id,owner,size,balance,prev_balance,multiplier_stage,"
+								+ "until_payout,remaining_offline_payout,remaining_offline_until_reset,"
+								+ "world,x,y,z FROM backup_accounts WHERE id = ?";
+						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
+							ps.setInt(1, rs.getInt("id"));
+							ps.executeUpdate();
+						}
+					}
+				}
+
+				// Convert transaction log table
+				try (Statement s = con.createStatement()) {
+					ResultSet rs = s.executeQuery("SELECT id FROM backup_transaction_log");
+					while (rs.next()) {
+
+						String insertQuery = "INSERT INTO " + tableTransactionLog
+								+ " SELECT id,account_id,bank_id,timestamp,time,owner_name,"
+								+ "owner_uuid,executor_name,executor_uuid,transaction_type,"
+								+ "amount,new_balance,world,x,y,z FROM backup_transaction_log WHERE id = ?";
+						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
+							ps.setInt(1, rs.getInt("id"));
+							ps.executeUpdate();
+						}
+					}
+				}
+
+				// Convert interest log table
+				try (Statement s = con.createStatement()) {
+					ResultSet rs = s.executeQuery("SELECT id FROM backup_interest_log");
+					while (rs.next()) {
+
+						String insertQuery = "INSERT INTO " + tableInterestLog
+								+ " SELECT id,account_id,bank_id,owner_name,owner_uuid,base_amount,"
+								+ "multiplier,amount,timestamp,time FROM backup_interest_log WHERE id = ?";
+						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
+							ps.setInt(1, rs.getInt("id"));
+							ps.executeUpdate();
+						}
+					}
+				}
+			}
+
+			if (needsUpdate2) {
+				plugin.getLogger().info("Updating database... (#2)");
+
+				// Create fields table
+				try (Statement s = con.createStatement()) {
+					s.executeUpdate(getQueryCreateTableFields());
+				}
+
+				setDatabaseVersion(2);
+			}
+
+			int databaseVersion = getDatabaseVersion();
+
+			if (databaseVersion < 3) {
+				// plugin.getLogger().info("Updating database... (#3)");
+
+				// Update database structure...
+
+				// setDatabaseVersion(3);
+			}
+
+			int newDatabaseVersion = getDatabaseVersion();
+			return needsUpdate1 || needsUpdate2 || newDatabaseVersion > databaseVersion;
+		}
 	}
 
 	/**

@@ -59,6 +59,24 @@ public class AccountStatus {
 		return remainingOfflineUntilReset;
 	}
 	
+	public int processWithdrawal() {
+		short increment = Config.withdrawalMultiplierBehavior;
+
+		if (increment > 0) {
+			resetMultiplierStage();
+			return 0;
+		} else if (increment == 0)
+			return multiplierStage;
+
+		int newStage = multiplierStage + increment;
+		if (newStage < 0)
+			multiplierStage = 0;
+		else
+			multiplierStage = newStage;
+
+		return multiplierStage;
+	}
+
 	/**
 	 * Increments this account's multiplier stage.
 	 * @param boolean whether the player is online or offline
@@ -151,7 +169,6 @@ public class AccountStatus {
 	 * balance is fully up-to-date.
 	 */
 	public void updatePrevBalance() {
-		balance = balance.setScale(2, RoundingMode.HALF_EVEN);
 		prevBalance = balance;
 	}
 
@@ -165,5 +182,4 @@ public class AccountStatus {
 		if (newBalance != null && newBalance.signum() >= 0)
 			this.balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
 	}
-	
 }

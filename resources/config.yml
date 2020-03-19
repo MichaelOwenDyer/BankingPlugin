@@ -10,7 +10,7 @@
 main-command-names:
   bank: bank
   account: account
-  control: bankingplugin
+  control: bp
 
 # Set the hours at which players should receive interest payments from their accounts.
 # These are real times (0 <= time < 24) represented as normal double values (e.g. 3:30 in the
@@ -22,14 +22,13 @@ main-command-names:
 # Type: List<Double>
 # Default: 9, 15, 21
 interest-payout-times:
-  -9
-  -12
-  -15
-  -18
-  -21
+  - 1
+  - 3
+  - 15
+  - 20.50
   
 # Set the baseline interest rate for all bank accounts on the server.
-# Value should be a float between 0 and 1.
+# Value should be a floating point number greater than 0.
 # Type: double
 # Default: 0.01 (for 1% interest)
 baseline-interest-rate: 0.01
@@ -48,9 +47,14 @@ enable-interest-multipliers: true
 # Multipliers will never go past the final stage, nor further back than the first stage.
 # Type: List<Integer>
 interest-multipliers:
-  -1
-  -2
-  -3
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 10
+  - 20
   
 
 # Set the number of interest payout events a player must own their account for
@@ -87,7 +91,7 @@ allowed-offline-payouts-before-multiplier-reset: 1
 # Setting this value to -1 causes the multiplier to decrease by one stage per payout time while the player is offline.
 # Setting this value to 0 causes the multiplier to freeze until the player comes back online. It will remain the same as long as it is not reset.
 # Setting this value to 1 causes the multiplier to iterate like normal, even when the player is offline (discouraged)
-# Absolute values greater than 1 *are* allowed, but to be used sparingly (-2 would decrease a player's multiplier by two stages for every missed payout)
+# Absolute values greater than 1 *are* allowed, but are to be used sparingly (-2 would decrease a player's multiplier by two stages for every missed payout)
 # Type: short
 # Default: 0
 offline-multiplier-behavior: 0
@@ -96,9 +100,10 @@ offline-multiplier-behavior: 0
 # Setting this value to -1 causes the multiplier to decrease by one stage per withdrawal.
 # Setting this value to 0 causes the multiplier to not be affected by withdrawals (discouraged)
 # Setting this value to any positive integer causes the multiplier to be RESET when the player makes a withdrawal.
+# Absolute values greater than 1 are, similarly to above, allowed but to be used sparingly.
 # Type: short
 # Default: 1
-withdrawal_multiplier_behavior: 1
+withdrawal-multiplier-behavior: 1
 
 # Set the item with which a player can click a account to retrieve information.
 # You can set this to an empty string ("") to disable this feature.

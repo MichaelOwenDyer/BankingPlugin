@@ -1,6 +1,152 @@
+# If you edit this file your face might melt off.
+
 name: BankingPlugin
 main: com.monst.bankingplugin.BankingPlugin
 version: 1.0.0
 api-version: 1.15
+database: true
 author: monst
-depend: [Vault, WorldEdit, GriefPrevention]
+depend: [Vault]
+softdepend: [WorldEdit, GriefPrevention]
+
+permissions:
+    bankingplugin.*:
+        description: Gives access to all BankingPlugin features.
+        default: op
+        children:
+            bankingplugin.account.*: true
+            bankingplugin.bank.*: true
+            bankingplugin.external.bypass: true
+            bankingplugin.config: true
+            bankingplugin.reload: true
+            bankingplugin.update: true
+    
+    bankingplugin.account.*:
+        description: Gives access to all account features.
+        default: op
+        children:
+            bankingplugin.account.create: true
+            bankingplugin.account.create.protected: true
+            bankingplugin.account.removeall: true
+            bankingplugin.account.limit.*: true
+            bankingplugin.account.other.*: true
+    
+    bankingplugin.account.other.*:
+        description: Gives control over other players' accounts.
+        default: op
+        children:
+            bankingplugin.account.other.create: true
+            bankingplugin.account.other.remove: true
+            bankingplugin.account.other.info: true
+            bankingplugin.account.other.info.verbose: true
+            bankingplugin.account.other.list: true
+            bankingplugin.account.other.list.verbose: true
+            bankingplugin.account.other.view: true
+            bankingplugin.account.other.edit: true
+            bankingplugin.account.other.extend: true
+            bankingplugin.account.other.extend.protected: true
+    
+    bankingplugin.bank.*:
+        description: Gives access to all bank features.
+        default: op
+        children:
+            bankingplugin.bank.create: true
+            bankingplugin.bank.remove: true
+            bankingplugin.bank.info: true
+            bankingplugin.bank.info.verbose: true
+            bankingplugin.bank.list: true
+            bankingplugin.bank.resize: true
+            
+    bankingplugin.account.create:
+        description: Create and remove accounts.
+        default: true
+    bankingplugin.account.create.protected:
+        description: Create an account on a protected chest or land claim.
+        default: op
+        children:
+            bankingplugin.account.create: true
+    bankingplugin.account.removeall:
+        description: Remove all accounts.
+        default: op
+        children:
+            bankingplugin.account.other.remove: true
+    bankingplugin.account.limit.*:
+        description: Create an unlimited number of accounts.
+        default: op
+    
+    bankingplugin.account.other.create:
+        description: Create an account in another player's name.
+        default: op
+        children:
+            bankingplugin.account.create: true
+    bankingplugin.account.other.remove:
+        description: Remove another player's account.
+        default: op
+    bankingplugin.account.other.info:
+        description: View another player's account info.
+        default: true
+    bankingplugin.account.other.info.verbose:
+        description: View another player's detailed account info.
+        default: op
+        children:
+            bankingplugin.account.other.info: true
+    bankingplugin.account.other.list:
+        description: View a list of other players' accounts.
+        default: op
+    bankingplugin.account.other.list.verbose:
+        description: View a detailed list of other players' accounts.
+        default: op
+        children:
+            bankingplugin.account.other.list: true
+    bankingplugin.account.other.view:
+        description: Open another player's account chest.
+        default: op
+    bankingplugin.account.other.edit:
+        description: Open and edit the contents another player's account chest.
+        default: op
+        children:
+            bankingplugin.account.other.view: true
+    bankingplugin.account.other.extend:
+        description: Extend another player's account chest.
+        default: op
+    bankingplugin.account.other.extend.protected:
+        description: Extend another player's account chest on a protected chest or land claim.
+        default: op
+        children:
+            bankingplugin.account.other.extend: true
+    
+    bankingplugin.bank.create:
+        description: Create a bank.
+        default: op
+    bankingplugin.bank.remove:
+        description: Remove a bank and all associated accounts.
+        default: op
+        children:
+            bankingplugin.account.other.remove: true
+    bankingplugin.bank.info:
+        description: View bank info.
+        default: true
+    bankingplugin.bank.info.verbose:
+        description: View detailed bank info.
+        default: op
+        children:
+            bankingplugin.bank.info: true
+    bankingplugin.bank.list:
+        description: View a list of banks.
+        default: true
+    bankingplugin.bank.resize:
+        description: Resize an existing bank.
+        default: op
+    
+    bankingplugin.external.bypass:
+        description: Bypass other plugins' attempts to stop you using this plugin.
+        default: op
+    bankingplugin.config:
+        description: Manage the configuration of this plugin.
+        default: op
+    bankingplugin.reload:
+        description: Reload this plugin.
+        default: op
+    bankingplugin.update:
+        description: Update this plugin.
+        default: op

@@ -25,6 +25,8 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class BankCommandExecutor implements CommandExecutor, SchedulableCommand {
 
 	private BankingPlugin plugin;
@@ -338,6 +340,10 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 	}
 
 	private void promptBankList(Player p, String[] args) {
+		if (bankUtils.getBanksCopy().isEmpty()) {
+			p.sendMessage(ChatColor.RED + "There are no banks to list.");
+			return;
+		}
 		p.sendMessage("");
 		p.sendMessage(bankUtils.getBanksCopy().stream().map(Bank::getInfoAsString).collect(Collectors.joining("\n")));
 		p.sendMessage("");

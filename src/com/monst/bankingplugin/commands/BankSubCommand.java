@@ -15,5 +15,6 @@ public abstract class BankSubCommand extends GenericSubCommand {
      * @param sender Sender to receive the help message
      * @return The help message for the command.
      */
-    public abstract String getHelpMessage(CommandSender sender);
+	@Override
+	public abstract String getHelpMessage(CommandSender sender);
 }

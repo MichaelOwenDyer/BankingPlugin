@@ -2,8 +2,12 @@ package com.monst.bankingplugin.listeners;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -21,7 +25,6 @@ public class InterestEventListener implements Listener {
 	
 	private BankingPlugin plugin;
 	private AccountUtils accountUtils;
-	private boolean multi = Config.enableInterestMultipliers;
 	
 	public InterestEventListener(BankingPlugin plugin) {
 		this.plugin = plugin;
@@ -31,40 +34,54 @@ public class InterestEventListener implements Listener {
 	@EventHandler
 	public void onInterestEvent(InterestEvent e) {
 		
-		for (Account account : accountUtils.getAccounts()) {
+		plugin.debug("Interest payout event occurring now!");
+		
+		Map<OfflinePlayer, List<Account>> playerAccounts = accountUtils.getAccountsCopy().stream()
+				.collect(Collectors.groupingBy(Account::getOwner));
+
+		for (OfflinePlayer owner : playerAccounts.keySet()) {
 			
-			OfflinePlayer owner = account.getOwner();
-			AccountStatus status = account.getStatus();
-			
-			BigDecimal interest = account.getBalance().multiply(BigDecimal.valueOf(Config.baselineInterestRate));
-			interest = interest.setScale(2, RoundingMode.HALF_EVEN);
-			BigDecimal baseInterest = interest;
-			
-			if (status.allowNextPayout(owner.isOnline())) {
-				int multiplier = 1;
-				if (multi) {
-					multiplier = status.getRealMultiplier();
-					interest.multiply(BigDecimal.valueOf(multiplier));
+			World world = playerAccounts.get(owner).get(0).getLocation().getWorld();
+
+			BigDecimal sumInterest = BigDecimal.ZERO;
+
+			for (Account account : playerAccounts.get(owner)) {
+
+				AccountStatus status = account.getStatus();
+				if (!status.allowNextPayout(owner.isOnline())) {
+					plugin.getDatabase().addAccount(account, null);
+					continue;
+				}
+
+				BigDecimal baseInterest = account.getBalance().multiply(BigDecimal.valueOf(Config.baselineInterestRate))
+						.setScale(2, RoundingMode.HALF_EVEN);
+				BigDecimal interest = baseInterest;
+
+				int multiplier = status.getRealMultiplier();
+				if (Config.enableInterestMultipliers) {
+					interest = interest.multiply(BigDecimal.valueOf(multiplier));
 				}
 
 				status.incrementMultiplier(owner.isOnline());
-				
-				EconomyResponse r = plugin.getEconomy().depositPlayer(owner, account.getLocation().getWorld().getName(),
-						interest.doubleValue());
-	            if (!r.transactionSuccess()) {
-	                plugin.debug("Economy transaction failed: " + r.errorMessage);
-	                if (owner.isOnline())
-	                	owner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-				} else {
-					if (Config.enableInterestLog) {
-						plugin.getDatabase().logInterest(account, baseInterest, multiplier, interest, null);
-					}
-	            }
-	            
+				sumInterest = sumInterest.add(interest);
+				account.getStatus().updatePrevBalance();
+
+				plugin.getDatabase().addAccount(account, null);
+
+				if (Config.enableInterestLog) {
+					plugin.getDatabase().logInterest(account, baseInterest, multiplier, interest, null);
+				}
 			}
-			
+
+			EconomyResponse r = plugin.getEconomy().depositPlayer(owner, world.getName(), sumInterest.doubleValue());
+			if (!r.transactionSuccess()) {
+				plugin.debug("Economy transaction failed: " + r.errorMessage);
+				if (owner.isOnline())
+					owner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
+			} else {
+				if (owner.isOnline())
+					owner.getPlayer().sendMessage(Messages.getWithValue(Messages.INTEREST_EARNED, sumInterest));
+			}
 		}
-		
 	}
-	
 }

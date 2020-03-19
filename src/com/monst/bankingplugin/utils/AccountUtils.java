@@ -29,6 +29,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 
+import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 public class AccountUtils {
@@ -79,7 +80,7 @@ public class AccountUtils {
      * @return Copy of collection of all accounts, may contain duplicates
      */
     public Collection<Account> getAccountsCopy() {
-        return new ArrayList<>(getAccounts());
+		return locatedAccounts.stream().distinct().collect(Collectors.toUnmodifiableSet());
     }
 
 	public Collection<Account> getPlayerAccountsCopy(OfflinePlayer owner) {
@@ -256,35 +257,38 @@ public class AccountUtils {
 				.mapToDouble(account -> account.getChestSize() == 1 ? 1.0 : 0.5).sum());
     }
 
+	@SuppressWarnings("deprecation")
 	public String getAccountList(CommandSender sender, String request, String[] args) {
 		String list = "";
+		int[] index = new int[1];
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
 			switch (request) {
 			case "":
 				list = getPlayerAccountsCopy(p).stream().distinct().map(Account::toString)
-						.collect(Collectors.joining("\n"));
+						.collect(Collectors.joining("\n", "" + ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			case "-d":
 				list = getPlayerAccountsCopy(p).stream().distinct().map(Account::toStringVerbose)
-						.collect(Collectors.joining("\n"));
+						.collect(Collectors.joining("\n", "" + ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			case "-a":
-				list = getAccountsCopy().stream().distinct().map(Account::toString).collect(Collectors.joining("\n"));
+				list = getAccountsCopy().stream().distinct().map(Account::toString)
+						.collect(Collectors.joining("\n", "" + ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			case "-a -d":
 				list = getAccountsCopy().stream().distinct().map(Account::toStringVerbose)
-						.collect(Collectors.joining("\n"));
+						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			case "name":
 				OfflinePlayer ownerA = Bukkit.getOfflinePlayer(args[1]);
 				list = getPlayerAccountsCopy(ownerA).stream().distinct().map(Account::toString)
-						.collect(Collectors.joining("\n"));
+						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			case "name -d":
 				OfflinePlayer ownerB = Bukkit.getOfflinePlayer(args[1]);
 				list = getPlayerAccountsCopy(ownerB).stream().distinct().map(Account::toString)
-						.collect(Collectors.joining("\n"));
+						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			default:
 				return Messages.ERROR_OCCURRED;
@@ -292,18 +296,22 @@ public class AccountUtils {
 		} else {
 			switch (request) {
 			case "-a":
-				list = getAccountsCopy().stream().map(Account::toString).collect(Collectors.joining("\n"));
+				list = getAccountsCopy().stream().map(Account::toString)
+						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			case "-a -d":
-				list = getAccountsCopy().stream().map(Account::toStringVerbose).collect(Collectors.joining("\n"));
+				list = getAccountsCopy().stream().map(Account::toStringVerbose)
+						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			case "name":
 				OfflinePlayer ownerA = Bukkit.getOfflinePlayer(args[1]);
-				list = getPlayerAccountsCopy(ownerA).stream().map(Account::toString).collect(Collectors.joining("\n"));
+				list = getPlayerAccountsCopy(ownerA).stream().map(Account::toString)
+						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			case "name -d":
 				OfflinePlayer ownerB = Bukkit.getOfflinePlayer(args[1]);
-				list = getPlayerAccountsCopy(ownerB).stream().map(Account::toString).collect(Collectors.joining("\n"));
+				list = getPlayerAccountsCopy(ownerB).stream().map(Account::toString)
+						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
 				break;
 			default:
 				return Messages.ERROR_OCCURRED;
@@ -312,6 +320,7 @@ public class AccountUtils {
 		return list.equals("") ? Messages.NO_ACCOUNTS_FOUND : list;
 	}
 
+	@SuppressWarnings("deprecation")
 	public List<Account> toRemoveList(CommandSender sender, String request, String[] args) {
 		BankUtils bankUtils = plugin.getBankUtils();
 		if (sender instanceof Player) {
@@ -352,6 +361,7 @@ public class AccountUtils {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public int removeAll(CommandSender sender, String request, String[] args) {
 
 		BankUtils bankUtils = plugin.getBankUtils();

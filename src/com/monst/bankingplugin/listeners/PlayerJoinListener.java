@@ -12,11 +12,11 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
 
-public class NotifyPlayerOnJoinListener implements Listener {
+public class PlayerJoinListener implements Listener {
 
 	private BankingPlugin plugin;
 
-	public NotifyPlayerOnJoinListener(BankingPlugin plugin) {
+	public PlayerJoinListener(BankingPlugin plugin) {
         this.plugin = plugin;
     }
 

@@ -2,7 +2,6 @@ package com.monst.bankingplugin.events.account;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 
 import com.monst.bankingplugin.Account;
 

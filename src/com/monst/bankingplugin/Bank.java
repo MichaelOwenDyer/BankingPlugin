@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
@@ -21,6 +22,8 @@ public class Bank {
 	private final BankingPlugin plugin;
 	private boolean created;
 	
+	private OfflinePlayer owner;
+
 	private int id;
 	private final String name;
 	private final World world;

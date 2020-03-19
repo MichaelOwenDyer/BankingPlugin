@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -192,6 +193,86 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeBankCreate(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
+		
+		if (args.length == 3) {
+			Block b = p.getTargetBlock(null, 150);
+			if (b == null)
+				return returnCompletions;
+			String coord = "" + b.getLocation().getBlockX();
+			if (!args[2].isEmpty()) {
+				if (args[2].startsWith(coord))
+					returnCompletions.add(coord);
+				return returnCompletions;
+			} else {
+				returnCompletions.add(coord);
+				return returnCompletions;
+			}
+		} else if (args.length == 4) {
+			Block b = p.getTargetBlock(null, 150);
+			if (b == null)
+				return returnCompletions;
+			String coord = "" + b.getLocation().getBlockY();
+			if (!args[3].isEmpty()) {
+				if (args[3].startsWith(coord))
+					returnCompletions.add(coord);
+				return returnCompletions;
+			} else {
+				returnCompletions.add(coord);
+				return returnCompletions;
+			}
+		} else if (args.length == 5) {
+			Block b = p.getTargetBlock(null, 150);
+			if (b == null)
+				return returnCompletions;
+			String coord = "" + b.getLocation().getBlockZ();
+			if (!args[4].isEmpty()) {
+				if (args[4].startsWith(coord))
+					returnCompletions.add(coord);
+				return returnCompletions;
+			} else {
+				returnCompletions.add(coord);
+				return returnCompletions;
+			}
+		} else if (args.length == 6) {
+			Block b = p.getTargetBlock(null, 150);
+			if (b == null)
+				return returnCompletions;
+			String coord = "" + b.getLocation().getBlockX();
+			if (!args[5].isEmpty()) {
+				if (args[5].startsWith(coord))
+					returnCompletions.add(coord);
+				return returnCompletions;
+			} else {
+				returnCompletions.add(coord);
+				return returnCompletions;
+			}
+		} else if (args.length == 7) {
+			Block b = p.getTargetBlock(null, 150);
+			if (b == null)
+				return returnCompletions;
+			String coord = "" + b.getLocation().getBlockY();
+			if (!args[6].isEmpty()) {
+				if (args[6].startsWith(coord))
+					returnCompletions.add(coord);
+				return returnCompletions;
+			} else {
+				returnCompletions.add(coord);
+				return returnCompletions;
+			}
+		} else if (args.length == 8) {
+			Block b = p.getTargetBlock(null, 150);
+			if (b == null)
+				return returnCompletions;
+			String coord = "" + b.getLocation().getBlockZ();
+			if (!args[7].isEmpty()) {
+				if (args[7].startsWith(coord))
+					returnCompletions.add(coord);
+				return returnCompletions;
+			} else {
+				returnCompletions.add(coord);
+				return returnCompletions;
+			}
+		}
 
 		return new ArrayList<>();
 	}

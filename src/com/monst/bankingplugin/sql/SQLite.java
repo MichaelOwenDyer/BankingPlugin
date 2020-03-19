@@ -132,8 +132,8 @@ public class SQLite extends Database {
             
 			+ "owner_name TEXT NOT NULL,"
 			+ "owner_uuid TEXT NOT NULL,"
-			+ "executor TEXT NOT NULL,"
-			+ "executor_uuid_if_different TEXT,"
+			+ "executor_name TEXT NOT NULL,"
+			+ "executor_uuid TEXT NOT NULL,"
             
 			+ "transaction_type TEXT NOT NULL,"
             + "amount TEXT NOT NULL,"

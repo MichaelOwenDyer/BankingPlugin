@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import org.bukkit.entity.Player;
 
 import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Account.TransactionType;
 
 public class AccountTransactionEvent extends AccountEvent {
 	
@@ -30,10 +31,6 @@ public class AccountTransactionEvent extends AccountEvent {
 	
 	public BigDecimal getNewBalance() {
 		return newBalance;
-	}
-	
-	public enum TransactionType {
-		DEPOSIT, WITHDRAWAL
 	}
 
 }

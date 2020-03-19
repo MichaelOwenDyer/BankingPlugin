@@ -12,10 +12,13 @@ import org.bukkit.entity.Player;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.bank.ReloadEvent;
+import com.monst.bankingplugin.events.interest.InterestEvent;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.UpdateChecker;
+
+import net.md_5.bungee.api.ChatColor;
 
 public class ControlCommandExecutor implements CommandExecutor {
 
@@ -53,15 +56,24 @@ public class ControlCommandExecutor implements CommandExecutor {
 			return changeConfig(sender, args);
 		case "reload":
 			promptReload(sender);
+			break;
 		case "update":
 			// checkUpdates(sender);
 			return false;
+		case "payinterest":
+			promptPayout(sender);
+			break;
 		default:
 			return false;
 		}
+		return true;
 	}
 	
 	private boolean changeConfig(CommandSender sender, String[] args) {
+
+		if (args.length < 4)
+			return false;
+
 		plugin.debug(sender.getName() + " is changing the configuration");
 
 		String property = args[2];
@@ -71,15 +83,19 @@ public class ControlCommandExecutor implements CommandExecutor {
 		case "set":
 			plugin.getPluginConfig().set(property, value);
 			sender.sendMessage(Messages.CHANGED_CONFIG_SET);
+			break;
 		case "add":
 			plugin.getPluginConfig().add(property, value);
 			sender.sendMessage(Messages.CHANGED_CONFIG_ADDED);
+			break;
 		case "remove":
 			plugin.getPluginConfig().remove(property, value);
 			sender.sendMessage(Messages.CHANGED_CONFIG_REMOVED);
+			break;
 		default:
 			return false;
 		}
+		return true;
 	}
 
 	/**
@@ -97,9 +113,9 @@ public class ControlCommandExecutor implements CommandExecutor {
 			return;
 		}
 
-		bankUtils.reload(true, true, new Callback<Integer[]>(plugin) {
+		bankUtils.reload(true, true, new Callback<int[]>(plugin) {
 			@Override
-			public void onResult(Integer[] result) {
+			public void onResult(int[] result) {
 				sender.sendMessage(
 						Messages.getWithValues(Messages.RELOADED_BANKS, new Object[] { result[0], result[1] }));
 				plugin.debug(sender.getName() + " has reloaded " + result[0] + " banks and " + result[1] + " accounts.");
@@ -152,5 +168,13 @@ public class ControlCommandExecutor implements CommandExecutor {
 			// plugin.setUpdateNeeded(false);
 			// sender.sendMessage(Messages.UPDATE_ERROR);
 		}
+	}
+
+	private void promptPayout(CommandSender sender) {
+		plugin.debug(sender.getName() + " is triggering an interest payout");
+		sender.sendMessage(ChatColor.GOLD + "Interest payout event triggered.");
+
+		InterestEvent event = new InterestEvent(plugin);
+		Bukkit.getPluginManager().callEvent(event);
 	}
 }

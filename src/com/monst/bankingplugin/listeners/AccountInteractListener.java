@@ -62,6 +62,7 @@ public class AccountInteractListener implements Listener {
 	 * 
 	 * @param PlayerInteractEvent
 	 */
+	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onAccountInteract(PlayerInteractEvent e) {
 		
@@ -95,9 +96,10 @@ public class AccountInteractListener implements Listener {
 
 			case REMOVE:
 
-				if (confirmRemove(p, account))
+				if (confirmRemove(p, account)) {
 					ClickType.removePlayerClickType(p);
-				else
+					e.setCancelled(true);
+				} else
 					e.setCancelled(true);
 				break;
 
@@ -126,13 +128,13 @@ public class AccountInteractListener implements Listener {
 				ItemStack item = Utils.getItemInMainHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account, false);
+					info(p, account, p.hasPermission(Permissions.ACCOUNT_OTHER_INFO));
 					return;
 				}
 				item = Utils.getItemInOffHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account, false);
+					info(p, account, p.hasPermission(Permissions.ACCOUNT_OTHER_INFO));
 					return;
 				}
 			}
@@ -175,7 +177,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		if (e.getWhoClicked() instanceof Player) {
 			Player executor = (Player) e.getWhoClicked();
-			if (!executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
+			if (!executor.hasPermission(Permissions.ACCOUNT_OTHER_EDIT)) {
 				plugin.debug(
 						executor.getName() + " does not have permission to edit " + owner.getName() + "'s account");
 				executor.sendMessage(Messages.getWithValue(Messages.NO_PERMISSION_ACCOUNT_EDIT_OTHER, owner.getName()));
@@ -246,6 +248,7 @@ public class AccountInteractListener implements Listener {
 		if (account.create(true)) {
 			plugin.debug("Account created");
 			accountUtils.addAccount(account, true);
+			bank.addAccount(account);
 			p.sendMessage(Messages.ACCOUNT_CREATED);
 		}
 
@@ -253,7 +256,7 @@ public class AccountInteractListener implements Listener {
 	
 	private boolean confirmRemove(Player executor, Account account) {
 		if (!executor.getUniqueId().equals(account.getOwner().getUniqueId())
-				&& !executor.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
+				&& !executor.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
 			executor.sendMessage(
 					Messages.getWithValue(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER, account.getOwner().getName()));
 			return !unconfirmed.containsKey(executor.getUniqueId());
@@ -341,7 +344,7 @@ public class AccountInteractListener implements Listener {
 	 */
 	private void tryPeek(Player executor, Account account, boolean message) {
 		boolean executorIsOwner = executor.getUniqueId().equals(account.getOwner().getUniqueId());
-		if (!executorIsOwner && !executor.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
+		if (!executorIsOwner && !executor.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
 			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_VIEW_OTHER);
 			plugin.debug(executor.getName() + " does not have permission to open " + account.getOwner().getName()
 					+ "'s account chest.");
@@ -368,7 +371,7 @@ public class AccountInteractListener implements Listener {
 	 */
 	private void info(Player executor, Account account, boolean verbose) {
 		boolean executorIsOwner = executor.getUniqueId().equals(account.getOwner().getUniqueId());
-		if (!executorIsOwner && !executor.hasPermission(Permissions.ACCOUNT_INFO_OTHER)) {
+		if (!executorIsOwner && !executor.hasPermission(Permissions.ACCOUNT_OTHER_INFO)) {
 			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_INFO_OTHER);
 			return;
 		}

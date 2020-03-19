@@ -76,7 +76,8 @@ public class Utils {
      * @param p Player whose item in his main hand should be returned
      * @return {@link ItemStack} in his main hand, or {@code null} if he doesn't hold one
      */
-    public static ItemStack getItemInMainHand(Player p) {
+	@SuppressWarnings("deprecation")
+	public static ItemStack getItemInMainHand(Player p) {
         if (getMajorVersion() < 9) {
             if (p.getItemInHand().getType() == Material.AIR)
                 return null;

@@ -223,7 +223,8 @@ public class BankUtils {
 		plugin.debug(String.format("Removing %d bank(s) with ID %d", toRemove.size(), bankId));
 
         if (toRemove.isEmpty()) {
-            if (callback != null) callback.callSyncResult(null);
+			if (callback != null)
+				callback.callSyncResult(null);
             return;
         }
 
@@ -236,7 +237,8 @@ public class BankUtils {
         if (removeFromDatabase) {
 			plugin.getDatabase().removeBank(toRemove.values().iterator().next(), callback);
         } else {
-            if (callback != null) callback.callSyncResult(null);
+			if (callback != null)
+				callback.callSyncResult(null);
         }
     }
 
@@ -274,8 +276,8 @@ public class BankUtils {
 	 * @param callback            Callback that - if succeeded - returns the amount
 	 *                            of accounts that were reloaded (as {@code int})
 	 */
-	public void reload(boolean reloadConfig, final boolean showConsoleMessages, final Callback<Integer[]> callback) {
-		plugin.debug("Reloading...");
+	public void reload(boolean reloadConfig, final boolean showConsoleMessages, final Callback<int[]> callback) {
+		plugin.debug("Loading banks and accounts from database...");
 
 		AccountUtils accountUtils = plugin.getAccountUtils();
 
@@ -283,9 +285,9 @@ public class BankUtils {
 			plugin.getPluginConfig().reload(false, showConsoleMessages);
         }
 
-		plugin.getDatabase().connect(new Callback<Integer[]>(plugin) {
+		plugin.getDatabase().connect(new Callback<int[]>(plugin) {
             @Override
-			public void onResult(Integer[] result) {
+			public void onResult(int[] result) {
             	Collection<Bank> banks = getBanksCopy();
             	Collection<Account> accounts = accountUtils.getAccountsCopy();
             	
@@ -306,7 +308,7 @@ public class BankUtils {
 					@Override
 					public void onResult(Map<Bank, Collection<Account>> result) {
 
-						for (Bank bank : result.keySet())
+						for (Bank bank : result.keySet()) {
 							if (bank.create(showConsoleMessages)) {
 								addBank(bank, false);
 								postReload[0]++;
@@ -319,15 +321,18 @@ public class BankUtils {
 										plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");
 								}
 							} else
-								plugin.debug("Could not re-create bank from database! (#" + bank.getID() + ")");
+								plugin.debug("Could not re-create bank \"" + bank.getName() + "\" from database! (#" + bank.getID() + ")");
+						}
 
-								if (preReload[0] != postReload[0])
-									plugin.debug("Number of banks changed during reload. Was: " + preReload[0]
-											+ ", is: " + postReload[0]);
-								if (preReload[1] != postReload[1])
-									plugin.debug("Number of accounts changed during reload. Was: " + preReload[1]
-											+ ", is: " + postReload[1]);
-
+						if (preReload[0] != postReload[0])
+							plugin.debug("Number of banks before load was " + preReload[0] + ", and is now "
+									+ postReload[0]);
+						if (preReload[1] != postReload[1])
+							plugin.debug("Number of accounts before load was " + preReload[1]
+									+ ", and is now " + postReload[1]);
+						
+						if (callback != null)
+							callback.callSyncResult(postReload);
 					}
 					
 					@Override

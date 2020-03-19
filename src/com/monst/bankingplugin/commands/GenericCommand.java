@@ -62,7 +62,7 @@ public class GenericCommand {
 		if (pluginCommand == null)
 			return;
 
-		plugin.debug("Registering BankingPlugin command \"" + name + "\"");
+		plugin.debug("Registering command \"" + name + "\"");
 
 		try {
 			Field f = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");

@@ -74,7 +74,8 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 				promptAccountInfo(p, args);
 				break;
 			case "list":
-				return promptAccountList(p, args);
+				if (!promptAccountList(p, args))
+					p.sendMessage(subCommand.getHelpMessage(p));
 			case "limits":
 				promptAccountLimit(p, args);
 				break;
@@ -111,7 +112,7 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 		plugin.debug(p.getName() + " wants to create an account");
 
 		boolean forSelf = args.length == 1;
-		String permission = forSelf ? Permissions.ACCOUNT_CREATE : Permissions.ACCOUNT_CREATE_OTHER;
+		String permission = forSelf ? Permissions.ACCOUNT_CREATE : Permissions.ACCOUNT_OTHER_CREATE;
 		boolean hasPermission = p.hasPermission(permission);
 		if (!hasPermission) {
 			for (PermissionAttachmentInfo permInfo : p.getEffectivePermissions()) {
@@ -130,7 +131,8 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 				p.sendMessage(Messages.getWithValue(Messages.PLAYER_NOT_FOUND, args[1]));
 				return;
 			}
-			plugin.debug("Used depricated method to lookup offline player \"" + args[1] + "\" and found uuid: " + owner.getUniqueId());
+			plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
+					+ owner.getUniqueId());
 		} else
 			owner = p;
 		
@@ -237,7 +239,7 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 					sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
 				}
 			} else if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
-				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
+				if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST)) {
 					plugin.debug(sender.getName() + " has listed all accounts");
 					sender.sendMessage(accountUtils.getAccountList(sender, "-a", args));
 				} else {
@@ -247,9 +249,9 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				if (owner.hasPlayedBefore()) {
-					plugin.debug("Used depricated method to lookup offline player \"" + args[1] + "\" and found uuid: "
+					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
-					if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
+					if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST)) {
 						plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
 						sender.sendMessage(accountUtils.getAccountList(sender, "name", args));
 					} else {
@@ -263,7 +265,7 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 		} else if (args.length == 3) {
 			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) && (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed"))
 					|| (args[2].equalsIgnoreCase("-a") || args[2].equalsIgnoreCase("all")) && (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed"))) {
-				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER_VERBOSE)) {
+				if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST_VERBOSE)) {
 					plugin.debug(sender.getName() + " has listed all accounts verbose");
 					sender.sendMessage(accountUtils.getAccountList(sender, "-a -d", args));
 				} else {
@@ -273,9 +275,9 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			} else if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				if (!owner.hasPlayedBefore()) {
-					plugin.debug("Used depricated method to lookup offline player \"" + args[1] + "\" and found uuid: "
+					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
-					if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER_VERBOSE)) {
+					if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST_VERBOSE)) {
 						plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
 						sender.sendMessage(accountUtils.getAccountList(sender, "name -d", args));
 					} else {
@@ -316,7 +318,7 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 					sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
 				}
 			} else if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) { // account removeall all
-				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
+				if (sender.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
 					scheduleRemoveAll(sender, "-a", args);
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to remove all accounts");
@@ -325,9 +327,9 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				if (owner.hasPlayedBefore()) {
-					plugin.debug("Used depricated method to lookup offline player \"" + args[1] + "\" and found uuid: "
+					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
-					if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) { // account removeall player
+					if (sender.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) { // account removeall player
 						scheduleRemoveAll(sender, "name", args);
 					} else {
 						plugin.debug(sender.getName() + " does not have permission to remove all accounts");

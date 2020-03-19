@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -366,7 +367,7 @@ public class Config {
 				.getInt("allowed-offline-before-multiplier-reset");
 		offlineMultiplierBehavior = (short) config.getInt("offline-multiplier-behavior");
 		withdrawalMultiplierBehavior = (short) config.getInt("withdrawal-multiplier-behavior");
-        accountInfoItem = config.getItemStack("account-info-item");
+		accountInfoItem = new ItemStack(Material.getMaterial(config.getString("account-info-item")));
 		// creationPriceBank = config.getDouble("creation-prices.account");
 		creationPriceAccount = config.getDouble("creation-prices.account");
         reimburseAccountCreation = config.getBoolean("reimburse-account-creation");

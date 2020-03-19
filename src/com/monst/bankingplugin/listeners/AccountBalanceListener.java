@@ -14,7 +14,9 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 
 import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Account.TransactionType;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
@@ -44,15 +46,13 @@ public class AccountBalanceListener implements Listener {
 			Player player = Bukkit.getPlayer(e.getPlayer().getUniqueId());
 			Account account = accountUtils.getAccount(loc);
 			if (!player.getUniqueId().equals(account.getOwner().getUniqueId())
-					&& !player.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
+					&& !player.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
 				player.sendMessage(Messages.NO_PERMISSION_ACCOUNT_VIEW_OTHER);
 				e.setCancelled(true);
 			}
 		}
 	}
 
-	// TODO: Add configuration for sending transaction messages to executor /
-	// player?
 	@EventHandler
 	public void onAccountInventoryClose(InventoryCloseEvent e) {
 
@@ -69,7 +69,7 @@ public class AccountBalanceListener implements Listener {
 			valueOnClose = valueOnClose.setScale(2, RoundingMode.HALF_EVEN);
 
 			BigDecimal difference = valueOnClose.subtract(account.getBalance());
-			if (difference.compareTo(BigDecimal.ZERO) == 0)
+			if (difference.signum() == 0)
 				return;
 
 			Player executor = (Player) e.getPlayer();
@@ -77,6 +77,21 @@ public class AccountBalanceListener implements Listener {
 
 			executor.sendMessage(getTransactionMessage(executor, account, difference));
 			executor.sendMessage(getNewBalanceMessage(executor, account, valueOnClose));
+
+			if (difference.signum() == -1) {
+				int multiplier = account.getStatus().getMultiplierStage();
+				if (multiplier != account.getStatus().processWithdrawal())
+					executor.sendMessage(ChatColor.GOLD + "Your multiplier has decreased to " + ChatColor.GREEN
+							+ account.getStatus().getRealMultiplier() + ChatColor.GOLD + "!");
+			}
+
+			plugin.getDatabase().addAccount(account, null);
+
+			if (Config.enableTransactionLog) {
+				TransactionType type = difference.signum() == 1 ? TransactionType.DEPOSIT : TransactionType.WITHDRAWAL;
+				plugin.getDatabase().logTransaction(executor, account, difference.abs(), type, null);
+				plugin.debug("Logging transaction to database...");
+			}
 		}
 	}
 

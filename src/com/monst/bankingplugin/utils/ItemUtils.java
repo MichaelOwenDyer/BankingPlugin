@@ -6,7 +6,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class ItemUtils {
 
-    public static boolean isTransparent(Block block) {
+	@SuppressWarnings("deprecation")
+	public static boolean isTransparent(Block block) {
 		return (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST
 				|| block.getType().isTransparent());
     }
@@ -16,7 +17,8 @@ public class ItemUtils {
      * @param item Serialized ItemStack e.g. {@code "STONE"} or {@code "STONE:1"}
      * @return The de-serialized ItemStack or {@code null} if the serialized item is invalid
      */
-    public static ItemStack getItemStack(String item) {
+	@SuppressWarnings("deprecation")
+	public static ItemStack getItemStack(String item) {
         if (item.trim().isEmpty()) return null;
 
         if (item.contains(":")) {

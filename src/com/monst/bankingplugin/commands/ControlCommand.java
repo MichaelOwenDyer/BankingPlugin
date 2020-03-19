@@ -29,23 +29,30 @@ public class ControlCommand extends GenericCommand {
 		addSubCommand(new ControlSubCommand("reload", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.RELOAD) ? Messages.COMMAND_DESC_RELOAD : "";
+				return sender.hasPermission(Permissions.RELOAD) ? Messages.COMMAND_USAGE_RELOAD : "";
             }
         });
 
 		addSubCommand(new ControlSubCommand("config", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.CONFIG) ? Messages.COMMAND_DESC_CONFIG : "";
+				return sender.hasPermission(Permissions.CONFIG) ? Messages.COMMAND_USAGE_CONFIG : "";
             }
         });
 
 		addSubCommand(new ControlSubCommand("update", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_DESC_UPDATE : "";
+				return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_UPDATE : "";
             }
         });
+
+		addSubCommand(new ControlSubCommand("payinterest", false, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_UPDATE : "";
+			}
+		});
 
         register();
         commandCreated = true;
