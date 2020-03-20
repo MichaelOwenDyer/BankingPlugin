@@ -30,6 +30,7 @@ permissions:
             bankingplugin.account.removeall: true
             bankingplugin.account.limit.*: true
             bankingplugin.account.other.*: true
+            bankingplugin.account.set.*: true
     
     bankingplugin.account.other.*:
         description: Gives control over other players' accounts.
@@ -43,8 +44,19 @@ permissions:
             bankingplugin.account.other.list.verbose: true
             bankingplugin.account.other.view: true
             bankingplugin.account.other.edit: true
+            bankingplugin.account.other.set.nickname: true
+            bankingplugin.account.other.set.multiplier: true
+            bankingplugin.account.other.set.delay-period: true
             bankingplugin.account.other.extend: true
             bankingplugin.account.other.extend.protected: true
+    
+    bankingplugin.account.set.*:
+        description: Gives access to all account configuration commands.
+        default: op
+        children:
+            bankingplugin.account.set.nickname: true
+            bankingplugin.account.set.multiplier: true
+            bankingplugin.account.set.delay-period: true
     
     bankingplugin.bank.*:
         description: Gives access to all bank features.
@@ -106,6 +118,21 @@ permissions:
         default: op
         children:
             bankingplugin.account.other.view: true
+    bankingplugin.account.other.set.nickname:
+        description: Set another player's account nickname.
+        default: op
+        children:
+            bankingplugin.account.set.nickname: true
+    bankingplugin.account.other.set.multiplier:
+        description: Set another player's account multiplier.
+        default: op
+        children:
+            bankingplugin.account.set.multiplier: true
+    bankingplugin.account.other.set.delay-period:
+        description: Set another player's account interest delay period.
+        default: op
+        children:
+            bankingplugin.account.set.delay-period: true
     bankingplugin.account.other.extend:
         description: Extend another player's account chest.
         default: op
@@ -114,6 +141,16 @@ permissions:
         default: op
         children:
             bankingplugin.account.other.extend: true
+    
+    bankingplugin.account.set.nickname:
+        description: Set an account nickname.
+        default: true
+    bankingplugin.account.set.multiplier:
+        description: Set an account multiplier.
+        default: op
+    bankingplugin.account.set.delay-period:
+        description: Set an account interest delay period.
+        default: op
     
     bankingplugin.bank.create:
         description: Create a bank.

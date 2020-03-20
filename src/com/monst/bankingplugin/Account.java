@@ -17,6 +17,7 @@ import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.ItemUtils;
+import com.monst.bankingplugin.utils.Utils;
 
 public class Account {
 
@@ -24,9 +25,7 @@ public class Account {
 	private boolean created;
 
 	private int id;
-
 	private String nickname;
-
 	private final OfflinePlayer owner;
 	private final Location location;
 	private final Bank bank;
@@ -35,20 +34,25 @@ public class Account {
 	private AccountStatus status;
 
 	public Account(BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc) {
-		this(-1, plugin, owner, bank, loc, new AccountStatus());
+		this(-1, plugin, owner, bank, loc, new AccountStatus(), null);
 	}
 	
 	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc) {
-		this(id, plugin, owner, bank, loc, new AccountStatus());
+		this(id, plugin, owner, bank, loc, new AccountStatus(), null);
 	}
 	
 	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc, AccountStatus status) {
+		this(id, plugin, owner, bank, loc, status, null);
+	}
+	
+	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc, AccountStatus status, String nickname) {
 		this.id = id;
 		this.plugin = plugin;
 		this.owner = owner;
 		this.bank = bank;
 		this.location = loc;
 		this.status = status;
+		this.nickname = nickname;
 	}
 
 	public boolean create(boolean showConsoleMessages) {
@@ -104,7 +108,6 @@ public class Account {
 						+ getBalance().toString() + " but was: $" + checkedBalance);
 			}
 			setBalance(checkedBalance);
-			plugin.getDatabase().addAccount(this, null);
 
 		} else if (checkedBalance.compareTo(getBalance()) == -1) {
 			plugin.debug("Unexpected account value (#" + id + ")! Expected: $" + getBalance().toString() + " but was: $"
@@ -146,26 +149,30 @@ public class Account {
 	
 	@Override
 	public String toString() {
-		return ChatColor.GRAY + "Unique ID: " + ChatColor.WHITE + id + "\n"
-				+ ChatColor.GRAY + "Owner: " + ChatColor.GOLD + owner.getName() + "\n"
+		String name;
+		name = hasNickname() ? ChatColor.WHITE + "\"" + Utils.colorize(nickname) + ChatColor.WHITE + "\""
+				: ChatColor.GRAY + "Account ID: " + ChatColor.WHITE + id;
+		return name + "\n" + ChatColor.GRAY + "Owner: " + ChatColor.GOLD + owner.getName() + "\n"
 				+ ChatColor.GRAY + "Bank: " + ChatColor.AQUA + bank.getName() + ChatColor.GRAY;
 	}
 
 	public String toStringVerbose() {
-		String balance = "$" + status.getBalance().toString();
+		String balance = "$" + Utils.formatNumber(status.getBalance());
 		String multiplier = status.getRealMultiplier() + "x (Stage " + (status.getMultiplierStage() + 1) + " of " + Config.interestMultipliers.size() + ")";
 		String interestRate = "" + ChatColor.GREEN + (Config.baselineInterestRate * status.getRealMultiplier() * 100)
 				+ "%" + ChatColor.GRAY + " (" + Config.baselineInterestRate + " x " + status.getRealMultiplier() + ")";
 		if (status.getRemainingUntilFirstPayout() != 0)
 			interestRate = interestRate.concat(ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)");
 		String loc = location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
-		String size = isDoubleChest() ? "Double" : "Single";
 		return toString() + "\n"
 				+ "Balance: " + ChatColor.GREEN + balance + "\n"
 				+ ChatColor.GRAY + "Multiplier: " + multiplier + "\n"
 				+ "Interest rate: " + interestRate + "\n"
-				+ ChatColor.GRAY + "Location: " + loc + "\n"
-				+ "Size: " + size;
+				+ ChatColor.GRAY + "Location: " + loc + "\n";
+	}
+
+	public boolean isOwner(OfflinePlayer player) {
+		return owner.getUniqueId().equals(player.getUniqueId());
 	}
 
 	public short getChestSize() {
@@ -174,6 +181,18 @@ public class Account {
 
 	public boolean isDoubleChest() {
 		return inventoryHolder instanceof DoubleChest;
+	}
+
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public String getNickname() {
+		return nickname;
+	}
+
+	public boolean hasNickname() {
+		return nickname != null;
 	}
 
 	public AccountStatus getStatus() {

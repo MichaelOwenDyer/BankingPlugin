@@ -12,6 +12,10 @@ public class Permissions {
 	public static final String ACCOUNT_CREATE = "bankingplugin.account.create";
 	public static final String ACCOUNT_CREATE_PROTECTED = "bankingplugin.account.create.protected";
 	public static final String ACCOUNT_REMOVEALL = "bankingplugin.account.removeall";
+	public static final String ACCOUNT_SET = "bankingplugin.account.set.*";
+	public static final String ACCOUNT_SET_NICKNAME = "bankingplugin.account.set.nickname";
+	public static final String ACCOUNT_SET_MULTIPLIER = "bankingplugin.account.set.multiplier";
+	public static final String ACCOUNT_SET_INTEREST_DELAY = "bankingplugin.account.set.interest-delay";
 	public static final String ACCOUNT_OTHER_CREATE = "bankingplugin.account.other.create";
 	public static final String ACCOUNT_OTHER_REMOVE = "bankingplugin.account.other.remove";
 	public static final String ACCOUNT_OTHER_INFO = "bankingplugin.account.other.info";
@@ -19,6 +23,10 @@ public class Permissions {
 	public static final String ACCOUNT_OTHER_LIST_VERBOSE = "bankingplugin.account.other.list.verbose";
 	public static final String ACCOUNT_OTHER_VIEW = "bankingplugin.account.other.view";
 	public static final String ACCOUNT_OTHER_EDIT = "bankingplugin.account.other.edit";
+	public static final String ACCOUNT_OTHER_SET = "bankingplugin.account.other.set.*";
+	public static final String ACCOUNT_OTHER_SET_NICKNAME = "bankingplugin.account.other.set.nickname";
+	public static final String ACCOUNT_OTHER_SET_MULTIPLIER = "bankingplugin.account.other.set.multiplier";
+	public static final String ACCOUNT_OTHER_SET_INTEREST_DELAY = "bankingplugin.account.other.set.interest-delay";
 	public static final String ACCOUNT_OTHER_EXTEND = "bankingplugin.account.other.extend";
 	public static final String ACCOUNT_OTHER_EXTEND_PROTECTED = "bankingplugin.account.other.extend.protected";
 	public static final String ACCOUNT_NO_LIMIT = "bankingplugin.account.limit.*";

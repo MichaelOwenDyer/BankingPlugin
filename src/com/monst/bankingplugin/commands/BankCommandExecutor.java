@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +28,7 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 
 import net.md_5.bungee.api.ChatColor;
 
-public class BankCommandExecutor implements CommandExecutor, SchedulableCommand {
+public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<Bank> {
 
 	private BankingPlugin plugin;
 	private BankUtils bankUtils;
@@ -63,7 +64,9 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 			switch (subCommand.getName().toLowerCase()) {
 
 			case "create":
-				return promptBankCreate(p, args);
+				if (!promptBankCreate(p, args))
+					p.sendMessage(Messages.COMMAND_USAGE_BANK_CREATE);
+				return true;
 			case "remove":
 				promptBankRemove(p, args);
 				break;
@@ -74,7 +77,9 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 				promptBankList(p, args);
 				break;
 			case "removeall":
-				return promptBankRemoveAll(p, args);
+				if (!promptBankRemoveAll(p, args));
+					p.sendMessage(Messages.COMMAND_USAGE_ACCOUNT_REMOVEALL);
+				return true;
 			default:
 				return false;
 			}
@@ -316,16 +321,16 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 		boolean confirmationEnabled = Config.confirmOnRemove;
 
 		if (confirmationEnabled && needsScheduling) {
-			if (commandConfirmed(p, bank, args))
-				scheduleCommand(p, bank, args, delay);
+			if (commandConfirmed(p, List.of(bank), args))
+				scheduleCommand(p, List.of(bank), args, delay);
 		} else if (confirmationEnabled) {
-			if (commandConfirmed(p, bank, args)) {
+			if (commandConfirmed(p, List.of(bank), args)) {
 				bankUtils.removeBank(bank, true);
 				plugin.debug("Bank was removed from the database");
 				p.sendMessage(Messages.BANK_REMOVED);
 			}
 		} else if (needsScheduling) {
-			scheduleCommand(p, bank, args, delay);
+			scheduleCommand(p, List.of(bank), args, delay);
 		} else {
 			bankUtils.removeBank(bank, true);
 			plugin.debug("Bank was removed from the database");
@@ -345,7 +350,9 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 			return;
 		}
 		p.sendMessage("");
-		p.sendMessage(bankUtils.getBanksCopy().stream().map(Bank::getInfoAsString).collect(Collectors.joining("\n")));
+		int i = 1;
+		for (Bank bank : bankUtils.getBanksCopy())
+			p.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.getInfoAsString());
 		p.sendMessage("");
 	}
 
@@ -354,7 +361,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 	}
 
 	@Override
-	public void scheduleCommand(Player p, Object request, String[] args, int ticks) {
+	public void scheduleCommand(Player p, Collection<Bank> banks, String[] args, int ticks) {
 		UUID uuid = p.getUniqueId();
 		scheduled.remove(uuid);
 		Optional.ofNullable(scheduled.get(uuid)).ifPresent(task -> {
@@ -364,9 +371,11 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 		scheduled.put(uuid, new BukkitRunnable() {
 			@Override
 			public void run() {
-				bankUtils.removeBank((Bank) request, true);
-				plugin.debug("Bank was removed from the database");
-				p.sendMessage(Messages.getWithValue(Messages.BANKS_REMOVED, 1));
+				int count = banks.size();
+				for (Bank bank : banks)
+					bankUtils.removeBank(bank, true);
+				plugin.debug(count + " bank(s) removed from the database");
+				p.sendMessage(Messages.getWithValue(Messages.BANKS_REMOVED, count));
 			}
 		}.runTaskLater(BankingPlugin.getInstance(), ticks));
 		p.sendMessage(Messages.getWithValues(Messages.BANK_COMMAND_SCHEDULED,
@@ -375,25 +384,16 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand 
 	}
 
 	@Override
-	public boolean commandConfirmed(Player p, Object request, String[] args) {
+	public boolean commandConfirmed(Player p, Collection<Bank> banks, String[] args) {
 		if (unconfirmed.containsKey(p.getUniqueId()) && unconfirmed.get(p.getUniqueId()).equals(args)) {
 			removeUnconfirmedCommand(p);
 			return true;
 		} else {
 			addUnconfirmedCommand(p, args);
-			if (request instanceof Bank) {
-				int accounts = ((Bank) request).getAccounts().size();
-				p.sendMessage(Messages.getWithValues(Messages.ABOUT_TO_REMOVE_BANKS, new Object[] { 1, accounts }));
-				p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
-				return false;
-			} else {
-				List<Bank> toRemove = bankUtils.toRemoveList(request.toString(), args);
-				int banks = toRemove.size();
-				int accounts = toRemove.stream().mapToInt(bank -> bank.getAccounts().size()).sum();
-				p.sendMessage(Messages.getWithValues(Messages.ABOUT_TO_REMOVE_BANKS, new Object[] { banks, accounts }));
-				p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
-				return false;
-			}
+			int accounts = banks.stream().mapToInt(bank -> bank.getAccounts().size()).sum();
+			p.sendMessage(Messages.getWithValues(Messages.ABOUT_TO_REMOVE_BANKS, new Integer[] { banks.size(), accounts }));
+			p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+			return false;
 		}
 	}
 }

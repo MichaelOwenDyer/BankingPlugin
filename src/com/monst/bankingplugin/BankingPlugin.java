@@ -220,7 +220,7 @@ public class BankingPlugin extends JavaPlugin {
 		if (griefPreventionPlugin instanceof GriefPrevention)
             griefPrevention = (GriefPrevention) griefPreventionPlugin;
 
-		Plugin worldEditPlugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+		Plugin worldEditPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
 		if (worldEditPlugin instanceof WorldEditPlugin)
 			worldEdit = (WorldEditPlugin) worldEditPlugin;
 		else {
@@ -231,12 +231,6 @@ public class BankingPlugin extends JavaPlugin {
 		if (essentialsPlugin instanceof Essentials) {
 			essentials = (Essentials) essentialsPlugin;
 			debug("Hooked with Essentials.");
-		} else {
-			essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("EssentialsX");
-			if (essentialsPlugin instanceof Essentials) {
-				essentials = (Essentials) essentialsPlugin;
-				debug("Hooked with EssentialsX.");
-			}
 		}
 
 		if (hasWorldGuard())
@@ -244,7 +238,6 @@ public class BankingPlugin extends JavaPlugin {
     }
     
 	private void initDatabase() {
-
 		database = new SQLite(this);
 		debug("Database initialized.");
 	}

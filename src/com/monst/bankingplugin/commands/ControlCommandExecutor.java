@@ -53,7 +53,9 @@ public class ControlCommandExecutor implements CommandExecutor {
 
 		switch (subCommand.getName().toLowerCase()) {
 		case "config":
-			return changeConfig(sender, args);
+			if (!changeConfig(sender, args))
+				sender.sendMessage(Messages.COMMAND_USAGE_CONFIG);
+			break;
 		case "reload":
 			promptReload(sender);
 			break;
@@ -77,7 +79,11 @@ public class ControlCommandExecutor implements CommandExecutor {
 		plugin.debug(sender.getName() + " is changing the configuration");
 
 		String property = args[2];
-		String value = args[3];
+		StringBuilder sb = new StringBuilder(args[3]);
+		for (int i = 4; i < args.length; i++) {
+			sb.append(" " + args[i]);
+		}
+		String value = sb.toString();
 
 		switch (args[1].toLowerCase()) {
 		case "set":

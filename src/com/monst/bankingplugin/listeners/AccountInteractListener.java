@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.listeners;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,6 +37,7 @@ import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.InfoClickType;
+import com.monst.bankingplugin.utils.ClickType.SetClickType;
 import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
@@ -96,17 +99,23 @@ public class AccountInteractListener implements Listener {
 
 			case REMOVE:
 
-				if (confirmRemove(p, account)) {
-					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
-				} else
-					e.setCancelled(true);
+				if (confirmRemove(p, account))
+					tryRemove(p, account);
+				e.setCancelled(true);
 				break;
 
 			case INFO:
 
 				boolean verbose = ((InfoClickType) clickType).isVerbose();
 				info(p, account, verbose);
+				ClickType.removePlayerClickType(p);
+				e.setCancelled(true);
+				break;
+
+			case SET:
+
+				String[] args = ((SetClickType) clickType).getArgs();
+				set(p, account, args);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
 				break;
@@ -144,8 +153,6 @@ public class AccountInteractListener implements Listener {
 				tryPeek(p, account, true);
 			}
 		}
-		// Unnecessary
-		// ClickType.removePlayerClickType(p);
 	}
 
 	/**
@@ -180,7 +187,7 @@ public class AccountInteractListener implements Listener {
 			if (!executor.hasPermission(Permissions.ACCOUNT_OTHER_EDIT)) {
 				plugin.debug(
 						executor.getName() + " does not have permission to edit " + owner.getName() + "'s account");
-				executor.sendMessage(Messages.getWithValue(Messages.NO_PERMISSION_ACCOUNT_EDIT_OTHER, owner.getName()));
+				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_EDIT);
 				e.setCancelled(true);
 			}
 
@@ -234,15 +241,19 @@ public class AccountInteractListener implements Listener {
 		}
 
 		if (creationPrice > 0) {
+			if (plugin.getEconomy().getBalance(p) < creationPrice) {
+				p.sendMessage(Messages.ACCOUNT_CREATE_INSUFFICIENT_FUNDS);
+				return;
+			}
 			OfflinePlayer player = p.getPlayer();
-			EconomyResponse r = plugin.getEconomy().withdrawPlayer(player, location.getWorld().getName(),
-					creationPrice);
-
+			EconomyResponse r = plugin.getEconomy().withdrawPlayer(player, location.getWorld().getName(), creationPrice);
 			if (!r.transactionSuccess()) {
 				plugin.debug("Economy transaction failed: " + r.errorMessage);
 				p.sendMessage(Messages.ERROR_OCCURRED);
 				return;
-			}
+			} else
+				p.sendMessage(Messages.getWithValue(Messages.ACCOUNT_CREATE_FEE_PAID,
+						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 		}
 
 		if (account.create(true)) {
@@ -255,18 +266,21 @@ public class AccountInteractListener implements Listener {
 	}
 	
 	private boolean confirmRemove(Player executor, Account account) {
-		if (!executor.getUniqueId().equals(account.getOwner().getUniqueId())
+		if (!account.isOwner(executor)
 				&& !executor.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
-			executor.sendMessage(
-					Messages.getWithValue(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER, account.getOwner().getName()));
+			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_REMOVE);
 			return !unconfirmed.containsKey(executor.getUniqueId());
 		}
 		
 		boolean confirmed = unconfirmed.containsKey(executor.getUniqueId()) 
 				&& unconfirmed.get(executor.getUniqueId()).contains(account.getID());
 		
-		if (!confirmed && Config.confirmOnRemove) {
+		if (!confirmed && (Config.confirmOnRemove || account.getBalance().signum() == 1)) {
 			plugin.debug("Needs confirmation");
+
+			if (account.getBalance().signum() == 1) {
+				executor.sendMessage(Messages.ACCOUNT_BALANCE_NOT_ZERO);
+			}
 	        executor.sendMessage(Messages.CLICK_TO_CONFIRM);
 			Set<Integer> ids = unconfirmed.containsKey(executor.getUniqueId())
 					? unconfirmed.get(executor.getUniqueId())
@@ -275,15 +289,15 @@ public class AccountInteractListener implements Listener {
 	        unconfirmed.put(executor.getUniqueId(), ids);
 			return false;
 		} else {
-	        tryRemove(executor, account);
 			if (Config.confirmOnRemove) {
 				Set<Integer> ids = unconfirmed.containsKey(executor.getUniqueId())
 						? unconfirmed.get(executor.getUniqueId())
 						: new HashSet<>();
                 ids.remove(account.getID());
-				if (ids.isEmpty())
+				if (ids.isEmpty()) {
 					unconfirmed.remove(executor.getUniqueId());
-				else
+					ClickType.removePlayerClickType(executor);
+				} else
 					unconfirmed.put(executor.getUniqueId(), ids);
 			}
 			return true;
@@ -297,14 +311,9 @@ public class AccountInteractListener implements Listener {
 	 * @param account  Account to be removed
 	 */
 	private void tryRemove(Player executor, Account account) {
-
-		if (account.getBalance().signum() == 1) {
-			executor.sendMessage(Messages.ACCOUNT_BALANCE_NOT_ZERO);
-			return;
-		}
-
-		plugin.debug(executor.getName() + " is removing " + account.getOwner().getName() + "'s account (#"
-				+ account.getID() + ")");
+		plugin.debug(executor.getName() + String.format(" is removing %s account (#", 
+				account.isOwner(executor) ? "their" 
+				: account.getOwner().getName() + "'s") + account.getID() + ")");
 		AccountRemoveEvent event = new AccountRemoveEvent(executor, account);
 		Bukkit.getPluginManager().callEvent(event);
 
@@ -315,7 +324,7 @@ public class AccountInteractListener implements Listener {
 
 		double creationPrice = Config.creationPriceAccount;
 		if (creationPrice > 0 && Config.reimburseAccountCreation
-				&& executor.getUniqueId().equals(account.getOwner().getUniqueId())) {
+				&& account.isOwner(executor)) {
 			OfflinePlayer owner = executor.getPlayer();
 			EconomyResponse r = plugin.getEconomy().depositPlayer(owner, account.getLocation().getWorld().getName(),
 					creationPrice);
@@ -324,7 +333,9 @@ public class AccountInteractListener implements Listener {
 				plugin.debug("Economy transaction failed: " + r.errorMessage);
 				executor.sendMessage(Messages.ERROR_OCCURRED);
 			} else {
-				executor.sendMessage(Messages.ACCOUNT_REMOVED_REFUND);
+				executor.sendMessage(Messages.getWithValue(Messages.PLAYER_REIMBURSED,
+						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
+				executor.sendMessage(Messages.ACCOUNT_REMOVED);
 			}
 		} else {
 			executor.sendMessage(Messages.ACCOUNT_REMOVED);
@@ -343,9 +354,9 @@ public class AccountInteractListener implements Listener {
 	 *                 {@link Message#ACCOUNT_OPENED} message
 	 */
 	private void tryPeek(Player executor, Account account, boolean message) {
-		boolean executorIsOwner = executor.getUniqueId().equals(account.getOwner().getUniqueId());
+		boolean executorIsOwner = account.isOwner(executor);
 		if (!executorIsOwner && !executor.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
-			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_VIEW_OTHER);
+			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
 			plugin.debug(executor.getName() + " does not have permission to open " + account.getOwner().getName()
 					+ "'s account chest.");
 			return;
@@ -370,9 +381,9 @@ public class AccountInteractListener implements Listener {
 	 * @param account  Account from which the information will be retrieved
 	 */
 	private void info(Player executor, Account account, boolean verbose) {
-		boolean executorIsOwner = executor.getUniqueId().equals(account.getOwner().getUniqueId());
+		boolean executorIsOwner = account.isOwner(executor);
 		if (!executorIsOwner && !executor.hasPermission(Permissions.ACCOUNT_OTHER_INFO)) {
-			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_INFO_OTHER);
+			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO);
 			return;
 		}
 
@@ -398,4 +409,79 @@ public class AccountInteractListener implements Listener {
 		executor.sendMessage(" ");
 	}
 
+	private void set(Player executor, Account account, String[] args) {
+		if (args[0].equalsIgnoreCase("nickname")) {
+			if (account.isOwner(executor)) {
+				plugin.debug(executor.getName() + " has set their account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
+				account.setNickname(args[1]);
+				executor.sendMessage(Messages.NICKNAME_SET);
+			} else {
+				if (executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_NICKNAME)) {
+					plugin.debug(executor.getName() + " has set " + account.getOwner().getName()
+							+ "'s account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
+					account.setNickname(args[1]);
+					executor.sendMessage(Messages.NICKNAME_SET);
+				} else {
+					plugin.debug(executor.getName() + " does not have permission to change another player's account nickname");
+					executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
+				}
+			}
+		} else if (args[0].equalsIgnoreCase("multiplier")) {
+			if (account.isOwner(executor)) {
+				if (args[1].equals("")) {
+					int stage = account.getStatus().setMultiplierStage(Integer.parseInt(args[2]));
+					plugin.debug(executor.getName() + " has set their account multiplier stage to " + stage + " (#" + account.getID() + ")");
+					executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
+				} else if (args[1].equals("+")) {
+					int stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]));
+					plugin.debug(executor.getName() + " has set their account multiplier stage to " + stage + " (#" + account.getID() + ")");
+					executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
+				} else if (args[1].equals("-")) {
+					int stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]) * -1);
+					plugin.debug(executor.getName() + " has set their account multiplier stage to " + stage + " (#" + account.getID() + ")");
+					executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
+				}
+			} else {
+				if (executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_MULTIPLIER)) {
+					if (args[1].equals("")) {
+						account.getStatus().setMultiplierStage(Integer.parseInt(args[2]));
+						plugin.debug(executor.getName() + " has set " + account.getOwner().getName()
+								+ "'s account multiplier stage to " + args[2] + " (#" + account.getID() + ")");
+						executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
+					} else if (args[1].equals("+")) {
+						int stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]));
+						plugin.debug(executor.getName() + " has set " + account.getOwner().getName()
+								+ "'s account multiplier stage to " + stage + " (#" + account.getID() + ")");
+						executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
+					} else if (args[1].equals("-")) {
+						int stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]) * -1);
+						plugin.debug(executor.getName() + " has set " + account.getOwner().getName()
+								+ "'s account multiplier stage to " + stage + " (#" + account.getID() + ")");
+						executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
+					}
+				} else {
+					plugin.debug(executor.getName()
+							+ " does not have permission to change another player's account multiplier");
+					executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
+				}
+			}
+		} else if (args[0].equalsIgnoreCase("interest-delay")) {
+			if (account.isOwner(executor)) {
+				int delay = account.getStatus().setInterestDelay(Integer.parseInt(args[1]));
+				plugin.debug(executor.getName() + " has set their account interest delay to " + delay + "(#" + account.getID() + ")");
+				executor.sendMessage(Messages.INTEREST_DELAY_SET);
+			} else {
+				if (executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_INTEREST_DELAY)) {
+					int delay = account.getStatus().setInterestDelay(Integer.parseInt(args[1]));
+					plugin.debug(executor.getName() + " has set " + account.getOwner().getName() + "'s account interest delay to " + delay + "(#" + account.getID() + ")");
+					executor.sendMessage(Messages.INTEREST_DELAY_SET);
+				} else
+					executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_SET_INTEREST_DELAY);
+			}
+		}
+	}
+
+	public static void clearUnconfirmed(OfflinePlayer p) {
+		unconfirmed.remove(p.getUniqueId());
+	}
 }

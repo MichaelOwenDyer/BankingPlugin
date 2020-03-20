@@ -48,6 +48,8 @@ class GenericTabCompleter implements TabCompleter {
 				return new ArrayList<>();
 			case "removeall":
 				return completeAccountRemoveAll(sender, args);
+			case "set":
+				return completeAccountSet(sender, args);
 			default:
 				return new ArrayList<>();
 			}
@@ -111,7 +113,7 @@ class GenericTabCompleter implements TabCompleter {
 			if (!args[1].isEmpty()) {
 				if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
 					returnCompletions.add("detailed");
-				if ("-a".startsWith(args[1].toLowerCase()) || "all".startsWith(args[2].toLowerCase()))
+				if ("-a".startsWith(args[1].toLowerCase()) || "all".startsWith(args[1].toLowerCase()))
 					returnCompletions.add("all");
 				for (String name : onlinePlayers)
 					if (name.toLowerCase().startsWith(args[1].toLowerCase()))
@@ -191,10 +193,29 @@ class GenericTabCompleter implements TabCompleter {
 		return new ArrayList<>();
 	}
 
+	private List<String> completeAccountSet(CommandSender sender, String[] args) {
+		ArrayList<String> returnCompletions = new ArrayList<>();
+		List<String> fields = List.of("nickname", "multiplier", "interest-delay");
+
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				for (String s : fields)
+					if (s.startsWith(args[1]))
+						returnCompletions.add(s);
+				return returnCompletions;
+			} else
+				return fields;
+		}
+		return new ArrayList<>();
+	}
+
 	private List<String> completeBankCreate(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		
-		if (args.length == 3) {
+		if (args.length == 2) {
+			returnCompletions.add("<name>");
+			return returnCompletions;
+		} else if (args.length == 3) {
 			Block b = p.getTargetBlock(null, 150);
 			if (b == null)
 				return returnCompletions;
@@ -299,7 +320,44 @@ class GenericTabCompleter implements TabCompleter {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		List<String> subCommands = Arrays.asList("add", "remove", "set");
 		Set<String> configValues = plugin.getConfig().getKeys(true);
+		configValues.remove("creation-prices");
+		configValues.remove("default-limits");
+		configValues.remove("enable-logs");
+		configValues.remove("main-command-names");
+		configValues.remove("worldguard-default-flag-values");
 
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				for (String s : subCommands)
+					if (s.startsWith(args[1]))
+						returnCompletions.add(s);
+				return returnCompletions;
+			} else
+				return subCommands;
+		} else if (args.length == 3) {
+			if (!args[2].isEmpty()) {
+				for (String s : configValues)
+					if (s.contains(args[2]))
+						returnCompletions.add(s);
+				return returnCompletions;
+			} else
+				return new ArrayList<>(configValues);
+		} else if (args.length == 4) {
+			List<?> values = plugin.getConfig().getList(args[2]);
+			if (values != null) {
+				if (args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove"))
+					for (Object o : values)
+						returnCompletions.add("-" + o.toString());
+				else
+					returnCompletions.add(values.stream().map(o -> "-" + o.toString()).collect(Collectors.joining(" ")));
+				return returnCompletions;
+			}
+			Object value = plugin.getConfig().get(args[2]);
+			if (value != null) {
+				returnCompletions.add(value.toString());
+			}
+			return returnCompletions;
+		}
 		return new ArrayList<>();
 	}
 }

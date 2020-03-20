@@ -230,9 +230,9 @@ public abstract class Database {
 	 */
 	public void addAccount(final Account account, final Callback<Integer> callback) {
 		final String queryNoId = "REPLACE INTO " + tableAccounts
-				+ " (bank_id,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				+ " (bank_id,nickname,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		final String queryWithId = "REPLACE INTO " + tableAccounts
-				+ " (id,bank_id,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				+ " (id,bank_id,nickname,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		new BukkitRunnable() {
 			@Override
@@ -248,21 +248,22 @@ public abstract class Database {
 					}
 
 					ps.setInt(i + 1, account.getBank().getID());
-					ps.setString(i + 2, account.getOwner().getUniqueId().toString());
-					ps.setInt(i + 3, account.getChestSize());
+					ps.setString(i + 2, account.getNickname());
+					ps.setString(i + 3, account.getOwner().getUniqueId().toString());
+					ps.setInt(i + 4, account.getChestSize());
 
-					ps.setString(i + 4, account.getBalance().toString());
-					ps.setString(i + 5, account.getPrevBalance().toString());
+					ps.setString(i + 5, account.getBalance().toString());
+					ps.setString(i + 6, account.getPrevBalance().toString());
 
-					ps.setInt(i + 6, account.getStatus().getMultiplierStage());
-					ps.setInt(i + 7, account.getStatus().getRemainingUntilFirstPayout());
-					ps.setInt(i + 8, account.getStatus().getRemainingOfflinePayouts());
-					ps.setInt(i + 9, account.getStatus().getRemainingOfflineUntilReset());
+					ps.setInt(i + 7, account.getStatus().getMultiplierStage());
+					ps.setInt(i + 8, account.getStatus().getRemainingUntilFirstPayout());
+					ps.setInt(i + 9, account.getStatus().getRemainingOfflinePayouts());
+					ps.setInt(i + 10, account.getStatus().getRemainingOfflineUntilReset());
 
-					ps.setString(i + 10, account.getLocation().getWorld().getName());
-					ps.setInt(i + 11, account.getLocation().getBlockX());
-					ps.setInt(i + 12, account.getLocation().getBlockY());
-					ps.setInt(i + 13, account.getLocation().getBlockZ());
+					ps.setString(i + 11, account.getLocation().getWorld().getName());
+					ps.setInt(i + 12, account.getLocation().getBlockX());
+					ps.setInt(i + 13, account.getLocation().getBlockY());
+					ps.setInt(i + 14, account.getLocation().getBlockZ());
 
 					ps.executeUpdate();
 
@@ -390,6 +391,7 @@ public abstract class Database {
 						plugin.getLogger()
 								.severe("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
 						plugin.debug("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
+						return;
 					}
 
 					ps.executeUpdate();
@@ -584,15 +586,15 @@ public abstract class Database {
 		try (Connection con = dataSource.getConnection();
 				PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableAccounts + " WHERE bank_id = ?")) {
 			ps.setInt(1, bank.getID());
-			ResultSet rsAccounts = ps.executeQuery();
+			ResultSet rs = ps.executeQuery();
 
-			while (rsAccounts.next()) {
+			while (rs.next()) {
 
-				int accountId = rsAccounts.getInt("id");
+				int accountId = rs.getInt("id");
 
 				plugin.debug("Getting account from database... (#" + accountId + ")");
 
-				String worldName = rsAccounts.getString("world");
+				String worldName = rs.getString("world");
 				World world = Bukkit.getWorld(worldName);
 
 				if (world == null) {
@@ -608,14 +610,14 @@ public abstract class Database {
 
 				AccountStatus status;
 				try {
-					int multiplierStage = rsAccounts.getInt("multiplier_stage");
-					int remainingUntilPayout = rsAccounts.getInt("remaining_until_payout");
-					int remainingOfflinePayouts = rsAccounts.getInt("remaining_offline_payouts");
-					int remainingOfflineUntilReset = rsAccounts.getInt("remaining_offline_until_reset");
+					int multiplierStage = rs.getInt("multiplier_stage");
+					int remainingUntilPayout = rs.getInt("remaining_until_payout");
+					int remainingOfflinePayouts = rs.getInt("remaining_offline_payouts");
+					int remainingOfflineUntilReset = rs.getInt("remaining_offline_until_reset");
 
-					BigDecimal balance = BigDecimal.valueOf(Double.parseDouble(rsAccounts.getString("balance")));
+					BigDecimal balance = BigDecimal.valueOf(Double.parseDouble(rs.getString("balance")));
 					BigDecimal prevBalance = BigDecimal
-							.valueOf(Double.parseDouble(rsAccounts.getString("prev_balance")));
+							.valueOf(Double.parseDouble(rs.getString("prev_balance")));
 
 					status = new AccountStatus(multiplierStage, remainingUntilPayout, remainingOfflinePayouts,
 							remainingOfflineUntilReset, balance, prevBalance);
@@ -627,16 +629,17 @@ public abstract class Database {
 					continue;
 				}
 
-				int x = rsAccounts.getInt("x");
-				int y = rsAccounts.getInt("y");
-				int z = rsAccounts.getInt("z");
+				int x = rs.getInt("x");
+				int y = rs.getInt("y");
+				int z = rs.getInt("z");
 				Location location = new Location(world, x, y, z);
-				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rsAccounts.getString("owner")));
+				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
 
 				plugin.debug("Initializing account... (#" + accountId + " at bank \"" + bank.getName() + "\" (#"
 						+ bank.getID() + "))");
 
 				Account account = new Account(accountId, plugin, owner, bank, location, status);
+				account.setNickname(rs.getString("nickname"));
 				accounts.add(account);
 			}
 
@@ -684,12 +687,12 @@ public abstract class Database {
 						ps.setLong(4, millis);
 						ps.setString(5, account.getOwner().getName());
 						ps.setString(6, account.getOwner().getUniqueId().toString());
-						if (!account.getOwner().getUniqueId().equals(executor.getUniqueId())) {
+						if (!account.isOwner(executor)) {
 							ps.setString(7, executor.getName());
 							ps.setString(8, executor.getUniqueId().toString());
 						} else {
-							ps.setString(7, "OWNER");
-							ps.setString(8, "OWNER");
+							ps.setString(7, null);
+							ps.setString(8, null);
 						}
 						ps.setString(9, type.toString());
 						ps.setString(10, amount.toString());

@@ -135,7 +135,7 @@ public class Bank {
 	
 	public String getInfoAsString() {
 		return ChatColor.GOLD + getName()
-		+ ChatColor.GREEN + " with "
+		+ ChatColor.GREEN + ": "
 		+ ChatColor.AQUA + accounts.size()
 		+ ChatColor.GREEN + " accounts.";
 	}

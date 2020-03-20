@@ -3,6 +3,7 @@ package com.monst.bankingplugin.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -40,6 +41,16 @@ public class Utils {
 	public static List<String> getOnlinePlayerNames(BankingPlugin plugin) {
 		return plugin.getServer().getOnlinePlayers().stream().map(player -> player.getName()).sorted()
 				.collect(Collectors.toList());
+	}
+
+	public static String colorize(String s) {
+		if (s == null)
+			return null;
+		return s.replaceAll("&([0-9a-f])", "\u00A7$1");
+	}
+
+	public static String formatNumber(BigDecimal bd) {
+		return String.format("%,.2f", bd);
 	}
 
 	/**

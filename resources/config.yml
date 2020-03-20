@@ -157,9 +157,9 @@ enable-update-checker: true
 # Debug log file may become quite large!
 # Type: boolean
 enable-logs:
-  transaction-log: false
+  transaction-log: true
   interest-log: true
-  debug-log: false
+  debug-log: true
 
 # Set the maximum age for economy log entries in days.
 # All log entries older than this will be deleted on server start.
@@ -177,7 +177,7 @@ enable-worldedit-integration: true
 # Set whether accounts should automatically be removed from the database if
 # an error occurred while loading.
 # (e.g. no chest, no space above chest, or unknown world)
-remove-account-on-error: false
+remove-account-on-error: true
 
 # Set the items for which a player will earn no interest in their account.
 blacklist:

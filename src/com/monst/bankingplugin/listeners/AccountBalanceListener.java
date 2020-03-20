@@ -20,6 +20,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 
 public class AccountBalanceListener implements Listener {
 	
@@ -45,9 +46,8 @@ public class AccountBalanceListener implements Listener {
 		if (accountUtils.isAccount(loc)) {
 			Player player = Bukkit.getPlayer(e.getPlayer().getUniqueId());
 			Account account = accountUtils.getAccount(loc);
-			if (!player.getUniqueId().equals(account.getOwner().getUniqueId())
-					&& !player.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
-				player.sendMessage(Messages.NO_PERMISSION_ACCOUNT_VIEW_OTHER);
+			if (!account.isOwner(player) && !player.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
+				player.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
 				e.setCancelled(true);
 			}
 		}
@@ -104,11 +104,11 @@ public class AccountBalanceListener implements Listener {
 			difference.abs();
 
 		if (transactionType)
-			sb.append("deposited " + ChatColor.GREEN + "$" + difference.toString() + ChatColor.WHITE + " into ");
+			sb.append("deposited " + ChatColor.GREEN + "$" + Utils.formatNumber(difference) + ChatColor.WHITE + " into ");
 		else
-			sb.append("withdrawn " + ChatColor.RED + "$" + difference.abs().toString() + ChatColor.WHITE + " from ");
+			sb.append("withdrawn " + ChatColor.RED + "$" + Utils.formatNumber(difference.abs()) + ChatColor.WHITE + " from ");
 		
-		if (executor.getUniqueId().equals(account.getOwner().getUniqueId()))
+		if (account.isOwner(executor))
 			sb.append("your account.");
 		else {
 			sb.append(account.getOwner().getName() + "'s account.");
@@ -117,10 +117,10 @@ public class AccountBalanceListener implements Listener {
 	}
 
 	private String getNewBalanceMessage(Player executor, Account account, BigDecimal balance) {
-		if (executor.getUniqueId().equals(account.getOwner().getUniqueId()))
-			return "Your new balance is " + ChatColor.GREEN + "$" + balance.toString() + ChatColor.WHITE + ".";
+		if (account.isOwner(executor))
+			return "Your new balance is " + ChatColor.GREEN + "$" + Utils.formatNumber(balance) + ChatColor.WHITE + ".";
 		else
-			return account.getOwner().getName() + "'s new balance is $" + balance.toString() + ".";
+			return account.getOwner().getName() + "'s new balance is $" + Utils.formatNumber(balance) + ".";
 	}
 }
 

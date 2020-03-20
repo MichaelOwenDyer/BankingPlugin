@@ -80,6 +80,13 @@ public class AccountCommand extends GenericCommand {
 			}
 		});
 
+		addSubCommand(new AccountSubCommand("set", true, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return sender.hasPermission(Permissions.ACCOUNT_SET) ? Messages.COMMAND_USAGE_ACCOUNT_SET : "";
+			}
+		});
+
 		register();
 		commandCreated = true;
 	}

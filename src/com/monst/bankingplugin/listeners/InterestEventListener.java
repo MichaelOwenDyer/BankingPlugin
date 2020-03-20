@@ -18,6 +18,7 @@ import com.monst.bankingplugin.events.interest.InterestEvent;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.utils.Utils;
 
 import net.milkbowl.vault.economy.EconomyResponse;
 
@@ -80,7 +81,7 @@ public class InterestEventListener implements Listener {
 					owner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
 			} else {
 				if (owner.isOnline())
-					owner.getPlayer().sendMessage(Messages.getWithValue(Messages.INTEREST_EARNED, sumInterest));
+					owner.getPlayer().sendMessage(Messages.getWithValue(Messages.INTEREST_EARNED, Utils.formatNumber(sumInterest)));
 			}
 		}
 	}

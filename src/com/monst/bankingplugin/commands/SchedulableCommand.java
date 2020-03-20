@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -13,15 +14,15 @@ import org.bukkit.scheduler.BukkitTask;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Messages;
 
-interface SchedulableCommand {
+interface SchedulableCommand<T> {
 	
 	static Map<UUID, BukkitTask> playerTimers = new HashMap<>();
 	static Map<UUID, String[]> unconfirmed = new HashMap<>();
 	static Map<UUID, BukkitTask> scheduled = new HashMap<>();
 
-	void scheduleCommand(Player p, Object request, String[] args, int ticks);
+	void scheduleCommand(Player p, Collection<T> objects, String[] args, int ticks);
 	
-	boolean commandConfirmed(Player p, Object request, String[] args);
+	boolean commandConfirmed(Player p, Collection<T> objects, String[] args);
 
 	default void addUnconfirmedCommand(Player p, String[] args) {
 		UUID uuid = p.getUniqueId();

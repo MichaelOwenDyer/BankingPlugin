@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -16,10 +17,12 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import com.earth2me.essentials.Essentials;
@@ -29,14 +32,13 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 
-import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 public class AccountUtils {
 
+	private final BankingPlugin plugin;
+
     private final Map<Location, Account> accountLocationMap = new ConcurrentHashMap<>();
-    private final Collection<Account> locatedAccounts = Collections.unmodifiableCollection(accountLocationMap.values());
-    private final BankingPlugin plugin;
 
     public AccountUtils(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -69,7 +71,7 @@ public class AccountUtils {
      * @return Read-only collection of all accounts, may contain duplicates
      */
     public Collection<Account> getAccounts() {
-        return locatedAccounts;
+		return accountLocationMap.values().stream().distinct().collect(Collectors.toSet());
     }
 
     /**
@@ -80,13 +82,17 @@ public class AccountUtils {
      * @return Copy of collection of all accounts, may contain duplicates
      */
     public Collection<Account> getAccountsCopy() {
-		return locatedAccounts.stream().distinct().collect(Collectors.toUnmodifiableSet());
+		return Collections.unmodifiableCollection(getAccounts());
     }
 
 	public Collection<Account> getPlayerAccountsCopy(OfflinePlayer owner) {
-		return getAccounts().stream().filter(account -> account.getOwner().getUniqueId().equals(owner.getUniqueId()))
+		return getAccounts().stream().filter(account -> account.isOwner(owner))
 				.collect(Collectors.toList());
     }
+
+	public Collection<Account> getBankAccountsCopy(Bank bank) {
+		return getAccounts().stream().filter(account -> account.getBank().equals(bank)).collect(Collectors.toList());
+	}
 
     /**
      * Add a account
@@ -258,81 +264,25 @@ public class AccountUtils {
     }
 
 	@SuppressWarnings("deprecation")
-	public String getAccountList(CommandSender sender, String request, String[] args) {
-		String list = "";
-		int[] index = new int[1];
-		if (sender instanceof Player) {
-			Player p = (Player) sender;
-			switch (request) {
-			case "":
-				list = getPlayerAccountsCopy(p).stream().distinct().map(Account::toString)
-						.collect(Collectors.joining("\n", "" + ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			case "-d":
-				list = getPlayerAccountsCopy(p).stream().distinct().map(Account::toStringVerbose)
-						.collect(Collectors.joining("\n", "" + ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			case "-a":
-				list = getAccountsCopy().stream().distinct().map(Account::toString)
-						.collect(Collectors.joining("\n", "" + ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			case "-a -d":
-				list = getAccountsCopy().stream().distinct().map(Account::toStringVerbose)
-						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			case "name":
-				OfflinePlayer ownerA = Bukkit.getOfflinePlayer(args[1]);
-				list = getPlayerAccountsCopy(ownerA).stream().distinct().map(Account::toString)
-						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			case "name -d":
-				OfflinePlayer ownerB = Bukkit.getOfflinePlayer(args[1]);
-				list = getPlayerAccountsCopy(ownerB).stream().distinct().map(Account::toString)
-						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			default:
-				return Messages.ERROR_OCCURRED;
-			}
-		} else {
-			switch (request) {
-			case "-a":
-				list = getAccountsCopy().stream().map(Account::toString)
-						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			case "-a -d":
-				list = getAccountsCopy().stream().map(Account::toStringVerbose)
-						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			case "name":
-				OfflinePlayer ownerA = Bukkit.getOfflinePlayer(args[1]);
-				list = getPlayerAccountsCopy(ownerA).stream().map(Account::toString)
-						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			case "name -d":
-				OfflinePlayer ownerB = Bukkit.getOfflinePlayer(args[1]);
-				list = getPlayerAccountsCopy(ownerB).stream().map(Account::toString)
-						.collect(Collectors.joining("\n", ChatColor.GOLD + "" + index[0]++, ""));
-				break;
-			default:
-				return Messages.ERROR_OCCURRED;
-			}
-		}
-		return list.equals("") ? Messages.NO_ACCOUNTS_FOUND : list;
-	}
-
-	@SuppressWarnings("deprecation")
-	public List<Account> toRemoveList(CommandSender sender, String request, String[] args) {
+	public List<Account> listAccounts(CommandSender sender, String request, String[] args) {
 		BankUtils bankUtils = plugin.getBankUtils();
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
 			switch (request) {
 			case "":
 				return new ArrayList<>(getPlayerAccountsCopy(p));
+			case "-d":
+				return new ArrayList<>(getPlayerAccountsCopy(p));
 			case "-a":
 				return new ArrayList<>(getAccountsCopy());
+			case "-a -d":
+				return new ArrayList<>(getAccountsCopy());
 			case "name":
-				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				return new ArrayList<>(getPlayerAccountsCopy(owner));
+				OfflinePlayer owner1 = Bukkit.getOfflinePlayer(args[1]);
+				return new ArrayList<>(getPlayerAccountsCopy(owner1));
+			case "name -d":
+				OfflinePlayer owner2 = Bukkit.getOfflinePlayer(args[1]);
+				return new ArrayList<>(getPlayerAccountsCopy(owner2));
 			case "bank":
 				Bank bankA = bankUtils.lookupBank(args[2]);
 				return getPlayerAccountsCopy(p).stream().filter(account -> account.getBank().equals(bankA))
@@ -342,15 +292,20 @@ public class AccountUtils {
 				return getAccountsCopy().stream().filter(account -> account.getBank().equals(bankB))
 						.collect(Collectors.toList());
 			default:
-				return new LinkedList<>();
+				return new ArrayList<>();
 			}
 		} else {
 			switch (request) {
 			case "-a":
 				return new ArrayList<>(getAccountsCopy());
+			case "-a -d":
+				return new ArrayList<>(getAccountsCopy());
 			case "name":
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				return new ArrayList<>(getPlayerAccountsCopy(owner));
+			case "name -d":
+				OfflinePlayer owner2 = Bukkit.getOfflinePlayer(args[1]);
+				return new ArrayList<>(getPlayerAccountsCopy(owner2));
 			case "-a bank":
 				Bank bankB = bankUtils.lookupBank(args[2]);
 				return getAccountsCopy().stream().filter(account -> account.getBank().equals(bankB))
@@ -361,60 +316,18 @@ public class AccountUtils {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
-	public int removeAll(CommandSender sender, String request, String[] args) {
+	public int removeAll(CommandSender sender, Collection<Account> accounts) {
+		int removed = accounts.size();
 
-		BankUtils bankUtils = plugin.getBankUtils();
-		List<Account> affectedAccounts = toRemoveList(sender, request, args);
-
-		AccountRemoveAllEvent event = new AccountRemoveAllEvent(sender, affectedAccounts);
+		AccountRemoveAllEvent event = new AccountRemoveAllEvent(sender, accounts);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
-			plugin.debug("Remove all event cancelled");
+			plugin.debug("Removeall event cancelled");
 			return 0;
 		}
+		accounts.forEach(account -> removeAccount(account, true));
 
-		if (sender instanceof Player) {
-			Player p = (Player) sender;
-			switch (request) {
-			case "":
-				plugin.debug(p.getName() + " is removing all of their accounts");
-				break;
-			case "-a":
-				plugin.debug(p.getName() + " is removing all accounts on the server");
-				break;
-			case "name":
-				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				plugin.debug(p.getName() + " is removing all of " + owner.getName() + "'s accounts.");
-				break;
-			case "-b":
-				Bank bankA = bankUtils.lookupBank(args[2]);
-				plugin.debug(p.getName() + " is removing all of their accounts at " + bankA.getName());
-				break;
-			case "-a -b":
-				Bank bankB = bankUtils.lookupBank(args[3]);
-				plugin.debug(p.getName() + " is removing all accounts at " + bankB.getName());
-				break;
-			}
-		} else {
-			switch (request) {
-			case "-a":
-				plugin.debug(sender.getName() + " is removing all accounts on the server");
-				break;
-			case "name":
-				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				plugin.debug(sender.getName() + " is removing all of " + owner.getName() + "'s accounts.");
-				break;
-			case "-a -b":
-				Bank bankB = bankUtils.lookupBank(args[2]);
-				plugin.debug(sender.getName() + " is removing all accounts at " + bankB.getName());
-				break;
-			}
-		}
-
-		affectedAccounts.forEach(account -> removeAccount(account, true));
-
-		return affectedAccounts.size();
+		return removed;
 	}
 
 	public BigDecimal appraiseAccountContents(Account account) {
@@ -427,14 +340,43 @@ public class AccountUtils {
 				continue;
 			if (Config.blacklist.contains(items.getType().toString()))
 				continue;
-			BigDecimal value = essentials.getWorth().getPrice(essentials, items);
-			if (value == null) {
+			BigDecimal itemValue = BigDecimal.ZERO;
+			if (items.getItemMeta() instanceof BlockStateMeta) {
+				BlockStateMeta im = (BlockStateMeta) items.getItemMeta();
+                if (im.getBlockState() instanceof ShulkerBox) {
+                	ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
+                	for (ItemStack innerItems : shulkerBox.getInventory().getContents()) {
+                		if (innerItems == null)
+                			continue;
+                		if (Config.blacklist.contains(innerItems.getType().toString()))
+							continue;
+						BigDecimal innerItemValue = getWorth(innerItems);
+						if (innerItemValue.signum() == 1)
+            				innerItemValue = innerItemValue.multiply(BigDecimal.valueOf(innerItems.getAmount()));
+            			else {
+							plugin.debug("An item without value (" + items.getType().toString()
+									+ ") was placed into account (#" + account.getID() + ")");
+            				continue;
+            			}
+						itemValue = itemValue.add(innerItemValue);
+                	}
+                }
+			}
+			itemValue = itemValue.add(getWorth(items));
+			if (itemValue.signum() == 1)
+				itemValue = itemValue.multiply(BigDecimal.valueOf(items.getAmount()));
+			else {
 				plugin.debug("An item without value (" + items.getType().toString() + ") was placed into account (#" + account.getID() + ")");
 				continue;
 			}
-			sum = sum.add(value);
+			sum = sum.add(itemValue);
 		}
 		return sum.setScale(2, RoundingMode.HALF_EVEN);
+	}
+
+	private BigDecimal getWorth(ItemStack items) {
+		Essentials essentials = plugin.getEssentials();
+		return Optional.ofNullable(essentials.getWorth().getPrice(essentials, items)).orElse(BigDecimal.ZERO);
 	}
 
 	public boolean payInsurance(Account account, BigDecimal loss) {

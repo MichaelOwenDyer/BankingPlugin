@@ -8,7 +8,7 @@ import com.monst.bankingplugin.config.Config;
 public class AccountStatus {
 	
 	private int multiplierStage;
-	private int remainingUntilFirstPayout;
+	private int remainingUntilPayout;
 	private int remainingOfflinePayouts;
 	private int remainingOfflineUntilReset;
 	private BigDecimal balance;
@@ -36,7 +36,7 @@ public class AccountStatus {
 	public AccountStatus(int multiplierStage, int remainingUntilFirstPayout, int remainingOfflinePayouts,
 			int remainingOfflineUntilReset, BigDecimal balance, BigDecimal prevBalance) {
 		this.multiplierStage = multiplierStage;
-		this.remainingUntilFirstPayout = remainingUntilFirstPayout;
+		this.remainingUntilPayout = remainingUntilFirstPayout;
 		this.remainingOfflinePayouts = remainingOfflinePayouts;
 		this.remainingOfflineUntilReset = remainingOfflineUntilReset;
 		this.balance = balance.setScale(2, RoundingMode.HALF_EVEN);
@@ -48,7 +48,7 @@ public class AccountStatus {
 	}
 
 	public int getRemainingUntilFirstPayout() {
-		return remainingUntilFirstPayout;
+		return remainingUntilPayout;
 	}
 
 	public int getRemainingOfflinePayouts() {
@@ -115,16 +115,16 @@ public class AccountStatus {
 	 */
 	public boolean allowNextPayout(boolean online) {
 		if (online) {
-			if (remainingUntilFirstPayout > 0) {
-				remainingUntilFirstPayout--;
+			if (remainingUntilPayout > 0) {
+				remainingUntilPayout--;
 				return false;
 			}
 			remainingOfflineUntilReset = Config.allowedOfflineBeforeMultiplierReset;
 			return true;
 		} else {
-			if (remainingUntilFirstPayout > 0) {
+			if (remainingUntilPayout > 0) {
 				if (Config.interestDelayCountWhileOffline)
-					remainingUntilFirstPayout--;
+					remainingUntilPayout--;
 				return false;
 			} else
 				if (remainingOfflinePayouts > 0) {
@@ -141,8 +141,10 @@ public class AccountStatus {
 	 */
 	public int getRealMultiplier() {
 		
-		if (multiplierStage < 0 || multiplierStage >= Config.interestMultipliers.size())
-			return 1;
+		if (multiplierStage < 0)
+			multiplierStage = 0;
+		else if (multiplierStage >= Config.interestMultipliers.size())
+			multiplierStage = Config.interestMultipliers.size() - 1;
 		
 		return Config.interestMultipliers.get(multiplierStage);
 	}
@@ -154,6 +156,36 @@ public class AccountStatus {
 		multiplierStage = 0;
 	}
 	
+	public int setMultiplierStage(int stage) {
+		stage--;
+		if (stage < 0)
+			multiplierStage = 0;
+		else if (stage >= Config.interestMultipliers.size())
+			multiplierStage = Config.interestMultipliers.size() - 1;
+		else
+			multiplierStage = stage;
+		return multiplierStage;
+	}
+
+	public int setMultiplierStageRelative(int stage) {
+		int newStage = multiplierStage + stage;
+		if (newStage < 0)
+			multiplierStage = 0;
+		else if (newStage >= Config.interestMultipliers.size())
+			multiplierStage = Config.interestMultipliers.size() - 1;
+		else
+			multiplierStage = newStage;
+		return multiplierStage;
+	}
+
+	public int setInterestDelay(int delay) {
+		if (delay <= 0)
+			remainingUntilPayout = 0;
+		else
+			remainingUntilPayout = delay;
+		return remainingUntilPayout;
+	}
+
 	public BigDecimal getBalance() {
 		return balance;
 	}

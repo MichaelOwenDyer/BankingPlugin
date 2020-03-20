@@ -101,6 +101,7 @@ public class SQLite extends Database {
     	return "CREATE TABLE IF NOT EXISTS " + tableAccounts + " ("
     			+ "id INTEGER PRIMARY KEY AUTOINCREMENT,"
     			+ "bank_id INTEGER NOT NULL," 
+				+ "nickname TEXT,"
 				+ "owner TEXT NOT NULL," // Owner UUID
     			+ "size INTEGER NOT NULL," // Single or double chest -> 1, 2
     			
@@ -117,8 +118,8 @@ public class SQLite extends Database {
     			+ "y INTEGER NOT NULL,"
     			+ "z INTEGER NOT NULL)";
     	
-		// id,bank_id,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z
-		// ?,?,?,?,?,?,?,?,?,?,?,?,?,?
+		// id,bank_id,nickname,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z
+		// ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
     }
 
     @Override
@@ -132,8 +133,8 @@ public class SQLite extends Database {
             
 			+ "owner_name TEXT NOT NULL,"
 			+ "owner_uuid TEXT NOT NULL,"
-			+ "executor_name TEXT NOT NULL,"
-			+ "executor_uuid TEXT NOT NULL,"
+			+ "executor_name TEXT,"
+			+ "executor_uuid TEXT,"
             
 			+ "transaction_type TEXT NOT NULL,"
             + "amount TEXT NOT NULL,"

@@ -12,6 +12,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.listeners.AccountInteractListener;
 
 public class ClickType {
     private static Map<UUID, ClickType> playerClickType = new HashMap<>();
@@ -73,6 +74,7 @@ public class ClickType {
             @Override
             public void run() {
 				playerClickType.remove(uuid);
+				AccountInteractListener.clearUnconfirmed(player);
 				BankingPlugin.getInstance().getServer().broadcastMessage("ClickType expired.");
             }
 		}.runTaskLater(BankingPlugin.getInstance(), 300));
@@ -87,7 +89,7 @@ public class ClickType {
     }
 
     public enum EnumClickType {
-		CREATE, REMOVE, INFO
+		CREATE, REMOVE, INFO, SET
     }
 
 	public static class InfoClickType extends ClickType {
@@ -101,6 +103,20 @@ public class ClickType {
 
 		public boolean isVerbose() {
 			return verbose;
+		}
+	}
+
+	public static class SetClickType extends ClickType {
+
+		private String[] args;
+
+		public SetClickType(String[] args) {
+			super(EnumClickType.SET);
+			this.args = args;
+		}
+
+		public String[] getArgs() {
+			return args;
 		}
 	}
 }

@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.listeners;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
@@ -56,9 +58,9 @@ public class ChestProtectListener implements Listener {
             if (p.isSneaking() && Utils.hasAxeInHand(p)) {
 				plugin.debug(String.format("%s tries to break %s's account (#%d)", p.getName(),
 						account.getOwner().getName(), account.getID()));
-				if (account.getOwner().getUniqueId().equals(p.getUniqueId())
+				if (account.isOwner(p)
 						|| p.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
-					removeAndCreateNew(account, b, p);
+					removeAndCreateSmaller(account, b, p);
 					return;
                 }
             }
@@ -210,7 +212,7 @@ public class ChestProtectListener implements Listener {
         }
     }
 
-	private void removeAndCreateNew(final Account account, final Block b, final Player p) {
+	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
 		if (account.getInventoryHolder() instanceof DoubleChest) {
 			DoubleChest dc = (DoubleChest) account.getInventoryHolder();
 			final Chest l = (Chest) dc.getLeftSide();
@@ -218,31 +220,31 @@ public class ChestProtectListener implements Listener {
 
 			Location loc = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
 			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getBank(), loc,
-					account.getStatus());
+					account.getStatus(), account.getNickname());
 
 			accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
 				@Override
 				public void onResult(Void result) {
+					newAccount.setBalance(BigDecimal.ZERO);
 					newAccount.create(true);
 					accountUtils.addAccount(newAccount, true);
 				}
 			});
-
 		} else {
 			double creationPrice = Config.creationPriceAccount;
 			if (creationPrice > 0 && Config.reimburseAccountCreation
 					&& p.getUniqueId().equals(account.getOwner().getUniqueId())) {
 				EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
 						creationPrice);
-				if (!r.transactionSuccess()) {
+				if (r.transactionSuccess())
+					p.sendMessage(Messages.getWithValue(Messages.PLAYER_REIMBURSED,
+							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
+				else {
 					plugin.debug("Economy transaction failed: " + r.errorMessage);
 					p.sendMessage(Messages.ERROR_OCCURRED);
-				} else {
-					p.sendMessage(Messages.ACCOUNT_REMOVED_REFUND);
 				}
-			} else {
+			} else
 				p.sendMessage(Messages.ACCOUNT_REMOVED);
-			}
 
 			accountUtils.removeAccount(account, true);
 			plugin.debug(String.format("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(),

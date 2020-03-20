@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
@@ -28,7 +30,7 @@ import com.monst.bankingplugin.utils.ClickType.EnumClickType;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 
-public class AccountCommandExecutor implements CommandExecutor, SchedulableCommand {
+public class AccountCommandExecutor implements CommandExecutor, SchedulableCommand<Account> {
 
 	private BankingPlugin plugin;
 	private AccountUtils accountUtils;
@@ -76,11 +78,18 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			case "list":
 				if (!promptAccountList(p, args))
 					p.sendMessage(subCommand.getHelpMessage(p));
+				break;
 			case "limits":
-				promptAccountLimit(p, args);
+				promptAccountLimit(p);
 				break;
 			case "removeall":
-				return promptAccountRemoveAll(p, args);
+				if (!promptAccountRemoveAll(p, args))
+					p.sendMessage(subCommand.getHelpMessage(p));
+				break;
+			case "set":
+				if (!promptAccountSet(p, args))
+					p.sendMessage(subCommand.getHelpMessage(p));
+				break;
 			default:
 				return false;
 			}
@@ -89,14 +98,17 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			switch (subCommand.getName().toLowerCase()) {
 
 			case "list":
-				return promptAccountList(sender, args);
+				if (!promptAccountList(sender, args))
+					sender.sendMessage(Messages.COMMAND_USAGE_ACCOUNT_LIST);
+				return true;
 			case "removeall":
-				return promptAccountRemoveAll(sender, args);
+				if (!promptAccountRemoveAll(sender, args))
+					sender.sendMessage(Messages.COMMAND_USAGE_ACCOUNT_REMOVEALL);
+				return true;
 			default:
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -131,8 +143,13 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 				p.sendMessage(Messages.getWithValue(Messages.PLAYER_NOT_FOUND, args[1]));
 				return;
 			}
-			plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
-					+ owner.getUniqueId());
+			if (!owner.getUniqueId().equals(p.getUniqueId()))
+				plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
+						+ owner.getUniqueId());
+			else {
+				forSelf = true;
+				owner = p;
+			}
 		} else
 			owner = p;
 		
@@ -144,7 +161,7 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			}
 		} else {
 			if (!hasPermission) {
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_OTHER);
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_CREATE);
 				plugin.debug(p.getName() + " is not permitted to create an account for another player");
 				return;
 			}
@@ -222,8 +239,13 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			if (sender instanceof Player) {
 				Player p = (Player) sender;
 				plugin.debug(p.getName() + " has listed their own accounts");
-				p.sendMessage(accountUtils.getAccountList(p, "", args));
-				return true;
+				Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(p);
+				if (!accounts.isEmpty()) {
+					int i = 1;
+					for (Account account : accounts)
+						p.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toString());
+				} else
+					p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 			} else {
 				plugin.debug("Only players can list their own accounts");
 				sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
@@ -233,7 +255,13 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 				if (sender instanceof Player) {
 					Player p = (Player) sender;
 					plugin.debug(p.getName() + " has listed their own accounts detailed");
-					p.sendMessage(accountUtils.getAccountList(p, "-d", args));
+					Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(p);
+					if (!accounts.isEmpty()) {
+						int i = 1;
+						for (Account account : accounts)
+							p.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toStringVerbose());
+					} else
+						p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
 					plugin.debug("Only players can list their own accounts detailed");
 					sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
@@ -241,62 +269,88 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			} else if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
 				if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST)) {
 					plugin.debug(sender.getName() + " has listed all accounts");
-					sender.sendMessage(accountUtils.getAccountList(sender, "-a", args));
+					Collection<Account> accounts = accountUtils.getAccountsCopy();
+					if (!accounts.isEmpty()) {
+						int i = 1;
+						for (Account account : accounts)
+							sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toString());
+					} else
+						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
+
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
+					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_LIST);
 				}
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				if (owner.hasPlayedBefore()) {
 					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
-					if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST)) {
+					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
+							|| sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST)) {
 						plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
-						sender.sendMessage(accountUtils.getAccountList(sender, "name", args));
+						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
+						if (!accounts.isEmpty()) {
+							int i = 1;
+							for (Account account : accounts)
+								sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toString());
+						} else
+							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {
 						plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
+						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_LIST);
 					}
 				} else
 					sender.sendMessage(Messages.getWithValue(Messages.PLAYER_NOT_FOUND, args[1]));
 			}
-			return true;
 		} else if (args.length == 3) {
 			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) && (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed"))
 					|| (args[2].equalsIgnoreCase("-a") || args[2].equalsIgnoreCase("all")) && (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed"))) {
 				if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST_VERBOSE)) {
 					plugin.debug(sender.getName() + " has listed all accounts verbose");
-					sender.sendMessage(accountUtils.getAccountList(sender, "-a -d", args));
+					Collection<Account> accounts = accountUtils.getAccountsCopy();
+					if (!accounts.isEmpty()) {
+						int i = 1;
+						for (Account account : accounts)
+							sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toStringVerbose());
+					} else
+						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER_VERBOSE);
+					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_LIST_VERBOSE);
 				}
 			} else if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				if (!owner.hasPlayedBefore()) {
 					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
-					if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST_VERBOSE)) {
+					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
+							|| sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST_VERBOSE)) {
 						plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
-						sender.sendMessage(accountUtils.getAccountList(sender, "name -d", args));
+						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
+						if (!accounts.isEmpty()) {
+							int i = 1;
+							for (Account account : accounts)
+								sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toStringVerbose());
+						} else
+							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {
 						plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER_VERBOSE);
+						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_LIST_VERBOSE);
 					}
 				} else
 					sender.sendMessage(Messages.getWithValue(Messages.PLAYER_NOT_FOUND, args[1]));
 			}
-			return true;
-		}
-		return false;
+		} else
+			return false;
+		return true;
 	}
 
-	private void promptAccountLimit(final Player p, String[] args) {
+	private void promptAccountLimit(final Player p) {
 		int used = accountUtils.getNumberOfAccounts(p);
-		int limit = accountUtils.getAccountLimit(p);
-		plugin.debug(p.getName() + " is viewing their account limits: " + used + "/" + limit);
-		p.sendMessage(Messages.getWithValues(Messages.ACCOUNT_LIMIT, new Integer[] { used, limit }));
+		Object limit = accountUtils.getAccountLimit(p) < 0 ? "∞" : accountUtils.getAccountLimit(p);
+		plugin.debug(p.getName() + " is viewing their account limits: " + used + " / " + limit);
+		p.sendMessage(Messages.getWithValues(Messages.ACCOUNT_LIMIT, new Object[] { used, limit }));
 	}
 
 	@SuppressWarnings("deprecation")
@@ -304,7 +358,11 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 
 		if (args.length == 1) {
 			if (sender instanceof Player) { // account removeall
-				scheduleRemoveAll(sender, "", args);
+				Collection<Account> accounts = accountUtils.getPlayerAccountsCopy((Player) sender);
+				if (!accounts.isEmpty())
+					scheduleRemoveAll(sender, accounts, args);
+				else
+					sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 			} else {
 				plugin.debug("Only players can remove all of their own accounts");
 				sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
@@ -319,21 +377,30 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 				}
 			} else if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) { // account removeall all
 				if (sender.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
-					scheduleRemoveAll(sender, "-a", args);
+					Collection<Account> accounts = accountUtils.getAccountsCopy();
+					if (!accounts.isEmpty())
+						scheduleRemoveAll(sender, accounts, args);
+					else
+						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to remove all accounts");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
+					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_REMOVE);
 				}
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				if (owner.hasPlayedBefore()) {
 					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
-					if (sender.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) { // account removeall player
-						scheduleRemoveAll(sender, "name", args);
+					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
+							|| sender.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) { // account removeall player
+						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
+						if (!accounts.isEmpty())
+							scheduleRemoveAll(sender, accounts, args);
+						else
+							sender.sendMessage(Messages.NO_PLAYER_ACCOUNTS);
 					} else {
 						plugin.debug(sender.getName() + " does not have permission to remove all accounts");
-						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
+						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_REMOVE);
 					}
 				} else
 					sender.sendMessage(Messages.getWithValue(Messages.PLAYER_NOT_FOUND, args[1]));
@@ -342,31 +409,94 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 			if (sender instanceof Player) {
 				if (args[1].equalsIgnoreCase("-b") || args[1].equalsIgnoreCase("bank")) { // account removeall bank
 					Bank bank = plugin.getBankUtils().lookupBank(args[2]);
-					if (bank != null)
-						scheduleRemoveAll(sender, "-b", args);
-					else
+					if (bank != null) {
+						Collection<Account> accounts = accountUtils.getAccountsCopy().stream().filter(account -> 
+						account.isOwner((Player) sender) && account.getBank().equals(bank))
+								.collect(Collectors.toList());
+						if (!accounts.isEmpty())
+							scheduleRemoveAll(sender, accounts, args);
+						else
+							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
+					} else
 						sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[2]));
 				}
 			} else {
 				plugin.debug("Only players can remove all of their own accounts at a certain bank");
 				sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
 			}
-		} else if (args.length >= 4) {
+		} else if (args.length == 4) {
 			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all"))
 					&& (args[2].equalsIgnoreCase("-b") || args[2].equalsIgnoreCase("bank"))) {
 
 				Bank bank = plugin.getBankUtils().lookupBank(args[3]);
-				if (bank != null)
-					scheduleRemoveAll(sender, "-a -b", args);
-				else
+				if (bank != null) {
+					Collection<Account> accounts = accountUtils.getBankAccountsCopy(bank);
+					if (!accounts.isEmpty())
+						scheduleRemoveAll(sender, accounts, args);
+					else
+						sender.sendMessage(Messages.NO_BANK_ACCOUNTS);
+				} else
 					sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[2]));
-			} else
-				return false;
-		}
+			}
+		} else
+			return false;
 		return true;
 	}
 	
-	private void scheduleRemoveAll(final CommandSender sender, String request, String[] args) {
+	public boolean promptAccountSet(final Player p, String[] args) {
+		if (args.length < 3)
+			return false;
+		else {
+			plugin.debug(p.getName() + " wants to configure an account");
+			if (args[1].equalsIgnoreCase("nickname")) {
+				if (p.hasPermission(Permissions.ACCOUNT_SET_NICKNAME)) {
+					String nickname = args[2];
+					// TODO: Add pattern matching?
+					p.sendMessage(Messages.CLICK_CHEST_SET);
+					ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "nickname", nickname }));
+				} else
+					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
+			} else if (args[1].equalsIgnoreCase("multiplier")) {
+				if (p.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER)) {
+					try {
+						String sign;
+						String multiplier;
+						if (args[2].startsWith("+")) {
+							sign = "+";
+							multiplier = "" + Integer.parseInt(args[2].substring(1));
+						} else if (args[2].startsWith("-")) {
+							sign = "-";
+							multiplier = "" + Integer.parseInt(args[2].substring(1));
+						} else {
+							sign = "";
+							multiplier = "" + Integer.parseInt(args[2]);
+						}
+						p.sendMessage(Messages.CLICK_CHEST_SET);
+						ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "multiplier", sign, multiplier }));
+					} catch (NumberFormatException e) {
+						p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[2]));
+					}
+				} else
+					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
+			} else if (args[1].equalsIgnoreCase("interest-delay")) {
+				if (p.hasPermission(Permissions.ACCOUNT_SET_INTEREST_DELAY)) {
+					try {
+						Integer.parseInt(args[2]);
+
+						p.sendMessage(Messages.CLICK_CHEST_SET);
+						ClickType.setPlayerClickType(p, new ClickType.SetClickType(args));
+					} catch (NumberFormatException e) {
+						p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[2]));
+					}
+				} else
+					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY);
+			} else
+				p.sendMessage(Messages.NOT_A_FIELD);
+		}
+		return true;
+	}
+
+	private void scheduleRemoveAll(final CommandSender sender, Collection<Account> accounts, String[] args) {
 
 		int delay = Config.removeDelay;
 		boolean needsScheduling = delay != 0;
@@ -375,22 +505,22 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
 			if (confirmationEnabled && needsScheduling) {
-				if (commandConfirmed(p, request, args))
-					scheduleCommand(p, request, args, delay);
+				if (commandConfirmed(p, accounts, args))
+					scheduleCommand(p, accounts, args, delay);
 			} else if (confirmationEnabled) {
-				if (commandConfirmed(p, request, args))
-					accountUtils.removeAll(p, request, args);
+				if (commandConfirmed(p, accounts, args))
+					accountUtils.removeAll(p, accounts);
 			} else if (needsScheduling) {
-				scheduleCommand(p, request, args, delay);
+				scheduleCommand(p, accounts, args, delay);
 			} else
-				accountUtils.removeAll(p, request, args);
+				accountUtils.removeAll(p, accounts);
 		} else {
-			accountUtils.removeAll(sender, request, args);
+			accountUtils.removeAll(sender, accounts);
 		}
 	}
 
 	@Override
-	public void scheduleCommand(Player p, Object request, String[] args, int ticks) {
+	public void scheduleCommand(Player p, Collection<Account> accounts, String[] args, int ticks) {
 		UUID uuid = p.getUniqueId();
 		scheduled.remove(uuid);
 		Optional.ofNullable(scheduled.get(uuid)).ifPresent(task -> {
@@ -400,25 +530,24 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 		scheduled.put(uuid, new BukkitRunnable() {
 			@Override
 			public void run() {
-				int count = accountUtils.removeAll(p, request.toString(), args);
+				int count = accountUtils.removeAll(p, accounts);
 				p.sendMessage(Messages.getWithValue(Messages.ACCOUNTS_REMOVED, count));
 			}
-		}.runTaskLater(BankingPlugin.getInstance(), ticks));
+		}.runTaskLater(plugin, ticks));
 		p.sendMessage(Messages.getWithValues(Messages.ACCOUNT_COMMAND_SCHEDULED,
 				new String[] { String.valueOf(Math.round((float) ticks / 20)), "/account removeall cancel" }));
 	}
 
 	@Override
-	public boolean commandConfirmed(Player p, Object request, String[] args) {
-		if (unconfirmed.containsKey(p.getUniqueId()) && unconfirmed.get(p.getUniqueId()).equals(args)) {
+	public boolean commandConfirmed(Player p, Collection<Account> accounts, String[] args) {
+		if (unconfirmed.containsKey(p.getUniqueId()) && Arrays.equals(unconfirmed.get(p.getUniqueId()), args)) {
 			removeUnconfirmedCommand(p);
 			return true;
 		} else {
 			addUnconfirmedCommand(p, args);
-			p.sendMessage(Messages.getWithValue(Messages.ABOUT_TO_REMOVE_ACCOUNTS,
-					accountUtils.toRemoveList(p, request.toString(), args).size()) + Messages.EXECUTE_AGAIN_TO_CONFIRM);
+			p.sendMessage(Messages.getWithValue(Messages.ABOUT_TO_REMOVE_ACCOUNTS, accounts.size())
+					+ Messages.EXECUTE_AGAIN_TO_CONFIRM);
 			return false;
 		}
 	}
-
 }
