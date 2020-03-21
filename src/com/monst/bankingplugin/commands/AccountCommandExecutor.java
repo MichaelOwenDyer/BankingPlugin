@@ -485,7 +485,7 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 					p.sendMessage(Messages.CLICK_CHEST_SET);
 					ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "multiplier", sign, multiplier }));
 				} catch (NumberFormatException e) {
-					p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[2]));
+					p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, "\"" + args[2] + "\""));
 				}
 			} else
 				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
@@ -499,12 +499,12 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 					p.sendMessage(Messages.CLICK_CHEST_SET);
 					ClickType.setPlayerClickType(p, new ClickType.SetClickType(args));
 				} catch (NumberFormatException e) {
-					p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[2]));
+					p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, "\"" + args[2] + "\""));
 				}
 			} else
 				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY);
 		} else
-			p.sendMessage(Messages.NOT_A_FIELD);
+			p.sendMessage(Messages.getWithValue(Messages.NOT_A_FIELD, "\"" + args[1] + "\""));
 		return true;
 	}
 

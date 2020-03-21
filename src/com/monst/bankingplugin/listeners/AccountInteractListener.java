@@ -73,6 +73,8 @@ public class AccountInteractListener implements Listener {
 		
 		Player p = e.getPlayer();
 		Block b = e.getClickedBlock();
+		if (b.getType() == Material.AIR)
+			return;
 		Account account = accountUtils.getAccount(b.getLocation());
 		ClickType clickType = ClickType.getPlayerClickType(p);
 

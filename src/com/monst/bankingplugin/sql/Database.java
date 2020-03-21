@@ -924,8 +924,8 @@ public abstract class Database {
 					ResultSet rs = ps.executeQuery();
 					
 					while (rs.next()) {
-						long interestTime = rs.getLong("time");
-						if (interestTime > logoutTime) {
+						long transactionTime = rs.getLong("time");
+						if (transactionTime > logoutTime) {
 							BigDecimal interest = BigDecimal.valueOf(Double.parseDouble(rs.getString("amount")));
 							revenue = revenue.add(interest);
 						}
@@ -1067,10 +1067,6 @@ public abstract class Database {
 				try (Statement s = con.createStatement()) {
 					s.executeUpdate(getQueryCreateTableInterestLog());
 				}
-
-				// TODO: Check table conversion, make sure extra steps in ShopChest unnecessary
-				// for this
-				// TODO: Recheck queries, practically all tables have changed
 
 				// Convert banks table
 				try (Statement s = con.createStatement()) {

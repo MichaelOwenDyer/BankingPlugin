@@ -25,7 +25,7 @@ public class Bank {
 	private OfflinePlayer owner;
 
 	private int id;
-	private final String name;
+	private String name;
 	private final World world;
 	private Selection selection;
 
@@ -60,6 +60,10 @@ public class Bank {
 		return name;
 	}
 	
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public boolean hasID() {
 		return id != -1;
 	}

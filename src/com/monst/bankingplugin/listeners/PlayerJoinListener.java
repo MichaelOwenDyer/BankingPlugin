@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.utils.Utils;
 
 public class PlayerJoinListener implements Listener {
 
@@ -36,9 +37,9 @@ public class PlayerJoinListener implements Listener {
 					@Override
 					public void onResult(BigDecimal result) {
 						if (result.signum() == 1) {
-							p.sendMessage(Messages.getWithValue(Messages.OFFLINE_TRANSACTION_REVENUE, result));
+							p.sendMessage(Messages.getWithValue(Messages.OFFLINE_TRANSACTION_REVENUE, Utils.formatNumber(result)));
 						} else if (result.signum() == -1) {
-							p.sendMessage(Messages.getWithValue(Messages.OFFLINE_TRANSACTION_EXPENDITURE, result));
+							p.sendMessage(Messages.getWithValue(Messages.OFFLINE_TRANSACTION_EXPENDITURE, Utils.formatNumber(result.abs())));
 						}
 					}
 				});
@@ -47,7 +48,7 @@ public class PlayerJoinListener implements Listener {
                     @Override
                     public void onResult(BigDecimal result) {
                         if (result.signum() == 1) {
-							p.sendMessage(Messages.getWithValue(Messages.OFFLINE_INTEREST_REVENUE, result));
+							p.sendMessage(Messages.getWithValue(Messages.OFFLINE_INTEREST_REVENUE, Utils.formatNumber(result)));
                         }
                     }
                 });

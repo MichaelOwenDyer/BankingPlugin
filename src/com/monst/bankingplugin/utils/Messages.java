@@ -65,8 +65,8 @@ public class Messages {
 	public static final String NICKNAME_SET = ChatColor.GOLD + "Account nickname has been set.";
 	public static final String MULTIPLIER_SET = ChatColor.GOLD + "Account multiplier has been set to |.";
 	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "Account interest delay has been set.";
-	public static final String NOT_A_NUMBER = ChatColor.RED + "| is not a number.";
-	public static final String NOT_A_FIELD = ChatColor.RED + "| is not a valid field.";
+	public static final String NOT_A_NUMBER = ChatColor.RED + "\"|\" is not a number!";
+	public static final String NOT_A_FIELD = ChatColor.RED + "\"|\" is not a valid field!";
 	
 	public static final String NO_PERMISSION = ChatColor.RED + "You do not have permission to ";
 	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";
