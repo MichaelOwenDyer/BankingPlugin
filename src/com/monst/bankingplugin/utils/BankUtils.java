@@ -314,6 +314,7 @@ public class BankUtils {
 								postReload[0]++;
 								for (Account account : result.get(bank)) {
 									if (account.create(showConsoleMessages)) {
+										account.setNickname(account.getNickname());
 										accountUtils.addAccount(account, false);
 										bank.addAccount(account);
 										postReload[1]++;

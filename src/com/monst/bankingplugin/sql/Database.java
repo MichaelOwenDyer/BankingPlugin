@@ -273,12 +273,10 @@ public abstract class Database {
 						if (rs.next()) {
 							accountId = rs.getInt(1);
 						}
-
 						account.setID(accountId);
 					}
 
 					if (callback != null) {
-						// What does this do?
 						callback.callSyncResult(account.getID());
 					}
 
@@ -634,12 +632,12 @@ public abstract class Database {
 				int z = rs.getInt("z");
 				Location location = new Location(world, x, y, z);
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
+				String nickname = rs.getString("nickname");
 
 				plugin.debug("Initializing account... (#" + accountId + " at bank \"" + bank.getName() + "\" (#"
 						+ bank.getID() + "))");
 
-				Account account = new Account(accountId, plugin, owner, bank, location, status);
-				account.setNickname(rs.getString("nickname"));
+				Account account = new Account(accountId, plugin, owner, bank, location, status, nickname);
 				accounts.add(account);
 			}
 

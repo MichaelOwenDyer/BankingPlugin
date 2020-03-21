@@ -444,55 +444,67 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 	}
 	
 	public boolean promptAccountSet(final Player p, String[] args) {
-		if (args.length < 3)
-			return false;
-		else {
-			plugin.debug(p.getName() + " wants to configure an account");
-			if (args[1].equalsIgnoreCase("nickname")) {
-				if (p.hasPermission(Permissions.ACCOUNT_SET_NICKNAME)) {
-					String nickname = args[2];
-					// TODO: Add pattern matching?
-					p.sendMessage(Messages.CLICK_CHEST_SET);
-					ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "nickname", nickname }));
-				} else
-					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
-			} else if (args[1].equalsIgnoreCase("multiplier")) {
-				if (p.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER)) {
-					try {
-						String sign;
-						String multiplier;
-						if (args[2].startsWith("+")) {
-							sign = "+";
-							multiplier = "" + Integer.parseInt(args[2].substring(1));
-						} else if (args[2].startsWith("-")) {
-							sign = "-";
-							multiplier = "" + Integer.parseInt(args[2].substring(1));
-						} else {
-							sign = "";
-							multiplier = "" + Integer.parseInt(args[2]);
-						}
-						p.sendMessage(Messages.CLICK_CHEST_SET);
-						ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "multiplier", sign, multiplier }));
-					} catch (NumberFormatException e) {
-						p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[2]));
-					}
-				} else
-					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
-			} else if (args[1].equalsIgnoreCase("interest-delay")) {
-				if (p.hasPermission(Permissions.ACCOUNT_SET_INTEREST_DELAY)) {
-					try {
-						Integer.parseInt(args[2]);
-
-						p.sendMessage(Messages.CLICK_CHEST_SET);
-						ClickType.setPlayerClickType(p, new ClickType.SetClickType(args));
-					} catch (NumberFormatException e) {
-						p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[2]));
-					}
-				} else
-					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY);
+		plugin.debug(p.getName() + " wants to configure an account");
+		if (args[1].equalsIgnoreCase("nickname")) {
+			if (args.length < 2)
+				return false;
+			if (p.hasPermission(Permissions.ACCOUNT_SET_NICKNAME)) {
+				String nickname;
+				if (args.length < 3)
+					nickname = "";
+				else
+					nickname = args[2];
+				if (args.length > 3) {
+					StringBuilder sb = new StringBuilder(nickname);
+					for (int i = 3; i < args.length; i++)
+						sb.append(" " + args[i]);
+					nickname = sb.toString();
+				}
+				// TODO: Add pattern matching?
+				p.sendMessage(Messages.CLICK_CHEST_SET);
+				ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "nickname", nickname }));
 			} else
-				p.sendMessage(Messages.NOT_A_FIELD);
-		}
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
+		} else if (args[1].equalsIgnoreCase("multiplier")) {
+			if (args.length < 3)
+				return false;
+			if (p.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER)) {
+				try {
+					String sign;
+					String multiplier;
+					if (args[2].startsWith("+")) {
+						sign = "+";
+						multiplier = "" + Integer.parseInt(args[2].substring(1));
+					} else if (args[2].startsWith("-")) {
+						sign = "-";
+						multiplier = "" + Integer.parseInt(args[2].substring(1));
+					} else {
+						sign = "";
+						multiplier = "" + Integer.parseInt(args[2]);
+					}
+					p.sendMessage(Messages.CLICK_CHEST_SET);
+					ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "multiplier", sign, multiplier }));
+				} catch (NumberFormatException e) {
+					p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[2]));
+				}
+			} else
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
+		} else if (args[1].equalsIgnoreCase("interest-delay")) {
+			if (args.length < 3)
+				return false;
+			if (p.hasPermission(Permissions.ACCOUNT_SET_INTEREST_DELAY)) {
+				try {
+					Integer.parseInt(args[2]);
+
+					p.sendMessage(Messages.CLICK_CHEST_SET);
+					ClickType.setPlayerClickType(p, new ClickType.SetClickType(args));
+				} catch (NumberFormatException e) {
+					p.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[2]));
+				}
+			} else
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY);
+		} else
+			p.sendMessage(Messages.NOT_A_FIELD);
 		return true;
 	}
 

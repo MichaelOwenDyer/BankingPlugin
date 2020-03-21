@@ -31,7 +31,7 @@ public class Account {
 	private final Bank bank;
 	private InventoryHolder inventoryHolder;
 	
-	private AccountStatus status;
+	private final AccountStatus status;
 
 	public Account(BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc) {
 		this(-1, plugin, owner, bank, loc, new AccountStatus(), null);
@@ -150,7 +150,7 @@ public class Account {
 	@Override
 	public String toString() {
 		String name;
-		name = hasNickname() ? ChatColor.WHITE + "\"" + Utils.colorize(nickname) + ChatColor.WHITE + "\""
+		name = hasNickname() ? ChatColor.GRAY + "\"" + Utils.colorize(nickname) + ChatColor.GRAY + "\""
 				: ChatColor.GRAY + "Account ID: " + ChatColor.WHITE + id;
 		return name + "\n" + ChatColor.GRAY + "Owner: " + ChatColor.GOLD + owner.getName() + "\n"
 				+ ChatColor.GRAY + "Bank: " + ChatColor.AQUA + bank.getName() + ChatColor.GRAY;
@@ -183,8 +183,37 @@ public class Account {
 		return inventoryHolder instanceof DoubleChest;
 	}
 
+	public void clearNickname() {
+		setNickname(null);
+	}
+
+	public void setDefaultNickname() {
+		if (!hasID())
+			return;
+		setNickname(ChatColor.DARK_GREEN + owner.getName() + "'s Account " + ChatColor.GRAY + "(#" + id + ")");
+	}
+
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
+		if (nickname == null)
+			nickname = "";
+		if (isDoubleChest()) {
+			DoubleChest dc = (DoubleChest) inventoryHolder;
+			if (dc == null)
+				return;
+			Chest left = (Chest) dc.getLeftSide();
+			Chest right = (Chest) dc.getRightSide();
+			left.setCustomName(Utils.colorize(nickname));
+			left.update();
+			right.setCustomName(Utils.colorize(nickname));
+			right.update();
+		} else {
+			Chest chest = (Chest) inventoryHolder;
+			if (chest == null)
+				return;
+			chest.setCustomName(Utils.colorize(nickname));
+			chest.update();
+		}
 	}
 
 	public String getNickname() {

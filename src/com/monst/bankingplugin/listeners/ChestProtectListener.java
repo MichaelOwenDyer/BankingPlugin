@@ -165,7 +165,7 @@ public class ChestProtectListener implements Listener {
             return;
         }
 
-		if (!p.getUniqueId().equals(account.getOwner().getUniqueId()) && !p.hasPermission(Permissions.ACCOUNT_OTHER_EXTEND)) {
+		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_OTHER_EXTEND)) {
             e.setCancelled(true);
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_OTHER);
             return;
@@ -178,13 +178,18 @@ public class ChestProtectListener implements Listener {
         }
 
 		final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getBank(),
-				account.getLocation(), account.getStatus());
+				account.getLocation(), account.getStatus(), account.getNickname());
 
 		accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
             @Override
             public void onResult(Void result) {
 				newAccount.create(true);
-				accountUtils.addAccount(newAccount, true);
+				accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
+					@Override
+					public void onResult(Integer result) {
+						newAccount.setNickname(newAccount.getNickname());
+					}
+				});
 				plugin.debug(String.format("%s extended %s's account (#%d)", p.getName(), account.getOwner().getName(),
 						account.getID()));
             }
@@ -227,7 +232,12 @@ public class ChestProtectListener implements Listener {
 				public void onResult(Void result) {
 					newAccount.setBalance(BigDecimal.ZERO);
 					newAccount.create(true);
-					accountUtils.addAccount(newAccount, true);
+					accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
+						@Override
+						public void onResult(Integer result) {
+							newAccount.setNickname(newAccount.getNickname());
+						}
+					});
 				}
 			});
 		} else {

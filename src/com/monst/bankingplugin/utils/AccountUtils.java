@@ -51,6 +51,8 @@ public class AccountUtils {
      * @return Account at the given location or <b>null</b> if no account is found there
      */
     public Account getAccount(Location location) {
+		if (location == null)
+			return null;
 		return accountLocationMap.get(Utils.blockifyLocation(location));
     }
 
@@ -122,7 +124,8 @@ public class AccountUtils {
         if (addToDatabase) {
 			plugin.getDatabase().addAccount(account, callback);
         } else {
-            if (callback != null) callback.callSyncResult(account.getID());
+			if (callback != null)
+				callback.callSyncResult(account.getID());
         }
     }
 
@@ -143,6 +146,8 @@ public class AccountUtils {
      */
     public void removeAccount(Account account, boolean removeFromDatabase, Callback<Void> callback) {
         plugin.debug("Removing account (#" + account.getID() + ")");
+
+		account.clearNickname();
 
         InventoryHolder ih = account.getInventoryHolder();
 

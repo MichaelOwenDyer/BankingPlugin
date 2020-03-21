@@ -35,6 +35,7 @@ import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.BankUtils;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.InfoClickType;
 import com.monst.bankingplugin.utils.ClickType.SetClickType;
@@ -43,6 +44,7 @@ import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
+import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 public class AccountInteractListener implements Listener {
@@ -258,7 +260,12 @@ public class AccountInteractListener implements Listener {
 
 		if (account.create(true)) {
 			plugin.debug("Account created");
-			accountUtils.addAccount(account, true);
+			accountUtils.addAccount(account, true, new Callback<Integer>(plugin) {
+				@Override
+				public void onResult(Integer result) {
+					account.setDefaultNickname();
+				}
+			});
 			bank.addAccount(account);
 			p.sendMessage(Messages.ACCOUNT_CREATED);
 		}
@@ -289,17 +296,14 @@ public class AccountInteractListener implements Listener {
 	        unconfirmed.put(executor.getUniqueId(), ids);
 			return false;
 		} else {
-			if (Config.confirmOnRemove) {
-				Set<Integer> ids = unconfirmed.containsKey(executor.getUniqueId())
-						? unconfirmed.get(executor.getUniqueId())
-						: new HashSet<>();
-                ids.remove(account.getID());
-				if (ids.isEmpty()) {
-					unconfirmed.remove(executor.getUniqueId());
-					ClickType.removePlayerClickType(executor);
-				} else
-					unconfirmed.put(executor.getUniqueId(), ids);
-			}
+			Set<Integer> ids = unconfirmed.containsKey(executor.getUniqueId()) ? unconfirmed.get(executor.getUniqueId())
+					: new HashSet<>();
+			ids.remove(account.getID());
+			if (ids.isEmpty()) {
+				unconfirmed.remove(executor.getUniqueId());
+				ClickType.removePlayerClickType(executor);
+			} else
+				unconfirmed.put(executor.getUniqueId(), ids);
 			return true;
 		}
 	}
@@ -412,11 +416,19 @@ public class AccountInteractListener implements Listener {
 	private void set(Player executor, Account account, String[] args) {
 		if (args[0].equalsIgnoreCase("nickname")) {
 			if (account.isOwner(executor)) {
-				plugin.debug(executor.getName() + " has set their account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
-				account.setNickname(args[1]);
+				if (args[1].equals("")) {
+					plugin.debug(executor.getName() + " has reset their account nickname (#" + account.getID() + ")");
+					account.setDefaultNickname();
+				} else {
+					plugin.debug(executor.getName() + " has set their account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
+					account.setNickname(args[1]);
+				}
 				executor.sendMessage(Messages.NICKNAME_SET);
 			} else {
 				if (executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_NICKNAME)) {
+					if (args[1].equals("")) {
+						args[1] = ChatColor.DARK_GREEN + account.getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + account.getID() + ")";
+					}
 					plugin.debug(executor.getName() + " has set " + account.getOwner().getName()
 							+ "'s account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
 					account.setNickname(args[1]);
