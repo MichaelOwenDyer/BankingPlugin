@@ -25,7 +25,7 @@ public class Messages {
 	public static final String CANNOT_BREAK_ACCOUNT = ChatColor.RED + "You cannot break that account chest.";
 	public static final String CHEST_NOT_ACCOUNT = ChatColor.RED + "That chest is not an account.";
 	public static final String CHEST_NOT_IN_BANK = ChatColor.RED + "That chest is not located within a bank.";
-	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or name the bank you want to \nremove.";
+	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or name the bank you want to remove.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account.";
 	//public static final String BANK_CREATE_INSUFFICIENT_FUNDS = "You do not have sufficient funds to create a bank.";
 	public static final String INTEREST_EARNED = ChatColor.GOLD + "You have earned " + ChatColor.GREEN + "$| " + ChatColor.GOLD + "in interest on your account!";
@@ -72,7 +72,9 @@ public class Messages {
 	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";
 	public static final String NO_PERMISSION_BANK_REMOVE = NO_PERMISSION + "remove a bank.";
 	public static final String NO_PERMISSION_BANK_INFO = NO_PERMISSION + "view bank info.";
-	public static final String NO_PERMISSION_BANK_INFO_OTHER = NO_PERMISSION + "view someone else's bank info.";
+	public static final String NO_PERMISSION_BANK_INFO_VERBOSE = NO_PERMISSION + "view detailed bank info.";
+	public static final String NO_PERMISSION_BANK_LIST = NO_PERMISSION + "view a list of banks.";
+	public static final String NO_PERMISSION_BANK_LIST_VERBOSE = NO_PERMISSION + "view a detailed list of banks.";
 	public static final String NO_PERMISSION_ACCOUNT_CREATE = NO_PERMISSION + "create an account.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME = NO_PERMISSION + "set an account nickname.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_MULTIPLIER = NO_PERMISSION + "set an account multiplier.";
@@ -84,6 +86,7 @@ public class Messages {
 	public static final String NO_PERMISSION_ACCOUNT_CREATE_PROTECTED = NO_PERMISSION + "create an account on a protected chest.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_REMOVE = NO_PERMISSION + "remove someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_INFO = NO_PERMISSION + "view someone else's account info.";
+	public static final String NO_PERMISSION_ACCOUNT_OTHER_INFO_VERBOSE = NO_PERMISSION + "view someone else's detailed account info.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_LIST = NO_PERMISSION + "view a list of others' accounts.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_LIST_VERBOSE = NO_PERMISSION + "view a detailed list of others' accounts.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_VIEW = NO_PERMISSION + "open someone else's account.";

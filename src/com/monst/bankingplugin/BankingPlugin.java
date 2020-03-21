@@ -27,7 +27,7 @@ import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.listeners.AccountBalanceListener;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
 import com.monst.bankingplugin.listeners.AccountTamperingListener;
-import com.monst.bankingplugin.listeners.ChestProtectListener;
+import com.monst.bankingplugin.listeners.AccountProtectListener;
 import com.monst.bankingplugin.listeners.InterestEventListener;
 import com.monst.bankingplugin.listeners.PlayerJoinListener;
 import com.monst.bankingplugin.listeners.WorldGuardListener;
@@ -289,7 +289,7 @@ public class BankingPlugin extends JavaPlugin {
     	getServer().getPluginManager().registerEvents(new AccountTamperingListener(this), this);
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
 		getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
-		getServer().getPluginManager().registerEvents(new ChestProtectListener(this), this);
+		getServer().getPluginManager().registerEvents(new AccountProtectListener(this), this);
 
 		if (hasWorldGuard())
 			getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);

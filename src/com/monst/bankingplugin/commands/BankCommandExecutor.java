@@ -288,30 +288,36 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 	/**
 	 * A given player removes a bank
 	 * 
-	 * @param p The command executor
+	 * @param sender The command executor
 	 */
-	private void promptBankRemove(final Player p, String[] args) {
-		plugin.debug(p.getName() + " wants to remove a bank");
+	private void promptBankRemove(final CommandSender sender, String[] args) {
+		plugin.debug(sender.getName() + " wants to remove a bank");
 
-		if (!p.hasPermission(Permissions.BANK_REMOVE)) {
-			plugin.debug(p.getName() + " does not have permission to remove a bank");
-			p.sendMessage(Messages.NO_PERMISSION_BANK_REMOVE);
+		if (!sender.hasPermission(Permissions.BANK_REMOVE)) {
+			plugin.debug(sender.getName() + " does not have permission to remove a bank");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_REMOVE);
 			return;
 		}
 
 		Bank bank;
 		if (args.length == 1) {
-			bank = bankUtils.getBank(p.getLocation());
-			if (bank == null) {
-				plugin.debug(p.getName() + " wasn't standing in a bank");
-				p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+			if (sender instanceof Player) {
+				Player p = (Player) sender;
+				bank = bankUtils.getBank(p.getLocation());
+				if (bank == null) {
+					plugin.debug(p.getName() + " wasn't standing in a bank");
+					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+					return;
+				}
+			} else {
+				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
 				return;
 			}
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
 				plugin.debug("No bank could be found under the identifier " + args[1]);
-				p.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+				sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
 				return;
 			}
 		}
@@ -320,40 +326,105 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 		boolean needsScheduling = delay != 0;
 		boolean confirmationEnabled = Config.confirmOnRemove;
 
-		if (confirmationEnabled && needsScheduling) {
-			if (commandConfirmed(p, List.of(bank), args))
+		if (sender instanceof Player) {
+			Player p = (Player) sender;
+			if (confirmationEnabled && needsScheduling) {
+				if (commandConfirmed(p, List.of(bank), args))
+					scheduleCommand(p, List.of(bank), args, delay);
+			} else if (confirmationEnabled) {
+				if (commandConfirmed(p, List.of(bank), args)) {
+					bankUtils.removeBank(bank, true);
+					plugin.debug("Bank was removed from the database");
+					p.sendMessage(Messages.BANK_REMOVED);
+				}
+			} else if (needsScheduling) {
 				scheduleCommand(p, List.of(bank), args, delay);
-		} else if (confirmationEnabled) {
-			if (commandConfirmed(p, List.of(bank), args)) {
+			} else {
 				bankUtils.removeBank(bank, true);
 				plugin.debug("Bank was removed from the database");
-				p.sendMessage(Messages.BANK_REMOVED);
+				sender.sendMessage(Messages.BANK_REMOVED);
 			}
-		} else if (needsScheduling) {
-			scheduleCommand(p, List.of(bank), args, delay);
 		} else {
 			bankUtils.removeBank(bank, true);
 			plugin.debug("Bank was removed from the database");
-			p.sendMessage(Messages.BANK_REMOVED);
+			sender.sendMessage(Messages.BANK_REMOVED);
 		}
 	}
 
-	private void promptBankInfo(Player p, String[] args) {
-		plugin.debug(p.getName() + " wants to show bank info");
+	private void promptBankInfo(CommandSender sender, String[] args) {
+		plugin.debug(sender.getName() + " wants to show bank info");
 
-
+		if (args.length == 1) {
+			if (!sender.hasPermission(Permissions.BANK_INFO)) {
+				sender.sendMessage(Messages.NO_PERMISSION_BANK_INFO);
+			}
+			if (sender instanceof Player) {
+				Player p = (Player) sender;
+				Bank bank = bankUtils.getBank(p.getLocation());
+				if (bank != null)
+					p.sendMessage(bank.toString());
+				else {
+					plugin.debug(p.getName() + " wasn't standing in a bank");
+					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+					return;
+				}
+			} else {
+				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+				return;
+			}
+		} else if (args.length >= 2) {
+			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
+				if (sender instanceof Player) {
+					Player p = (Player) sender;
+					Bank bank = bankUtils.getBank(p.getLocation());
+					if (bank != null)
+						p.sendMessage(bank.toStringVerbose());
+					else {
+						plugin.debug(p.getName() + " wasn't standing in a bank");
+						p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+						return;
+					}
+				} else {
+					sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+					return;
+				}
+			} else {
+				Bank bank = bankUtils.lookupBank(args[1]);
+				if (bank != null)
+					sender.sendMessage(bank.toStringVerbose());
+				else {
+					plugin.debug("No bank could be found under the identifier " + args[1]);
+					sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+					return;
+				}
+			}
+		}
 	}
 
-	private void promptBankList(Player p, String[] args) {
-		if (bankUtils.getBanksCopy().isEmpty()) {
-			p.sendMessage(ChatColor.RED + "There are no banks to list.");
-			return;
+	private void promptBankList(CommandSender sender, String[] args) {
+
+		if (args.length == 1) {
+			if (sender.hasPermission(Permissions.BANK_LIST)) {
+				sender.sendMessage("");
+				int i = 1;
+				for (Bank bank : bankUtils.getBanksCopy())
+					sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toString());
+				sender.sendMessage("");
+			} else
+				sender.sendMessage(Messages.NO_PERMISSION_BANK_LIST);
+		} else if (args.length >= 2) {
+			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
+				if (sender.hasPermission(Permissions.BANK_LIST_VERBOSE)) {
+					sender.sendMessage("");
+					int i = 1;
+					for (Bank bank : bankUtils.getBanksCopy())
+						sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toStringVerbose());
+					sender.sendMessage("");
+				} else
+					sender.sendMessage(Messages.NO_PERMISSION_BANK_LIST_VERBOSE);
+			}
 		}
-		p.sendMessage("");
-		int i = 1;
-		for (Bank bank : bankUtils.getBanksCopy())
-			p.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.getInfoAsString());
-		p.sendMessage("");
+
 	}
 
 	private boolean promptBankRemoveAll(CommandSender sender, String[] args) {

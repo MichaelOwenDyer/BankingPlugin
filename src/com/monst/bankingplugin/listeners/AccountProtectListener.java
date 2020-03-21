@@ -20,6 +20,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
@@ -37,12 +38,12 @@ import com.monst.bankingplugin.utils.Utils;
 
 import net.milkbowl.vault.economy.EconomyResponse;
 
-public class ChestProtectListener implements Listener {
+public class AccountProtectListener implements Listener {
 
 	private BankingPlugin plugin;
 	private AccountUtils accountUtils;
 
-	public ChestProtectListener(BankingPlugin plugin) {
+	public AccountProtectListener(BankingPlugin plugin) {
         this.plugin = plugin;
 		this.accountUtils = plugin.getAccountUtils();
     }
@@ -216,6 +217,23 @@ public class ChestProtectListener implements Listener {
             }
         }
     }
+
+	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+	public void onAccountItemClick(InventoryClickEvent e) {
+		if (!(e.getInventory().getHolder() instanceof Chest || e.getInventory().getHolder() instanceof DoubleChest))
+			return;
+		if (!accountUtils.isAccount(e.getInventory().getLocation()))
+			return;
+		if (!(e.getWhoClicked() instanceof Player))
+			return;
+		Account account = accountUtils.getAccount(e.getInventory().getLocation());
+		Player executor = (Player) e.getWhoClicked();
+		if (!account.isOwner(executor))
+			if (!executor.hasPermission(Permissions.ACCOUNT_OTHER_EDIT)) {
+				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_EDIT);
+				e.setCancelled(true);
+			}
+	}
 
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
 		if (account.getInventoryHolder() instanceof DoubleChest) {

@@ -388,9 +388,14 @@ public class AccountInteractListener implements Listener {
 	 */
 	private void info(Player executor, Account account, boolean verbose) {
 		boolean executorIsOwner = account.isOwner(executor);
-		if (!executorIsOwner && !executor.hasPermission(Permissions.ACCOUNT_OTHER_INFO)) {
-			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO);
-			return;
+		if (!executorIsOwner) {
+			if (!verbose && !executor.hasPermission(Permissions.ACCOUNT_OTHER_INFO)) {
+				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO);
+				return;
+			} else if (verbose && !executor.hasPermission(Permissions.ACCOUNT_OTHER_INFO_VERBOSE)) {
+				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO_VERBOSE);
+				return;
+			}
 		}
 
 		if (executorIsOwner)

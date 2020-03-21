@@ -3,14 +3,12 @@ package com.monst.bankingplugin.listeners;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 
 import com.monst.bankingplugin.Account;
@@ -18,8 +16,6 @@ import com.monst.bankingplugin.Account.TransactionType;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
 public class AccountBalanceListener implements Listener {
@@ -30,27 +26,6 @@ public class AccountBalanceListener implements Listener {
 	public AccountBalanceListener(BankingPlugin plugin) {
 		this.plugin = plugin;
 		this.accountUtils = plugin.getAccountUtils();
-	}
-
-	// TODO: Move this somewhere else? Block unwanted account views
-	@EventHandler
-	public void onAccountInventoryOpen(InventoryOpenEvent e) {
-		
-		if (!(e.getPlayer() instanceof Player) || e.getInventory() == null)
-			return;
-		if (!e.getInventory().getType().equals(InventoryType.CHEST))
-			return;
-		
-		Location loc = e.getInventory().getLocation();
-		
-		if (accountUtils.isAccount(loc)) {
-			Player player = Bukkit.getPlayer(e.getPlayer().getUniqueId());
-			Account account = accountUtils.getAccount(loc);
-			if (!account.isOwner(player) && !player.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
-				player.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
-				e.setCancelled(true);
-			}
-		}
 	}
 
 	@EventHandler
