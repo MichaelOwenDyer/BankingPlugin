@@ -28,6 +28,7 @@ permissions:
             bankingplugin.account.create: true
             bankingplugin.account.create.protected: true
             bankingplugin.account.removeall: true
+            bankingplugin.account.trust: true
             bankingplugin.account.limit.*: true
             bankingplugin.account.other.*: true
             bankingplugin.account.set.*: true
@@ -47,6 +48,7 @@ permissions:
             bankingplugin.account.other.set.nickname: true
             bankingplugin.account.other.set.multiplier: true
             bankingplugin.account.other.set.delay-period: true
+            bankingplugin.account.other.trust: true
             bankingplugin.account.other.extend: true
             bankingplugin.account.other.extend.protected: true
     
@@ -82,6 +84,9 @@ permissions:
         default: op
         children:
             bankingplugin.account.other.remove: true
+    bankingplugin.account.trust:
+        description: Add or remove other players as co-owners of your account.
+        default: true
     bankingplugin.account.limit.*:
         description: Create an unlimited number of accounts.
         default: op
@@ -136,6 +141,11 @@ permissions:
     bankingplugin.account.other.extend:
         description: Extend another player's account chest.
         default: op
+    bankingplugin.account.other.trust:
+        description: Add or remove other players as co-owners of someone else's account.
+        default: op
+        children:
+            bankingplugin.account.trust: true
     bankingplugin.account.other.extend.protected:
         description: Extend another player's account chest on a protected chest or land claim.
         default: op

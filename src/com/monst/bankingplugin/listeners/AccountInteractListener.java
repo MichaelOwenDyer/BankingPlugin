@@ -39,6 +39,8 @@ import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.InfoClickType;
 import com.monst.bankingplugin.utils.ClickType.SetClickType;
+import com.monst.bankingplugin.utils.ClickType.TrustClickType;
+import com.monst.bankingplugin.utils.ClickType.UntrustClickType;
 import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
@@ -73,7 +75,7 @@ public class AccountInteractListener implements Listener {
 		
 		Player p = e.getPlayer();
 		Block b = e.getClickedBlock();
-		if (b.getType() == Material.AIR)
+		if (b == null || b.getType() == Material.AIR)
 			return;
 		Account account = accountUtils.getAccount(b.getLocation());
 		ClickType clickType = ClickType.getPlayerClickType(p);
@@ -123,6 +125,23 @@ public class AccountInteractListener implements Listener {
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
 				break;
+
+			case TRUST:
+
+				OfflinePlayer playerToTrust = ((TrustClickType) clickType).getPlayerToTrust();
+				trust(p, account, playerToTrust);
+				ClickType.removePlayerClickType(p);
+				e.setCancelled(true);
+				break;
+
+			case UNTRUST:
+
+				OfflinePlayer playerToUntrust = ((UntrustClickType) clickType).getPlayerToUntrust();
+				untrust(p, account, playerToUntrust);
+				ClickType.removePlayerClickType(p);
+				e.setCancelled(true);
+				break;
+
 			}
 
 		} else {
@@ -498,6 +517,46 @@ public class AccountInteractListener implements Listener {
 					executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_SET_INTEREST_DELAY);
 			}
 		}
+	}
+
+	private void trust(Player p, Account account, OfflinePlayer playerToTrust) {
+		if (!account.isOwner(p))
+			if (p.hasPermission(Permissions.ACCOUNT_OTHER_TRUST)) {
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_TRUST);
+				return;
+			}
+		plugin.debug(String.format(
+				p.getName() + " has trusted " + playerToTrust.getName() + " to %s account (#" + account.getID() + ")",
+				account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"));
+
+		if (account.isTrusted(playerToTrust)) {
+			plugin.debug(playerToTrust.getName() + " was already trusted on that account (#" + account.getID() + ")");
+			p.sendMessage(Messages.getWithValue(Messages.ALREADY_A_COOWNER, playerToTrust.getName()));
+			return;
+		}
+
+		p.sendMessage(Messages.getWithValue(Messages.ADDED_COOWNER, playerToTrust.getName()));
+		account.trustPlayer(playerToTrust);
+	}
+
+	private void untrust(Player p, Account account, OfflinePlayer playerToUntrust) {
+		if (!account.isOwner(p))
+			if (p.hasPermission(Permissions.ACCOUNT_OTHER_TRUST)) {
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_UNTRUST);
+				return;
+			}
+		plugin.debug(String.format(p.getName() + " has untrusted " + playerToUntrust.getName() + " from %s account (#"
+				+ account.getID() + ")", account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"));
+
+		if (!account.isTrusted(playerToUntrust)) {
+			plugin.debug(playerToUntrust.getName() + " was not trusted on that account and could not be removed (#"
+					+ account.getID() + ")");
+			p.sendMessage(Messages.getWithValue(Messages.NOT_A_COOWNER, playerToUntrust.getName()));
+			return;
+		}
+
+		p.sendMessage(Messages.getWithValue(Messages.REMOVED_COOWNER, playerToUntrust.getName()));
+		account.untrustPlayer(playerToUntrust);
 	}
 
 	public static void clearUnconfirmed(OfflinePlayer p) {

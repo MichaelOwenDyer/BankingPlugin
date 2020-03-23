@@ -75,7 +75,6 @@ public class ClickType {
             public void run() {
 				playerClickType.remove(uuid);
 				AccountInteractListener.clearUnconfirmed(player);
-				BankingPlugin.getInstance().getServer().broadcastMessage("ClickType expired.");
             }
 		}.runTaskLater(BankingPlugin.getInstance(), 300));
     
@@ -89,7 +88,7 @@ public class ClickType {
     }
 
     public enum EnumClickType {
-		CREATE, REMOVE, INFO, SET
+		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST
     }
 
 	public static class InfoClickType extends ClickType {
@@ -117,6 +116,34 @@ public class ClickType {
 
 		public String[] getArgs() {
 			return args;
+		}
+	}
+
+	public static class TrustClickType extends ClickType {
+
+		private OfflinePlayer toTrust;
+
+		public TrustClickType(OfflinePlayer p) {
+			super(EnumClickType.TRUST);
+			toTrust = p;
+		}
+
+		public OfflinePlayer getPlayerToTrust() {
+			return toTrust;
+		}
+	}
+
+	public static class UntrustClickType extends ClickType {
+
+		private OfflinePlayer toUntrust;
+
+		public UntrustClickType(OfflinePlayer p) {
+			super(EnumClickType.TRUST);
+			toUntrust = p;
+		}
+
+		public OfflinePlayer getPlayerToUntrust() {
+			return toUntrust;
 		}
 	}
 }

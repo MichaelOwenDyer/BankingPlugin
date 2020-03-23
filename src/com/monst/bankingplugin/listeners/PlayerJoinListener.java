@@ -52,6 +52,9 @@ public class PlayerJoinListener implements Listener {
                         }
                     }
                 });
+
+				// Player does not actually log off here
+				plugin.getDatabase().logLogout(p, null);
             }
         });
     }

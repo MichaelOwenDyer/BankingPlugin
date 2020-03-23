@@ -1,6 +1,8 @@
 package com.monst.bankingplugin;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -27,6 +29,7 @@ public class Account {
 	private int id;
 	private String nickname;
 	private final OfflinePlayer owner;
+	private Set<OfflinePlayer> coowners;
 	private final Location location;
 	private final Bank bank;
 	private InventoryHolder inventoryHolder;
@@ -252,6 +255,26 @@ public class Account {
 
 	public OfflinePlayer getOwner() {
 		return owner;
+	}
+
+	public boolean isTrusted(OfflinePlayer p) {
+		return coowners.contains(p);
+	}
+
+	public void trustPlayer(OfflinePlayer p) {
+		coowners.add(p);
+	}
+
+	public OfflinePlayer untrustPlayer(OfflinePlayer p) {
+		if (coowners.contains(p)) {
+			coowners.remove(p);
+			return p;
+		} else
+			return null;
+	}
+
+	public Set<OfflinePlayer> getTrustedPlayersCopy() {
+		return Collections.unmodifiableSet(coowners);
 	}
 
 	public BigDecimal getBalance() {

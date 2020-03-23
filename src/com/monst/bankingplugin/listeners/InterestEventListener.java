@@ -77,12 +77,12 @@ public class InterestEventListener implements Listener {
 			EconomyResponse r = plugin.getEconomy().depositPlayer(owner, world.getName(), sumInterest.doubleValue());
 			if (!r.transactionSuccess()) {
 				plugin.debug("Economy transaction failed: " + r.errorMessage);
-				if (owner.isOnline())
-					owner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-			} else {
-				if (owner.isOnline())
-					owner.getPlayer().sendMessage(Messages.getWithValue(Messages.INTEREST_EARNED, Utils.formatNumber(sumInterest)));
-			}
+				owner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
+			} else
+				owner.getPlayer().sendMessage(Messages.getWithValue(Messages.INTEREST_EARNED, Utils.formatNumber(sumInterest)));
+
+			if (owner.isOnline())
+				plugin.getDatabase().logLogout(owner.getPlayer(), null);
 		}
 	}
 }

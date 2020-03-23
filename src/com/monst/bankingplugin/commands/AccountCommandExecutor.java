@@ -90,6 +90,10 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 				if (!promptAccountSet(p, args))
 					p.sendMessage(subCommand.getHelpMessage(p));
 				break;
+			case "trust":
+				if (!promptAccountTrust(p, args))
+					p.sendMessage(subCommand.getHelpMessage(p));
+				break;
 			default:
 				return false;
 			}
@@ -529,6 +533,62 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 		} else {
 			accountUtils.removeAll(sender, accounts);
 		}
+	}
+
+	@SuppressWarnings("deprecation")
+	public boolean promptAccountTrust(Player p, String[] args) {
+		if (args.length < 2)
+			return false;
+
+		plugin.debug(p.getName() + " wants to trust a player to an account");
+
+		if (!p.hasPermission(Permissions.ACCOUNT_TRUST)) {
+			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRUST);
+			return true;
+		}
+		OfflinePlayer playerToTrust = Bukkit.getOfflinePlayer(args[1]);
+		if (!playerToTrust.hasPlayedBefore()) {
+			p.sendMessage(Messages.getWithValue(Messages.PLAYER_NOT_FOUND, args[1]));
+			return false;
+		}
+		if (playerToTrust.getUniqueId().equals(p.getUniqueId()))
+			return false;
+
+		plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
+				+ playerToTrust.getUniqueId());
+
+		p.sendMessage(Messages.CLICK_CHEST_TRUST);
+		ClickType.setPlayerClickType(p, new ClickType.TrustClickType(playerToTrust));
+		plugin.debug(p.getName() + " is trusting " + playerToTrust.getName() + " to an account");
+		return true;
+	}
+
+	@SuppressWarnings("deprecation")
+	public boolean promptAccountUntrust(Player p, String[] args) {
+		if (args.length < 2)
+			return false;
+
+		plugin.debug(p.getName() + " wants to trust a player to an account");
+
+		if (!p.hasPermission(Permissions.ACCOUNT_TRUST)) {
+			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_UNTRUST);
+			return true;
+		}
+		OfflinePlayer playerToUntrust = Bukkit.getOfflinePlayer(args[1]);
+		if (!playerToUntrust.hasPlayedBefore()) {
+			p.sendMessage(Messages.getWithValue(Messages.PLAYER_NOT_FOUND, args[1]));
+			return false;
+		}
+		if (playerToUntrust.getUniqueId().equals(p.getUniqueId()))
+			return false;
+
+		plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
+				+ playerToUntrust.getUniqueId());
+
+		p.sendMessage(Messages.CLICK_CHEST_UNTRUST);
+		ClickType.setPlayerClickType(p, new ClickType.UntrustClickType(playerToUntrust));
+		plugin.debug(p.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
+		return true;
 	}
 
 	@Override

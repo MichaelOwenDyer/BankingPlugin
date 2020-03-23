@@ -62,6 +62,9 @@ public class AccountBalanceListener implements Listener {
 
 			plugin.getDatabase().addAccount(account, null);
 
+			if (account.getOwner().isOnline())
+				plugin.getDatabase().logLogout(account.getOwner().getPlayer(), null);
+
 			if (Config.enableTransactionLog) {
 				TransactionType type = difference.signum() == 1 ? TransactionType.DEPOSIT : TransactionType.WITHDRAWAL;
 				plugin.getDatabase().logTransaction(executor, account, difference.abs(), type, null);
@@ -74,20 +77,12 @@ public class AccountBalanceListener implements Listener {
 		
 		StringBuilder sb = new StringBuilder("You have ");
 		
-		boolean transactionType = difference.signum() == 1;
-		if (!transactionType)
-			difference.abs();
-
-		if (transactionType)
-			sb.append("deposited " + ChatColor.GREEN + "$" + Utils.formatNumber(difference) + ChatColor.WHITE + " into ");
-		else
-			sb.append("withdrawn " + ChatColor.RED + "$" + Utils.formatNumber(difference.abs()) + ChatColor.WHITE + " from ");
+		sb.append(difference.signum() == 1
+				? "deposited " + ChatColor.GREEN + "$" + Utils.formatNumber(difference) + ChatColor.WHITE + " into "
+				: "withdrawn " + ChatColor.RED + "$" + Utils.formatNumber(difference.abs()) + ChatColor.WHITE + " from ");
 		
-		if (account.isOwner(executor))
-			sb.append("your account.");
-		else {
-			sb.append(account.getOwner().getName() + "'s account.");
-		}
+		sb.append(account.isOwner(executor) ? "your account." : account.getOwner().getName() + "'s account.");
+
 		return sb.toString();
 	}
 

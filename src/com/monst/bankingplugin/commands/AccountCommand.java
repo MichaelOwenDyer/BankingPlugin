@@ -87,6 +87,20 @@ public class AccountCommand extends GenericCommand {
 			}
 		});
 
+		addSubCommand(new AccountSubCommand("trust", true, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return sender.hasPermission(Permissions.ACCOUNT_TRUST) ? Messages.COMMAND_USAGE_ACCOUNT_TRUST : "";
+			}
+		});
+
+		addSubCommand(new AccountSubCommand("untrust", true, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return sender.hasPermission(Permissions.ACCOUNT_TRUST) ? Messages.COMMAND_USAGE_ACCOUNT_UNTRUST : "";
+			}
+		});
+
 		register();
 		commandCreated = true;
 	}

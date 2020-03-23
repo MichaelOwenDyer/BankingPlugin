@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
 class GenericTabCompleter implements TabCompleter {
@@ -105,16 +106,21 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeAccountList(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
+
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		onlinePlayers.remove(sender.getName());
-		List<String> flags = List.of("-a", "-d");
+
+		List<String> flags = List.of("-d");
+		if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST))
+			flags.add("-a");
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
 				if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
 					returnCompletions.add("detailed");
 				if ("-a".startsWith(args[1].toLowerCase()) || "all".startsWith(args[1].toLowerCase()))
-					returnCompletions.add("all");
+					if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST))
+						returnCompletions.add("all");
 				for (String name : onlinePlayers)
 					if (name.toLowerCase().startsWith(args[1].toLowerCase()))
 						returnCompletions.add(name);
@@ -149,15 +155,11 @@ class GenericTabCompleter implements TabCompleter {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		onlinePlayers.remove(sender.getName());
-		List<String> banks = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName)
-				.collect(Collectors.toList());
 		
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
 				if ("-a".startsWith(args[1].toLowerCase()) || "all".startsWith(args[1].toLowerCase()))
 					returnCompletions.add("all");
-				if ("-b".startsWith(args[1].toLowerCase()) || "bank".startsWith(args[1].toLowerCase()))
-					returnCompletions.add("bank");
 				if ("-c".startsWith(args[1].toLowerCase()) || "cancel".startsWith(args[1].toLowerCase()))
 					returnCompletions.add("cancel");
 				for (String name : onlinePlayers)
@@ -165,29 +167,8 @@ class GenericTabCompleter implements TabCompleter {
 						returnCompletions.add(name);
 				return returnCompletions;
 			} else {
-				onlinePlayers.addAll(List.of("all","detailed","cancel"));
+				onlinePlayers.addAll(List.of("all", "cancel"));
 				return onlinePlayers;
-			}
-		} else if (args.length == 3) {
-			if (args[1].equalsIgnoreCase("-b") || args[1].equalsIgnoreCase("bank")) {
-				if (!args[2].isEmpty()) {
-					for (String bank : banks)
-						if (bank.toLowerCase().startsWith(args[2].toLowerCase()))
-							returnCompletions.add(bank);
-					return returnCompletions;
-				} else
-					return banks;
-			}
-		} else if (args.length == 4) {
-			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all"))
-					&& (args[2].equalsIgnoreCase("-b") || args[2].equalsIgnoreCase("bank"))) {
-				if (!args[2].isEmpty()) {
-					for (String bank : banks)
-						if (bank.toLowerCase().startsWith(args[2].toLowerCase()))
-							returnCompletions.add(bank);
-					return returnCompletions;
-				} else
-					return banks;
 			}
 		}
 		return new ArrayList<>();
@@ -213,7 +194,7 @@ class GenericTabCompleter implements TabCompleter {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		
 		if (args.length == 2) {
-			returnCompletions.add("<name>");
+			returnCompletions.add("<bankname>");
 			return returnCompletions;
 		} else if (args.length == 3) {
 			Block b = p.getTargetBlock(null, 150);
@@ -300,13 +281,31 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeBankInfo(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
-
+		List<String> banks = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName).collect(Collectors.toList());
+		
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				for (String bank : banks)
+					if (bank.toLowerCase().startsWith(args[1].toLowerCase()))
+						returnCompletions.add(bank);
+				return returnCompletions;
+			} else
+				return banks;
+		}
 		return new ArrayList<>();
 	}
 
 	private List<String> completeBankList(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
+					returnCompletions.add("detailed");
+				return returnCompletions;
+			} else
+				return List.of("detailed");
+		}
 		return new ArrayList<>();
 	}
 

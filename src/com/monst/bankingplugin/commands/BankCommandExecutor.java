@@ -65,20 +65,29 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 
 			case "create":
 				if (!promptBankCreate(p, args))
-					p.sendMessage(Messages.COMMAND_USAGE_BANK_CREATE);
+					p.sendMessage(subCommand.getHelpMessage(sender));
 				return true;
 			case "remove":
 				promptBankRemove(p, args);
-				break;
+				return true;
 			case "info":
-				promptBankInfo(p, args);
-				break;
+				if (!promptBankInfo(p, args))
+					p.sendMessage(subCommand.getHelpMessage(sender));
+				return true;
 			case "list":
 				promptBankList(p, args);
-				break;
+				return true;
 			case "removeall":
-				if (!promptBankRemoveAll(p, args));
-					p.sendMessage(Messages.COMMAND_USAGE_ACCOUNT_REMOVEALL);
+				if (!promptBankRemoveAll(p, args))
+					p.sendMessage(subCommand.getHelpMessage(sender));
+				return true;
+			case "resize":
+				if (!promptBankResize(p, args))
+					p.sendMessage(subCommand.getHelpMessage(sender));
+				return true;
+			case "set":
+				if (!promptBankSet(p, args))
+					p.sendMessage(subCommand.getHelpMessage(sender));
 				return true;
 			default:
 				return false;
@@ -101,7 +110,6 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 				return false;
 			}
 		}
-		return true;
 	}
 
 	private boolean promptBankCreate(final Player p, String[] args) {
@@ -351,7 +359,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 		}
 	}
 
-	private void promptBankInfo(CommandSender sender, String[] args) {
+	private boolean promptBankInfo(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to show bank info");
 
 		if (args.length == 1) {
@@ -366,13 +374,10 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 				else {
 					plugin.debug(p.getName() + " wasn't standing in a bank");
 					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
-					return;
 				}
-			} else {
+			} else
 				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-				return;
-			}
-		} else if (args.length >= 2) {
+		} else if (args.length == 2) {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
 				if (sender instanceof Player) {
 					Player p = (Player) sender;
@@ -382,23 +387,31 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 					else {
 						plugin.debug(p.getName() + " wasn't standing in a bank");
 						p.sendMessage(Messages.NOT_STANDING_IN_BANK);
-						return;
 					}
-				} else {
+				} else
 					sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-					return;
-				}
 			} else {
+				Bank bank = bankUtils.lookupBank(args[1]);
+				if (bank != null)
+					sender.sendMessage(bank.toString());
+				else {
+					plugin.debug("No bank could be found under the identifier " + args[1]);
+					sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+				}
+			}
+		} else if (args.length == 3) {
+			if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
 				Bank bank = bankUtils.lookupBank(args[1]);
 				if (bank != null)
 					sender.sendMessage(bank.toStringVerbose());
 				else {
 					plugin.debug("No bank could be found under the identifier " + args[1]);
 					sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
-					return;
 				}
 			}
-		}
+		} else
+			return false;
+		return true;
 	}
 
 	private void promptBankList(CommandSender sender, String[] args) {
@@ -428,6 +441,14 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 	}
 
 	private boolean promptBankRemoveAll(CommandSender sender, String[] args) {
+		return false;
+	}
+
+	private boolean promptBankResize(Player p, String[] args) {
+		return false;
+	}
+
+	private boolean promptBankSet(CommandSender sender, String[] args) {
 		return false;
 	}
 

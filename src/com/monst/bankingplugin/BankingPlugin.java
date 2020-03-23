@@ -26,8 +26,8 @@ import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.listeners.AccountBalanceListener;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
-import com.monst.bankingplugin.listeners.AccountTamperingListener;
 import com.monst.bankingplugin.listeners.AccountProtectListener;
+import com.monst.bankingplugin.listeners.AccountTamperingListener;
 import com.monst.bankingplugin.listeners.InterestEventListener;
 import com.monst.bankingplugin.listeners.PlayerJoinListener;
 import com.monst.bankingplugin.listeners.WorldGuardListener;
@@ -151,7 +151,7 @@ public class BankingPlugin extends JavaPlugin {
 		initDatabase();
         registerListeners();
         registerExternalListeners();
-		initializeBanking();
+		initializeBanksAndAccounts();
 		scheduleInterestPoints();
         
         }
@@ -303,19 +303,19 @@ public class BankingPlugin extends JavaPlugin {
     }
 
 	/**
-	 * Initializes banks
+	 * Initializes banks and accounts
 	 */
-	private void initializeBanking() {
+	private void initializeBanksAndAccounts() {
 		bankUtils.reload(false, true, new Callback<int[]>(this) {
 			@Override
 			public void onResult(int[] result) {
 				Bukkit.getServer().getPluginManager().callEvent(new BankInitializedEvent(result[0]));
-				getLogger().info("Initialized " + result[0] + " banks");
-				debug("Initialized " + result[0] + " banks");
+				getLogger().info(String.format("Initialized " + result[0] + " bank%s", result[0] == 1 ? "" : "s"));
+				debug(String.format("Initialized " + result[0] + " bank%s", result[0] == 1 ? "" : "s"));
 
 				Bukkit.getServer().getPluginManager().callEvent(new AccountInitializedEvent(result[1]));
-				getLogger().info("Initialized " + result[1] + " accounts");
-				debug("Initialized " + result[1] + " accounts");
+				getLogger().info(String.format("Initialized " + result[1] + " account%s", result[1] == 1 ? "" : "s"));
+				debug(String.format("Initialized " + result[1] + " account%s", result[1] == 1 ? "" : "s"));
 			}
 
 			@Override

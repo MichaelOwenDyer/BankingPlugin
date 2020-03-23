@@ -842,7 +842,9 @@ public abstract class Database {
                         callback.callSyncResult(null);
                     }
 
-                    plugin.debug("Logged logout to database");
+					if (!player.isOnline())
+						plugin.debug("Logged logout to database");
+
                 } catch (final SQLException ex) {
                     if (callback != null) {
                         callback.callSyncError(ex);

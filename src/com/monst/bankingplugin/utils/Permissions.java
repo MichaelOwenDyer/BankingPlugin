@@ -19,6 +19,7 @@ public class Permissions {
 	public static final String ACCOUNT_OTHER_SET_NICKNAME = "bankingplugin.account.other.set.nickname";
 	public static final String ACCOUNT_OTHER_SET_MULTIPLIER = "bankingplugin.account.other.set.multiplier";
 	public static final String ACCOUNT_OTHER_SET_INTEREST_DELAY = "bankingplugin.account.other.set.interest-delay";
+	public static final String ACCOUNT_OTHER_TRUST = "bankingplugin.account.other.trust";
 	public static final String ACCOUNT_OTHER_EXTEND = "bankingplugin.account.other.extend";
 	public static final String ACCOUNT_OTHER_EXTEND_PROTECTED = "bankingplugin.account.other.extend.protected";
 
@@ -26,6 +27,7 @@ public class Permissions {
 	public static final String ACCOUNT_SET_NICKNAME = "bankingplugin.account.set.nickname";
 	public static final String ACCOUNT_SET_MULTIPLIER = "bankingplugin.account.set.multiplier";
 	public static final String ACCOUNT_SET_INTEREST_DELAY = "bankingplugin.account.set.interest-delay";
+	public static final String ACCOUNT_TRUST = "bankingplugin.account.trust";
 
 	public static final String BANK_CREATE = "bankingplugin.bank.create";
 	public static final String BANK_REMOVE = "bankingplugin.bank.remove";
