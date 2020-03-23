@@ -21,6 +21,7 @@ public class Messages {
 	public static final String PLAYER_REIMBURSED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$|" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
 	public static final String ACCOUNT_OPENED = ChatColor.GOLD + "You have opened |'s account chest.";
+	public static final String MUST_BE_OWNER = ChatColor.RED + "You must be the owner of the account to do that.";
 	public static final String ALL_ACCOUNTS_REMOVED = ChatColor.GREEN + "All accounts were successfully removed.";
 	public static final String CANNOT_BREAK_ACCOUNT = ChatColor.RED + "You cannot break that account chest.";
 	public static final String CHEST_NOT_ACCOUNT = ChatColor.RED + "That chest is not an account.";
@@ -28,7 +29,7 @@ public class Messages {
 	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or specify the name of a bank.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account.";
 	//public static final String BANK_CREATE_INSUFFICIENT_FUNDS = "You do not have sufficient funds to create a bank.";
-	public static final String INTEREST_EARNED = ChatColor.GOLD + "You have earned " + ChatColor.GREEN + "$| " + ChatColor.GOLD + "in interest on your account!";
+	public static final String INTEREST_EARNED = ChatColor.GOLD + "You have earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
 	public static final String MULTIPLIER_INCREASED = ChatColor.GOLD + "Your account multiplier has increased to |.";
 	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to |.";
 	public static final String ERROR_OCCURRED = ChatColor.DARK_RED + "An error occurred! ";

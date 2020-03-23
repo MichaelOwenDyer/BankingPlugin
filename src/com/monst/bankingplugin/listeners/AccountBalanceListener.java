@@ -48,7 +48,7 @@ public class AccountBalanceListener implements Listener {
 				return;
 
 			Player executor = (Player) e.getPlayer();
-			account.getStatus().setBalance(valueOnClose);
+			account.setBalance(valueOnClose);
 
 			executor.sendMessage(getTransactionMessage(executor, account, difference));
 			executor.sendMessage(getNewBalanceMessage(executor, account, valueOnClose));

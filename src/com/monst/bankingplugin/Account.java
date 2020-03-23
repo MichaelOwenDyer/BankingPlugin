@@ -2,6 +2,7 @@ package com.monst.bankingplugin;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
@@ -56,6 +57,7 @@ public class Account {
 		this.location = loc;
 		this.status = status;
 		this.nickname = nickname;
+		this.coowners = new HashSet<>();
 	}
 
 	public boolean create(boolean showConsoleMessages) {
@@ -133,57 +135,9 @@ public class Account {
 		created = true;
 		return true;
 	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
 
-		Account otherAccount = (Account) o;
-		return id != -1 && id == otherAccount.id;
-	}
-
-	@Override
-	public int hashCode() {
-		return id != -1 ? id : super.hashCode();
-	}
-	
-	@Override
-	public String toString() {
-		String name;
-		name = hasNickname() ? ChatColor.GRAY + "\"" + Utils.colorize(nickname) + ChatColor.GRAY + "\""
-				: ChatColor.GRAY + "Account ID: " + ChatColor.WHITE + id;
-		return name + "\n" + ChatColor.GRAY + "Owner: " + ChatColor.GOLD + owner.getName() + "\n"
-				+ ChatColor.GRAY + "Bank: " + ChatColor.AQUA + bank.getName() + ChatColor.GRAY;
-	}
-
-	public String toStringVerbose() {
-		String balance = "$" + Utils.formatNumber(status.getBalance());
-		String multiplier = status.getRealMultiplier() + "x (Stage " + (status.getMultiplierStage() + 1) + " of " + Config.interestMultipliers.size() + ")";
-		String interestRate = "" + ChatColor.GREEN + (Config.baselineInterestRate * status.getRealMultiplier() * 100)
-				+ "%" + ChatColor.GRAY + " (" + Config.baselineInterestRate + " x " + status.getRealMultiplier() + ")";
-		if (status.getRemainingUntilFirstPayout() != 0)
-			interestRate = interestRate.concat(ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)");
-		String loc = location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
-		return toString() + "\n"
-				+ "Balance: " + ChatColor.GREEN + balance + "\n"
-				+ ChatColor.GRAY + "Multiplier: " + multiplier + "\n"
-				+ "Interest rate: " + interestRate + "\n"
-				+ ChatColor.GRAY + "Location: " + loc + "\n";
-	}
-
-	public boolean isOwner(OfflinePlayer player) {
-		return owner.getUniqueId().equals(player.getUniqueId());
-	}
-
-	public short getChestSize() {
-		return isDoubleChest() ? (short) 2 : 1;
-	}
-
-	public boolean isDoubleChest() {
-		return inventoryHolder instanceof DoubleChest;
+	public boolean isCreated() {
+		return created;
 	}
 
 	public void clearNickname() {
@@ -235,10 +189,6 @@ public class Account {
 		return bank;
 	}
 
-	public boolean isCreated() {
-		return created;
-	}
-
 	public boolean hasID() {
 		return id != -1;
 	}
@@ -253,12 +203,24 @@ public class Account {
 		}
 	}
 
+	public boolean isOwner(OfflinePlayer player) {
+		return owner.getUniqueId().equals(player.getUniqueId());
+	}
+
 	public OfflinePlayer getOwner() {
 		return owner;
 	}
 
+	public boolean isTrustedPlayerOnline() {
+		return owner.isOnline() || coowners.stream().anyMatch(p -> p.isOnline());
+	}
+
 	public boolean isTrusted(OfflinePlayer p) {
-		return coowners.contains(p);
+		return p != null ? isOwner(p) || isCoowner(p) : false;
+	}
+
+	public boolean isCoowner(OfflinePlayer p) {
+		return p != null ? coowners.contains(p) : false;
 	}
 
 	public void trustPlayer(OfflinePlayer p) {
@@ -274,6 +236,13 @@ public class Account {
 	}
 
 	public Set<OfflinePlayer> getTrustedPlayersCopy() {
+		Set<OfflinePlayer> trustedPlayers = new HashSet<>();
+		trustedPlayers.add(owner);
+		trustedPlayers.addAll(coowners);
+		return Collections.unmodifiableSet(trustedPlayers);
+	}
+
+	public Set<OfflinePlayer> getCoownersCopy() {
 		return Collections.unmodifiableSet(coowners);
 	}
 
@@ -297,6 +266,54 @@ public class Account {
 		return inventoryHolder;
 	}
 	
+	public short getChestSize() {
+		return isDoubleChest() ? (short) 2 : 1;
+	}
+
+	public boolean isDoubleChest() {
+		return inventoryHolder instanceof DoubleChest;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Account otherAccount = (Account) o;
+		return id != -1 && id == otherAccount.id;
+	}
+
+	@Override
+	public int hashCode() {
+		return id != -1 ? id : super.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		String name;
+		name = hasNickname() ? ChatColor.GRAY + "\"" + Utils.colorize(nickname) + ChatColor.GRAY + "\""
+				: ChatColor.GRAY + "Account ID: " + ChatColor.WHITE + id;
+		return name + "\n" + ChatColor.GRAY + "Owner: " + ChatColor.GOLD + owner.getName() + "\n" + ChatColor.GRAY
+				+ "Bank: " + ChatColor.AQUA + bank.getName() + ChatColor.GRAY;
+	}
+
+	public String toStringVerbose() {
+		String balance = "$" + Utils.formatNumber(status.getBalance());
+		String multiplier = status.getRealMultiplier() + "x (Stage " + (status.getMultiplierStage() + 1) + " of "
+				+ Config.interestMultipliers.size() + ")";
+		String interestRate = "" + ChatColor.GREEN + (Config.baselineInterestRate * status.getRealMultiplier() * 100)
+				+ "%" + ChatColor.GRAY + " (" + Config.baselineInterestRate + " x " + status.getRealMultiplier() + ")";
+		if (status.getRemainingUntilFirstPayout() != 0)
+			interestRate = interestRate
+					.concat(ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)");
+		String loc = location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
+		return toString() + "\n" + "Balance: " + ChatColor.GREEN + balance + "\n" + ChatColor.GRAY + "Multiplier: "
+				+ multiplier + "\n" + "Interest rate: " + interestRate + "\n" + ChatColor.GRAY + "Location: " + loc
+				+ "\n";
+	}
+
 	public enum TransactionType {
 		DEPOSIT, WITHDRAWAL
 	}

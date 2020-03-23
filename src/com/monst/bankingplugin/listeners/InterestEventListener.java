@@ -2,6 +2,7 @@ package com.monst.bankingplugin.listeners;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,7 +37,10 @@ public class InterestEventListener implements Listener {
 	public void onInterestEvent(InterestEvent e) {
 		
 		plugin.debug("Interest payout event occurring now!");
-		
+
+		Map<OfflinePlayer, BigDecimal> totalPayouts = new HashMap<>();
+		Map<OfflinePlayer, Integer> counter = new HashMap<>();
+
 		Map<OfflinePlayer, List<Account>> playerAccounts = accountUtils.getAccountsCopy().stream()
 				.collect(Collectors.groupingBy(Account::getOwner));
 
@@ -44,12 +48,10 @@ public class InterestEventListener implements Listener {
 			
 			World world = playerAccounts.get(owner).get(0).getLocation().getWorld();
 
-			BigDecimal sumInterest = BigDecimal.ZERO;
-
 			for (Account account : playerAccounts.get(owner)) {
 
 				AccountStatus status = account.getStatus();
-				if (!status.allowNextPayout(owner.isOnline())) {
+				if (!status.allowNextPayout(account.isTrustedPlayerOnline())) {
 					plugin.getDatabase().addAccount(account, null);
 					continue;
 				}
@@ -63,9 +65,15 @@ public class InterestEventListener implements Listener {
 					interest = interest.multiply(BigDecimal.valueOf(multiplier));
 				}
 
-				status.incrementMultiplier(owner.isOnline());
-				sumInterest = sumInterest.add(interest);
+				status.incrementMultiplier(account.isTrustedPlayerOnline());
 				account.getStatus().updatePrevBalance();
+
+				final int payoutSplit = account.getTrustedPlayersCopy().size();
+				for (OfflinePlayer recipient : account.getTrustedPlayersCopy()) {
+					totalPayouts.put(recipient, totalPayouts.getOrDefault(recipient, BigDecimal.ZERO)
+							.add(interest.divide(BigDecimal.valueOf(payoutSplit))));
+					counter.put(recipient, counter.getOrDefault(recipient, 0).intValue() + 1);
+				}
 
 				plugin.getDatabase().addAccount(account, null);
 
@@ -74,15 +82,25 @@ public class InterestEventListener implements Listener {
 				}
 			}
 
-			EconomyResponse r = plugin.getEconomy().depositPlayer(owner, world.getName(), sumInterest.doubleValue());
-			if (!r.transactionSuccess()) {
-				plugin.debug("Economy transaction failed: " + r.errorMessage);
-				owner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-			} else
-				owner.getPlayer().sendMessage(Messages.getWithValue(Messages.INTEREST_EARNED, Utils.formatNumber(sumInterest)));
+			for (OfflinePlayer recipient : totalPayouts.keySet()) {
+				
+				boolean online = recipient.isOnline();
+				EconomyResponse r = plugin.getEconomy().depositPlayer(owner, world.getName(), totalPayouts.get(recipient).doubleValue());
+				if (!r.transactionSuccess()) {
+					plugin.debug("Economy transaction failed: " + r.errorMessage);
+					if (online)
+						recipient.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
+				} else
+				if (online)
+					recipient.getPlayer()
+							.sendMessage(String.format(Messages.INTEREST_EARNED,
+									Utils.formatNumber(totalPayouts.get(recipient)), counter.get(recipient),
+									counter.get(recipient) == 1 ? "" : "s"));
 
-			if (owner.isOnline())
-				plugin.getDatabase().logLogout(owner.getPlayer(), null);
+				if (online)
+					plugin.getDatabase().logLogout(owner.getPlayer(), null);
+
+			}
 		}
 	}
 }

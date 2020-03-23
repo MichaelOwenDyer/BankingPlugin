@@ -46,7 +46,6 @@ import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
-import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 public class AccountInteractListener implements Listener {
@@ -294,9 +293,11 @@ public class AccountInteractListener implements Listener {
 	}
 	
 	private boolean confirmRemove(Player executor, Account account) {
-		if (!account.isOwner(executor)
-				&& !executor.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
-			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_REMOVE);
+		if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
+			if (account.isTrusted(executor))
+				executor.sendMessage(Messages.MUST_BE_OWNER);
+			else
+				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_REMOVE);
 			return !unconfirmed.containsKey(executor.getUniqueId());
 		}
 		
@@ -379,23 +380,21 @@ public class AccountInteractListener implements Listener {
 	 *                 {@link Message#ACCOUNT_OPENED} message
 	 */
 	private void tryPeek(Player executor, Account account, boolean message) {
-		boolean executorIsOwner = account.isOwner(executor);
-		if (!executorIsOwner && !executor.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
+		boolean executorIsTrusted = account.isTrusted(executor);
+		if (!executorIsTrusted && !executor.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
 			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
 			plugin.debug(executor.getName() + " does not have permission to open " + account.getOwner().getName()
 					+ "'s account chest.");
 			return;
 		}
 
-		if (executorIsOwner)
-			plugin.debug(executor.getName() + " is opening their account (#" + account.getID() + ")");
-		else
-			plugin.debug(executor.getName() + " is opening " + account.getOwner().getName() + "'s account (#"
-					+ account.getID() + ")");
+		plugin.debug(String.format(executor.getName() + " is opening %s account%s (#" + account.getID() + ")",
+				(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
+				(account.isCoowner(executor) ? " as a co-owner" : "")));
 
 		executor.openInventory(account.getInventoryHolder().getInventory());
 
-		if (message && !executorIsOwner)
+		if (message && !executorIsTrusted)
 			executor.sendMessage(Messages.getWithValue(Messages.ACCOUNT_OPENED, account.getOwner().getName()));
 	}
 
@@ -406,8 +405,8 @@ public class AccountInteractListener implements Listener {
 	 * @param account  Account from which the information will be retrieved
 	 */
 	private void info(Player executor, Account account, boolean verbose) {
-		boolean executorIsOwner = account.isOwner(executor);
-		if (!executorIsOwner) {
+		boolean executorIsTrusted = account.isTrusted(executor);
+		if (!executorIsTrusted)
 			if (!verbose && !executor.hasPermission(Permissions.ACCOUNT_OTHER_INFO)) {
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO);
 				return;
@@ -415,13 +414,10 @@ public class AccountInteractListener implements Listener {
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO_VERBOSE);
 				return;
 			}
-		}
 
-		if (executorIsOwner)
-			plugin.debug(executor.getName() + " is retrieving their account info (#" + account.getID() + ")");
-		else
-			plugin.debug(executor.getName() + " is retrieving " + account.getOwner().getName() + "'s account info (#"
-					+ account.getID() + ")");
+		plugin.debug(String.format(executor.getName() + " is retrieving %s account info%s (#" + account.getID() + ")",
+				(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
+				(account.isCoowner(executor) ? " as a co-owner" : "")));
 
 		AccountInfoEvent event = new AccountInfoEvent(executor, account, verbose);
 		Bukkit.getPluginManager().callEvent(event);
@@ -432,18 +428,18 @@ public class AccountInteractListener implements Listener {
 		}
 
 		executor.sendMessage(" ");
-		if (verbose) 
-			executor.sendMessage(account.toStringVerbose());
-		else
-			executor.sendMessage(account.toString());
+		executor.sendMessage(verbose ? account.toStringVerbose() : account.toString());
 		executor.sendMessage(" ");
 	}
 
 	private void set(Player executor, Account account, String[] args) {
 		if (args[0].equalsIgnoreCase("nickname")) {
-			if (account.isOwner(executor)) {
+			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_NICKNAME)) {
 				if (args[1].equals("")) {
-					plugin.debug(executor.getName() + " has reset their account nickname (#" + account.getID() + ")");
+					plugin.debug(String.format(
+							executor.getName() + " has reset %s account nickname%s (#" + account.getID() + ")",
+							(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
+							(account.isCoowner(executor) ? " as a co-owner" : "")));
 					account.setDefaultNickname();
 				} else {
 					plugin.debug(executor.getName() + " has set their account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
@@ -451,80 +447,56 @@ public class AccountInteractListener implements Listener {
 				}
 				executor.sendMessage(Messages.NICKNAME_SET);
 			} else {
-				if (executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_NICKNAME)) {
-					if (args[1].equals("")) {
-						args[1] = ChatColor.DARK_GREEN + account.getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + account.getID() + ")";
-					}
-					plugin.debug(executor.getName() + " has set " + account.getOwner().getName()
-							+ "'s account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
-					account.setNickname(args[1]);
-					executor.sendMessage(Messages.NICKNAME_SET);
-				} else {
-					plugin.debug(executor.getName() + " does not have permission to change another player's account nickname");
-					executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
-				}
+				plugin.debug(executor.getName() + " does not have permission to change another player's account nickname");
+				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
 			}
 		} else if (args[0].equalsIgnoreCase("multiplier")) {
-			if (account.isOwner(executor)) {
+			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_MULTIPLIER)) {
+				int stage = 0;
 				if (args[1].equals("")) {
-					int stage = account.getStatus().setMultiplierStage(Integer.parseInt(args[2]));
-					plugin.debug(executor.getName() + " has set their account multiplier stage to " + stage + " (#" + account.getID() + ")");
+					stage = account.getStatus().setMultiplierStage(Integer.parseInt(args[2]));
 					executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
 				} else if (args[1].equals("+")) {
-					int stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]));
-					plugin.debug(executor.getName() + " has set their account multiplier stage to " + stage + " (#" + account.getID() + ")");
+					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]));
 					executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
 				} else if (args[1].equals("-")) {
-					int stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]) * -1);
-					plugin.debug(executor.getName() + " has set their account multiplier stage to " + stage + " (#" + account.getID() + ")");
+					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]) * -1);
 					executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
 				}
+				plugin.debug(String.format(
+						executor.getName() + " has set %s account multiplier stage to %d%s (#" + account.getID() + ")",
+						(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
+						stage,
+						(account.isCoowner(executor) ? " as a co-owner" : "")));
 			} else {
-				if (executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_MULTIPLIER)) {
-					if (args[1].equals("")) {
-						account.getStatus().setMultiplierStage(Integer.parseInt(args[2]));
-						plugin.debug(executor.getName() + " has set " + account.getOwner().getName()
-								+ "'s account multiplier stage to " + args[2] + " (#" + account.getID() + ")");
-						executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
-					} else if (args[1].equals("+")) {
-						int stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]));
-						plugin.debug(executor.getName() + " has set " + account.getOwner().getName()
-								+ "'s account multiplier stage to " + stage + " (#" + account.getID() + ")");
-						executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
-					} else if (args[1].equals("-")) {
-						int stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]) * -1);
-						plugin.debug(executor.getName() + " has set " + account.getOwner().getName()
-								+ "'s account multiplier stage to " + stage + " (#" + account.getID() + ")");
-						executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
-					}
-				} else {
-					plugin.debug(executor.getName()
-							+ " does not have permission to change another player's account multiplier");
-					executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
-				}
+				plugin.debug(executor.getName() + " does not have permission to change " + account.getOwner().getName()
+						+ "'s account multiplier");
+				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
 			}
 		} else if (args[0].equalsIgnoreCase("interest-delay")) {
-			if (account.isOwner(executor)) {
+			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_INTEREST_DELAY)) {
 				int delay = account.getStatus().setInterestDelay(Integer.parseInt(args[1]));
-				plugin.debug(executor.getName() + " has set their account interest delay to " + delay + "(#" + account.getID() + ")");
+				plugin.debug(String.format(
+						executor.getName() + " has set %s account interest delay to %d%s (#" + account.getID() + ")",
+						(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"), delay,
+						(account.isCoowner(executor) ? " as a co-owner" : "")));
 				executor.sendMessage(Messages.INTEREST_DELAY_SET);
-			} else {
-				if (executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_INTEREST_DELAY)) {
-					int delay = account.getStatus().setInterestDelay(Integer.parseInt(args[1]));
-					plugin.debug(executor.getName() + " has set " + account.getOwner().getName() + "'s account interest delay to " + delay + "(#" + account.getID() + ")");
-					executor.sendMessage(Messages.INTEREST_DELAY_SET);
-				} else
-					executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_SET_INTEREST_DELAY);
-			}
+			} else
+				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_SET_INTEREST_DELAY);
 		}
 	}
 
 	private void trust(Player p, Account account, OfflinePlayer playerToTrust) {
-		if (!account.isOwner(p))
-			if (p.hasPermission(Permissions.ACCOUNT_OTHER_TRUST)) {
+		if (!account.isOwner(p)) {
+			if (account.isTrusted(p)) {
+				p.sendMessage(Messages.MUST_BE_OWNER);
+				return;
+			}
+			if (!p.hasPermission(Permissions.ACCOUNT_OTHER_TRUST)) {
 				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_TRUST);
 				return;
 			}
+		}
 		plugin.debug(String.format(
 				p.getName() + " has trusted " + playerToTrust.getName() + " to %s account (#" + account.getID() + ")",
 				account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"));
@@ -541,7 +513,11 @@ public class AccountInteractListener implements Listener {
 
 	private void untrust(Player p, Account account, OfflinePlayer playerToUntrust) {
 		if (!account.isOwner(p))
-			if (p.hasPermission(Permissions.ACCOUNT_OTHER_TRUST)) {
+			if (account.isTrusted(p)) {
+				p.sendMessage(Messages.MUST_BE_OWNER);
+				return;
+			}
+		if (!p.hasPermission(Permissions.ACCOUNT_OTHER_TRUST)) {
 				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_UNTRUST);
 				return;
 			}
