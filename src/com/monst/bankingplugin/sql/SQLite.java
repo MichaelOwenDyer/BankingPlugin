@@ -103,6 +103,7 @@ public class SQLite extends Database {
     			+ "bank_id INTEGER NOT NULL," 
 				+ "nickname TEXT,"
 				+ "owner TEXT NOT NULL," // Owner UUID
+				+ "co_owners TEXT,"
     			+ "size INTEGER NOT NULL," // Single or double chest -> 1, 2
     			
 				+ "balance TEXT NOT NULL,"
@@ -118,8 +119,8 @@ public class SQLite extends Database {
     			+ "y INTEGER NOT NULL,"
     			+ "z INTEGER NOT NULL)";
     	
-		// id,bank_id,nickname,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z
-		// ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+		// id,bank_id,nickname,owner,co_owners,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z
+		// ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
     }
 
     @Override

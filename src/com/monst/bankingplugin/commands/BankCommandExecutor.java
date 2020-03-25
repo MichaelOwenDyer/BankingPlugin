@@ -20,6 +20,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.utils.BankUtils;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -121,47 +122,19 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 			return true;
 		}
 
-		if (args.length == 1) {
-			return false;
-		}
+		Selection selection;
 
-		if (args.length == 2) {
+		if (args.length == 1)
+			return false;
+
+		else if (args.length == 2) {
+
 			if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
 				WorldEditPlugin worldEdit = plugin.getWorldEdit();
-				Selection selection = worldEdit.getSelection(p);
+				selection = worldEdit.getSelection(p);
 				if (selection == null) {
 					plugin.debug(p.getName() + " tried to create a bank with no worldedit selection");
 					p.sendMessage(Messages.NO_SELECTION_FOUND);
-					return true;
-				}
-				if (!bankUtils.isExclusiveSelection(selection)) {
-					plugin.debug("Selection is not exclusive");
-					p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
-					return true;
-				}
-				if (!bankUtils.isUniqueName(args[1])) {
-					plugin.debug("Name is not unique");
-					p.sendMessage(Messages.NAME_NOT_UNIQUE);
-					return true;
-				}
-
-				Bank bank = new Bank(plugin, args[1], selection);
-
-				BankCreateEvent event = new BankCreateEvent(p, bank);
-				Bukkit.getPluginManager().callEvent(event);
-				if (event.isCancelled()) {
-					plugin.debug("Account create event cancelled");
-					return true;
-				}
-
-				if (bank.create(true)) {
-					bankUtils.addBank(bank, true);
-					plugin.debug(p.getName() + " has created a new bank.");
-					p.sendMessage(Messages.BANK_CREATED);
-					return true;
-				} else {
-					plugin.debug("An error occured creating the bank");
-					p.sendMessage(Messages.ERROR_OCCURRED);
 					return true;
 				}
 			} else {
@@ -169,12 +142,8 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 				p.sendMessage(Messages.WORLDEDIT_NOT_ENABLED);
 				return true;
 			}
+
 		} else if (args.length == 5) {
-			if (!bankUtils.isUniqueName(args[1])) {
-				plugin.debug("Name is not unique");
-				p.sendMessage(Messages.NAME_NOT_UNIQUE);
-				return true;
-			}
 
 			String argX = args[2];
 			String argY = args[3];
@@ -203,30 +172,9 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 			
 			Location loc1 = new Location(p.getWorld(), x1, y1, z1);
 			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
-			Selection selection = new CuboidSelection(p.getWorld(), loc1, loc2);
-			
-			if (!bankUtils.isExclusiveSelection(selection)) {
-				plugin.debug("Selection is not exclusive");
-				p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
-				return true;
-			}
-			Bank bank = new Bank(plugin, args[1], selection);
-			if (bank.create(true)) {
-				bankUtils.addBank(bank, true);
-				plugin.debug(p.getName() + " has created a new bank.");
-				p.sendMessage(Messages.BANK_CREATED);
-				return true;
-			} else {
-				plugin.debug("An error occured creating the bank");
-				p.sendMessage(Messages.ERROR_OCCURRED);
-				return true;
-			}
+			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
+
 		} else if (args.length >= 8) {
-			if (!bankUtils.isUniqueName(args[1])) {
-				plugin.debug("Name is not unique");
-				p.sendMessage(Messages.NAME_NOT_UNIQUE);
-				return true;
-			}
 
 			String argX1 = args[2];
 			String argY1 = args[3];
@@ -263,34 +211,41 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 
 			Location loc1 = new Location(p.getWorld(), x1, y1, z1);
 			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
-			Selection selection = new CuboidSelection(p.getWorld(), loc1, loc2);
+			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
 
-			if (!bankUtils.isExclusiveSelection(selection)) {
-				plugin.debug("Selection is not exclusive");
-				p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
-				return true;
-			}
-			Bank bank = new Bank(plugin, args[1], selection);
+		} else
+			return false;
 
-			BankCreateEvent event = new BankCreateEvent(p, bank);
-			Bukkit.getPluginManager().callEvent(event);
-			if (event.isCancelled()) {
-				plugin.debug("Account create event cancelled");
-				return true;
-			}
-
-			if (bank.create(true)) {
-				bankUtils.addBank(bank, true);
-				plugin.debug(p.getName() + " has created a new bank.");
-				p.sendMessage(Messages.BANK_CREATED);
-				return true;
-			} else {
-				plugin.debug("An error occured creating the bank");
-				p.sendMessage(Messages.ERROR_OCCURRED);
-				return true;
-			}
+		if (!bankUtils.isExclusiveSelection(selection)) {
+			plugin.debug("Selection is not exclusive");
+			p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
+			return true;
 		}
-		return false;
+		if (!bankUtils.isUniqueName(args[1])) {
+			plugin.debug("Name is not unique");
+			p.sendMessage(Messages.NAME_NOT_UNIQUE);
+			return true;
+		}
+
+		Bank bank = new Bank(plugin, args[1], selection);
+
+		BankCreateEvent event = new BankCreateEvent(p, bank);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			plugin.debug("Account create event cancelled");
+			return true;
+		}
+
+		if (bank.create(true)) {
+			bankUtils.addBank(bank, true);
+			plugin.debug(p.getName() + " has created a new bank.");
+			p.sendMessage(Messages.BANK_CREATED);
+			return true;
+		} else {
+			plugin.debug("An error occured creating the bank");
+			p.sendMessage(Messages.ERROR_OCCURRED);
+			return true;
+		}
 	}
 
 	/**
@@ -411,6 +366,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 			}
 		} else
 			return false;
+
 		return true;
 	}
 
@@ -445,7 +401,148 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 	}
 
 	private boolean promptBankResize(Player p, String[] args) {
-		return false;
+		plugin.debug(p.getName() + " wants to resize a bank");
+
+		if (!p.hasPermission(Permissions.BANK_RESIZE)) {
+			plugin.debug(p.getName() + " does not have permission to resize a bank");
+			p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE);
+			return true;
+		}
+
+		Bank bank;
+		Selection selection;
+
+		if (args.length == 1)
+			return false;
+
+		else if (args.length == 2) {
+
+			if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
+				WorldEditPlugin worldEdit = plugin.getWorldEdit();
+				selection = worldEdit.getSelection(p);
+				if (selection == null) {
+					plugin.debug(p.getName() + " tried to create a bank with no worldedit selection");
+					p.sendMessage(Messages.NO_SELECTION_FOUND);
+					return true;
+				}
+			} else {
+				plugin.debug("WorldEdit is not enabled");
+				p.sendMessage(Messages.WORLDEDIT_NOT_ENABLED);
+				return true;
+			}
+
+		} else if (args.length == 5) {
+
+			String argX = args[2];
+			String argY = args[3];
+			String argZ = args[4];
+
+			int x1, x2, y1, y2, z1, z2;
+			try {
+				x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1, argX.length())) : Integer.parseInt(argX);
+				y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1, argY.length())) : Integer.parseInt(argY);
+				z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1, argZ.length())) : Integer.parseInt(argZ);
+			} catch (NumberFormatException e) {
+				plugin.debug("Could not parse coordinates in command args");
+				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
+				return false;
+			}
+			x2 = p.getLocation().getBlockX();
+			y2 = p.getLocation().getBlockY();
+			z2 = p.getLocation().getBlockZ();
+
+			if (argX.startsWith("~"))
+				x1 += x2;
+			if (argY.startsWith("~"))
+				y1 += y2;
+			if (argZ.startsWith("~"))
+				z1 += z2;
+
+			Location loc1 = new Location(p.getWorld(), x1, y1, z1);
+			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
+			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
+
+		} else if (args.length >= 8) {
+
+			String argX1 = args[2];
+			String argY1 = args[3];
+			String argZ1 = args[4];
+			String argX2 = args[5];
+			String argY2 = args[6];
+			String argZ2 = args[7];
+
+			int x1, y1, z1, x2, y2, z2;
+			try {
+				x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1, argX1.length()))
+						: Integer.parseInt(argX1);
+				y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1, argY1.length()))
+						: Integer.parseInt(argY1);
+				z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1, argZ1.length()))
+						: Integer.parseInt(argZ1);
+				x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1, argX2.length()))
+						: Integer.parseInt(argX2);
+				y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1, argY2.length()))
+						: Integer.parseInt(argY2);
+				z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1, argZ2.length()))
+						: Integer.parseInt(argZ2);
+			} catch (NumberFormatException e) {
+				plugin.debug("Could not parse coordinates in command args");
+				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
+				return false;
+			}
+			if (argX1.startsWith("~"))
+				x1 += p.getLocation().getBlockX();
+			if (argY1.startsWith("~"))
+				y1 += p.getLocation().getBlockY();
+			if (argZ1.startsWith("~"))
+				z1 += p.getLocation().getBlockZ();
+			if (argX2.startsWith("~"))
+				x2 += p.getLocation().getBlockX();
+			if (argY2.startsWith("~"))
+				y2 += p.getLocation().getBlockY();
+			if (argZ2.startsWith("~"))
+				z2 += p.getLocation().getBlockZ();
+
+			Location loc1 = new Location(p.getWorld(), x1, y1, z1);
+			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
+			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
+
+		} else
+			return false;
+
+		bank = bankUtils.lookupBank(args[1]);
+		if (bank == null) {
+			plugin.debug("No bank could be found under the identifier " + args[1]);
+			p.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+			return true;
+		}
+		if (!bankUtils.isExclusiveSelectionWithoutThis(selection, bank)) {
+			plugin.debug("New selection is not exclusive");
+			p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
+			return true;
+		}
+		if (!bankUtils.containsAllAccounts(bank, selection)) {
+			plugin.debug("New selection does not contain all accounts");
+			p.sendMessage(Messages.SELECTION_CUTS_ACCOUNTS);
+			return true;
+		}
+
+		bankUtils.resizeBank(bank, selection);
+		bankUtils.addBank(bank, true, new Callback<Integer>(plugin) {
+			@Override
+			public void onResult(Integer result) {
+				plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
+				p.sendMessage(Messages.BANK_RESIZED);
+			}
+
+			@Override
+			public void onError(Throwable e) {
+				plugin.debug(e);
+				p.sendMessage(Messages.ERROR_OCCURRED);
+			}
+		});
+
+		return true;
 	}
 
 	private boolean promptBankSet(CommandSender sender, String[] args) {
@@ -477,7 +574,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 
 	@Override
 	public boolean commandConfirmed(Player p, Collection<Bank> banks, String[] args) {
-		if (unconfirmed.containsKey(p.getUniqueId()) && unconfirmed.get(p.getUniqueId()).equals(args)) {
+		if (unconfirmed.containsKey(p.getUniqueId()) && Arrays.equals(unconfirmed.get(p.getUniqueId()), args)) {
 			removeUnconfirmedCommand(p);
 			return true;
 		} else {

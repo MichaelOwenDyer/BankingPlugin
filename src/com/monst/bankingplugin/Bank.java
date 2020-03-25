@@ -88,6 +88,10 @@ public class Bank {
 		return selection;
 	}
 
+	public void setSelection(Selection sel) {
+		this.selection = sel;
+	}
+
 	public String getCoordinates() {
 		if (getSelectionType().equals("CUBOID")) {
 			CuboidSelection sel = (CuboidSelection) selection;

@@ -6,10 +6,6 @@ import com.monst.bankingplugin.config.Config;
 
 public class Messages {
 	
-	private static final String ACCOUNT_CMD = Config.mainCommandNameAccount;
-	private static final String BANK_CMD = Config.mainCommandNameBank;
-	private static final String CONTROL_CMD = Config.mainCommandNameControl;
-	
 	public static final String BANK_CREATED = ChatColor.GOLD + "Bank created!";
 	public static final String ACCOUNT_CREATED = ChatColor.GOLD + "Account created!";
 	public static final String ACCOUNT_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$| " + ChatColor.GOLD + "to create an account.";
@@ -18,6 +14,7 @@ public class Messages {
 	public static final String CHEST_BLOCKED = ChatColor.RED + "Chest is blocked!";
 	public static final String ACCOUNT_REMOVED = ChatColor.GOLD + "The account has been removed!";
 	public static final String BANK_REMOVED = ChatColor.GOLD + "The bank has been removed!";
+	public static final String BANK_RESIZED = ChatColor.GOLD + "The bank has been resized!";
 	public static final String PLAYER_REIMBURSED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$|" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
 	public static final String ACCOUNT_OPENED = ChatColor.GOLD + "You have opened |'s account chest.";
@@ -42,6 +39,7 @@ public class Messages {
 	public static final String COORDINATES_PARSE_ERROR = ChatColor.RED + "Invalid coordinates.";
 	public static final String NAME_NOT_UNIQUE = ChatColor.RED + "A bank with that name already exists.";
 	public static final String SELECTION_NOT_EXCLUSIVE = ChatColor.RED + "Your selection overlaps with another bank.";
+	public static final String SELECTION_CUTS_ACCOUNTS = ChatColor.RED + "Your selection does not contain all accounts at this bank.";
 	public static final String WORLDEDIT_NOT_ENABLED = ChatColor.RED + "WorldEdit is not currently enabled. Please enter coordinates manually.";
 	public static final String CLICK_CHEST_CREATE = ChatColor.GOLD + "Click a chest to create an account.";
 	public static final String CLICK_CHEST_REMOVE = ChatColor.GOLD + "Click an account chest to remove.";
@@ -82,6 +80,7 @@ public class Messages {
 	public static final String NO_PERMISSION_BANK_INFO_VERBOSE = NO_PERMISSION + "view detailed bank info.";
 	public static final String NO_PERMISSION_BANK_LIST = NO_PERMISSION + "view a list of banks.";
 	public static final String NO_PERMISSION_BANK_LIST_VERBOSE = NO_PERMISSION + "view a detailed list of banks.";
+	public static final String NO_PERMISSION_BANK_RESIZE = NO_PERMISSION + "resize a bank.";
 	public static final String NO_PERMISSION_ACCOUNT_CREATE = NO_PERMISSION + "create an account.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME = NO_PERMISSION + "set an account nickname.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_MULTIPLIER = NO_PERMISSION + "set an account multiplier.";
@@ -126,7 +125,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_BANK_LIST = USAGE_PREFIX_BANK + " list <\"detailed\">";
 	//public static final String COMMAND_DESC_BANK_LIMITS = COMMAND_USAGE_PREFIX_BANK + " limits";
 	public static final String COMMAND_USAGE_BANK_REMOVEALL = USAGE_PREFIX_BANK + " removeall <\"all\">";
-	public static final String COMMAND_USAGE_BANK_RESIZE = USAGE_PREFIX_BANK + " resize <name> <xyz> <xyz>";
+	public static final String COMMAND_USAGE_BANK_RESIZE = USAGE_PREFIX_BANK + " resize [bankname] <xyz> <xyz>";
 	public static final String COMMAND_USAGE_BANK_SET = USAGE_PREFIX_BANK + " set [bankname] [field] [value]";
 	public static final String COMMAND_USAGE_RELOAD = USAGE_PREFIX_CONTROL + " reload";
 	public static final String COMMAND_USAGE_CONFIG = USAGE_PREFIX_CONTROL + " config [set / add / remove] [field] <newvalue>";

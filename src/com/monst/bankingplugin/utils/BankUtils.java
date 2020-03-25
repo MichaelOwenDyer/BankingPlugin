@@ -3,9 +3,12 @@ package com.monst.bankingplugin.utils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,9 +40,9 @@ public class BankUtils {
 	 * @return Bank at the given location or <b>null</b> if no bank is found there
 	 */
 	public Bank getBank(Location location) {
-		for (java.util.Map.Entry<Selection, Bank> e : bankSelectionMap.entrySet())
-			if (e.getKey().contains(location))
-				return e.getValue();
+		for (Selection sel : bankSelectionMap.keySet())
+			if (sel.contains(location))
+				return bankSelectionMap.get(sel);
 		return null;
     }
 
@@ -85,7 +88,7 @@ public class BankUtils {
     }
 
 	public boolean isUniqueName(String name) {
-		return !getBanksCopy().stream().anyMatch(bank -> bank.getName().equalsIgnoreCase(name));
+		return getBanksCopy().stream().noneMatch(bank -> bank.getName().equalsIgnoreCase(name));
 	}
 
 	// TODO: ?
@@ -94,21 +97,43 @@ public class BankUtils {
 	}
 
 	public boolean isExclusiveSelection(Selection sel) {
+		return isExclusiveSelectionWithoutThis(sel, null);
+	}
+
+	public boolean isExclusiveSelectionWithoutThis(Selection sel, Bank bank) {
 
 		List<Location> selVertices = getVertices(sel);
-		for (Selection existing : bankSelectionMap.keySet()) {
+		Set<Selection> selections = new HashSet<>(bankSelectionMap.keySet());
+		Optional.ofNullable(bank).ifPresent(b -> selections.remove(bank.getSelection()));
+		for (Selection existing : selections) {
 			// Ensures none of the selection's vertices lie inside an existing region
 			for (Location loc : selVertices)
 				if (existing.contains(loc))
 					return false;
-
 			// Ensures none of the existing regions' vertices lie inside of the selection
 			for (Location loc : getVertices(existing))
 				if (sel.contains(loc))
 					return false;
 		}
-
 		return true;
+	}
+
+	public void resizeBank(Bank bank, Selection newSel) {
+		bankSelectionMap.remove(bank.getSelection());
+		bankSelectionMap.put(newSel, bank);
+		bank.setSelection(newSel);
+	}
+
+	/**
+	 * Determines whether a new bank selection still contains all accounts of that
+	 * bank
+	 * 
+	 * @param bank Bank that is being resized
+	 * @param sel  New selection for the bank
+	 * @return Whether the new selection contains all accounts
+	 */
+	public boolean containsAllAccounts(Bank bank, Selection sel) {
+		return bank.getAccounts().stream().noneMatch(account -> !sel.contains(account.getLocation()));
 	}
 
 	public List<Location> getVertices(Selection sel) {

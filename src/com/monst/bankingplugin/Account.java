@@ -38,18 +38,11 @@ public class Account {
 	private final AccountStatus status;
 
 	public Account(BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc) {
-		this(-1, plugin, owner, bank, loc, new AccountStatus(), null);
+		this(-1, plugin, owner, null, bank, loc, new AccountStatus(), null);
 	}
 	
-	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc) {
-		this(id, plugin, owner, bank, loc, new AccountStatus(), null);
-	}
-	
-	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc, AccountStatus status) {
-		this(id, plugin, owner, bank, loc, status, null);
-	}
-	
-	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc, AccountStatus status, String nickname) {
+	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank,
+			Location loc, AccountStatus status, String nickname) {
 		this.id = id;
 		this.plugin = plugin;
 		this.owner = owner;
@@ -57,7 +50,7 @@ public class Account {
 		this.location = loc;
 		this.status = status;
 		this.nickname = nickname;
-		this.coowners = new HashSet<>();
+		this.coowners = coowners != null ? coowners : new HashSet<>();
 	}
 
 	public boolean create(boolean showConsoleMessages) {
@@ -227,12 +220,8 @@ public class Account {
 		coowners.add(p);
 	}
 
-	public OfflinePlayer untrustPlayer(OfflinePlayer p) {
-		if (coowners.contains(p)) {
-			coowners.remove(p);
-			return p;
-		} else
-			return null;
+	public void untrustPlayer(OfflinePlayer p) {
+		coowners.remove(p);
 	}
 
 	public Set<OfflinePlayer> getTrustedPlayersCopy() {
@@ -242,7 +231,7 @@ public class Account {
 		return Collections.unmodifiableSet(trustedPlayers);
 	}
 
-	public Set<OfflinePlayer> getCoownersCopy() {
+	public Set<OfflinePlayer> getCoowners() {
 		return Collections.unmodifiableSet(coowners);
 	}
 

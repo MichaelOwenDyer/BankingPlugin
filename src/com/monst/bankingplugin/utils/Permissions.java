@@ -6,6 +6,7 @@ public class Permissions {
 	public static final String ACCOUNT_CREATE_PROTECTED = "bankingplugin.account.create.protected";
 	public static final String ACCOUNT_REMOVEALL = "bankingplugin.account.removeall";
 	public static final String ACCOUNT_NO_LIMIT = "bankingplugin.account.limit.*";
+	public static final String ACCOUNT_TRUST = "bankingplugin.account.trust";
 
 	public static final String ACCOUNT_OTHER_CREATE = "bankingplugin.account.other.create";
 	public static final String ACCOUNT_OTHER_REMOVE = "bankingplugin.account.other.remove";
@@ -27,7 +28,6 @@ public class Permissions {
 	public static final String ACCOUNT_SET_NICKNAME = "bankingplugin.account.set.nickname";
 	public static final String ACCOUNT_SET_MULTIPLIER = "bankingplugin.account.set.multiplier";
 	public static final String ACCOUNT_SET_INTEREST_DELAY = "bankingplugin.account.set.interest-delay";
-	public static final String ACCOUNT_TRUST = "bankingplugin.account.trust";
 
 	public static final String BANK_CREATE = "bankingplugin.bank.create";
 	public static final String BANK_REMOVE = "bankingplugin.bank.remove";
@@ -37,6 +37,7 @@ public class Permissions {
 	public static final String BANK_LIST = "bankingplugin.bank.list";
 	public static final String BANK_LIST_VERBOSE = "bankingplugin.bank.list.verbose";
 	public static final String BANK_RESIZE = "bankingplugin.bank.resize";
+	public static final String BANK_SET = "bankingplugin.bank.set";
 
 	public static final String BYPASS_EXTERNAL_PLUGINS = "bankingplugin.external.bypass";
 	public static final String CONFIG = "bankingplugin.config";

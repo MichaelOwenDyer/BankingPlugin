@@ -66,6 +66,10 @@ class GenericTabCompleter implements TabCompleter {
 				return completeBankList(sender, args);
 			case "removeall":
 				return completeBankRemoveAll(sender, args);
+			case "resize":
+				return completeBankCreate((Player) sender, args);
+			case "set":
+				return new ArrayList<>();
 			default:
 				return new ArrayList<>();
 			}

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -230,9 +231,9 @@ public abstract class Database {
 	 */
 	public void addAccount(final Account account, final Callback<Integer> callback) {
 		final String queryNoId = "REPLACE INTO " + tableAccounts
-				+ " (bank_id,nickname,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				+ " (bank_id,nickname,owner,co_owners,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		final String queryWithId = "REPLACE INTO " + tableAccounts
-				+ " (id,bank_id,nickname,owner,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				+ " (id,bank_id,nickname,owner,co_owners,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		new BukkitRunnable() {
 			@Override
@@ -250,20 +251,23 @@ public abstract class Database {
 					ps.setInt(i + 1, account.getBank().getID());
 					ps.setString(i + 2, account.getNickname());
 					ps.setString(i + 3, account.getOwner().getUniqueId().toString());
-					ps.setInt(i + 4, account.getChestSize());
+					ps.setString(i + 4, account.getCoowners().isEmpty() ? null
+							: account.getCoowners().stream().map(p -> "" + p.getUniqueId())
+									.collect(Collectors.joining(" | ")));
+					ps.setInt(i + 5, account.getChestSize());
 
-					ps.setString(i + 5, account.getBalance().toString());
-					ps.setString(i + 6, account.getPrevBalance().toString());
+					ps.setString(i + 6, account.getBalance().toString());
+					ps.setString(i + 7, account.getPrevBalance().toString());
 
-					ps.setInt(i + 7, account.getStatus().getMultiplierStage());
-					ps.setInt(i + 8, account.getStatus().getRemainingUntilFirstPayout());
-					ps.setInt(i + 9, account.getStatus().getRemainingOfflinePayouts());
-					ps.setInt(i + 10, account.getStatus().getRemainingOfflineUntilReset());
+					ps.setInt(i + 8, account.getStatus().getMultiplierStage());
+					ps.setInt(i + 9, account.getStatus().getRemainingUntilFirstPayout());
+					ps.setInt(i + 10, account.getStatus().getRemainingOfflinePayouts());
+					ps.setInt(i + 11, account.getStatus().getRemainingOfflineUntilReset());
 
-					ps.setString(i + 11, account.getLocation().getWorld().getName());
-					ps.setInt(i + 12, account.getLocation().getBlockX());
-					ps.setInt(i + 13, account.getLocation().getBlockY());
-					ps.setInt(i + 14, account.getLocation().getBlockZ());
+					ps.setString(i + 12, account.getLocation().getWorld().getName());
+					ps.setInt(i + 13, account.getLocation().getBlockX());
+					ps.setInt(i + 14, account.getLocation().getBlockY());
+					ps.setInt(i + 15, account.getLocation().getBlockZ());
 
 					ps.executeUpdate();
 
@@ -632,12 +636,16 @@ public abstract class Database {
 				int z = rs.getInt("z");
 				Location location = new Location(world, x, y, z);
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
+				Set<OfflinePlayer> coowners = rs.getString("co_owners") == null ? null
+						: Arrays.stream(rs.getString("co_owners").split(" \\| ")).filter(uuid -> !uuid.equals(""))
+								.map(uuid -> Bukkit.getOfflinePlayer(UUID.fromString(uuid)))
+								.collect(Collectors.toSet());
 				String nickname = rs.getString("nickname");
 
 				plugin.debug("Initializing account... (#" + accountId + " at bank \"" + bank.getName() + "\" (#"
 						+ bank.getID() + "))");
 
-				Account account = new Account(accountId, plugin, owner, bank, location, status, nickname);
+				Account account = new Account(accountId, plugin, owner, coowners, bank, location, status, nickname);
 				accounts.add(account);
 			}
 

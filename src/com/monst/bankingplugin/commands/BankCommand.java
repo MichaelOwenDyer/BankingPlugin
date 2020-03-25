@@ -75,14 +75,14 @@ public class BankCommand extends GenericCommand {
 		addSubCommand(new BankSubCommand("resize", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_REMOVEALL) ? Messages.COMMAND_USAGE_BANK_REMOVEALL : "";
+				return sender.hasPermission(Permissions.BANK_RESIZE) ? Messages.COMMAND_USAGE_BANK_RESIZE : "";
 			}
 		});
 
 		addSubCommand(new BankSubCommand("set", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_REMOVEALL) ? Messages.COMMAND_USAGE_BANK_REMOVEALL : "";
+				return sender.hasPermission(Permissions.BANK_SET) ? Messages.COMMAND_USAGE_BANK_SET : "";
 			}
 		});
 
