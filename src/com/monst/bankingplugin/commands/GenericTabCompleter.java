@@ -295,6 +295,12 @@ class GenericTabCompleter implements TabCompleter {
 				return returnCompletions;
 			} else
 				return banks;
+		} else if (args.length == 3) {
+			if (!args[1].isEmpty()) {
+				if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
+					return List.of("detailed");
+			} else
+				return List.of("detailed");
 		}
 		return new ArrayList<>();
 	}

@@ -227,7 +227,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 			return true;
 		}
 
-		Bank bank = new Bank(plugin, args[1], selection);
+		Bank bank = new Bank(plugin, args[1], p, null, selection);
 
 		BankCreateEvent event = new BankCreateEvent(p, bank);
 		Bukkit.getPluginManager().callEvent(event);

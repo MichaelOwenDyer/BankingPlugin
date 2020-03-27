@@ -337,7 +337,6 @@ public class AccountUtils {
 
 	public BigDecimal appraiseAccountContents(Account account) {
 
-		Essentials essentials = plugin.getEssentials();
 		BigDecimal sum = BigDecimal.ZERO;
 		sum.setScale(2, RoundingMode.HALF_EVEN);
 		for (ItemStack items : account.getInventoryHolder().getInventory().getContents()) {

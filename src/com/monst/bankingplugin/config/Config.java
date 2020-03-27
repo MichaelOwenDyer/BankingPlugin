@@ -36,7 +36,7 @@ public class Config {
     /**
      * The baseline interest rate for all accounts.
      **/
-    public static double baselineInterestRate;
+    public static double baseInterestRate;
     
     /**
      * Whether to enable or disable interest multipliers.
@@ -64,23 +64,23 @@ public class Config {
 	/**
 	 * The number of payouts a player is allowed to collect offline.
 	 **/
-    public static short allowedOfflinePayouts;
+	public static int allowedOfflinePayouts;
 
     /**
 	 * The number of payouts a player is allowed to be offline for (but not
 	 * necessarily collect) before their multiplier is reset.
 	 **/
-    public static short allowedOfflineBeforeMultiplierReset;
+	public static int allowedOfflineBeforeMultiplierReset;
 
     /**
 	 * The behavior of an offline player's multiplier.
 	 **/
-	public static short offlineMultiplierBehavior;
+	public static int offlineMultiplierBehavior;
     
     /**
 	 * The behavior of a player's multiplier at a withdrawal event.
 	 **/
-	public static short withdrawalMultiplierBehavior;
+	public static int withdrawalMultiplierBehavior;
     
     /**
      * The item with which a player can click an account chest to retrieve information.
@@ -90,12 +90,22 @@ public class Config {
     /**
      * The price a player has to pay in order to create a bank.
      **/
-	// public static double creationPriceBank;
+	public static double creationPriceBank;
     
     /**
      * The price a player has to pay in order to create an account.
      **/
     public static double creationPriceAccount;
+
+	/**
+	 * The default minimum balance
+	 */
+	public static double minBalance;
+
+	/**
+	 * The fee that must be paid for a balance lower than the minimum
+	 */
+	public static double lowBalanceFee;
 
     /**
      * Whether the account creation price should be refunded at removal.
@@ -150,7 +160,7 @@ public class Config {
      * 
      * If this is equal to {@code 0}, the log will not be cleaned.
      **/
-	public static short cleanupLogDays;
+	public static int cleanupLogDays;
 
     /**
      * Whether WorldGuard integration should be enabled.
@@ -194,7 +204,7 @@ public class Config {
     /**
      * The default account ownership limit for players whose limit is not set via a permission.
      **/
-    public static short defaultAccountLimit;
+	public static int defaultAccountLimit;
 
     /**
      * The default value for the custom WorldGuard flag 'create-bank'
@@ -356,7 +366,7 @@ public class Config {
         interestPayoutTimes = (config.getDoubleList("interest-payout-times")) != null ?
 				config.getDoubleList("interest-payout-times").stream().map(t -> (t % 24 + 24) % 24).distinct().sorted()
 						.collect(Collectors.toList()) : new LinkedList<>();
-        baselineInterestRate = config.getDouble("baseline-interest-rate");
+		baseInterestRate = config.getDouble("base-interest-rate");
         enableInterestMultipliers = config.getBoolean("enable-interest-multipliers");
         interestMultipliers = (config.getIntegerList("interest-multipliers")) != null ?
 				config.getIntegerList("interest-multipliers") : new ArrayList<>();
@@ -368,7 +378,7 @@ public class Config {
 		offlineMultiplierBehavior = (short) config.getInt("offline-multiplier-behavior");
 		withdrawalMultiplierBehavior = (short) config.getInt("withdrawal-multiplier-behavior");
 		accountInfoItem = new ItemStack(Material.getMaterial(config.getString("account-info-item")));
-		// creationPriceBank = config.getDouble("creation-prices.account");
+		creationPriceBank = config.getDouble("creation-prices.bank");
 		creationPriceAccount = config.getDouble("creation-prices.account");
         reimburseAccountCreation = config.getBoolean("reimburse-account-creation");
 		confirmOnRemove = config.getBoolean("confirm-on-remove");

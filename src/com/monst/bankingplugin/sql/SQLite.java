@@ -85,15 +85,19 @@ public class SQLite extends Database {
         return "CREATE TABLE IF NOT EXISTS " + tableBanks + " ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
 			+ "name TEXT NOT NULL," // Bank name
-			+ "world TEXT NOT NULL,"
+            + "owner TEST NOT NULL," // Owner UUID
+            + "co_owners TEXT,"
 			
             + "selection_type TEXT NOT NULL CHECK (selection_type IN ('CUBOID', 'POLYGONAL')),"
+			+ "world TEXT NOT NULL,"
 			+ "minY INTEGER," // only used if polygonal
 			+ "maxY INTEGER," // only used if polygonal
-        	+ "points TEXT NOT NULL)"; // Contains min/max points if cuboid, all vertices if polygonal
+        	+ "points TEXT NOT NULL," // Contains min/max points if cuboid, all vertices if polygonal
         
-        // id,name,world,selection_type,maxY,minY,points
-		// ?,?,?,?,?,?,?
+        	+ "account_config TEXT NOT NULL)";
+        
+		// id,name,owner,co_owners,selection_type,world,maxY,minY,points
+		// ?,?,?,?,?,?,?,?,?
     }
     
     @Override

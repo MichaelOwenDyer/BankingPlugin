@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import org.bukkit.entity.Player;
 
 import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Account.TransactionType;
+import com.monst.bankingplugin.listeners.AccountBalanceListener.TransactionType;
 
 public class AccountTransactionEvent extends AccountEvent {
 	

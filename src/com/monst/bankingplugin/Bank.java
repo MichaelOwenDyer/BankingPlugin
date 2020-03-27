@@ -13,6 +13,8 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 
+import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Utils;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Polygonal2DSelection;
@@ -20,31 +22,34 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 
 import net.md_5.bungee.api.ChatColor;
 
-public class Bank {
+public class Bank extends Ownable {
 	
 	private final BankingPlugin plugin;
 	private boolean created;
 	
-	private OfflinePlayer owner;
-
 	private int id;
 	private String name;
 	private final World world;
 	private Selection selection;
+	private final AccountConfig accountConfig;
+	private final Set<Account> accounts;
 
-	private Set<Account> accounts = null;
-
-	public Bank(BankingPlugin plugin, String name, Selection selection) {
-		this(-1, plugin, name, selection);
+	public Bank(BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+			Selection selection) {
+		this(-1, plugin, name, owner, coowners, selection, null);
 	}
 	
-	public Bank(int id, BankingPlugin plugin, String name, Selection selection) {
+	public Bank(int id, BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+			Selection selection, AccountConfig accountConfig) {
 		this.id = id;
 		this.plugin = plugin;
+		this.owner = owner;
+		this.coowners = coowners != null ? coowners : new HashSet<>();
 		this.name = name;
 		this.world = selection.getWorld();
 		this.selection = selection;
-		accounts = new HashSet<>();
+		this.accounts = new HashSet<>();
+		this.accountConfig = accountConfig != null ? accountConfig : new AccountConfig();
 	}
 	
 	public boolean create(boolean showConsoleMessages) {
@@ -90,6 +95,10 @@ public class Bank {
 
 	public void setSelection(Selection sel) {
 		this.selection = sel;
+	}
+
+	public AccountConfig getAccountConfig() {
+		return accountConfig;
 	}
 
 	public String getCoordinates() {
@@ -151,7 +160,7 @@ public class Bank {
 
 	public BigDecimal getTotalValue() {
 		if (created)
-			return accounts.stream().map(account -> account.getStatus().getBalance()).reduce(BigDecimal.ZERO,
+			return accounts.stream().map(account -> account.getBalance()).reduce(BigDecimal.ZERO,
 					(value, sum) -> sum.add(value)).setScale(2, RoundingMode.HALF_EVEN);
 		else
 			return BigDecimal.ZERO;

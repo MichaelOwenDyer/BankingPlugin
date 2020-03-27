@@ -28,11 +28,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Account.TransactionType;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
+import com.monst.bankingplugin.listeners.AccountBalanceListener.TransactionType;
+import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.Callback;
 import com.sk89q.worldedit.BlockVector2D;
@@ -341,9 +342,9 @@ public abstract class Database {
 	 */
 	public void addBank(final Bank bank, final Callback<Integer> callback) {
 		final String queryWithId = "REPLACE INTO " + tableBanks
-				+ " (id,name,world,selection_type,minY,maxY,points) VALUES(?,?,?,?,?,?,?)";
+				+ " (id,name,owner,co_owners,selection_type,world,minY,maxY,points) VALUES(?,?,?,?,?,?,?,?,?)";
 		final String queryNoId = "REPLACE INTO " + tableBanks
-				+ " (name,world,selection_type,minY,maxY,points) VALUES(?,?,?,?,?,?)";
+				+ " (name,owner,co_owners,selection_type,world,minY,maxY,points) VALUES(?,?,?,?,?,?,?,?)";
 
 		new BukkitRunnable() {
 			@Override
@@ -359,20 +360,25 @@ public abstract class Database {
 					}
 
 					ps.setString(i + 1, bank.getName());
-					ps.setString(i + 2, bank.getWorld().getName());
-					ps.setString(i + 3, bank.getSelectionType());
+					ps.setString(i + 2, bank.getOwner().getUniqueId().toString());
+					ps.setString(i + 3, bank.getCoowners().isEmpty() ? null
+							: bank.getCoowners().stream().map(p -> p.getUniqueId().toString())
+									.collect(Collectors.joining(" | ")));
+					ps.setString(i + 4, bank.getSelectionType());
+					ps.setString(i + 5, bank.getWorld().getName());
+
 
 					if (bank.getSelection() instanceof Polygonal2DSelection) {
 						Polygonal2DSelection sel = (Polygonal2DSelection) bank.getSelection();
 
-						ps.setInt(i + 4, sel.getMaximumPoint().getBlockY());
-						ps.setInt(i + 5, sel.getMinimumPoint().getBlockY());
+						ps.setInt(i + 6, sel.getMaximumPoint().getBlockY());
+						ps.setInt(i + 7, sel.getMinimumPoint().getBlockY());
 
 						String vertices = sel.getNativePoints().stream()
 								.map(vector -> "" + vector.getBlockX() + "," + vector.getBlockZ())
 								.collect(Collectors.joining(" | "));
 
-						ps.setString(i + 6, vertices);
+						ps.setString(i + 8, vertices);
 
 					} else if (bank.getSelection() instanceof CuboidSelection) {
 						CuboidSelection sel = (CuboidSelection) bank.getSelection();
@@ -385,16 +391,29 @@ public abstract class Database {
 						sb.append(" | ");
 						sb.append(min.getBlockX() + "," + min.getBlockY() + "," + min.getBlockZ());
 
-						ps.setInt(i + 4, -1);
-						ps.setInt(i + 5, -1);
+						ps.setInt(i + 6, -1);
+						ps.setInt(i + 7, -1);
 
-						ps.setString(i + 6, sb.toString());
+						ps.setString(i + 8, sb.toString());
 					} else {
 						plugin.getLogger()
 								.severe("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
 						plugin.debug("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
 						return;
 					}
+
+					AccountConfig config = bank.getAccountConfig();
+					ps.setString(i + 9,
+							config.getInterestDelay() + " | " + config.getAllowedOffline() + " | "
+									+ config.getAllowedOfflineBeforeReset() + " | " + config.getBaseInterestRate()
+									+ " | "
+									+ config.getMultipliers().stream().map(num -> "" + num).collect(
+											Collectors.joining(",", "[", "]"))
+									+ " | " + config.multipliersEnabled() + " | " + config.countsInterestDelayOffline()
+									+ " | " + config.reimbursesAccountCreation() + " | "
+									+ config.getOfflineMultiplierBehavior() + " | "
+									+ config.getWithdrawalMultiplierBehavior() + " | "
+									+ config.getAccountCreationPrice() + " | " + config.getMinBalance());
 
 					ps.executeUpdate();
 
@@ -476,17 +495,17 @@ public abstract class Database {
 				Map<Bank, Collection<Account>> banksAndAccounts = new HashMap<>();
 
 				try (Connection con = dataSource.getConnection();
-						PreparedStatement psBanks = con.prepareStatement("SELECT * FROM " + tableBanks + "")) {
-					// id,name,world,selection_type,minY,maxY,points
-					ResultSet rsBanks = psBanks.executeQuery();
+						PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableBanks + "")) {
+					// id,name,selection_type,world,minY,maxY,points,account_config
+					ResultSet rs = ps.executeQuery();
 
-					while (rsBanks.next()) {
+					while (rs.next()) {
 
-						int bankId = rsBanks.getInt("id");
+						int bankId = rs.getInt("id");
 
 						plugin.debug("Getting bank from database... (#" + bankId + ")");
 
-						String worldName = rsBanks.getString("world");
+						String worldName = rs.getString("world");
 						World world = Bukkit.getWorld(worldName);
 
 						if (world == null) {
@@ -500,14 +519,19 @@ public abstract class Database {
 							continue;
 						}
 
-						String name = rsBanks.getString("name");
-						
+						String name = rs.getString("name");
+						OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
+						Set<OfflinePlayer> coowners = rs.getString("co_owners") == null ? null
+								: Arrays.stream(rs.getString("co_owners").split(" \\| "))
+										.filter(uuid -> !uuid.equals(""))
+										.map(uuid -> Bukkit.getOfflinePlayer(UUID.fromString(uuid)))
+										.collect(Collectors.toSet());
 						Selection selection;
-						String[] pointArray = rsBanks.getString("points").split(" \\| ");
+						String[] pointArray = rs.getString("points").split(" \\| ");
 						
-						if (rsBanks.getString("selection_type").equals("POLYGONAL")) {
-							int minY = rsBanks.getInt("minY");
-							int maxY = rsBanks.getInt("maxY");
+						if (rs.getString("selection_type").equals("POLYGONAL")) {
+							int minY = rs.getInt("minY");
+							int maxY = rs.getInt("maxY");
 							
 							List<BlockVector2D> nativePoints = new ArrayList<>();
 							
@@ -536,10 +560,29 @@ public abstract class Database {
 							
 							selection = new CuboidSelection(world, min, max);
 						}
+						String[] values = rs.getString("account_config").substring(1).split(" \\| ");
+						List<Integer> multipliers = Arrays
+								.stream(values[4].substring(1, values[4].length() - 1).split(","))
+								.map(Integer::parseInt).collect(Collectors.toList());
+
+						AccountConfig accountConfig = new AccountConfig(
+								Integer.parseInt(values[0]),
+								Integer.parseInt(values[1]),
+								Integer.parseInt(values[2]), 
+								Double.parseDouble(values[3]),
+								multipliers, 
+								Boolean.parseBoolean(values[5]),
+								Boolean.parseBoolean(values[6]),
+								Boolean.parseBoolean(values[7]),
+								Integer.parseInt(values[8]),
+								Integer.parseInt(values[9]),
+								Double.parseDouble(values[10]),
+								Double.parseDouble(values[11])
+								);
 
 						plugin.debug("Initializing bank \"" + name + "\"... (#" + bankId + ")");
 
-						Bank bank = new Bank(bankId, plugin, name, selection);
+						Bank bank = new Bank(bankId, plugin, name, owner, coowners, selection, accountConfig);
 
 						getAccountsByBank(bank, showConsoleMessages, new Callback<Collection<Account>>(plugin) {
 							@Override
@@ -617,12 +660,8 @@ public abstract class Database {
 					int remainingOfflinePayouts = rs.getInt("remaining_offline_payouts");
 					int remainingOfflineUntilReset = rs.getInt("remaining_offline_until_reset");
 
-					BigDecimal balance = BigDecimal.valueOf(Double.parseDouble(rs.getString("balance")));
-					BigDecimal prevBalance = BigDecimal
-							.valueOf(Double.parseDouble(rs.getString("prev_balance")));
-
-					status = new AccountStatus(multiplierStage, remainingUntilPayout, remainingOfflinePayouts,
-							remainingOfflineUntilReset, balance, prevBalance);
+					status = new AccountStatus(bank.getAccountConfig(), multiplierStage, remainingUntilPayout,
+							remainingOfflinePayouts, remainingOfflineUntilReset);
 
 				} catch (SQLException e) {
 					plugin.getLogger().severe("Failed to create account status (#" + accountId + ")");
@@ -630,6 +669,9 @@ public abstract class Database {
 					plugin.debug(e);
 					continue;
 				}
+
+				BigDecimal balance = BigDecimal.valueOf(Double.parseDouble(rs.getString("balance")));
+				BigDecimal prevBalance = BigDecimal.valueOf(Double.parseDouble(rs.getString("prev_balance")));
 
 				int x = rs.getInt("x");
 				int y = rs.getInt("y");
@@ -645,7 +687,8 @@ public abstract class Database {
 				plugin.debug("Initializing account... (#" + accountId + " at bank \"" + bank.getName() + "\" (#"
 						+ bank.getID() + "))");
 
-				Account account = new Account(accountId, plugin, owner, coowners, bank, location, status, nickname);
+				Account account = new Account(accountId, plugin, owner, coowners, bank, location, status, nickname,
+						balance, prevBalance);
 				accounts.add(account);
 			}
 

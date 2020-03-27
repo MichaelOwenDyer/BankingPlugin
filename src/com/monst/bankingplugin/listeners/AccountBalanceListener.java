@@ -12,7 +12,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 
 import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Account.TransactionType;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.AccountUtils;
@@ -92,5 +91,10 @@ public class AccountBalanceListener implements Listener {
 		else
 			return account.getOwner().getName() + "'s new balance is $" + Utils.formatNumber(balance) + ".";
 	}
+
+	public enum TransactionType {
+		DEPOSIT, WITHDRAWAL
+	}
+
 }
 

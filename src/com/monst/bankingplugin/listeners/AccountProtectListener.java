@@ -179,7 +179,8 @@ public class AccountProtectListener implements Listener {
         }
 
 		final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
-				account.getBank(), account.getLocation(), account.getStatus(), account.getNickname());
+				account.getBank(), account.getLocation(), account.getStatus(), account.getNickname(),
+				account.getBalance(), account.getPrevBalance());
 
 		accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
             @Override
@@ -243,8 +244,8 @@ public class AccountProtectListener implements Listener {
 
 			Location loc = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
 			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(),
-					account.getCoowners(), account.getBank(), loc,
-					account.getStatus(), account.getNickname());
+					account.getCoowners(), account.getBank(), loc, account.getStatus(), account.getNickname(),
+					account.getBalance(), account.getPrevBalance());
 
 			accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
 				@Override

@@ -56,7 +56,7 @@ public class InterestEventListener implements Listener {
 					continue;
 				}
 
-				BigDecimal baseInterest = account.getBalance().multiply(BigDecimal.valueOf(Config.baselineInterestRate))
+				BigDecimal baseInterest = account.getBalance().multiply(BigDecimal.valueOf(Config.baseInterestRate))
 						.setScale(2, RoundingMode.HALF_EVEN);
 				BigDecimal interest = baseInterest;
 
@@ -66,7 +66,7 @@ public class InterestEventListener implements Listener {
 				}
 
 				status.incrementMultiplier(account.isTrustedPlayerOnline());
-				account.getStatus().updatePrevBalance();
+				account.updatePrevBalance();
 
 				final int payoutSplit = account.getTrustedPlayersCopy().size();
 				for (OfflinePlayer recipient : account.getTrustedPlayersCopy()) {

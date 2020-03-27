@@ -1,7 +1,7 @@
 package com.monst.bankingplugin;
 
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,37 +20,40 @@ import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.ItemUtils;
+import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Utils;
 
-public class Account {
+public class Account extends Ownable {
 
 	private final BankingPlugin plugin;
 	private boolean created;
 
 	private int id;
 	private String nickname;
-	private final OfflinePlayer owner;
-	private Set<OfflinePlayer> coowners;
 	private final Location location;
 	private final Bank bank;
 	private InventoryHolder inventoryHolder;
 	
 	private final AccountStatus status;
+	private BigDecimal balance;
+	private BigDecimal prevBalance;
 
 	public Account(BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc) {
-		this(-1, plugin, owner, null, bank, loc, new AccountStatus(), null);
+		this(-1, plugin, owner, null, bank, loc, new AccountStatus(bank.getAccountConfig()), null, BigDecimal.ZERO, BigDecimal.ZERO);
 	}
 	
 	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank,
-			Location loc, AccountStatus status, String nickname) {
+			Location loc, AccountStatus status, String nickname, BigDecimal balance, BigDecimal prevBalance) {
 		this.id = id;
 		this.plugin = plugin;
 		this.owner = owner;
+		this.coowners = coowners != null ? coowners : new HashSet<>();
 		this.bank = bank;
 		this.location = loc;
 		this.status = status;
 		this.nickname = nickname;
-		this.coowners = coowners != null ? coowners : new HashSet<>();
+		this.balance = balance.setScale(2, RoundingMode.HALF_EVEN);
+		this.prevBalance = prevBalance.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
 	public boolean create(boolean showConsoleMessages) {
@@ -196,55 +199,33 @@ public class Account {
 		}
 	}
 
-	public boolean isOwner(OfflinePlayer player) {
-		return owner.getUniqueId().equals(player.getUniqueId());
-	}
-
-	public OfflinePlayer getOwner() {
-		return owner;
-	}
-
-	public boolean isTrustedPlayerOnline() {
-		return owner.isOnline() || coowners.stream().anyMatch(p -> p.isOnline());
-	}
-
-	public boolean isTrusted(OfflinePlayer p) {
-		return p != null ? isOwner(p) || isCoowner(p) : false;
-	}
-
-	public boolean isCoowner(OfflinePlayer p) {
-		return p != null ? coowners.contains(p) : false;
-	}
-
-	public void trustPlayer(OfflinePlayer p) {
-		coowners.add(p);
-	}
-
-	public void untrustPlayer(OfflinePlayer p) {
-		coowners.remove(p);
-	}
-
-	public Set<OfflinePlayer> getTrustedPlayersCopy() {
-		Set<OfflinePlayer> trustedPlayers = new HashSet<>();
-		trustedPlayers.add(owner);
-		trustedPlayers.addAll(coowners);
-		return Collections.unmodifiableSet(trustedPlayers);
-	}
-
-	public Set<OfflinePlayer> getCoowners() {
-		return Collections.unmodifiableSet(coowners);
-	}
-
 	public BigDecimal getBalance() {
-		return status.getBalance();
-	}
-	
-	public void setBalance(BigDecimal newBalance) {
-		status.setBalance(newBalance);
+		return balance;
 	}
 
 	public BigDecimal getPrevBalance() {
-		return status.getPrevBalance();
+		return prevBalance;
+	}
+	
+	/**
+	 * Saves the current balance of this account into the previous balance. Used
+	 * only at interest payout events. Should only be used AFTER refreshing the
+	 * account balance with AccountUtils.appraiseAccountContents() to ensure the
+	 * balance is fully up-to-date.
+	 */
+	public void updatePrevBalance() {
+		prevBalance = balance;
+	}
+
+	/**
+	 * Changes the current balance of this account. Used every time the account
+	 * chest is accessed and the contents are changed.
+	 * 
+	 * @param newBalance the new (positive) balance of the account.
+	 */
+	public void setBalance(BigDecimal newBalance) {
+		if (newBalance != null && newBalance.signum() >= 0)
+			this.balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
 	public Location getLocation() {
@@ -289,11 +270,11 @@ public class Account {
 	}
 
 	public String toStringVerbose() {
-		String balance = "$" + Utils.formatNumber(status.getBalance());
+		String balance = "$" + Utils.formatNumber(getBalance());
 		String multiplier = status.getRealMultiplier() + "x (Stage " + (status.getMultiplierStage() + 1) + " of "
 				+ Config.interestMultipliers.size() + ")";
-		String interestRate = "" + ChatColor.GREEN + (Config.baselineInterestRate * status.getRealMultiplier() * 100)
-				+ "%" + ChatColor.GRAY + " (" + Config.baselineInterestRate + " x " + status.getRealMultiplier() + ")";
+		String interestRate = "" + ChatColor.GREEN + (Config.baseInterestRate * status.getRealMultiplier() * 100) + "%"
+				+ ChatColor.GRAY + " (" + Config.baseInterestRate + " x " + status.getRealMultiplier() + ")";
 		if (status.getRemainingUntilFirstPayout() != 0)
 			interestRate = interestRate
 					.concat(ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)");
@@ -302,9 +283,4 @@ public class Account {
 				+ multiplier + "\n" + "Interest rate: " + interestRate + "\n" + ChatColor.GRAY + "Location: " + loc
 				+ "\n";
 	}
-
-	public enum TransactionType {
-		DEPOSIT, WITHDRAWAL
-	}
-
 }
