@@ -1,8 +1,9 @@
 package com.monst.bankingplugin.config;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.bukkit.Material;
@@ -36,7 +37,7 @@ public class Config {
     /**
      * The baseline interest rate for all accounts.
      **/
-    public static double baseInterestRate;
+	public static Entry<Double, Boolean> interestRate;
     
     /**
      * Whether to enable or disable interest multipliers.
@@ -46,41 +47,41 @@ public class Config {
     /**
      * The list of interest multipliers in sequential order.
      **/
-    public static List<Integer> interestMultipliers;
+	public static Entry<List<Integer>, Boolean> interestMultipliers;
 
     /**
 	 * The number of interest payout events a player has to own their account for
 	 * before they start collecting interest
 	 **/
-	public static int interestDelayPeriod;
+	public static Entry<Integer, Boolean> initialDelayPeriod;
 
 	/**
 	 * Whether to decrement the interest delay period while a player is offline. 
 	 * Set this to false to only decrement the delay period when a player is online for
 	 * an interest payout event, and not while offline.
 	 **/
-	public static boolean interestDelayCountWhileOffline;
+	public static Entry<Boolean, Boolean> countInterestDelayOffline;
 
 	/**
 	 * The number of payouts a player is allowed to collect offline.
 	 **/
-	public static int allowedOfflinePayouts;
+	public static Entry<Integer, Boolean> allowedOfflinePayouts;
 
     /**
 	 * The number of payouts a player is allowed to be offline for (but not
 	 * necessarily collect) before their multiplier is reset.
 	 **/
-	public static int allowedOfflineBeforeMultiplierReset;
+	public static Entry<Integer, Boolean> allowedOfflineBeforeMultiplierReset;
 
     /**
 	 * The behavior of an offline player's multiplier.
 	 **/
-	public static int offlineMultiplierBehavior;
+	public static Entry<Integer, Boolean> offlineMultiplierBehavior;
     
     /**
 	 * The behavior of a player's multiplier at a withdrawal event.
 	 **/
-	public static int withdrawalMultiplierBehavior;
+	public static Entry<Integer, Boolean> withdrawalMultiplierBehavior;
     
     /**
      * The item with which a player can click an account chest to retrieve information.
@@ -95,22 +96,22 @@ public class Config {
     /**
      * The price a player has to pay in order to create an account.
      **/
-    public static double creationPriceAccount;
+	public static Entry<Double, Boolean> creationPriceAccount;
 
 	/**
-	 * The default minimum balance
+	 * The default minimum balance.
 	 */
-	public static double minBalance;
+	public static Entry<Double, Boolean> minBalance;
 
 	/**
-	 * The fee that must be paid for a balance lower than the minimum
+	 * The fee that must be paid for a balance lower than the minimum.
 	 */
-	public static double lowBalanceFee;
+	public static Entry<Double, Boolean> lowBalanceFee;
 
     /**
      * Whether the account creation price should be refunded at removal.
      */
-    public static boolean reimburseAccountCreation;
+	public static Entry<Boolean, Boolean> reimburseAccountCreation;
 
 	/**
 	 * Whether remove requests should be confirmed
@@ -363,24 +364,52 @@ public class Config {
         mainCommandNameBank = config.getString("main-command-names.bank");
         mainCommandNameAccount = config.getString("main-command-names.account");
 		mainCommandNameControl = config.getString("main-command-names.control");
-        interestPayoutTimes = (config.getDoubleList("interest-payout-times")) != null ?
-				config.getDoubleList("interest-payout-times").stream().map(t -> (t % 24 + 24) % 24).distinct().sorted()
-						.collect(Collectors.toList()) : new LinkedList<>();
-		baseInterestRate = config.getDouble("base-interest-rate");
-        enableInterestMultipliers = config.getBoolean("enable-interest-multipliers");
-        interestMultipliers = (config.getIntegerList("interest-multipliers")) != null ?
-				config.getIntegerList("interest-multipliers") : new ArrayList<>();
-		interestDelayPeriod = config.getInt("interest-delay-period");
-		interestDelayCountWhileOffline = config.getBoolean("interest-delay-count-while-offline");
-		allowedOfflinePayouts = (short) config.getInt("allowed-offline-payouts");
-		allowedOfflineBeforeMultiplierReset = (short) config
-				.getInt("allowed-offline-before-multiplier-reset");
-		offlineMultiplierBehavior = (short) config.getInt("offline-multiplier-behavior");
-		withdrawalMultiplierBehavior = (short) config.getInt("withdrawal-multiplier-behavior");
+		interestPayoutTimes = (config.getDoubleList("interest-payout-times")) != null
+				? config.getDoubleList("interest-payout-times").stream().map(t -> (t % 24 + 24) % 24).distinct()
+						.sorted().collect(Collectors.toList())
+				: new ArrayList<>();
+
+		interestRate = new SimpleEntry<>(config.getDouble("interest-rate.default"),
+				config.getBoolean("interest-rate.allow-override"));
+
+		interestMultipliers = new SimpleEntry<>(config.getIntegerList("interest-multipliers.default") != null
+				? config.getIntegerList("interest-multipliers")
+				: List.of(1), 
+				config.getBoolean("interest-multipliers.allow-override"));
+
+		initialDelayPeriod = new SimpleEntry<>(config.getInt("interest-delay-period.default"),
+				config.getBoolean("interest-delay-period.allow-override"));
+
+		countInterestDelayOffline = new SimpleEntry<>(config.getBoolean("count-interest-delay-offline.default"),
+				config.getBoolean("count-interest-delay-offline.allow-override"));
+
+		allowedOfflinePayouts = new SimpleEntry<>(config.getInt("allowed-offline-payouts.default"),
+				config.getBoolean("allowed-offline-payouts.allow-override"));
+
+		allowedOfflineBeforeMultiplierReset = new SimpleEntry<>(
+				config.getInt("allowed-offline-before-multiplier-reset.default"),
+				config.getBoolean("allowed-offline-before-multiplier-reset.allow-override"));
+
+		offlineMultiplierBehavior = new SimpleEntry<>(config.getInt("offline-multiplier-behavior.default"),
+				config.getBoolean("offline-multiplier-behavior.allow-override"));
+
+		withdrawalMultiplierBehavior = new SimpleEntry<>(config.getInt("withdrawal-multiplier-behavior.default"),
+				config.getBoolean("withdrawal-multiplier-behavior.allow-override"));
+
 		accountInfoItem = new ItemStack(Material.getMaterial(config.getString("account-info-item")));
 		creationPriceBank = config.getDouble("creation-prices.bank");
-		creationPriceAccount = config.getDouble("creation-prices.account");
-        reimburseAccountCreation = config.getBoolean("reimburse-account-creation");
+		creationPriceAccount = new SimpleEntry<>(config.getDouble("creation-prices.account.default"),
+				config.getBoolean("creation-prices.account.allow-override"));
+
+		minBalance = new SimpleEntry<>(config.getDouble("minimum-account-balance.default"),
+				config.getBoolean("minimum-account-balance.allow-override"));
+
+		lowBalanceFee = new SimpleEntry<>(config.getDouble("low-balance-fee.default"),
+				config.getBoolean("low-balance-fee.allow-override"));
+
+		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.default"),
+				config.getBoolean("reimburse-account-creation.allow-override"));
+
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");
 		removeDelay = config.getInt("removeall-delay") >= 0 ? config.getInt("removeall-delay") : 600;
@@ -389,7 +418,7 @@ public class Config {
 		enableTransactionLog = config.getBoolean("enable-logs.transaction-log");
 		enableInterestLog = config.getBoolean("enable-logs.interest-log");
 		enableDebugLog = config.getBoolean("enable-logs.debug-log");
-		cleanupLogDays = (short) config.getInt("cleanup-log-days");
+		cleanupLogDays = config.getInt("cleanup-log-days");
         enableWorldGuardIntegration = config.getBoolean("enable-worldguard-integration");
         enableGriefPreventionIntegration = config.getBoolean("enable-griefprevention-integration");
 		enableWorldEditIntegration = config.getBoolean("enable-worldedit-integration");
@@ -397,7 +426,7 @@ public class Config {
         blacklist = (config.getStringList("blacklist") != null) ? 
 				config.getStringList("blacklist") : new ArrayList<>();
 		// defaultBankLimit = (short) config.getInt("default-limits.bank");
-        defaultAccountLimit = (short) config.getInt("default-limits.account");
+		defaultAccountLimit = config.getInt("default-limits.account");
 		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-values.create-bank");
         wgAllowCreateAccountDefault = config.getBoolean("worldguard-default-flag-values.create-account");
 		databaseTablePrefix = config.getString("table-prefix");

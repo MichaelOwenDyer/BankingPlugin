@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
@@ -47,6 +48,14 @@ public class Utils {
 		if (s == null)
 			return null;
 		return s.replaceAll("&([0-9a-f])", "\u00A7$1");
+	}
+
+	public static String stripColor(String s) {
+		return ChatColor.stripColor(colorize(s));
+	}
+
+	public static String formatNumber(double d) {
+		return formatNumber(BigDecimal.valueOf(d));
 	}
 
 	public static String formatNumber(BigDecimal bd) {

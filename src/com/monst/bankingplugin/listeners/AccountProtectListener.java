@@ -27,8 +27,8 @@ import org.bukkit.inventory.InventoryHolder;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
+import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ItemUtils;
@@ -189,7 +189,7 @@ public class AccountProtectListener implements Listener {
 				accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
 					@Override
 					public void onResult(Integer result) {
-						newAccount.setNickname(newAccount.getNickname());
+						newAccount.setNickname(account.getNickname());
 					}
 				});
 				plugin.debug(String.format("%s extended %s's account (#%d)", p.getName(), account.getOwner().getName(),
@@ -261,8 +261,10 @@ public class AccountProtectListener implements Listener {
 				}
 			});
 		} else {
-			double creationPrice = Config.creationPriceAccount;
-			if (creationPrice > 0 && Config.reimburseAccountCreation
+			AccountConfig accountConfig = account.getBank().getAccountConfig();
+
+			double creationPrice = accountConfig.getAccountCreationPriceOrDefault();
+			if (creationPrice > 0 && accountConfig.isReimburseAccountCreationOrDefault()
 					&& p.getUniqueId().equals(account.getOwner().getUniqueId())) {
 				EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
 						creationPrice);

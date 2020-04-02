@@ -449,9 +449,9 @@ public class AccountCommandExecutor implements CommandExecutor, SchedulableComma
 	
 	public boolean promptAccountSet(final Player p, String[] args) {
 		plugin.debug(p.getName() + " wants to configure an account");
+		if (args.length < 2)
+			return false;
 		if (args[1].equalsIgnoreCase("nickname")) {
-			if (args.length < 2)
-				return false;
 			if (p.hasPermission(Permissions.ACCOUNT_SET_NICKNAME)) {
 				String nickname;
 				if (args.length < 3)

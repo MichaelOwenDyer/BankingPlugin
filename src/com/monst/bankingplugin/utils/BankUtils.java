@@ -91,9 +91,8 @@ public class BankUtils {
 		return getBanksCopy().stream().noneMatch(bank -> bank.getName().equalsIgnoreCase(name));
 	}
 
-	// TODO: ?
 	public boolean isAllowedName(String name) {
-		return true;
+		return name.matches("[a-zA-Z]+");
 	}
 
 	public boolean isExclusiveSelection(Selection sel) {
@@ -102,20 +101,29 @@ public class BankUtils {
 
 	public boolean isExclusiveSelectionWithoutThis(Selection sel, Bank bank) {
 
-		List<Location> selVertices = getVertices(sel);
 		Set<Selection> selections = new HashSet<>(bankSelectionMap.keySet());
 		Optional.ofNullable(bank).ifPresent(b -> selections.remove(bank.getSelection()));
+		
+		int minX = sel.getMinimumPoint().getBlockX();
+		int maxX = sel.getMaximumPoint().getBlockX();
+		int minY = sel.getMinimumPoint().getBlockY();
+		int maxY = sel.getMaximumPoint().getBlockY();
+		int minZ = sel.getMinimumPoint().getBlockZ();
+		int maxZ = sel.getMaximumPoint().getBlockZ();
 		for (Selection existing : selections) {
-			// Ensures none of the selection's vertices lie inside an existing region
-			for (Location loc : selVertices)
-				if (existing.contains(loc))
-					return false;
-			// Ensures none of the existing regions' vertices lie inside of the selection
-			for (Location loc : getVertices(existing))
-				if (sel.contains(loc))
-					return false;
+			if (overlaps(minX, maxX, existing.getMinimumPoint().getBlockX(), existing.getMaximumPoint().getBlockX())
+					&& overlaps(minY, maxY, existing.getMinimumPoint().getBlockY(), existing.getMaximumPoint().getBlockY())
+					&& overlaps(minZ, maxZ, existing.getMinimumPoint().getBlockZ(), existing.getMaximumPoint().getBlockZ()))
+				return false;
 		}
 		return true;
+	}
+
+	private boolean overlaps(int rangeMinExisting, int rangeMaxExisting, int rangeMinNew, int rangeMaxNew) {
+		return (rangeMinExisting >= rangeMinNew && rangeMinExisting <= rangeMaxNew)
+				|| (rangeMaxExisting >= rangeMinNew && rangeMaxExisting <= rangeMaxNew)
+				|| (rangeMinNew >= rangeMinExisting && rangeMinNew <= rangeMaxExisting)
+				|| (rangeMaxNew >= rangeMinExisting && rangeMaxNew <= rangeMaxExisting);
 	}
 
 	public void resizeBank(Bank bank, Selection newSel) {
@@ -339,8 +347,12 @@ public class BankUtils {
 								postReload[0]++;
 								for (Account account : result.get(bank)) {
 									if (account.create(showConsoleMessages)) {
-										account.setNickname(account.getNickname());
-										accountUtils.addAccount(account, false);
+										accountUtils.addAccount(account, false, new Callback<Integer>(plugin) {
+											@Override
+											public void onResult(Integer result) {
+												account.setNickname(account.getNickname());
+											}
+										});
 										bank.addAccount(account);
 										postReload[1]++;
 									} else

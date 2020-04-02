@@ -137,19 +137,23 @@ public class Account extends Ownable {
 	}
 
 	public void clearNickname() {
-		setNickname(null);
+		setNickname("");
+	}
+
+	public String getDefaultNickname() {
+		return ChatColor.DARK_GREEN + owner.getName() + "'s Account " + ChatColor.GRAY + "(#" + id + ")";
 	}
 
 	public void setDefaultNickname() {
 		if (!hasID())
 			return;
-		setNickname(ChatColor.DARK_GREEN + owner.getName() + "'s Account " + ChatColor.GRAY + "(#" + id + ")");
+		setNickname(null);
 	}
 
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
 		if (nickname == null)
-			nickname = "";
+			nickname = getDefaultNickname();
 		if (isDoubleChest()) {
 			DoubleChest dc = (DoubleChest) inventoryHolder;
 			if (dc == null)
@@ -272,9 +276,10 @@ public class Account extends Ownable {
 	public String toStringVerbose() {
 		String balance = "$" + Utils.formatNumber(getBalance());
 		String multiplier = status.getRealMultiplier() + "x (Stage " + (status.getMultiplierStage() + 1) + " of "
-				+ Config.interestMultipliers.size() + ")";
-		String interestRate = "" + ChatColor.GREEN + (Config.baseInterestRate * status.getRealMultiplier() * 100) + "%"
-				+ ChatColor.GRAY + " (" + Config.baseInterestRate + " x " + status.getRealMultiplier() + ")";
+				+ (bank.getAccountConfig().getMultipliersOrDefault().size()) + ")";
+		String interestRate = "" + ChatColor.GREEN
+				+ (bank.getAccountConfig().getInterestRateOrDefault() * status.getRealMultiplier() * 100) + "%"
+				+ ChatColor.GRAY + " (" + bank.getAccountConfig().getInterestRateOrDefault() + " x " + status.getRealMultiplier() + ")";
 		if (status.getRemainingUntilFirstPayout() != 0)
 			interestRate = interestRate
 					.concat(ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)");

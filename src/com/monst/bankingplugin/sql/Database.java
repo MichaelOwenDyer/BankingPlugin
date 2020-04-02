@@ -342,9 +342,9 @@ public abstract class Database {
 	 */
 	public void addBank(final Bank bank, final Callback<Integer> callback) {
 		final String queryWithId = "REPLACE INTO " + tableBanks
-				+ " (id,name,owner,co_owners,selection_type,world,minY,maxY,points) VALUES(?,?,?,?,?,?,?,?,?)";
+				+ " (id,name,owner,co_owners,selection_type,world,minY,maxY,points,account_config) VALUES(?,?,?,?,?,?,?,?,?,?)";
 		final String queryNoId = "REPLACE INTO " + tableBanks
-				+ " (name,owner,co_owners,selection_type,world,minY,maxY,points) VALUES(?,?,?,?,?,?,?,?)";
+				+ " (name,owner,co_owners,selection_type,world,minY,maxY,points,account_config) VALUES(?,?,?,?,?,?,?,?,?)";
 
 		new BukkitRunnable() {
 			@Override
@@ -404,16 +404,18 @@ public abstract class Database {
 
 					AccountConfig config = bank.getAccountConfig();
 					ps.setString(i + 9,
-							config.getInterestDelay() + " | " + config.getAllowedOffline() + " | "
-									+ config.getAllowedOfflineBeforeReset() + " | " + config.getBaseInterestRate()
-									+ " | "
-									+ config.getMultipliers().stream().map(num -> "" + num).collect(
-											Collectors.joining(",", "[", "]"))
-									+ " | " + config.multipliersEnabled() + " | " + config.countsInterestDelayOffline()
-									+ " | " + config.reimbursesAccountCreation() + " | "
+							config.getInterestRate() + " | " 
+									+ config.getMultipliers().stream().map(num -> "" + num).collect(Collectors.joining(",", "[", "]")) + " | " 
+									+ config.getInitialDelay() + " | " 
+									+ config.isCountInterestDelayOffline() + " | " 
+									+ config.getAllowedOfflinePayouts() + " | "
+									+ config.getAllowedOfflineBeforeReset() + " | "
 									+ config.getOfflineMultiplierBehavior() + " | "
 									+ config.getWithdrawalMultiplierBehavior() + " | "
-									+ config.getAccountCreationPrice() + " | " + config.getMinBalance());
+									+ config.getAccountCreationPrice() + " | "
+									+ config.isReimburseAccountCreation() + " | " 
+									+ config.getMinBalance() + " | "
+									+ config.getLowBalanceFee());
 
 					ps.executeUpdate();
 
@@ -560,25 +562,24 @@ public abstract class Database {
 							
 							selection = new CuboidSelection(world, min, max);
 						}
-						String[] values = rs.getString("account_config").substring(1).split(" \\| ");
+						String[] values = rs.getString("account_config").split(" \\| ");
 						List<Integer> multipliers = Arrays
-								.stream(values[4].substring(1, values[4].length() - 1).split(","))
+								.stream(values[1].substring(1, values[1].length() - 1).split(","))
 								.map(Integer::parseInt).collect(Collectors.toList());
 
 						AccountConfig accountConfig = new AccountConfig(
-								Integer.parseInt(values[0]),
-								Integer.parseInt(values[1]),
-								Integer.parseInt(values[2]), 
-								Double.parseDouble(values[3]),
+								Double.parseDouble(values[0]),
 								multipliers, 
-								Boolean.parseBoolean(values[5]),
-								Boolean.parseBoolean(values[6]),
-								Boolean.parseBoolean(values[7]),
-								Integer.parseInt(values[8]),
-								Integer.parseInt(values[9]),
+								Integer.parseInt(values[2]),
+								Boolean.parseBoolean(values[3]),
+								Integer.parseInt(values[4]),
+								Integer.parseInt(values[5]), 
+								Integer.parseInt(values[6]),
+								Integer.parseInt(values[7]),
+								Double.parseDouble(values[8]),
+								Boolean.parseBoolean(values[9]),
 								Double.parseDouble(values[10]),
-								Double.parseDouble(values[11])
-								);
+								Double.parseDouble(values[11]));
 
 						plugin.debug("Initializing bank \"" + name + "\"... (#" + bankId + ")");
 
@@ -1192,7 +1193,7 @@ public abstract class Database {
 					s.executeUpdate(getQueryCreateTableFields());
 				}
 
-				setDatabaseVersion(2);
+				setDatabaseVersion(1);
 			}
 
 			int databaseVersion = getDatabaseVersion();

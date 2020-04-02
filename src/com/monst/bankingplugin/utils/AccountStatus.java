@@ -13,7 +13,7 @@ public class AccountStatus {
 	 * <p>Default AccountStatus constructor for a brand new account.</p>
 	 */
 	public AccountStatus(AccountConfig config) {
-		this(config, 0, config.getInterestDelay(), config.getAllowedOffline(),
+		this(config, 0, config.getInitialDelay(), config.getAllowedOfflinePayouts(),
 				config.getAllowedOfflineBeforeReset());
 	}
 	/**
@@ -113,7 +113,7 @@ public class AccountStatus {
 			return true;
 		} else {
 			if (remainingUntilPayout > 0) {
-				if (config.countsInterestDelayOffline())
+				if (config.isCountInterestDelayOffline())
 					remainingUntilPayout--;
 				return false;
 			} else

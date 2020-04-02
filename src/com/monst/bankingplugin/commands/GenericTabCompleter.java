@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
@@ -69,7 +70,7 @@ class GenericTabCompleter implements TabCompleter {
 			case "resize":
 				return completeBankCreate((Player) sender, args);
 			case "set":
-				return new ArrayList<>();
+				return completeBankSet(sender, args);
 			default:
 				return new ArrayList<>();
 			}
@@ -319,9 +320,37 @@ class GenericTabCompleter implements TabCompleter {
 		return new ArrayList<>();
 	}
 
+	@SuppressWarnings("unused")
 	private List<String> completeBankRemoveAll(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 
+		return new ArrayList<>();
+	}
+	
+	private List<String> completeBankSet(CommandSender sender, String[] args) {
+		ArrayList<String> returnCompletions = new ArrayList<>();
+		List<String> bankNames = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName).map(Utils::stripColor)
+				.collect(Collectors.toList());
+		List<String> fields = AccountConfig.fields;
+		
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				for (String s : bankNames) {
+					if (s.toLowerCase().startsWith(args[1].toLowerCase()))
+						returnCompletions.add(s);
+				}
+				return returnCompletions;
+			} else
+				return bankNames;
+		} else if (args.length == 3) {
+			if (!args[1].isEmpty()) {
+				for (String s : fields)
+					if (s.startsWith(args[1].toLowerCase()))
+						returnCompletions.add(s);
+				return returnCompletions;
+			} else
+				return fields;
+		}
 		return new ArrayList<>();
 	}
 

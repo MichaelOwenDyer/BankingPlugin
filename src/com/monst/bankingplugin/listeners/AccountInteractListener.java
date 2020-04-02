@@ -33,6 +33,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
+import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
@@ -249,9 +250,10 @@ public class AccountInteractListener implements Listener {
 
 		Location location = b.getLocation();
 
-		double creationPrice = Config.creationPriceAccount;
 		Bank bank = bankUtils.getBank(location);
 		Account account = new Account(plugin, p, bank, location);
+		
+		double creationPrice = bank.getAccountConfig().getAccountCreationPriceOrDefault();
 
 		AccountCreateEvent event = new AccountCreateEvent(p, account, creationPrice);
 		Bukkit.getPluginManager().callEvent(event);
@@ -347,10 +349,11 @@ public class AccountInteractListener implements Listener {
 			plugin.debug("Remove event cancelled (#" + account.getID() + ")");
 			return;
 		}
+		
+		AccountConfig accountConfig = account.getBank().getAccountConfig();
+		double creationPrice = accountConfig.getAccountCreationPriceOrDefault();
 
-		double creationPrice = Config.creationPriceAccount;
-		if (creationPrice > 0 && Config.reimburseAccountCreation
-				&& account.isOwner(executor)) {
+		if (creationPrice > 0 && accountConfig.isReimburseAccountCreationOrDefault() && account.isOwner(executor)) {
 			OfflinePlayer owner = executor.getPlayer();
 			EconomyResponse r = plugin.getEconomy().depositPlayer(owner, account.getLocation().getWorld().getName(),
 					creationPrice);
@@ -445,6 +448,7 @@ public class AccountInteractListener implements Listener {
 					plugin.debug(executor.getName() + " has set their account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
 					account.setNickname(args[1]);
 				}
+				plugin.getDatabase().addAccount(account, null);
 				executor.sendMessage(Messages.NICKNAME_SET);
 			} else {
 				plugin.debug(executor.getName() + " does not have permission to change another player's account nickname");
@@ -453,16 +457,16 @@ public class AccountInteractListener implements Listener {
 		} else if (args[0].equalsIgnoreCase("multiplier")) {
 			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_MULTIPLIER)) {
 				int stage = 0;
-				if (args[1].equals("")) {
+				if (args[1].equals(""))
 					stage = account.getStatus().setMultiplierStage(Integer.parseInt(args[2]));
-					executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
-				} else if (args[1].equals("+")) {
+				else if (args[1].equals("+"))
 					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]));
-					executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
-				} else if (args[1].equals("-")) {
+				else if (args[1].equals("-"))
 					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]) * -1);
-					executor.sendMessage(Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
-				}
+
+				plugin.getDatabase().addAccount(account, null);
+				executor.sendMessage(
+						Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
 				plugin.debug(String.format(
 						executor.getName() + " has set %s account multiplier stage to %d%s (#" + account.getID() + ")",
 						(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),

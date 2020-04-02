@@ -173,11 +173,19 @@ public class Bank extends Ownable {
 	@Override
 	public String toString() {
 		return ChatColor.GRAY + "\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n"
-				+ ChatColor.GRAY + "Accounts: " + ChatColor.GREEN + accounts.size();
+				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber(accountConfig.getInterestRateOrDefault()) + "\n"
+				+ ChatColor.GRAY + "Multipliers: " + ChatColor.AQUA + accountConfig.getMultipliersOrDefault() + "\n"
+				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.getAccountCreationPriceOrDefault());
 	}
 	
 	public String toStringVerbose() {
 		return toString() + "\n"
+				+ ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + accountConfig.getAllowedOfflinePayoutsOrDefault() 
+						+ ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getAllowedOfflineBeforeResetOrDefault() + ChatColor.GRAY + " before reset)\n"
+				+ ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + accountConfig.getInitialDelayOrDefault() + "\n"
+				+ ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.getMinBalanceOrDefault()) 
+						+ ChatColor.GRAY + " (" + ChatColor.RED + "$" + Utils.formatNumber(accountConfig.getLowBalanceFeeOrDefault()) + ChatColor.GRAY + " fee)\n"
+				+ ChatColor.GRAY + "Current accounts: " + ChatColor.AQUA + accounts.size() + "\n"
 				+ ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n"
 				+ ChatColor.GRAY + "Selection type: " + getSelectionType() + "\n"
 				+ ChatColor.GRAY + "Location: " + ChatColor.AQUA + getCoordinates();

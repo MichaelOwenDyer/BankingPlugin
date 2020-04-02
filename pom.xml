@@ -22,10 +22,10 @@
 	</properties>
 
 	<repositories>
-		<repository>
-			<id>vault-repo</id>
-			<url>http://nexus.hc.to/content/repositories/pub_releases/</url>
-		</repository>
+  		<repository>
+        	<id>sk89q-repo</id>
+        	<url>https://maven.enginehub.org/repo/</url>
+    	</repository>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>

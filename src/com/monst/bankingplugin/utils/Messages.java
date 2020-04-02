@@ -9,12 +9,14 @@ public class Messages {
 	public static final String BANK_CREATED = ChatColor.GOLD + "Bank created!";
 	public static final String ACCOUNT_CREATED = ChatColor.GOLD + "Account created!";
 	public static final String ACCOUNT_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$| " + ChatColor.GOLD + "to create an account.";
+	public static final String BANK_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$| " + ChatColor.GOLD + "to create a bank.";
 	public static final String BANK_ALREADY_EXISTS = ChatColor.RED + "A bank by that name already exists!";
 	public static final String CHEST_ALREADY_ACCOUNT = ChatColor.RED + "That chest is already an account.";
 	public static final String CHEST_BLOCKED = ChatColor.RED + "Chest is blocked!";
 	public static final String ACCOUNT_REMOVED = ChatColor.GOLD + "The account has been removed!";
 	public static final String BANK_REMOVED = ChatColor.GOLD + "The bank has been removed!";
 	public static final String BANK_RESIZED = ChatColor.GOLD + "The bank has been resized!";
+	public static final String BANK_FIELD_SET = ChatColor.GOLD + "The bank field has been set!";
 	public static final String PLAYER_REIMBURSED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$|" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
 	public static final String ACCOUNT_OPENED = ChatColor.GOLD + "You have opened |'s account chest.";
@@ -25,8 +27,11 @@ public class Messages {
 	public static final String CHEST_NOT_IN_BANK = ChatColor.RED + "That chest is not located within a bank.";
 	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or specify the name of a bank.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account.";
-	//public static final String BANK_CREATE_INSUFFICIENT_FUNDS = "You do not have sufficient funds to create a bank.";
+	public static final String BANK_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create a bank.";
 	public static final String INTEREST_EARNED = ChatColor.GOLD + "You have earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
+	public static final String INTEREST_PAID = ChatColor.GOLD + "You have paid " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
+	public static final String LOW_BALANCE_FEE_EARNED = ChatColor.RED + "You have earned " + ChatColor.GREEN + "$| " + ChatColor.RED + "in low balance fees on %d account%s.";
+	public static final String LOW_BALANCE_FEE_PAID = ChatColor.RED + "You have paid " + ChatColor.GREEN + "$| " + ChatColor.RED + "in low balance fees on %d account%s.";
 	public static final String MULTIPLIER_INCREASED = ChatColor.GOLD + "Your account multiplier has increased to |.";
 	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to |.";
 	public static final String ERROR_OCCURRED = ChatColor.DARK_RED + "An error occurred! ";
@@ -34,10 +39,12 @@ public class Messages {
 	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found under the identifier \"|\".";
 	public static final String NO_ACCOUNTS_FOUND = ChatColor.RED + "No accounts found!";
 	public static final String NO_PLAYER_ACCOUNTS = ChatColor.RED + "That player does not own any accounts.";
+	public static final String NO_BANKS = ChatColor.RED + "There are no banks to list.";
 	public static final String NO_BANK_ACCOUNTS = ChatColor.RED + "There are no accounts registered at that bank.";
 	public static final String NO_SELECTION_FOUND = ChatColor.RED + "Select a WorldEdit region first.";
 	public static final String COORDINATES_PARSE_ERROR = ChatColor.RED + "Invalid coordinates.";
 	public static final String NAME_NOT_UNIQUE = ChatColor.RED + "A bank with that name already exists.";
+	public static final String NAME_NOT_ALLOWED = ChatColor.RED + "Name must include at least one letter.";
 	public static final String SELECTION_NOT_EXCLUSIVE = ChatColor.RED + "Your selection overlaps with another bank.";
 	public static final String SELECTION_CUTS_ACCOUNTS = ChatColor.RED + "Your selection does not contain all accounts at this bank.";
 	public static final String WORLDEDIT_NOT_ENABLED = ChatColor.RED + "WorldEdit is not currently enabled. Please enter coordinates manually.";
@@ -71,7 +78,10 @@ public class Messages {
 	public static final String MULTIPLIER_SET = ChatColor.GOLD + "Account multiplier has been set to |.";
 	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "Account interest delay has been set.";
 	public static final String NOT_A_NUMBER = ChatColor.RED + "\"|\" is not a number!";
+	public static final String NOT_AN_INTEGER = ChatColor.RED + "\"|\" is not an integer!";
+	public static final String NOT_A_BOOLEAN = ChatColor.RED + "\"|\" is not a boolean value!";
 	public static final String NOT_A_FIELD = ChatColor.RED + "\"|\" is not a valid field!";
+	public static final String NOT_A_LIST = ChatColor.RED + "\"|\" is not a parseable list!";
 	
 	private static final String NO_PERMISSION = ChatColor.RED + "You do not have permission to ";
 	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";
@@ -81,6 +91,13 @@ public class Messages {
 	public static final String NO_PERMISSION_BANK_LIST = NO_PERMISSION + "view a list of banks.";
 	public static final String NO_PERMISSION_BANK_LIST_VERBOSE = NO_PERMISSION + "view a detailed list of banks.";
 	public static final String NO_PERMISSION_BANK_RESIZE = NO_PERMISSION + "resize a bank.";
+	public static final String NO_PERMISSION_BANK_SET = NO_PERMISSION + "configure a bank.";
+	public static final String NO_PERMISSION_OTHER_BANK_CREATE = NO_PERMISSION + "create a bank in someone else's name.";
+	public static final String NO_PERMISSION_OTHER_BANK_REMOVE = NO_PERMISSION + "remove someone else's bank.";
+	public static final String NO_PERMISSION_OTHER_BANK_INFO = NO_PERMISSION + "view someone else's bank info.";
+	public static final String NO_PERMISSION_OTHER_BANK_INFO_VERBOSE = NO_PERMISSION + "view someone else's detailed bank info.";
+	public static final String NO_PERMISSION_OTHER_BANK_RESIZE = NO_PERMISSION + "resize someone else's bank.";
+	public static final String NO_PERMISSION_OTHER_BANK_SET = NO_PERMISSION + "configure someone else's bank.";
 	public static final String NO_PERMISSION_ACCOUNT_CREATE = NO_PERMISSION + "create an account.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME = NO_PERMISSION + "set an account nickname.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_MULTIPLIER = NO_PERMISSION + "set an account multiplier.";

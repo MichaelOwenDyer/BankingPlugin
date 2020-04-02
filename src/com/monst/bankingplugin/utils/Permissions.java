@@ -39,6 +39,16 @@ public class Permissions {
 	public static final String BANK_RESIZE = "bankingplugin.bank.resize";
 	public static final String BANK_SET = "bankingplugin.bank.set";
 
+	public static final String BANK_OTHER_CREATE = "bankingplugin.bank.other.create";
+	public static final String BANK_OTHER_REMOVE = "bankingplugin.bank.other.remove";
+	public static final String BANK_OTHER_REMOVEALL = "bankingplugin.bank.other.removeall";
+	public static final String BANK_OTHER_INFO = "bankingplugin.bank.other.info";
+	public static final String BANK_OTHER_INFO_VERBOSE = "bankingplugin.bank.other.info.verbose";
+	public static final String BANK_OTHER_LIST = "bankingplugin.bank.other.list";
+	public static final String BANK_OTHER_LIST_VERBOSE = "bankingplugin.bank.other.list.verbose";
+	public static final String BANK_OTHER_RESIZE = "bankingplugin.bank.other.resize";
+	public static final String BANK_OTHER_SET = "bankingplugin.bank.other.set";
+
 	public static final String BYPASS_EXTERNAL_PLUGINS = "bankingplugin.external.bypass";
 	public static final String CONFIG = "bankingplugin.config";
 	public static final String RELOAD = "bankingplugin.reload";

@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.commands;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,6 +22,7 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
+import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
@@ -28,6 +32,7 @@ import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 
 import net.md_5.bungee.api.ChatColor;
+import net.milkbowl.vault.economy.EconomyResponse;
 
 public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<Bank> {
 
@@ -226,6 +231,11 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 			p.sendMessage(Messages.NAME_NOT_UNIQUE);
 			return true;
 		}
+		if (!bankUtils.isAllowedName(args[1])) {
+			plugin.debug("Name is not allowed");
+			p.sendMessage(Messages.NAME_NOT_ALLOWED);
+			return true;
+		}
 
 		Bank bank = new Bank(plugin, args[1], p, null, selection);
 
@@ -234,6 +244,24 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 		if (event.isCancelled()) {
 			plugin.debug("Account create event cancelled");
 			return true;
+		}
+
+		double creationPrice = Config.creationPriceBank;
+		if (creationPrice > 0) {
+			if (plugin.getEconomy().getBalance(p) < creationPrice) {
+				p.sendMessage(Messages.BANK_CREATE_INSUFFICIENT_FUNDS);
+				return true;
+			}
+			OfflinePlayer player = p.getPlayer();
+			EconomyResponse r = plugin.getEconomy().withdrawPlayer(player, p.getLocation().getWorld().getName(),
+					creationPrice);
+			if (!r.transactionSuccess()) {
+				plugin.debug("Economy transaction failed: " + r.errorMessage);
+				p.sendMessage(Messages.ERROR_OCCURRED);
+				return true;
+			} else
+				p.sendMessage(Messages.getWithValue(Messages.BANK_CREATE_FEE_PAID,
+						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 		}
 
 		if (bank.create(true)) {
@@ -374,21 +402,29 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 
 		if (args.length == 1) {
 			if (sender.hasPermission(Permissions.BANK_LIST)) {
-				sender.sendMessage("");
-				int i = 1;
-				for (Bank bank : bankUtils.getBanksCopy())
-					sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toString());
-				sender.sendMessage("");
+				if (bankUtils.getBanksCopy().isEmpty()) {
+					sender.sendMessage(Messages.NO_BANKS);
+				} else {
+					sender.sendMessage("");
+					int i = 1;
+					for (Bank bank : bankUtils.getBanksCopy())
+						sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toString());
+					sender.sendMessage("");
+				}
 			} else
 				sender.sendMessage(Messages.NO_PERMISSION_BANK_LIST);
 		} else if (args.length >= 2) {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
 				if (sender.hasPermission(Permissions.BANK_LIST_VERBOSE)) {
-					sender.sendMessage("");
-					int i = 1;
-					for (Bank bank : bankUtils.getBanksCopy())
-						sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toStringVerbose());
-					sender.sendMessage("");
+					if (bankUtils.getBanksCopy().isEmpty()) {
+						sender.sendMessage(Messages.NO_BANKS);
+					} else {
+						sender.sendMessage("");
+						int i = 1;
+						for (Bank bank : bankUtils.getBanksCopy())
+							sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toStringVerbose());
+						sender.sendMessage("");
+					}
 				} else
 					sender.sendMessage(Messages.NO_PERMISSION_BANK_LIST_VERBOSE);
 			}
@@ -546,7 +582,167 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 	}
 
 	private boolean promptBankSet(CommandSender sender, String[] args) {
-		return false;
+		plugin.debug(sender.getName() + " wants to configure a bank");
+
+		if (args.length < 4)
+			return false;
+
+		Bank bank = bankUtils.lookupBank(args[1]);
+		if (bank == null) {
+			plugin.debug("No bank could be found under the identifier " + args[1]);
+			sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+			return true;
+		}
+
+		if ((sender instanceof Player && !bank.isTrusted((Player) sender))
+				&& !sender.hasPermission(Permissions.BANK_OTHER_SET)) {
+			plugin.debug(sender.getName() + " does not have permission to configure a bank");
+			sender.sendMessage(Messages.NO_PERMISSION_OTHER_BANK_SET);
+			return true;
+		}
+
+		if (!AccountConfig.fields.contains(args[2].toLowerCase())) {
+			plugin.debug("No account config field could be found with name " + args[2]);
+			sender.sendMessage(Messages.getWithValue(Messages.NOT_A_FIELD, args[2]));
+			return true;
+		}
+
+		AccountConfig config = bank.getAccountConfig();
+		switch (args[2].toLowerCase()) {
+
+		case "interest-rate":
+			try {
+				config.setInterestRate(Double.parseDouble(args[3]));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse double: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "multipliers":
+			try {
+				config.setMultipliers(Arrays.stream(args[3].split(",")).map(s -> Integer.parseInt(s.trim()))
+						.collect(Collectors.toList()));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse list: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_LIST, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "interest-delay":
+			try {
+				config.setInitialDelay(Integer.parseInt(args[3]));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse integer: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "allowed-offline-payouts":
+			try {
+				config.setAllowedOfflinePayouts(Integer.parseInt(args[3]));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse integer: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_AN_INTEGER, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "allowed-offline-payouts-before-multiplier-reset":
+			try {
+				config.setInitialDelay(Integer.parseInt(args[3]));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse integer: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_AN_INTEGER, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "count-interest-delay-offline":
+			if (args[3].equalsIgnoreCase("true"))
+				config.setCountInterestDelayOffline(true);
+			else if (args[3].equalsIgnoreCase("false"))
+				config.setCountInterestDelayOffline(false);
+			else {
+				plugin.debug("Failed to parse boolean: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_BOOLEAN, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "offline-multiplier-behavior":
+			try {
+				config.setOfflineMultiplierBehavior(Integer.parseInt(args[3]));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse integer: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "withdrawal-multiplier-behavior":
+			try {
+				config.setWithdrawalMultiplierBehavior(Integer.parseInt(args[3]));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse integer: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "account-creation-price":
+			try {
+				config.setAccountCreationPrice(Double.parseDouble(args[3]));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse double: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "min-balance":
+			try {
+				config.setMinBalance(Double.parseDouble(args[3]));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse double: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "low-balance-fee":
+			try {
+				config.setLowBalanceFee(Double.parseDouble(args[3]));
+			} catch (NumberFormatException e) {
+				plugin.debug("Failed to parse double: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		case "reimburse-account-creation":
+			if (args[3].equalsIgnoreCase("true"))
+				config.setReimburseAccountCreation(true);
+			else if (args[3].equalsIgnoreCase("false"))
+				config.setReimburseAccountCreation(false);
+			else {
+				plugin.debug("Failed to parse boolean: " + args[3]);
+				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_BOOLEAN, args[3]));
+				break;
+			}
+			sender.sendMessage(Messages.BANK_FIELD_SET);
+			break;
+		default:
+			sender.sendMessage(Messages.NOT_A_FIELD);
+			return true;
+		}
+
+		plugin.getDatabase().addBank(bank, null);
+		plugin.debug(sender.getName() + " has set " + args[2] + " at " + bank.getName() + " to " + args[3]);
+		return true;
 	}
 
 	@Override
