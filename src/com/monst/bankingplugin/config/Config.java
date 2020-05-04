@@ -53,7 +53,7 @@ public class Config {
 	 * The number of interest payout events a player has to own their account for
 	 * before they start collecting interest
 	 **/
-	public static Entry<Integer, Boolean> initialDelayPeriod;
+	public static Entry<Integer, Boolean> initialInterestDelay;
 
 	/**
 	 * Whether to decrement the interest delay period while a player is offline. 
@@ -377,8 +377,8 @@ public class Config {
 				: List.of(1), 
 				config.getBoolean("interest-multipliers.allow-override"));
 
-		initialDelayPeriod = new SimpleEntry<>(config.getInt("interest-delay-period.default"),
-				config.getBoolean("interest-delay-period.allow-override"));
+		initialInterestDelay = new SimpleEntry<>(config.getInt("initial-interest-delay.default"),
+				config.getBoolean("initial-interest-delay.allow-override"));
 
 		countInterestDelayOffline = new SimpleEntry<>(config.getBoolean("count-interest-delay-offline.default"),
 				config.getBoolean("count-interest-delay-offline.allow-override"));

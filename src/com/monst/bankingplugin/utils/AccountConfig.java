@@ -6,7 +6,7 @@ import com.monst.bankingplugin.config.Config;
 
 public class AccountConfig {
 	
-	public static final List<String> fields = List.of("interest-rate", "multipliers", "interest-delay",
+	public static final List<String> FIELDS = List.of("interest-rate", "multipliers", "initial-interest-delay",
 			"count-interest-delay-offline", "allowed-offline-payouts",
 			"allowed-offline-payouts-before-multiplier-reset", "offline-multiplier-behavior",
 			"withdrawal-multiplier-behavior", "account-creation-price", "reimburse-account-creation", "min-balance",
@@ -14,7 +14,7 @@ public class AccountConfig {
 
 	private double interestRate;
 	private List<Integer> multipliers;
-	private int initialDelay;
+	private int initialInterestDelay;
 	private boolean countInterestDelayOffline;
 	private int allowedOfflinePayouts;
 	private int allowedOfflineBeforeReset;
@@ -28,7 +28,7 @@ public class AccountConfig {
 	public AccountConfig() {
 		this(Config.interestRate.getKey(),
 				Config.interestMultipliers.getKey(),
-				Config.initialDelayPeriod.getKey(),
+				Config.initialInterestDelay.getKey(),
 				Config.countInterestDelayOffline.getKey(),
 				Config.allowedOfflinePayouts.getKey(),
 				Config.allowedOfflineBeforeMultiplierReset.getKey(),
@@ -40,14 +40,14 @@ public class AccountConfig {
 				Config.lowBalanceFee.getKey());
 	}
 
-	public AccountConfig(double interestRate, List<Integer> multipliers, int interestDelay,
+	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
 			boolean countInterestDelayOffline, int allowedOffline, int allowedOfflineBeforeReset,
 			int offlineMultiplierBehavior, int withdrawalMultiplierBehavior, double accountCreationPrice,
 			boolean reimburseAccountCreation, double minBalance, double lowBalanceFee) {
 
 		this.interestRate = interestRate;
 		this.multipliers = multipliers;
-		this.initialDelay = interestDelay;
+		this.initialInterestDelay = initialInterestDelay;
 		this.countInterestDelayOffline = countInterestDelayOffline;
 		this.allowedOfflinePayouts = allowedOffline;
 		this.allowedOfflineBeforeReset = allowedOfflineBeforeReset;
@@ -67,8 +67,8 @@ public class AccountConfig {
 		return multipliers;
 	}
 
-	public int getInitialDelay() {
-		return initialDelay;
+	public int getInitialInterestDelay() {
+		return initialInterestDelay;
 	}
 
 	public boolean isCountInterestDelayOffline() {
@@ -115,8 +115,8 @@ public class AccountConfig {
 		this.multipliers = multipliers;
 	}
 
-	public void setInitialDelay(int initialDelay) {
-		this.initialDelay = initialDelay;
+	public void setInitialInterestDelay(int initialInterestDelay) {
+		this.initialInterestDelay = initialInterestDelay;
 	}
 
 	public void setCountInterestDelayOffline(boolean countInterestDelayOffline) {
@@ -163,8 +163,8 @@ public class AccountConfig {
 		return Config.interestMultipliers.getValue() ? multipliers : Config.interestMultipliers.getKey();
 	}
 
-	public int getInitialDelayOrDefault() {
-		return Config.initialDelayPeriod.getValue() ? initialDelay : Config.initialDelayPeriod.getKey();
+	public int getInitialInterestDelayOrDefault() {
+		return Config.initialInterestDelay.getValue() ? initialInterestDelay : Config.initialInterestDelay.getKey();
 	}
 
 	public boolean isCountInterestDelayOfflineOrDefault() {

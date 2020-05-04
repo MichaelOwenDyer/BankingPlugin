@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,6 +17,7 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
@@ -93,6 +95,9 @@ class GenericTabCompleter implements TabCompleter {
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		onlinePlayers.remove(p.getName());
 
+		if (!p.hasPermission(Permissions.ACCOUNT_OTHER_CREATE))
+			return new ArrayList<>();
+		
 		if (!args[1].isEmpty()) {
 			for (String name : onlinePlayers)
 				if (name.toLowerCase().startsWith(args[1].toLowerCase()))
@@ -103,8 +108,10 @@ class GenericTabCompleter implements TabCompleter {
 	}
 
 	private List<String> completeAccountInfo(Player p, String[] args) {
-		if ("-d".startsWith(args[1].toLowerCase()))
-			return List.of("-d");
+		if (args.length > 2)
+			return new ArrayList<>();
+		if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
+			return List.of("detailed");
 		else
 			return new ArrayList<>();
 	}
@@ -115,9 +122,9 @@ class GenericTabCompleter implements TabCompleter {
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		onlinePlayers.remove(sender.getName());
 
-		List<String> flags = List.of("-d");
+		ArrayList<String> flags = new ArrayList<>(List.of("detailed"));
 		if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST))
-			flags.add("-a");
+			flags.add("all");
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
@@ -181,7 +188,7 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeAccountSet(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
-		List<String> fields = List.of("nickname", "multiplier", "interest-delay");
+		List<String> fields = List.of("nickname", "multiplier", "initial-delay");
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
@@ -199,8 +206,10 @@ class GenericTabCompleter implements TabCompleter {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		
 		if (args.length == 2) {
-			returnCompletions.add("<bankname>");
-			return returnCompletions;
+			if (args[1].isEmpty())
+				return List.of("[bankname]");
+			else
+				return new ArrayList<>();
 		} else if (args.length == 3) {
 			Block b = p.getTargetBlock(null, 150);
 			if (b == null)
@@ -320,18 +329,18 @@ class GenericTabCompleter implements TabCompleter {
 		return new ArrayList<>();
 	}
 
-	@SuppressWarnings("unused")
 	private List<String> completeBankRemoveAll(CommandSender sender, String[] args) {
-		ArrayList<String> returnCompletions = new ArrayList<>();
+		// ArrayList<String> returnCompletions = new ArrayList<>();
 
 		return new ArrayList<>();
 	}
 	
 	private List<String> completeBankSet(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
-		List<String> bankNames = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName).map(Utils::stripColor)
+		BankUtils bankUtils = plugin.getBankUtils();
+		List<String> bankNames = bankUtils.getBanksCopy().stream().map(Bank::getName).map(Utils::stripColor)
 				.collect(Collectors.toList());
-		List<String> fields = AccountConfig.fields;
+		List<String> fields = new ArrayList<>(AccountConfig.FIELDS);
 		
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
@@ -340,16 +349,22 @@ class GenericTabCompleter implements TabCompleter {
 						returnCompletions.add(s);
 				}
 				return returnCompletions;
-			} else
-				return bankNames;
+			} else {
+				List<String> ownBanks = bankUtils.getBanksCopy().stream()
+						.filter(b -> b.isTrusted((OfflinePlayer) sender)).map(Bank::getName).map(Utils::stripColor)
+						.collect(Collectors.toList());
+				Bank standingIn = bankUtils.getBank(((Player) sender).getLocation());
+				return ownBanks.isEmpty() ? (standingIn != null ? List.of(Utils.stripColor(standingIn.getName())) : bankNames) : ownBanks;
+			}
 		} else if (args.length == 3) {
-			if (!args[1].isEmpty()) {
+			if (!args[2].isEmpty()) {
 				for (String s : fields)
-					if (s.startsWith(args[1].toLowerCase()))
+					if (s.contains(args[2].toLowerCase()))
 						returnCompletions.add(s);
 				return returnCompletions;
 			} else
 				return fields;
+		} else if (args.length == 4) {
 		}
 		return new ArrayList<>();
 	}
@@ -358,11 +373,8 @@ class GenericTabCompleter implements TabCompleter {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		List<String> subCommands = Arrays.asList("add", "remove", "set");
 		Set<String> configValues = plugin.getConfig().getKeys(true);
-		configValues.remove("creation-prices");
-		configValues.remove("default-limits");
-		configValues.remove("enable-logs");
-		configValues.remove("main-command-names");
-		configValues.remove("worldguard-default-flag-values");
+		configValues.removeAll(plugin.getConfig().getKeys(false));
+		configValues.remove("creation-prices.account");
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {

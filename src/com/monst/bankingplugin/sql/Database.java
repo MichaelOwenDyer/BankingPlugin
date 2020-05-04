@@ -406,7 +406,7 @@ public abstract class Database {
 					ps.setString(i + 9,
 							config.getInterestRate() + " | " 
 									+ config.getMultipliers().stream().map(num -> "" + num).collect(Collectors.joining(",", "[", "]")) + " | " 
-									+ config.getInitialDelay() + " | " 
+									+ config.getInitialInterestDelay() + " | " 
 									+ config.isCountInterestDelayOffline() + " | " 
 									+ config.getAllowedOfflinePayouts() + " | "
 									+ config.getAllowedOfflineBeforeReset() + " | "

@@ -2,7 +2,7 @@ package com.monst.bankingplugin.utils;
 
 public class AccountStatus {
 	
-	private final AccountConfig config;
+	private final AccountConfig accountConfig;
 
 	private int multiplierStage;
 	private int remainingUntilPayout;
@@ -13,8 +13,8 @@ public class AccountStatus {
 	 * <p>Default AccountStatus constructor for a brand new account.</p>
 	 */
 	public AccountStatus(AccountConfig config) {
-		this(config, 0, config.getInitialDelay(), config.getAllowedOfflinePayouts(),
-				config.getAllowedOfflineBeforeReset());
+		this(config, 0, config.getInitialInterestDelayOrDefault(), config.getAllowedOfflinePayoutsOrDefault(),
+				config.getAllowedOfflineBeforeResetOrDefault());
 	}
 	/**
 	 * Creates an account status with the given values.
@@ -26,7 +26,7 @@ public class AccountStatus {
 	 */
 	public AccountStatus(AccountConfig config, int multiplierStage, int remainingUntilFirstPayout,
 			int remainingOfflinePayouts, int remainingOfflineUntilReset) {
-		this.config = config;
+		this.accountConfig = config;
 		this.multiplierStage = multiplierStage;
 		this.remainingUntilPayout = remainingUntilFirstPayout;
 		this.remainingOfflinePayouts = remainingOfflinePayouts;
@@ -50,7 +50,7 @@ public class AccountStatus {
 	}
 	
 	public int processWithdrawal() {
-		int increment = config.getWithdrawalMultiplierBehavior();
+		int increment = accountConfig.getWithdrawalMultiplierBehaviorOrDefault();
 
 		if (increment > 0) {
 			resetMultiplierStage();
@@ -74,7 +74,7 @@ public class AccountStatus {
 	 */
 	public int incrementMultiplier(boolean online) {
 		if (online) {
-			if (multiplierStage < config.getMultipliers().size() - 1)
+			if (multiplierStage < accountConfig.getMultipliersOrDefault().size() - 1)
 				multiplierStage++;
 			
 		} else {
@@ -84,13 +84,13 @@ public class AccountStatus {
 				resetMultiplierStage();
 				return 0;
 			}
-			int increment = config.getOfflineMultiplierBehavior();
+			int increment = accountConfig.getOfflineMultiplierBehaviorOrDefault();
 			int newStage = multiplierStage + increment;
 			
 			if (newStage < 0) {
 				multiplierStage = 0;
-			} else if (newStage >= config.getMultipliers().size()) {
-				multiplierStage = config.getMultipliers().size() - 1;
+			} else if (newStage >= accountConfig.getMultipliersOrDefault().size()) {
+				multiplierStage = accountConfig.getMultipliersOrDefault().size() - 1;
 			} else
 				multiplierStage = newStage;
 		}
@@ -109,11 +109,11 @@ public class AccountStatus {
 				remainingUntilPayout--;
 				return false;
 			}
-			remainingOfflineUntilReset = config.getAllowedOfflineBeforeReset();
+			remainingOfflineUntilReset = accountConfig.getAllowedOfflineBeforeResetOrDefault();
 			return true;
 		} else {
 			if (remainingUntilPayout > 0) {
-				if (config.isCountInterestDelayOffline())
+				if (accountConfig.isCountInterestDelayOfflineOrDefault())
 					remainingUntilPayout--;
 				return false;
 			} else
@@ -133,10 +133,10 @@ public class AccountStatus {
 		
 		if (multiplierStage < 0)
 			multiplierStage = 0;
-		else if (multiplierStage >= config.getMultipliers().size())
-			multiplierStage = config.getMultipliers().size() - 1;
+		else if (multiplierStage >= accountConfig.getMultipliersOrDefault().size())
+			multiplierStage = accountConfig.getMultipliersOrDefault().size() - 1;
 		
-		return config.getMultipliers().get(multiplierStage);
+		return accountConfig.getMultipliersOrDefault().get(multiplierStage);
 	}
 	
 	/**
@@ -150,8 +150,8 @@ public class AccountStatus {
 		stage--;
 		if (stage < 0)
 			multiplierStage = 0;
-		else if (stage >= config.getMultipliers().size())
-			multiplierStage = config.getMultipliers().size() - 1;
+		else if (stage >= accountConfig.getMultipliersOrDefault().size())
+			multiplierStage = accountConfig.getMultipliersOrDefault().size() - 1;
 		else
 			multiplierStage = stage;
 		return multiplierStage;
@@ -161,8 +161,8 @@ public class AccountStatus {
 		int newStage = multiplierStage + stage;
 		if (newStage < 0)
 			multiplierStage = 0;
-		else if (newStage >= config.getMultipliers().size())
-			multiplierStage = config.getMultipliers().size() - 1;
+		else if (newStage >= accountConfig.getMultipliersOrDefault().size())
+			multiplierStage = accountConfig.getMultipliersOrDefault().size() - 1;
 		else
 			multiplierStage = newStage;
 		return multiplierStage;

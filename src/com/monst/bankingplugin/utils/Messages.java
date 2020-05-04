@@ -71,7 +71,7 @@ public class Messages {
 	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to delete | accounts. ";
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to delete | banks and | accounts. ";
 	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "Your command has been executed and | accounts were removed.";
-	public static final String BANKS_REMOVED = ChatColor.GREEN + "Your command has been executed and | banks were removed.";
+	public static final String BANKS_REMOVED = ChatColor.GREEN + "Your command has been executed and %d bank%s were removed.";
 	public static final String EXECUTE_AGAIN_TO_CONFIRM = ChatColor.GOLD + "Execute command again to confirm.";
 	public static final String INTEREST_PAYOUT_TRIGGERED = ChatColor.GOLD + "Interest payout event has been triggered.";
 	public static final String NICKNAME_SET = ChatColor.GOLD + "Account nickname has been set.";
@@ -86,6 +86,7 @@ public class Messages {
 	private static final String NO_PERMISSION = ChatColor.RED + "You do not have permission to ";
 	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";
 	public static final String NO_PERMISSION_BANK_REMOVE = NO_PERMISSION + "remove a bank.";
+	public static final String NO_PERMISSION_BANK_REMOVEALL = NO_PERMISSION + "remove all banks.";
 	public static final String NO_PERMISSION_BANK_INFO = NO_PERMISSION + "view bank info.";
 	public static final String NO_PERMISSION_BANK_INFO_VERBOSE = NO_PERMISSION + "view detailed bank info.";
 	public static final String NO_PERMISSION_BANK_LIST = NO_PERMISSION + "view a list of banks.";

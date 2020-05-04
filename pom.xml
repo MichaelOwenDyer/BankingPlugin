@@ -44,18 +44,6 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>net.ess3</groupId>
-			<artifactId>EssentialsX</artifactId>
-			<version>2.16.1</version>
-			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.bukkit</groupId>
-					<artifactId>bukkit</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>com.github.TechFortress</groupId>
 			<artifactId>GriefPrevention</artifactId>
 			<version>16.13.0</version>
@@ -96,6 +84,18 @@
 			<version>1.7.26</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.ess3</groupId>
+			<artifactId>EssentialsX</artifactId>
+			<version>2.16.1</version>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bukkit</groupId>
+					<artifactId>bukkit</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -129,6 +129,7 @@
 							<include>org.codemc.worldguardwrapper:worldguardwrapper</include>
 							<include>com.sk89q:worldedit</include>
 							<include>org.slf4j</include>
+							<include>net.ess3:EssentialsX</include>
 						</includes>
 					</artifactSet>
 					<relocations>
@@ -152,6 +153,10 @@
 							<pattern>org.slf4j</pattern>
 							<shadedPattern>com.monst.bankingplugin.dependencies.slf4j</shadedPattern>
 						</relocation>
+						<relocation>
+							<pattern>com.earth2me.essentials</pattern>
+							<shadedPattern>com.monst.bankingplugin.dependencies.essentials</shadedPattern>
+						</relocation>
 					</relocations>
 					<filters>
 						<filter>
@@ -165,6 +170,12 @@
 							<includes>
 								<include>com/sk89q/worldedit/**</include>
 								<include>com/thoughtworks/paranamer/**</include>
+							</includes>
+						</filter>
+						<filter>
+							<artifact>net.ess3:EssentialsX</artifact>
+							<includes>
+								<include>com/earth2me/essentials/Worth.class</include>
 							</includes>
 						</filter>
 					</filters>

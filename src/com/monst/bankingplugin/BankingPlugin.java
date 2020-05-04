@@ -26,10 +26,10 @@ import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.listeners.AccountBalanceListener;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
-import com.monst.bankingplugin.listeners.AccountProtectListener;
 import com.monst.bankingplugin.listeners.AccountTamperingListener;
+import com.monst.bankingplugin.listeners.ChestProtectListener;
 import com.monst.bankingplugin.listeners.InterestEventListener;
-import com.monst.bankingplugin.listeners.PlayerJoinListener;
+import com.monst.bankingplugin.listeners.NotifyPlayerOnJoinListener;
 import com.monst.bankingplugin.listeners.WorldGuardListener;
 import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.sql.SQLite;
@@ -60,8 +60,8 @@ public class BankingPlugin extends JavaPlugin {
 	private String downloadLink = "";
 	private FileWriter fw;
 	
-	private Economy econ = null;
-	private Essentials essentials = null;
+	private Economy econ;
+	private Essentials essentials;
 	private Database database;
 	private AccountUtils accountUtils;
 	private BankUtils bankUtils;
@@ -107,23 +107,15 @@ public class BankingPlugin extends JavaPlugin {
         if (worldGuard != null) {
             WorldGuardBankingFlag.register(this);
         }
-        
     }
 
 	@Override
 	public void onEnable() {
 		debug("Enabling BankingPlugin version " + getDescription().getVersion());
 
-		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
-            debug("Could not find plugin \"Vault\"");
-            getLogger().severe("Could not find plugin \"Vault\"");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-
-        if (!setupEconomy()) {
-            debug("Could not find any Vault economy dependency!");
-            getLogger().severe("Could not find any Vault economy dependency!");
+		if (!getServer().getPluginManager().isPluginEnabled("Essentials")) {
+			debug("Could not find plugin \"Essentials\"");
+			getLogger().severe("Could not find plugin \"Essentials\"");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -154,7 +146,7 @@ public class BankingPlugin extends JavaPlugin {
 		initializeBanksAndAccounts();
 		scheduleInterestPoints();
         
-        }
+	}
 
 	@Override
 	public void onDisable() {
@@ -220,18 +212,19 @@ public class BankingPlugin extends JavaPlugin {
 		if (griefPreventionPlugin instanceof GriefPrevention)
             griefPrevention = (GriefPrevention) griefPreventionPlugin;
 
-		Plugin worldEditPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
-		if (worldEditPlugin instanceof WorldEditPlugin)
+		Plugin worldEditPlugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+		if (worldEditPlugin != null)
+			debug(worldEditPlugin.toString());
+		try {
 			worldEdit = (WorldEditPlugin) worldEditPlugin;
-		else {
+		} catch (ClassCastException e) {
 			debug("Could not find WorldEdit!");
+			debug(e);
 		}
 
 		Plugin essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("Essentials");
-		if (essentialsPlugin instanceof Essentials) {
+		if (essentialsPlugin instanceof Essentials)
 			essentials = (Essentials) essentialsPlugin;
-			debug("Hooked with Essentials.");
-		}
 
 		if (hasWorldGuard())
             WorldGuardWrapper.getInstance().registerEvents(this);
@@ -288,8 +281,8 @@ public class BankingPlugin extends JavaPlugin {
     	getServer().getPluginManager().registerEvents(new AccountInteractListener(this), this);
     	getServer().getPluginManager().registerEvents(new AccountTamperingListener(this), this);
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
-		getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
-		getServer().getPluginManager().registerEvents(new AccountProtectListener(this), this);
+		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
+		getServer().getPluginManager().registerEvents(new ChestProtectListener(this), this);
 
 		if (hasWorldGuard())
 			getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);
@@ -421,6 +414,10 @@ public class BankingPlugin extends JavaPlugin {
 	
 	public Economy getEconomy() {
 		return econ;
+	}
+
+	public boolean hasEssentials() {
+		return essentials != null && essentials.isEnabled();
 	}
 
 	public Essentials getEssentials() {
