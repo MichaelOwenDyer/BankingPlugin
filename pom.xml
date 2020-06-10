@@ -22,6 +22,10 @@
 	</properties>
 
 	<repositories>
+    	<repository>
+        	<id>spigot-repo</id>
+        	<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+		</repository>
   		<repository>
         	<id>sk89q-repo</id>
         	<url>https://maven.enginehub.org/repo/</url>
@@ -38,6 +42,12 @@
 
 	<dependencies>
 		<dependency>
+           	<groupId>org.spigotmc</groupId>
+           	<artifactId>spigot-api</artifactId>
+           	<version>1.15.2-R0.1-SNAPSHOT</version>
+           	<scope>provided</scope>
+       	</dependency>
+		<dependency>
 			<groupId>net.milkbowl.vault</groupId>
 			<artifactId>VaultAPI</artifactId>
 			<version>1.7</version>
@@ -52,10 +62,6 @@
 				<exclusion>
 					<groupId>org.bukkit</groupId>
 					<artifactId>bukkit</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sk89q.worldedit</groupId>
-					<artifactId>worldedit-bukkit</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -168,7 +174,7 @@
 						<filter>
 							<artifact>com.sk89q:worldedit</artifact>
 							<includes>
-								<include>com/sk89q/worldedit/**</include>
+								<include>com/sk89q/worldedit/bukkit/selections/**</include>
 								<include>com/thoughtworks/paranamer/**</include>
 							</includes>
 						</filter>
@@ -176,6 +182,7 @@
 							<artifact>net.ess3:EssentialsX</artifact>
 							<includes>
 								<include>com/earth2me/essentials/Worth.class</include>
+								<include>com/earth2me/essentials/IEssentials.class</include>
 							</includes>
 						</filter>
 					</filters>

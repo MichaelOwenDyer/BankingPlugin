@@ -480,7 +480,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 				WorldEditPlugin worldEdit = plugin.getWorldEdit();
 				selection = worldEdit.getSelection(p);
 				if (selection == null) {
-					plugin.debug(p.getName() + " tried to create a bank with no worldedit selection");
+					plugin.debug(p.getName() + " tried to resize a bank with no worldedit selection");
 					p.sendMessage(Messages.NO_SELECTION_FOUND);
 					return true;
 				}

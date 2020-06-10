@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -71,6 +73,8 @@ public class BankingPlugin extends JavaPlugin {
 	private GriefPrevention griefPrevention;
 	private WorldEditPlugin worldEdit;
 	
+	private static final Map<Double, Integer> payoutTimeIds = new HashMap<>();
+
 	/**
 	 * @return An instance of BankingPlugin
 	 */
@@ -105,7 +109,7 @@ public class BankingPlugin extends JavaPlugin {
 
         worldGuard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard != null) {
-            WorldGuardBankingFlag.register(this);
+			WorldGuardBankingFlag.register(this); // Throws class error with worldedit:World.class
         }
     }
 
@@ -113,7 +117,14 @@ public class BankingPlugin extends JavaPlugin {
 	public void onEnable() {
 		debug("Enabling BankingPlugin version " + getDescription().getVersion());
 
-		if (!getServer().getPluginManager().isPluginEnabled("Essentials")) {
+		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
+			debug("Could not find plugin \"Vault\"");
+			getLogger().severe("Could not find plugin \"Vault\"");
+			getServer().getPluginManager().disablePlugin(this);
+			return;
+		}
+
+		if (!setupEconomy()) {
 			debug("Could not find plugin \"Essentials\"");
 			getLogger().severe("Could not find plugin \"Essentials\"");
             getServer().getPluginManager().disablePlugin(this);
@@ -324,19 +335,16 @@ public class BankingPlugin extends JavaPlugin {
 
 	public void scheduleInterestPoints() {
 		for (Double time : Config.interestPayoutTimes) {
-			int id = scheduleRepeatAtTime(time, new Runnable() {
-				@Override
-				public void run() {
-					Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(instance));
-				}
-			});
-
+			int id = scheduleRepeatAtTime(time);
 			if (id == -1)
 				debug("Interest payout scheduling failed! (" + time + ")");
+			else {
+				payoutTimeIds.put(time, id);
+			}
 		}
 	}
 
-	private int scheduleRepeatAtTime(double time, Runnable task) {
+	private int scheduleRepeatAtTime(double time) {
 		// 24 hours/day * 60 minutes/hour * 60 seconds/minute *  20 ticks/second = 1728000 ticks/day
 		final long ticksInADay = 1728000L;
 		
@@ -361,7 +369,8 @@ public class BankingPlugin extends JavaPlugin {
 		
 		debug("Scheduling daily interest payout at " + Utils.convertDoubleTime(time, false));
 		
-		return Bukkit.getScheduler().scheduleSyncRepeatingTask(instance, task, ticks, ticksInADay);
+		return Bukkit.getScheduler().scheduleSyncRepeatingTask(instance,
+				() -> Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(instance)), ticks, ticksInADay);
 	}
 
 	public void debug(String message) {
