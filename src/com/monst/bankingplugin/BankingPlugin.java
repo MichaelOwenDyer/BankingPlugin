@@ -73,6 +73,7 @@ public class BankingPlugin extends JavaPlugin {
 	private GriefPrevention griefPrevention;
 	private WorldEditPlugin worldEdit;
 	
+	// To be used for hot-swapping interest payout times
 	private static final Map<Double, Integer> payoutTimeIds = new HashMap<>();
 
 	/**
