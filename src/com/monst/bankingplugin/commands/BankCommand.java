@@ -25,7 +25,7 @@ public class BankCommand extends GenericCommand {
         this.name = Config.mainCommandNameBank;
         this.desc = Messages.COMMAND_DESC_BANK;
 		this.pluginCommand = super.createPluginCommand();
-        this.executor = new BankCommandExecutor(plugin);
+		this.executor = new BankCommandExecutor(plugin);
 
 		addSubCommand(new BankSubCommand("create", true, executor, tabCompleter) {
             @Override

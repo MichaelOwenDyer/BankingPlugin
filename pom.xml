@@ -6,7 +6,7 @@
 
 	<groupId>com.monst</groupId>
 	<artifactId>BankingPlugin</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.1-SNAPSHOT</version>
 
 	<name>BankingPlugin</name>
 	<description>Create bank accounts in bank vault chests and earn interest on your investments!</description>
@@ -23,21 +23,25 @@
 
 	<repositories>
     	<repository>
-        	<id>spigot-repo</id>
+        	<id>spigot-repo</id> <!-- Spigot -->
         	<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
   		<repository>
-        	<id>sk89q-repo</id>
-        	<url>https://maven.enginehub.org/repo/</url>
-    	</repository>
-		<repository>
-			<id>jitpack.io</id>
+			<id>jitpack.io</id> <!-- Vault -->
 			<url>https://jitpack.io</url>
 		</repository>
 		<repository>
-			<id>ess-repo</id>
+        	<id>enginehub-maven</id> <!-- WorldEdit -->
+        	<url>https://maven.enginehub.org/repo/</url>
+    	</repository>
+		<repository>
+			<id>ess-repo</id> <!-- Essentials -->
 			<url>https://ci.ender.zone/plugin/repository/everything/</url>
 		</repository>
+        <repository>
+            <id>codemc-repo</id> <!-- WorldGuardWrapper -->
+            <url>https://repo.codemc.org/repository/maven-public/</url>
+        </repository>
 	</repositories>
 
 	<dependencies>
@@ -65,42 +69,43 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 		<dependency>
-			<groupId>com.sk89q</groupId>
-			<artifactId>worldedit</artifactId>
-			<version>6.0.0-SNAPSHOT</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.codemc.worldguardwrapper</groupId>
-			<artifactId>worldguardwrapper</artifactId>
-			<version>1.1.6-SNAPSHOT</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP</artifactId>
-			<version>3.3.1</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.7.26</version>
-			<scope>compile</scope>
+			<groupId>com.sk89q.worldedit</groupId>
+			<artifactId>worldedit-bukkit</artifactId>
+			<version>7.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.ess3</groupId>
 			<artifactId>EssentialsX</artifactId>
-			<version>2.16.1</version>
-			<scope>compile</scope>
+			<version>2.17.2</version>
+			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>org.bukkit</groupId>
 					<artifactId>bukkit</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		
+		<!-- Shaded dependencies -->
+		<dependency>
+			<groupId>org.codemc.worldguardwrapper</groupId>
+			<artifactId>worldguardwrapper</artifactId>
+			<version>1.1.8-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>3.4.5</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<version>1.7.30</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
@@ -118,7 +123,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.2</version>
+				<version>3.2.3</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -133,9 +138,7 @@
 						<includes>
 							<include>com.zaxxer:HikariCP</include>
 							<include>org.codemc.worldguardwrapper:worldguardwrapper</include>
-							<include>com.sk89q:worldedit</include>
 							<include>org.slf4j</include>
-							<include>net.ess3:EssentialsX</include>
 						</includes>
 					</artifactSet>
 					<relocations>
@@ -148,20 +151,8 @@
 							<shadedPattern>com.monst.bankingplugin.dependencies.worldguardwrapper</shadedPattern>
 						</relocation>
 						<relocation>
-							<pattern>com.sk89q.worldedit</pattern>
-							<shadedPattern>com.monst.bankingplugin.dependencies.worldedit</shadedPattern>
-						</relocation>
-						<relocation>
-							<pattern>com.thoughtworks.paranamer</pattern>
-							<shadedPattern>com.monst.bankingplugin.dependencies.paranamer</shadedPattern>
-						</relocation>
-						<relocation>
 							<pattern>org.slf4j</pattern>
 							<shadedPattern>com.monst.bankingplugin.dependencies.slf4j</shadedPattern>
-						</relocation>
-						<relocation>
-							<pattern>com.earth2me.essentials</pattern>
-							<shadedPattern>com.monst.bankingplugin.dependencies.essentials</shadedPattern>
 						</relocation>
 					</relocations>
 					<filters>
@@ -170,20 +161,6 @@
 							<excludes>
 								<exclude>META-INF/*.MF</exclude>
 							</excludes>
-						</filter>
-						<filter>
-							<artifact>com.sk89q:worldedit</artifact>
-							<includes>
-								<include>com/sk89q/worldedit/bukkit/selections/**</include>
-								<include>com/thoughtworks/paranamer/**</include>
-							</includes>
-						</filter>
-						<filter>
-							<artifact>net.ess3:EssentialsX</artifact>
-							<includes>
-								<include>com/earth2me/essentials/Worth.class</include>
-								<include>com/earth2me/essentials/IEssentials.class</include>
-							</includes>
 						</filter>
 					</filters>
 				</configuration>

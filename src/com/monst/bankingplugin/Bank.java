@@ -13,12 +13,12 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 
+import com.monst.bankingplugin.selections.CuboidSelection;
+import com.monst.bankingplugin.selections.Polygonal2DSelection;
+import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Utils;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
-import com.sk89q.worldedit.bukkit.selections.Polygonal2DSelection;
-import com.sk89q.worldedit.bukkit.selections.Selection;
 
 import net.md_5.bungee.api.ChatColor;
 

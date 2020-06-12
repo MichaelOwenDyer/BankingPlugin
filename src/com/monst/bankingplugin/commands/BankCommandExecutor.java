@@ -23,14 +23,14 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
+import com.monst.bankingplugin.external.WorldEditReader;
+import com.monst.bankingplugin.selections.CuboidSelection;
+import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
-import com.sk89q.worldedit.bukkit.selections.Selection;
 
 import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -134,12 +134,13 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 			return false;
 
 		else if (args.length == 2) {
-
+			
 			if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
-				WorldEditPlugin worldEdit = plugin.getWorldEdit();
-				selection = worldEdit.getSelection(p);
+
+				selection = WorldEditReader.getSelection(plugin, p);
+
 				if (selection == null) {
-					plugin.debug(p.getName() + " tried to create a bank with no worldedit selection");
+					plugin.debug(p.getName() + " tried to resize a bank with no worldedit selection");
 					p.sendMessage(Messages.NO_SELECTION_FOUND);
 					return true;
 				}
@@ -223,7 +224,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 			return false;
 
 		if (!bankUtils.isExclusiveSelection(selection)) {
-			plugin.debug("Selection is not exclusive");
+			plugin.debug("Region is not exclusive");
 			p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
 			return true;
 		}
@@ -477,8 +478,9 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 		else if (args.length == 2) {
 
 			if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
-				WorldEditPlugin worldEdit = plugin.getWorldEdit();
-				selection = worldEdit.getSelection(p);
+
+				selection = WorldEditReader.getSelection(plugin, p);
+
 				if (selection == null) {
 					plugin.debug(p.getName() + " tried to resize a bank with no worldedit selection");
 					p.sendMessage(Messages.NO_SELECTION_FOUND);

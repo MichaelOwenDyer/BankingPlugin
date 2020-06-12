@@ -32,6 +32,8 @@ import org.bukkit.util.Vector;
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.nms.JsonBuilder;
+import com.monst.bankingplugin.selections.Selection;
+import com.sk89q.worldedit.regions.Region;
 
 public class Utils {
 
@@ -60,6 +62,10 @@ public class Utils {
 
 	public static String formatNumber(BigDecimal bd) {
 		return String.format("%,.2f", bd);
+	}
+
+	public static Selection convertRegion(Region region) {
+		return null;
 	}
 
 	/**

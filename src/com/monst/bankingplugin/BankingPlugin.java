@@ -146,11 +146,12 @@ public class BankingPlugin extends JavaPlugin {
         accountUtils = new AccountUtils(this);
 		bankUtils = new BankUtils(this);
 
+		loadExternalPlugins();
+
 		accountCommand = new AccountCommand(this);
 		bankCommand = new BankCommand(this);
 		controlCommand = new ControlCommand(this);
 
-        loadExternalPlugins();
 		// checkForUpdates();
 		initDatabase();
         registerListeners();
@@ -211,31 +212,36 @@ public class BankingPlugin extends JavaPlugin {
      */
     private boolean setupEconomy() {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
+		if (rsp == null)
             return false;
-        }
-        econ = rsp.getProvider();
-        return econ != null;
+		// debug(rsp.getProvider().toString());
+
+		econ = rsp.getProvider();
+		return econ != null;
     }
     
     private void loadExternalPlugins() {
 
         Plugin griefPreventionPlugin = Bukkit.getServer().getPluginManager().getPlugin("GriefPrevention");
-		if (griefPreventionPlugin instanceof GriefPrevention)
+		if (griefPreventionPlugin != null && griefPreventionPlugin.isEnabled()
+				&& griefPreventionPlugin instanceof GriefPrevention)
             griefPrevention = (GriefPrevention) griefPreventionPlugin;
 
 		Plugin worldEditPlugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-		if (worldEditPlugin != null)
-			debug(worldEditPlugin.toString());
-		try {
+		if (worldEditPlugin != null && worldEditPlugin.isEnabled() 
+				&& worldEditPlugin instanceof WorldEditPlugin) {
 			worldEdit = (WorldEditPlugin) worldEditPlugin;
-		} catch (ClassCastException e) {
-			debug("Could not find WorldEdit!");
-			debug(e);
+			debug("Hooked with WorldEdit! (" + worldEditPlugin.toString() + ")");
+			getLogger().info("Hooked with WorldEdit.");
+		} else {
+			debug("Could not hook with WorldEdit!");
+			if (worldEditPlugin != null)
+				debug("Found: " + worldEditPlugin.toString());
 		}
 
 		Plugin essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("Essentials");
-		if (essentialsPlugin instanceof Essentials)
+		if (essentialsPlugin != null && essentialsPlugin.isEnabled() 
+				&& essentialsPlugin instanceof Essentials)
 			essentials = (Essentials) essentialsPlugin;
 
 		if (hasWorldGuard())
@@ -247,9 +253,9 @@ public class BankingPlugin extends JavaPlugin {
 		debug("Database initialized.");
 	}
 
-    // URLs NOT YET CHANGED
+	// URLs NOT YET SET UP
     // DO NOT USE
-    private void checkForUpdates() {
+	private void checkForUpdates() {
         if (!Config.enableUpdateChecker) {
             return;
         }
@@ -370,8 +376,8 @@ public class BankingPlugin extends JavaPlugin {
 		
 		debug("Scheduling daily interest payout at " + Utils.convertDoubleTime(time, false));
 		
-		return Bukkit.getScheduler().scheduleSyncRepeatingTask(instance,
-				() -> Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(instance)), ticks, ticksInADay);
+		return Bukkit.getScheduler().scheduleSyncRepeatingTask(this,
+				() -> Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(this)), ticks, ticksInADay);
 	}
 
 	public void debug(String message) {

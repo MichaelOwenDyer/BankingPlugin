@@ -18,10 +18,9 @@ import org.bukkit.World;
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
-import com.sk89q.worldedit.BlockVector2D;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
-import com.sk89q.worldedit.bukkit.selections.Polygonal2DSelection;
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.monst.bankingplugin.selections.CuboidSelection;
+import com.monst.bankingplugin.selections.Polygonal2DSelection;
+import com.monst.bankingplugin.selections.Selection;
 
 public class BankUtils {
 
