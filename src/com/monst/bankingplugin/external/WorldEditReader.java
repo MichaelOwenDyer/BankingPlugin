@@ -34,8 +34,7 @@ public class WorldEditReader {
 				return new CuboidSelection(loc1.getWorld(), loc1, loc2);
 			}
 
-		} catch (IncompleteRegionException e1) {
-		}
+		} catch (IncompleteRegionException e1) {}
 
 		return null;
 	}

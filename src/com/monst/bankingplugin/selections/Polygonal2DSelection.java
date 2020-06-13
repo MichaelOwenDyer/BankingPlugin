@@ -27,27 +27,41 @@ public class Polygonal2DSelection implements Selection {
 
 	@Override
 	public Location getMinimumPoint() {
-		return null;
+		int minX = points.stream().mapToInt(BlockVector2D::getBlockX).min().getAsInt();
+		int minZ = points.stream().mapToInt(BlockVector2D::getBlockZ).min().getAsInt();
+		return new Location(world, minX, minY, minZ);
 	}
 
 	@Override
 	public Location getMaximumPoint() {
-		return null;
+		int maxX = points.stream().mapToInt(BlockVector2D::getBlockX).max().getAsInt();
+		int maxZ = points.stream().mapToInt(BlockVector2D::getBlockZ).max().getAsInt();
+		return new Location(world, maxX, maxY, maxZ);
 	}
 
 	@Override
 	public World getWorld() {
-		return null;
+		return world;
 	}
 
 	@Override
 	public int getArea() {
-		return 0;
+		int minX = getMinimumPoint().getBlockX();
+		int maxX = getMaximumPoint().getBlockX();
+		int minZ = getMinimumPoint().getBlockZ();
+		int maxZ = getMaximumPoint().getBlockZ();
+		return (maxX - minX) * (maxY - minY) * (maxZ - minZ);
 	}
 
 	@Override
 	public boolean contains(Location pt) {
-		return false;
+		int x = pt.getBlockX();
+		int y = pt.getBlockY();
+		int z = pt.getBlockZ();
+		Location max = getMaximumPoint();
+		Location min = getMinimumPoint();
+		return (x < max.getBlockX() && x > min.getBlockX()) && (y < max.getBlockY() 
+				&& y > min.getBlockY()) && (z < max.getBlockZ() && z > max.getBlockZ());
 	}
 
 }
