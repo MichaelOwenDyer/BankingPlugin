@@ -200,7 +200,7 @@ public class Config {
     /**
      * The default bank ownership limit for players whose limit is not set via a permission.
      **/
-	// public static short defaultBankLimit;
+	public static int defaultBankLimit;
     
     /**
      * The default account ownership limit for players whose limit is not set via a permission.
@@ -412,7 +412,7 @@ public class Config {
 
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");
-		removeDelay = config.getInt("removeall-delay") >= 0 ? config.getInt("removeall-delay") : 600;
+		removeDelay = config.getInt("removeall-delay") >= 0 ? config.getInt("removeall-delay") : 300;
 		insureAccountsUpTo = config.getLong("insure-accounts-up-to");
         enableUpdateChecker = config.getBoolean("enable-update-checker");
 		enableTransactionLog = config.getBoolean("enable-logs.transaction-log");
@@ -425,7 +425,7 @@ public class Config {
         removeAccountOnError = config.getBoolean("remove-account-on-error");
         blacklist = (config.getStringList("blacklist") != null) ? 
 				config.getStringList("blacklist") : new ArrayList<>();
-		// defaultBankLimit = (short) config.getInt("default-limits.bank");
+		defaultBankLimit = config.getInt("default-limits.bank");
 		defaultAccountLimit = config.getInt("default-limits.account");
 		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-values.create-bank");
         wgAllowCreateAccountDefault = config.getBoolean("worldguard-default-flag-values.create-account");

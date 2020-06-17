@@ -11,23 +11,30 @@ public class CuboidSelection implements Selection {
 
 	public CuboidSelection(World world, Location loc1, Location loc2) {
 		this.world = world;
-		if (loc1.getBlockY() == loc2.getBlockY()) {
-			if (loc1.getBlockX() == loc2.getBlockX()) {
-				if (loc1.getBlockZ() == loc2.getBlockZ()) {
-					min = loc1;
-					max = loc2;
-				} else {
-					min = loc1.getBlockZ() < loc2.getBlockZ() ? loc1 : loc2;
-					max = loc1.getBlockZ() > loc2.getBlockZ() ? loc1 : loc2;
-				}
-			} else {
-				min = loc1.getBlockX() < loc2.getBlockX() ? loc1 : loc2;
-				max = loc1.getBlockX() > loc2.getBlockX() ? loc1 : loc2;
-			}
+		int minX, minY, minZ, maxX, maxY, maxZ;
+		if (loc1.getBlockX() < loc2.getBlockX()) {
+			minX = loc1.getBlockX();
+			maxX = loc2.getBlockX();
 		} else {
-			min = loc1.getBlockY() < loc2.getBlockY() ? loc1 : loc2;
-			max = loc1.getBlockY() > loc2.getBlockY() ? loc1 : loc2;
+			minX = loc2.getBlockX();
+			maxX = loc1.getBlockX();
 		}
+		if (loc1.getBlockY() < loc2.getBlockY()) {
+			minY = loc1.getBlockY();
+			maxY = loc2.getBlockY();
+		} else {
+			minY = loc2.getBlockY();
+			maxY = loc1.getBlockY();
+		}
+		if (loc1.getBlockZ() < loc2.getBlockZ()) {
+			minZ = loc1.getBlockZ();
+			maxZ = loc2.getBlockZ();
+		} else {
+			minZ = loc2.getBlockZ();
+			maxZ = loc1.getBlockZ();
+		}
+		min = new Location(world, minX, minY, minZ);
+		max = new Location(world, maxX, maxY, maxZ);
 	}
 
 	@Override
@@ -56,8 +63,10 @@ public class CuboidSelection implements Selection {
 		int x = pt.getBlockX();
 		int y = pt.getBlockY();
 		int z = pt.getBlockZ();
-		return (x < max.getBlockX() && x > min.getBlockX()) && (y < max.getBlockY() && y > min.getBlockY())
-				&& (z < max.getBlockZ() && z > min.getBlockZ());
+		boolean inX = (x < max.getBlockX() && x > min.getBlockX());
+		boolean inY = (y < max.getBlockY() && y > min.getBlockY());
+		boolean inZ = (z < max.getBlockZ() && z > min.getBlockZ());
+		return inX && inY && inZ;
 	}
 
 }

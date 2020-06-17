@@ -93,9 +93,8 @@ public class BankingPlugin extends JavaPlugin {
             File debugLogFile = new File(getDataFolder(), "debug.txt");
 
             try {
-                if (!debugLogFile.exists()) {
+				if (!debugLogFile.exists())
                     debugLogFile.createNewFile();
-                }
 
                 new PrintWriter(debugLogFile).close();
 
@@ -228,7 +227,7 @@ public class BankingPlugin extends JavaPlugin {
             griefPrevention = (GriefPrevention) griefPreventionPlugin;
 
 		Plugin worldEditPlugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-		if (worldEditPlugin != null && worldEditPlugin.isEnabled() 
+		if (worldEditPlugin != null && worldEditPlugin.isEnabled()
 				&& worldEditPlugin instanceof WorldEditPlugin) {
 			worldEdit = (WorldEditPlugin) worldEditPlugin;
 			debug("Hooked with WorldEdit! (" + worldEditPlugin.toString() + ")");
@@ -240,7 +239,7 @@ public class BankingPlugin extends JavaPlugin {
 		}
 
 		Plugin essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("Essentials");
-		if (essentialsPlugin != null && essentialsPlugin.isEnabled() 
+		if (essentialsPlugin != null // && essentialsPlugin.isEnabled()
 				&& essentialsPlugin instanceof Essentials)
 			essentials = (Essentials) essentialsPlugin;
 

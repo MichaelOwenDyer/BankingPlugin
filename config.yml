@@ -20,12 +20,12 @@ main-command-names:
 #   10 minutes = .17        15 minutes = .25      30 minutes = .50    45 minutes = .75      50 minutes = .84
 # Equivalent values will be joined together.
 # Type: List<Double>
-# Default: 9, 15, 21
+# Default: 3, 9, 12, 15, 21
 interest-payout-times:
+  -3
   -9
   -12
   -15
-  -18
   -21
   
 # Set the baseline interest rate for all bank accounts on the server.
@@ -51,6 +51,7 @@ interest-multipliers:
   -1
   -2
   -3
+  -5
   
 
 # Set the number of interest payout events a player must own their account for
@@ -61,25 +62,25 @@ interest-multipliers:
 interest-delay-period: 0
 
 # Whether to decrement the interest delay period while a player is offline. 
-# Set this to false to only decrement the delay period when a player is online for
-# an interest payout event, and not while offline.
+# Set this to false to only count down the delay period while a player is online.
 # Type: boolean
 # Default: false
 interest-delay-count-while-offline: false
 
 # Set the number of times a player can be offline and still collect interest on their accounts.
 # Set this to 0 for no interest while offline.
-# Type: short
+# Type: int
 # Default: 1
 allowed-offline-payouts: 1
 
-# Set the number of times a player can be offline at the interest payout times before their multiplier is reset.
+# Set the number of times a player can be offline for consecutive interest payouts before their multiplier is reset.
 # This is independent of the number of times a player can collect interest payouts offline.
 # A player could continue to receive baseline interest payouts offline after the multiplier reset if allowed-offline-payouts is set higher than this.
 # If allowed-offline-payouts is set lower than this, an offline player will stop receiving payouts but will not lose their multiplier
 # until after they are offline for this number of interest payout times.
 # Set this value to 0 for a no-tolerance policy on missing payouts (multiplier reset at first offline payout)
-# Type: short
+# Set this value to -1 to never reset the multiplier by missing a payout.
+# Type: int
 # Default: 1
 allowed-offline-payouts-before-multiplier-reset: 1
 
@@ -88,7 +89,7 @@ allowed-offline-payouts-before-multiplier-reset: 1
 # Setting this value to 0 causes the multiplier to freeze until the player comes back online. It will remain the same as long as it is not reset.
 # Setting this value to 1 causes the multiplier to iterate like normal, even when the player is offline (discouraged)
 # Absolute values greater than 1 *are* allowed, but to be used sparingly (-2 would decrease a player's multiplier by two stages for every missed payout)
-# Type: short
+# Type: int
 # Default: 0
 offline-multiplier-behavior: 0
 
@@ -96,7 +97,7 @@ offline-multiplier-behavior: 0
 # Setting this value to -1 causes the multiplier to decrease by one stage per withdrawal.
 # Setting this value to 0 causes the multiplier to not be affected by withdrawals (discouraged)
 # Setting this value to any positive integer causes the multiplier to be RESET when the player makes a withdrawal.
-# Type: short
+# Type: int
 # Default: 1
 withdrawal_multiplier_behavior: 1
 
@@ -110,7 +111,7 @@ account-info-item: "STICK"
 # You can set this to 0 to disable costs.
 # Type: double
 creation-prices:
-# bank: 100
+  bank: 100
   account: 25
 
 # Set whether the (current) account creation price should be refunded
@@ -129,7 +130,7 @@ confirm-on-remove: true
 confirm-on-removeall: true
 
 # Set the delay, in ticks, before a removeall command should be executed on
-# the server. Set to zero for no delay. Defaults to 600 ticks if negative.
+# the server. Set to zero for no delay. Defaults to 300 ticks if negative.
 # Type: int
 # Default: 300
 removeall-delay: 300
@@ -159,7 +160,7 @@ enable-logs:
 # Set the maximum age for economy log entries in days.
 # All log entries older than this will be deleted on server start.
 # Set this to 0 to disable this feature.
-# Type: short
+# Type: int
 # Default: 30
 cleanup-log-days: 30
 
@@ -188,7 +189,7 @@ default-limits:
   # specific permission may have.
   # If you don't want the players to have a limit by default
   # set the value to -1.
-# bank: 1
+  bank: 1
   account: 2
 
 # Set whether the custom WorldGuard flags should be allowed by default.

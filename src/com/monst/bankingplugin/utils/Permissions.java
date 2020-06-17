@@ -32,6 +32,7 @@ public class Permissions {
 	public static final String BANK_CREATE = "bankingplugin.bank.create";
 	public static final String BANK_REMOVE = "bankingplugin.bank.remove";
 	public static final String BANK_REMOVEALL = "bankingplugin.bank.removeall";
+	public static final String BANK_NO_LIMIT = "bankingplugin.bank.limit.*";
 	public static final String BANK_INFO = "bankingplugin.bank.info";
 	public static final String BANK_INFO_VERBOSE = "bankingplugin.bank.info.verbose";
 	public static final String BANK_LIST = "bankingplugin.bank.list";
@@ -48,6 +49,16 @@ public class Permissions {
 	public static final String BANK_OTHER_LIST_VERBOSE = "bankingplugin.bank.other.list.verbose";
 	public static final String BANK_OTHER_RESIZE = "bankingplugin.bank.other.resize";
 	public static final String BANK_OTHER_SET = "bankingplugin.bank.other.set";
+
+	public static final String BANK_ADMIN_CREATE = "bankingplugin.bank.admin.create";
+	public static final String BANK_ADMIN_REMOVE = "bankingplugin.bank.admin.remove";
+	public static final String BANK_ADMIN_REMOVEALL = "bankingplugin.bank.admin.removeall";
+	public static final String BANK_ADMIN_INFO = "bankingplugin.bank.admin.info";
+	public static final String BANK_ADMIN_INFO_VERBOSE = "bankingplugin.bank.admin.info.verbose";
+	public static final String BANK_ADMIN_LIST = "bankingplugin.bank.admin.list";
+	public static final String BANK_ADMIN_LIST_VERBOSE = "bankingplugin.bank.admin.list.verbose";
+	public static final String BANK_ADMIN_RESIZE = "bankingplugin.bank.admin.resize";
+	public static final String BANK_ADMIN_SET = "bankingplugin.bank.admin.set";
 
 	public static final String BYPASS_EXTERNAL_PLUGINS = "bankingplugin.external.bypass";
 	public static final String CONFIG = "bankingplugin.config";

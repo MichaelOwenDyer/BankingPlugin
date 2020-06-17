@@ -14,10 +14,13 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
@@ -295,7 +298,48 @@ public class BankUtils {
 	}
 
 	public void removeAll(String request, String[] args) {
+		// TODO: implement
+	}
 
+	/**
+	 * Get the bank limits of a player
+	 * 
+	 * @param player Player, whose bank limits should be returned
+	 * @return The bank limits of the given player
+	 */
+	public int getBankLimit(Player player) {
+		int limit = 0;
+		boolean useDefault = true;
+
+		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+			if (permInfo.getPermission().startsWith(
+					"bankingplugin.bank.limit.")
+					&& player.hasPermission(permInfo.getPermission())) {
+				if (permInfo.getPermission().equalsIgnoreCase(Permissions.BANK_NO_LIMIT)) {
+					limit = -1;
+					useDefault = false;
+					break;
+				} else {
+					String[] spl = permInfo.getPermission().split("bankingplugin.bank.limit.");
+
+					if (spl.length > 1) {
+						try {
+							int newLimit = Integer.valueOf(spl[1]);
+							if (newLimit < 0) {
+								limit = -1;
+								break;
+							}
+							limit = Math.max(limit, newLimit);
+							useDefault = false;
+						} catch (NumberFormatException e) {
+						}
+					}
+				}
+			}
+		}
+		if (limit < -1)
+			limit = -1;
+		return (useDefault ? Config.defaultBankLimit : limit);
 	}
 
 

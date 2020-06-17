@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.bukkit.OfflinePlayer;
 
-public class Ownable {
+public abstract class Ownable {
 
 	protected OfflinePlayer owner;
 	protected Set<OfflinePlayer> coowners = new HashSet<>();

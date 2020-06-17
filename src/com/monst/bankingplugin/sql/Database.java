@@ -563,9 +563,14 @@ public abstract class Database {
 							selection = new CuboidSelection(world, min, max);
 						}
 						String[] values = rs.getString("account_config").split(" \\| ");
-						List<Integer> multipliers = Arrays
+						List<Integer> multipliers;
+						try {
+							multipliers = Arrays
 								.stream(values[1].substring(1, values[1].length() - 1).split(","))
 								.map(Integer::parseInt).collect(Collectors.toList());
+						} catch (NumberFormatException e) {
+							multipliers = List.of(1);
+						}
 
 						AccountConfig accountConfig = new AccountConfig(
 								Double.parseDouble(values[0]),
