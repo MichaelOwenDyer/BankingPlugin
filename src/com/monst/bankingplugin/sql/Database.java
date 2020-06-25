@@ -285,7 +285,7 @@ public abstract class Database {
 						callback.callSyncResult(account.getID());
 					}
 
-					plugin.debug("Adding account to database (#" + account.getID() + ")");
+					plugin.debug("Added account to database (#" + account.getID() + ")");
 				} catch (SQLException e) {
 					if (callback != null) {
 						callback.callSyncError(e);
@@ -569,7 +569,7 @@ public abstract class Database {
 								.stream(values[1].substring(1, values[1].length() - 1).split(","))
 								.map(Integer::parseInt).collect(Collectors.toList());
 						} catch (NumberFormatException e) {
-							multipliers = List.of(1);
+							multipliers = Arrays.asList(1);
 						}
 
 						AccountConfig accountConfig = new AccountConfig(

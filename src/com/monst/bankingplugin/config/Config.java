@@ -2,6 +2,7 @@ package com.monst.bankingplugin.config;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -374,7 +375,7 @@ public class Config {
 
 		interestMultipliers = new SimpleEntry<>(config.getIntegerList("interest-multipliers.default") != null
 				? config.getIntegerList("interest-multipliers")
-				: List.of(1), 
+				: Arrays.asList(1), 
 				config.getBoolean("interest-multipliers.allow-override"));
 
 		initialInterestDelay = new SimpleEntry<>(config.getInt("initial-interest-delay.default"),

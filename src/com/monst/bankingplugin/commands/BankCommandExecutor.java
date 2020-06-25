@@ -322,16 +322,16 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
 			if (confirmationEnabled && needsScheduling) {
-				if (commandConfirmed(p, List.of(bank), args))
-					scheduleCommand(p, List.of(bank), args, delay);
+				if (commandConfirmed(p, Arrays.asList(bank), args))
+					scheduleCommand(p, Arrays.asList(bank), args, delay);
 			} else if (confirmationEnabled) {
-				if (commandConfirmed(p, List.of(bank), args)) {
+				if (commandConfirmed(p, Arrays.asList(bank), args)) {
 					bankUtils.removeBank(bank, true);
 					plugin.debug("Bank was removed from the database");
 					p.sendMessage(Messages.BANK_REMOVED);
 				}
 			} else if (needsScheduling) {
-				scheduleCommand(p, List.of(bank), args, delay);
+				scheduleCommand(p, Arrays.asList(bank), args, delay);
 			} else {
 				bankUtils.removeBank(bank, true);
 				plugin.debug("Bank was removed from the database");

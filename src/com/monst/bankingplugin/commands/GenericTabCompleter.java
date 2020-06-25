@@ -111,7 +111,7 @@ class GenericTabCompleter implements TabCompleter {
 		if (args.length > 2)
 			return new ArrayList<>();
 		if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
-			return List.of("detailed");
+			return Arrays.asList("detailed");
 		else
 			return new ArrayList<>();
 	}
@@ -122,7 +122,7 @@ class GenericTabCompleter implements TabCompleter {
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		onlinePlayers.remove(sender.getName());
 
-		ArrayList<String> flags = new ArrayList<>(List.of("detailed"));
+		ArrayList<String> flags = new ArrayList<>(Arrays.asList("detailed"));
 		if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST))
 			flags.add("all");
 
@@ -145,19 +145,19 @@ class GenericTabCompleter implements TabCompleter {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
 				if (!args[2].isEmpty()) {
 					if ("-a".startsWith(args[2].toLowerCase()) || "all".startsWith(args[2].toLowerCase()))
-						return List.of("all");
+						return Arrays.asList("all");
 					else
 						return new ArrayList<>();
 				} else
-					return List.of("all");
+					return Arrays.asList("all");
 			} else {
 				if (!args[2].isEmpty()) {
 					if ("-d".startsWith(args[2].toLowerCase()) || "detailed".startsWith(args[2].toLowerCase()))
-						return List.of("detailed");
+						return Arrays.asList("detailed");
 					else
 						return new ArrayList<>();
 				} else
-					return List.of("detailed");
+					return Arrays.asList("detailed");
 			}
 		} else
 			return new ArrayList<>();
@@ -179,7 +179,7 @@ class GenericTabCompleter implements TabCompleter {
 						returnCompletions.add(name);
 				return returnCompletions;
 			} else {
-				onlinePlayers.addAll(List.of("all", "cancel"));
+				onlinePlayers.addAll(Arrays.asList("all", "cancel"));
 				return onlinePlayers;
 			}
 		}
@@ -188,7 +188,7 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeAccountSet(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
-		List<String> fields = List.of("nickname", "multiplier", "initial-delay");
+		List<String> fields = Arrays.asList("nickname", "multiplier", "initial-delay");
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
@@ -207,7 +207,7 @@ class GenericTabCompleter implements TabCompleter {
 		
 		if (args.length == 2) {
 			if (args[1].isEmpty())
-				return List.of("[bankname]");
+				return Arrays.asList("[bankname]");
 			else
 				return new ArrayList<>();
 		} else if (args.length == 3) {
@@ -308,9 +308,9 @@ class GenericTabCompleter implements TabCompleter {
 		} else if (args.length == 3) {
 			if (!args[1].isEmpty()) {
 				if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
-					return List.of("detailed");
+					return Arrays.asList("detailed");
 			} else
-				return List.of("detailed");
+				return Arrays.asList("detailed");
 		}
 		return new ArrayList<>();
 	}
@@ -324,7 +324,7 @@ class GenericTabCompleter implements TabCompleter {
 					returnCompletions.add("detailed");
 				return returnCompletions;
 			} else
-				return List.of("detailed");
+				return Arrays.asList("detailed");
 		}
 		return new ArrayList<>();
 	}
@@ -354,7 +354,9 @@ class GenericTabCompleter implements TabCompleter {
 						.filter(b -> b.isTrusted((OfflinePlayer) sender)).map(Bank::getName).map(Utils::stripColor)
 						.collect(Collectors.toList());
 				Bank standingIn = bankUtils.getBank(((Player) sender).getLocation());
-				return ownBanks.isEmpty() ? (standingIn != null ? List.of(Utils.stripColor(standingIn.getName())) : bankNames) : ownBanks;
+				return ownBanks.isEmpty()
+						? (standingIn != null ? Arrays.asList(Utils.stripColor(standingIn.getName())) : bankNames)
+						: ownBanks;
 			}
 		} else if (args.length == 3) {
 			if (!args[2].isEmpty()) {

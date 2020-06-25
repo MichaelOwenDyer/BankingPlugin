@@ -11,12 +11,12 @@ public class Messages {
 	public static final String ACCOUNT_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$| " + ChatColor.GOLD + "to create an account.";
 	public static final String BANK_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$| " + ChatColor.GOLD + "to create a bank.";
 	public static final String BANK_ALREADY_EXISTS = ChatColor.RED + "A bank by that name already exists!";
-	public static final String CHEST_ALREADY_ACCOUNT = ChatColor.RED + "That chest is already an account.";
+	public static final String CHEST_ALREADY_ACCOUNT = ChatColor.RED + "That chest is already an account!";
 	public static final String CHEST_BLOCKED = ChatColor.RED + "Chest is blocked!";
-	public static final String ACCOUNT_REMOVED = ChatColor.GOLD + "The account has been removed!";
-	public static final String BANK_REMOVED = ChatColor.GOLD + "The bank has been removed!";
-	public static final String BANK_RESIZED = ChatColor.GOLD + "The bank has been resized!";
-	public static final String BANK_FIELD_SET = ChatColor.GOLD + "The bank field has been set!";
+	public static final String ACCOUNT_REMOVED = ChatColor.GOLD + "The account has been removed.";
+	public static final String BANK_REMOVED = ChatColor.GOLD + "The bank has been removed.";
+	public static final String BANK_RESIZED = ChatColor.GOLD + "The bank has been resized.";
+	public static final String BANK_FIELD_SET = ChatColor.GOLD + "Bank field set.";
 	public static final String PLAYER_REIMBURSED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$|" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
 	public static final String ACCOUNT_OPENED = ChatColor.GOLD + "You have opened |'s account chest.";
@@ -26,7 +26,7 @@ public class Messages {
 	public static final String CHEST_NOT_ACCOUNT = ChatColor.RED + "That chest is not an account.";
 	public static final String CHEST_NOT_IN_BANK = ChatColor.RED + "That chest is not located within a bank.";
 	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or specify the name of a bank.";
-	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account.";
+	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account at this bank.";
 	public static final String BANK_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create a bank.";
 	public static final String INTEREST_EARNED = ChatColor.GOLD + "You have earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
 	public static final String INTEREST_PAID = ChatColor.GOLD + "You have paid " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";

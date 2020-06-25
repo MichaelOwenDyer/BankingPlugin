@@ -1,12 +1,13 @@
 package com.monst.bankingplugin.utils;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.monst.bankingplugin.config.Config;
 
 public class AccountConfig {
 	
-	public static final List<String> FIELDS = List.of("interest-rate", "multipliers", "initial-interest-delay",
+	public static final List<String> FIELDS = Arrays.asList("interest-rate", "multipliers", "initial-interest-delay",
 			"count-interest-delay-offline", "allowed-offline-payouts",
 			"allowed-offline-payouts-before-multiplier-reset", "offline-multiplier-behavior",
 			"withdrawal-multiplier-behavior", "account-creation-price", "reimburse-account-creation", "min-balance",

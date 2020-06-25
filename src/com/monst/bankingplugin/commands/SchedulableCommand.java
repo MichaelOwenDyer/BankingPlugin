@@ -46,9 +46,10 @@ interface SchedulableCommand<T> {
 	default void unscheduleCommand(Player p) {
 		UUID uuid = p.getUniqueId();
 		scheduled.remove(uuid);
-		Optional.ofNullable(scheduled.get(uuid)).ifPresentOrElse(task -> {
-			task.cancel();
+		if (scheduled.get(uuid) != null) {
+			scheduled.get(uuid).cancel();
 			p.sendMessage(Messages.SCHEDULED_COMMAND_CANCELLED);
-		}, () -> p.sendMessage(Messages.SCHEDULED_COMMAND_NOT_EXIST));
+		} else
+			p.sendMessage(Messages.SCHEDULED_COMMAND_NOT_EXIST);
 	}
 }
