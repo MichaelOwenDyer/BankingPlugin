@@ -17,6 +17,7 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -322,7 +323,7 @@ class GenericTabCompleter implements TabCompleter {
 		BankUtils bankUtils = plugin.getBankUtils();
 		List<String> bankNames = bankUtils.getBanksCopy().stream().map(Bank::getName).map(Utils::stripColor)
 				.collect(Collectors.toList());
-		List<String> fields = new ArrayList<>(AccountConfig.FIELDS);
+		List<Field> fields = Field.stream().filter(field -> AccountConfig.isOverrideAllowed(field)).collect(Collectors.toList());
 		
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
@@ -342,13 +343,15 @@ class GenericTabCompleter implements TabCompleter {
 			}
 		} else if (args.length == 3) {
 			if (!args[2].isEmpty()) {
-				for (String s : fields)
-					if (s.contains(args[2].toLowerCase()))
-						returnCompletions.add(s);
+				for (Field f : fields)
+					if (f.getName().contains(args[2].toLowerCase()))
+						returnCompletions.add(f.getName());
 				return returnCompletions;
 			} else
-				return fields;
+				return fields.stream().map(field -> field.getName()).collect(Collectors.toList());
 		} else if (args.length == 4) {
+			if (Field.getByName(args[2]) != null)
+				return new ArrayList<>();
 		}
 		return new ArrayList<>();
 	}

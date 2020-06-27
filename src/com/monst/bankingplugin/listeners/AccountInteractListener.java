@@ -424,7 +424,6 @@ public class AccountInteractListener implements Listener {
 
 		AccountInfoEvent event = new AccountInfoEvent(executor, account, verbose);
 		Bukkit.getPluginManager().callEvent(event);
-
 		if (event.isCancelled()) {
 			plugin.debug("Info event cancelled (#" + account.getID() + ")");
 			return;

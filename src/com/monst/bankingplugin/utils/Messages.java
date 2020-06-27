@@ -28,11 +28,11 @@ public class Messages {
 	public static final String BANKS_REMOVED = ChatColor.GREEN + "%d bank%s and %s %d account%s were removed.";
 	
 	// NOTIFICATIONS
-	public static final String ACCOUNT_OPENED = ChatColor.GOLD + "You have opened %s's account chest.";
-	public static final String INTEREST_EARNED = ChatColor.GOLD + "You have earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
-	public static final String INTEREST_PAID = ChatColor.GOLD + "You have paid " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
-	public static final String LOW_BALANCE_FEE_EARNED = ChatColor.RED + "You have earned " + ChatColor.GREEN + "$%s" + ChatColor.RED + " in low balance fees on %d account%s.";
-	public static final String LOW_BALANCE_FEE_PAID = ChatColor.RED + "You have paid " + ChatColor.GREEN + "$%s" + ChatColor.RED + " in low balance fees on %d account%s.";
+	public static final String ACCOUNT_OPENED = ChatColor.GOLD + "You opened %s's account chest.";
+	public static final String INTEREST_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
+	public static final String INTEREST_PAID = ChatColor.GOLD + "You paid " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
+	public static final String LOW_BALANCE_FEE_EARNED = ChatColor.RED + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.RED + " in low balance fees on %d account%s.";
+	public static final String LOW_BALANCE_FEE_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s" + ChatColor.RED + " in low balance fees on %d account%s.";
 	public static final String MULTIPLIER_INCREASED = ChatColor.GOLD + "Your account multiplier has increased to %d."; // XXX
 	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to %d."; // XXX
 	public static final String ACCOUNT_LIMIT = ChatColor.GOLD + "You own %d/%d allowed accounts.";

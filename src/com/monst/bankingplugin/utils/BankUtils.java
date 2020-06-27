@@ -135,6 +135,74 @@ public class BankUtils {
 		bankSelectionMap.put(newSel, bank);
 		bank.setSelection(newSel);
 	}
+	
+	public Selection parseCoordinates(String[] args, Location loc) throws NumberFormatException {
+
+		if (args.length == 5 || args.length == 6) {
+
+			String argX = args[2];
+			String argY = args[3];
+			String argZ = args[4];
+
+			int x1, x2, y1, y2, z1, z2;
+
+			x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1, argX.length())) : Integer.parseInt(argX);
+			y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1, argY.length())) : Integer.parseInt(argY);
+			z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1, argZ.length())) : Integer.parseInt(argZ);
+
+			x2 = loc.getBlockX();
+			y2 = loc.getBlockY();
+			z2 = loc.getBlockZ();
+
+			if (argX.startsWith("~"))
+				x1 += x2;
+			if (argY.startsWith("~"))
+				y1 += y2;
+			if (argZ.startsWith("~"))
+				z1 += z2;
+
+			Location loc1 = new Location(loc.getWorld(), x1, y1, z1);
+			Location loc2 = new Location(loc.getWorld(), x2, y2, z2);
+			return new CuboidSelection(loc.getWorld(), loc1, loc2);
+
+		} else if (args.length == 8 || args.length == 9) {
+
+			String argX1 = args[2];
+			String argY1 = args[3];
+			String argZ1 = args[4];
+			String argX2 = args[5];
+			String argY2 = args[6];
+			String argZ2 = args[7];
+
+			int x1, y1, z1, x2, y2, z2;
+
+			x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1, argX1.length())) : Integer.parseInt(argX1);
+			y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1, argY1.length())) : Integer.parseInt(argY1);
+			z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1, argZ1.length())) : Integer.parseInt(argZ1);
+			x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1, argX2.length())) : Integer.parseInt(argX2);
+			y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1, argY2.length())) : Integer.parseInt(argY2);
+			z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1, argZ2.length())) : Integer.parseInt(argZ2);
+
+			if (argX1.startsWith("~"))
+				x1 += loc.getBlockX();
+			if (argY1.startsWith("~"))
+				y1 += loc.getBlockY();
+			if (argZ1.startsWith("~"))
+				z1 += loc.getBlockZ();
+			if (argX2.startsWith("~"))
+				x2 += loc.getBlockX();
+			if (argY2.startsWith("~"))
+				y2 += loc.getBlockY();
+			if (argZ2.startsWith("~"))
+				z2 += loc.getBlockZ();
+
+			Location loc1 = new Location(loc.getWorld(), x1, y1, z1);
+			Location loc2 = new Location(loc.getWorld(), x2, y2, z2);
+			return new CuboidSelection(loc.getWorld(), loc1, loc2);
+
+		} else
+			return null;
+	}
 
 	/**
 	 * Determines whether a new bank selection still contains all accounts of that

@@ -1,17 +1,12 @@
 package com.monst.bankingplugin.utils;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.monst.bankingplugin.config.Config;
 
 public class AccountConfig {
-	
-	public static final List<String> FIELDS = Arrays.asList("interest-rate", "multipliers", "initial-interest-delay",
-			"count-interest-delay-offline", "allowed-offline-payouts",
-			"allowed-offline-payouts-before-multiplier-reset", "offline-multiplier-behavior",
-			"withdrawal-multiplier-behavior", "account-creation-price", "reimburse-account-creation", "min-balance",
-			"low-balance-fee");
 
 	private double interestRate;
 	private List<Integer> multipliers;
@@ -38,7 +33,8 @@ public class AccountConfig {
 				Config.creationPriceAccount.getValue(),
 				Config.reimburseAccountCreation.getValue(),
 				Config.minBalance.getValue(),
-				Config.lowBalanceFee.getValue());
+				Config.lowBalanceFee.getValue()
+				);
 	}
 
 	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
@@ -58,6 +54,39 @@ public class AccountConfig {
 		this.reimburseAccountCreation = reimburseAccountCreation;
 		this.minBalance = minBalance;
 		this.lowBalanceFee = lowBalanceFee;
+	}
+
+	public static boolean isOverrideAllowed(Field field) {
+		switch (field) {
+
+		case INTEREST_RATE:
+			return Config.interestRate.getKey();
+		case MULTIPLIERS:
+			return Config.interestMultipliers.getKey();
+		case INITIAL_INTEREST_DELAY:
+			return Config.initialInterestDelay.getKey();
+		case COUNT_INTEREST_DELAY_OFFLINE:
+			return Config.countInterestDelayOffline.getKey();
+		case ALLOWED_OFFLINE_PAYOUTS:
+			return Config.allowedOfflinePayouts.getKey();
+		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
+			return Config.allowedOfflineBeforeMultiplierReset.getKey();
+		case OFFLINE_MULTIPLAYER_BEHAVIOR:
+			return Config.offlineMultiplierBehavior.getKey();
+		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
+			return Config.withdrawalMultiplierBehavior.getKey();
+		case ACCOUNT_CREATION_PRICE:
+			return Config.creationPriceAccount.getKey();
+		case REIMBURSE_ACCOUNT_CREATION:
+			return Config.reimburseAccountCreation.getKey();
+		case MIN_BALANCE:
+			return Config.minBalance.getKey();
+		case LOW_BALANCE_FEE:
+			return Config.lowBalanceFee.getKey();
+		default:
+			return false;
+
+		}
 	}
 
 	public double getInterestRate() {
@@ -204,4 +233,42 @@ public class AccountConfig {
 		return Config.lowBalanceFee.getKey() ? lowBalanceFee : Config.lowBalanceFee.getValue();
 	}
 
+	public enum Field {
+
+		INTEREST_RATE ("interest-rate"), 
+		MULTIPLIERS ("multipliers"), 
+		INITIAL_INTEREST_DELAY ("initial-interest-delay"), 
+		COUNT_INTEREST_DELAY_OFFLINE ("count-interest-delay-offline"), 
+		ALLOWED_OFFLINE_PAYOUTS ("allowed-offline-payouts"),
+		ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET ("allowed-offline-payouts-before-multiplier-reset"),
+		OFFLINE_MULTIPLAYER_BEHAVIOR ("offline-multiplier-behavior"), 
+		WITHDRAWAL_MULTIPLIER_BEHAVIOR ("withdrawal-multiplier-behavior"),
+		ACCOUNT_CREATION_PRICE ("account-creation-price"), 
+		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation"), 
+		MIN_BALANCE ("min-balance"), 
+		LOW_BALANCE_FEE ("low-balance-fee");
+		
+		private String name;
+
+		Field(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public static Stream<Field> stream() {
+			return Stream.of(Field.values());
+		}
+
+		public static List<String> names() {
+			return stream().map(Field::getName).collect(Collectors.toList());
+		}
+
+		public static Field getByName(String name) {
+			return stream().filter(field -> field.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+		}
+	}
+	
 }

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -24,9 +23,9 @@ import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
-import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
@@ -103,14 +102,15 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 
 			switch (subCommand.getName().toLowerCase()) {
 			case "remove":
-				// promptBankRemove(sender, args);
-				return false;
+				promptBankRemove(sender, args);
+				return true;
 			case "info":
-				// promptBankInfo(sender, args);
-				return false;
+				if (!promptBankInfo(sender, args))
+					sender.sendMessage(subCommand.getHelpMessage(sender));
+				return true;
 			case "list":
-				// promptBankList(sender, args);
-				return false;
+				promptBankList(sender, args);
+				return true;
 			case "removeall":
 				return promptBankRemoveAll(sender, args);
 			default:
@@ -151,87 +151,23 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				return true;
 			}
 
-			if (args.length == 3 && args[2].equalsIgnoreCase("admin"))
-				isAdminBank = true;
-
-		} else if (args.length == 5 || args.length == 6) {
-
-			String argX = args[2];
-			String argY = args[3];
-			String argZ = args[4];
-			
-			int x1, x2, y1, y2, z1, z2;
+		} else {
 			try {
-				x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1, argX.length())) : Integer.parseInt(argX);
-				y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1, argY.length())) : Integer.parseInt(argY);
-				z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1, argZ.length())) : Integer.parseInt(argZ);
+				selection = bankUtils.parseCoordinates(args, p.getLocation());
 			} catch (NumberFormatException e) {
 				plugin.debug("Could not parse coordinates in command args");
 				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
 				return false;
 			}
-			x2 = p.getLocation().getBlockX();
-			y2 = p.getLocation().getBlockY();
-			z2 = p.getLocation().getBlockZ();
-			
-			if (argX.startsWith("~"))
-				x1 += x2;
-			if (argY.startsWith("~"))
-				y1 += y2;
-			if (argZ.startsWith("~"))
-				z1 += z2;
-			
-			Location loc1 = new Location(p.getWorld(), x1, y1, z1);
-			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
-			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
+		}
 
-			if (args.length == 6 && args[5].equalsIgnoreCase("admin"))
-				isAdminBank = true;
-
-		} else if (args.length == 8 || args.length == 9) {
-
-			String argX1 = args[2];
-			String argY1 = args[3];
-			String argZ1 = args[4];
-			String argX2 = args[5];
-			String argY2 = args[6];
-			String argZ2 = args[7];
-			
-			int x1, y1, z1, x2, y2, z2;
-			try {
-				x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1, argX1.length())) : Integer.parseInt(argX1);
-				y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1, argY1.length())) : Integer.parseInt(argY1);
-				z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1, argZ1.length())) : Integer.parseInt(argZ1);
-				x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1, argX2.length())) : Integer.parseInt(argX2);
-				y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1, argY2.length())) : Integer.parseInt(argY2);
-				z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1, argZ2.length())) : Integer.parseInt(argZ2);
-			} catch (NumberFormatException e) {
-				plugin.debug("Could not parse coordinates in command args");
-				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
-				return false;
-			}
-			if (argX1.startsWith("~"))
-				x1 += p.getLocation().getBlockX();
-			if (argY1.startsWith("~"))
-				y1 += p.getLocation().getBlockY();
-			if (argZ1.startsWith("~"))
-				z1 += p.getLocation().getBlockZ();
-			if (argX2.startsWith("~"))
-				x2 += p.getLocation().getBlockX();
-			if (argY2.startsWith("~"))
-				y2 += p.getLocation().getBlockY();
-			if (argZ2.startsWith("~"))
-				z2 += p.getLocation().getBlockZ();
-
-			Location loc1 = new Location(p.getWorld(), x1, y1, z1);
-			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
-			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
-
-			if (args.length == 9 && args[8].equalsIgnoreCase("admin"))
-				isAdminBank = true;
-
-		} else
+		if (selection == null)
 			return false;
+
+		if ((args.length == 3 && args[2].equalsIgnoreCase("admin"))
+				|| (args.length == 6 && args[5].equalsIgnoreCase("admin"))
+				|| (args.length == 9 && args[8].equalsIgnoreCase("admin")))
+			isAdminBank = true;
 
 		if (isAdminBank && !p.hasPermission(Permissions.BANK_ADMIN_CREATE)) {
 			plugin.debug(p.getName() + " does not have permission to create an admin bank");
@@ -510,83 +446,17 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				return true;
 			}
 
-		} else if (args.length == 5) {
-
-			String argX = args[2];
-			String argY = args[3];
-			String argZ = args[4];
-
-			int x1, x2, y1, y2, z1, z2;
+		} else {
 			try {
-				x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1, argX.length())) : Integer.parseInt(argX);
-				y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1, argY.length())) : Integer.parseInt(argY);
-				z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1, argZ.length())) : Integer.parseInt(argZ);
+				selection = bankUtils.parseCoordinates(args, p.getLocation());
 			} catch (NumberFormatException e) {
 				plugin.debug("Could not parse coordinates in command args");
 				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
 				return false;
 			}
-			x2 = p.getLocation().getBlockX();
-			y2 = p.getLocation().getBlockY();
-			z2 = p.getLocation().getBlockZ();
+		}
 
-			if (argX.startsWith("~"))
-				x1 += x2;
-			if (argY.startsWith("~"))
-				y1 += y2;
-			if (argZ.startsWith("~"))
-				z1 += z2;
-
-			Location loc1 = new Location(p.getWorld(), x1, y1, z1);
-			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
-			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
-
-		} else if (args.length >= 8) {
-
-			String argX1 = args[2];
-			String argY1 = args[3];
-			String argZ1 = args[4];
-			String argX2 = args[5];
-			String argY2 = args[6];
-			String argZ2 = args[7];
-
-			int x1, y1, z1, x2, y2, z2;
-			try {
-				x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1, argX1.length()))
-						: Integer.parseInt(argX1);
-				y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1, argY1.length()))
-						: Integer.parseInt(argY1);
-				z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1, argZ1.length()))
-						: Integer.parseInt(argZ1);
-				x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1, argX2.length()))
-						: Integer.parseInt(argX2);
-				y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1, argY2.length()))
-						: Integer.parseInt(argY2);
-				z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1, argZ2.length()))
-						: Integer.parseInt(argZ2);
-			} catch (NumberFormatException e) {
-				plugin.debug("Could not parse coordinates in command args");
-				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
-				return false;
-			}
-			if (argX1.startsWith("~"))
-				x1 += p.getLocation().getBlockX();
-			if (argY1.startsWith("~"))
-				y1 += p.getLocation().getBlockY();
-			if (argZ1.startsWith("~"))
-				z1 += p.getLocation().getBlockZ();
-			if (argX2.startsWith("~"))
-				x2 += p.getLocation().getBlockX();
-			if (argY2.startsWith("~"))
-				y2 += p.getLocation().getBlockY();
-			if (argZ2.startsWith("~"))
-				z2 += p.getLocation().getBlockZ();
-
-			Location loc1 = new Location(p.getWorld(), x1, y1, z1);
-			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
-			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
-
-		} else
+		if (selection == null)
 			return false;
 
 		bank = bankUtils.lookupBank(args[1]);
@@ -651,7 +521,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			return true;
 		}
 
-		if (!AccountConfig.FIELDS.contains(args[2].toLowerCase())) {
+		if (Field.getByName(args[2]) == null) {
 			plugin.debug("No account config field could be found with name " + args[2]);
 			sender.sendMessage(String.format(Messages.NOT_A_FIELD, args[2]));
 			return true;
@@ -709,7 +579,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			break;
 		case "allowed-offline-payouts-before-multiplier-reset":
 			try {
-				config.setInitialInterestDelay(Integer.parseInt(args[3]));
+				config.setAllowedOfflineBeforeReset(Integer.parseInt(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse integer: " + args[3]);
 				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));

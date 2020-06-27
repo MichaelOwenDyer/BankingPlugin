@@ -30,7 +30,7 @@ public abstract class Ownable {
 	public boolean isTrustedPlayerOnline() {
 		if (owner == null)
 			return false;
-		return owner.isOnline() || coowners != null ? coowners.stream().anyMatch(p -> p.isOnline()) : false;
+		return owner.isOnline() || (coowners != null ? coowners.stream().anyMatch(p -> p.isOnline()) : false);
 	}
 
 	public boolean isTrusted(OfflinePlayer p) {

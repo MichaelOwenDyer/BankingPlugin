@@ -5,7 +5,7 @@ main: com.monst.bankingplugin.BankingPlugin
 version: ${project.version}
 api-version: 1.15
 database: true
-author: monst
+author: FreshLlamanade
 depend: [Vault, Essentials]
 softdepend: [WorldEdit, GriefPrevention, WorldGuard]
 

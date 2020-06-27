@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.utils;
 
+import java.util.List;
+
 public class AccountStatus {
 	
 	private final AccountConfig accountConfig;
@@ -135,8 +137,8 @@ public class AccountStatus {
 			multiplierStage = 0;
 		else if (multiplierStage >= accountConfig.getMultipliersOrDefault().size())
 			multiplierStage = accountConfig.getMultipliersOrDefault().size() - 1;
-		
-		return accountConfig.getMultipliersOrDefault().get(multiplierStage);
+		List<Integer> multipliers = accountConfig.getMultipliersOrDefault();
+		return multipliers.isEmpty() ? 1 : multipliers.get(multiplierStage);
 	}
 	
 	/**
