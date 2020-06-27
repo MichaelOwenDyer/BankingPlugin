@@ -126,12 +126,6 @@ public class Config {
 	public static boolean confirmOnRemoveAll;
 
 	/**
-	 * The delay, in ticks, before a remove command should be executed on the
-	 * server. Set to zero for no delay. Defaults to 600 ticks if negative.
-	 */
-	public static int removeDelay;
-
-	/**
 	 * Amount to insure accounts for in case of chests being corrupted.
 	 */
 	public static long insureAccountsUpTo;
@@ -413,7 +407,6 @@ public class Config {
 
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");
-		removeDelay = config.getInt("removeall-delay") >= 0 ? config.getInt("removeall-delay") : 300;
 		insureAccountsUpTo = config.getLong("insure-accounts-up-to");
         enableUpdateChecker = config.getBoolean("enable-update-checker");
 		enableTransactionLog = config.getBoolean("enable-logs.transaction-log");

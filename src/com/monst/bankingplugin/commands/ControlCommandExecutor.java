@@ -54,7 +54,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 		switch (subCommand.getName().toLowerCase()) {
 		case "config":
 			if (!changeConfig(sender, args))
-				sender.sendMessage(Messages.COMMAND_USAGE_CONFIG);
+				sender.sendMessage(subCommand.getHelpMessage(sender));
 			break;
 		case "reload":
 			promptReload(sender);
@@ -123,7 +123,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 			@Override
 			public void onResult(int[] result) {
 				sender.sendMessage(
-						Messages.getWithValues(Messages.RELOADED_BANKS, new Object[] { result[0], result[1] }));
+						String.format(Messages.RELOADED_BANKS, result[0], result[1]));
 				plugin.debug(sender.getName() + " has reloaded " + result[0] + " banks and " + result[1] + " accounts.");
 			}
 

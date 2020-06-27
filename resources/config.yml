@@ -129,12 +129,6 @@ confirm-on-remove: true
 # Default: true
 confirm-on-removeall: true
 
-# Set the delay, in ticks, before a removeall command should be executed on
-# the server. Set to zero for no delay. Defaults to 300 ticks if negative.
-# Type: int
-# Default: 300
-removeall-delay: 300
-
 # Set insurance for every account on the server in case of chest corruption (not expected).
 # Account owners will be reimbursed what was lost up to this amount.
 # Set this value to -1 for no limit.

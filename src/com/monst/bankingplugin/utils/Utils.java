@@ -176,9 +176,8 @@ public class Utils {
             DoubleChest dc = (DoubleChest) ih;
             chestLocations.add(((Chest) dc.getLeftSide()).getLocation());
             chestLocations.add(((Chest) dc.getRightSide()).getLocation());
-        } else {
+		} else
             chestLocations.add(account.getLocation());
-        }
         return chestLocations;
     }
 

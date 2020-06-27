@@ -473,8 +473,8 @@ public abstract class Database {
 						callback.callSyncError(e);
 					}
 
-					plugin.getLogger().severe("Failed to remove account from database (#" + bank.getID() + ")");
-					plugin.debug("Failed to remove account from database (#" + bank.getID() + ")");
+					plugin.getLogger().severe("Failed to remove bank from database (#" + bank.getID() + ")");
+					plugin.debug("Failed to remove bank from database (#" + bank.getID() + ")");
 					plugin.debug(e);
 				}
 			}

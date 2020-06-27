@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -21,6 +22,7 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
@@ -143,7 +145,7 @@ public class BankUtils {
 	 * @return Whether the new selection contains all accounts
 	 */
 	public boolean containsAllAccounts(Bank bank, Selection sel) {
-		return bank.getAccounts().stream().noneMatch(account -> !sel.contains(account.getLocation()));
+		return bank.getAccounts().stream().allMatch(account -> sel.contains(account.getLocation()));
 	}
 
 	public List<Location> getVertices(Selection sel) {
@@ -288,17 +290,21 @@ public class BankUtils {
 		removeBankById(bankId, removeFromDatabase, null);
     }
 
-	public List<Bank> toRemoveList(String request, String[] args) {
-		switch (request) {
-		case "-a":
-			return new ArrayList<>(getBanksCopy());
-		default:
-			return new ArrayList<>();
-		}
-	}
+	public int removeAll(Collection<Bank> banks) {
+		int count = banks.size();
 
-	public void removeAll(String request, String[] args) {
-		// TODO: implement
+		BankRemoveAllEvent event = new BankRemoveAllEvent(banks);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			plugin.debug("Removeall event cancelled");
+			return 0;
+		}
+		for (Bank bank : banks) {
+			for (Account account : bank.getAccounts())
+				plugin.getAccountUtils().removeAccount(account, true);
+			removeBank(bank, true);
+		}
+		return count;
 	}
 
 	/**

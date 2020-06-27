@@ -2,7 +2,6 @@ package com.monst.bankingplugin.events.account;
 
 import java.util.Collection;
 
-import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -13,11 +12,9 @@ public class AccountRemoveAllEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     
 	private boolean cancelled;
-	private CommandSender sender;
 	private Collection<Account> affectedAccounts;
 
-	public AccountRemoveAllEvent(CommandSender sender, Collection<Account> accounts) {
-		this.sender = sender;
+	public AccountRemoveAllEvent(Collection<Account> accounts) {
 		this.affectedAccounts = accounts;
 	}
 
@@ -33,10 +30,6 @@ public class AccountRemoveAllEvent extends Event implements Cancellable {
 
 	public Collection<Account> getAffectedAccounts() {
 		return affectedAccounts;
-	}
-
-	public CommandSender getSender() {
-		return sender;
 	}
 
 	@Override

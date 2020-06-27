@@ -14,12 +14,16 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
@@ -38,7 +42,7 @@ public class AccountUtils {
 
 	private final BankingPlugin plugin;
 
-    private final Map<Location, Account> accountLocationMap = new ConcurrentHashMap<>();
+	private final Map<Location, Account> accountLocationMap = new ConcurrentHashMap<>();
 
     public AccountUtils(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -50,10 +54,33 @@ public class AccountUtils {
      * @param location Location of the account
      * @return Account at the given location or <b>null</b> if no account is found there
      */
-    public Account getAccount(Location location) {
+	public Account getAccount(Location location) { // XXX
 		if (location == null)
 			return null;
-		return accountLocationMap.get(Utils.blockifyLocation(location));
+		Block b = location.getBlock();
+		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
+			return null;
+
+		BlockState state = b.getState();
+		Chest chest = (Chest) state;
+		Inventory inv = chest.getInventory();
+		InventoryHolder ih = inv.getHolder();
+		DoubleChest dc = (DoubleChest) ih;
+		Location loc = dc.getLocation();
+
+		return accountLocationMap.get(new Location(location.getWorld(), 0, 0, 0));
+
+//		if (b.getState() instanceof Chest) {
+//			Chest chest = (Chest) b.getState();
+//			Inventory inv = chest.getInventory();
+//			if (inv instanceof DoubleChestInventory) {
+//				DoubleChest dc = (DoubleChest) inv.getHolder();
+//				return accountLocationMap.get(dc.getLocation());
+//			} else
+//				return accountLocationMap.get(chest.getLocation());
+//		}
+
+		// return accountLocationMap.get(Utils.blockifyLocation(location));
     }
 
     /**
@@ -106,15 +133,17 @@ public class AccountUtils {
         InventoryHolder ih = account.getInventoryHolder();
         plugin.debug("Adding account... (#" + account.getID() + ")");
 
+		// XXX
+
         if (ih instanceof DoubleChest) {
-            DoubleChest dc = (DoubleChest) ih;
-            Chest r = (Chest) dc.getRightSide();
-            Chest l = (Chest) dc.getLeftSide();
+			DoubleChest dc = (DoubleChest) ih;
+			// Chest l = (Chest) dc.getLeftSide();
+			// Chest r = (Chest) dc.getRightSide();
 
-            plugin.debug("Added account as double chest. (#" + account.getID() + ")");
+			plugin.debug("Added account as double chest. (#" + account.getID() + ")");
 
-            accountLocationMap.put(r.getLocation(), account);
-            accountLocationMap.put(l.getLocation(), account);
+			accountLocationMap.put(dc.getLocation(), account);
+			// accountLocationMap.put(l.getLocation(), account);
         } else {
             plugin.debug("Added account as single chest. (#" + account.getID() + ")");
 
@@ -153,11 +182,11 @@ public class AccountUtils {
 
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
-            Chest r = (Chest) dc.getRightSide();
-            Chest l = (Chest) dc.getLeftSide();
+			// Chest r = (Chest) dc.getRightSide();
+			// Chest l = (Chest) dc.getLeftSide();
 
-            accountLocationMap.remove(r.getLocation());
-            accountLocationMap.remove(l.getLocation());
+			accountLocationMap.remove(dc.getLocation());
+			// accountLocationMap.remove(l.getLocation());
         } else {
             accountLocationMap.remove(account.getLocation());
         }
@@ -321,10 +350,10 @@ public class AccountUtils {
 		}
 	}
 
-	public int removeAll(CommandSender sender, Collection<Account> accounts) {
+	public int removeAll(Collection<Account> accounts) {
 		int removed = accounts.size();
 
-		AccountRemoveAllEvent event = new AccountRemoveAllEvent(sender, accounts);
+		AccountRemoveAllEvent event = new AccountRemoveAllEvent(accounts);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Removeall event cancelled");

@@ -36,9 +36,9 @@ public class NotifyPlayerOnJoinListener implements Listener {
 					@Override
 					public void onResult(BigDecimal result) {
 						if (result.signum() == 1) {
-							p.sendMessage(Messages.getWithValue(Messages.OFFLINE_TRANSACTION_REVENUE, result));
+							p.sendMessage(String.format(Messages.OFFLINE_TRANSACTION_REVENUE, result));
 						} else if (result.signum() == -1) {
-							p.sendMessage(Messages.getWithValue(Messages.OFFLINE_TRANSACTION_EXPENDITURE, result));
+							p.sendMessage(String.format(Messages.OFFLINE_TRANSACTION_EXPENDITURE, result));
 						}
 					}
 				});
@@ -47,7 +47,7 @@ public class NotifyPlayerOnJoinListener implements Listener {
                     @Override
                     public void onResult(BigDecimal result) {
                         if (result.signum() == 1) {
-							p.sendMessage(Messages.getWithValue(Messages.OFFLINE_INTEREST_REVENUE, result));
+							p.sendMessage(String.format(Messages.OFFLINE_INTEREST_REVENUE, result));
                         }
                     }
                 });

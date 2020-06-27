@@ -50,7 +50,7 @@ public class ControlCommand extends GenericCommand {
 		addSubCommand(new ControlSubCommand("payinterest", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_UPDATE : "";
+				return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_PAYINTEREST : "";
 			}
 		});
 

@@ -2,7 +2,6 @@ package com.monst.bankingplugin.events.bank;
 
 import java.util.Collection;
 
-import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -14,11 +13,9 @@ public class BankRemoveAllEvent extends Event implements Cancellable {
 	private HandlerList handlers;
 
 	private boolean cancelled;
-	private CommandSender sender;
 	private Collection<Bank> banks;
 
-	public BankRemoveAllEvent(CommandSender sender, Collection<Bank> banks) {
-		this.sender = sender;
+	public BankRemoveAllEvent(Collection<Bank> banks) {
 		this.banks = banks;
 	}
 
@@ -35,10 +32,6 @@ public class BankRemoveAllEvent extends Event implements Cancellable {
 	@Override
 	public HandlerList getHandlers() {
 		return handlers;
-	}
-
-	public CommandSender getSender() {
-		return sender;
 	}
 
 	public Collection<Bank> getBanks() {

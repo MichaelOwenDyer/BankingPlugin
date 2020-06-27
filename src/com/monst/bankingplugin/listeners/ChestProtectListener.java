@@ -219,6 +219,8 @@ public class ChestProtectListener implements Listener {
 			final Chest l = (Chest) dc.getLeftSide();
 			final Chest r = (Chest) dc.getRightSide();
 
+			// TODO: Test location to make sure no bugs
+
 			Location loc = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
 			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
 					account.getBank(), loc, account.getStatus(), account.getNickname(), account.getBalance(),
@@ -243,7 +245,7 @@ public class ChestProtectListener implements Listener {
 					p.sendMessage(Messages.ERROR_OCCURRED);
 				} else {
 					p.sendMessage(Messages.ACCOUNT_REMOVED);
-					p.sendMessage(Messages.getWithValue(Messages.PLAYER_REIMBURSED,
+					p.sendMessage(String.format(Messages.PLAYER_REIMBURSED,
 							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
 				}
 			} else {

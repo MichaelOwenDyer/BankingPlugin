@@ -23,7 +23,6 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.InventoryHolder;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
@@ -107,49 +106,32 @@ public class AccountProtectListener implements Listener {
         // Can't use Utils::getChestLocations since inventory holder
         // has not been updated yet in this event (for 1.13+)
 
-        if (Utils.getMajorVersion() < 13) {
-            InventoryHolder ih = c.getInventory().getHolder();
-            if (!(ih instanceof DoubleChest)) {
-                return;
-            }
+		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) c.getBlockData();
 
-            DoubleChest dc = (DoubleChest) ih;
-            Chest l = (Chest) dc.getLeftSide();
-            Chest r = (Chest) dc.getRightSide();
+		if (data.getType() == Type.SINGLE) {
+			return;
+		}
 
-            if (b.getLocation().equals(l.getLocation())) {
-                b2 = r.getBlock();
-            } else {
-                b2 = l.getBlock();
-            }
-        } else {
-            org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) c.getBlockData();
+		BlockFace neighborFacing;
 
-            if (data.getType() == Type.SINGLE) {
-                return;
-            }
+		switch (data.getFacing()) {
+		case NORTH:
+			neighborFacing = data.getType() == Type.LEFT ? BlockFace.EAST : BlockFace.WEST;
+			break;
+		case EAST:
+			neighborFacing = data.getType() == Type.LEFT ? BlockFace.SOUTH : BlockFace.NORTH;
+			break;
+		case SOUTH:
+			neighborFacing = data.getType() == Type.LEFT ? BlockFace.WEST : BlockFace.EAST;
+			break;
+		case WEST:
+			neighborFacing = data.getType() == Type.LEFT ? BlockFace.NORTH : BlockFace.SOUTH;
+			break;
+		default:
+			neighborFacing = null;
+		}
 
-            BlockFace neighborFacing;
-
-            switch (data.getFacing()) {
-                case NORTH:
-                    neighborFacing = data.getType() == Type.LEFT ? BlockFace.EAST : BlockFace.WEST;
-                    break;
-                case EAST:
-                    neighborFacing = data.getType() == Type.LEFT ? BlockFace.SOUTH : BlockFace.NORTH;
-                    break;
-                case SOUTH:
-                    neighborFacing = data.getType() == Type.LEFT ? BlockFace.WEST : BlockFace.EAST;
-                    break;
-                case WEST:
-                    neighborFacing = data.getType() == Type.LEFT ? BlockFace.NORTH : BlockFace.SOUTH;
-                    break;
-                default:
-                    neighborFacing = null;
-            }
-
-            b2 = b.getRelative(neighborFacing);
-        }
+		b2 = b.getRelative(neighborFacing);
 
 		final Account account = accountUtils.getAccount(b2.getLocation());
 		if (account == null)
@@ -269,7 +251,7 @@ public class AccountProtectListener implements Listener {
 				EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
 						creationPrice);
 				if (r.transactionSuccess())
-					p.sendMessage(Messages.getWithValue(Messages.PLAYER_REIMBURSED,
+					p.sendMessage(String.format(Messages.PLAYER_REIMBURSED,
 							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
 				else {
 					plugin.debug("Economy transaction failed: " + r.errorMessage);

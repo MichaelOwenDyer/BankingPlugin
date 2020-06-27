@@ -5,8 +5,6 @@ import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -16,8 +14,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
+import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
@@ -35,7 +33,7 @@ import com.monst.bankingplugin.utils.Permissions;
 import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.EconomyResponse;
 
-public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<Bank> {
+public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 
 	private BankingPlugin plugin;
 	private BankUtils bankUtils;
@@ -262,7 +260,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 				p.sendMessage(Messages.ERROR_OCCURRED);
 				return true;
 			} else
-				p.sendMessage(Messages.getWithValue(Messages.BANK_CREATE_FEE_PAID,
+				p.sendMessage(String.format(Messages.BANK_CREATE_FEE_PAID,
 						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 		}
 
@@ -283,7 +281,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 	 * 
 	 * @param sender The command executor
 	 */
-	private void promptBankRemove(final CommandSender sender, String[] args) {
+	private void promptBankRemove(final CommandSender sender, String[] args) { // XXX
 		plugin.debug(sender.getName() + " wants to remove a bank");
 
 		if (!sender.hasPermission(Permissions.BANK_REMOVE)) {
@@ -310,38 +308,23 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
 				plugin.debug("No bank could be found under the identifier " + args[1]);
-				sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return;
 			}
 		}
 
-		int delay = Config.removeDelay;
-		boolean needsScheduling = delay != 0;
-		boolean confirmationEnabled = Config.confirmOnRemove;
-
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
-			if (confirmationEnabled && needsScheduling) {
-				if (commandConfirmed(p, Arrays.asList(bank), args))
-					scheduleCommand(p, Arrays.asList(bank), args, delay);
-			} else if (confirmationEnabled) {
-				if (commandConfirmed(p, Arrays.asList(bank), args)) {
-					bankUtils.removeBank(bank, true);
-					plugin.debug("Bank was removed from the database");
-					p.sendMessage(Messages.BANK_REMOVED);
+			if (Config.confirmOnRemove)
+				if (!commandConfirmed(p, args)) {
+					p.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, 1, "", bank.getAccounts().size(), bank.getAccounts().size() == 1 ? "" : "s")
+							+ Messages.EXECUTE_AGAIN_TO_CONFIRM);
+					return;
 				}
-			} else if (needsScheduling) {
-				scheduleCommand(p, Arrays.asList(bank), args, delay);
-			} else {
-				bankUtils.removeBank(bank, true);
-				plugin.debug("Bank was removed from the database");
-				sender.sendMessage(Messages.BANK_REMOVED);
-			}
-		} else {
-			bankUtils.removeBank(bank, true);
-			plugin.debug("Bank was removed from the database");
-			sender.sendMessage(Messages.BANK_REMOVED);
 		}
+		bankUtils.removeBank(bank, true);
+		plugin.debug("Bank #" + bank.getID() + " removed from the database");
+		sender.sendMessage(Messages.BANK_REMOVED);
 	}
 
 	private boolean promptBankInfo(CommandSender sender, String[] args) {
@@ -381,7 +364,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 					sender.sendMessage(bank.toString());
 				else {
 					plugin.debug("No bank could be found under the identifier " + args[1]);
-					sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				}
 			}
 		} else if (args.length == 3) {
@@ -391,7 +374,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 					sender.sendMessage(bank.toStringVerbose());
 				else {
 					plugin.debug("No bank could be found under the identifier " + args[1]);
-					sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				}
 			}
 		} else
@@ -431,10 +414,9 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 					sender.sendMessage(Messages.NO_PERMISSION_BANK_LIST_VERBOSE);
 			}
 		}
-
 	}
 
-	private boolean promptBankRemoveAll(CommandSender sender, String[] args) {
+	private boolean promptBankRemoveAll(CommandSender sender, String[] args) { // XXX
 		plugin.debug(sender.getName() + " wants to remove all banks");
 		if (args.length > 1)
 			return false;
@@ -445,18 +427,33 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 			return true;
 		}
 
-		BankRemoveAllEvent event = new BankRemoveAllEvent(sender, plugin.getBankUtils().getBanksCopy());
+		Collection<Bank> banks = bankUtils.getBanksCopy();
+		Collection<Account> accounts = banks.stream().flatMap(bank -> bank.getAccounts().stream())
+				.collect(Collectors.toSet());
+
+		BankRemoveAllEvent event = new BankRemoveAllEvent(banks);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Bank remove all event cancelled");
 			return true;
 		}
-		
-		for (Bank bank : plugin.getBankUtils().getBanksCopy()) {
-			plugin.getBankUtils().removeBank(bank, true);
+
+		if (sender instanceof Player) {
+			Player p = (Player) sender;
+			if (Config.confirmOnRemoveAll)
+				if (!commandConfirmed(p, args)) {
+					p.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, banks.size(),
+							banks.size() == 1 ? "" : "s", accounts.size(), accounts.size() == 1 ? "" : "s"));
+					p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+					return true;
+				}
 		}
-		sender.sendMessage(String.format(Messages.BANKS_REMOVED, event.getBanks().size(),
-				event.getBanks().size() == 1 ? "" : "s"));
+		bankUtils.removeAll(banks);
+		plugin.debug("Bank #s " + banks.stream().map(bank -> "" + bank.getID()).collect(Collectors.joining(", ", "", ""))
+				+ " removed from the database.");
+		sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s",
+				banks.size() == 1 ? "its" : "their", accounts.size(), accounts.size() == 1 ? "" : "s"));
+
 		return true;
 	}
 
@@ -574,7 +571,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 		bank = bankUtils.lookupBank(args[1]);
 		if (bank == null) {
 			plugin.debug("No bank could be found under the identifier " + args[1]);
-			p.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+			p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
 		if (!bankUtils.isExclusiveSelectionWithoutThis(selection, bank)) {
@@ -615,7 +612,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 		Bank bank = bankUtils.lookupBank(args[1]);
 		if (bank == null) {
 			plugin.debug("No bank could be found under the identifier " + args[1]);
-			sender.sendMessage(Messages.getWithValue(Messages.BANK_NOT_FOUND, args[1]));
+			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
 
@@ -628,7 +625,7 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 
 		if (!AccountConfig.FIELDS.contains(args[2].toLowerCase())) {
 			plugin.debug("No account config field could be found with name " + args[2]);
-			sender.sendMessage(Messages.getWithValue(Messages.NOT_A_FIELD, args[2]));
+			sender.sendMessage(String.format(Messages.NOT_A_FIELD, args[2]));
 			return true;
 		}
 
@@ -640,10 +637,10 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 				config.setInterestRate(Double.parseDouble(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse double: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "multipliers":
 			try {
@@ -651,40 +648,40 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 						.collect(Collectors.toList()));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse list: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_LIST, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_LIST, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "interest-delay":
 			try {
 				config.setInitialInterestDelay(Integer.parseInt(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "allowed-offline-payouts":
 			try {
 				config.setAllowedOfflinePayouts(Integer.parseInt(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_AN_INTEGER, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "allowed-offline-payouts-before-multiplier-reset":
 			try {
 				config.setInitialInterestDelay(Integer.parseInt(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_AN_INTEGER, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "count-interest-delay-offline":
 			if (args[3].equalsIgnoreCase("true"))
@@ -693,60 +690,60 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 				config.setCountInterestDelayOffline(false);
 			else {
 				plugin.debug("Failed to parse boolean: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_BOOLEAN, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "offline-multiplier-behavior":
 			try {
 				config.setOfflineMultiplierBehavior(Integer.parseInt(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "withdrawal-multiplier-behavior":
 			try {
 				config.setWithdrawalMultiplierBehavior(Integer.parseInt(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "account-creation-price":
 			try {
 				config.setAccountCreationPrice(Double.parseDouble(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse double: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "min-balance":
 			try {
 				config.setMinBalance(Double.parseDouble(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse double: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "low-balance-fee":
 			try {
 				config.setLowBalanceFee(Double.parseDouble(args[3]));
 			} catch (NumberFormatException e) {
 				plugin.debug("Failed to parse double: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_NUMBER, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		case "reimburse-account-creation":
 			if (args[3].equalsIgnoreCase("true"))
@@ -755,10 +752,10 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 				config.setReimburseAccountCreation(false);
 			else {
 				plugin.debug("Failed to parse boolean: " + args[3]);
-				sender.sendMessage(Messages.getWithValue(Messages.NOT_A_BOOLEAN, args[3]));
+				sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, args[3]));
 				break;
 			}
-			sender.sendMessage(Messages.BANK_FIELD_SET);
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
 			break;
 		default:
 			sender.sendMessage(Messages.NOT_A_FIELD);
@@ -770,40 +767,4 @@ public class BankCommandExecutor implements CommandExecutor, SchedulableCommand<
 		return true;
 	}
 
-	@Override
-	public void scheduleCommand(Player p, Collection<Bank> banks, String[] args, int ticks) {
-		UUID uuid = p.getUniqueId();
-		scheduled.remove(uuid);
-		Optional.ofNullable(scheduled.get(uuid)).ifPresent(task -> {
-			task.cancel();
-			p.sendMessage(Messages.SCHEDULED_COMMAND_CANCELLED);
-		});
-		scheduled.put(uuid, new BukkitRunnable() {
-			@Override
-			public void run() {
-				int count = banks.size();
-				for (Bank bank : banks)
-					bankUtils.removeBank(bank, true);
-				plugin.debug(count + " bank(s) removed from the database");
-				p.sendMessage(String.format(Messages.BANKS_REMOVED, count, count == 1 ? "" : "s"));
-			}
-		}.runTaskLater(BankingPlugin.getInstance(), ticks));
-		p.sendMessage(Messages.getWithValues(Messages.BANK_COMMAND_SCHEDULED,
-				new String[] { String.valueOf(Math.round((float) ticks / 20)), "/bank " + args[0] + " cancel" }));
-
-	}
-
-	@Override
-	public boolean commandConfirmed(Player p, Collection<Bank> banks, String[] args) {
-		if (unconfirmed.containsKey(p.getUniqueId()) && Arrays.equals(unconfirmed.get(p.getUniqueId()), args)) {
-			removeUnconfirmedCommand(p);
-			return true;
-		} else {
-			addUnconfirmedCommand(p, args);
-			int accounts = banks.stream().mapToInt(bank -> bank.getAccounts().size()).sum();
-			p.sendMessage(Messages.getWithValues(Messages.ABOUT_TO_REMOVE_BANKS, new Integer[] { banks.size(), accounts }));
-			p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
-			return false;
-		}
-	}
 }

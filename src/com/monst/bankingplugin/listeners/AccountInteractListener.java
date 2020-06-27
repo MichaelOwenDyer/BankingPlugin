@@ -85,7 +85,7 @@ public class AccountInteractListener implements Listener {
 
 		if (clickType != null) {
 
-			if (clickType.getClickType() != ClickType.EnumClickType.CREATE && account == null)
+			if (account == null && clickType.getClickType() != ClickType.EnumClickType.CREATE)
 				return;
 			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK))
 				return;
@@ -276,7 +276,7 @@ public class AccountInteractListener implements Listener {
 				p.sendMessage(Messages.ERROR_OCCURRED);
 				return;
 			} else
-				p.sendMessage(Messages.getWithValue(Messages.ACCOUNT_CREATE_FEE_PAID,
+				p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
 						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 		}
 
@@ -362,7 +362,7 @@ public class AccountInteractListener implements Listener {
 				plugin.debug("Economy transaction failed: " + r.errorMessage);
 				executor.sendMessage(Messages.ERROR_OCCURRED);
 			} else {
-				executor.sendMessage(Messages.getWithValue(Messages.PLAYER_REIMBURSED,
+				executor.sendMessage(String.format(Messages.PLAYER_REIMBURSED,
 						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
 				executor.sendMessage(Messages.ACCOUNT_REMOVED);
 			}
@@ -398,7 +398,7 @@ public class AccountInteractListener implements Listener {
 		executor.openInventory(account.getInventoryHolder().getInventory());
 
 		if (message && !executorIsTrusted)
-			executor.sendMessage(Messages.getWithValue(Messages.ACCOUNT_OPENED, account.getOwner().getName()));
+			executor.sendMessage(String.format(Messages.ACCOUNT_OPENED, account.getOwner().getName()));
 	}
 
 	/**
@@ -466,7 +466,7 @@ public class AccountInteractListener implements Listener {
 
 				plugin.getDatabase().addAccount(account, null);
 				executor.sendMessage(
-						Messages.getWithValue(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
+						String.format(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
 				plugin.debug(String.format(
 						executor.getName() + " has set %s account multiplier stage to %d%s (#" + account.getID() + ")",
 						(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
@@ -507,11 +507,11 @@ public class AccountInteractListener implements Listener {
 
 		if (account.isTrusted(playerToTrust)) {
 			plugin.debug(playerToTrust.getName() + " was already trusted on that account (#" + account.getID() + ")");
-			p.sendMessage(Messages.getWithValue(Messages.ALREADY_A_COOWNER, playerToTrust.getName()));
+			p.sendMessage(String.format(Messages.ALREADY_A_COOWNER, playerToTrust.getName()));
 			return;
 		}
 
-		p.sendMessage(Messages.getWithValue(Messages.ADDED_COOWNER, playerToTrust.getName()));
+		p.sendMessage(String.format(Messages.ADDED_COOWNER, playerToTrust.getName()));
 		account.trustPlayer(playerToTrust);
 	}
 
@@ -531,11 +531,11 @@ public class AccountInteractListener implements Listener {
 		if (!account.isTrusted(playerToUntrust)) {
 			plugin.debug(playerToUntrust.getName() + " was not trusted on that account and could not be removed (#"
 					+ account.getID() + ")");
-			p.sendMessage(Messages.getWithValue(Messages.NOT_A_COOWNER, playerToUntrust.getName()));
+			p.sendMessage(String.format(Messages.NOT_A_COOWNER, playerToUntrust.getName()));
 			return;
 		}
 
-		p.sendMessage(Messages.getWithValue(Messages.REMOVED_COOWNER, playerToUntrust.getName()));
+		p.sendMessage(String.format(Messages.REMOVED_COOWNER, playerToUntrust.getName()));
 		account.untrustPlayer(playerToUntrust);
 	}
 
