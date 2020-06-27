@@ -125,7 +125,9 @@ account-info-item: "STICK"
 # Set this to 0 to disable creation fees.
 # Type: double
 creation-prices:
-    bank: 100000
+    bank:
+        player: 100000
+        admin: 0
     account:
         default: 2500
         allow-override: true
