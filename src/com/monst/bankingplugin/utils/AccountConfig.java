@@ -27,18 +27,18 @@ public class AccountConfig {
 	private double lowBalanceFee;
 
 	public AccountConfig() {
-		this(Config.interestRate.getKey(),
-				Config.interestMultipliers.getKey(),
-				Config.initialInterestDelay.getKey(),
-				Config.countInterestDelayOffline.getKey(),
-				Config.allowedOfflinePayouts.getKey(),
-				Config.allowedOfflineBeforeMultiplierReset.getKey(),
-				Config.offlineMultiplierBehavior.getKey(),
-				Config.withdrawalMultiplierBehavior.getKey(),
-				Config.creationPriceAccount.getKey(),
-				Config.reimburseAccountCreation.getKey(),
-				Config.minBalance.getKey(),
-				Config.lowBalanceFee.getKey());
+		this(Config.interestRate.getValue(),
+				Config.interestMultipliers.getValue(),
+				Config.initialInterestDelay.getValue(),
+				Config.countInterestDelayOffline.getValue(),
+				Config.allowedOfflinePayouts.getValue(),
+				Config.allowedOfflineBeforeMultiplierReset.getValue(),
+				Config.offlineMultiplierBehavior.getValue(),
+				Config.withdrawalMultiplierBehavior.getValue(),
+				Config.creationPriceAccount.getValue(),
+				Config.reimburseAccountCreation.getValue(),
+				Config.minBalance.getValue(),
+				Config.lowBalanceFee.getValue());
 	}
 
 	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
@@ -157,51 +157,51 @@ public class AccountConfig {
 	}
 
 	public double getInterestRateOrDefault() {
-		return Config.interestRate.getValue() ? interestRate : Config.interestRate.getKey();
+		return Config.interestRate.getKey() ? interestRate : Config.interestRate.getValue();
 	}
 
 	public List<Integer> getMultipliersOrDefault() {
-		return Config.interestMultipliers.getValue() ? multipliers : Config.interestMultipliers.getKey();
+		return Config.interestMultipliers.getKey() ? multipliers : Config.interestMultipliers.getValue();
 	}
 
 	public int getInitialInterestDelayOrDefault() {
-		return Config.initialInterestDelay.getValue() ? initialInterestDelay : Config.initialInterestDelay.getKey();
+		return Config.initialInterestDelay.getKey() ? initialInterestDelay : Config.initialInterestDelay.getValue();
 	}
 
 	public boolean isCountInterestDelayOfflineOrDefault() {
-		return Config.countInterestDelayOffline.getValue() ? countInterestDelayOffline : Config.countInterestDelayOffline.getKey();
+		return Config.countInterestDelayOffline.getKey() ? countInterestDelayOffline : Config.countInterestDelayOffline.getValue();
 	}
 
 	public int getAllowedOfflinePayoutsOrDefault() {
-		return Config.allowedOfflinePayouts.getValue() ? allowedOfflinePayouts : Config.allowedOfflinePayouts.getKey();
+		return Config.allowedOfflinePayouts.getKey() ? allowedOfflinePayouts : Config.allowedOfflinePayouts.getValue();
 	}
 
 	public int getAllowedOfflineBeforeResetOrDefault() {
-		return Config.allowedOfflineBeforeMultiplierReset.getValue() ? allowedOfflineBeforeReset : Config.allowedOfflineBeforeMultiplierReset.getKey();
+		return Config.allowedOfflineBeforeMultiplierReset.getKey() ? allowedOfflineBeforeReset : Config.allowedOfflineBeforeMultiplierReset.getValue();
 	}
 
 	public int getOfflineMultiplierBehaviorOrDefault() {
-		return Config.offlineMultiplierBehavior.getValue() ? offlineMultiplierBehavior : Config.offlineMultiplierBehavior.getKey();
+		return Config.offlineMultiplierBehavior.getKey() ? offlineMultiplierBehavior : Config.offlineMultiplierBehavior.getValue();
 	}
 
 	public int getWithdrawalMultiplierBehaviorOrDefault() {
-		return Config.withdrawalMultiplierBehavior.getValue() ? withdrawalMultiplierBehavior : Config.withdrawalMultiplierBehavior.getKey();
+		return Config.withdrawalMultiplierBehavior.getKey() ? withdrawalMultiplierBehavior : Config.withdrawalMultiplierBehavior.getValue();
 	}
 
 	public double getAccountCreationPriceOrDefault() {
-		return Config.creationPriceAccount.getValue() ? accountCreationPrice : Config.creationPriceAccount.getKey();
+		return Config.creationPriceAccount.getKey() ? accountCreationPrice : Config.creationPriceAccount.getValue();
 	}
 
 	public boolean isReimburseAccountCreationOrDefault() {
-		return Config.reimburseAccountCreation.getValue() ? reimburseAccountCreation : Config.reimburseAccountCreation.getKey();
+		return Config.reimburseAccountCreation.getKey() ? reimburseAccountCreation : Config.reimburseAccountCreation.getValue();
 	}
 
 	public double getMinBalanceOrDefault() {
-		return Config.minBalance.getValue() ? minBalance : Config.minBalance.getKey();
+		return Config.minBalance.getKey() ? minBalance : Config.minBalance.getValue();
 	}
 
 	public double getLowBalanceFeeOrDefault() {
-		return Config.lowBalanceFee.getValue() ? lowBalanceFee : Config.lowBalanceFee.getKey();
+		return Config.lowBalanceFee.getKey() ? lowBalanceFee : Config.lowBalanceFee.getValue();
 	}
 
 }

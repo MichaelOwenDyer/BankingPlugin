@@ -38,7 +38,7 @@ public class Config {
     /**
      * The baseline interest rate for all accounts.
      **/
-	public static Entry<Double, Boolean> interestRate;
+	public static Entry<Boolean, Double> interestRate;
     
     /**
      * Whether to enable or disable interest multipliers.
@@ -48,13 +48,13 @@ public class Config {
     /**
      * The list of interest multipliers in sequential order.
      **/
-	public static Entry<List<Integer>, Boolean> interestMultipliers;
+	public static Entry<Boolean, List<Integer>> interestMultipliers;
 
     /**
 	 * The number of interest payout events a player has to own their account for
 	 * before they start collecting interest
 	 **/
-	public static Entry<Integer, Boolean> initialInterestDelay;
+	public static Entry<Boolean, Integer> initialInterestDelay;
 
 	/**
 	 * Whether to decrement the interest delay period while a player is offline. 
@@ -66,23 +66,23 @@ public class Config {
 	/**
 	 * The number of payouts a player is allowed to collect offline.
 	 **/
-	public static Entry<Integer, Boolean> allowedOfflinePayouts;
+	public static Entry<Boolean, Integer> allowedOfflinePayouts;
 
     /**
 	 * The number of payouts a player is allowed to be offline for (but not
 	 * necessarily collect) before their multiplier is reset.
 	 **/
-	public static Entry<Integer, Boolean> allowedOfflineBeforeMultiplierReset;
+	public static Entry<Boolean, Integer> allowedOfflineBeforeMultiplierReset;
 
     /**
 	 * The behavior of an offline player's multiplier.
 	 **/
-	public static Entry<Integer, Boolean> offlineMultiplierBehavior;
+	public static Entry<Boolean, Integer> offlineMultiplierBehavior;
     
     /**
 	 * The behavior of a player's multiplier at a withdrawal event.
 	 **/
-	public static Entry<Integer, Boolean> withdrawalMultiplierBehavior;
+	public static Entry<Boolean, Integer> withdrawalMultiplierBehavior;
     
     /**
      * The item with which a player can click an account chest to retrieve information.
@@ -92,22 +92,22 @@ public class Config {
     /**
      * The price a player has to pay in order to create a bank.
      **/
-	public static double creationPriceBank;
+	public static Entry<Double, Double> creationPriceBank;
     
     /**
      * The price a player has to pay in order to create an account.
      **/
-	public static Entry<Double, Boolean> creationPriceAccount;
+	public static Entry<Boolean, Double> creationPriceAccount;
 
 	/**
 	 * The default minimum balance.
 	 */
-	public static Entry<Double, Boolean> minBalance;
+	public static Entry<Boolean, Double> minBalance;
 
 	/**
 	 * The fee that must be paid for a balance lower than the minimum.
 	 */
-	public static Entry<Double, Boolean> lowBalanceFee;
+	public static Entry<Boolean, Double> lowBalanceFee;
 
     /**
      * Whether the account creation price should be refunded at removal.
@@ -207,11 +207,6 @@ public class Config {
      **/
 	public static boolean wgAllowCreateBankDefault;
     
-    /**
-     * The default value for the custom WorldGuard flag 'create-account'
-     **/
-    public static boolean wgAllowCreateAccountDefault;
-
     /**
      * The prefix to be used for database tables.
      */
@@ -364,43 +359,46 @@ public class Config {
 						.sorted().collect(Collectors.toList())
 				: new ArrayList<>();
 
-		interestRate = new SimpleEntry<>(config.getDouble("interest-rate.default"),
-				config.getBoolean("interest-rate.allow-override"));
+		interestRate = new SimpleEntry<>(config.getBoolean("interest-rate.allow-override"),
+				config.getDouble("interest-rate.default"));
 
-		interestMultipliers = new SimpleEntry<>(config.getIntegerList("interest-multipliers.default") != null
+		interestMultipliers = new SimpleEntry<>(config.getBoolean("interest-multipliers.allow-override"),
+				config.getIntegerList("interest-multipliers.default") != null
 				? config.getIntegerList("interest-multipliers")
-				: Arrays.asList(1), 
-				config.getBoolean("interest-multipliers.allow-override"));
+				: Arrays.asList(1));
 
-		initialInterestDelay = new SimpleEntry<>(config.getInt("initial-interest-delay.default"),
-				config.getBoolean("initial-interest-delay.allow-override"));
+		initialInterestDelay = new SimpleEntry<>(config.getBoolean("initial-interest-delay.allow-override"),
+				config.getInt("initial-interest-delay.default"));
 
 		countInterestDelayOffline = new SimpleEntry<>(config.getBoolean("count-interest-delay-offline.default"),
 				config.getBoolean("count-interest-delay-offline.allow-override"));
 
-		allowedOfflinePayouts = new SimpleEntry<>(config.getInt("allowed-offline-payouts.default"),
-				config.getBoolean("allowed-offline-payouts.allow-override"));
+		allowedOfflinePayouts = new SimpleEntry<>(config.getBoolean("allowed-offline-payouts.allow-override"),
+				config.getInt("allowed-offline-payouts.default"));
 
 		allowedOfflineBeforeMultiplierReset = new SimpleEntry<>(
-				config.getInt("allowed-offline-before-multiplier-reset.default"),
-				config.getBoolean("allowed-offline-before-multiplier-reset.allow-override"));
+				config.getBoolean("allowed-offline-before-multiplier-reset.allow-override"),
+				config.getInt("allowed-offline-before-multiplier-reset.default"));
 
-		offlineMultiplierBehavior = new SimpleEntry<>(config.getInt("offline-multiplier-behavior.default"),
-				config.getBoolean("offline-multiplier-behavior.allow-override"));
+		offlineMultiplierBehavior = new SimpleEntry<>(config.getBoolean("offline-multiplier-behavior.allow-override"),
+				config.getInt("offline-multiplier-behavior.default"));
 
-		withdrawalMultiplierBehavior = new SimpleEntry<>(config.getInt("withdrawal-multiplier-behavior.default"),
-				config.getBoolean("withdrawal-multiplier-behavior.allow-override"));
+		withdrawalMultiplierBehavior = new SimpleEntry<>(config.getBoolean("withdrawal-multiplier-behavior.allow-override"),
+				config.getInt("withdrawal-multiplier-behavior.default"));
 
 		accountInfoItem = new ItemStack(Material.getMaterial(config.getString("account-info-item")));
-		creationPriceBank = config.getDouble("creation-prices.bank");
-		creationPriceAccount = new SimpleEntry<>(config.getDouble("creation-prices.account.default"),
-				config.getBoolean("creation-prices.account.allow-override"));
 
-		minBalance = new SimpleEntry<>(config.getDouble("minimum-account-balance.default"),
-				config.getBoolean("minimum-account-balance.allow-override"));
+		creationPriceBank = new SimpleEntry<>(config.getDouble("creation-prices.bank.player"),
+				config.getDouble("creation-prices.bank.admin"));
 
-		lowBalanceFee = new SimpleEntry<>(config.getDouble("low-balance-fee.default"),
-				config.getBoolean("low-balance-fee.allow-override"));
+		creationPriceAccount = new SimpleEntry<>(config.getBoolean("creation-prices.account.allow-override"),
+				config.getDouble("creation-prices.account.default"));
+
+		minBalance = new SimpleEntry<>(config.getBoolean("minimum-account-balance.allow-override"),
+				config.getDouble("minimum-account-balance.default"));
+
+		lowBalanceFee = new SimpleEntry<>(config.getBoolean("low-balance-fee.allow-override"),
+				config.getDouble("low-balance-fee.default"));
 
 		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.default"),
 				config.getBoolean("reimburse-account-creation.allow-override"));
@@ -421,8 +419,7 @@ public class Config {
 				config.getStringList("blacklist") : new ArrayList<>();
 		defaultBankLimit = config.getInt("default-limits.bank");
 		defaultAccountLimit = config.getInt("default-limits.account");
-		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-values.create-bank");
-        wgAllowCreateAccountDefault = config.getBoolean("worldguard-default-flag-values.create-account");
+		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value.create-bank");
 		databaseTablePrefix = config.getString("table-prefix");
         
     }
