@@ -48,15 +48,15 @@ public class InterestEventListener implements Listener {
 		if (playerAccounts.isEmpty())
 			return;
 
-		Map<OfflinePlayer, BigDecimal> totalInterest = new HashMap<>();
-		Map<OfflinePlayer, BigDecimal> totalFees = new HashMap<>();
-		Map<OfflinePlayer, Integer> interestCounter = new HashMap<>();
-		Map<OfflinePlayer, Integer> feeCounter = new HashMap<>();
+		Map<OfflinePlayer, BigDecimal> totalInterest = new HashMap<>(); // The amount of interest each account owner earns
+		Map<OfflinePlayer, BigDecimal> totalFees = new HashMap<>(); // The amount of fees each account owner must pay
+		Map<OfflinePlayer, Integer> interestCounter = new HashMap<>(); // The number of accounts each account owner is earning interest on
+		Map<OfflinePlayer, Integer> feeCounter = new HashMap<>(); // The number of accounts each account owner must pay fees for
 
-		Map<OfflinePlayer, BigDecimal> totalInterestBank = new HashMap<>();
-		Map<OfflinePlayer, BigDecimal> totalFeesBank = new HashMap<>();
-		Map<OfflinePlayer, Integer> interestCounterBank = new HashMap<>();
-		Map<OfflinePlayer, Integer> feeCounterBank = new HashMap<>();
+		Map<OfflinePlayer, BigDecimal> totalInterestBank = new HashMap<>(); // The amount of interest each bank owner must pay
+		Map<OfflinePlayer, BigDecimal> totalFeesBank = new HashMap<>(); // The amount of fees each bank owner receives as income
+		Map<OfflinePlayer, Integer> interestCounterBank = new HashMap<>(); // The number of accounts each bank owner must pay interest on
+		Map<OfflinePlayer, Integer> feeCounterBank = new HashMap<>(); // The number of fees each bank owner receives as income
 
 		for (OfflinePlayer owner : playerAccounts.keySet()) {
 			
@@ -72,16 +72,18 @@ public class InterestEventListener implements Listener {
 				if (config.getMinBalance() > 0 && account.getBalance().compareTo(BigDecimal.valueOf(config.getMinBalance())) == -1) {
 					totalFees.put(owner, totalFees.getOrDefault(owner, BigDecimal.ZERO)
 							.add(BigDecimal.valueOf(config.getLowBalanceFee())));
-					totalFeesBank.put(account.getBank().getOwner(),
+					feeCounter.put(owner, feeCounter.getOrDefault(owner, 0).intValue() + 0);
+					if (!account.getBank().isAdminBank()) {
+						totalFeesBank.put(account.getBank().getOwner(),
 							totalFeesBank.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
 									.add(BigDecimal.valueOf(config.getLowBalanceFee())));
+					feeCounterBank.put(account.getBank().getOwner(),
+							feeCounterBank.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
+					}
 					if (Config.enableInterestLog) {
 						plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
 								BigDecimal.valueOf(config.getLowBalanceFee() * -1), null);
 					}
-					feeCounter.put(owner, feeCounter.getOrDefault(owner, 0).intValue() + 0);
-					feeCounterBank.put(account.getBank().getOwner(),
-							feeCounterBank.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
 					continue;
 				}
 
@@ -102,10 +104,12 @@ public class InterestEventListener implements Listener {
 							.add(interest.divide(BigDecimal.valueOf(payoutSplit))));
 					interestCounter.put(recipient, interestCounter.getOrDefault(recipient, 0).intValue() + 1);
 				}
-				totalInterestBank.put(account.getBank().getOwner(),
-						totalInterestBank.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO).add(interest));
-				interestCounterBank.put(account.getBank().getOwner(),
-						interestCounterBank.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
+				if (!account.getBank().isAdminBank()) {
+					totalInterestBank.put(account.getBank().getOwner(),
+							totalInterestBank.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO).add(interest));
+					interestCounterBank.put(account.getBank().getOwner(),
+							interestCounterBank.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
+				}
 
 				plugin.getDatabase().addAccount(account, null);
 
