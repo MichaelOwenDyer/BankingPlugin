@@ -12,10 +12,14 @@ public abstract class Ownable {
 	protected Set<OfflinePlayer> coowners = new HashSet<>();
 
 	public boolean isOwner(OfflinePlayer player) {
+		if (owner == null)
+			return false;
 		return owner.getUniqueId().equals(player.getUniqueId());
 	}
 
 	public String getOwnerDisplayName() {
+		if (owner == null)
+			return "";
 		return owner.isOnline() ? owner.getPlayer().getDisplayName() : owner.getName();
 	}
 
@@ -24,7 +28,9 @@ public abstract class Ownable {
 	}
 
 	public boolean isTrustedPlayerOnline() {
-		return owner.isOnline() || coowners.stream().anyMatch(p -> p.isOnline());
+		if (owner == null)
+			return false;
+		return owner.isOnline() || coowners != null ? coowners.stream().anyMatch(p -> p.isOnline()) : false;
 	}
 
 	public boolean isTrusted(OfflinePlayer p) {
@@ -32,18 +38,22 @@ public abstract class Ownable {
 	}
 
 	public boolean isCoowner(OfflinePlayer p) {
-		return p != null ? coowners.contains(p) : false;
+		return p != null && coowners != null ? coowners.contains(p) : false;
 	}
 
 	public void trustPlayer(OfflinePlayer p) {
-		coowners.add(p);
+		if (coowners != null)
+			coowners.add(p);
 	}
 
 	public void untrustPlayer(OfflinePlayer p) {
-		coowners.remove(p);
+		if (coowners != null)
+			coowners.remove(p);
 	}
 
 	public Set<OfflinePlayer> getTrustedPlayersCopy() {
+		if (owner == null || coowners == null)
+			return null;
 		Set<OfflinePlayer> trustedPlayers = new HashSet<>();
 		trustedPlayers.add(owner);
 		trustedPlayers.addAll(coowners);

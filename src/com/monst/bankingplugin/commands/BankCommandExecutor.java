@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -667,18 +668,24 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "multipliers":
+			StringBuilder sb = new StringBuilder(args[3]);
+			for (int i = 4; i < args.length; i++)
+				sb.append(" " + args[i]);
 			try {
-				config.setMultipliers(Arrays.stream(args[3].split(",")).map(s -> Integer.parseInt(s.trim()))
-						.collect(Collectors.toList()));
+				List<Integer> multipliers = new ArrayList<>();
+				for (int i = 3; i < args.length; i++)
+					multipliers.add(Integer.parseInt(args[i]));
+				config.setMultipliers(multipliers);
 			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse list: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_LIST, args[3]));
+				plugin.debug("Failed to parse list: " + sb.toString());
+				sender.sendMessage(String.format(Messages.NOT_A_LIST, sb.toString()));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			args[3] = sb.toString();
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "interest-delay":
 			try {
@@ -688,7 +695,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "allowed-offline-payouts":
 			try {
@@ -698,7 +705,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "allowed-offline-payouts-before-multiplier-reset":
 			try {
@@ -708,7 +715,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "count-interest-delay-offline":
 			if (args[3].equalsIgnoreCase("true"))
@@ -720,7 +727,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "offline-multiplier-behavior":
 			try {
@@ -730,7 +737,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "withdrawal-multiplier-behavior":
 			try {
@@ -740,7 +747,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "account-creation-price":
 			try {
@@ -750,7 +757,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "min-balance":
 			try {
@@ -760,7 +767,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "low-balance-fee":
 			try {
@@ -770,7 +777,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		case "reimburse-account-creation":
 			if (args[3].equalsIgnoreCase("true"))
@@ -782,7 +789,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, args[3]));
 				break;
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3]));
+			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
 			break;
 		default:
 			sender.sendMessage(Messages.NOT_A_FIELD);

@@ -20,7 +20,8 @@ public class Messages {
 	public static final String ACCOUNT_REMOVED = ChatColor.GOLD + "The account has been removed.";
 	public static final String BANK_REMOVED = ChatColor.GOLD + "The bank has been removed.";
 	public static final String BANK_RESIZED = ChatColor.GOLD + "The bank has been resized.";
-	public static final String BANK_FIELD_SET = ChatColor.AQUA + "%s" + ChatColor.GOLD + "has been set to " + ChatColor.GREEN + "%s.";
+	public static final String BANK_FIELD_SET = ChatColor.GOLD + "Field " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " has been set to "
+			+ ChatColor.GREEN + "%s" + ChatColor.GOLD + " at bank " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
 	public static final String PLAYER_REIMBURSED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
 	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "%d account%s %s successfully removed.";
