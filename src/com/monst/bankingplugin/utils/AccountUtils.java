@@ -17,12 +17,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -61,26 +61,26 @@ public class AccountUtils {
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
 			return null;
 
-		BlockState state = b.getState();
-		Chest chest = (Chest) state;
-		Inventory inv = chest.getInventory();
-		InventoryHolder ih = inv.getHolder();
-		DoubleChest dc = (DoubleChest) ih;
-		Location loc = dc.getLocation();
+//		BlockState state = b.getState();
+//		Chest chest = (Chest) state;
+//		Inventory inv = chest.getInventory();
+//		InventoryHolder ih = inv.getHolder();
+//		DoubleChest dc = (DoubleChest) ih;
+//		Location loc = dc.getLocation();
+//
+//		return accountLocationMap.get(new Location(location.getWorld(), 0, 0, 0));
 
-		return accountLocationMap.get(new Location(location.getWorld(), 0, 0, 0));
+		if (b.getState() instanceof Chest) {
+			Chest chest = (Chest) b.getState();
+			Inventory inv = chest.getInventory();
+			if (inv instanceof DoubleChestInventory) {
+				DoubleChest dc = (DoubleChest) inv.getHolder();
+				return accountLocationMap.get(dc.getLocation());
+			} else
+				return accountLocationMap.get(chest.getLocation());
+		}
 
-//		if (b.getState() instanceof Chest) {
-//			Chest chest = (Chest) b.getState();
-//			Inventory inv = chest.getInventory();
-//			if (inv instanceof DoubleChestInventory) {
-//				DoubleChest dc = (DoubleChest) inv.getHolder();
-//				return accountLocationMap.get(dc.getLocation());
-//			} else
-//				return accountLocationMap.get(chest.getLocation());
-//		}
-
-		// return accountLocationMap.get(Utils.blockifyLocation(location));
+		return accountLocationMap.get(Utils.blockifyLocation(location));
     }
 
     /**

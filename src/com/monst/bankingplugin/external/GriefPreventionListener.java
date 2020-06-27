@@ -28,7 +28,7 @@ public class GriefPreventionListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onCreateShop(AccountCreateEvent e) {
+	public void onCreateAccount(AccountCreateEvent e) {
         if (!Config.enableGriefPreventionIntegration)
             return;
 
@@ -43,7 +43,7 @@ public class GriefPreventionListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onExtendShop(AccountExtendEvent e) {
+	public void onExtendAccount(AccountExtendEvent e) {
 		if (!Config.enableGriefPreventionIntegration)
             return;
 
