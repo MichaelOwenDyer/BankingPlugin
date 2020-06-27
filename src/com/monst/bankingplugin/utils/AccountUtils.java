@@ -350,7 +350,7 @@ public class AccountUtils {
 		}
 	}
 
-	public int removeAll(Collection<Account> accounts) {
+	public int removeAccount(Collection<Account> accounts, boolean removeFromDatabase) {
 		int removed = accounts.size();
 
 		AccountRemoveAllEvent event = new AccountRemoveAllEvent(accounts);
@@ -359,7 +359,7 @@ public class AccountUtils {
 			plugin.debug("Removeall event cancelled");
 			return 0;
 		}
-		accounts.forEach(account -> removeAccount(account, true));
+		accounts.forEach(account -> removeAccount(account, removeFromDatabase));
 
 		return removed;
 	}

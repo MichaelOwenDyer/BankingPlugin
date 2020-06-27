@@ -1,19 +1,25 @@
 package com.monst.bankingplugin.selections;
 
+import java.util.Collection;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 
 public interface Selection {
 
+	public enum SelectionType {
+		CUBOID, POLYGONAL
+	}
+
 	/**
-	 * Get the lower point of a region.
+	 * Get the lower point of a selection.
 	 * 
 	 * @return min. point
 	 */
 	public Location getMinimumPoint();
 
 	/**
-	 * Get the upper point of a region.
+	 * Get the upper point of a selection.
 	 * 
 	 * @return max. point
 	 */
@@ -27,18 +33,32 @@ public interface Selection {
 	public World getWorld();
 
 	/**
-	 * Get the number of blocks in the region.
+	 * Get the number of blocks in the selection.
 	 * 
 	 * @return number of blocks
 	 */
-	public int getArea();
+	public int getVolume();
 
 	/**
-	 * Returns true based on whether the region contains the point,
+	 * Get all vertices of the selection.
+	 * 
+	 * @return a Collection<Location> representing all vertices.
+	 */
+	public Collection<Location> getVertices();
+
+	/**
+	 * Returns true based on whether the selection contains the point,
 	 *
 	 * @param pt
 	 * @return
 	 */
 	public boolean contains(Location pt);
+
+	/**
+	 * Returns the type of selection.
+	 * 
+	 * @return SelectionType.CUBOID or SelectionType.POLYGONAL
+	 */
+	public SelectionType getType();
 
 }

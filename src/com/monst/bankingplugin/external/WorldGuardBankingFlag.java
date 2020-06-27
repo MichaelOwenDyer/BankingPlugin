@@ -17,11 +17,7 @@ public class WorldGuardBankingFlag {
 		Optional<IWrappedFlag<WrappedState>> createBankFlag = wrapper.registerFlag("create-bank", WrappedState.class,
 				Config.wgAllowCreateBankDefault ? WrappedState.ALLOW : WrappedState.DENY);
                 
-        Optional<IWrappedFlag<WrappedState>> createAccountFlag = wrapper.registerFlag("create-account",
-                WrappedState.class, Config.wgAllowCreateAccountDefault ? WrappedState.ALLOW : WrappedState.DENY);
-        
 		plugin.debug("Flag create-bank: " + String.valueOf(createBankFlag.isPresent()));
-        plugin.debug("Flag create-account: " + String.valueOf(createAccountFlag.isPresent()));
     }
 
 }

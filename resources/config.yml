@@ -6,11 +6,11 @@
 
 # Set the main command names to be used for bank management, account management, and system control in this plugin.
 # Type: String
-# Defaults: "bank", "account", "bankingplugin"
+# Defaults: "bank", "account", "bp"
 main-command-names:
   bank: bank
   account: account
-  control: bankingplugin
+  control: bp
 
 # Set the hours at which players should receive interest payments from their accounts.
 # These are real times (0 <= time < 24) represented as normal double values (e.g. 3:30 in the
@@ -20,9 +20,8 @@ main-command-names:
 #   10 minutes = .17        15 minutes = .25      30 minutes = .50    45 minutes = .75      50 minutes = .84
 # Equivalent values will be joined together.
 # Type: List<Double>
-# Default: 3, 9, 12, 15, 21
+# Default: 9, 12, 15, 21
 interest-payout-times:
-  -3
   -9
   -12
   -15

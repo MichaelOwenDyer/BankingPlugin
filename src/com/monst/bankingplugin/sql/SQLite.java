@@ -85,7 +85,7 @@ public class SQLite extends Database {
         return "CREATE TABLE IF NOT EXISTS " + tableBanks + " ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
 			+ "name TEXT NOT NULL," // Bank name
-            + "owner TEST NOT NULL," // Owner UUID
+            + "owner TEXT NOT NULL," // Owner UUID
             + "co_owners TEXT,"
 			
             + "selection_type TEXT NOT NULL CHECK (selection_type IN ('CUBOID', 'POLYGONAL')),"

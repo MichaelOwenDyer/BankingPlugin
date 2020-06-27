@@ -290,7 +290,7 @@ public class BankUtils {
 		removeBankById(bankId, removeFromDatabase, null);
     }
 
-	public int removeAll(Collection<Bank> banks) {
+	public int removeBank(Collection<Bank> banks, boolean removeFromDatabase) {
 		int count = banks.size();
 
 		BankRemoveAllEvent event = new BankRemoveAllEvent(banks);
@@ -301,8 +301,8 @@ public class BankUtils {
 		}
 		for (Bank bank : banks) {
 			for (Account account : bank.getAccounts())
-				plugin.getAccountUtils().removeAccount(account, true);
-			removeBank(bank, true);
+				plugin.getAccountUtils().removeAccount(account, removeFromDatabase);
+			removeBank(bank, removeFromDatabase);
 		}
 		return count;
 	}

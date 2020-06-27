@@ -1,5 +1,8 @@
 package com.monst.bankingplugin.selections;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -53,9 +56,23 @@ public class CuboidSelection implements Selection {
 	}
 
 	@Override
-	public int getArea() {
+	public int getVolume() {
 		return (max.getBlockX() - min.getBlockX()) * (max.getBlockZ() - min.getBlockZ())
 				* (max.getBlockY() - min.getBlockY());
+	}
+
+	@Override
+	public Collection<Location> getVertices() {
+		Collection<Location> vertices = new HashSet<>();
+		vertices.add(min);
+		vertices.add(new Location(world, max.getX(), min.getY(), min.getZ()));
+		vertices.add(new Location(world, min.getX(), max.getY(), min.getZ()));
+		vertices.add(new Location(world, max.getX(), max.getY(), min.getZ()));
+		vertices.add(new Location(world, min.getX(), min.getY(), max.getZ()));
+		vertices.add(new Location(world, max.getX(), min.getY(), max.getZ()));
+		vertices.add(new Location(world, min.getX(), max.getY(), max.getZ()));
+		vertices.add(max);
+		return vertices;
 	}
 
 	@Override
@@ -67,6 +84,11 @@ public class CuboidSelection implements Selection {
 		boolean inY = (y < max.getBlockY() && y > min.getBlockY());
 		boolean inZ = (z < max.getBlockZ() && z > min.getBlockZ());
 		return inX && inY && inZ;
+	}
+
+	@Override
+	public SelectionType getType() {
+		return SelectionType.CUBOID;
 	}
 
 }

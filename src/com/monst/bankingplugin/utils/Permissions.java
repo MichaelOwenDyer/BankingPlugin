@@ -8,7 +8,6 @@ public class Permissions {
 	public static final String ACCOUNT_NO_LIMIT = "bankingplugin.account.limit.*";
 	public static final String ACCOUNT_TRUST = "bankingplugin.account.trust";
 
-	public static final String ACCOUNT_OTHER_CREATE = "bankingplugin.account.other.create";
 	public static final String ACCOUNT_OTHER_REMOVE = "bankingplugin.account.other.remove";
 	public static final String ACCOUNT_OTHER_INFO = "bankingplugin.account.other.info";
 	public static final String ACCOUNT_OTHER_INFO_VERBOSE = "bankingplugin.account.other.info.verbose";
@@ -16,7 +15,6 @@ public class Permissions {
 	public static final String ACCOUNT_OTHER_LIST_VERBOSE = "bankingplugin.account.other.list.verbose";
 	public static final String ACCOUNT_OTHER_VIEW = "bankingplugin.account.other.view";
 	public static final String ACCOUNT_OTHER_EDIT = "bankingplugin.account.other.edit";
-	public static final String ACCOUNT_OTHER_SET = "bankingplugin.account.other.set.*";
 	public static final String ACCOUNT_OTHER_SET_NICKNAME = "bankingplugin.account.other.set.nickname";
 	public static final String ACCOUNT_OTHER_SET_MULTIPLIER = "bankingplugin.account.other.set.multiplier";
 	public static final String ACCOUNT_OTHER_SET_INTEREST_DELAY = "bankingplugin.account.other.set.interest-delay";
@@ -40,7 +38,6 @@ public class Permissions {
 	public static final String BANK_RESIZE = "bankingplugin.bank.resize";
 	public static final String BANK_SET = "bankingplugin.bank.set";
 
-	public static final String BANK_OTHER_CREATE = "bankingplugin.bank.other.create";
 	public static final String BANK_OTHER_REMOVE = "bankingplugin.bank.other.remove";
 	public static final String BANK_OTHER_REMOVEALL = "bankingplugin.bank.other.removeall";
 	public static final String BANK_OTHER_INFO = "bankingplugin.bank.other.info";

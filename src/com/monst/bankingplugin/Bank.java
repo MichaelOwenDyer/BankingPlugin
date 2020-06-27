@@ -16,6 +16,7 @@ import org.bukkit.World;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Utils;
@@ -24,6 +25,10 @@ import net.md_5.bungee.api.ChatColor;
 
 public class Bank extends Ownable {
 	
+	public enum BankType {
+		PLAYER, ADMIN
+	}
+
 	private final BankingPlugin plugin;
 	private boolean created;
 	
@@ -33,23 +38,42 @@ public class Bank extends Ownable {
 	private Selection selection;
 	private final AccountConfig accountConfig;
 	private final Set<Account> accounts;
+	private final BankType type;
 
+	// New admin bank
+	public Bank(BankingPlugin plugin, String name, Selection selection) {
+		this(-1, plugin, name, null, null, selection, new AccountConfig(), BankType.ADMIN);
+	}
+
+	// Old admin bank
+	public Bank(int id, BankingPlugin plugin, String name, Selection selection, AccountConfig config) {
+		this(id, plugin, name, null, null, selection, config, BankType.ADMIN);
+	}
+
+	// New player bank
 	public Bank(BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 			Selection selection) {
-		this(-1, plugin, name, owner, coowners, selection, null);
+		this(-1, plugin, name, owner, coowners, selection, new AccountConfig(), BankType.PLAYER);
 	}
 	
+	// Old player bank
 	public Bank(int id, BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-			Selection selection, AccountConfig accountConfig) {
+			Selection selection, AccountConfig config) {
+		this(id, plugin, name, owner, coowners, selection, config, BankType.PLAYER);
+	}
+
+	public Bank(int id, BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+			Selection selection, AccountConfig accountConfig, BankType type) {
 		this.id = id;
 		this.plugin = plugin;
 		this.owner = owner;
-		this.coowners = coowners != null ? coowners : new HashSet<>();
+		this.coowners = coowners;
 		this.name = name;
 		this.world = selection.getWorld();
 		this.selection = selection;
 		this.accounts = new HashSet<>();
-		this.accountConfig = accountConfig != null ? accountConfig : new AccountConfig();
+		this.accountConfig = accountConfig;
+		this.type = type;
 	}
 	
 	public boolean create(boolean showConsoleMessages) {
@@ -101,8 +125,16 @@ public class Bank extends Ownable {
 		return accountConfig;
 	}
 
+	public BankType getType() {
+		return type;
+	}
+
+	public boolean isAdminBank() {
+		return type == BankType.ADMIN;
+	}
+
 	public String getCoordinates() {
-		if (getSelectionType().equals("CUBOID")) {
+		if (selection.getType() == SelectionType.CUBOID) {
 			CuboidSelection sel = (CuboidSelection) selection;
 			Location min = sel.getMinimumPoint();
 			Location max = sel.getMaximumPoint();
@@ -119,14 +151,6 @@ public class Bank extends Ownable {
 
 	public List<Location> getVertices() {
 		return plugin.getBankUtils().getVertices(selection);
-	}
-
-	public String getSelectionType() {
-		if (selection instanceof CuboidSelection)
-			return "CUBOID";
-		if (selection instanceof Polygonal2DSelection)
-			return "POLYGONAL";
-		return "";
 	}
 
 	public Collection<Account> getAccounts() {
@@ -188,7 +212,7 @@ public class Bank extends Ownable {
 						+ ChatColor.GRAY + " (" + ChatColor.RED + "$" + Utils.formatNumber(accountConfig.getLowBalanceFeeOrDefault()) + ChatColor.GRAY + " fee)\n"
 				+ ChatColor.GRAY + "Current accounts: " + ChatColor.AQUA + accounts.size() + "\n"
 				+ ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n"
-				+ ChatColor.GRAY + "Selection type: " + getSelectionType() + "\n"
+				+ ChatColor.GRAY + "Selection type: " + selection.getType() + "\n"
 				+ ChatColor.GRAY + "Location: " + ChatColor.AQUA + getCoordinates();
 	}
 

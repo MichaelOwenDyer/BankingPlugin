@@ -41,7 +41,7 @@ class GenericTabCompleter implements TabCompleter {
 		if (command.getName().equalsIgnoreCase(accountCommand)) {
 			switch (subCommand) {
 			case "create":
-				return completeAccountCreate((Player) sender, args);
+				return new ArrayList<>();
 			case "remove":
 				return new ArrayList<>();
 			case "info":
@@ -87,24 +87,6 @@ class GenericTabCompleter implements TabCompleter {
 			}
 		}
 		return new ArrayList<>();
-	}
-
-	private List<String> completeAccountCreate(Player p, String[] args) {
-		ArrayList<String> returnCompletions = new ArrayList<>();
-
-		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
-		onlinePlayers.remove(p.getName());
-
-		if (!p.hasPermission(Permissions.ACCOUNT_OTHER_CREATE))
-			return new ArrayList<>();
-		
-		if (!args[1].isEmpty()) {
-			for (String name : onlinePlayers)
-				if (name.toLowerCase().startsWith(args[1].toLowerCase()))
-					returnCompletions.add(name);
-			return returnCompletions;
-		} else
-			return onlinePlayers;
 	}
 
 	private List<String> completeAccountInfo(Player p, String[] args) {

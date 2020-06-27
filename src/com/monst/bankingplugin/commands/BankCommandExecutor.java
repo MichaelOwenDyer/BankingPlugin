@@ -21,6 +21,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
+import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Selection;
@@ -127,18 +128,19 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		}
 
 		Selection selection;
+		boolean isAdminBank = false;
 
 		if (args.length == 1)
 			return false;
 
-		else if (args.length == 2) {
+		else if (args.length == 2 || args.length == 3) {
 			
 			if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
 
 				selection = WorldEditReader.getSelection(plugin, p);
 
 				if (selection == null) {
-					plugin.debug(p.getName() + " tried to resize a bank with no worldedit selection");
+					plugin.debug(p.getName() + " tried to create a bank with no worldedit selection");
 					p.sendMessage(Messages.NO_SELECTION_FOUND);
 					return true;
 				}
@@ -148,7 +150,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				return true;
 			}
 
-		} else if (args.length == 5) {
+			if (args.length == 3 && args[2].equalsIgnoreCase("admin"))
+				isAdminBank = true;
+
+		} else if (args.length == 5 || args.length == 6) {
 
 			String argX = args[2];
 			String argY = args[3];
@@ -179,7 +184,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
 			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
 
-		} else if (args.length >= 8) {
+			if (args.length == 6 && args[5].equalsIgnoreCase("admin"))
+				isAdminBank = true;
+
+		} else if (args.length == 8 || args.length == 9) {
 
 			String argX1 = args[2];
 			String argY1 = args[3];
@@ -218,9 +226,17 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			Location loc2 = new Location(p.getWorld(), x2, y2, z2);
 			selection = new CuboidSelection(p.getWorld(), loc1, loc2);
 
+			if (args.length == 9 && args[8].equalsIgnoreCase("admin"))
+				isAdminBank = true;
+
 		} else
 			return false;
 
+		if (isAdminBank && !p.hasPermission(Permissions.BANK_ADMIN_CREATE)) {
+			plugin.debug(p.getName() + " does not have permission to create an admin bank");
+			p.sendMessage(Messages.NO_PERMISSION_BANK_ADMIN_CREATE);
+			return true;
+		}
 		if (!bankUtils.isExclusiveSelection(selection)) {
 			plugin.debug("Region is not exclusive");
 			p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
@@ -237,7 +253,11 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			return true;
 		}
 
-		Bank bank = new Bank(plugin, args[1], p, null, selection);
+		Bank bank;
+		if (isAdminBank)
+			bank = new Bank(plugin, args[1], selection);
+		else
+			bank = new Bank(plugin, args[1], p, null, selection);
 
 		BankCreateEvent event = new BankCreateEvent(p, bank);
 		Bukkit.getPluginManager().callEvent(event);
@@ -247,7 +267,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		}
 
 		double creationPrice = Config.creationPriceBank;
-		if (creationPrice > 0) {
+		if (creationPrice > 0 && !isAdminBank) {
 			if (plugin.getEconomy().getBalance(p) < creationPrice) {
 				p.sendMessage(Messages.BANK_CREATE_INSUFFICIENT_FUNDS);
 				return true;
@@ -266,7 +286,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 
 		if (bank.create(true)) {
 			bankUtils.addBank(bank, true);
-			plugin.debug(p.getName() + " has created a new bank.");
+			plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
 			p.sendMessage(Messages.BANK_CREATED);
 			return true;
 		} else {
@@ -448,7 +468,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					return true;
 				}
 		}
-		bankUtils.removeAll(banks);
+		bankUtils.removeBank(banks, true);
 		plugin.debug("Bank #s " + banks.stream().map(bank -> "" + bank.getID()).collect(Collectors.joining(", ", "", ""))
 				+ " removed from the database.");
 		sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s",
@@ -585,6 +605,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			return true;
 		}
 
+		BankResizeEvent event = new BankResizeEvent(p, bank, selection);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			plugin.debug("Bank resize event cancelled");
+			return true;
+		}
+
 		bankUtils.resizeBank(bank, selection);
 		bankUtils.addBank(bank, true, new Callback<Integer>(plugin) {
 			@Override
@@ -619,7 +646,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		if ((sender instanceof Player && !bank.isTrusted((Player) sender))
 				&& !sender.hasPermission(Permissions.BANK_OTHER_SET)) {
 			plugin.debug(sender.getName() + " does not have permission to configure a bank");
-			sender.sendMessage(Messages.NO_PERMISSION_OTHER_BANK_SET);
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_OTHER_SET);
 			return true;
 		}
 

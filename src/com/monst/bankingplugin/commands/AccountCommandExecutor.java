@@ -123,59 +123,30 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 	private void promptAccountCreate(final Player p, String[] args) {
 		plugin.debug(p.getName() + " wants to create an account");
 
-		boolean forSelf = args.length == 1;
-		String permission = forSelf ? Permissions.ACCOUNT_CREATE : Permissions.ACCOUNT_OTHER_CREATE;
-		boolean hasPermission = p.hasPermission(permission);
+		boolean hasPermission = p.hasPermission(Permissions.ACCOUNT_CREATE);
 		if (!hasPermission) {
 			for (PermissionAttachmentInfo permInfo : p.getEffectivePermissions()) {
 				String perm = permInfo.getPermission();
-				if (perm.startsWith(permission) && p.hasPermission(perm)) {
+				if (perm.startsWith(Permissions.ACCOUNT_CREATE) && p.hasPermission(perm)) {
 					hasPermission = true;
 					break;
 				}
 			}
 		}
 		
-		OfflinePlayer owner;
-		if (!forSelf) {
-			owner = Bukkit.getOfflinePlayer(args[1]);
-			if (!owner.hasPlayedBefore()) {
-				p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
-				return;
-			}
-			if (!owner.getUniqueId().equals(p.getUniqueId()))
-				plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
-						+ owner.getUniqueId());
-			else {
-				forSelf = true;
-				owner = p;
-			}
-		} else
-			owner = p;
+		OfflinePlayer owner = p;
 		
-		if (forSelf) {
-			if (!hasPermission) {
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE);
-				plugin.debug(p.getName() + " is not permitted to create an account");
-				return;
-			}
-		} else {
-			if (!hasPermission) {
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_CREATE);
-				plugin.debug(p.getName() + " is not permitted to create an account for another player");
-				return;
-			}
+		if (!hasPermission) {
+			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE);
+			plugin.debug(p.getName() + " is not permitted to create an account");
+			return;
 		}
 
-		if (forSelf) {
-			int limit = accountUtils.getAccountLimit(p);
-			if (limit != -1) {
-				if (accountUtils.getNumberOfAccounts(p) >= limit) {
-					p.sendMessage(Messages.ACCOUNT_LIMIT_REACHED);
-					plugin.debug(p.getName() + " has reached their account limit");
-					return;
-				}
-			}
+		int limit = accountUtils.getAccountLimit(p);
+		if (limit != -1 && accountUtils.getNumberOfAccounts(p) >= limit) {
+			p.sendMessage(Messages.ACCOUNT_LIMIT_REACHED);
+			plugin.debug(p.getName() + " has reached their account limit");
+			return;
 		}
 
 		AccountPreCreateEvent event = new AccountPreCreateEvent(p, args);
@@ -449,7 +420,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		}
 		// TODO: Send AccountRemoveAllEvent
 
-		accountUtils.removeAll(accounts);
+		accountUtils.removeAccount(accounts, true);
 		sender.sendMessage(String.format(Messages.ACCOUNTS_REMOVED, accounts.size(), accounts.size() == 1 ? "" : "s",
 				accounts.size() == 1 ? "was" : "were"));
 

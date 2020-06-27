@@ -2,7 +2,6 @@ package com.monst.bankingplugin.external;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -16,10 +15,8 @@ import org.codemc.worldguardwrapper.flag.WrappedState;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.events.bank.BankResizeEvent;
 
 public class WorldGuardListener implements Listener {
 
@@ -29,19 +26,6 @@ public class WorldGuardListener implements Listener {
 	public WorldGuardListener(BankingPlugin plugin) {
         this.plugin = plugin;
         this.wgWrapper = WorldGuardWrapper.getInstance();
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onCreateAccount(AccountCreateEvent e) {
-        if (!Config.enableWorldGuardIntegration)
-            return;
-
-		Set<Location> chestLocations = Utils.getChestLocations(e.getAccount());
-		IWrappedFlag<WrappedState> flag = getStateFlag("create-account");
-        for (Location loc : chestLocations) {
-            if (handleForLocation(e.getPlayer(), loc, e, flag))
-                return;
-        }
     }
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -58,11 +42,13 @@ public class WorldGuardListener implements Listener {
 	}
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onExtendShop(AccountExtendEvent e) {
-        if (!Config.enableWorldGuardIntegration)
-            return;
+	public void onResizeBank(BankResizeEvent e) {
+		if (!Config.enableWorldGuardIntegration)
+			return;
 
-		handleForLocation(e.getPlayer(), e.getNewChestLocation(), e, getStateFlag("create-account"));
+		for (Location loc : e.getNewSelection().getVertices())
+			if (!handleForLocation(e.getPlayer(), loc, e, getStateFlag("create-bank")))
+				break;
     }
 
     private boolean handleForLocation(Player player, Location loc, Cancellable e, IWrappedFlag<WrappedState> flag) {

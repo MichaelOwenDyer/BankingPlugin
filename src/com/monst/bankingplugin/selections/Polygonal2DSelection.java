@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.selections;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -45,12 +47,22 @@ public class Polygonal2DSelection implements Selection {
 	}
 
 	@Override
-	public int getArea() {
+	public int getVolume() {
 		int minX = getMinimumPoint().getBlockX();
 		int maxX = getMaximumPoint().getBlockX();
 		int minZ = getMinimumPoint().getBlockZ();
 		int maxZ = getMaximumPoint().getBlockZ();
 		return (maxX - minX) * (maxY - minY) * (maxZ - minZ);
+	}
+
+	@Override
+	public Collection<Location> getVertices() {
+		Collection<Location> vertices = new HashSet<>();
+		points.stream().forEach(point -> {
+			vertices.add(new Location(world, point.getBlockX(), minY, point.getBlockZ()));
+			vertices.add(new Location(world, point.getBlockX(), maxY, point.getBlockZ()));
+		});
+		return vertices;
 	}
 
 	@Override
@@ -62,6 +74,11 @@ public class Polygonal2DSelection implements Selection {
 		Location min = getMinimumPoint();
 		return (x < max.getBlockX() && x > min.getBlockX()) && (y < max.getBlockY() 
 				&& y > min.getBlockY()) && (z < max.getBlockZ() && z > max.getBlockZ());
+	}
+
+	@Override
+	public SelectionType getType() {
+		return SelectionType.POLYGONAL;
 	}
 
 }

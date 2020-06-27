@@ -29,6 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.Bank.BankType;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
@@ -36,6 +37,7 @@ import com.monst.bankingplugin.listeners.AccountBalanceListener.TransactionType;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.BlockVector2D;
@@ -360,15 +362,20 @@ public abstract class Database {
 					}
 
 					ps.setString(i + 1, bank.getName());
-					ps.setString(i + 2, bank.getOwner().getUniqueId().toString());
-					ps.setString(i + 3, bank.getCoowners().isEmpty() ? null
+					
+					if (bank.getType() == BankType.ADMIN) {
+						ps.setString(i + 2, "$ADMIN$");
+						ps.setString(i + 3, null);
+					} else {
+						ps.setString(i + 2, bank.getOwner().getUniqueId().toString());
+						ps.setString(i + 3, bank.getCoowners().isEmpty() ? null
 							: bank.getCoowners().stream().map(p -> p.getUniqueId().toString())
 									.collect(Collectors.joining(" | ")));
-					ps.setString(i + 4, bank.getSelectionType());
+					}
+					ps.setString(i + 4, bank.getSelection().getType().toString());
 					ps.setString(i + 5, bank.getWorld().getName());
 
-
-					if (bank.getSelection() instanceof Polygonal2DSelection) {
+					if (bank.getSelection().getType() == SelectionType.POLYGONAL) {
 						Polygonal2DSelection sel = (Polygonal2DSelection) bank.getSelection();
 
 						ps.setInt(i + 6, sel.getMaximumPoint().getBlockY());
@@ -380,7 +387,7 @@ public abstract class Database {
 
 						ps.setString(i + 8, vertices);
 
-					} else if (bank.getSelection() instanceof CuboidSelection) {
+					} else if (bank.getSelection().getType() == SelectionType.CUBOID) {
 						CuboidSelection sel = (CuboidSelection) bank.getSelection();
 
 						StringBuilder sb = new StringBuilder();
@@ -399,7 +406,7 @@ public abstract class Database {
 						plugin.getLogger()
 								.severe("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
 						plugin.debug("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
-						return;
+						return; // This should never happen
 					}
 
 					AccountConfig config = bank.getAccountConfig();
@@ -522,15 +529,20 @@ public abstract class Database {
 						}
 
 						String name = rs.getString("name");
-						OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
-						Set<OfflinePlayer> coowners = rs.getString("co_owners") == null ? null
+						boolean isAdminBank = rs.getString("owner").equals("$ADMIN$");
+						OfflinePlayer owner = null;
+						Set<OfflinePlayer> coowners = null;
+						if (!isAdminBank) {
+							owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
+							coowners = rs.getString("co_owners") == null ? null
 								: Arrays.stream(rs.getString("co_owners").split(" \\| "))
-										.filter(uuid -> !uuid.equals(""))
+										.filter(uuid -> uuid != null && !uuid.equals(""))
 										.map(uuid -> Bukkit.getOfflinePlayer(UUID.fromString(uuid)))
 										.collect(Collectors.toSet());
-						Selection selection;
-						String[] pointArray = rs.getString("points").split(" \\| ");
+						}
 						
+						String[] pointArray = rs.getString("points").split(" \\| ");
+						Selection selection;
 						if (rs.getString("selection_type").equals("POLYGONAL")) {
 							int minY = rs.getInt("minY");
 							int maxY = rs.getInt("maxY");
@@ -562,33 +574,38 @@ public abstract class Database {
 							
 							selection = new CuboidSelection(world, min, max);
 						}
-						String[] values = rs.getString("account_config").split(" \\| ");
+						
+						String[] accConfig = rs.getString("account_config").split(" \\| ");
 						List<Integer> multipliers;
 						try {
 							multipliers = Arrays
-								.stream(values[1].substring(1, values[1].length() - 1).split(","))
+								.stream(accConfig[1].substring(1, accConfig[1].length() - 1).split(","))
 								.map(Integer::parseInt).collect(Collectors.toList());
 						} catch (NumberFormatException e) {
 							multipliers = Arrays.asList(1);
 						}
 
 						AccountConfig accountConfig = new AccountConfig(
-								Double.parseDouble(values[0]),
+								Double.parseDouble(accConfig[0]),
 								multipliers, 
-								Integer.parseInt(values[2]),
-								Boolean.parseBoolean(values[3]),
-								Integer.parseInt(values[4]),
-								Integer.parseInt(values[5]), 
-								Integer.parseInt(values[6]),
-								Integer.parseInt(values[7]),
-								Double.parseDouble(values[8]),
-								Boolean.parseBoolean(values[9]),
-								Double.parseDouble(values[10]),
-								Double.parseDouble(values[11]));
+								Integer.parseInt(accConfig[2]),
+								Boolean.parseBoolean(accConfig[3]),
+								Integer.parseInt(accConfig[4]),
+								Integer.parseInt(accConfig[5]), 
+								Integer.parseInt(accConfig[6]),
+								Integer.parseInt(accConfig[7]),
+								Double.parseDouble(accConfig[8]),
+								Boolean.parseBoolean(accConfig[9]),
+								Double.parseDouble(accConfig[10]),
+								Double.parseDouble(accConfig[11]));
 
 						plugin.debug("Initializing bank \"" + name + "\"... (#" + bankId + ")");
 
-						Bank bank = new Bank(bankId, plugin, name, owner, coowners, selection, accountConfig);
+						Bank bank;
+						if (isAdminBank)
+							bank = new Bank(bankId, plugin, name, selection, accountConfig);
+						else
+							bank = new Bank(bankId, plugin, name, owner, coowners, selection, accountConfig);
 
 						getAccountsByBank(bank, showConsoleMessages, new Callback<Collection<Account>>(plugin) {
 							@Override
