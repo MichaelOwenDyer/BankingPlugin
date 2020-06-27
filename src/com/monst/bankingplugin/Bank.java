@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -149,10 +148,6 @@ public class Bank extends Ownable {
 		}
 	}
 
-	public List<Location> getVertices() {
-		return plugin.getBankUtils().getVertices(selection);
-	}
-
 	public Collection<Account> getAccounts() {
 		return accounts;
 	}
@@ -197,7 +192,7 @@ public class Bank extends Ownable {
 	@Override
 	public String toString() {
 		return ChatColor.GRAY + "\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n"
-				// + ChatColor.GRAY + "Owner: " + getOwner().getName() + "\n"
+				+ ChatColor.GRAY + "Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n"
 				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber(accountConfig.getInterestRateOrDefault()) + "\n"
 				+ ChatColor.GRAY + "Multipliers: " + ChatColor.AQUA + accountConfig.getMultipliersOrDefault() + "\n"
 				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.getAccountCreationPriceOrDefault());
@@ -206,10 +201,10 @@ public class Bank extends Ownable {
 	public String toStringVerbose() {
 		return toString() + "\n"
 				+ ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + accountConfig.getAllowedOfflinePayoutsOrDefault() 
-						+ ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getAllowedOfflineBeforeResetOrDefault() + ChatColor.GRAY + " before reset)\n"
+				+ ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getAllowedOfflineBeforeResetOrDefault() + ChatColor.GRAY + " before reset)\n"
 				+ ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + accountConfig.getInitialInterestDelayOrDefault() + "\n"
 				+ ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.getMinBalanceOrDefault()) 
-						+ ChatColor.GRAY + " (" + ChatColor.RED + "$" + Utils.formatNumber(accountConfig.getLowBalanceFeeOrDefault()) + ChatColor.GRAY + " fee)\n"
+				+ ChatColor.GRAY + " (" + ChatColor.RED + "$" + Utils.formatNumber(accountConfig.getLowBalanceFeeOrDefault()) + ChatColor.GRAY + " fee)\n"
 				+ ChatColor.GRAY + "Current accounts: " + ChatColor.AQUA + accounts.size() + "\n"
 				+ ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n"
 				+ ChatColor.GRAY + "Selection type: " + selection.getType() + "\n"

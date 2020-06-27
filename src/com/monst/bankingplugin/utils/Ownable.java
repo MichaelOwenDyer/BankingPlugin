@@ -15,6 +15,10 @@ public abstract class Ownable {
 		return owner.getUniqueId().equals(player.getUniqueId());
 	}
 
+	public String getOwnerDisplayName() {
+		return owner.isOnline() ? owner.getPlayer().getDisplayName() : owner.getName();
+	}
+
 	public OfflinePlayer getOwner() {
 		return owner;
 	}

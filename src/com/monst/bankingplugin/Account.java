@@ -269,7 +269,7 @@ public class Account extends Ownable {
 		String name;
 		name = hasNickname() ? ChatColor.GRAY + "\"" + Utils.colorize(nickname) + ChatColor.GRAY + "\""
 				: ChatColor.GRAY + "Account ID: " + ChatColor.WHITE + id;
-		return name + "\n" + ChatColor.GRAY + "Owner: " + ChatColor.GOLD + owner.getName() + "\n" + ChatColor.GRAY
+		return name + "\n" + ChatColor.GRAY + "Owner: " + ChatColor.GOLD + getOwnerDisplayName() + "\n" + ChatColor.GRAY
 				+ "Bank: " + ChatColor.AQUA + bank.getName() + ChatColor.GRAY;
 	}
 

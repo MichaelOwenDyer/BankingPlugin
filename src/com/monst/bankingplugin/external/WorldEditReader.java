@@ -1,16 +1,23 @@
 package com.monst.bankingplugin.external;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.selections.CuboidSelection;
+import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.utils.BlockVector2D;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Polygonal2DRegion;
 import com.sk89q.worldedit.regions.Region;
 
 public class WorldEditReader {
@@ -32,6 +39,15 @@ public class WorldEditReader {
 				Location loc2 = new Location(BukkitAdapter.adapt(cuboid.getWorld()), vector2.getBlockX(),
 						vector2.getBlockY(), vector2.getBlockZ());
 				return new CuboidSelection(loc1.getWorld(), loc1, loc2);
+			} else if (region instanceof Polygonal2DRegion) {
+				Polygonal2DRegion polygon = (Polygonal2DRegion) region;
+				int minY = polygon.getMinimumY();
+				int maxY = polygon.getMaximumY();
+				World world = BukkitAdapter.adapt(polygon.getWorld());
+				List<BlockVector2D> points = new ArrayList<>();
+				polygon.getPoints()
+						.forEach(point -> points.add(new BlockVector2D(point.getBlockX(), point.getBlockZ())));
+				return new Polygonal2DSelection(world, points, minY, minY);
 			}
 
 		} catch (IncompleteRegionException e1) {}

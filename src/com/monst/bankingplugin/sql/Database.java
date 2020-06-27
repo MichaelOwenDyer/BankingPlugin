@@ -1220,13 +1220,13 @@ public abstract class Database {
 
 			int databaseVersion = getDatabaseVersion();
 
-			if (databaseVersion < 3) {
-				// plugin.getLogger().info("Updating database... (#3)");
+			// if (databaseVersion < 2) {
+				// plugin.getLogger().info("Updating database... (V2)");
 
 				// Update database structure...
 
-				// setDatabaseVersion(3);
-			}
+				// setDatabaseVersion(2);
+			// }
 
 			int newDatabaseVersion = getDatabaseVersion();
 			return needsUpdate1 || needsUpdate2 || newDatabaseVersion > databaseVersion;

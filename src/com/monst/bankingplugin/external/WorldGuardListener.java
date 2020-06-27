@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.external;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.bukkit.Location;
@@ -33,7 +33,7 @@ public class WorldGuardListener implements Listener {
 		if (!Config.enableWorldGuardIntegration)
 			return;
 
-		List<Location> vertices = e.getBank().getVertices();
+		Collection<Location> vertices = e.getBank().getSelection().getVertices();
 		IWrappedFlag<WrappedState> flag = getStateFlag("create-bank");
 		for (Location loc : vertices) {
 			if (handleForLocation(e.getPlayer(), loc, e, flag))
