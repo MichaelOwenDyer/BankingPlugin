@@ -33,6 +33,7 @@ import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 
 import net.milkbowl.vault.economy.EconomyResponse;
 
@@ -235,8 +236,8 @@ public class ChestProtectListener implements Listener {
 			});
 
 		} else {
-			double creationPrice = account.getBank().getAccountConfig().getAccountCreationPriceOrDefault();
-			if (creationPrice > 0 && account.getBank().getAccountConfig().isReimburseAccountCreationOrDefault()
+			double creationPrice = (double) account.getBank().getAccountConfig().getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+			if (creationPrice > 0 && (boolean) account.getBank().getAccountConfig().getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION)
 					&& account.isTrusted(p)) {
 				EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
 						creationPrice);

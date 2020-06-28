@@ -2,7 +2,6 @@ package com.monst.bankingplugin.commands;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -528,141 +527,47 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		}
 
 		AccountConfig config = bank.getAccountConfig();
-		switch (args[2].toLowerCase()) {
-
-		case "interest-rate":
-			try {
-				config.setInterestRate(Double.parseDouble(args[3]));
-			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse double: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "multipliers":
+		
+		Field field = Field.getByName(args[2]);
+		if (field == null) {
+			sender.sendMessage(Messages.NOT_A_FIELD);
+			return true;
+		}
+		
+		if (field == Field.MULTIPLIERS) {
 			StringBuilder sb = new StringBuilder(args[3]);
 			for (int i = 4; i < args.length; i++)
 				sb.append(" " + args[i]);
-			try {
-				List<Integer> multipliers = new ArrayList<>();
-				for (int i = 3; i < args.length; i++)
-					multipliers.add(Integer.parseInt(args[i]));
-				config.setMultipliers(multipliers);
-			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse list: " + sb.toString());
-				sender.sendMessage(String.format(Messages.NOT_A_LIST, sb.toString()));
-				break;
-			}
 			args[3] = sb.toString();
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "interest-delay":
-			try {
-				config.setInitialInterestDelay(Integer.parseInt(args[3]));
-			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse integer: " + args[3]);
+		}
+		
+		try {
+			if (config.setOrDefault(field, args[3]))
+				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
+			else
+				sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
+		} catch (NumberFormatException e) {
+			if (field == Field.INTEREST_RATE 
+					|| field == Field.ACCOUNT_CREATION_PRICE 
+					|| field == Field.MINIMUM_BALANCE 
+					|| field == Field.LOW_BALANCE_FEE) {
+				plugin.debug("Failed to parse double: " + args[3]);
 				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "allowed-offline-payouts":
-			try {
-				config.setAllowedOfflinePayouts(Integer.parseInt(args[3]));
-			} catch (NumberFormatException e) {
+			} else if (field == Field.INITIAL_INTEREST_DELAY 
+					|| field == Field.ALLOWED_OFFLINE_PAYOUTS 
+					|| field == Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET 
+					|| field == Field.OFFLINE_MULTIPLAYER_BEHAVIOR 
+					|| field == Field.WITHDRAWAL_MULTIPLIER_BEHAVIOR) {
 				plugin.debug("Failed to parse integer: " + args[3]);
 				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "allowed-offline-payouts-before-multiplier-reset":
-			try {
-				config.setAllowedOfflineBeforeReset(Integer.parseInt(args[3]));
-			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "count-interest-delay-offline":
-			if (args[3].equalsIgnoreCase("true"))
-				config.setCountInterestDelayOffline(true);
-			else if (args[3].equalsIgnoreCase("false"))
-				config.setCountInterestDelayOffline(false);
-			else {
+			} else if (field == Field.COUNT_INTEREST_DELAY_OFFLINE 
+					|| field == Field.REIMBURSE_ACCOUNT_CREATION) {
 				plugin.debug("Failed to parse boolean: " + args[3]);
 				sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, args[3]));
-				break;
+			} else {
+				plugin.debug("Failed to parse list: " + args[3]);
+				sender.sendMessage(String.format(Messages.NOT_A_LIST, args[3]));
 			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "offline-multiplier-behavior":
-			try {
-				config.setOfflineMultiplierBehavior(Integer.parseInt(args[3]));
-			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "withdrawal-multiplier-behavior":
-			try {
-				config.setWithdrawalMultiplierBehavior(Integer.parseInt(args[3]));
-			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "account-creation-price":
-			try {
-				config.setAccountCreationPrice(Double.parseDouble(args[3]));
-			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse double: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "min-balance":
-			try {
-				config.setMinBalance(Double.parseDouble(args[3]));
-			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse double: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "low-balance-fee":
-			try {
-				config.setLowBalanceFee(Double.parseDouble(args[3]));
-			} catch (NumberFormatException e) {
-				plugin.debug("Failed to parse double: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		case "reimburse-account-creation":
-			if (args[3].equalsIgnoreCase("true"))
-				config.setReimburseAccountCreation(true);
-			else if (args[3].equalsIgnoreCase("false"))
-				config.setReimburseAccountCreation(false);
-			else {
-				plugin.debug("Failed to parse boolean: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, args[3]));
-				break;
-			}
-			sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
-			break;
-		default:
-			sender.sendMessage(Messages.NOT_A_FIELD);
 			return true;
 		}
 

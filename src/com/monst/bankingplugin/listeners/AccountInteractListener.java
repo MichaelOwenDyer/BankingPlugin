@@ -34,6 +34,7 @@ import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
@@ -115,7 +116,7 @@ public class AccountInteractListener implements Listener {
 				boolean verbose = ((InfoClickType) clickType).isVerbose();
 				info(p, account, verbose);
 				ClickType.removePlayerClickType(p);
-				e.setCancelled(true);
+				e.setCancelled(false);
 				break;
 
 			case SET:
@@ -253,7 +254,7 @@ public class AccountInteractListener implements Listener {
 		Bank bank = bankUtils.getBank(location);
 		Account account = new Account(plugin, p, bank, location);
 		
-		double creationPrice = bank.getAccountConfig().getAccountCreationPriceOrDefault();
+		double creationPrice = (double) bank.getAccountConfig().getOrDefault(Field.ACCOUNT_CREATION_PRICE);
 
 		AccountCreateEvent event = new AccountCreateEvent(p, account, creationPrice);
 		Bukkit.getPluginManager().callEvent(event);
@@ -351,9 +352,9 @@ public class AccountInteractListener implements Listener {
 		}
 		
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = accountConfig.getAccountCreationPriceOrDefault();
+		double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
 
-		if (creationPrice > 0 && accountConfig.isReimburseAccountCreationOrDefault() && account.isOwner(executor)) {
+		if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION) && account.isOwner(executor)) {
 			OfflinePlayer owner = executor.getPlayer();
 			EconomyResponse r = plugin.getEconomy().depositPlayer(owner, account.getLocation().getWorld().getName(),
 					creationPrice);

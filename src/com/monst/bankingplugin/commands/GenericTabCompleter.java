@@ -337,9 +337,11 @@ class GenericTabCompleter implements TabCompleter {
 						.filter(b -> b.isTrusted((OfflinePlayer) sender)).map(Bank::getName).map(Utils::stripColor)
 						.collect(Collectors.toList());
 				Bank standingIn = bankUtils.getBank(((Player) sender).getLocation());
-				return ownBanks.isEmpty()
-						? (standingIn != null ? Arrays.asList(Utils.stripColor(standingIn.getName())) : bankNames)
-						: ownBanks;
+
+				if (!ownBanks.isEmpty())
+					return ownBanks;
+				else
+					return standingIn != null ? Arrays.asList(Utils.stripColor(standingIn.getName())) : bankNames;
 			}
 		} else if (args.length == 3) {
 			if (!args[2].isEmpty()) {
@@ -350,8 +352,10 @@ class GenericTabCompleter implements TabCompleter {
 			} else
 				return fields.stream().map(field -> field.getName()).collect(Collectors.toList());
 		} else if (args.length == 4) {
-			if (Field.getByName(args[2]) != null)
-				return new ArrayList<>();
+			Bank bank = bankUtils.getBankByName(args[1]);
+			Field field = Field.getByName(args[2]);
+			if (bank != null && field != null)
+				return Arrays.asList(bank.getAccountConfig().getOrDefault(field).toString());
 		}
 		return new ArrayList<>();
 	}
@@ -362,6 +366,7 @@ class GenericTabCompleter implements TabCompleter {
 		Set<String> configValues = plugin.getConfig().getKeys(true);
 		configValues.removeAll(plugin.getConfig().getKeys(false));
 		configValues.remove("creation-prices.account");
+		configValues.remove("creation-prices.bank");
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {

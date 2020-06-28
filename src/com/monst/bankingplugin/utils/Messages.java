@@ -68,6 +68,7 @@ public class Messages {
 	public static final String NOT_A_COOWNER = ChatColor.RED + "%s is not a co-owner of that account.";
 	public static final String ALREADY_A_COOWNER = ChatColor.RED + "%s is not a co-owner of that account.";
 	public static final String BANK_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create a bank.";
+	public static final String FIELD_NOT_OVERRIDABLE = ChatColor.RED + "That field cannot be overridden!";
 	public static final String NOT_A_NUMBER = ChatColor.RED + "\"%s\" is not a number!";
 	public static final String NOT_AN_INTEGER = ChatColor.RED + "\"%s\" is not an integer!";
 	public static final String NOT_A_BOOLEAN = ChatColor.RED + "\"%s\" is not a boolean value!";

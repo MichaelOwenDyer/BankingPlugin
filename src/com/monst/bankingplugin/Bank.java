@@ -17,6 +17,7 @@ import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Utils;
 
@@ -193,18 +194,18 @@ public class Bank extends Ownable {
 	public String toString() {
 		return ChatColor.GRAY + "\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n"
 				+ ChatColor.GRAY + "Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n"
-				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber(accountConfig.getInterestRateOrDefault()) + "\n"
-				+ ChatColor.GRAY + "Multipliers: " + ChatColor.AQUA + accountConfig.getMultipliersOrDefault() + "\n"
-				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.getAccountCreationPriceOrDefault());
+				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n"
+				+ ChatColor.GRAY + "Multipliers: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.MULTIPLIERS) + "\n"
+				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE));
 	}
 	
 	public String toStringVerbose() {
 		return toString() + "\n"
-				+ ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + accountConfig.getAllowedOfflinePayoutsOrDefault() 
-				+ ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getAllowedOfflineBeforeResetOrDefault() + ChatColor.GRAY + " before reset)\n"
-				+ ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + accountConfig.getInitialInterestDelayOrDefault() + "\n"
-				+ ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.getMinBalanceOrDefault()) 
-				+ ChatColor.GRAY + " (" + ChatColor.RED + "$" + Utils.formatNumber(accountConfig.getLowBalanceFeeOrDefault()) + ChatColor.GRAY + " fee)\n"
+				+ ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS) 
+				+ ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before reset)\n"
+				+ ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY) + "\n"
+				+ ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE)) 
+				+ ChatColor.GRAY + " (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)\n"
 				+ ChatColor.GRAY + "Current accounts: " + ChatColor.AQUA + accounts.size() + "\n"
 				+ ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n"
 				+ ChatColor.GRAY + "Selection type: " + selection.getType() + "\n"

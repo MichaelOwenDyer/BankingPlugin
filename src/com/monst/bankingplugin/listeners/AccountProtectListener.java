@@ -28,6 +28,7 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ItemUtils;
@@ -245,8 +246,8 @@ public class AccountProtectListener implements Listener {
 		} else {
 			AccountConfig accountConfig = account.getBank().getAccountConfig();
 
-			double creationPrice = accountConfig.getAccountCreationPriceOrDefault();
-			if (creationPrice > 0 && accountConfig.isReimburseAccountCreationOrDefault()
+			double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+			if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION)
 					&& p.getUniqueId().equals(account.getOwner().getUniqueId())) {
 				EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
 						creationPrice);

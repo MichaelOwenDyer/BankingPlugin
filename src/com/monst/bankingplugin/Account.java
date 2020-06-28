@@ -3,6 +3,7 @@ package com.monst.bankingplugin;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
@@ -18,6 +19,7 @@ import org.bukkit.inventory.InventoryHolder;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Ownable;
@@ -273,13 +275,14 @@ public class Account extends Ownable {
 				+ "Bank: " + ChatColor.AQUA + bank.getName() + ChatColor.GRAY;
 	}
 
+	@SuppressWarnings("unchecked")
 	public String toStringVerbose() {
 		String balance = "$" + Utils.formatNumber(getBalance());
 		String multiplier = status.getRealMultiplier() + "x (Stage " + (status.getMultiplierStage() + 1) + " of "
-				+ (bank.getAccountConfig().getMultipliersOrDefault().size()) + ")";
+				+ ((List<Integer>) bank.getAccountConfig().getOrDefault(Field.MULTIPLIERS)).size() + ")";
 		String interestRate = "" + ChatColor.GREEN
-				+ (bank.getAccountConfig().getInterestRateOrDefault() * status.getRealMultiplier() * 100) + "%"
-				+ ChatColor.GRAY + " (" + bank.getAccountConfig().getInterestRateOrDefault() + " x " + status.getRealMultiplier() + ")";
+				+ ((double) bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) * status.getRealMultiplier() * 100) + "%"
+				+ ChatColor.GRAY + " (" + bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) + " x " + status.getRealMultiplier() + ")";
 		if (status.getRemainingUntilFirstPayout() != 0)
 			interestRate = interestRate
 					.concat(ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)");

@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.utils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -79,13 +80,87 @@ public class AccountConfig {
 			return Config.creationPriceAccount.getKey();
 		case REIMBURSE_ACCOUNT_CREATION:
 			return Config.reimburseAccountCreation.getKey();
-		case MIN_BALANCE:
+		case MINIMUM_BALANCE:
 			return Config.minBalance.getKey();
 		case LOW_BALANCE_FEE:
 			return Config.lowBalanceFee.getKey();
 		default:
 			return false;
 
+		}
+	}
+
+	public Object getOrDefault(Field field) {
+		switch (field) {
+
+		case INTEREST_RATE:
+			return Config.interestRate.getKey() ? interestRate : Config.interestRate.getValue();
+		case MULTIPLIERS:
+			return Config.interestMultipliers.getKey() ? multipliers : Config.interestMultipliers.getValue();
+		case INITIAL_INTEREST_DELAY:
+			return Config.initialInterestDelay.getKey() ? initialInterestDelay : Config.initialInterestDelay.getValue();
+		case COUNT_INTEREST_DELAY_OFFLINE:
+			return Config.countInterestDelayOffline.getKey() ? countInterestDelayOffline : Config.countInterestDelayOffline.getValue();
+		case ALLOWED_OFFLINE_PAYOUTS:
+			return Config.allowedOfflinePayouts.getKey() ? allowedOfflinePayouts : Config.allowedOfflinePayouts.getValue();
+		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
+			return Config.allowedOfflineBeforeMultiplierReset.getKey() ? allowedOfflineBeforeReset : Config.allowedOfflineBeforeMultiplierReset.getValue();
+		case OFFLINE_MULTIPLAYER_BEHAVIOR:
+			return Config.offlineMultiplierBehavior.getKey() ? offlineMultiplierBehavior : Config.offlineMultiplierBehavior.getValue();
+		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
+			return Config.withdrawalMultiplierBehavior.getKey() ? withdrawalMultiplierBehavior : Config.withdrawalMultiplierBehavior.getValue();
+		case ACCOUNT_CREATION_PRICE:
+			return Config.creationPriceAccount.getKey() ? accountCreationPrice : Config.creationPriceAccount.getValue();
+		case REIMBURSE_ACCOUNT_CREATION:
+			return Config.reimburseAccountCreation.getKey() ? reimburseAccountCreation : Config.reimburseAccountCreation.getValue();
+		case MINIMUM_BALANCE:
+			return Config.minBalance.getKey() ? minBalance : Config.minBalance.getValue();
+		case LOW_BALANCE_FEE:
+			return Config.lowBalanceFee.getKey() ? lowBalanceFee : Config.lowBalanceFee.getValue();
+		default:
+			return null;
+		}
+	}
+	
+	public boolean setOrDefault(Field field, String s) throws NumberFormatException {
+		
+		if (!isOverrideAllowed(field))
+			return false;
+		
+		switch (field) {
+		
+		case INTEREST_RATE:
+			interestRate = Double.parseDouble(s);
+		case MULTIPLIERS:
+			multipliers = Arrays.stream(s.split(" ")).map(string -> Integer.parseInt(string)).collect(Collectors.toList());
+		case INITIAL_INTEREST_DELAY:
+			initialInterestDelay = Integer.parseInt(s);
+		case COUNT_INTEREST_DELAY_OFFLINE:
+			if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
+				countInterestDelayOffline = Boolean.parseBoolean(s);
+			else
+				throw new NumberFormatException();
+		case ALLOWED_OFFLINE_PAYOUTS:
+			allowedOfflinePayouts = Integer.parseInt(s);
+		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
+			allowedOfflineBeforeReset = Integer.parseInt(s);
+		case OFFLINE_MULTIPLAYER_BEHAVIOR:
+			offlineMultiplierBehavior = Integer.parseInt(s);
+		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
+			withdrawalMultiplierBehavior = Integer.parseInt(s);
+		case ACCOUNT_CREATION_PRICE:
+			accountCreationPrice = Double.parseDouble(s);
+		case REIMBURSE_ACCOUNT_CREATION:
+			if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
+				reimburseAccountCreation = Boolean.parseBoolean(s);
+			else
+				throw new NumberFormatException();
+		case MINIMUM_BALANCE:
+			minBalance = Double.parseDouble(s);
+		case LOW_BALANCE_FEE:
+			lowBalanceFee = Double.parseDouble(s);
+		default:
+			return false;
 		}
 	}
 
@@ -137,102 +212,6 @@ public class AccountConfig {
 		return lowBalanceFee;
 	}
 
-	public void setInterestRate(double interestRate) {
-		this.interestRate = interestRate;
-	}
-
-	public void setMultipliers(List<Integer> multipliers) {
-		this.multipliers = multipliers;
-	}
-
-	public void setInitialInterestDelay(int initialInterestDelay) {
-		this.initialInterestDelay = initialInterestDelay;
-	}
-
-	public void setCountInterestDelayOffline(boolean countInterestDelayOffline) {
-		this.countInterestDelayOffline = countInterestDelayOffline;
-	}
-
-	public void setAllowedOfflinePayouts(int allowedOffline) {
-		this.allowedOfflinePayouts = allowedOffline;
-	}
-
-	public void setAllowedOfflineBeforeReset(int allowedOfflineBeforeReset) {
-		this.allowedOfflineBeforeReset = allowedOfflineBeforeReset;
-	}
-
-	public void setOfflineMultiplierBehavior(int offlineMultiplierBehavior) {
-		this.offlineMultiplierBehavior = offlineMultiplierBehavior;
-	}
-
-	public void setWithdrawalMultiplierBehavior(int withdrawalMultiplierBehavior) {
-		this.withdrawalMultiplierBehavior = withdrawalMultiplierBehavior;
-	}
-
-	public void setAccountCreationPrice(double accountCreationPrice) {
-		this.accountCreationPrice = accountCreationPrice;
-	}
-
-	public void setReimburseAccountCreation(boolean reimburseAccountCreation) {
-		this.reimburseAccountCreation = reimburseAccountCreation;
-	}
-
-	public void setMinBalance(double minBalance) {
-		this.minBalance = minBalance;
-	}
-
-	public void setLowBalanceFee(double lowBalanceFee) {
-		this.lowBalanceFee = lowBalanceFee;
-	}
-
-	public double getInterestRateOrDefault() {
-		return Config.interestRate.getKey() ? interestRate : Config.interestRate.getValue();
-	}
-
-	public List<Integer> getMultipliersOrDefault() {
-		return Config.interestMultipliers.getKey() ? multipliers : Config.interestMultipliers.getValue();
-	}
-
-	public int getInitialInterestDelayOrDefault() {
-		return Config.initialInterestDelay.getKey() ? initialInterestDelay : Config.initialInterestDelay.getValue();
-	}
-
-	public boolean isCountInterestDelayOfflineOrDefault() {
-		return Config.countInterestDelayOffline.getKey() ? countInterestDelayOffline : Config.countInterestDelayOffline.getValue();
-	}
-
-	public int getAllowedOfflinePayoutsOrDefault() {
-		return Config.allowedOfflinePayouts.getKey() ? allowedOfflinePayouts : Config.allowedOfflinePayouts.getValue();
-	}
-
-	public int getAllowedOfflineBeforeResetOrDefault() {
-		return Config.allowedOfflineBeforeMultiplierReset.getKey() ? allowedOfflineBeforeReset : Config.allowedOfflineBeforeMultiplierReset.getValue();
-	}
-
-	public int getOfflineMultiplierBehaviorOrDefault() {
-		return Config.offlineMultiplierBehavior.getKey() ? offlineMultiplierBehavior : Config.offlineMultiplierBehavior.getValue();
-	}
-
-	public int getWithdrawalMultiplierBehaviorOrDefault() {
-		return Config.withdrawalMultiplierBehavior.getKey() ? withdrawalMultiplierBehavior : Config.withdrawalMultiplierBehavior.getValue();
-	}
-
-	public double getAccountCreationPriceOrDefault() {
-		return Config.creationPriceAccount.getKey() ? accountCreationPrice : Config.creationPriceAccount.getValue();
-	}
-
-	public boolean isReimburseAccountCreationOrDefault() {
-		return Config.reimburseAccountCreation.getKey() ? reimburseAccountCreation : Config.reimburseAccountCreation.getValue();
-	}
-
-	public double getMinBalanceOrDefault() {
-		return Config.minBalance.getKey() ? minBalance : Config.minBalance.getValue();
-	}
-
-	public double getLowBalanceFeeOrDefault() {
-		return Config.lowBalanceFee.getKey() ? lowBalanceFee : Config.lowBalanceFee.getValue();
-	}
-
 	public enum Field {
 
 		INTEREST_RATE ("interest-rate"), 
@@ -245,7 +224,7 @@ public class AccountConfig {
 		WITHDRAWAL_MULTIPLIER_BEHAVIOR ("withdrawal-multiplier-behavior"),
 		ACCOUNT_CREATION_PRICE ("account-creation-price"), 
 		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation"), 
-		MIN_BALANCE ("min-balance"), 
+		MINIMUM_BALANCE ("min-balance"), 
 		LOW_BALANCE_FEE ("low-balance-fee");
 		
 		private String name;

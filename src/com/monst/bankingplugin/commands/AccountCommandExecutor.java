@@ -119,7 +119,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 	 * @param p    The command executor
 	 * @param args Arguments of the entered command
 	 */
-	@SuppressWarnings("deprecation")
 	private void promptAccountCreate(final Player p, String[] args) {
 		plugin.debug(p.getName() + " wants to create an account");
 
@@ -133,8 +132,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				}
 			}
 		}
-		
-		OfflinePlayer owner = p;
 		
 		if (!hasPermission) {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE);

@@ -18,6 +18,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.interest.InterestEvent;
 import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Messages;
@@ -70,26 +71,27 @@ public class InterestEventListener implements Listener {
 							continue;
 						}
 
-						if (config.getMinBalanceOrDefault() > 0 && account.getBalance().compareTo(BigDecimal.valueOf(config.getMinBalanceOrDefault())) == -1) {
+						if ((double) config.getOrDefault(Field.MINIMUM_BALANCE) > 0 && account.getBalance()
+								.compareTo(BigDecimal.valueOf((double) config.getOrDefault(Field.MINIMUM_BALANCE))) == -1) {
 							totalFees.put(owner, totalFees.getOrDefault(owner, BigDecimal.ZERO)
-									.add(BigDecimal.valueOf(config.getLowBalanceFeeOrDefault())));
+									.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));
 							feeCounter.put(owner, feeCounter.getOrDefault(owner, 0).intValue() + 1);
 							if (!account.getBank().isAdminBank()) {
 								totalFeesBank.put(account.getBank().getOwner(),
 									totalFeesBank.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
-												.add(BigDecimal.valueOf(config.getLowBalanceFeeOrDefault())));
+												.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));
 							feeCounterBank.put(account.getBank().getOwner(),
 									feeCounterBank.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
 							}
 							if (Config.enableInterestLog) {
 								plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
-										BigDecimal.valueOf(config.getLowBalanceFeeOrDefault() * -1), null);
+										BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE) * -1), null);
 							}
 							continue;
 						}
 
 						BigDecimal baseInterest = account.getBalance()
-								.multiply(BigDecimal.valueOf(config.getInterestRateOrDefault()))
+								.multiply(BigDecimal.valueOf((double) config.getOrDefault(Field.INTEREST_RATE)))
 								.setScale(2, RoundingMode.HALF_EVEN);
 						BigDecimal interest = baseInterest;
 
