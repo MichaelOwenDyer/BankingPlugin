@@ -27,13 +27,13 @@ import org.bukkit.inventory.InventoryHolder;
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
 
 import net.milkbowl.vault.economy.EconomyResponse;
 
@@ -186,7 +186,12 @@ public class ChestProtectListener implements Listener {
             @Override
             public void onResult(Void result) {
 				newAccount.create(true);
-				accountUtils.addAccount(newAccount, true);
+				accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
+					@Override
+					public void onResult(Integer result) {
+						newAccount.setNickname(newAccount.getNickname());
+					}
+				});
 				plugin.debug(String.format("%s extended %s's account (#%d)", p.getName(), account.getOwner().getName(),
 						account.getID()));
             }
@@ -220,8 +225,6 @@ public class ChestProtectListener implements Listener {
 			final Chest l = (Chest) dc.getLeftSide();
 			final Chest r = (Chest) dc.getRightSide();
 
-			// TODO: Test location to make sure no bugs
-
 			Location loc = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
 			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
 					account.getBank(), loc, account.getStatus(), account.getNickname(), account.getBalance(),
@@ -231,12 +234,17 @@ public class ChestProtectListener implements Listener {
 				@Override
 				public void onResult(Void result) {
 					newAccount.create(true);
-					accountUtils.addAccount(newAccount, true);
+					accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
+						@Override
+						public void onResult(Integer result) {
+							newAccount.setNickname(newAccount.getNickname());
+						}
+					});
 				}
 			});
-
 		} else {
 			double creationPrice = (double) account.getBank().getAccountConfig().getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+
 			if (creationPrice > 0 && (boolean) account.getBank().getAccountConfig().getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION)
 					&& account.isTrusted(p)) {
 				EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),

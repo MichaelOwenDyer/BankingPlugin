@@ -271,7 +271,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		if (bank.getAccounts().stream().filter(account -> account.isOwner(p)).count() >= Config.accountLimitPerBank) {
+		if (Config.accountLimitPerBank > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(p)).count() >= Config.accountLimitPerBank) {
 			p.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
 			plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
 			return;
@@ -295,13 +295,13 @@ public class AccountInteractListener implements Listener {
 				return;
 			}
 			
-			OfflinePlayer player = p.getPlayer();
-			EconomyResponse r = plugin.getEconomy().withdrawPlayer(player, location.getWorld().getName(), creationPrice);
+			OfflinePlayer accountOwner = p.getPlayer();
+			EconomyResponse r = plugin.getEconomy().withdrawPlayer(accountOwner, location.getWorld().getName(), creationPrice);
 			if (!r.transactionSuccess()) {
 				plugin.debug("Economy transaction failed: " + r.errorMessage);
 				p.sendMessage(Messages.ERROR_OCCURRED);
 				return;
-			} else
+			} else if (!account.getBank().isAdminBank() && account.getBank().getOwner().getUniqueId() != accountOwner.getUniqueId())
 				p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
 						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 			
@@ -312,8 +312,8 @@ public class AccountInteractListener implements Listener {
 					plugin.debug("Economy transaction failed: " + r2.errorMessage);
 					p.sendMessage(Messages.ERROR_OCCURRED);
 					return;
-				} else
-					p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
+				} else if (bankOwner.getUniqueId() != accountOwner.getUniqueId())
+					p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED, accountOwner.getName(),
 							BigDecimal.valueOf(r2.amount).setScale(2, RoundingMode.HALF_EVEN)));
 			}
 		}
@@ -326,7 +326,6 @@ public class AccountInteractListener implements Listener {
 					account.setDefaultNickname();
 				}
 			});
-			bank.addAccount(account);
 			p.sendMessage(Messages.ACCOUNT_CREATED);
 		}
 

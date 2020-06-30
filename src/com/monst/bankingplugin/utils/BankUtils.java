@@ -462,7 +462,6 @@ public class BankUtils {
 												account.setNickname(account.getNickname());
 											}
 										});
-										bank.addAccount(account);
 										postReload[1]++;
 									} else
 										plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");

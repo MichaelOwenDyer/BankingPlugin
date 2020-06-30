@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.OfflinePlayer;
@@ -75,6 +76,9 @@ public class InterestEventListener implements Listener {
 
 						if ((double) config.getOrDefault(Field.MINIMUM_BALANCE) > 0 && account.getBalance()
 								.compareTo(BigDecimal.valueOf((double) config.getOrDefault(Field.MINIMUM_BALANCE))) == -1) {
+							if (!account.getBank().isAdminBank() && account.getBank().getOwner().getUniqueId()
+									.equals(account.getOwner().getUniqueId()))
+								continue;
 							totalFees.put(owner, totalFees.getOrDefault(owner, BigDecimal.ZERO)
 									.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));
 							feeCounter.put(owner, feeCounter.getOrDefault(owner, 0).intValue() + 1);
@@ -82,14 +86,14 @@ public class InterestEventListener implements Listener {
 								totalFeesBank.put(account.getBank().getOwner(),
 									totalFeesBank.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
 												.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));
-							feeCounterBank.put(account.getBank().getOwner(),
+								feeCounterBank.put(account.getBank().getOwner(),
 									feeCounterBank.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
 							}
 							if (Config.enableInterestLog) {
 								plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
 										BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE) * -1), null);
 							}
-							continue;
+							continue; // Config value for paying interest on low balance or not?
 						}
 
 						BigDecimal baseInterest = account.getBalance()
@@ -103,7 +107,9 @@ public class InterestEventListener implements Listener {
 						status.incrementMultiplier(account.isTrustedPlayerOnline());
 						account.updatePrevBalance();
 
-						final int payoutSplit = account.getTrustedPlayersCopy().size();
+						Set<OfflinePlayer> trustedPlayers = account.getTrustedPlayersCopy();
+						final int payoutSplit = trustedPlayers.size();
+						// TODO: Bank owners should not pay themselves interest
 						for (OfflinePlayer recipient : account.getTrustedPlayersCopy()) {
 							totalInterest.put(recipient, totalInterest.getOrDefault(recipient, BigDecimal.ZERO)
 									.add(interest.divide(BigDecimal.valueOf(payoutSplit))));
@@ -204,7 +210,7 @@ public class InterestEventListener implements Listener {
 							bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
 					} else if (isOnline)
 						bankOwner.getPlayer()
-								.sendMessage(String.format(Messages.INTEREST_PAID,
+								.sendMessage(String.format(Messages.REVENUE_EARNED,
 										Utils.formatNumber(totalProfitBank.get(bankOwner)),
 										interestCounterBank.get(bankOwner),
 										interestCounterBank.get(bankOwner) == 1 ? "" : "s"));

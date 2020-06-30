@@ -52,15 +52,17 @@ public abstract class Ownable {
 	}
 
 	public Set<OfflinePlayer> getTrustedPlayersCopy() {
-		if (owner == null || coowners == null)
-			return null;
 		Set<OfflinePlayer> trustedPlayers = new HashSet<>();
-		trustedPlayers.add(owner);
-		trustedPlayers.addAll(coowners);
+		if (owner != null)
+			trustedPlayers.add(owner);
+		if (coowners != null)
+			trustedPlayers.addAll(coowners);
 		return Collections.unmodifiableSet(trustedPlayers);
 	}
 
 	public Set<OfflinePlayer> getCoowners() {
+		if (coowners == null)
+			return new HashSet<>();
 		return Collections.unmodifiableSet(coowners);
 	}
 

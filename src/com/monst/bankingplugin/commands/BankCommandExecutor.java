@@ -207,6 +207,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		double creationPrice = isAdminBank ? Config.creationPriceBank.getKey() : Config.creationPriceBank.getValue();
 		if (creationPrice > 0 && !isAdminBank) {
 			if (plugin.getEconomy().getBalance(p) < creationPrice) {
+				plugin.debug(p.getName() + " does not have enough money to create a bank");
 				p.sendMessage(Messages.BANK_CREATE_INSUFFICIENT_FUNDS);
 				return true;
 			}

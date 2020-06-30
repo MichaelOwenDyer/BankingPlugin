@@ -6,7 +6,7 @@
 
 	<groupId>com.monst</groupId>
 	<artifactId>BankingPlugin</artifactId>
-	<version>1.2.6-SNAPSHOT</version>
+	<version>1.2.7-SNAPSHOT</version>
 
 	<name>BankingPlugin</name>
 	<description>Create bank accounts in bank vault chests and earn interest on your investments!</description>
@@ -92,7 +92,7 @@
 		<dependency>
 			<groupId>org.codemc.worldguardwrapper</groupId>
 			<artifactId>worldguardwrapper</artifactId>
-			<version>1.1.8-SNAPSHOT</version>
+			<version>1.1.9-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -168,7 +168,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>3.2.1</version>
 				<executions>
 					<execution>
 						<goals>

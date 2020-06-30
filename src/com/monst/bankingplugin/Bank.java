@@ -154,12 +154,23 @@ public class Bank extends Ownable {
 	}
 	
 	public void addAccount(Account account) {
-		accounts.add(account);
+		if (account != null)
+			accounts.add(account);
 	}
 	
 	public void addAccount(Collection<Account> newAccounts) {
-		if (created)
-			newAccounts.forEach(account -> accounts.add(account));
+		if (newAccounts != null)
+			newAccounts.forEach(account -> addAccount(account));
+	}
+
+	public void removeAccount(Account account) {
+		if (account != null)
+			accounts.remove(account);
+	}
+
+	public void removeAccount(Collection<Account> accountsToRemove) {
+		if (accountsToRemove != null)
+			accountsToRemove.forEach(account -> removeAccount(account));
 	}
 
 	@Override

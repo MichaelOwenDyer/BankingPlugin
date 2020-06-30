@@ -172,7 +172,7 @@ public class AccountProtectListener implements Listener {
 				accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
 					@Override
 					public void onResult(Integer result) {
-						newAccount.setNickname(account.getNickname());
+						newAccount.setNickname(newAccount.getNickname());
 					}
 				});
 				plugin.debug(String.format("%s extended %s's account (#%d)", p.getName(), account.getOwner().getName(),

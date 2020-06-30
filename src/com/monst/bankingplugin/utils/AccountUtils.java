@@ -106,7 +106,10 @@ public class AccountUtils {
         InventoryHolder ih = account.getInventoryHolder();
         plugin.debug("Adding account... (#" + account.getID() + ")");
 
-		// XXX
+		if (!account.getBank().getAccounts().contains(account))
+			account.getBank().addAccount(account);
+		else
+			plugin.debug("Bank already contained account #" + account.getID());
 
         if (ih instanceof DoubleChest) {
 			DoubleChest dc = (DoubleChest) ih;
@@ -144,12 +147,12 @@ public class AccountUtils {
      * @param account Account to remove
      * @param removeFromDatabase Whether the account should also be removed from the database
      * @param callback Callback that - if succeeded - returns null
-     * @see AccountUtils#removeAccountById(int, boolean, Callback)
      */
     public void removeAccount(Account account, boolean removeFromDatabase, Callback<Void> callback) {
         plugin.debug("Removing account (#" + account.getID() + ")");
 
 		account.clearNickname();
+		account.getBank().removeAccount(account);
 
         InventoryHolder ih = account.getInventoryHolder();
 
@@ -179,45 +182,6 @@ public class AccountUtils {
      */
     public void removeAccount(Account account, boolean removeFromDatabase) {
         removeAccount(account, removeFromDatabase, null);
-    }
-
-    /**
-     * Remove a account by its ID
-     * @param accountId ID of the account to remove
-     * @param removeFromDatabase Whether the account should also be removed from the database
-     * @param callback Callback that - if succeeded - returns null
-     */
-    public void removeAccountById(int accountId, boolean removeFromDatabase, Callback<Void> callback) {
-        Map<Location, Account> toRemove = accountLocationMap.entrySet().stream()
-                .filter(e -> e.getValue().getID() == accountId)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        plugin.debug(String.format("Removing %d account(s) with ID %d", toRemove.size(), accountId));
-
-        if (toRemove.isEmpty()) {
-            if (callback != null) callback.callSyncResult(null);
-            return;
-        }
-
-        toRemove.forEach((loc, account) -> {
-            accountLocationMap.remove(loc);
-        });
-
-        // Database#removeAccount removes account by ID so this only needs to be called once
-        if (removeFromDatabase) {
-			plugin.getDatabase().removeAccount(toRemove.values().iterator().next(), callback);
-        } else {
-            if (callback != null) callback.callSyncResult(null);
-        }
-    }
-
-    /**
-     * Remove a account by its ID
-     * @param accountId ID of the account to remove
-     * @param removeFromDatabase Whether the account should also be removed from the database
-     */
-    public void removeAccountById(int accountId, boolean removeFromDatabase) {
-        removeAccountById(accountId, removeFromDatabase, null);
     }
 
     /**
