@@ -1,15 +1,16 @@
 package com.monst.bankingplugin.events.bank;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
 import com.monst.bankingplugin.Bank;
 
 public class BankRemoveEvent extends BankEvent implements Cancellable {
+
 	private boolean cancelled;
 
-	public BankRemoveEvent(Player player, Bank bank) {
-		super(player, bank);
+	public BankRemoveEvent(CommandSender sender, Bank bank) {
+		super(sender, bank);
 	}
 
 	@Override

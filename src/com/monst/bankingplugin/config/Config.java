@@ -41,11 +41,6 @@ public class Config {
 	public static Entry<Boolean, Double> interestRate;
     
     /**
-     * Whether to enable or disable interest multipliers.
-     **/
-    public static boolean enableInterestMultipliers;
-
-    /**
      * The list of interest multipliers in sequential order.
      **/
 	public static Entry<Boolean, List<Integer>> interestMultipliers;
@@ -109,10 +104,21 @@ public class Config {
 	 */
 	public static Entry<Boolean, Double> lowBalanceFee;
 
+	/**
+	 * Whether the bank creation price should be refunded at removal.
+	 */
+	public static Entry<Boolean, Boolean> reimburseBankCreation;
+
     /**
      * Whether the account creation price should be refunded at removal.
      */
 	public static Entry<Boolean, Boolean> reimburseAccountCreation;
+
+	/**
+	 * Whether a bank owner should be allowed to create an account at their own
+	 * bank.
+	 */
+	public static boolean allowSelfBanking = false;
 
 	/**
 	 * Whether remove requests should be confirmed
@@ -201,6 +207,13 @@ public class Config {
      * The default account ownership limit for players whose limit is not set via a permission.
      **/
 	public static int defaultAccountLimit;
+
+	/**
+	 * The default account limit per player per bank.
+	 */
+	public static int accountLimitPerBank;
+
+	public static Entry<Double, Double> bankProfitMargin;
 
     /**
      * The default value for the custom WorldGuard flag 'create-bank'
@@ -364,14 +377,14 @@ public class Config {
 
 		interestMultipliers = new SimpleEntry<>(config.getBoolean("interest-multipliers.allow-override"),
 				config.getIntegerList("interest-multipliers.default") != null
-				? config.getIntegerList("interest-multipliers")
+				? config.getIntegerList("interest-multipliers.default")
 				: Arrays.asList(1));
 
 		initialInterestDelay = new SimpleEntry<>(config.getBoolean("initial-interest-delay.allow-override"),
 				config.getInt("initial-interest-delay.default"));
 
-		countInterestDelayOffline = new SimpleEntry<>(config.getBoolean("count-interest-delay-offline.default"),
-				config.getBoolean("count-interest-delay-offline.allow-override"));
+		countInterestDelayOffline = new SimpleEntry<>(config.getBoolean("count-interest-delay-offline.allow-override"),
+				config.getBoolean("count-interest-delay-offline.default"));
 
 		allowedOfflinePayouts = new SimpleEntry<>(config.getBoolean("allowed-offline-payouts.allow-override"),
 				config.getInt("allowed-offline-payouts.default"));
@@ -388,8 +401,8 @@ public class Config {
 
 		accountInfoItem = new ItemStack(Material.getMaterial(config.getString("account-info-item")));
 
-		creationPriceBank = new SimpleEntry<>(config.getDouble("creation-prices.bank.player"),
-				config.getDouble("creation-prices.bank.admin"));
+		creationPriceBank = new SimpleEntry<>(config.getDouble("creation-prices.bank.admin"),
+				config.getDouble("creation-prices.bank.player"));
 
 		creationPriceAccount = new SimpleEntry<>(config.getBoolean("creation-prices.account.allow-override"),
 				config.getDouble("creation-prices.account.default"));
@@ -400,9 +413,13 @@ public class Config {
 		lowBalanceFee = new SimpleEntry<>(config.getBoolean("low-balance-fee.allow-override"),
 				config.getDouble("low-balance-fee.default"));
 
-		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.default"),
-				config.getBoolean("reimburse-account-creation.allow-override"));
+		reimburseBankCreation = new SimpleEntry<>(config.getBoolean("reimburse-creation.bank.admin"),
+				config.getBoolean("reimburse-creation.bank.player"));
 
+		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.allow-override"),
+				config.getBoolean("reimburse-account-creation.default"));
+
+		allowSelfBanking = config.getBoolean("allow-self-banking");
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");
 		insureAccountsUpTo = config.getLong("insure-accounts-up-to");
@@ -419,6 +436,9 @@ public class Config {
 				config.getStringList("blacklist") : new ArrayList<>();
 		defaultBankLimit = config.getInt("default-limits.bank");
 		defaultAccountLimit = config.getInt("default-limits.account");
+		accountLimitPerBank = config.getInt("player-account-limit-per-bank");
+		bankProfitMargin = new SimpleEntry<>(config.getDouble("bank-profit-margin.base-percentage"),
+				config.getDouble("bank-profit-margin.rate-of-increase"));
 		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value.create-bank");
 		databaseTablePrefix = config.getString("table-prefix");
         

@@ -54,7 +54,7 @@ class GenericTabCompleter implements TabCompleter {
 			case "removeall":
 				return completeAccountRemoveAll(sender, args);
 			case "set":
-				return completeAccountSet(sender, args);
+				return completeAccountSet((Player) sender, args);
 			default:
 				return new ArrayList<>();
 			}
@@ -63,13 +63,13 @@ class GenericTabCompleter implements TabCompleter {
 			case "create":
 				return completeBankCreate((Player) sender, args);
 			case "remove":
-				return new ArrayList<>();
+				return completeBankRemove(sender, args);
 			case "info":
 				return completeBankInfo((Player) sender, args);
 			case "list":
 				return completeBankList(sender, args);
 			case "removeall":
-				return completeBankRemoveAll(sender, args);
+				return new ArrayList<>();
 			case "resize":
 				return completeBankCreate((Player) sender, args);
 			case "set":
@@ -169,7 +169,7 @@ class GenericTabCompleter implements TabCompleter {
 		return new ArrayList<>();
 	}
 
-	private List<String> completeAccountSet(CommandSender sender, String[] args) {
+	private List<String> completeAccountSet(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		List<String> fields = Arrays.asList("nickname", "multiplier", "initial-delay");
 
@@ -276,6 +276,37 @@ class GenericTabCompleter implements TabCompleter {
 		return new ArrayList<>();
 	}
 
+	private List<String> completeBankRemove(CommandSender sender, String[] args) {
+		ArrayList<String> returnCompletions = new ArrayList<>();
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				if (sender instanceof Player) {
+					for (Bank bank : plugin.getBankUtils().getBanksCopy().stream().filter(bank -> bank.getName().startsWith(args[1].toLowerCase())).collect(Collectors.toList())) {
+						if (!bank.isAdminBank() && (bank.isOwner((Player) sender)
+								|| sender.hasPermission(Permissions.BANK_OTHER_REMOVE)))
+							returnCompletions.add(bank.getName());
+						if (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_ADMIN_REMOVE))
+							returnCompletions.add(bank.getName());
+					}
+				} else
+					return plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName).filter(s -> s.contains(args[1])).collect(Collectors.toList());
+			} else {
+				if (sender instanceof Player) {
+					for (Bank bank : plugin.getBankUtils().getBanksCopy()) {
+						if (!bank.isAdminBank() && (bank.isOwner((Player) sender)
+								|| sender.hasPermission(Permissions.BANK_OTHER_REMOVE)))
+							returnCompletions.add(bank.getName());
+						if (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_ADMIN_REMOVE))
+							returnCompletions.add(bank.getName());
+					}
+				} else
+					return plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName)
+							.collect(Collectors.toList());
+			}
+		}
+		return new ArrayList<>();
+	}
+
 	private List<String> completeBankInfo(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		List<String> banks = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName).collect(Collectors.toList());
@@ -309,12 +340,6 @@ class GenericTabCompleter implements TabCompleter {
 			} else
 				return Arrays.asList("detailed");
 		}
-		return new ArrayList<>();
-	}
-
-	private List<String> completeBankRemoveAll(CommandSender sender, String[] args) {
-		// ArrayList<String> returnCompletions = new ArrayList<>();
-
 		return new ArrayList<>();
 	}
 	
@@ -354,28 +379,30 @@ class GenericTabCompleter implements TabCompleter {
 		} else if (args.length == 4) {
 			Bank bank = bankUtils.getBankByName(args[1]);
 			Field field = Field.getByName(args[2]);
-			if (bank != null && field != null)
-				return Arrays.asList(bank.getAccountConfig().getOrDefault(field).toString());
+			if (bank != null && field != null) {
+				String value = bank.getAccountConfig().getOrDefault(field).toString();
+				if (field.getDataType() == 0)
+					value = Utils.formatNumber(Double.parseDouble(value));
+				return Arrays.asList(value);
+			}
+
 		}
 		return new ArrayList<>();
 	}
 
 	private List<String> completeControlConfig(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
-		List<String> subCommands = Arrays.asList("add", "remove", "set");
 		Set<String> configValues = plugin.getConfig().getKeys(true);
-		configValues.removeAll(plugin.getConfig().getKeys(false));
+		plugin.getConfig().getKeys(false).stream().forEach(s -> configValues.remove(s));
 		configValues.remove("creation-prices.account");
 		configValues.remove("creation-prices.bank");
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
-				for (String s : subCommands)
-					if (s.startsWith(args[1]))
-						returnCompletions.add(s);
-				return returnCompletions;
+				if ("set".startsWith(args[1].toLowerCase()))
+					return Arrays.asList("set");
 			} else
-				return subCommands;
+				return Arrays.asList("set");
 		} else if (args.length == 3) {
 			if (!args[2].isEmpty()) {
 				for (String s : configValues)

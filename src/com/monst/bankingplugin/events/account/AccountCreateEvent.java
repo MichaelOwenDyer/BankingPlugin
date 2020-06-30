@@ -8,17 +8,11 @@ import com.monst.bankingplugin.Account;
 public class AccountCreateEvent extends AccountEvent implements Cancellable {
 	
 	private boolean cancelled;
-	private double creationPrice;
 
-	public AccountCreateEvent(Player player, Account account, double creationPrice) {
+	public AccountCreateEvent(Player player, Account account) {
 		super(player, account);
-		this.creationPrice = creationPrice;
 	}
 	
-	public double getCreationPrice() {
-		return creationPrice;
-	}
-
 	@Override
 	public boolean isCancelled() {
 		return cancelled;

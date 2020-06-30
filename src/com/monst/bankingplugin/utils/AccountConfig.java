@@ -130,38 +130,51 @@ public class AccountConfig {
 		switch (field) {
 		
 		case INTEREST_RATE:
-			interestRate = Double.parseDouble(s);
+			interestRate = Double.parseDouble(s.replace(",", ""));
+			break;
 		case MULTIPLIERS:
 			multipliers = Arrays.stream(s.split(" ")).map(string -> Integer.parseInt(string)).collect(Collectors.toList());
+			break;
 		case INITIAL_INTEREST_DELAY:
 			initialInterestDelay = Integer.parseInt(s);
+			break;
 		case COUNT_INTEREST_DELAY_OFFLINE:
 			if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
 				countInterestDelayOffline = Boolean.parseBoolean(s);
 			else
 				throw new NumberFormatException();
+			break;
 		case ALLOWED_OFFLINE_PAYOUTS:
 			allowedOfflinePayouts = Integer.parseInt(s);
+			break;
 		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
 			allowedOfflineBeforeReset = Integer.parseInt(s);
+			break;
 		case OFFLINE_MULTIPLAYER_BEHAVIOR:
 			offlineMultiplierBehavior = Integer.parseInt(s);
+			break;
 		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
 			withdrawalMultiplierBehavior = Integer.parseInt(s);
+			break;
 		case ACCOUNT_CREATION_PRICE:
-			accountCreationPrice = Double.parseDouble(s);
+			accountCreationPrice = Double.parseDouble(s.replace(",", ""));
+			break;
 		case REIMBURSE_ACCOUNT_CREATION:
 			if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
 				reimburseAccountCreation = Boolean.parseBoolean(s);
 			else
 				throw new NumberFormatException();
+			break;
 		case MINIMUM_BALANCE:
-			minBalance = Double.parseDouble(s);
+			minBalance = Double.parseDouble(s.replace(",", ""));
+			break;
 		case LOW_BALANCE_FEE:
-			lowBalanceFee = Double.parseDouble(s);
+			lowBalanceFee = Double.parseDouble(s.replace(",", ""));
+			break;
 		default:
 			return false;
 		}
+		return true;
 	}
 
 	public double getInterestRate() {
@@ -214,27 +227,33 @@ public class AccountConfig {
 
 	public enum Field {
 
-		INTEREST_RATE ("interest-rate"), 
-		MULTIPLIERS ("multipliers"), 
-		INITIAL_INTEREST_DELAY ("initial-interest-delay"), 
-		COUNT_INTEREST_DELAY_OFFLINE ("count-interest-delay-offline"), 
-		ALLOWED_OFFLINE_PAYOUTS ("allowed-offline-payouts"),
-		ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET ("allowed-offline-payouts-before-multiplier-reset"),
-		OFFLINE_MULTIPLAYER_BEHAVIOR ("offline-multiplier-behavior"), 
-		WITHDRAWAL_MULTIPLIER_BEHAVIOR ("withdrawal-multiplier-behavior"),
-		ACCOUNT_CREATION_PRICE ("account-creation-price"), 
-		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation"), 
-		MINIMUM_BALANCE ("min-balance"), 
-		LOW_BALANCE_FEE ("low-balance-fee");
+		INTEREST_RATE ("interest-rate", 0), 
+		MULTIPLIERS ("multipliers", 3), 
+		INITIAL_INTEREST_DELAY ("initial-interest-delay", 1), 
+		COUNT_INTEREST_DELAY_OFFLINE ("count-interest-delay-offline", 2), 
+		ALLOWED_OFFLINE_PAYOUTS ("allowed-offline-payouts", 1),
+		ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET ("allowed-offline-payouts-before-multiplier-reset", 1),
+		OFFLINE_MULTIPLAYER_BEHAVIOR ("offline-multiplier-behavior", 1), 
+		WITHDRAWAL_MULTIPLIER_BEHAVIOR ("withdrawal-multiplier-behavior", 1),
+		ACCOUNT_CREATION_PRICE ("account-creation-price", 0), 
+		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation", 2), 
+		MINIMUM_BALANCE ("min-balance", 0), 
+		LOW_BALANCE_FEE ("low-balance-fee", 0);
 		
 		private String name;
+		private int dataType;
 
-		Field(String name) {
+		Field(String name, int dataType) {
 			this.name = name;
+			this.dataType = dataType;
 		}
 
 		public String getName() {
 			return name;
+		}
+
+		public int getDataType() {
+			return dataType;
 		}
 
 		public static Stream<Field> stream() {

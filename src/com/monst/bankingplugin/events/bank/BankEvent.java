@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.bank;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -9,16 +9,16 @@ import com.monst.bankingplugin.Bank;
 public class BankEvent extends Event {
 
 	private static HandlerList handlers = new HandlerList();
-	private Player player;
+	private CommandSender sender;
 	private Bank bank;
 	
-	public BankEvent(Player player, Bank bank) {
-		this.player = player;
+	public BankEvent(CommandSender sender, Bank bank) {
+		this.sender = sender;
 		this.bank = bank;
 	}
 	
-	public Player getPlayer() {
-		return player;
+	public CommandSender getSender() {
+		return sender;
 	}
 	
 	public Bank getBank() {

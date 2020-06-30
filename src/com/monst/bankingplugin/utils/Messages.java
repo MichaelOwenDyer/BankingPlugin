@@ -10,9 +10,10 @@ public class Messages {
 	public static final String BANK_CREATED = ChatColor.GOLD + "Bank created!";
 	public static final String ACCOUNT_CREATED = ChatColor.GOLD + "Account created!";
 	public static final String ACCOUNT_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account.";
+	public static final String ACCOUNT_CREATE_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account at your bank.";
 	public static final String BANK_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create a bank.";
 	public static final String NAME_NOT_UNIQUE = ChatColor.RED + "A bank with that name already exists.";
-	public static final String NAME_NOT_ALLOWED = ChatColor.RED + "Name must include at least one letter.";
+	public static final String NAME_NOT_ALLOWED = ChatColor.RED + "Name must consist only of letters.";
 	public static final String CHEST_ALREADY_ACCOUNT = ChatColor.RED + "That chest is already an account!";
 	public static final String CHEST_BLOCKED = ChatColor.RED + "Chest is blocked!";
 	
@@ -25,7 +26,7 @@ public class Messages {
 	public static final String PLAYER_REIMBURSED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
 	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "%d account%s %s successfully removed.";
-	public static final String BANKS_REMOVED = ChatColor.GREEN + "%d bank%s and %s %d account%s were removed.";
+	public static final String BANKS_REMOVED = ChatColor.GREEN + "%d bank%s and %d account%s were removed.";
 	
 	// NOTIFICATIONS
 	public static final String ACCOUNT_OPENED = ChatColor.GOLD + "You opened %s's account chest.";
@@ -78,6 +79,8 @@ public class Messages {
 	public static final String PLAYER_NOT_FOUND = ChatColor.RED + "No player was found under the name \"%s\".";
 	public static final String BANK_LIMIT_REACHED = "You are not allowed to create any more banks!"; // XXX
 	public static final String ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create any more accounts!";
+	public static final String NO_SELF_BANKING = ChatColor.RED + "You are not allowed to create an account at your own bank.";
+	public static final String PER_BANK_ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create another account at this bank.";
 	public static final String PLAYER_COMMAND_ONLY = ChatColor.RED + "Only players can use this command.";
 	
 	// CLICK PROMPTS
@@ -88,7 +91,7 @@ public class Messages {
 	public static final String CLICK_CHEST_TRUST = ChatColor.GOLD + "Click an account chest to add %s as a co-owner.";
 	public static final String CLICK_CHEST_UNTRUST = ChatColor.GOLD + "Click an account chest to remove %s as a co-owner.";
 	public static final String CLICK_TO_CONFIRM = ChatColor.GOLD + "Click chest again to confirm.";
-	public static final String EXECUTE_AGAIN_TO_CONFIRM = ChatColor.GOLD + "Execute command again to confirm.";
+	public static final String EXECUTE_AGAIN_TO_CONFIRM = ChatColor.GOLD + " Execute command again to confirm.";
 	
 	
 	private static final String NO_PERMISSION = ChatColor.RED + "You do not have permission to ";
@@ -164,9 +167,9 @@ public class Messages {
 	public static final String COMMAND_DESC_BANK = ChatColor.GOLD + "Create, manage, and remove banks.";
 	public static final String COMMAND_DESC_CONTROL = ChatColor.GOLD + "Configure this plugin.";
 
-	public static final String CHANGED_CONFIG_ADDED = ChatColor.GREEN + "Added the config value.";
-	public static final String CHANGED_CONFIG_REMOVED = ChatColor.GREEN + "Removed the config value.";
-	public static final String CHANGED_CONFIG_SET = ChatColor.GREEN + "Config value has been set.";
+	public static final String CHANGED_CONFIG_ADDED = ChatColor.GOLD + "Added the config value " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
+	public static final String CHANGED_CONFIG_REMOVED = ChatColor.GOLD + "Removed the config value " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
+	public static final String CHANGED_CONFIG_SET = ChatColor.GOLD + "Config value " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " has been set to " + ChatColor.GREEN + "%s" + ChatColor.GOLD + ".";
 
 	public static final String OFFLINE_INTEREST_REVENUE = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in interest while you were offline!";
 	public static final String OFFLINE_TRANSACTION_REVENUE = ChatColor.GOLD + "Your account increased in value by " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " while you were offline.";

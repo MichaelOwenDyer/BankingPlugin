@@ -59,6 +59,8 @@ public class InterestEventListener implements Listener {
 				Map<OfflinePlayer, BigDecimal> totalFeesBank = new HashMap<>(); // The amount of fees each bank owner receives as income
 				Map<OfflinePlayer, Integer> interestCounterBank = new HashMap<>(); // The number of accounts each bank owner must pay interest on
 				Map<OfflinePlayer, Integer> feeCounterBank = new HashMap<>(); // The number of fees each bank owner receives as income
+				
+				Map<OfflinePlayer, BigDecimal> totalProfitBank = new HashMap<>(); // The amount of profit each bank owner earns
 
 				for (OfflinePlayer owner : playerAccounts.keySet()) {
 					
@@ -112,6 +114,12 @@ public class InterestEventListener implements Listener {
 									totalInterestBank.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO).add(interest));
 							interestCounterBank.put(account.getBank().getOwner(),
 									interestCounterBank.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
+							BigDecimal margin = BigDecimal
+									.valueOf(Config.bankProfitMargin.getKey() + (Config.bankProfitMargin.getValue()
+											* Math.log(account.getBank().getAccounts().size())));
+							totalProfitBank.put(account.getBank().getOwner(),
+									totalProfitBank.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
+											.add(interest.multiply(margin)));
 						}
 
 						plugin.getDatabase().addAccount(account, null);
@@ -185,19 +193,33 @@ public class InterestEventListener implements Listener {
 					if (totalInterestBank.get(bankOwner).signum() == 0)
 						continue;
 
-					World world = fallbackWorld;
+					boolean isOnline = bankOwner.isOnline();
+					World world = isOnline ? bankOwner.getPlayer().getLocation().getWorld() : fallbackWorld;
 
-					boolean online = bankOwner.isOnline();
-					EconomyResponse r = plugin.getEconomy().withdrawPlayer(bankOwner, online ? bankOwner.getPlayer().getWorld().getName() : world.getName(),
-							totalInterestBank.get(bankOwner).doubleValue());
+					EconomyResponse r = plugin.getEconomy().depositPlayer(bankOwner, world.getName(),
+							totalProfitBank.get(bankOwner).doubleValue());
 					if (!r.transactionSuccess()) {
 						plugin.debug("Economy transaction failed: " + r.errorMessage);
-						if (online)
+						if (isOnline)
 							bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-					} else if (online)
+					} else if (isOnline)
 						bankOwner.getPlayer()
 								.sendMessage(String.format(Messages.INTEREST_PAID,
-										Utils.formatNumber(totalInterestBank.get(bankOwner)), interestCounterBank.get(bankOwner),
+										Utils.formatNumber(totalProfitBank.get(bankOwner)),
+										interestCounterBank.get(bankOwner),
+										interestCounterBank.get(bankOwner) == 1 ? "" : "s"));
+
+					EconomyResponse r2 = plugin.getEconomy().withdrawPlayer(bankOwner, world.getName(),
+							totalInterestBank.get(bankOwner).doubleValue());
+					if (!r2.transactionSuccess()) {
+						plugin.debug("Economy transaction failed: " + r2.errorMessage);
+						if (isOnline)
+							bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
+					} else if (isOnline)
+						bankOwner.getPlayer()
+								.sendMessage(String.format(Messages.INTEREST_PAID,
+										Utils.formatNumber(totalInterestBank.get(bankOwner)),
+										interestCounterBank.get(bankOwner),
 										interestCounterBank.get(bankOwner) == 1 ? "" : "s"));
 
 				}

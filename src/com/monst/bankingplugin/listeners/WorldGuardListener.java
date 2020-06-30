@@ -34,28 +34,30 @@ public class WorldGuardListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onUseBlock(WrappedUseBlockEvent event) {
-		if (Config.enableWorldGuardIntegration) {
-			Player player = event.getPlayer();
+		if (!Config.enableWorldGuardIntegration)
+			return;
 
-			if (event.getOriginalEvent() instanceof PlayerInteractEvent) {
-				Block block = event.getBlocks().get(0);
-				Material type = block.getType();
+		Player player = event.getPlayer();
 
-				if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
-					if (isAllowed(player, block.getLocation())) {
-						event.setResult(Result.ALLOW);
-					}
+		if (event.getOriginalEvent() instanceof PlayerInteractEvent) {
+			Block block = event.getBlocks().get(0);
+			Material type = block.getType();
+
+			if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
+				if (isAllowed(player, block.getLocation())) {
+					event.setResult(Result.ALLOW);
 				}
-			} else if (event.getOriginalEvent() instanceof InventoryOpenEvent) {
-				InventoryOpenEvent orig = (InventoryOpenEvent) event.getOriginalEvent();
+			}
+		} else if (event.getOriginalEvent() instanceof InventoryOpenEvent) {
+			InventoryOpenEvent orig = (InventoryOpenEvent) event.getOriginalEvent();
 
-				if (orig.getInventory().getHolder() instanceof Chest) {
-					if (isAllowed(player, ((Chest) orig.getInventory().getHolder()).getLocation())) {
-						event.setResult(Result.ALLOW);
-					}
+			if (orig.getInventory().getHolder() instanceof Chest) {
+				if (isAllowed(player, ((Chest) orig.getInventory().getHolder()).getLocation())) {
+					event.setResult(Result.ALLOW);
 				}
 			}
 		}
+
 	}
 
     private boolean isAllowed(Player player, Location location) {

@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -22,7 +21,6 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
@@ -361,12 +359,6 @@ public class BankUtils {
 	public int removeBank(Collection<Bank> banks, boolean removeFromDatabase) {
 		int count = banks.size();
 
-		BankRemoveAllEvent event = new BankRemoveAllEvent(banks);
-		Bukkit.getPluginManager().callEvent(event);
-		if (event.isCancelled()) {
-			plugin.debug("Removeall event cancelled");
-			return 0;
-		}
 		for (Bank bank : banks) {
 			for (Account account : bank.getAccounts())
 				plugin.getAccountUtils().removeAccount(account, removeFromDatabase);

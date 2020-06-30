@@ -47,7 +47,7 @@ public class WorldEditReader {
 				List<BlockVector2D> points = new ArrayList<>();
 				polygon.getPoints()
 						.forEach(point -> points.add(new BlockVector2D(point.getBlockX(), point.getBlockZ())));
-				return new Polygonal2DSelection(world, points, minY, minY);
+				return new Polygonal2DSelection(world, points, minY, maxY);
 			}
 
 		} catch (IncompleteRegionException e1) {}

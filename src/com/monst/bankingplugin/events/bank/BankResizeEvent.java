@@ -16,14 +16,8 @@ public class BankResizeEvent extends BankEvent implements Cancellable {
 		this.newSelection = newSelection;
 	}
 	
-	@Override
 	public Player getPlayer() {
-		return super.getPlayer();
-	}
-	
-	@Override
-	public Bank getBank() {
-		return super.getBank();
+		return (Player) super.getSender();
 	}
 
 	public Selection getOldSelection() {

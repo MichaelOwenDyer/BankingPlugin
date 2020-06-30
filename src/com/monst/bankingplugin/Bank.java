@@ -200,12 +200,14 @@ public class Bank extends Ownable {
 	}
 	
 	public String toStringVerbose() {
+		double minBalance = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
+		boolean showFee = minBalance != 0;
 		return toString() + "\n"
 				+ ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS) 
 				+ ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before reset)\n"
 				+ ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY) + "\n"
-				+ ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE)) 
-				+ ChatColor.GRAY + " (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)\n"
+				+ ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBalance)
+				+ ChatColor.GRAY + (showFee ? " (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)" : "") + "\n"
 				+ ChatColor.GRAY + "Current accounts: " + ChatColor.AQUA + accounts.size() + "\n"
 				+ ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n"
 				+ ChatColor.GRAY + "Selection type: " + selection.getType() + "\n"

@@ -173,8 +173,21 @@ public class AccountInteractListener implements Listener {
 			}
 
 			if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !p.isSneaking()) {
-				e.setCancelled(true); // peek method handles the chest opening instead
-				tryPeek(p, account, true);
+				boolean executorIsTrusted = account.isTrusted(p);
+				if (!executorIsTrusted && !p.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
+					e.setCancelled(true);
+					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
+					plugin.debug(p.getName() + " does not have permission to open " + account.getOwner().getName()
+							+ "'s account chest.");
+					return;
+				}
+
+				plugin.debug(String.format(p.getName() + " is opening %s account%s (#" + account.getID() + ")",
+						(account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"),
+						(account.isCoowner(p) ? " as a co-owner" : "")));
+
+				if (!executorIsTrusted)
+					p.sendMessage(String.format(Messages.ACCOUNT_OPENED, account.getOwner().getName()));
 			}
 		}
 	}
@@ -250,26 +263,38 @@ public class AccountInteractListener implements Listener {
 		}
 
 		Location location = b.getLocation();
-
 		Bank bank = bankUtils.getBank(location);
+
+		if (!bank.isAdminBank() && !Config.allowSelfBanking && bank.isOwner(p)) {
+			p.sendMessage(Messages.NO_SELF_BANKING);
+			plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
+			return;
+		}
+
+		if (bank.getAccounts().stream().filter(account -> account.isOwner(p)).count() >= Config.accountLimitPerBank) {
+			p.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
+			plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
+			return;
+		}
+
 		Account account = new Account(plugin, p, bank, location);
 		
-		double creationPrice = (double) bank.getAccountConfig().getOrDefault(Field.ACCOUNT_CREATION_PRICE);
-
-		AccountCreateEvent event = new AccountCreateEvent(p, account, creationPrice);
+		AccountCreateEvent event = new AccountCreateEvent(p, account);
 		Bukkit.getPluginManager().callEvent(event);
-
 		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 			plugin.debug("No permission to create account on a protected chest.");
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
 			return;
 		}
 
+		double creationPrice = (double) bank.getAccountConfig().getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+
 		if (creationPrice > 0) {
 			if (plugin.getEconomy().getBalance(p) < creationPrice) {
 				p.sendMessage(Messages.ACCOUNT_CREATE_INSUFFICIENT_FUNDS);
 				return;
 			}
+			
 			OfflinePlayer player = p.getPlayer();
 			EconomyResponse r = plugin.getEconomy().withdrawPlayer(player, location.getWorld().getName(), creationPrice);
 			if (!r.transactionSuccess()) {
@@ -279,6 +304,18 @@ public class AccountInteractListener implements Listener {
 			} else
 				p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
 						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
+			
+			if (!account.getBank().isAdminBank()) {
+				OfflinePlayer bankOwner = account.getBank().getOwner();
+				EconomyResponse r2 = plugin.getEconomy().depositPlayer(bankOwner, location.getWorld().getName(), creationPrice);
+				if (!r2.transactionSuccess()) {
+					plugin.debug("Economy transaction failed: " + r2.errorMessage);
+					p.sendMessage(Messages.ERROR_OCCURRED);
+					return;
+				} else
+					p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
+							BigDecimal.valueOf(r2.amount).setScale(2, RoundingMode.HALF_EVEN)));
+			}
 		}
 
 		if (account.create(true)) {
@@ -373,33 +410,6 @@ public class AccountInteractListener implements Listener {
 
 		accountUtils.removeAccount(account, true);
 		plugin.debug("Removed account (#" + account.getID() + ")");
-	}
-
-	/**
-	 * Look into an account
-	 * 
-	 * @param executor Player, who executed the command and will receive the message
-	 * @param account  Account to be opened
-	 * @param message  Whether the player should receive the
-	 *                 {@link Message#ACCOUNT_OPENED} message
-	 */
-	private void tryPeek(Player executor, Account account, boolean message) {
-		boolean executorIsTrusted = account.isTrusted(executor);
-		if (!executorIsTrusted && !executor.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
-			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
-			plugin.debug(executor.getName() + " does not have permission to open " + account.getOwner().getName()
-					+ "'s account chest.");
-			return;
-		}
-
-		plugin.debug(String.format(executor.getName() + " is opening %s account%s (#" + account.getID() + ")",
-				(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
-				(account.isCoowner(executor) ? " as a co-owner" : "")));
-
-		executor.openInventory(account.getInventoryHolder().getInventory());
-
-		if (message && !executorIsTrusted)
-			executor.sendMessage(String.format(Messages.ACCOUNT_OPENED, account.getOwner().getName()));
 	}
 
 	/**

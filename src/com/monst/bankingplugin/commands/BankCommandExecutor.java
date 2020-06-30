@@ -20,6 +20,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
+import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.selections.Selection;
@@ -29,6 +30,7 @@ import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 
 import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -198,11 +200,11 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		BankCreateEvent event = new BankCreateEvent(p, bank);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
-			plugin.debug("Account create event cancelled");
+			plugin.debug("Bank create event cancelled");
 			return true;
 		}
 
-		double creationPrice = isAdminBank ? Config.creationPriceBank.getValue() : Config.creationPriceBank.getKey();
+		double creationPrice = isAdminBank ? Config.creationPriceBank.getKey() : Config.creationPriceBank.getValue();
 		if (creationPrice > 0 && !isAdminBank) {
 			if (plugin.getEconomy().getBalance(p) < creationPrice) {
 				p.sendMessage(Messages.BANK_CREATE_INSUFFICIENT_FUNDS);
@@ -269,6 +271,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			}
 		}
 
+		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_ADMIN_REMOVE)) {
+			plugin.debug(sender.getName() + " does not have permission to remove an admin bank");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_ADMIN_REMOVE);
+			return;
+		}
+
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
 			if (Config.confirmOnRemove)
@@ -278,6 +286,35 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					return;
 				}
 		}
+
+		BankRemoveEvent event = new BankRemoveEvent(sender, bank);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			plugin.debug("Bank remove event cancelled");
+			return;
+		}
+
+		if (sender instanceof Player) {
+			Player executor = (Player) sender;
+			double creationPrice = bank.isAdminBank() ? Config.creationPriceBank.getKey()
+					: Config.creationPriceBank.getValue();
+			boolean reimburse = bank.isAdminBank() ? Config.reimburseBankCreation.getKey()
+					: Config.reimburseBankCreation.getValue();
+			if (creationPrice > 0 && reimburse && (bank.isAdminBank() || bank.isOwner(executor))) {
+				OfflinePlayer owner = executor.getPlayer();
+				EconomyResponse r = plugin.getEconomy().depositPlayer(owner, bank.getSelection().getWorld().getName(),
+						creationPrice);
+
+				if (!r.transactionSuccess()) {
+					plugin.debug("Economy transaction failed: " + r.errorMessage);
+					executor.sendMessage(Messages.ERROR_OCCURRED);
+				} else {
+					executor.sendMessage(String.format(Messages.PLAYER_REIMBURSED,
+							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
+				}
+			}
+		}
+
 		bankUtils.removeBank(bank, true);
 		plugin.debug("Bank #" + bank.getID() + " removed from the database");
 		sender.sendMessage(Messages.BANK_REMOVED);
@@ -387,7 +424,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		Collection<Account> accounts = banks.stream().flatMap(bank -> bank.getAccounts().stream())
 				.collect(Collectors.toSet());
 
-		BankRemoveAllEvent event = new BankRemoveAllEvent(banks);
+		BankRemoveAllEvent event = new BankRemoveAllEvent(sender, banks);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Bank remove all event cancelled");
@@ -404,11 +441,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					return true;
 				}
 		}
+
 		bankUtils.removeBank(banks, true);
 		plugin.debug("Bank #s " + banks.stream().map(bank -> "" + bank.getID()).collect(Collectors.joining(", ", "", ""))
 				+ " removed from the database.");
 		sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s",
-				banks.size() == 1 ? "its" : "their", accounts.size(), accounts.size() == 1 ? "" : "s"));
+				accounts.size(), accounts.size() == 1 ? "" : "s"));
 
 		return true;
 	}
@@ -543,30 +581,29 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		
 		try {
 			if (config.setOrDefault(field, args[3]))
-				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
+				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2],
+						field.getDataType() == 0 ? Utils.formatNumber(Double.parseDouble(args[3].replace(",", ""))) : args[3],
+						bank.getName()));
 			else
 				sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
 		} catch (NumberFormatException e) {
-			if (field == Field.INTEREST_RATE 
-					|| field == Field.ACCOUNT_CREATION_PRICE 
-					|| field == Field.MINIMUM_BALANCE 
-					|| field == Field.LOW_BALANCE_FEE) {
+			switch (field.getDataType()) {
+			case 0:
 				plugin.debug("Failed to parse double: " + args[3]);
 				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
-			} else if (field == Field.INITIAL_INTEREST_DELAY 
-					|| field == Field.ALLOWED_OFFLINE_PAYOUTS 
-					|| field == Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET 
-					|| field == Field.OFFLINE_MULTIPLAYER_BEHAVIOR 
-					|| field == Field.WITHDRAWAL_MULTIPLIER_BEHAVIOR) {
+				break;
+			case 1:
 				plugin.debug("Failed to parse integer: " + args[3]);
 				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
-			} else if (field == Field.COUNT_INTEREST_DELAY_OFFLINE 
-					|| field == Field.REIMBURSE_ACCOUNT_CREATION) {
-				plugin.debug("Failed to parse boolean: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, args[3]));
-			} else {
+				break;
+			case 2:
+				plugin.debug("Failed to parse integer: " + args[3]);
+				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
+				break;
+			case 3:
 				plugin.debug("Failed to parse list: " + args[3]);
 				sender.sendMessage(String.format(Messages.NOT_A_LIST, args[3]));
+				break;
 			}
 			return true;
 		}

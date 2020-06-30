@@ -14,16 +14,12 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.DoubleChestInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
@@ -57,29 +53,6 @@ public class AccountUtils {
 	public Account getAccount(Location location) { // XXX
 		if (location == null)
 			return null;
-		Block b = location.getBlock();
-		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
-			return null;
-
-//		BlockState state = b.getState();
-//		Chest chest = (Chest) state;
-//		Inventory inv = chest.getInventory();
-//		InventoryHolder ih = inv.getHolder();
-//		DoubleChest dc = (DoubleChest) ih;
-//		Location loc = dc.getLocation();
-//
-//		return accountLocationMap.get(new Location(location.getWorld(), 0, 0, 0));
-
-		if (b.getState() instanceof Chest) {
-			Chest chest = (Chest) b.getState();
-			Inventory inv = chest.getInventory();
-			if (inv instanceof DoubleChestInventory) {
-				DoubleChest dc = (DoubleChest) inv.getHolder();
-				return accountLocationMap.get(dc.getLocation());
-			} else
-				return accountLocationMap.get(chest.getLocation());
-		}
-
 		return accountLocationMap.get(Utils.blockifyLocation(location));
     }
 
@@ -137,13 +110,13 @@ public class AccountUtils {
 
         if (ih instanceof DoubleChest) {
 			DoubleChest dc = (DoubleChest) ih;
-			// Chest l = (Chest) dc.getLeftSide();
-			// Chest r = (Chest) dc.getRightSide();
+			Chest l = (Chest) dc.getLeftSide();
+			Chest r = (Chest) dc.getRightSide();
 
 			plugin.debug("Added account as double chest. (#" + account.getID() + ")");
 
-			accountLocationMap.put(dc.getLocation(), account);
-			// accountLocationMap.put(l.getLocation(), account);
+			accountLocationMap.put(r.getLocation(), account);
+			accountLocationMap.put(l.getLocation(), account);
         } else {
             plugin.debug("Added account as single chest. (#" + account.getID() + ")");
 
@@ -182,11 +155,11 @@ public class AccountUtils {
 
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
-			// Chest r = (Chest) dc.getRightSide();
-			// Chest l = (Chest) dc.getLeftSide();
+			Chest r = (Chest) dc.getRightSide();
+			Chest l = (Chest) dc.getLeftSide();
 
-			accountLocationMap.remove(dc.getLocation());
-			// accountLocationMap.remove(l.getLocation());
+			accountLocationMap.remove(r.getLocation());
+			accountLocationMap.remove(l.getLocation());
         } else {
             accountLocationMap.remove(account.getLocation());
         }
