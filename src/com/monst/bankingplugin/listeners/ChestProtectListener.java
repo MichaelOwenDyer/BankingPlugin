@@ -59,7 +59,7 @@ public class ChestProtectListener implements Listener {
 				plugin.debug(String.format("%s tries to break %s's account (#%d)", p.getName(),
 						account.getOwner().getName(), account.getID()));
 				if (account.getOwner().getUniqueId().equals(p.getUniqueId())
-						|| p.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
+						|| p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
 					removeAndCreateNew(account, b, p);
 					return;
                 }
@@ -166,7 +166,7 @@ public class ChestProtectListener implements Listener {
         }
 
 		if (!p.getUniqueId().equals(account.getOwner().getUniqueId())
-				&& !p.hasPermission(Permissions.ACCOUNT_OTHER_EXTEND)) {
+				&& !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)) {
             e.setCancelled(true);
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_OTHER);
             return;

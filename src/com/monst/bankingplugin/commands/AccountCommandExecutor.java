@@ -227,7 +227,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					if (!accounts.isEmpty()) {
 						int i = 1;
 						for (Account account : accounts)
-							p.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toStringVerbose());
+							p.spigot().sendMessage(account.toStringVerbose());
 					} else
 						p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
@@ -235,7 +235,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
 				}
 			} else if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
-				if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST)) {
+				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
 					plugin.debug(sender.getName() + " has listed all accounts");
 					Collection<Account> accounts = accountUtils.getAccountsCopy();
 					if (!accounts.isEmpty()) {
@@ -255,7 +255,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
 					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
-							|| sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST)) {
+							|| sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
 						plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
 						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
 						if (!accounts.isEmpty()) {
@@ -274,7 +274,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		} else if (args.length == 3) {
 			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) && (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed"))
 					|| (args[2].equalsIgnoreCase("-a") || args[2].equalsIgnoreCase("all")) && (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed"))) {
-				if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST_VERBOSE)) {
+				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER_VERBOSE)) {
 					plugin.debug(sender.getName() + " has listed all accounts verbose");
 					Collection<Account> accounts = accountUtils.getAccountsCopy();
 					if (!accounts.isEmpty()) {
@@ -293,7 +293,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
 					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
-							|| sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST_VERBOSE)) {
+							|| sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER_VERBOSE)) {
 						plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
 						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
 						if (!accounts.isEmpty()) {
@@ -337,7 +337,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 			}
 		} else if (args.length == 2) {
 			if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) { // account removeall all
-				if (sender.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
+				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
 					Collection<Account> accounts = accountUtils.getAccountsCopy();
 					if (!accounts.isEmpty())
 						confirmRemoveAll(sender, accounts, args);
@@ -353,7 +353,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
 					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
-							|| sender.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) { // account removeall player
+							|| sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) { // account removeall player
 						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
 						if (!accounts.isEmpty())
 							confirmRemoveAll(sender, accounts, args);

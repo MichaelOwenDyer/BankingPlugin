@@ -50,6 +50,14 @@ public class Utils {
 		return String.format("%,.2f", bd);
 	}
 
+	public static String simplifyList(String list) {
+		return list.replaceAll("\\p{Punct}", "");
+	}
+
+	public static String listifyList(String list) {
+		return "[" + simplifyList(list).replace(" ", ", ") + "]";
+	}
+
 	/**
 	 * @param time Double representation of a time during the day
 	 * @param hourFormat Whether or not to enable the 12-hour AM/PM format

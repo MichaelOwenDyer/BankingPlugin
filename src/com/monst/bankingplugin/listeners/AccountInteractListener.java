@@ -161,20 +161,20 @@ public class AccountInteractListener implements Listener {
 				ItemStack item = Utils.getItemInMainHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account, p.hasPermission(Permissions.ACCOUNT_OTHER_INFO));
+					info(p, account, p.hasPermission(Permissions.ACCOUNT_INFO_OTHER));
 					return;
 				}
 				item = Utils.getItemInOffHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account, p.hasPermission(Permissions.ACCOUNT_OTHER_INFO));
+					info(p, account, p.hasPermission(Permissions.ACCOUNT_INFO_OTHER));
 					return;
 				}
 			}
 
 			if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !p.isSneaking()) {
 				boolean executorIsTrusted = account.isTrusted(p);
-				if (!executorIsTrusted && !p.hasPermission(Permissions.ACCOUNT_OTHER_VIEW)) {
+				if (!executorIsTrusted && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
 					e.setCancelled(true);
 					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
 					plugin.debug(p.getName() + " does not have permission to open " + account.getOwner().getName()
@@ -221,7 +221,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		if (e.getWhoClicked() instanceof Player) {
 			Player executor = (Player) e.getWhoClicked();
-			if (!executor.hasPermission(Permissions.ACCOUNT_OTHER_EDIT)) {
+			if (!executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
 				plugin.debug(
 						executor.getName() + " does not have permission to edit " + owner.getName() + "'s account");
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_EDIT);
@@ -332,7 +332,7 @@ public class AccountInteractListener implements Listener {
 	}
 	
 	private boolean confirmRemove(Player executor, Account account) {
-		if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
+		if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
 			if (account.isTrusted(executor))
 				executor.sendMessage(Messages.MUST_BE_OWNER);
 			else
@@ -420,10 +420,7 @@ public class AccountInteractListener implements Listener {
 	private void info(Player executor, Account account, boolean verbose) {
 		boolean executorIsTrusted = account.isTrusted(executor);
 		if (!executorIsTrusted)
-			if (!verbose && !executor.hasPermission(Permissions.ACCOUNT_OTHER_INFO)) {
-				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO);
-				return;
-			} else if (verbose && !executor.hasPermission(Permissions.ACCOUNT_OTHER_INFO_VERBOSE)) {
+			if (verbose && !executor.hasPermission(Permissions.ACCOUNT_INFO_OTHER)) {
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO_VERBOSE);
 				return;
 			}
@@ -440,13 +437,16 @@ public class AccountInteractListener implements Listener {
 		}
 
 		executor.sendMessage(" ");
-		executor.sendMessage(verbose ? account.toStringVerbose() : account.toString());
+		if (verbose)
+			executor.spigot().sendMessage(account.toStringVerbose());
+		else
+			executor.sendMessage(account.toString());
 		executor.sendMessage(" ");
 	}
 
 	private void set(Player executor, Account account, String[] args) {
 		if (args[0].equalsIgnoreCase("nickname")) {
-			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_NICKNAME)) {
+			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_SET_NICKNAME_OTHER)) {
 				if (args[1].equals("")) {
 					plugin.debug(String.format(
 							executor.getName() + " has reset %s account nickname%s (#" + account.getID() + ")",
@@ -464,7 +464,7 @@ public class AccountInteractListener implements Listener {
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
 			}
 		} else if (args[0].equalsIgnoreCase("multiplier")) {
-			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_MULTIPLIER)) {
+			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER_OTHER)) {
 				int stage = 0;
 				if (args[1].equals(""))
 					stage = account.getStatus().setMultiplierStage(Integer.parseInt(args[2]));
@@ -487,7 +487,7 @@ public class AccountInteractListener implements Listener {
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
 			}
 		} else if (args[0].equalsIgnoreCase("interest-delay")) {
-			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_OTHER_SET_INTEREST_DELAY)) {
+			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_SET_INTEREST_DELAY_OTHER)) {
 				int delay = account.getStatus().setInterestDelay(Integer.parseInt(args[1]));
 				plugin.debug(String.format(
 						executor.getName() + " has set %s account interest delay to %d%s (#" + account.getID() + ")",
@@ -505,8 +505,8 @@ public class AccountInteractListener implements Listener {
 				p.sendMessage(Messages.MUST_BE_OWNER);
 				return;
 			}
-			if (!p.hasPermission(Permissions.ACCOUNT_OTHER_TRUST)) {
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_TRUST);
+			if (!p.hasPermission(Permissions.ACCOUNT_TRUST)) {
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRUST);
 				return;
 			}
 		}
@@ -530,8 +530,8 @@ public class AccountInteractListener implements Listener {
 				p.sendMessage(Messages.MUST_BE_OWNER);
 				return;
 			}
-		if (!p.hasPermission(Permissions.ACCOUNT_OTHER_TRUST)) {
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_UNTRUST);
+		if (!p.hasPermission(Permissions.ACCOUNT_TRUST)) {
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_UNTRUST);
 				return;
 			}
 		plugin.debug(String.format(p.getName() + " has untrusted " + playerToUntrust.getName() + " from %s account (#"

@@ -222,7 +222,8 @@ public class Bank extends Ownable {
 				+ ChatColor.GRAY + "Current accounts: " + ChatColor.AQUA + accounts.size() + "\n"
 				+ ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n"
 				+ ChatColor.GRAY + "Selection type: " + selection.getType() + "\n"
-				+ ChatColor.GRAY + "Location: " + ChatColor.AQUA + getCoordinates();
+				+ ChatColor.GRAY + "Location: " + ChatColor.AQUA + getCoordinates(); // Remove location and selection type?
+		// Make this more useful for customers
 	}
 
 }

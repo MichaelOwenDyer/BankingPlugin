@@ -60,7 +60,7 @@ public class AccountProtectListener implements Listener {
 				plugin.debug(String.format("%s tries to break %s's account (#%d)", p.getName(),
 						account.getOwner().getName(), account.getID()));
 				if (account.isOwner(p)
-						|| p.hasPermission(Permissions.ACCOUNT_OTHER_REMOVE)) {
+						|| p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
 					removeAndCreateSmaller(account, b, p);
 					return;
                 }
@@ -143,13 +143,13 @@ public class AccountProtectListener implements Listener {
 
 		AccountExtendEvent event = new AccountExtendEvent(p, account, b.getLocation());
         Bukkit.getPluginManager().callEvent(event);
-		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_OTHER_EXTEND_PROTECTED)) {
+		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER) && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             e.setCancelled(true);
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED);
             return;
         }
 
-		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_OTHER_EXTEND)) {
+		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)) {
             e.setCancelled(true);
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_OTHER);
             return;
@@ -213,7 +213,7 @@ public class AccountProtectListener implements Listener {
 		Account account = accountUtils.getAccount(e.getInventory().getLocation());
 		Player executor = (Player) e.getWhoClicked();
 		if (!account.isOwner(executor))
-			if (!executor.hasPermission(Permissions.ACCOUNT_OTHER_EDIT)) {
+			if (!executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_EDIT);
 				e.setCancelled(true);
 			}

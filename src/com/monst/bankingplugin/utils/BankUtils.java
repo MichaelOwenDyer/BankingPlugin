@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -88,6 +89,11 @@ public class BankUtils {
 	public Collection<Bank> getBanksCopy() {
 		return new ArrayList<>(getBanks());
     }
+
+	public Collection<Bank> getPlayerBanksCopy(OfflinePlayer owner) {
+		return getBanksCopy().stream().filter(bank -> !bank.isAdminBank() && bank.isOwner(owner))
+				.collect(Collectors.toSet());
+	}
 
 	public boolean isUniqueName(String name) {
 		return getBanksCopy().stream().noneMatch(bank -> bank.getName().equalsIgnoreCase(name));
@@ -408,6 +414,15 @@ public class BankUtils {
 		return (useDefault ? Config.defaultBankLimit : limit);
 	}
 
+	/**
+	 * Get the number of accounts owned by a certain player
+	 * 
+	 * @param player Player whose accounts should be counted
+	 * @return The number of accounts owned by the player
+	 */
+	public int getNumberOfBanks(OfflinePlayer owner) {
+		return Math.round(getPlayerBanksCopy(owner).stream().count());
+	}
 
     /**
 	 * Reload the accounts

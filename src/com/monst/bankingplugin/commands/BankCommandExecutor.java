@@ -84,6 +84,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			case "list":
 				promptBankList(p, args);
 				return true;
+			case "limits":
+				promptBankLimit(p);
+				return true;
 			case "removeall":
 				if (!promptBankRemoveAll(p, args))
 					p.sendMessage(subCommand.getHelpMessage(sender));
@@ -170,7 +173,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				|| (args.length == 9 && args[8].equalsIgnoreCase("admin")))
 			isAdminBank = true;
 
-		if (isAdminBank && !p.hasPermission(Permissions.BANK_ADMIN_CREATE)) {
+		if (isAdminBank && !p.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
 			plugin.debug(p.getName() + " does not have permission to create an admin bank");
 			p.sendMessage(Messages.NO_PERMISSION_BANK_ADMIN_CREATE);
 			return true;
@@ -243,12 +246,6 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 	private void promptBankRemove(final CommandSender sender, String[] args) { // XXX
 		plugin.debug(sender.getName() + " wants to remove a bank");
 
-		if (!sender.hasPermission(Permissions.BANK_REMOVE)) {
-			plugin.debug(sender.getName() + " does not have permission to remove a bank");
-			sender.sendMessage(Messages.NO_PERMISSION_BANK_REMOVE);
-			return;
-		}
-
 		Bank bank;
 		if (args.length == 1) {
 			if (sender instanceof Player) {
@@ -272,7 +269,14 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			}
 		}
 
-		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_ADMIN_REMOVE)) {
+		if (!bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_OTHER) && sender instanceof Player
+				&& !bank.isOwner((Player) sender)) {
+			plugin.debug(sender.getName() + " does not have permission to remove another player's bank");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_OTHER_REMOVE);
+			return;
+		}
+
+		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)) {
 			plugin.debug(sender.getName() + " does not have permission to remove an admin bank");
 			sender.sendMessage(Messages.NO_PERMISSION_BANK_ADMIN_REMOVE);
 			return;
@@ -325,9 +329,6 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		plugin.debug(sender.getName() + " wants to show bank info");
 
 		if (args.length == 1) {
-			if (!sender.hasPermission(Permissions.BANK_INFO)) {
-				sender.sendMessage(Messages.NO_PERMISSION_BANK_INFO);
-			}
 			if (sender instanceof Player) {
 				Player p = (Player) sender;
 				Bank bank = bankUtils.getBank(p.getLocation());
@@ -380,18 +381,15 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 	private void promptBankList(CommandSender sender, String[] args) {
 
 		if (args.length == 1) {
-			if (sender.hasPermission(Permissions.BANK_LIST)) {
-				if (bankUtils.getBanksCopy().isEmpty()) {
-					sender.sendMessage(Messages.NO_BANKS);
-				} else {
-					sender.sendMessage("");
-					int i = 1;
-					for (Bank bank : bankUtils.getBanksCopy())
-						sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toString());
-					sender.sendMessage("");
-				}
-			} else
-				sender.sendMessage(Messages.NO_PERMISSION_BANK_LIST);
+			if (bankUtils.getBanksCopy().isEmpty()) {
+				sender.sendMessage(Messages.NO_BANKS);
+			} else {
+				sender.sendMessage("");
+				int i = 1;
+				for (Bank bank : bankUtils.getBanksCopy())
+					sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toString());
+				sender.sendMessage("");
+			}
 		} else if (args.length >= 2) {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
 				if (sender.hasPermission(Permissions.BANK_LIST_VERBOSE)) {
@@ -408,6 +406,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					sender.sendMessage(Messages.NO_PERMISSION_BANK_LIST_VERBOSE);
 			}
 		}
+	}
+
+	private void promptBankLimit(final Player p) {
+		int used = bankUtils.getNumberOfBanks(p);
+		Object limit = bankUtils.getBankLimit(p) < 0 ? "∞" : bankUtils.getBankLimit(p);
+		plugin.debug(p.getName() + " is viewing their bank limits: " + used + " / " + limit);
+		p.sendMessage(String.format(Messages.BANK_LIMIT, used, limit));
 	}
 
 	private boolean promptBankRemoveAll(CommandSender sender, String[] args) { // XXX
@@ -553,7 +558,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		}
 
 		if ((sender instanceof Player && !bank.isTrusted((Player) sender))
-				&& !sender.hasPermission(Permissions.BANK_OTHER_SET)) {
+				&& !sender.hasPermission(Permissions.BANK_SET_OTHER)) {
 			plugin.debug(sender.getName() + " does not have permission to configure a bank");
 			sender.sendMessage(Messages.NO_PERMISSION_BANK_OTHER_SET);
 			return true;
@@ -581,11 +586,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		}
 		
 		try {
-			if (config.setOrDefault(field, args[3]))
-				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2],
-						field.getDataType() == 0 ? Utils.formatNumber(Double.parseDouble(args[3].replace(",", ""))) : args[3],
-						bank.getName()));
-			else
+			if (config.setOrDefault(field, args[3])) {
+				if (field.getDataType() == 0)
+					args[3] = Utils.formatNumber(Double.parseDouble(args[3].replace(",", "")));
+				else if (field.getDataType() == 3)
+					args[3] = Utils.listifyList(args[3]);
+				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
+			} else
 				sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
 		} catch (NumberFormatException e) {
 			switch (field.getDataType()) {

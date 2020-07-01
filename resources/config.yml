@@ -226,6 +226,7 @@ default-limits:
 # Set the number of accounts a player may have at any given bank.
 # For example, a value of 2 would allow a player to create no more than two accounts at a single bank.
 # A third account would have to be created at a different bank.
+# Set this to 0 or below to disable this feature.
 # Type: int
 # Default: 1
 player-account-limit-per-bank: 1

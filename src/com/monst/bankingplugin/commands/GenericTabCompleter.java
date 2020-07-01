@@ -106,7 +106,7 @@ class GenericTabCompleter implements TabCompleter {
 		onlinePlayers.remove(sender.getName());
 
 		ArrayList<String> flags = new ArrayList<>(Arrays.asList("detailed"));
-		if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST))
+		if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
 			flags.add("all");
 
 		if (args.length == 2) {
@@ -114,7 +114,7 @@ class GenericTabCompleter implements TabCompleter {
 				if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
 					returnCompletions.add("detailed");
 				if ("-a".startsWith(args[1].toLowerCase()) || "all".startsWith(args[1].toLowerCase()))
-					if (sender.hasPermission(Permissions.ACCOUNT_OTHER_LIST))
+					if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
 						returnCompletions.add("all");
 				for (String name : onlinePlayers)
 					if (name.toLowerCase().startsWith(args[1].toLowerCase()))
@@ -283,9 +283,9 @@ class GenericTabCompleter implements TabCompleter {
 				if (sender instanceof Player) {
 					for (Bank bank : plugin.getBankUtils().getBanksCopy().stream().filter(bank -> bank.getName().startsWith(args[1].toLowerCase())).collect(Collectors.toList())) {
 						if (!bank.isAdminBank() && (bank.isOwner((Player) sender)
-								|| sender.hasPermission(Permissions.BANK_OTHER_REMOVE)))
+								|| sender.hasPermission(Permissions.BANK_REMOVE_OTHER)))
 							returnCompletions.add(bank.getName());
-						if (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_ADMIN_REMOVE))
+						if (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN))
 							returnCompletions.add(bank.getName());
 					}
 				} else
@@ -294,9 +294,9 @@ class GenericTabCompleter implements TabCompleter {
 				if (sender instanceof Player) {
 					for (Bank bank : plugin.getBankUtils().getBanksCopy()) {
 						if (!bank.isAdminBank() && (bank.isOwner((Player) sender)
-								|| sender.hasPermission(Permissions.BANK_OTHER_REMOVE)))
+								|| sender.hasPermission(Permissions.BANK_REMOVE_OTHER)))
 							returnCompletions.add(bank.getName());
-						if (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_ADMIN_REMOVE))
+						if (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN))
 							returnCompletions.add(bank.getName());
 					}
 				} else

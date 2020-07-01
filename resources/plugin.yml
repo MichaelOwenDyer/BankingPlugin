@@ -27,51 +27,46 @@ permissions:
         children:
             bankingplugin.account.create: true
             bankingplugin.account.create.protected: true
-            bankingplugin.account.removeall: true
             bankingplugin.account.trust: true
+            bankingplugin.account.remove-other: true
+            bankingplugin.account.info-other-verbose: true
+            bankingplugin.account.list.other: true
+            bankingplugin.account.list.other.verbose: true
+            bankingplugin.account.view-other: true
+            bankingplugin.account.edit-other: true
+            bankingplugin.account.extend-other: true
             bankingplugin.account.limit.*: true
-            bankingplugin.account.other.*: true
             bankingplugin.account.set.*: true
-    
-    bankingplugin.account.other.*:
-        description: Gives control over other players' accounts.
-        default: op
-        children:
-            bankingplugin.account.other.create: true
-            bankingplugin.account.other.remove: true
-            bankingplugin.account.other.info: true
-            bankingplugin.account.other.info.verbose: true
-            bankingplugin.account.other.list: true
-            bankingplugin.account.other.list.verbose: true
-            bankingplugin.account.other.view: true
-            bankingplugin.account.other.edit: true
-            bankingplugin.account.other.set.nickname: true
-            bankingplugin.account.other.set.multiplier: true
-            bankingplugin.account.other.set.delay-period: true
-            bankingplugin.account.other.trust: true
-            bankingplugin.account.other.extend: true
-            bankingplugin.account.other.extend.protected: true
     
     bankingplugin.account.set.*:
         description: Gives access to all account configuration commands.
         default: op
         children:
             bankingplugin.account.set.nickname: true
+            bankingplugin.account.set.nickname.other: true
             bankingplugin.account.set.multiplier: true
+            bankingplugin.account.set.multiplier.other: true
             bankingplugin.account.set.delay-period: true
+            bankingplugin.account.set.delay-period.other: true
     
     bankingplugin.bank.*:
         description: Gives access to all bank features.
         default: op
         children:
             bankingplugin.bank.create: true
-            bankingplugin.bank.remove: true
+            bankingplugin.bank.create.admin: true
+            bankingplugin.bank.remove.other: true
+            bankingplugin.bank.remove.admin: true
+            bankingplugin.bank.removeall: true
             bankingplugin.bank.limit.*: true
-            bankingplugin.bank.info: true
             bankingplugin.bank.info.verbose: true
-            bankingplugin.bank.list: true
+            bankingplugin.bank.list.verbose: true
             bankingplugin.bank.resize: true
-            bankingplugin.bank.other.*: true
+            bankingplugin.bank.resize.other: true
+            bankingplugin.bank.resize.admin: true
+            bankingplugin.bank.set: true
+            bankingplugin.bank.set.other: true
+            bankingplugin.bank.set.admin: true
     
     
     # ACCOUNT #
@@ -83,137 +78,131 @@ permissions:
         default: op
         children:
             bankingplugin.account.create: true
-    bankingplugin.account.removeall:
-        description: Remove all accounts.
-        default: op
-        children:
-            bankingplugin.account.other.remove: true
     bankingplugin.account.trust:
         description: Add or remove other players as co-owners of your account.
         default: true
+    bankingplugin.account.remove-other:
+        description: Remove another player's account.
+        default: op
+        
+    bankingplugin.account.info-other-verbose:
+        description: View detailed information about another player's account.
+        default: op
+        
+    bankingplugin.account.list.other:
+        description: View a list of other player's accounts.
+        default: op
+    
+    bankingplugin.account.list.other.verbose:
+        description: View a detailed list of other player's accounts.
+        default: op
+        children:
+            bankingplugin.account.list.other: true
+    
+    bankingplugin.account.view-other:
+        description: Look into another player's account chest.
+        default: op
+        
+    bankingplugin.account.edit-other:
+        description: Edit the contents of another player's account chest.
+        default: op
+        children:
+            bankingplugin.account.view-other: true
+            
+    bankingplugin.account.extend.other:
+        description: Extend another player's account chest.
+        default: op
+        
     bankingplugin.account.limit.*:
         description: Create an unlimited number of accounts.
         default: op
     
-    
-    # ACCOUNT.OTHER #
-    bankingplugin.account.other.create:
-        description: Create an account in another player's name.
-        default: op
-        children:
-            bankingplugin.account.create: true
-    bankingplugin.account.other.remove:
-        description: Remove another player's account.
-        default: op
-    bankingplugin.account.other.info:
-        description: View another player's account info.
+    # ACCOUNT.SET #
+    bankingplugin.account.set.nickname:
+        description: Set your account nickname.
         default: true
-    bankingplugin.account.other.info.verbose:
-        description: View another player's detailed account info.
-        default: op
-        children:
-            bankingplugin.account.other.info: true
-    bankingplugin.account.other.list:
-        description: View a list of other players' accounts.
-        default: op
-    bankingplugin.account.other.list.verbose:
-        description: View a detailed list of other players' accounts.
-        default: op
-        children:
-            bankingplugin.account.other.list: true
-    bankingplugin.account.other.view:
-        description: Open another player's account chest.
-        default: op
-    bankingplugin.account.other.edit:
-        description: Open and edit the contents another player's account chest.
-        default: op
-        children:
-            bankingplugin.account.other.view: true
-    bankingplugin.account.other.set.nickname:
+    
+    bankingplugin.account.set.nickname.other:
         description: Set another player's account nickname.
         default: op
         children:
             bankingplugin.account.set.nickname: true
-    bankingplugin.account.other.set.multiplier:
+            
+    bankingplugin.account.set.multiplier:
+        description: Set your account multiplier.
+        default: op
+    
+    bankingplugin.account.set.multiplier.other:
         description: Set another player's account multiplier.
         default: op
         children:
             bankingplugin.account.set.multiplier: true
-    bankingplugin.account.other.set.delay-period:
+            
+    bankingplugin.account.set.delay-period:
+        description: Set your account delay period.
+        default: op
+    
+    bankingplugin.account.set.delay-period.other:
         description: Set another player's account interest delay period.
         default: op
         children:
             bankingplugin.account.set.delay-period: true
-    bankingplugin.account.other.extend:
-        description: Extend another player's account chest.
-        default: op
-    bankingplugin.account.other.trust:
-        description: Add or remove other players as co-owners of someone else's account.
-        default: op
-        children:
-            bankingplugin.account.trust: true
-    bankingplugin.account.other.extend.protected:
-        description: Extend another player's account chest on a protected chest or land claim.
-        default: op
-        children:
-            bankingplugin.account.other.extend: true
-    
-    
-    # ACCOUNT.SET #
-    bankingplugin.account.set.nickname:
-        description: Set an account nickname.
-        default: true
-    bankingplugin.account.set.multiplier:
-        description: Set an account multiplier.
-        default: op
-    bankingplugin.account.set.delay-period:
-        description: Set an account interest delay period.
-        default: op
     
     
     # BANK #
     bankingplugin.bank.create:
         description: Create a bank.
         default: op
-    bankingplugin.bank.remove:
-        description: Remove a bank and all associated accounts.
+    bankingplugin.bank.create.admin:
+        description: Create an admin bank.
+        default: op
+    bankingplugin.bank.remove.other:
+        description: Remove another player's bank and all associated accounts.
         default: op
         children:
-            bankingplugin.account.other.remove: true
+            bankingplugin.account.remove-other: true
+    bankingplugin.bank.remove.admin:
+        description: Remove an admin bank and all associated accounts.
+        default: op
+        children:
+            bankingplugin.account.remove-other: true
+    bankingplugin.bank.removeall:
+        description: Remove all banks and all accounts.
+        default: op
+        children:
+            bankingplugin.bank.remove.other: true
+            bankingplugin.bank.remove.admin: true
+            bankingplugin.account.remove-other: true
     bankingplugin.bank.limit.*:
         description: Create an unlimited number of banks.
         default: op
-    bankingplugin.bank.info:
-        description: View bank info.
-        default: true
     bankingplugin.bank.info.verbose:
         description: View detailed bank info.
         default: true
-        children:
-            bankingplugin.bank.info: true
-    bankingplugin.bank.list:
-        description: View a list of banks.
+    bankingplugin.bank.list.verbose:
+        description: View a detailed list of banks.
         default: true
     bankingplugin.bank.resize:
         description: Resize an existing bank.
         default: op
-        
-        
-    # BANK.OTHER #
-    bankingplugin.bank.other.create:
-        description: Create a bank in another player's name.
+    bankingplugin.bank.resize.other:
+        description: Resize another player's bank.
         default: op
-    bankingplugin.bank.other.remove:
-        description: Remove another player's bank and all associated accounts.
-        default: op
-        children:  
-            bankingplugin.bank.remove: true
-    bankingplugin.bank.other.info:
-        description: View another player's bank info.
-        default: true
         children:
-            bankingplugin.bank.info: true
-    
+            bankingplugin.bank.resize: true
+    bankingplugin.bank.resize.admin:
+        description: Resize an admin bank.
+        default: op
+        children:
+            bankingplugin.bank.resize.other: true
+    bankingplugin.bank.set.other:
+        description: Configure another player's bank.
+        default: op
+    bankingplugin.bank.set.admin:
+        description: Configure an admin bank.
+        default: op
+        children:
+            bankingplugin.bank.set.other: true
     
     bankingplugin.external.bypass:
         description: Bypass other plugins' attempts to stop you using this plugin.

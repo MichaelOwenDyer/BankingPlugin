@@ -76,8 +76,7 @@ public class InterestEventListener implements Listener {
 
 						if ((double) config.getOrDefault(Field.MINIMUM_BALANCE) > 0 && account.getBalance()
 								.compareTo(BigDecimal.valueOf((double) config.getOrDefault(Field.MINIMUM_BALANCE))) == -1) {
-							if (!account.getBank().isAdminBank() && account.getBank().getOwner().getUniqueId()
-									.equals(account.getOwner().getUniqueId()))
+							if (!account.getBank().isAdminBank() && account.isOwner(account.getBank().getOwner()))
 								continue;
 							totalFees.put(owner, totalFees.getOrDefault(owner, BigDecimal.ZERO)
 									.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));

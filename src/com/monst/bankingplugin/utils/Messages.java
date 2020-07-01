@@ -38,6 +38,7 @@ public class Messages {
 	public static final String MULTIPLIER_INCREASED = ChatColor.GOLD + "Your account multiplier has increased to %d."; // XXX
 	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to %d."; // XXX
 	public static final String ACCOUNT_LIMIT = ChatColor.GOLD + "You own %d/%d allowed accounts.";
+	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%d allowed banks.";
 	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to delete %d account%s.";
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to delete %d bank%s and %d account%s.";
 	
@@ -155,7 +156,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_BANK_REMOVE = USAGE_PREFIX_BANK + "remove <bankname>";
 	public static final String COMMAND_USAGE_BANK_INFO = USAGE_PREFIX_BANK + "info <bankname / \"all\">";
 	public static final String COMMAND_USAGE_BANK_LIST = USAGE_PREFIX_BANK + "list <\"detailed\">";
-	public static final String COMMAND_DESC_BANK_LIMITS = USAGE_PREFIX_BANK + "limits"; // XXX
+	public static final String COMMAND_USAGE_BANK_LIMITS = USAGE_PREFIX_BANK + "limits";
 	public static final String COMMAND_USAGE_BANK_REMOVEALL = USAGE_PREFIX_BANK + "removeall <\"all\">";
 	public static final String COMMAND_USAGE_BANK_RESIZE = USAGE_PREFIX_BANK + "resize [bankname] <xyz> <xyz>";
 	public static final String COMMAND_USAGE_BANK_SET = USAGE_PREFIX_BANK + "set [bankname] [field] [value]";

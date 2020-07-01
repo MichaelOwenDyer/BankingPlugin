@@ -47,7 +47,7 @@ public class BankCommand extends GenericCommand {
 		addSubCommand(new BankSubCommand("remove", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_REMOVE) ? Messages.COMMAND_USAGE_BANK_REMOVE : "";
+				return Messages.COMMAND_USAGE_BANK_REMOVE;
             }
 		});
 
@@ -64,6 +64,13 @@ public class BankCommand extends GenericCommand {
                 return Messages.COMMAND_USAGE_BANK_LIST;
             }
         });
+
+		addSubCommand(new BankSubCommand("limits", true, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return Messages.COMMAND_USAGE_BANK_LIMITS;
+			}
+		});
 
         addSubCommand(new BankSubCommand("removeall", false, executor, tabCompleter) {
             @Override
@@ -82,7 +89,7 @@ public class BankCommand extends GenericCommand {
 		addSubCommand(new BankSubCommand("set", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_SET) ? Messages.COMMAND_USAGE_BANK_SET : "";
+				return Messages.COMMAND_USAGE_BANK_SET;
 			}
 		});
 
