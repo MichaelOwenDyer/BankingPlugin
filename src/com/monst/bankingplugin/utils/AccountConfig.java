@@ -21,6 +21,7 @@ public class AccountConfig {
 	private boolean reimburseAccountCreation;
 	private double minBalance;
 	private double lowBalanceFee;
+	private int playerAccountLimit;
 
 	public AccountConfig() {
 		this(Config.interestRate.getValue(),
@@ -34,14 +35,15 @@ public class AccountConfig {
 				Config.creationPriceAccount.getValue(),
 				Config.reimburseAccountCreation.getValue(),
 				Config.minBalance.getValue(),
-				Config.lowBalanceFee.getValue()
+				Config.lowBalanceFee.getValue(),
+				Config.playerBankAccountLimit.getValue()
 				);
 	}
 
 	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
 			boolean countInterestDelayOffline, int allowedOffline, int allowedOfflineBeforeReset,
 			int offlineMultiplierBehavior, int withdrawalMultiplierBehavior, double accountCreationPrice,
-			boolean reimburseAccountCreation, double minBalance, double lowBalanceFee) {
+			boolean reimburseAccountCreation, double minBalance, double lowBalanceFee, int playerAccountLimit) {
 
 		this.interestRate = interestRate;
 		this.multipliers = multipliers;
@@ -55,6 +57,7 @@ public class AccountConfig {
 		this.reimburseAccountCreation = reimburseAccountCreation;
 		this.minBalance = minBalance;
 		this.lowBalanceFee = lowBalanceFee;
+		this.playerAccountLimit = playerAccountLimit;
 	}
 
 	public static boolean isOverrideAllowed(Field field) {
@@ -84,6 +87,8 @@ public class AccountConfig {
 			return Config.minBalance.getKey();
 		case LOW_BALANCE_FEE:
 			return Config.lowBalanceFee.getKey();
+		case PLAYER_ACCOUNT_LIMIT:
+			return Config.playerBankAccountLimit.getKey();
 		default:
 			return false;
 
@@ -117,6 +122,8 @@ public class AccountConfig {
 			return Config.minBalance.getKey() ? minBalance : Config.minBalance.getValue();
 		case LOW_BALANCE_FEE:
 			return Config.lowBalanceFee.getKey() ? lowBalanceFee : Config.lowBalanceFee.getValue();
+		case PLAYER_ACCOUNT_LIMIT:
+			return Config.playerBankAccountLimit.getKey() ? playerAccountLimit : Config.playerBankAccountLimit.getValue();
 		default:
 			return null;
 		}
@@ -173,6 +180,8 @@ public class AccountConfig {
 		case LOW_BALANCE_FEE:
 			lowBalanceFee = Double.parseDouble(s.replace(",", ""));
 			break;
+		case PLAYER_ACCOUNT_LIMIT:
+			playerAccountLimit = Integer.parseInt(s);
 		default:
 			return false;
 		}
@@ -227,6 +236,10 @@ public class AccountConfig {
 		return lowBalanceFee;
 	}
 
+	public int getPlayerAccountLimit() {
+		return playerAccountLimit;
+	}
+
 	public enum Field {
 
 		INTEREST_RATE ("interest-rate", 0), 
@@ -240,7 +253,8 @@ public class AccountConfig {
 		ACCOUNT_CREATION_PRICE ("account-creation-price", 0), 
 		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation", 2), 
 		MINIMUM_BALANCE ("min-balance", 0), 
-		LOW_BALANCE_FEE ("low-balance-fee", 0);
+		LOW_BALANCE_FEE ("low-balance-fee", 0),
+		PLAYER_ACCOUNT_LIMIT ("player-account-limit", 1);
 		
 		private String name;
 		private int dataType;

@@ -17,7 +17,7 @@ main-command-names:
 # These are real times (0 <= time < 24) written in the standard 24-hour format (for example '00:00' for midnight, '13:45', '17:15:30').
 # Equivalent values will be considered one.
 # Type: List<LocalTime>
-# Default: '9', '15', '21'
+# Default: '9:00', '15:00', '21:00'
 interest-payout-times:
   - '9:00'
   - '12:00'
@@ -150,6 +150,16 @@ reimburse-creation:
         default: false
         allow-override: true
 
+# Set the number of accounts a player may have at any given bank.
+# For example, a value of 2 would allow a player to create no more than two accounts at a single bank.
+# A third account would have to be created at a different bank.
+# Set this to 0 or below to disable this feature.
+# Type: int
+# Default: 1
+player-bank-account-limit:
+    default: 1
+    allow-override: true
+
 # Whether a bank owner should be able to create an account at their own bank.
 # Type: boolean
 # Default: false
@@ -223,23 +233,15 @@ default-limits:
   bank: 1
   account: 2
 
-# Set the number of accounts a player may have at any given bank.
-# For example, a value of 2 would allow a player to create no more than two accounts at a single bank.
-# A third account would have to be created at a different bank.
-# Set this to 0 or below to disable this feature.
-# Type: int
-# Default: 1
-player-bank-account-limit: 1
-
 # Set this value to customize how much revenue banks should generate for their owners.
 # Bank revenue is calculated as a function of the total value of the bank and of the inequality (https://en.wikipedia.org/wiki/Gini_coefficient) of the balances of its accounts.
 # The calculation follows this formula: [ R = (this config value) * (total value of bank) * (1 - gini) * ln(number of accounts with unique owners) ]
 # The more unequal the balances of the bank's accounts, the less the owner will earn.
 # In this way, a large number of medium-sized accounts are more valuable to the bank owner than many small accounts and a few very valuable ones, assuming the total value is equal.
-# You will likely want to increase this value for smaller servers, and decrease it for larger servers.
+# View the graph of the function here: https://www.desmos.com/calculator/csrmrifa7u
 # Type: double
-# Default: 0.25
-bank-revenue-multiplier: 0.25
+# Default: 0.10
+bank-revenue-multiplier: 0.10
 
 # Set whether the custom WorldGuard flag should be allowed by default.
 worldguard-default-flag-value:

@@ -116,6 +116,11 @@ public class Config {
 	public static Entry<Boolean, Boolean> reimburseAccountCreation;
 
 	/**
+	 * The default account limit per player per bank.
+	 */
+	public static Entry<Boolean, Integer> playerBankAccountLimit;
+
+	/**
 	 * Whether a bank owner should be allowed to create an account at their own
 	 * bank.
 	 */
@@ -208,11 +213,6 @@ public class Config {
      * The default account ownership limit for players whose limit is not set via a permission.
      **/
 	public static int defaultAccountLimit;
-
-	/**
-	 * The default account limit per player per bank.
-	 */
-	public static int playerBankAccountLimit;
 
 	/**
 	 * The bank revenue multiplier.
@@ -434,6 +434,9 @@ public class Config {
 		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.allow-override"),
 				config.getBoolean("reimburse-account-creation.default"));
 
+		playerBankAccountLimit = new SimpleEntry<>(config.getBoolean("player-bank-account-limit.allow-override"),
+				config.getInt("player-bank-account-limit.default"));
+
 		allowSelfBanking = config.getBoolean("allow-self-banking");
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");
@@ -451,7 +454,6 @@ public class Config {
 				config.getStringList("blacklist") : new ArrayList<>();
 		defaultBankLimit = config.getInt("default-limits.bank");
 		defaultAccountLimit = config.getInt("default-limits.account");
-		playerBankAccountLimit = config.getInt("player-bank-account-limit");
 		bankRevenueMultiplier = config.getDouble("bank-revenue-multiplier");
 		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value.create-bank");
 		databaseTablePrefix = config.getString("table-prefix");

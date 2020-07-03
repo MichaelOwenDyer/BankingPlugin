@@ -422,7 +422,8 @@ public abstract class Database {
 									+ config.getAccountCreationPrice() + " | "
 									+ config.isReimburseAccountCreation() + " | " 
 									+ config.getMinBalance() + " | "
-									+ config.getLowBalanceFee());
+									+ config.getLowBalanceFee() + " | "
+									+ config.getPlayerAccountLimit());
 
 					ps.executeUpdate();
 
@@ -597,7 +598,8 @@ public abstract class Database {
 								Double.parseDouble(accConfig[8]),
 								Boolean.parseBoolean(accConfig[9]),
 								Double.parseDouble(accConfig[10]),
-								Double.parseDouble(accConfig[11]));
+								Double.parseDouble(accConfig[11]),
+								(accConfig.length == 13 ? Integer.parseInt(accConfig[12]) : Config.playerBankAccountLimit.getValue())); // For update
 
 						plugin.debug("Initializing bank \"" + name + "\"... (#" + bankId + ")");
 

@@ -27,6 +27,8 @@ import com.monst.bankingplugin.utils.ClickType.EnumClickType;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 
+import net.md_5.bungee.api.chat.TextComponent;
+
 public class AccountCommandExecutor implements CommandExecutor, Confirmable<Account> {
 
 	private BankingPlugin plugin;
@@ -211,7 +213,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				if (!accounts.isEmpty()) {
 					int i = 1;
 					for (Account account : accounts)
-						p.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toString());
+						sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfo());
 				} else
 					p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 			} else {
@@ -226,7 +228,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(p);
 					if (!accounts.isEmpty()) {
 						for (Account account : accounts)
-							p.spigot().sendMessage(account.toStringVerbose());
+							p.spigot().sendMessage(account.getInfoVerbose());
 					} else
 						p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
@@ -240,8 +242,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					if (!accounts.isEmpty()) {
 						int i = 1;
 						for (Account account : accounts)
-							sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toString());
-					} else
+							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfo());
+						} else
 						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 
 				} else {
@@ -260,7 +262,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 						if (!accounts.isEmpty()) {
 							int i = 1;
 							for (Account account : accounts)
-								sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toString());
+								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfo());
 						} else
 							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {
@@ -279,7 +281,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					if (!accounts.isEmpty()) {
 						int i = 1;
 						for (Account account : accounts)
-							sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toStringVerbose());
+							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfoVerbose());
 					} else
 						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
@@ -298,7 +300,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 						if (!accounts.isEmpty()) {
 							int i = 1;
 							for (Account account : accounts)
-								sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + account.toStringVerbose());
+								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfoVerbose());
 						} else
 							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {

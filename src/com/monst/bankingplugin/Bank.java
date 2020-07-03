@@ -233,14 +233,66 @@ public class Bank extends Ownable {
 		BigDecimal valueSum = BigDecimal.ZERO;
 		BigDecimal weightedValueSum = BigDecimal.ZERO;
 		for (int i = 0; i < orderedValues.size(); i++) {
-			valueSum.add(orderedValues.get(i));
-			weightedValueSum.add(orderedValues.get(i).multiply(BigDecimal.valueOf(i + 1)));
+			valueSum = valueSum.add(orderedValues.get(i));
+			weightedValueSum = weightedValueSum.add(orderedValues.get(i).multiply(BigDecimal.valueOf(i + 1)));
 		}
 		valueSum = valueSum.multiply(BigDecimal.valueOf(orderedValues.size()));
 		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
+		if (valueSum.signum() == 0)
+			return 0;
 		BigDecimal leftEq = weightedValueSum.divide(valueSum);
 		BigDecimal rightEq = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
 		return leftEq.subtract(rightEq).doubleValue();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public TextComponent getInfo() {
+		
+		TextComponent info = new TextComponent("\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n");
+		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+		TextComponent owner = new TextComponent("Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n");
+		TextComponent interestRate = new TextComponent("Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n");
+		TextComponent multipliers = new TextComponent("Multipliers: ");
+		multipliers.addExtra(Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)));
+		TextComponent creationPrice = new TextComponent("\nAccount creation price: " + ChatColor.GREEN + "$"
+				+ Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE)));
+		
+		info.addExtra(owner);
+		info.addExtra(interestRate);
+		info.addExtra(multipliers);
+		info.addExtra(creationPrice);
+		
+		return info;
+		
+	}
+	
+	public TextComponent getInfoVerbose() {
+		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
+		
+		TextComponent info = getInfo();
+		TextComponent offlinePayouts = new TextComponent("Offline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS));
+		offlinePayouts.addExtra(ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before reset)\n");
+		TextComponent initialDelay = new TextComponent("Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY) + "\n");
+		TextComponent minBalance = new TextComponent("Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
+		if (minBal != 0)
+			minBalance.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)" + "\n");
+		TextComponent numberOfAccounts = new TextComponent("Current accounts: " + ChatColor.AQUA + accounts.size() + "\n");
+		TextComponent totalValue = new TextComponent("Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n");
+		TextComponent equality = new TextComponent("Inequality score: " + getGiniCoefficient() + "\n"); // TODO: Dynamic color
+		TextComponent selectionType = new TextComponent("Selection type: " + selection.getType() + "\n");
+		TextComponent loc = new TextComponent("Location: " + ChatColor.AQUA + getCoordinates());
+		
+		info.addExtra(offlinePayouts);
+		info.addExtra(initialDelay);
+		info.addExtra(minBalance);
+		info.addExtra(numberOfAccounts);
+		info.addExtra(totalValue);
+		info.addExtra(equality);
+		info.addExtra(selectionType);
+		info.addExtra(loc);
+		
+		return info;
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -249,34 +301,7 @@ public class Bank extends Ownable {
 		return ChatColor.GRAY + "\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n"
 				+ ChatColor.GRAY + "Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n"
 				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n"
-				+ ChatColor.GRAY + "Multipliers: " + Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)) + "\n"
+				+ ChatColor.GRAY + "Multipliers:" + Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)) + "\n"
 				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE));
 	}
-	
-	@SuppressWarnings("unchecked")
-	public TextComponent toText() {
-		return new TextComponent(ChatColor.GRAY + "\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n"
-				+ ChatColor.GRAY + "Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n"
-				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n"
-				+ ChatColor.GRAY + "Multipliers: " + Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)) + "\n"
-				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE)));
-	}
-	
-	public TextComponent toStringVerbose() {
-		double minBalance = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
-		boolean showFee = minBalance != 0;
-		return new TextComponent(toText() + "\n"
-				+ ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS) 
-				+ ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before reset)\n"
-				+ ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY) + "\n"
-				+ ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBalance)
-				+ ChatColor.GRAY + (showFee ? " (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)" : "") + "\n"
-				+ ChatColor.GRAY + "Current accounts: " + ChatColor.AQUA + accounts.size() + "\n"
-				+ ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n"
-				+ ChatColor.GRAY + "Gini coefficient: " + getGiniCoefficient() + "\n" // Dynamic color
-				+ ChatColor.GRAY + "Selection type: " + selection.getType() + "\n"
-				+ ChatColor.GRAY + "Location: " + ChatColor.AQUA + getCoordinates()); // Remove location and selection type?
-		// Make this more useful for customers
-	}
-
 }

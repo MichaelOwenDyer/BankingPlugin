@@ -271,8 +271,8 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		if (Config.playerBankAccountLimit > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(p))
-				.count() >= Config.playerBankAccountLimit) {
+		int playerAccountLimit = (int) bank.getAccountConfig().getOrDefault(Field.PLAYER_ACCOUNT_LIMIT);
+		if (playerAccountLimit > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(p)).count() >= playerAccountLimit) {
 			p.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
 			plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
 			return;
@@ -290,7 +290,7 @@ public class AccountInteractListener implements Listener {
 
 		double creationPrice = (double) bank.getAccountConfig().getOrDefault(Field.ACCOUNT_CREATION_PRICE);
 
-		if (creationPrice > 0) {
+		if (creationPrice > 0 && !bank.isOwner(p)) {
 			if (plugin.getEconomy().getBalance(p) < creationPrice) {
 				p.sendMessage(Messages.ACCOUNT_CREATE_INSUFFICIENT_FUNDS);
 				return;
@@ -439,9 +439,9 @@ public class AccountInteractListener implements Listener {
 
 		executor.sendMessage(" ");
 		if (verbose)
-			executor.spigot().sendMessage(account.toStringVerbose());
+			executor.spigot().sendMessage(account.getInfoVerbose());
 		else
-			executor.sendMessage(account.toString());
+			executor.spigot().sendMessage(account.getInfo());
 		executor.sendMessage(" ");
 	}
 

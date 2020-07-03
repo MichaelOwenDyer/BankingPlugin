@@ -270,18 +270,28 @@ public class Account extends Ownable {
 
 	@Override
 	public String toString() {
-		String name = hasNickname() ? ChatColor.GRAY + "\"" + Utils.colorize(nickname) + ChatColor.GRAY + "\""
-				: ChatColor.GRAY + "Account ID: " + ChatColor.WHITE + id;
-		return name + "\n" + ChatColor.GRAY + "Owner: " + ChatColor.GOLD + getOwnerDisplayName() + "\n" + ChatColor.GRAY
-				+ "Bank: " + ChatColor.AQUA + bank.getName() + ChatColor.GRAY;
+		return "";
+	}
+
+	public TextComponent getInfo() {
+
+		TextComponent info = new TextComponent();
+		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+
+		info.addExtra(hasNickname() ? ChatColor.GRAY + "\"" + Utils.colorize(nickname) + ChatColor.GRAY + "\""
+				: ChatColor.GRAY + "Account ID: " + ChatColor.AQUA + id);
+		info.addExtra("\nOwner: " + ChatColor.GOLD + getOwnerDisplayName() + "\n");
+		info.addExtra("Bank: " + ChatColor.AQUA + bank.getName());
+
+		return info;
 	}
 
 	@SuppressWarnings("unchecked")
-	public TextComponent toStringVerbose() {
-		TextComponent info = new TextComponent(toString() + "\nBalance: ");
+	public TextComponent getInfoVerbose() {
+		TextComponent info = getInfo();
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 		
-		TextComponent message = new TextComponent(ChatColor.GREEN + "$" + Utils.formatNumber(getBalance()) + "\n");
+		TextComponent message = new TextComponent("\nBalance: " + ChatColor.GREEN + "$" + Utils.formatNumber(getBalance()) + "\n");
 		
 		TextComponent multiplier = new TextComponent("Multiplier:");
 		multiplier.addExtra(Utils.getMultiplierView((List<Integer>) bank.getAccountConfig().getOrDefault(Field.MULTIPLIERS),

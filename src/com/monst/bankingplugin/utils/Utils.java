@@ -143,6 +143,7 @@ public class Utils {
 			}
 			int levelSize = stackedMultipliers.get(i).size();
 			if (levelSize > 1) {
+				number.setBold(true);
 				ComponentBuilder cb = new ComponentBuilder();
 				if (stage == -1 || i < stage) {
 					cb.append("" + ChatColor.GREEN + levelSize).append(ChatColor.DARK_GRAY + "/")

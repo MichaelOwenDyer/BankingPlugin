@@ -33,6 +33,7 @@ import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
@@ -333,7 +334,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				Player p = (Player) sender;
 				Bank bank = bankUtils.getBank(p.getLocation());
 				if (bank != null)
-					p.spigot().sendMessage(bank.toText());
+					p.spigot().sendMessage(bank.getInfo());
 				else {
 					plugin.debug(p.getName() + " wasn't standing in a bank");
 					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
@@ -346,7 +347,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					Player p = (Player) sender;
 					Bank bank = bankUtils.getBank(p.getLocation());
 					if (bank != null)
-						p.spigot().sendMessage(bank.toStringVerbose());
+						p.spigot().sendMessage(bank.getInfoVerbose());
 					else {
 						plugin.debug(p.getName() + " wasn't standing in a bank");
 						p.sendMessage(Messages.NOT_STANDING_IN_BANK);
@@ -356,7 +357,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			} else {
 				Bank bank = bankUtils.lookupBank(args[1]);
 				if (bank != null)
-					sender.sendMessage(bank.toString());
+					sender.spigot().sendMessage(bank.getInfo());
 				else {
 					plugin.debug("No bank could be found under the identifier " + args[1]);
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
@@ -366,7 +367,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
 				Bank bank = bankUtils.lookupBank(args[1]);
 				if (bank != null)
-					sender.spigot().sendMessage(bank.toStringVerbose());
+					sender.spigot().sendMessage(bank.getInfoVerbose());
 				else {
 					plugin.debug("No bank could be found under the identifier " + args[1]);
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
@@ -384,11 +385,11 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			if (bankUtils.getBanksCopy().isEmpty()) {
 				sender.sendMessage(Messages.NO_BANKS);
 			} else {
-				sender.sendMessage("");
 				int i = 1;
-				for (Bank bank : bankUtils.getBanksCopy())
-					sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toString());
-				sender.sendMessage("");
+				for (Bank bank : bankUtils.getBanksCopy()) {
+					sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), bank.getInfo());
+					sender.sendMessage("");
+				}
 			}
 		} else if (args.length >= 2) {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
@@ -396,10 +397,11 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					if (bankUtils.getBanksCopy().isEmpty()) {
 						sender.sendMessage(Messages.NO_BANKS);
 					} else {
-						sender.sendMessage("");
-						for (Bank bank : bankUtils.getBanksCopy())
-							sender.spigot().sendMessage(bank.toStringVerbose());
-						sender.sendMessage("");
+						int i = 1;
+						for (Bank bank : bankUtils.getBanksCopy()) {
+							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), bank.getInfoVerbose());
+							sender.sendMessage("");
+						}
 					}
 				} else
 					sender.sendMessage(Messages.NO_PERMISSION_BANK_LIST_VERBOSE);
