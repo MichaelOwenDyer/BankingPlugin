@@ -30,7 +30,7 @@ public class Messages {
 	
 	// NOTIFICATIONS
 	public static final String ACCOUNT_OPENED = ChatColor.GOLD + "You opened %s's account chest.";
-	public static final String REVENUE_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in revenue on %d account%s!";
+	public static final String REVENUE_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in revenue from %s!";
 	public static final String INTEREST_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
 	public static final String INTEREST_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s " + ChatColor.RED + "in interest on %d account%s!";
 	public static final String LOW_BALANCE_FEE_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in low balance fees on %d account%s.";
@@ -49,7 +49,7 @@ public class Messages {
 	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "Account interest delay has been set.";
 	public static final String ADDED_COOWNER = ChatColor.GOLD + "%s has been added as a co-owner.";
 	public static final String REMOVED_COOWNER = ChatColor.GOLD + "%s has been removed as a co-owner.";
-	public static final String RELOADED_BANKS = ChatColor.GOLD + "Successfully reloaded %d banks and %d accounts.";
+	public static final String RELOADED_BANKS = ChatColor.GOLD + "Successfully reloaded BankingPlugin.";
 	
 	// DENY NOTIFICATIONS
 	public static final String MUST_BE_OWNER = ChatColor.RED + "You must be the owner of the account to do that.";
@@ -160,6 +160,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_BANK_REMOVEALL = USAGE_PREFIX_BANK + "removeall <\"all\">";
 	public static final String COMMAND_USAGE_BANK_RESIZE = USAGE_PREFIX_BANK + "resize [bankname] <xyz> <xyz>";
 	public static final String COMMAND_USAGE_BANK_SET = USAGE_PREFIX_BANK + "set [bankname] [field] [value]";
+	public static final String COMMAND_USAGE_VERSION = USAGE_PREFIX_CONTROL + "version";
 	public static final String COMMAND_USAGE_RELOAD = USAGE_PREFIX_CONTROL + "reload";
 	public static final String COMMAND_USAGE_CONFIG = USAGE_PREFIX_CONTROL + "config [set / add / remove] [field] <newvalue>";
 	public static final String COMMAND_USAGE_UPDATE = USAGE_PREFIX_CONTROL + "update";

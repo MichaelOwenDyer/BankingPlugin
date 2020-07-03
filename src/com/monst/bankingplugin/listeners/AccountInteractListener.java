@@ -271,7 +271,8 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		if (Config.accountLimitPerBank > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(p)).count() >= Config.accountLimitPerBank) {
+		if (Config.playerBankAccountLimit > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(p))
+				.count() >= Config.playerBankAccountLimit) {
 			p.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
 			plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
 			return;

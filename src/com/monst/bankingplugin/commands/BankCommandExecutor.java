@@ -333,7 +333,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				Player p = (Player) sender;
 				Bank bank = bankUtils.getBank(p.getLocation());
 				if (bank != null)
-					p.sendMessage(bank.toString());
+					p.spigot().sendMessage(bank.toText());
 				else {
 					plugin.debug(p.getName() + " wasn't standing in a bank");
 					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
@@ -346,7 +346,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					Player p = (Player) sender;
 					Bank bank = bankUtils.getBank(p.getLocation());
 					if (bank != null)
-						p.sendMessage(bank.toStringVerbose());
+						p.spigot().sendMessage(bank.toStringVerbose());
 					else {
 						plugin.debug(p.getName() + " wasn't standing in a bank");
 						p.sendMessage(Messages.NOT_STANDING_IN_BANK);
@@ -366,7 +366,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
 				Bank bank = bankUtils.lookupBank(args[1]);
 				if (bank != null)
-					sender.sendMessage(bank.toStringVerbose());
+					sender.spigot().sendMessage(bank.toStringVerbose());
 				else {
 					plugin.debug("No bank could be found under the identifier " + args[1]);
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
@@ -397,9 +397,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 						sender.sendMessage(Messages.NO_BANKS);
 					} else {
 						sender.sendMessage("");
-						int i = 1;
 						for (Bank bank : bankUtils.getBanksCopy())
-							sender.sendMessage(ChatColor.GOLD + "" + i++ + ": " + bank.toStringVerbose());
+							sender.spigot().sendMessage(bank.toStringVerbose());
 						sender.sendMessage("");
 					}
 				} else

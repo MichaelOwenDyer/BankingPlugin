@@ -26,6 +26,13 @@ public class ControlCommand extends GenericCommand {
 		this.pluginCommand = super.createPluginCommand();
         this.executor = new ControlCommandExecutor(plugin);
 
+		addSubCommand(new ControlSubCommand("version", false, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return Messages.COMMAND_USAGE_VERSION;
+			}
+		});
+
 		addSubCommand(new ControlSubCommand("reload", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {

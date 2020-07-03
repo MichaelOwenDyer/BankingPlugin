@@ -11,8 +11,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.events.bank.ReloadEvent;
-import com.monst.bankingplugin.events.interest.InterestEvent;
+import com.monst.bankingplugin.events.InterestEvent;
+import com.monst.bankingplugin.events.ReloadEvent;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
@@ -52,6 +52,8 @@ public class ControlCommandExecutor implements CommandExecutor {
 		}
 
 		switch (subCommand.getName().toLowerCase()) {
+		case "version":
+			sender.sendMessage(ChatColor.AQUA + "BankingPlugin version " + plugin.getDescription().getVersion());
 		case "config":
 			if (!changeConfig(sender, args))
 				sender.sendMessage(subCommand.getHelpMessage(sender));

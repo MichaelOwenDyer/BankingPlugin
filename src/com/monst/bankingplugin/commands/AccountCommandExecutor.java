@@ -225,13 +225,12 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					plugin.debug(p.getName() + " has listed their own accounts detailed");
 					Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(p);
 					if (!accounts.isEmpty()) {
-						int i = 1;
 						for (Account account : accounts)
 							p.spigot().sendMessage(account.toStringVerbose());
 					} else
 						p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
-					plugin.debug("Only players can list their own accounts detailed");
+					plugin.debug("Only players can list their own accounts");
 					sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
 				}
 			} else if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
@@ -289,7 +288,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				}
 			} else if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				if (!owner.hasPlayedBefore()) {
+				if (owner.hasPlayedBefore()) {
 					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
 					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))

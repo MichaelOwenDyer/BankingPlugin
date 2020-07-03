@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +22,9 @@ import com.monst.bankingplugin.commands.AccountCommand;
 import com.monst.bankingplugin.commands.BankCommand;
 import com.monst.bankingplugin.commands.ControlCommand;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.InterestEvent;
 import com.monst.bankingplugin.events.account.AccountInitializedEvent;
 import com.monst.bankingplugin.events.bank.BankInitializedEvent;
-import com.monst.bankingplugin.events.interest.InterestEvent;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.listeners.AccountBalanceListener;
@@ -74,7 +75,7 @@ public class BankingPlugin extends JavaPlugin {
 	private WorldEditPlugin worldEdit;
 	
 	// To be used for hot-swapping interest payout times
-	private static final Map<Double, Integer> payoutTimeIds = new HashMap<>();
+	private static final Map<LocalTime, Integer> payoutTimeIds = new HashMap<>();
 
 	/**
 	 * @return An instance of BankingPlugin
@@ -340,40 +341,46 @@ public class BankingPlugin extends JavaPlugin {
 	}
 
 	public void scheduleInterestPoints() {
-		for (Double time : Config.interestPayoutTimes) {
-			int id = scheduleRepeatAtTime(time);
-			if (id == -1)
-				debug("Interest payout scheduling failed! (" + time + ")");
-			else {
-				payoutTimeIds.put(time, id);
+		for (LocalTime time : payoutTimeIds.keySet())
+			if (!Config.interestPayoutTimes.contains(time)) {
+				Bukkit.getScheduler().cancelTask(payoutTimeIds.get(time));
+				debug("Removed interest payout at " + time);
+			}
+		for (LocalTime time : Config.interestPayoutTimes) {
+			if (!payoutTimeIds.containsKey(time)) {
+				int id = scheduleRepeatAtTime(time);
+				if (id == -1)
+					debug("Interest payout scheduling failed! (" + time + ")");
+				else {
+					payoutTimeIds.put(time, id);
+					debug("Scheduled interest payment at " + time);
+				}
 			}
 		}
 	}
 
-	private int scheduleRepeatAtTime(double time) {
+	private int scheduleRepeatAtTime(LocalTime time) {
 		// 24 hours/day * 60 minutes/hour * 60 seconds/minute *  20 ticks/second = 1728000 ticks/day
 		final long ticksInADay = 1728000L;
 		
 		Calendar cal = Calendar.getInstance();
 		long currentTime = cal.getTimeInMillis();
 		
-		time = (time % 24 + 24) % 24;
+		int hour = time.getHour();
+		int minute = time.getMinute();
+		int second = time.getSecond();
 		
-		int hour = (int) time;
-		int minute = (int) ((time - hour) * 60);
-		
-		if ((hour < cal.get(Calendar.HOUR_OF_DAY))
-				|| (hour == cal.get(Calendar.HOUR_OF_DAY) && minute <= cal.get(Calendar.MINUTE)))
+		if (LocalTime.now().isAfter(time))
 			cal.add(Calendar.DATE, 1);
 		cal.set(Calendar.HOUR_OF_DAY, hour);
 		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.SECOND, second);
 		cal.set(Calendar.MILLISECOND, 0);
 		
 		long offset = cal.getTimeInMillis() - currentTime;
 		long ticks = offset / 50L;
 		
-		debug("Scheduling daily interest payout at " + Utils.convertDoubleTime(time, false));
+		debug("Scheduling daily interest payout at " + time.toString());
 		
 		return Bukkit.getScheduler().scheduleSyncRepeatingTask(this,
 				() -> Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(this)), ticks, ticksInADay);

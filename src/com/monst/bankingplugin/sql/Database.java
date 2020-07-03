@@ -1091,10 +1091,8 @@ public abstract class Database {
 			if (needsUpdate1) {
 				String queryRenameTableBanks = "ALTER TABLE banks RENAME TO backup_banks"; // for backup
 				String queryRenameTableAccounts = "ALTER TABLE accounts RENAME TO backup_accounts"; // for backup
-				String queryRenameTableTransactionLog = "ALTER TABLE transaction_log RENAME TO backup_transaction_log"; // for
-																														// backup
-				String queryRenameTableInterestLog = "ALTER TABLE interest_log RENAME TO backup_interest_log"; // for
-																												// backup
+				String queryRenameTableTransactionLog = "ALTER TABLE transaction_log RENAME TO backup_transaction_log"; // for backup
+				String queryRenameTableInterestLog = "ALTER TABLE interest_log RENAME TO backup_interest_log"; // for backup
 				String queryRenameTableLogouts = "ALTER TABLE player_logout RENAME TO " + tableLogouts;
 
 				plugin.getLogger().info("Updating database... (#1)");

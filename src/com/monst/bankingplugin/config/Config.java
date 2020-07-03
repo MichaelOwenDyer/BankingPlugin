@@ -1,11 +1,12 @@
 package com.monst.bankingplugin.config;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -33,7 +34,7 @@ public class Config {
     /**
      * The real-life times for account interest payouts.
      **/
-    public static List<Double> interestPayoutTimes;
+	public static List<LocalTime> interestPayoutTimes;
     
     /**
      * The baseline interest rate for all accounts.
@@ -211,9 +212,12 @@ public class Config {
 	/**
 	 * The default account limit per player per bank.
 	 */
-	public static int accountLimitPerBank;
+	public static int playerBankAccountLimit;
 
-	public static Entry<Double, Double> bankProfitMargin;
+	/**
+	 * The bank revenue multiplier.
+	 */
+	public static double bankRevenueMultiplier;
 
     /**
      * The default value for the custom WorldGuard flag 'create-bank'
@@ -232,7 +236,7 @@ public class Config {
 
         plugin.saveDefaultConfig();
 
-        reload(true, true);
+		reload();
     }
 
     /**
@@ -248,7 +252,7 @@ public class Config {
             plugin.getConfig().set(property, intValue);
 
             plugin.saveConfig();
-            reload(false, false);
+			reload();
 
             return;
         } catch (NumberFormatException e) { /* Value not an integer */ }
@@ -258,7 +262,7 @@ public class Config {
             plugin.getConfig().set(property, doubleValue);
 
             plugin.saveConfig();
-            reload(false, false);
+			reload();
 
             return;
         } catch (NumberFormatException e) { /* Value not a double */ }
@@ -272,7 +276,7 @@ public class Config {
 
         plugin.saveConfig();
 
-        reload(false, false);
+		reload();
     }
 
     /**
@@ -291,7 +295,7 @@ public class Config {
             list.add(intValue);
 
             plugin.saveConfig();
-            reload(false, false);
+			reload();
 
             return;
         } catch (NumberFormatException e) { /* Value not an integer */ }
@@ -301,7 +305,7 @@ public class Config {
             list.add(doubleValue);
 
             plugin.saveConfig();
-            reload(false, false);
+			reload();
 
             return;
         } catch (NumberFormatException e) { /* Value not a double */ }
@@ -315,7 +319,7 @@ public class Config {
 
         plugin.saveConfig();
 
-        reload(false, false);
+		reload();
     }
 
     public void remove(String property, String value) {
@@ -327,7 +331,7 @@ public class Config {
             list.remove(intValue);
 
             plugin.saveConfig();
-            reload(false, false);
+			reload();
 
             return;
         } catch (NumberFormatException e) { /* Value not an integer */ }
@@ -337,7 +341,7 @@ public class Config {
             list.remove(doubleValue);
 
             plugin.saveConfig();
-            reload(false, false);
+			reload();
 
             return;
         } catch (NumberFormatException e) { /* Value not a double */ }
@@ -351,7 +355,7 @@ public class Config {
 
         plugin.saveConfig();
 
-        reload(false, false);
+		reload();
     }
 
     /**
@@ -359,7 +363,7 @@ public class Config {
      * @param firstLoad Whether the config values have not been loaded before
      * @param showMessages Whether console (error) messages should be shown
      */
-    public void reload(boolean firstLoad, boolean showMessages) {
+	public void reload() {
         plugin.reloadConfig();
         
         FileConfiguration config = plugin.getConfig();
@@ -367,10 +371,21 @@ public class Config {
         mainCommandNameBank = config.getString("main-command-names.bank");
         mainCommandNameAccount = config.getString("main-command-names.account");
 		mainCommandNameControl = config.getString("main-command-names.control");
-		interestPayoutTimes = (config.getDoubleList("interest-payout-times")) != null
-				? config.getDoubleList("interest-payout-times").stream().map(t -> (t % 24 + 24) % 24).distinct()
-						.sorted().collect(Collectors.toList())
-				: new ArrayList<>();
+		interestPayoutTimes = new ArrayList<>();
+		if (config.getStringList("interest-payout-times") != null)
+			config.getStringList("interest-payout-times").stream().forEach(t -> {
+				try {
+					interestPayoutTimes.add(LocalTime.parse(t));
+				} catch (DateTimeParseException e) {
+					try {
+						interestPayoutTimes.add(LocalTime.parse(t + ":00"));
+					} catch (DateTimeParseException e2) {
+						plugin.getLogger().severe("Could not parse interest payout time (" + t + ")!");
+					}
+				}
+			});
+		if (plugin.isEnabled())
+			plugin.scheduleInterestPoints();
 
 		interestRate = new SimpleEntry<>(config.getBoolean("interest-rate.allow-override"),
 				config.getDouble("interest-rate.default"));
@@ -436,9 +451,8 @@ public class Config {
 				config.getStringList("blacklist") : new ArrayList<>();
 		defaultBankLimit = config.getInt("default-limits.bank");
 		defaultAccountLimit = config.getInt("default-limits.account");
-		accountLimitPerBank = config.getInt("player-account-limit-per-bank");
-		bankProfitMargin = new SimpleEntry<>(config.getDouble("bank-profit-margin.base-percentage"),
-				config.getDouble("bank-profit-margin.rate-of-increase"));
+		playerBankAccountLimit = config.getInt("player-bank-account-limit");
+		bankRevenueMultiplier = config.getDouble("bank-revenue-multiplier");
 		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value.create-bank");
 		databaseTablePrefix = config.getString("table-prefix");
         

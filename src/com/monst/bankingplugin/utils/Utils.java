@@ -2,6 +2,7 @@ package com.monst.bankingplugin.utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,11 @@ import org.bukkit.inventory.ItemStack;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
+
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.HoverEvent.Action;
+import net.md_5.bungee.api.chat.TextComponent;
 
 public class Utils {
 
@@ -58,34 +64,114 @@ public class Utils {
 		return "[" + simplifyList(list).replace(" ", ", ") + "]";
 	}
 
-	/**
-	 * @param time Double representation of a time during the day
-	 * @param hourFormat Whether or not to enable the 12-hour AM/PM format
-	 * @return A string representing the time
-	 */
-	public static String convertDoubleTime(double time, boolean hourFormat) {
-		
-		time = (time % 24 + 24) % 24;
-		
-		int hour = (int) time;
-		int minute = (int) ((time - hour) * 60);
-		
-		String minutes = minute < 10 ? "0" + minute : "" + minute;
+	public static List<List<Integer>> getStackedList(List<Integer> multipliers) {
+		List<List<Integer>> stackedMultipliers = new ArrayList<>();
+		stackedMultipliers.add(new ArrayList<>());
+		stackedMultipliers.get(0).add(multipliers.get(0));
+		int level = 0;
+		for (int i = 1; i < multipliers.size(); i++) {
+			if (multipliers.get(i) == stackedMultipliers.get(level).get(0))
+				stackedMultipliers.get(level).add(multipliers.get(i));
+			else {
+				stackedMultipliers.add(new ArrayList<>());
+				stackedMultipliers.get(++level).add(multipliers.get(i));
+			}
+		}
+		return stackedMultipliers;
+	}
 
-		if (hourFormat) {
-			String suffix = "AM";
-			if (hour >= 13) {
-				hour -= 12;
-				suffix = "PM";
-			} else
-				if (hour == 12)
-					suffix = "PM";
-				else if (hour == 0)
-					hour += 12;
-			
-			return hour + ":" + minutes + " " + suffix;
-		} else
-			return hour + ":" + minutes;
+	public static TextComponent getMultiplierView(List<Integer> multipliers) {
+		return getMultiplierView(multipliers, -1);
+	}
+
+	public static TextComponent getMultiplierView(List<Integer> multipliers, int highlightStage) {
+
+		TextComponent message = new TextComponent();
+		message.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+
+		if (multipliers.size() == 0) {
+			message.setText(ChatColor.GREEN + "1x");
+			return message;
+		}
+
+		List<List<Integer>> stackedMultipliers = Utils.getStackedList(multipliers);
+
+		final int listSize = 5;
+		int stage = -1;
+		if (highlightStage != -1)
+			for (List<Integer> list : stackedMultipliers) {
+				stage++;
+				if (highlightStage - list.size() < 0)
+					break;
+				else
+					highlightStage -= list.size();
+			}
+
+		TextComponent openingBracket = new TextComponent(ChatColor.GOLD + " [");
+		openingBracket.setBold(true);
+
+		message.addExtra(openingBracket);
+
+		TextComponent closingBracket = new TextComponent(ChatColor.GOLD + " ]");
+		closingBracket.setBold(true);
+
+		int lower = 0;
+		int upper = stackedMultipliers.size();
+
+		if (stage != -1 && stackedMultipliers.size() > listSize) {
+			lower = stage - (listSize / 2);
+			upper = stage + (listSize / 2) + 1;
+			while (lower < 0) {
+				lower++;
+				upper++;
+			}
+			while (upper > stackedMultipliers.size()) {
+				lower--;
+				upper--;
+			}
+
+			if (lower > 0)
+				message.addExtra(" ...");
+		}
+
+		for (int i = lower; i < upper; i++) {
+			TextComponent number = new TextComponent(" " + stackedMultipliers.get(i).get(0) + "x");
+
+			if (i == stage) {
+				number.setColor(net.md_5.bungee.api.ChatColor.GREEN);
+				number.setBold(true);
+			}
+			int levelSize = stackedMultipliers.get(i).size();
+			if (levelSize > 1) {
+				ComponentBuilder cb = new ComponentBuilder();
+				if (stage == -1 || i < stage) {
+					cb.append("" + ChatColor.GREEN + levelSize).append(ChatColor.DARK_GRAY + "/")
+							.append("" + ChatColor.GREEN + levelSize);
+				} else if (i > stage) {
+					cb.append("0").color(net.md_5.bungee.api.ChatColor.RED).append("/")
+							.color(net.md_5.bungee.api.ChatColor.DARK_GRAY).append("" + levelSize)
+							.color(net.md_5.bungee.api.ChatColor.GREEN);
+				} else {
+					net.md_5.bungee.api.ChatColor color;
+					if (highlightStage == levelSize - 1)
+						color = net.md_5.bungee.api.ChatColor.GREEN;
+					else if (highlightStage > (levelSize - 1) / 2)
+						color = net.md_5.bungee.api.ChatColor.GOLD;
+					else
+						color = net.md_5.bungee.api.ChatColor.RED;
+
+					cb.append("" + highlightStage).color(color).append("/")
+							.color(net.md_5.bungee.api.ChatColor.DARK_GRAY).append("" + levelSize)
+							.color(net.md_5.bungee.api.ChatColor.GREEN);
+				}
+				number.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, cb.create()));
+			}
+			message.addExtra(number);
+		}
+		if (upper < stackedMultipliers.size())
+			message.addExtra(" ...");
+		message.addExtra(closingBracket);
+		return message;
 	}
 
     /**

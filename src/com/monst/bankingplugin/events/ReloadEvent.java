@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.events.bank;
+package com.monst.bankingplugin.events;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;

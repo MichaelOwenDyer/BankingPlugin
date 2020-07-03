@@ -2,7 +2,6 @@ package com.monst.bankingplugin;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,9 +25,6 @@ import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Utils;
 
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.HoverEvent.Action;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class Account extends Ownable {
@@ -256,107 +252,6 @@ public class Account extends Ownable {
 		return inventoryHolder instanceof DoubleChest;
 	}
 
-	@SuppressWarnings("unchecked")
-	public TextComponent getMultiplierView() {
-		List<Integer> multipliers = (List<Integer>) bank.getAccountConfig().getOrDefault(Field.MULTIPLIERS);
-		TextComponent message = new TextComponent();
-		message.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-
-		if (multipliers.size() == 0) {
-			message.setText(ChatColor.GREEN + "1x");
-			return message;
-		}
-
-		List<List<Integer>> stackedMultipliers = new ArrayList<>();
-		stackedMultipliers.add(new ArrayList<>());
-		stackedMultipliers.get(0).add(multipliers.get(0));
-		int level = 0;
-		for (int i = 1; i < multipliers.size(); i++) {
-			if (multipliers.get(i) == stackedMultipliers.get(level).get(0))
-				stackedMultipliers.get(level).add(multipliers.get(i));
-			else {
-				stackedMultipliers.add(new ArrayList<>());
-				stackedMultipliers.get(++level).add(multipliers.get(i));
-			}
-		}
-
-		final int listSize = 5;
-		int counter = status.getMultiplierStage();
-		int stage = -1;
-		for (List<Integer> list : stackedMultipliers) {
-			stage++;
-			if (counter - list.size() < 0)
-				break;
-			else
-				counter -= list.size();
-		}
-
-		TextComponent openingBracket = new TextComponent(ChatColor.GOLD + " [");
-		openingBracket.setBold(true);
-
-		message.addExtra(openingBracket);
-
-		TextComponent closingBracket = new TextComponent(ChatColor.GOLD + " ]");
-		closingBracket.setBold(true);
-
-		int lower = 0;
-		int upper = stackedMultipliers.size();
-
-		if (stackedMultipliers.size() > listSize) {
-			lower = stage - (listSize / 2);
-			upper = stage + (listSize / 2) + 1;
-			while (lower < 0) {
-				lower++;
-				upper++;
-			}
-			while (upper > stackedMultipliers.size()) {
-				lower--;
-				upper--;
-			}
-
-			if (lower > 0)
-				message.addExtra(" ...");
-		}
-
-		for (int i = lower; i < upper; i++) {
-			TextComponent number = new TextComponent(" " + stackedMultipliers.get(i).get(0) + "x");
-
-			if (i == stage) {
-				number.setColor(net.md_5.bungee.api.ChatColor.GREEN);
-				number.setBold(true);
-			}
-			int levelSize = stackedMultipliers.get(i).size();
-			if (levelSize > 1) {
-				ComponentBuilder cb = new ComponentBuilder();
-				if (i < stage) {
-					cb.append("" + ChatColor.GREEN + levelSize).append(ChatColor.DARK_GRAY + "/")
-							.append("" + ChatColor.GREEN + levelSize);
-				} else if (i > stage) {
-					cb.append("0").color(net.md_5.bungee.api.ChatColor.RED).append("/")
-							.color(net.md_5.bungee.api.ChatColor.DARK_GRAY).append("" + levelSize)
-							.color(net.md_5.bungee.api.ChatColor.GREEN);
-				} else {
-					net.md_5.bungee.api.ChatColor color;
-					if (counter == levelSize - 1)
-						color = net.md_5.bungee.api.ChatColor.GREEN;
-					else if (counter > (levelSize - 1) / 2)
-						color = net.md_5.bungee.api.ChatColor.GOLD;
-					else
-						color = net.md_5.bungee.api.ChatColor.RED;
-					
-					cb.append("" + counter).color(color).append("/").color(net.md_5.bungee.api.ChatColor.DARK_GRAY)
-							.append("" + levelSize).color(net.md_5.bungee.api.ChatColor.GREEN);
-				}
-				number.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, cb.create()));
-			}
-			message.addExtra(number);
-		}
-		if (upper < stackedMultipliers.size())
-			message.addExtra(" ...");
-		message.addExtra(closingBracket);
-		return message;
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -375,36 +270,33 @@ public class Account extends Ownable {
 
 	@Override
 	public String toString() {
-		String name;
-		name = hasNickname() ? ChatColor.GRAY + "\"" + Utils.colorize(nickname) + ChatColor.GRAY + "\""
+		String name = hasNickname() ? ChatColor.GRAY + "\"" + Utils.colorize(nickname) + ChatColor.GRAY + "\""
 				: ChatColor.GRAY + "Account ID: " + ChatColor.WHITE + id;
 		return name + "\n" + ChatColor.GRAY + "Owner: " + ChatColor.GOLD + getOwnerDisplayName() + "\n" + ChatColor.GRAY
 				+ "Bank: " + ChatColor.AQUA + bank.getName() + ChatColor.GRAY;
 	}
 
+	@SuppressWarnings("unchecked")
 	public TextComponent toStringVerbose() {
 		TextComponent info = new TextComponent(toString() + "\nBalance: ");
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 		
-		TextComponent message = new TextComponent(
-				ChatColor.GREEN + "$" + Utils.formatNumber(getBalance()) + "\n");
+		TextComponent message = new TextComponent(ChatColor.GREEN + "$" + Utils.formatNumber(getBalance()) + "\n");
 		
 		TextComponent multiplier = new TextComponent("Multiplier:");
-		multiplier.addExtra(getMultiplierView());
+		multiplier.addExtra(Utils.getMultiplierView((List<Integer>) bank.getAccountConfig().getOrDefault(Field.MULTIPLIERS),
+						status.getMultiplierStage()));
 		multiplier.addExtra("\nInterest rate: ");
 		
-		TextComponent interestRate = new TextComponent(ChatColor.GREEN + ""
-				+ Math.round(((double) bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE)
-						* status.getRealMultiplier() * 100))
-				+ "%" + ChatColor.GRAY + " (" + bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) + " x "
-				+ status.getRealMultiplier() + ")\n");
+		TextComponent interestRate = new TextComponent(ChatColor.GREEN + "" 
+				+ Math.round(((double) bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) * status.getRealMultiplier() * 100))+ "%" 
+				+ ChatColor.GRAY + " (" + bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) + " x " + status.getRealMultiplier() + ")\n");
 		
 		if (status.getRemainingUntilFirstPayout() != 0)
-			interestRate.addExtra(new TextComponent(
-					ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)"));
+			interestRate.addExtra(new TextComponent(ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)"));
 		
-		TextComponent loc = new TextComponent("Location: " + ChatColor.AQUA + "(" + location.getBlockX() + ", "
-				+ location.getBlockY() + ", " + location.getBlockZ() + ")");
+		TextComponent loc = new TextComponent(
+				"Location: " + ChatColor.AQUA + "(" + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ")");
 		
 		info.addExtra(message);
 		info.addExtra(multiplier);

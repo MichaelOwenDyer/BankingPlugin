@@ -425,7 +425,7 @@ public class BankUtils {
 	}
 
     /**
-	 * Reload the accounts
+	 * Reload the plugin
 	 * 
 	 * @param reloadConfig        Whether the configuration should also be reloaded
 	 * @param showConsoleMessages Whether messages about the language file should be
@@ -439,7 +439,7 @@ public class BankUtils {
 		AccountUtils accountUtils = plugin.getAccountUtils();
 
         if (reloadConfig) {
-			plugin.getPluginConfig().reload(false, showConsoleMessages);
+			plugin.getPluginConfig().reload();
         }
 
 		plugin.getDatabase().connect(new Callback<int[]>(plugin) {

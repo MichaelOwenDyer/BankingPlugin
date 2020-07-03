@@ -3,7 +3,10 @@ package com.monst.bankingplugin;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,6 +25,7 @@ import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Utils;
 
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
 
 public class Bank extends Ownable {
 	
@@ -201,19 +205,67 @@ public class Bank extends Ownable {
 		return accounts.stream().mapToInt(account -> account.getID());
 	}
 	
+	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
+		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
+	}
+
+	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
+		Map<OfflinePlayer, BigDecimal> customerBalances = new HashMap<>();
+		getCustomerAccounts().entrySet().forEach(entry -> {
+			customerBalances.put(entry.getKey(),
+					entry.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, (a, bd) -> a.add(bd)));
+		});
+		return customerBalances;
+	}
+
+	/**
+	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
+	 * inequality among all n accounts at the bank.
+	 * 
+	 * @return G = ( 2 * sum(i,n)(i * value of ith account) / n * sum(i,n)(value of
+	 *         ith account) ) - ( n + 1 / n )
+	 */
+	public double getGiniCoefficient() {
+		if (getAccounts().isEmpty())
+			return 0;
+		List<BigDecimal> orderedValues = getCustomerBalances().values().stream().sorted(BigDecimal::compareTo)
+				.collect(Collectors.toList());
+		BigDecimal valueSum = BigDecimal.ZERO;
+		BigDecimal weightedValueSum = BigDecimal.ZERO;
+		for (int i = 0; i < orderedValues.size(); i++) {
+			valueSum.add(orderedValues.get(i));
+			weightedValueSum.add(orderedValues.get(i).multiply(BigDecimal.valueOf(i + 1)));
+		}
+		valueSum = valueSum.multiply(BigDecimal.valueOf(orderedValues.size()));
+		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
+		BigDecimal leftEq = weightedValueSum.divide(valueSum);
+		BigDecimal rightEq = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
+		return leftEq.subtract(rightEq).doubleValue();
+	}
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public String toString() {
 		return ChatColor.GRAY + "\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n"
 				+ ChatColor.GRAY + "Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n"
 				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n"
-				+ ChatColor.GRAY + "Multipliers: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.MULTIPLIERS) + "\n"
+				+ ChatColor.GRAY + "Multipliers: " + Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)) + "\n"
 				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE));
 	}
 	
-	public String toStringVerbose() {
+	@SuppressWarnings("unchecked")
+	public TextComponent toText() {
+		return new TextComponent(ChatColor.GRAY + "\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n"
+				+ ChatColor.GRAY + "Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n"
+				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n"
+				+ ChatColor.GRAY + "Multipliers: " + Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)) + "\n"
+				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE)));
+	}
+	
+	public TextComponent toStringVerbose() {
 		double minBalance = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
 		boolean showFee = minBalance != 0;
-		return toString() + "\n"
+		return new TextComponent(toText() + "\n"
 				+ ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS) 
 				+ ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before reset)\n"
 				+ ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY) + "\n"
@@ -221,8 +273,9 @@ public class Bank extends Ownable {
 				+ ChatColor.GRAY + (showFee ? " (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)" : "") + "\n"
 				+ ChatColor.GRAY + "Current accounts: " + ChatColor.AQUA + accounts.size() + "\n"
 				+ ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n"
+				+ ChatColor.GRAY + "Gini coefficient: " + getGiniCoefficient() + "\n" // Dynamic color
 				+ ChatColor.GRAY + "Selection type: " + selection.getType() + "\n"
-				+ ChatColor.GRAY + "Location: " + ChatColor.AQUA + getCoordinates(); // Remove location and selection type?
+				+ ChatColor.GRAY + "Location: " + ChatColor.AQUA + getCoordinates()); // Remove location and selection type?
 		// Make this more useful for customers
 	}
 
