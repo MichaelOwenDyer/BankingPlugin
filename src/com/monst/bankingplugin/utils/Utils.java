@@ -13,8 +13,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.block.data.type.Slab;
+import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -63,6 +66,13 @@ public class Utils {
 	public static String listifyList(String list) {
 		return "[" + simplifyList(list).replace(" ", ", ") + "]";
 	}
+	
+	@SuppressWarnings("deprecation")
+	public static boolean isTransparent(Block block) {
+		return (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST
+				|| block.getBlockData() instanceof Slab || block.getBlockData() instanceof Stairs
+				|| block.getType().isTransparent());
+    }
 
 	public static List<List<Integer>> getStackedList(List<Integer> multipliers) {
 		List<List<Integer>> stackedMultipliers = new ArrayList<>();

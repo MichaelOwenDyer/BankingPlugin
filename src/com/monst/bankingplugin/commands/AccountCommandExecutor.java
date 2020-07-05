@@ -511,7 +511,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 				+ playerToTrust.getUniqueId());
 
-		p.sendMessage(Messages.CLICK_CHEST_TRUST);
+		p.sendMessage(String.format(Messages.CLICK_CHEST_TRUST, playerToTrust.getName()));
 		ClickType.setPlayerClickType(p, new ClickType.TrustClickType(playerToTrust));
 		plugin.debug(p.getName() + " is trusting " + playerToTrust.getName() + " to an account");
 		return true;

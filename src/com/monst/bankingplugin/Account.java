@@ -21,7 +21,6 @@ import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountStatus;
-import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Utils;
 
@@ -84,7 +83,7 @@ public class Account extends Ownable {
 			plugin.debug(e);
 			return false;
 			
-		} else if (!ItemUtils.isTransparent(b.getRelative(BlockFace.UP))) {
+		} else if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
 			
 			NotEnoughSpaceException e = new NotEnoughSpaceException(
 					String.format("No space above chest in world '%s' at location: %d; %d; %d", b.getWorld().getName(),
@@ -300,10 +299,12 @@ public class Account extends Ownable {
 		
 		TextComponent interestRate = new TextComponent(ChatColor.GREEN + "" 
 				+ Math.round(((double) bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) * status.getRealMultiplier() * 100))+ "%" 
-				+ ChatColor.GRAY + " (" + bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) + " x " + status.getRealMultiplier() + ")\n");
+				+ ChatColor.GRAY + " (" + bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) + " x "
+				+ status.getRealMultiplier() + ")");
 		
 		if (status.getRemainingUntilFirstPayout() != 0)
-			interestRate.addExtra(new TextComponent(ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)"));
+			interestRate.addExtra(new TextComponent(
+					ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)\n"));
 		
 		TextComponent loc = new TextComponent(
 				"Location: " + ChatColor.AQUA + "(" + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ")");

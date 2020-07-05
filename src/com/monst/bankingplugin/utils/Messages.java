@@ -21,8 +21,7 @@ public class Messages {
 	public static final String ACCOUNT_REMOVED = ChatColor.GOLD + "The account has been removed.";
 	public static final String BANK_REMOVED = ChatColor.GOLD + "The bank has been removed.";
 	public static final String BANK_RESIZED = ChatColor.GOLD + "The bank has been resized.";
-	public static final String BANK_FIELD_SET = ChatColor.GOLD + "Field " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " has been set to "
-			+ ChatColor.GREEN + "%s" + ChatColor.GOLD + " at bank " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
+	public static final String BANK_FIELD_SET = ChatColor.GOLD + "Field " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " has been set to " + ChatColor.GREEN + "%s" + ChatColor.GOLD + " at bank " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
 	public static final String PLAYER_REIMBURSED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
 	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "%d account%s %s successfully removed.";
@@ -50,6 +49,10 @@ public class Messages {
 	public static final String ADDED_COOWNER = ChatColor.GOLD + "%s has been added as a co-owner.";
 	public static final String REMOVED_COOWNER = ChatColor.GOLD + "%s has been removed as a co-owner.";
 	public static final String RELOADED_BANKS = ChatColor.GOLD + "Successfully reloaded BankingPlugin.";
+	public static final String ACCOUNT_DEPOSIT = ChatColor.GOLD + "You have deposited " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " into %s account.";
+	public static final String ACCOUNT_WITHDRAWAL = ChatColor.GOLD + "You have withdrawn " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " from %s account.";
+	public static final String ACCOUNT_NEW_BALANCE = ChatColor.GOLD + "Your new balance is " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
+	public static final String BANK_SELECTED = ChatColor.GOLD + "Bank region selected as %s.";
 	
 	// DENY NOTIFICATIONS
 	public static final String MUST_BE_OWNER = ChatColor.RED + "You must be the owner of the account to do that.";
@@ -114,6 +117,7 @@ public class Messages {
 	public static final String NO_PERMISSION_BANK_OTHER_SET = NO_PERMISSION + "configure someone else's bank.";
 	public static final String NO_PERMISSION_BANK_ADMIN_CREATE = NO_PERMISSION + "create an admin bank.";
 	public static final String NO_PERMISSION_BANK_ADMIN_REMOVE = NO_PERMISSION + "remove an admin bank.";
+	public static final String NO_PERMISSION_BANK_SELECT = NO_PERMISSION + "select a bank.";
 	public static final String NO_PERMISSION_ACCOUNT_CREATE = NO_PERMISSION + "create an account.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME = NO_PERMISSION + "set an account nickname.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_MULTIPLIER = NO_PERMISSION + "set an account multiplier.";
@@ -160,6 +164,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_BANK_REMOVEALL = USAGE_PREFIX_BANK + "removeall <\"all\">";
 	public static final String COMMAND_USAGE_BANK_RESIZE = USAGE_PREFIX_BANK + "resize [bankname] <xyz> <xyz>";
 	public static final String COMMAND_USAGE_BANK_SET = USAGE_PREFIX_BANK + "set [bankname] [field] [value]";
+	public static final String COMMAND_USAGE_BANK_SELECT = USAGE_PREFIX_BANK + "select";
 	public static final String COMMAND_USAGE_VERSION = USAGE_PREFIX_CONTROL + "version";
 	public static final String COMMAND_USAGE_RELOAD = USAGE_PREFIX_CONTROL + "reload";
 	public static final String COMMAND_USAGE_CONFIG = USAGE_PREFIX_CONTROL + "config [set / add / remove] [field] <newvalue>";

@@ -2,7 +2,6 @@ package com.monst.bankingplugin.listeners;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,9 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -31,7 +28,6 @@ import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -50,49 +46,26 @@ public class AccountProtectListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
 	public void onAccountChestBreak(BlockBreakEvent e) {
-        final Block b = e.getBlock();
+		final Block b = e.getBlock();
 
 		if (accountUtils.isAccount(b.getLocation())) {
 			final Account account = accountUtils.getAccount(e.getBlock().getLocation());
-            Player p = e.getPlayer();
+			Player p = e.getPlayer();
 
-            if (p.isSneaking() && Utils.hasAxeInHand(p)) {
+			if (p.isSneaking() && Utils.hasAxeInHand(p)) {
 				plugin.debug(String.format("%s tries to break %s's account (#%d)", p.getName(),
 						account.getOwner().getName(), account.getID()));
-				if (account.isOwner(p)
-						|| p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
+				if (account.isOwner(p) || p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
 					removeAndCreateSmaller(account, b, p);
 					return;
-                }
-            }
-            e.setCancelled(true);
-			e.getPlayer().sendMessage(Messages.CANNOT_BREAK_ACCOUNT);
-        }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onEntityExplode(EntityExplodeEvent e) {
-        ArrayList<Block> bl = new ArrayList<>(e.blockList());
-        for (Block b : bl) {
-            if (b.getType().equals(Material.CHEST) || b.getType().equals(Material.TRAPPED_CHEST)) {
-				if (accountUtils.isAccount(b.getLocation()))
-					e.blockList().remove(b);
-            }
-        }
-    }
-
-	@EventHandler
-	public void onBlockExplode(BlockExplodeEvent e) {
-		ArrayList<Block> bl = new ArrayList<>(e.blockList());
-		for (Block b : bl) {
-			if (b.getType().equals(Material.CHEST) || b.getType().equals(Material.TRAPPED_CHEST)) {
-				if (plugin.getAccountUtils().isAccount(b.getLocation()))
-					e.blockList().remove(b);
+				}
 			}
+			e.setCancelled(true);
+			e.getPlayer().sendMessage(Messages.CANNOT_BREAK_ACCOUNT);
 		}
 	}
 
-    @EventHandler(ignoreCancelled = true)
+	@EventHandler(ignoreCancelled = true)
 	public void onAccountExtend(BlockPlaceEvent e) {
         final Player p = e.getPlayer();
         final Block b = e.getBlockPlaced();
@@ -143,7 +116,8 @@ public class AccountProtectListener implements Listener {
 
 		AccountExtendEvent event = new AccountExtendEvent(p, account, b.getLocation());
         Bukkit.getPluginManager().callEvent(event);
-		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER) && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)
+				&& !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             e.setCancelled(true);
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED);
             return;
@@ -155,7 +129,7 @@ public class AccountProtectListener implements Listener {
             return;
         }
 
-		if (!ItemUtils.isTransparent(b.getRelative(BlockFace.UP))) {
+		if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
             e.setCancelled(true);
 			p.sendMessage(Messages.CHEST_BLOCKED);
             return;
@@ -212,11 +186,10 @@ public class AccountProtectListener implements Listener {
 			return;
 		Account account = accountUtils.getAccount(e.getInventory().getLocation());
 		Player executor = (Player) e.getWhoClicked();
-		if (!account.isOwner(executor))
-			if (!executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
-				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_EDIT);
-				e.setCancelled(true);
-			}
+		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
+			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_EDIT);
+			e.setCancelled(true);
+		}
 	}
 
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
@@ -226,14 +199,13 @@ public class AccountProtectListener implements Listener {
 			final Chest r = (Chest) dc.getRightSide();
 
 			Location loc = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
-			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(),
-					account.getCoowners(), account.getBank(), loc, account.getStatus(), account.getNickname(),
-					account.getBalance(), account.getPrevBalance());
+			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
+					account.getBank(), loc, account.getStatus(), account.getNickname(), account.getBalance(),
+					account.getPrevBalance());
 
 			accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
 				@Override
 				public void onResult(Void result) {
-					newAccount.setBalance(BigDecimal.ZERO);
 					newAccount.create(true);
 					accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
 						@Override
@@ -245,21 +217,23 @@ public class AccountProtectListener implements Listener {
 			});
 		} else {
 			AccountConfig accountConfig = account.getBank().getAccountConfig();
-
 			double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+
 			if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION)
-					&& p.getUniqueId().equals(account.getOwner().getUniqueId())) {
+					&& account.isTrusted(p)) {
 				EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
 						creationPrice);
-				if (r.transactionSuccess())
-					p.sendMessage(String.format(Messages.PLAYER_REIMBURSED,
-							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
-				else {
+				if (!r.transactionSuccess()) {
 					plugin.debug("Economy transaction failed: " + r.errorMessage);
 					p.sendMessage(Messages.ERROR_OCCURRED);
+				} else {
+					p.sendMessage(Messages.ACCOUNT_REMOVED);
+					p.sendMessage(String.format(Messages.PLAYER_REIMBURSED,
+							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
 				}
-			} else
+			} else {
 				p.sendMessage(Messages.ACCOUNT_REMOVED);
+			}
 
 			accountUtils.removeAccount(account, true);
 			plugin.debug(String.format("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(),

@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.listeners;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -15,6 +14,7 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.AccountUtils;
+import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Utils;
 
 public class AccountBalanceListener implements Listener {
@@ -29,7 +29,7 @@ public class AccountBalanceListener implements Listener {
 
 	@EventHandler
 	public void onAccountInventoryClose(InventoryCloseEvent e) {
-
+		
 		if (!(e.getPlayer() instanceof Player) || e.getInventory() == null)
 			return;
 		if (!e.getInventory().getType().equals(InventoryType.CHEST))
@@ -38,21 +38,31 @@ public class AccountBalanceListener implements Listener {
 		Location loc = e.getInventory().getLocation();
 
 		if (accountUtils.isAccount(loc)) {
+			Player executor = (Player) e.getPlayer();
 			Account account = accountUtils.getAccount(loc);
+			
+			plugin.debug(executor.getName() + " has closed an account chest (" + account.getID() + ")");
+			
 			BigDecimal valueOnClose = accountUtils.appraiseAccountContents(account);
-			valueOnClose = valueOnClose.setScale(2, RoundingMode.HALF_EVEN);
 
 			BigDecimal difference = valueOnClose.subtract(account.getBalance());
 			if (difference.signum() == 0)
 				return;
 
-			Player executor = (Player) e.getPlayer();
 			account.setBalance(valueOnClose);
 
-			executor.sendMessage(getTransactionMessage(executor, account, difference));
-			executor.sendMessage(getNewBalanceMessage(executor, account, valueOnClose));
+			plugin.debug("Account #" + account.getID() + " has been updated with a new balance ("
+					+ Utils.formatNumber(valueOnClose) + ")");
 
-			if (difference.signum() == -1) {
+			if (difference.signum() == 1)
+				executor.sendMessage(String.format(Messages.ACCOUNT_DEPOSIT, Utils.formatNumber(difference),
+						(account.isOwner(executor)) ? "your" : account.getOwner().getName()));
+			else
+				executor.sendMessage(String.format(Messages.ACCOUNT_WITHDRAWAL, Utils.formatNumber(difference.abs()),
+						(account.isOwner(executor)) ? "your" : account.getOwner().getName()));
+			executor.sendMessage(String.format(Messages.ACCOUNT_NEW_BALANCE, Utils.formatNumber(valueOnClose)));
+
+			if (difference.signum() == -1 && valueOnClose.compareTo(account.getPrevBalance()) == -1) {
 				int multiplier = account.getStatus().getMultiplierStage();
 				if (multiplier != account.getStatus().processWithdrawal())
 					executor.sendMessage(ChatColor.GOLD + "Your multiplier has decreased to " + ChatColor.GREEN
@@ -70,26 +80,6 @@ public class AccountBalanceListener implements Listener {
 				plugin.debug("Logging transaction to database...");
 			}
 		}
-	}
-
-	private String getTransactionMessage(Player executor, Account account, BigDecimal difference) {
-		
-		StringBuilder sb = new StringBuilder("You have ");
-		
-		sb.append(difference.signum() == 1
-				? "deposited " + ChatColor.GREEN + "$" + Utils.formatNumber(difference) + ChatColor.WHITE + " into "
-				: "withdrawn " + ChatColor.RED + "$" + Utils.formatNumber(difference.abs()) + ChatColor.WHITE + " from ");
-		
-		sb.append(account.isOwner(executor) ? "your account." : account.getOwner().getName() + "'s account.");
-
-		return sb.toString();
-	}
-
-	private String getNewBalanceMessage(Player executor, Account account, BigDecimal balance) {
-		if (account.isOwner(executor))
-			return "Your new balance is " + ChatColor.GREEN + "$" + Utils.formatNumber(balance) + ChatColor.WHITE + ".";
-		else
-			return account.getOwner().getName() + "'s new balance is $" + Utils.formatNumber(balance) + ".";
 	}
 
 	public enum TransactionType {

@@ -55,6 +55,10 @@ class GenericTabCompleter implements TabCompleter {
 				return completeAccountRemoveAll(sender, args);
 			case "set":
 				return completeAccountSet((Player) sender, args);
+			case "trust":
+				return completeAccountTrust((Player) sender, args);
+			case "untrust":
+				return completeAccountTrust((Player) sender, args);
 			default:
 				return new ArrayList<>();
 			}
@@ -71,7 +75,7 @@ class GenericTabCompleter implements TabCompleter {
 			case "removeall":
 				return new ArrayList<>();
 			case "resize":
-				return completeBankCreate((Player) sender, args);
+				return completeBankResize((Player) sender, args);
 			case "set":
 				return completeBankSet(sender, args);
 			default:
@@ -171,7 +175,7 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeAccountSet(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
-		List<String> fields = Arrays.asList("nickname", "multiplier", "initial-delay");
+		List<String> fields = Arrays.asList("nickname", "multiplier", "interest-delay");
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
@@ -185,12 +189,29 @@ class GenericTabCompleter implements TabCompleter {
 		return new ArrayList<>();
 	}
 
+	private List<String> completeAccountTrust(Player p, String[] args) {
+		ArrayList<String> returnCompletions = new ArrayList<>();
+		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin); 
+		onlinePlayers.remove(p.getName());
+
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				for (String name : onlinePlayers)
+					if (name.startsWith(args[1]))
+						returnCompletions.add(name);
+				return returnCompletions;
+			}
+			return onlinePlayers;
+		}
+		return new ArrayList<>();
+	}
+
 	private List<String> completeBankCreate(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		
 		if (args.length == 2) {
 			if (args[1].isEmpty())
-				return Arrays.asList("[bankname]");
+				return Arrays.asList("<bankname>");
 			else
 				return new ArrayList<>();
 		} else if (args.length == 3) {
@@ -390,12 +411,27 @@ class GenericTabCompleter implements TabCompleter {
 		return new ArrayList<>();
 	}
 
+	private List<String> completeBankResize(Player p, String[] args) {
+		ArrayList<String> returnCompletions = new ArrayList<>();
+		List<String> banks = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName)
+				.collect(Collectors.toList());
+
+		if (args.length == 2) {
+			for (String name : banks)
+				if (name.startsWith(args[1]))
+					returnCompletions.add(name);
+			return returnCompletions;
+		}
+		return completeBankCreate(p, args);
+	}
+
 	private List<String> completeControlConfig(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		Set<String> configValues = plugin.getConfig().getKeys(true);
-		plugin.getConfig().getKeys(false).stream().forEach(s -> configValues.remove(s));
-		configValues.remove("creation-prices.account");
-		configValues.remove("creation-prices.bank");
+		plugin.getConfig().getKeys(true).stream().forEach(s -> {
+			if (s.contains("."))
+				configValues.remove(s.substring(0, s.lastIndexOf(".")));
+		});
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {

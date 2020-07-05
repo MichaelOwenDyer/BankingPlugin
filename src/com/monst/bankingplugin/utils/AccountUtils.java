@@ -106,11 +106,6 @@ public class AccountUtils {
         InventoryHolder ih = account.getInventoryHolder();
         plugin.debug("Adding account... (#" + account.getID() + ")");
 
-		if (!account.getBank().getAccounts().contains(account))
-			account.getBank().addAccount(account);
-		else
-			plugin.debug("Bank already contained account #" + account.getID());
-
         if (ih instanceof DoubleChest) {
 			DoubleChest dc = (DoubleChest) ih;
 			Chest l = (Chest) dc.getLeftSide();

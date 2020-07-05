@@ -54,6 +54,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 		switch (subCommand.getName().toLowerCase()) {
 		case "version":
 			sender.sendMessage(ChatColor.AQUA + "BankingPlugin version " + plugin.getDescription().getVersion());
+			break;
 		case "config":
 			if (!changeConfig(sender, args))
 				sender.sendMessage(subCommand.getHelpMessage(sender));

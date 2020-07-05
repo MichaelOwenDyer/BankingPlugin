@@ -43,7 +43,6 @@ import com.monst.bankingplugin.utils.ClickType.InfoClickType;
 import com.monst.bankingplugin.utils.ClickType.SetClickType;
 import com.monst.bankingplugin.utils.ClickType.TrustClickType;
 import com.monst.bankingplugin.utils.ClickType.UntrustClickType;
-import com.monst.bankingplugin.utils.ItemUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -161,19 +160,21 @@ public class AccountInteractListener implements Listener {
 				ItemStack item = Utils.getItemInMainHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account, p.hasPermission(Permissions.ACCOUNT_INFO_OTHER));
+					info(p, account, account.isTrusted(p) || account.getBank().isOwner(p)
+							|| p.hasPermission(Permissions.ACCOUNT_INFO_OTHER));
 					return;
 				}
 				item = Utils.getItemInOffHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account, p.hasPermission(Permissions.ACCOUNT_INFO_OTHER));
+					info(p, account, account.isTrusted(p) || account.getBank().isOwner(p)
+							|| p.hasPermission(Permissions.ACCOUNT_INFO_OTHER));
 					return;
 				}
 			}
 
 			if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !p.isSneaking()) {
-				boolean executorIsTrusted = account.isTrusted(p);
+				boolean executorIsTrusted = account.isTrusted(p) || account.getBank().isOwner(p);
 				if (!executorIsTrusted && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
 					e.setCancelled(true);
 					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
@@ -245,7 +246,7 @@ public class AccountInteractListener implements Listener {
 			plugin.debug("Chest is already an account.");
 			return;
 		}
-		if (!ItemUtils.isTransparent(b.getRelative(BlockFace.UP))) {
+		if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
 			p.sendMessage(Messages.CHEST_BLOCKED);
 			plugin.debug("Chest is blocked.");
 			return;
@@ -265,7 +266,7 @@ public class AccountInteractListener implements Listener {
 		Location location = b.getLocation();
 		Bank bank = bankUtils.getBank(location);
 
-		if (!bank.isAdminBank() && !Config.allowSelfBanking && bank.isOwner(p)) {
+		if (!Config.allowSelfBanking && bank.isOwner(p)) {
 			p.sendMessage(Messages.NO_SELF_BANKING);
 			plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
 			return;
@@ -313,8 +314,9 @@ public class AccountInteractListener implements Listener {
 					plugin.debug("Economy transaction failed: " + r2.errorMessage);
 					p.sendMessage(Messages.ERROR_OCCURRED);
 					return;
-				} else if (bankOwner.getUniqueId() != accountOwner.getUniqueId())
-					p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED, accountOwner.getName(),
+				} else if (!account.isOwner(bankOwner) && bankOwner.isOnline())
+					bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
+							accountOwner.getName(),
 							BigDecimal.valueOf(r2.amount).setScale(2, RoundingMode.HALF_EVEN)));
 			}
 		}
@@ -333,7 +335,8 @@ public class AccountInteractListener implements Listener {
 	}
 	
 	private boolean confirmRemove(Player executor, Account account) {
-		if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
+		if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
+				&& account.getBank().isTrusted(executor)) {
 			if (account.isTrusted(executor))
 				executor.sendMessage(Messages.MUST_BE_OWNER);
 			else
@@ -419,9 +422,10 @@ public class AccountInteractListener implements Listener {
 	 * @param account  Account from which the information will be retrieved
 	 */
 	private void info(Player executor, Account account, boolean verbose) {
-		boolean executorIsTrusted = account.isTrusted(executor);
+		boolean executorIsTrusted = account.isTrusted(executor) || account.getBank().isTrusted(executor);
 		if (!executorIsTrusted)
-			if (verbose && !executor.hasPermission(Permissions.ACCOUNT_INFO_OTHER)) {
+			if (verbose && !executor.hasPermission(Permissions.ACCOUNT_INFO_OTHER)
+					&& !account.getBank().isOwner(executor)) {
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO_VERBOSE);
 				return;
 			}

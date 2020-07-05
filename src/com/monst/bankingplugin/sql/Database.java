@@ -283,6 +283,8 @@ public abstract class Database {
 						account.setID(accountId);
 					}
 
+					account.getBank().addAccount(account);
+
 					if (callback != null) {
 						callback.callSyncResult(account.getID());
 					}

@@ -93,6 +93,13 @@ public class BankCommand extends GenericCommand {
 			}
 		});
 
+		addSubCommand(new BankSubCommand("select", true, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return Messages.COMMAND_USAGE_BANK_SELECT;
+			}
+		});
+
         register();
         commandCreated = true;
     }

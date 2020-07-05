@@ -182,6 +182,7 @@ public class AccountConfig {
 			break;
 		case PLAYER_ACCOUNT_LIMIT:
 			playerAccountLimit = Integer.parseInt(s);
+			break;
 		default:
 			return false;
 		}
@@ -283,6 +284,7 @@ public class AccountConfig {
 		public static Field getByName(String name) {
 			return stream().filter(field -> field.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
 		}
+
 	}
 	
 }

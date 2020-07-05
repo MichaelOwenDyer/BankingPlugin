@@ -24,6 +24,7 @@ import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.BankUtils;
@@ -99,6 +100,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			case "set":
 				if (!promptBankSet(p, args))
 					p.sendMessage(subCommand.getHelpMessage(sender));
+				return true;
+			case "select":
+				promptBankSelect(p, args);
 				return true;
 			default:
 				return false;
@@ -620,6 +624,44 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		plugin.getDatabase().addBank(bank, null);
 		plugin.debug(sender.getName() + " has set " + args[2] + " at " + bank.getName() + " to " + args[3]);
 		return true;
+	}
+
+	private void promptBankSelect(Player p, String[] args) {
+		plugin.debug(p.getName() + " wants to select a bank");
+
+		if (!p.hasPermission("worldedit.selection.pos")) {
+			plugin.debug(p.getName() + " does not have permission to select a bank");
+			p.sendMessage(Messages.NO_PERMISSION_BANK_SELECT);
+			return;
+		}
+
+		if (!plugin.hasWorldEdit()) {
+			plugin.debug("WorldEdit is not enabled");
+			p.sendMessage(Messages.WORLDEDIT_NOT_ENABLED);
+			return;
+		}
+
+		Bank bank;
+		if (args.length == 1) {
+			bank = bankUtils.getBank(p.getLocation());
+			if (bank == null) {
+				plugin.debug(p.getName() + " wasn't standing in a bank");
+				p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+				return;
+			}
+		}
+		bank = bankUtils.lookupBank(args[1]);
+		if (bank == null) {
+			plugin.debug("No bank could be found under the identifier " + args[1]);
+			p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			return;
+		}
+
+		WorldEditReader.setSelection(plugin, bank.getSelection(), p);
+		plugin.debug(p.getName() + " has selected a bank");
+		p.sendMessage(String.format(Messages.BANK_SELECTED,
+				bank.getSelection().getType() == SelectionType.CUBOID ? "cuboid" : "polygon"));
+
 	}
 
 }

@@ -161,11 +161,6 @@ public class Bank extends Ownable {
 		if (account != null)
 			accounts.add(account);
 	}
-	
-	public void addAccount(Collection<Account> newAccounts) {
-		if (newAccounts != null)
-			newAccounts.forEach(account -> addAccount(account));
-	}
 
 	public void removeAccount(Account account) {
 		if (account != null)
@@ -270,7 +265,8 @@ public class Bank extends Ownable {
 		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
 		
 		TextComponent info = getInfo();
-		TextComponent offlinePayouts = new TextComponent("Offline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS));
+		TextComponent offlinePayouts = new TextComponent(
+				"\nOffline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS));
 		offlinePayouts.addExtra(ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before reset)\n");
 		TextComponent initialDelay = new TextComponent("Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY) + "\n");
 		TextComponent minBalance = new TextComponent("Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
@@ -278,7 +274,7 @@ public class Bank extends Ownable {
 			minBalance.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)" + "\n");
 		TextComponent numberOfAccounts = new TextComponent("Current accounts: " + ChatColor.AQUA + accounts.size() + "\n");
 		TextComponent totalValue = new TextComponent("Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n");
-		TextComponent equality = new TextComponent("Inequality score: " + getGiniCoefficient() + "\n"); // TODO: Dynamic color
+		TextComponent equality = new TextComponent("Inequality score: " + String.format("%.2f", getGiniCoefficient()) + "\n"); // TODO: Dynamic color
 		TextComponent selectionType = new TextComponent("Selection type: " + selection.getType() + "\n");
 		TextComponent loc = new TextComponent("Location: " + ChatColor.AQUA + getCoordinates());
 		
