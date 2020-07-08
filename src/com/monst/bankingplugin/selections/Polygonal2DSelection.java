@@ -1,5 +1,8 @@
 package com.monst.bankingplugin.selections;
 
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Shape;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -15,12 +18,21 @@ public class Polygonal2DSelection implements Selection {
 	private List<BlockVector2D> points;
 	private int minY;
 	private int maxY;
+	private Polygon poly;
 
 	public Polygonal2DSelection(World world, List<BlockVector2D> points, int minY, int maxY) {
 		this.world = world;
 		this.points = points;
 		this.minY = Math.min(Math.max(0, minY), world.getMaxHeight());
 		this.maxY = Math.min(Math.max(0, maxY), world.getMaxHeight());
+
+		int[] xpoints = new int[points.size()];
+		int[] ypoints = new int[points.size()];
+		for (int i = 0; i < points.size(); i++) {
+			xpoints[i] = points.get(i).getBlockX();
+			ypoints[i] = points.get(i).getBlockZ();
+		}
+		poly = new Polygon(xpoints, ypoints, points.size());
 	}
 
 	public List<BlockVector2D> getNativePoints() {
@@ -48,11 +60,11 @@ public class Polygonal2DSelection implements Selection {
 
 	@Override
 	public int getVolume() {
-		int minX = getMinimumPoint().getBlockX();
-		int maxX = getMaximumPoint().getBlockX();
-		int minZ = getMinimumPoint().getBlockZ();
-		int maxZ = getMaximumPoint().getBlockZ();
-		return (maxX - minX) * (maxY - minY) * (maxZ - minZ);
+		int area = 0;
+		for (int i = 0; i < points.size() - 1; i++)
+			area += (points.get(i + 1).getBlockX() * points.get(i).getBlockZ())
+					- (points.get(i + 1).getBlockZ() * points.get(i).getBlockX());
+		return area;
 	}
 
 	@Override
@@ -66,14 +78,14 @@ public class Polygonal2DSelection implements Selection {
 	}
 
 	@Override
+	public Shape getShape() {
+		return poly;
+	}
+
+	@Override
 	public boolean contains(Location pt) {
-		int x = pt.getBlockX();
-		int y = pt.getBlockY();
-		int z = pt.getBlockZ();
-		Location max = getMaximumPoint();
-		Location min = getMinimumPoint();
-		return (x < max.getBlockX() && x > min.getBlockX()) && (y < max.getBlockY() 
-				&& y > min.getBlockY()) && (z < max.getBlockZ() && z > max.getBlockZ());
+		return pt.getBlockY() >= minY && pt.getBlockY() <= maxY
+				&& poly.contains(new Point(pt.getBlockX(), pt.getBlockZ()));
 	}
 
 	@Override

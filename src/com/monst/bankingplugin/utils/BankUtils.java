@@ -91,7 +91,7 @@ public class BankUtils {
     }
 
 	public Collection<Bank> getPlayerBanksCopy(OfflinePlayer owner) {
-		return getBanksCopy().stream().filter(bank -> !bank.isAdminBank() && bank.isOwner(owner))
+		return getBanksCopy().stream().filter(bank -> bank.isOwner(owner))
 				.collect(Collectors.toSet());
 	}
 
@@ -111,27 +111,10 @@ public class BankUtils {
 
 		Set<Selection> selections = new HashSet<>(bankSelectionMap.keySet());
 		Optional.ofNullable(bank).ifPresent(b -> selections.remove(bank.getSelection()));
-		
-		int minX = sel.getMinimumPoint().getBlockX();
-		int maxX = sel.getMaximumPoint().getBlockX();
-		int minY = sel.getMinimumPoint().getBlockY();
-		int maxY = sel.getMaximumPoint().getBlockY();
-		int minZ = sel.getMinimumPoint().getBlockZ();
-		int maxZ = sel.getMaximumPoint().getBlockZ();
-		for (Selection existing : selections) {
-			if (overlaps(minX, maxX, existing.getMinimumPoint().getBlockX(), existing.getMaximumPoint().getBlockX())
-					&& overlaps(minY, maxY, existing.getMinimumPoint().getBlockY(), existing.getMaximumPoint().getBlockY())
-					&& overlaps(minZ, maxZ, existing.getMinimumPoint().getBlockZ(), existing.getMaximumPoint().getBlockZ()))
+		for (Selection existingSel : selections)
+			if (existingSel.overlaps(sel))
 				return false;
-		}
 		return true;
-	}
-
-	private boolean overlaps(int rangeMinExisting, int rangeMaxExisting, int rangeMinNew, int rangeMaxNew) {
-		return (rangeMinExisting >= rangeMinNew && rangeMinExisting <= rangeMaxNew)
-				|| (rangeMaxExisting >= rangeMinNew && rangeMaxExisting <= rangeMaxNew)
-				|| (rangeMinNew >= rangeMinExisting && rangeMinNew <= rangeMaxExisting)
-				|| (rangeMaxNew >= rangeMinExisting && rangeMaxNew <= rangeMaxExisting);
 	}
 
 	public void resizeBank(Bank bank, Selection newSel) {
@@ -384,8 +367,7 @@ public class BankUtils {
 		boolean useDefault = true;
 
 		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
-			if (permInfo.getPermission().startsWith(
-					"bankingplugin.bank.limit.")
+			if (permInfo.getPermission().startsWith("bankingplugin.bank.limit.")
 					&& player.hasPermission(permInfo.getPermission())) {
 				if (permInfo.getPermission().equalsIgnoreCase(Permissions.BANK_NO_LIMIT)) {
 					limit = -1;
@@ -412,6 +394,49 @@ public class BankUtils {
 		if (limit < -1)
 			limit = -1;
 		return (useDefault ? Config.defaultBankLimit : limit);
+	}
+	
+	public int getVolumeLimit(Player player) {
+		int limit = 0;
+		boolean useDefault = true;
+
+		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+			if (permInfo.getPermission().startsWith("bankingplugin.bank.size.")
+					&& player.hasPermission(permInfo.getPermission())) {
+				if (permInfo.getPermission().equalsIgnoreCase(Permissions.BANK_NO_SIZE_LIMIT)) {
+					limit = -1;
+					useDefault = false;
+					break;
+				} else {
+					String[] spl = permInfo.getPermission().split("bankingplugin.bank.size.");
+
+					if (spl.length > 1) {
+						try {
+							int newLimit = Integer.parseInt(spl[1]);
+							if (newLimit < 0) {
+								limit = -1;
+								break;
+							}
+							limit = Math.max(limit, newLimit);
+							useDefault = false;
+						} catch (NumberFormatException e) {
+						}
+					}
+				}
+			}
+		}
+		if (limit < -1)
+			limit = -1;
+		return (useDefault ? Config.defaultBankVolumeLimit : limit);
+	}
+
+	public long getCurrentVolume(Player player) {
+		return getPlayerBanksCopy(player).stream().mapToLong(bank -> bank.getSelection().getVolume()).sum();
+	}
+
+	public boolean isVolumeAllowed(Bank bank, Player player) {
+		return getVolumeLimit(player) == -1
+				|| getVolumeLimit(player) > getCurrentVolume(player) + bank.getSelection().getVolume();
 	}
 
 	/**

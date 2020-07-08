@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -36,13 +35,12 @@ public class Bank extends Ownable {
 	private final BankingPlugin plugin;
 	private boolean created;
 	
-	private int id;
 	private String name;
 	private final World world;
 	private Selection selection;
 	private final AccountConfig accountConfig;
 	private final Set<Account> accounts;
-	private final BankType type;
+	private BankType type;
 
 	// New admin bank
 	public Bank(BankingPlugin plugin, String name, Selection selection) {
@@ -85,56 +83,9 @@ public class Bank extends Ownable {
 			plugin.debug("Bank was already created! (#" + id + ")");
 			return false;
 		}
-		
 		plugin.debug("Creating bank (#" + id + ")");
-
 		created = true;
 		return true;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public boolean hasID() {
-		return id != -1;
-	}
-	
-	public int getID() {
-		return id;
-	}
-	
-	public void setID(int id) {
-		if (this.id == -1)
-			this.id = id;
-	}
-	
-	public World getWorld() {
-		return world;
-	}
-
-	public Selection getSelection() {
-		return selection;
-	}
-
-	public void setSelection(Selection sel) {
-		this.selection = sel;
-	}
-
-	public AccountConfig getAccountConfig() {
-		return accountConfig;
-	}
-
-	public BankType getType() {
-		return type;
-	}
-
-	public boolean isAdminBank() {
-		return type == BankType.ADMIN;
 	}
 
 	public String getCoordinates() {
@@ -152,10 +103,6 @@ public class Bank extends Ownable {
 					.collect(Collectors.joining(", ")) + " at Y = " + minY + " to " + maxY;
 		}
 	}
-
-	public Collection<Account> getAccounts() {
-		return accounts;
-	}
 	
 	public void addAccount(Account account) {
 		if (account != null)
@@ -172,45 +119,12 @@ public class Bank extends Ownable {
 			accountsToRemove.forEach(account -> removeAccount(account));
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-
-		Bank otherBank = (Bank) o;
-		return id != -1 && id == otherBank.id;
-	}
-
-	@Override
-	public int hashCode() {
-		return id != -1 ? id : super.hashCode();
-	}
-
 	public BigDecimal getTotalValue() {
 		if (created)
 			return accounts.stream().map(account -> account.getBalance()).reduce(BigDecimal.ZERO,
 					(value, sum) -> sum.add(value)).setScale(2, RoundingMode.HALF_EVEN);
 		else
 			return BigDecimal.ZERO;
-	}
-	
-	public IntStream getAccountIDs() {
-		return accounts.stream().mapToInt(account -> account.getID());
-	}
-	
-	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
-		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
-	}
-
-	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
-		Map<OfflinePlayer, BigDecimal> customerBalances = new HashMap<>();
-		getCustomerAccounts().entrySet().forEach(entry -> {
-			customerBalances.put(entry.getKey(),
-					entry.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, (a, bd) -> a.add(bd)));
-		});
-		return customerBalances;
 	}
 
 	/**
@@ -299,5 +213,74 @@ public class Bank extends Ownable {
 				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n"
 				+ ChatColor.GRAY + "Multipliers:" + Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)) + "\n"
 				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE));
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Bank otherBank = (Bank) o;
+		return id != -1 && id == otherBank.id;
+	}
+
+	@Override
+	public int hashCode() {
+		return id != -1 ? id : super.hashCode();
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public World getWorld() {
+		return world;
+	}
+
+	public Selection getSelection() {
+		return selection;
+	}
+
+	public void setSelection(Selection sel) {
+		this.selection = sel;
+	}
+
+	public AccountConfig getAccountConfig() {
+		return accountConfig;
+	}
+
+	public BankType getType() {
+		return type;
+	}
+
+	public boolean isAdminBank() {
+		return type == BankType.ADMIN;
+	}
+
+	public Collection<Account> getAccounts() {
+		return accounts;
+	}
+
+	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
+		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
+	}
+
+	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
+		Map<OfflinePlayer, BigDecimal> customerBalances = new HashMap<>();
+		getCustomerAccounts().entrySet().forEach(entry -> {
+			customerBalances.put(entry.getKey(),
+					entry.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, (a, bd) -> a.add(bd)));
+		});
+		return customerBalances;
+	}
+
+	public void setBankType(BankType type) {
+		this.type = type;
 	}
 }

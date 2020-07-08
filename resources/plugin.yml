@@ -34,6 +34,7 @@ permissions:
             bankingplugin.account.list.other.verbose: true
             bankingplugin.account.view-other: true
             bankingplugin.account.edit-other: true
+            bankingplugin.account.migrate-other: true
             bankingplugin.account.extend-other: true
             bankingplugin.account.limit.*: true
             bankingplugin.account.set.*: true

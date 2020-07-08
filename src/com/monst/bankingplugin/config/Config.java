@@ -120,6 +120,21 @@ public class Config {
 	 */
 	public static Entry<Boolean, Integer> playerBankAccountLimit;
 
+    /**
+     * The default bank ownership limit for players whose limit is not set via a permission.
+     **/
+	public static int defaultBankLimit;
+    
+    /**
+     * The default account ownership limit for players whose limit is not set via a permission.
+     **/
+	public static int defaultAccountLimit;
+	
+	/**
+	 * The default bank volume limit for players whose limit is not set via a permission.
+	 */
+	public static int defaultBankVolumeLimit;
+	
 	/**
 	 * Whether a bank owner should be allowed to create an account at their own
 	 * bank.
@@ -203,16 +218,6 @@ public class Config {
 	 * blacklist.
 	 **/
     public static List<String> blacklist;
-
-    /**
-     * The default bank ownership limit for players whose limit is not set via a permission.
-     **/
-	public static int defaultBankLimit;
-    
-    /**
-     * The default account ownership limit for players whose limit is not set via a permission.
-     **/
-	public static int defaultAccountLimit;
 
 	/**
 	 * The bank revenue multiplier.
@@ -437,6 +442,9 @@ public class Config {
 		playerBankAccountLimit = new SimpleEntry<>(config.getBoolean("player-bank-account-limit.allow-override"),
 				config.getInt("player-bank-account-limit.default"));
 
+		defaultBankLimit = config.getInt("default-limits.bank");
+		defaultAccountLimit = config.getInt("default-limits.account");
+		defaultBankVolumeLimit = config.getInt("default-bank-volume-limit");
 		allowSelfBanking = config.getBoolean("allow-self-banking");
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");
@@ -452,8 +460,6 @@ public class Config {
         removeAccountOnError = config.getBoolean("remove-account-on-error");
         blacklist = (config.getStringList("blacklist") != null) ? 
 				config.getStringList("blacklist") : new ArrayList<>();
-		defaultBankLimit = config.getInt("default-limits.bank");
-		defaultAccountLimit = config.getInt("default-limits.account");
 		bankRevenueMultiplier = config.getDouble("bank-revenue-multiplier");
 		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value.create-bank");
 		databaseTablePrefix = config.getString("table-prefix");

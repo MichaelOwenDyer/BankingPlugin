@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
@@ -133,7 +134,38 @@ public class AccountProtectListener implements Listener {
             e.setCancelled(true);
 			p.sendMessage(Messages.CHEST_BLOCKED);
             return;
-        }
+		}
+		
+		AccountConfig accountConfig = account.getBank().getAccountConfig();
+		double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+		
+		if (creationPrice > 0 && account.isOwner(p)) {
+			OfflinePlayer owner = p.getPlayer();
+			EconomyResponse r = plugin.getEconomy().withdrawPlayer(owner, 
+					account.getLocation().getWorld().getName(), creationPrice);
+			if (!r.transactionSuccess()) {
+				plugin.debug("Economy transaction failed: " + r.errorMessage);
+				p.sendMessage(Messages.ERROR_OCCURRED);
+				return;
+			} else {
+				p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID,
+						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
+			}
+			
+			if (!account.getBank().isAdminBank()) {
+				OfflinePlayer bankOwner = account.getBank().getOwner();
+				EconomyResponse r2 = plugin.getEconomy().depositPlayer(bankOwner, 
+						account.getLocation().getWorld().getName(), creationPrice);
+				if (!r2.transactionSuccess()) {
+					plugin.debug("Economy transaction failed: " + r2.errorMessage);
+					p.sendMessage(Messages.ERROR_OCCURRED);
+					return;
+				} else if (!account.isOwner(bankOwner) && bankOwner.isOnline())
+					bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
+							account.getOwner().getName(),
+							BigDecimal.valueOf(r2.amount).setScale(2, RoundingMode.HALF_EVEN)));
+			}
+		}
 
 		final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
 				account.getBank(), account.getLocation(), account.getStatus(), account.getNickname(),
@@ -176,6 +208,11 @@ public class AccountProtectListener implements Listener {
         }
     }
 
+	/**
+	 * Prevents unauthorized players from editing other players' accounts
+	 * 
+	 * @param InventoryClickEvent e
+	 */
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onAccountItemClick(InventoryClickEvent e) {
 		if (!(e.getInventory().getHolder() instanceof Chest || e.getInventory().getHolder() instanceof DoubleChest))
@@ -193,6 +230,34 @@ public class AccountProtectListener implements Listener {
 	}
 
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
+		AccountConfig accountConfig = account.getBank().getAccountConfig();
+		double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+
+		if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION) && account.isOwner(p)) {
+			EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(), creationPrice);
+			if (!r.transactionSuccess()) {
+				plugin.debug("Economy transaction failed: " + r.errorMessage);
+				p.sendMessage(Messages.ERROR_OCCURRED);
+			} else {
+				p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
+						Utils.formatNumber(r.amount)));
+			}
+
+			if (!account.getBank().isAdminBank()) {
+				OfflinePlayer bankOwner = account.getBank().getOwner();
+				EconomyResponse r2 = plugin.getEconomy().withdrawPlayer(bankOwner,
+						account.getLocation().getWorld().getName(), creationPrice);
+				if (!r2.transactionSuccess()) {
+					plugin.debug("Economy transaction failed: " + r2.errorMessage);
+					if (bankOwner.isOnline())
+						bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
+					return;
+				} else if (!account.isOwner(bankOwner) && bankOwner.isOnline())
+					bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
+							account.getOwner().getName(), Utils.formatNumber(r2.amount)));
+			}
+		}
+
 		if (account.getInventoryHolder() instanceof DoubleChest) {
 			DoubleChest dc = (DoubleChest) account.getInventoryHolder();
 			final Chest l = (Chest) dc.getLeftSide();
@@ -215,29 +280,12 @@ public class AccountProtectListener implements Listener {
 					});
 				}
 			});
+
 		} else {
-			AccountConfig accountConfig = account.getBank().getAccountConfig();
-			double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
-
-			if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION)
-					&& account.isTrusted(p)) {
-				EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
-						creationPrice);
-				if (!r.transactionSuccess()) {
-					plugin.debug("Economy transaction failed: " + r.errorMessage);
-					p.sendMessage(Messages.ERROR_OCCURRED);
-				} else {
-					p.sendMessage(Messages.ACCOUNT_REMOVED);
-					p.sendMessage(String.format(Messages.PLAYER_REIMBURSED,
-							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
-				}
-			} else {
-				p.sendMessage(Messages.ACCOUNT_REMOVED);
-			}
-
 			accountUtils.removeAccount(account, true);
 			plugin.debug(String.format("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(),
 					account.getID()));
+			p.sendMessage(Messages.ACCOUNT_REMOVED);
 		}
 	}
 }

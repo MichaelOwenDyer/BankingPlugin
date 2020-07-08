@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.selections;
 
+import java.awt.Shape;
+import java.awt.geom.Area;
 import java.util.Collection;
 
 import org.bukkit.Location;
@@ -38,6 +40,23 @@ public interface Selection {
 	 * @return number of blocks
 	 */
 	public int getVolume();
+	
+	/**
+	 * Get whether or not this selection overlaps with another one.
+	 * @param sel
+	 * @return
+	 */
+	public default boolean overlaps(Selection sel) {
+		Area area = new Area(getShape());
+		area.intersect(new Area(sel.getShape()));
+		return !area.isEmpty();
+	}
+	
+	/**
+	 * Get the shape associated with this selection.
+	 * @return
+	 */
+	public Shape getShape();
 
 	/**
 	 * Get all vertices of the selection.

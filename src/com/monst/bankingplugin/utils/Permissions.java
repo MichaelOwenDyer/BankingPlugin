@@ -12,6 +12,7 @@ public class Permissions {
 	public static final String ACCOUNT_LIST_OTHER_VERBOSE = "bankingplugin.account.list-other-verbose";
 	public static final String ACCOUNT_VIEW_OTHER = "bankingplugin.account.view-other";
 	public static final String ACCOUNT_EDIT_OTHER = "bankingplugin.account.edit-other";
+	public static final String ACCOUNT_MIGRATE_OTHER = "bankingplugin.account.migrate-other";
 	public static final String ACCOUNT_SET = "bankingplugin.account.set.*";
 	public static final String ACCOUNT_SET_NICKNAME = "bankingplugin.account.set.nickname";
 	public static final String ACCOUNT_SET_MULTIPLIER = "bankingplugin.account.set.multiplier";
@@ -27,6 +28,7 @@ public class Permissions {
 	public static final String BANK_REMOVE_ADMIN = "bankingplugin.bank.remove.admin";
 	public static final String BANK_REMOVEALL = "bankingplugin.bank.removeall";
 	public static final String BANK_NO_LIMIT = "bankingplugin.bank.limit.*";
+	public static final String BANK_NO_SIZE_LIMIT = "bankingplugin.bank.size.*";
 	public static final String BANK_INFO_VERBOSE = "bankingplugin.bank.info.verbose"; // XXX
 	public static final String BANK_LIST_VERBOSE = "bankingplugin.bank.list.verbose"; // XXX
 	public static final String BANK_RESIZE = "bankingplugin.bank.resize";

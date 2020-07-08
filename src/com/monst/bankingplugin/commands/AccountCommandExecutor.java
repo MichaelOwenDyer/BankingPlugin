@@ -92,6 +92,13 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				if (!promptAccountTrust(p, args))
 					p.sendMessage(subCommand.getHelpMessage(p));
 				break;
+			case "untrust":
+				if (!promptAccountUntrust(p, args))
+					p.sendMessage(subCommand.getHelpMessage(p));
+				break;
+			case "migrate":
+				promptAccountMigrate(p);
+				break;
 			default:
 				return false;
 			}
@@ -522,7 +529,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		if (args.length < 2)
 			return false;
 
-		plugin.debug(p.getName() + " wants to trust a player to an account");
+		plugin.debug(p.getName() + " wants to untrust a player from an account");
 
 		if (!p.hasPermission(Permissions.ACCOUNT_TRUST)) {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_UNTRUST);
@@ -543,6 +550,20 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		ClickType.setPlayerClickType(p, new ClickType.UntrustClickType(playerToUntrust));
 		plugin.debug(p.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
 		return true;
+	}
+
+	public void promptAccountMigrate(Player p) {
+		plugin.debug(p.getName() + " wants to migrate an account");
+
+		if (!p.hasPermission(Permissions.ACCOUNT_CREATE)) {
+			plugin.debug(p.getName() + " does not have permission to migrate an account");
+			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE);
+			return;
+		}
+
+		p.sendMessage(Messages.CLICK_CHEST_MIGRATE_FIRST);
+		ClickType.setPlayerClickType(p, new ClickType.MigrateClickType(null));
+		plugin.debug(p.getName() + " is migrating an account");
 	}
 
 

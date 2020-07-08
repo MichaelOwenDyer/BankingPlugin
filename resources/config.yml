@@ -160,6 +160,25 @@ player-bank-account-limit:
     default: 1
     allow-override: true
 
+# Account limits are handled with permissions.
+# A player with permission "bankingplugin.account.limit.X" has a limit of X accounts.
+# A player with permission "bankingplugin.account.limit.*" does not have an account limit.
+# Type: int
+default-limits:
+
+  # Set the amount of accounts that anyone who doesn't have a
+  # specific permission may have.
+  # If you don't want the players to have a limit by default set the value to -1.
+  bank: 1
+  account: 2
+
+# Bank volume allowance is handled with permissions.
+# A player with permission "bankingplugin.bank.size.X" can create banks with a total volume of up to X blocks.
+# A player with permission "bankingplugin.bank.size.*" can create banks with unlimited volume.
+# Set the volume limit for anyone who doesn't have a specific permission here.
+# Type: int
+default-bank-volume-limit: 5000
+
 # Whether a bank owner should be able to create an account at their own bank.
 # Type: boolean
 # Default: false
@@ -220,18 +239,6 @@ remove-account-on-error: true
 blacklist:
 # - "DIORITE"
 
-
-# Account limits are handled with permissions.
-# A player with permission "bankingplugin.account.limit.X" has a limit of X accounts,
-# a player with permission "bankingplugin.account.limit.*" does not have an account limit.
-# Type: int
-default-limits:
-
-  # Set the amount of accounts that anyone who doesn't have a
-  # specific permission may have.
-  # If you don't want the players to have a limit by default set the value to -1.
-  bank: 1
-  account: 2
 
 # Set this value to customize how much revenue banks should generate for their owners.
 # Bank revenue is calculated as a function of the total value of the bank and of the inequality (https://en.wikipedia.org/wiki/Gini_coefficient) of the balances of its accounts.

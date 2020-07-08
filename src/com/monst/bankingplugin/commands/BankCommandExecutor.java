@@ -248,7 +248,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 	 * 
 	 * @param sender The command executor
 	 */
-	private void promptBankRemove(final CommandSender sender, String[] args) { // XXX
+	private void promptBankRemove(final CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to remove a bank");
 
 		Bank bank;
@@ -319,7 +319,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					plugin.debug("Economy transaction failed: " + r.errorMessage);
 					executor.sendMessage(Messages.ERROR_OCCURRED);
 				} else {
-					executor.sendMessage(String.format(Messages.PLAYER_REIMBURSED,
+					executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
 							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
 				}
 			}
@@ -420,7 +420,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		p.sendMessage(String.format(Messages.BANK_LIMIT, used, limit));
 	}
 
-	private boolean promptBankRemoveAll(CommandSender sender, String[] args) { // XXX
+	private boolean promptBankRemoveAll(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to remove all banks");
 		if (args.length > 1)
 			return false;
@@ -498,7 +498,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			try {
 				selection = bankUtils.parseCoordinates(args, p.getLocation());
 			} catch (NumberFormatException e) {
-				plugin.debug("Could not parse coordinates in command args");
+				plugin.debug("Could not parse coordinates in command args: \"" + args + "\"");
 				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
 				return false;
 			}

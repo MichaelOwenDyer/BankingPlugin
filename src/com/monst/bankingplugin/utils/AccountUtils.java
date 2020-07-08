@@ -2,11 +2,8 @@ package com.monst.bankingplugin.utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +15,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -147,7 +143,6 @@ public class AccountUtils {
         plugin.debug("Removing account (#" + account.getID() + ")");
 
 		account.clearNickname();
-		account.getBank().removeAccount(account);
 
         InventoryHolder ih = account.getInventoryHolder();
 
@@ -164,6 +159,7 @@ public class AccountUtils {
 
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);
+			account.getBank().removeAccount(account);
         } else {
             if (callback != null) callback.callSyncResult(null);
         }
@@ -229,59 +225,6 @@ public class AccountUtils {
 				.mapToDouble(account -> account.getChestSize() == 1 ? 1.0 : 0.5).sum());
     }
 
-	@SuppressWarnings("deprecation")
-	public List<Account> listAccounts(CommandSender sender, String request, String[] args) {
-		BankUtils bankUtils = plugin.getBankUtils();
-		if (sender instanceof Player) {
-			Player p = (Player) sender;
-			switch (request) {
-			case "":
-				return new ArrayList<>(getPlayerAccountsCopy(p));
-			case "-d":
-				return new ArrayList<>(getPlayerAccountsCopy(p));
-			case "-a":
-				return new ArrayList<>(getAccountsCopy());
-			case "-a -d":
-				return new ArrayList<>(getAccountsCopy());
-			case "name":
-				OfflinePlayer owner1 = Bukkit.getOfflinePlayer(args[1]);
-				return new ArrayList<>(getPlayerAccountsCopy(owner1));
-			case "name -d":
-				OfflinePlayer owner2 = Bukkit.getOfflinePlayer(args[1]);
-				return new ArrayList<>(getPlayerAccountsCopy(owner2));
-			case "bank":
-				Bank bankA = bankUtils.lookupBank(args[2]);
-				return getPlayerAccountsCopy(p).stream().filter(account -> account.getBank().equals(bankA))
-						.collect(Collectors.toList());
-			case "-a bank":
-				Bank bankB = bankUtils.lookupBank(args[2]);
-				return getAccountsCopy().stream().filter(account -> account.getBank().equals(bankB))
-						.collect(Collectors.toList());
-			default:
-				return new ArrayList<>();
-			}
-		} else {
-			switch (request) {
-			case "-a":
-				return new ArrayList<>(getAccountsCopy());
-			case "-a -d":
-				return new ArrayList<>(getAccountsCopy());
-			case "name":
-				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				return new ArrayList<>(getPlayerAccountsCopy(owner));
-			case "name -d":
-				OfflinePlayer owner2 = Bukkit.getOfflinePlayer(args[1]);
-				return new ArrayList<>(getPlayerAccountsCopy(owner2));
-			case "-a bank":
-				Bank bankB = bankUtils.lookupBank(args[2]);
-				return getAccountsCopy().stream().filter(account -> account.getBank().equals(bankB))
-						.collect(Collectors.toList());
-			default:
-				return new LinkedList<>();
-			}
-		}
-	}
-
 	public int removeAccount(Collection<Account> accounts, boolean removeFromDatabase) {
 		int removed = accounts.size();
 
@@ -300,14 +243,14 @@ public class AccountUtils {
 
 		BigDecimal sum = BigDecimal.ZERO;
 		sum.setScale(2, RoundingMode.HALF_EVEN);
-		for (ItemStack items : account.getInventoryHolder().getInventory().getContents()) {
-			if (items == null)
+		for (ItemStack item : account.getInventoryHolder().getInventory().getContents()) {
+			if (item == null)
 				continue;
-			if (Config.blacklist.contains(items.getType().toString()))
+			if (Config.blacklist.contains(item.getType().toString()))
 				continue;
 			BigDecimal itemValue = BigDecimal.ZERO;
-			if (items.getItemMeta() instanceof BlockStateMeta) {
-				BlockStateMeta im = (BlockStateMeta) items.getItemMeta();
+			if (item.getItemMeta() instanceof BlockStateMeta) {
+				BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
                 if (im.getBlockState() instanceof ShulkerBox) {
                 	ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
                 	for (ItemStack innerItems : shulkerBox.getInventory().getContents()) {
@@ -319,7 +262,7 @@ public class AccountUtils {
 						if (innerItemValue.signum() == 1)
             				innerItemValue = innerItemValue.multiply(BigDecimal.valueOf(innerItems.getAmount()));
             			else {
-							plugin.debug("An item without value (" + items.getType().toString()
+							plugin.debug("An item without value (" + item.getType().toString()
 									+ ") was placed into account (#" + account.getID() + ")");
             				continue;
             			}
@@ -327,11 +270,11 @@ public class AccountUtils {
                 	}
                 }
 			}
-			itemValue = itemValue.add(getWorth(items));
+			itemValue = itemValue.add(getWorth(item));
 			if (itemValue.signum() == 1)
-				itemValue = itemValue.multiply(BigDecimal.valueOf(items.getAmount()));
+				itemValue = itemValue.multiply(BigDecimal.valueOf(item.getAmount()));
 			else {
-				plugin.debug("An item without value (" + items.getType().toString() + ") was placed into account (#" + account.getID() + ")");
+				plugin.debug("An item without value (" + item.getType().toString() + ") was placed into account (#" + account.getID() + ")");
 				continue;
 			}
 			sum = sum.add(itemValue);

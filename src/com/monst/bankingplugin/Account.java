@@ -31,7 +31,6 @@ public class Account extends Ownable {
 	private final BankingPlugin plugin;
 	private boolean created;
 
-	private int id;
 	private String nickname;
 	private final Location location;
 	private final Bank bank;
@@ -190,20 +189,6 @@ public class Account extends Ownable {
 	
 	public Bank getBank() {
 		return bank;
-	}
-
-	public boolean hasID() {
-		return id != -1;
-	}
-
-	public int getID() {
-		return id;
-	}
-	
-	public void setID(int id) {
-		if (this.id == -1) {
-			this.id = id;
-		}
 	}
 
 	public BigDecimal getBalance() {

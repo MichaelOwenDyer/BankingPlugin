@@ -6,8 +6,13 @@ import java.util.Set;
 
 import org.bukkit.OfflinePlayer;
 
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.Bank.BankType;
+
 public abstract class Ownable {
 
+	protected int id;
 	protected OfflinePlayer owner;
 	protected Set<OfflinePlayer> coowners = new HashSet<>();
 
@@ -64,6 +69,30 @@ public abstract class Ownable {
 		if (coowners == null)
 			return new HashSet<>();
 		return Collections.unmodifiableSet(coowners);
+	}
+
+	public void transferOwnership(OfflinePlayer newOwner, boolean trustPrevOwner) {
+		if (this instanceof Account && newOwner == null)
+			return;
+		OfflinePlayer prevOwner = owner;
+		owner = newOwner;
+		if (this instanceof Bank)
+			((Bank) this).setBankType(owner == null ? BankType.ADMIN : BankType.PLAYER);
+		if (trustPrevOwner)
+			coowners.add(prevOwner);
+	}
+
+	public boolean hasID() {
+		return id != -1;
+	}
+
+	public int getID() {
+		return id;
+	}
+
+	public void setID(int id) {
+		if (this.id == -1)
+			this.id = id;
 	}
 
 }

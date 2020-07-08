@@ -10,7 +10,9 @@ public class Messages {
 	public static final String BANK_CREATED = ChatColor.GOLD + "Bank created!";
 	public static final String ACCOUNT_CREATED = ChatColor.GOLD + "Account created!";
 	public static final String ACCOUNT_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account.";
+	public static final String ACCOUNT_EXTEND_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend your account.";
 	public static final String ACCOUNT_CREATE_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account at your bank.";
+	public static final String ACCOUNT_EXTEND_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend their account at your bank.";
 	public static final String BANK_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create a bank.";
 	public static final String NAME_NOT_UNIQUE = ChatColor.RED + "A bank with that name already exists.";
 	public static final String NAME_NOT_ALLOWED = ChatColor.RED + "Name must consist only of letters.";
@@ -22,7 +24,8 @@ public class Messages {
 	public static final String BANK_REMOVED = ChatColor.GOLD + "The bank has been removed.";
 	public static final String BANK_RESIZED = ChatColor.GOLD + "The bank has been resized.";
 	public static final String BANK_FIELD_SET = ChatColor.GOLD + "Field " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " has been set to " + ChatColor.GREEN + "%s" + ChatColor.GOLD + " at bank " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
-	public static final String PLAYER_REIMBURSED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
+	public static final String ACCOUNT_REIMBURSEMENT_RECEIVED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
+	public static final String ACCOUNT_REIMBURSEMENT_PAID = ChatColor.GOLD + "You reimbursed %s " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
 	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "%d account%s %s successfully removed.";
 	public static final String BANKS_REMOVED = ChatColor.GREEN + "%d bank%s and %d account%s were removed.";
@@ -87,6 +90,7 @@ public class Messages {
 	public static final String NO_SELF_BANKING = ChatColor.RED + "You are not allowed to create an account at your own bank.";
 	public static final String PER_BANK_ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create another account at this bank.";
 	public static final String PLAYER_COMMAND_ONLY = ChatColor.RED + "Only players can use this command.";
+	public static final String SAME_ACCOUNT = ChatColor.RED + "Nothing happened. That is the same account.";
 	
 	// CLICK PROMPTS
 	public static final String CLICK_CHEST_CREATE = ChatColor.GOLD + "Click a chest to create an account.";
@@ -95,6 +99,8 @@ public class Messages {
 	public static final String CLICK_CHEST_SET = ChatColor.GOLD + "Click an account chest to set.";
 	public static final String CLICK_CHEST_TRUST = ChatColor.GOLD + "Click an account chest to add %s as a co-owner.";
 	public static final String CLICK_CHEST_UNTRUST = ChatColor.GOLD + "Click an account chest to remove %s as a co-owner.";
+	public static final String CLICK_CHEST_MIGRATE_FIRST = ChatColor.GOLD + "Click an account chest to migrate to another chest.";
+	public static final String CLICK_CHEST_MIGRATE_SECOND = ChatColor.GOLD + "Click a chest to migrate the account to.";
 	public static final String CLICK_TO_CONFIRM = ChatColor.GOLD + "Click chest again to confirm.";
 	public static final String EXECUTE_AGAIN_TO_CONFIRM = ChatColor.GOLD + " Execute command again to confirm.";
 	
@@ -140,6 +146,8 @@ public class Messages {
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_EDIT = NO_PERMISSION + "edit someone else's account contents.";
 	public static final String NO_PERMISSION_ACCOUNT_EXTEND_OTHER = NO_PERMISSION + "extend someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED = NO_PERMISSION + "extend a protected account chest.";
+	public static final String NO_PERMISSION_ACCOUNT_MIGRATE = NO_PERMISSION + "migrate an account.";
+	public static final String NO_PERMISSION_ACCOUNT_MIGRATE_OTHER = NO_PERMISSION + "migrate someone else's account.";
 	public static final String NO_PERMISSION_RELOAD = NO_PERMISSION + "reload the plugin."; // XXX
 	public static final String NO_PERMISSION_CONFIG = NO_PERMISSION + "configure the plugin."; // XXX
 	public static final String NO_PERMISSION_UPDATE = NO_PERMISSION + "update the plugin."; // XXX
@@ -156,6 +164,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_ACCOUNT_SET = USAGE_PREFIX_ACCOUNT + "set [field] [value]";
 	public static final String COMMAND_USAGE_ACCOUNT_TRUST = USAGE_PREFIX_ACCOUNT + "trust [playername]";
 	public static final String COMMAND_USAGE_ACCOUNT_UNTRUST = USAGE_PREFIX_ACCOUNT + "untrust [playername]";
+	public static final String COMMAND_USAGE_ACCOUNT_MIGRATE = USAGE_PREFIX_ACCOUNT + "migrate";
 	public static final String COMMAND_USAGE_BANK_CREATE = USAGE_PREFIX_BANK + "create [bankname] <xyz> <xyz> <admin>";
 	public static final String COMMAND_USAGE_BANK_REMOVE = USAGE_PREFIX_BANK + "remove <bankname>";
 	public static final String COMMAND_USAGE_BANK_INFO = USAGE_PREFIX_BANK + "info <bankname / \"all\">";

@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.selections;
 
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -11,6 +13,7 @@ public class CuboidSelection implements Selection {
 	private World world;
 	private Location min;
 	private Location max;
+	private Rectangle rectangle;
 
 	public CuboidSelection(World world, Location loc1, Location loc2) {
 		this.world = world;
@@ -38,6 +41,7 @@ public class CuboidSelection implements Selection {
 		}
 		min = new Location(world, minX, minY, minZ);
 		max = new Location(world, maxX, maxY, maxZ);
+		rectangle = new Rectangle(minX, minZ, (maxX - minX), (maxZ - minZ));
 	}
 
 	@Override
@@ -59,6 +63,11 @@ public class CuboidSelection implements Selection {
 	public int getVolume() {
 		return (max.getBlockX() - min.getBlockX()) * (max.getBlockZ() - min.getBlockZ())
 				* (max.getBlockY() - min.getBlockY());
+	}
+
+	@Override
+	public Shape getShape() {
+		return rectangle;
 	}
 
 	@Override

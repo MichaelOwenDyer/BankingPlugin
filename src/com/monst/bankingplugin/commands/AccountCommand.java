@@ -94,6 +94,13 @@ public class AccountCommand extends GenericCommand {
 			}
 		});
 
+		addSubCommand(new AccountSubCommand("migrate", true, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return sender.hasPermission(Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_MIGRATE : "";
+			}
+		});
+
 		register();
 		commandCreated = true;
 	}

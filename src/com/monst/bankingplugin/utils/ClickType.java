@@ -11,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
 
@@ -88,7 +89,7 @@ public class ClickType {
     }
 
     public enum EnumClickType {
-		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST
+		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE
     }
 
 	public static class InfoClickType extends ClickType {
@@ -138,12 +139,33 @@ public class ClickType {
 		private OfflinePlayer toUntrust;
 
 		public UntrustClickType(OfflinePlayer p) {
-			super(EnumClickType.TRUST);
+			super(EnumClickType.UNTRUST);
 			toUntrust = p;
 		}
 
 		public OfflinePlayer getPlayerToUntrust() {
 			return toUntrust;
+		}
+	}
+
+	public static class MigrateClickType extends ClickType {
+
+		private Account toMigrate;
+
+		/**
+		 * @param toMigrate The account chest to be migrated
+		 */
+		public MigrateClickType(Account toMigrate) {
+			super(EnumClickType.MIGRATE);
+			this.toMigrate = toMigrate;
+		}
+
+		public boolean isFirstClick() {
+			return toMigrate == null;
+		}
+
+		public Account getAccount() {
+			return toMigrate;
 		}
 	}
 }
