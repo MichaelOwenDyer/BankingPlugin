@@ -156,46 +156,45 @@ public class Bank extends Ownable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public TextComponent getInfo() {
+	public TextComponent getInfo() {		
+		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
 		
-		TextComponent info = new TextComponent("\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n");
+		TextComponent info = new TextComponent("\"" + ChatColor.RED + ChatColor.UNDERLINE + Utils.colorize(name) + ChatColor.RESET + ChatColor.GRAY + "\" (#" + id + ")\n");
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-		TextComponent owner = new TextComponent("Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n");
-		TextComponent interestRate = new TextComponent("Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n");
+		
 		TextComponent multipliers = new TextComponent("Multipliers: ");
 		multipliers.addExtra(Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)));
-		TextComponent creationPrice = new TextComponent("\nAccount creation price: " + ChatColor.GREEN + "$"
-				+ Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE)));
 		
-		info.addExtra(owner);
-		info.addExtra(interestRate);
+		TextComponent offlinePayouts = new TextComponent(
+				"\nOffline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS));
+		offlinePayouts.addExtra(ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before reset)\n");
+		
+		TextComponent minBalance = new TextComponent("Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
+		if (minBal != 0)
+			minBalance.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)");
+		
+		info.addExtra("Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n");
+		info.addExtra("Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n");
 		info.addExtra(multipliers);
-		info.addExtra(creationPrice);
-		
+		info.addExtra("\nAccount creation price: " + ChatColor.GREEN + "$"
+				+ Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE)));
+		info.addExtra(offlinePayouts);
+		info.addExtra("Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY) + "\n");
+		info.addExtra(minBalance);
 		return info;
 		
 	}
 	
 	public TextComponent getInfoVerbose() {
-		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
 		
 		TextComponent info = getInfo();
-		TextComponent offlinePayouts = new TextComponent(
-				"\nOffline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS));
-		offlinePayouts.addExtra(ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before reset)\n");
-		TextComponent initialDelay = new TextComponent("Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY) + "\n");
-		TextComponent minBalance = new TextComponent("Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
-		if (minBal != 0)
-			minBalance.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)" + "\n");
-		TextComponent numberOfAccounts = new TextComponent("Current accounts: " + ChatColor.AQUA + accounts.size() + "\n");
+		
+		TextComponent numberOfAccounts = new TextComponent("\nCurrent accounts: " + ChatColor.AQUA + accounts.size() + "\n");
 		TextComponent totalValue = new TextComponent("Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n");
 		TextComponent equality = new TextComponent("Inequality score: " + String.format("%.2f", getGiniCoefficient()) + "\n"); // TODO: Dynamic color
 		TextComponent selectionType = new TextComponent("Selection type: " + selection.getType() + "\n");
 		TextComponent loc = new TextComponent("Location: " + ChatColor.AQUA + getCoordinates());
 		
-		info.addExtra(offlinePayouts);
-		info.addExtra(initialDelay);
-		info.addExtra(minBalance);
 		info.addExtra(numberOfAccounts);
 		info.addExtra(totalValue);
 		info.addExtra(equality);

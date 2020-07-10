@@ -92,20 +92,6 @@ public class ClickType {
 		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE
     }
 
-	public static class InfoClickType extends ClickType {
-
-		private boolean verbose;
-
-		public InfoClickType(boolean verbose) {
-			super(EnumClickType.INFO);
-			this.verbose = verbose;
-		}
-
-		public boolean isVerbose() {
-			return verbose;
-		}
-	}
-
 	public static class SetClickType extends ClickType {
 
 		private String[] args;

@@ -46,7 +46,7 @@ class GenericTabCompleter implements TabCompleter {
 			case "remove":
 				return new ArrayList<>();
 			case "info":
-				return completeAccountInfo((Player) sender, args);
+				return new ArrayList<>();
 			case "list":
 				return completeAccountList(sender, args);
 			case "limits":
@@ -92,15 +92,6 @@ class GenericTabCompleter implements TabCompleter {
 			}
 		}
 		return new ArrayList<>();
-	}
-
-	private List<String> completeAccountInfo(Player p, String[] args) {
-		if (args.length > 2)
-			return new ArrayList<>();
-		if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
-			return Arrays.asList("detailed");
-		else
-			return new ArrayList<>();
 	}
 
 	private List<String> completeAccountList(CommandSender sender, String[] args) {

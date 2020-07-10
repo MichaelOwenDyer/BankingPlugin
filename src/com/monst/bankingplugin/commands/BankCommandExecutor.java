@@ -367,7 +367,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				}
 			}
-		} else if (args.length == 3) {
+		} else if (args.length >= 3) {
 			if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
 				Bank bank = bankUtils.lookupBank(args[1]);
 				if (bank != null)
@@ -376,10 +376,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					plugin.debug("No bank could be found under the identifier " + args[1]);
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				}
-			}
-		} else
-			return false;
-
+			} else
+				return false;
+		}
 		return true;
 	}
 

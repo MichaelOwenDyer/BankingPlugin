@@ -6,11 +6,9 @@ import org.bukkit.event.Cancellable;
 public class AccountPreInfoEvent extends AccountEvent implements Cancellable {
 
 	private boolean cancelled;
-	private boolean verbose;
 
-	public AccountPreInfoEvent(Player p, boolean verbose) {
+	public AccountPreInfoEvent(Player p) {
 		super(p, null);
-		this.verbose = verbose;
 	}
 
 	@Override
@@ -21,10 +19,6 @@ public class AccountPreInfoEvent extends AccountEvent implements Cancellable {
 	@Override
 	public void setCancelled(boolean cancel) {
 		cancelled = cancel;
-	}
-
-	public boolean isVerbose() {
-		return verbose;
 	}
 
 }

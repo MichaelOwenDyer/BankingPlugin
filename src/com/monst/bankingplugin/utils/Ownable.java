@@ -10,6 +10,8 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.Bank.BankType;
 
+import net.md_5.bungee.api.ChatColor;
+
 public abstract class Ownable {
 
 	protected int id;
@@ -25,6 +27,8 @@ public abstract class Ownable {
 	public String getOwnerDisplayName() {
 		if (owner == null)
 			return "";
+		if (!owner.hasPlayedBefore())
+			return ChatColor.DARK_GRAY + owner.getUniqueId().toString();
 		return owner.isOnline() ? owner.getPlayer().getDisplayName() : owner.getName();
 	}
 

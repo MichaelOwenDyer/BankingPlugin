@@ -188,23 +188,18 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 	}
 
 	private void promptAccountInfo(final Player p, String[] args) {
-		plugin.debug(p.getName() + " wants to retrieve information");
+		plugin.debug(p.getName() + " wants to retrieve account info");
 
-		boolean verbose = false;
-		if (args.length == 2)
-			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed"))
-				verbose = true;
-
-		AccountPreInfoEvent event = new AccountPreInfoEvent(p, verbose);
+		AccountPreInfoEvent event = new AccountPreInfoEvent(p);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
-			plugin.debug("Shop pre-info event cancelled");
+			plugin.debug("Account pre-info event cancelled");
 			return;
 		}
 
-		plugin.debug(p.getName() + " can now click a chest to get account info");
+		plugin.debug(p.getName() + " can now click an account to get info");
 		p.sendMessage(Messages.CLICK_CHEST_INFO);
-		ClickType.setPlayerClickType(p, new ClickType.InfoClickType(verbose));
+		ClickType.setPlayerClickType(p, new ClickType(EnumClickType.INFO));
 
 	}
 

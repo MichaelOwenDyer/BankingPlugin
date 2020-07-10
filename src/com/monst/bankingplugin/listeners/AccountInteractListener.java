@@ -37,7 +37,6 @@ import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.ClickType.InfoClickType;
 import com.monst.bankingplugin.utils.ClickType.MigrateClickType;
 import com.monst.bankingplugin.utils.ClickType.SetClickType;
 import com.monst.bankingplugin.utils.ClickType.TrustClickType;
@@ -117,8 +116,7 @@ public class AccountInteractListener implements Listener {
 
 			case INFO:
 
-				boolean verbose = ((InfoClickType) clickType).isVerbose();
-				info(p, account, verbose);
+				info(p, account);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
 				break;
@@ -172,15 +170,13 @@ public class AccountInteractListener implements Listener {
 				ItemStack item = Utils.getItemInMainHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account, account.isTrusted(p) || account.getBank().isOwner(p)
-							|| p.hasPermission(Permissions.ACCOUNT_INFO_OTHER));
+					info(p, account);
 					return;
 				}
 				item = Utils.getItemInOffHand(p);
 				if (item != null && infoItem.getType() == item.getType()) {
 					e.setCancelled(true);
-					info(p, account, account.isTrusted(p) || account.getBank().isOwner(p)
-							|| p.hasPermission(Permissions.ACCOUNT_INFO_OTHER));
+					info(p, account);
 					return;
 				}
 			}
@@ -411,14 +407,8 @@ public class AccountInteractListener implements Listener {
 	 *                 information
 	 * @param account  Account from which the information will be retrieved
 	 */
-	private void info(Player executor, Account account, boolean verbose) {
-		boolean executorIsTrusted = account.isTrusted(executor) || account.getBank().isTrusted(executor);
-		if (!executorIsTrusted)
-			if (verbose && !executor.hasPermission(Permissions.ACCOUNT_INFO_OTHER)
-					&& !account.getBank().isOwner(executor)) {
-				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_INFO_VERBOSE);
-				return;
-			}
+	private void info(Player executor, Account account) {
+		boolean verbose = account.isTrusted(executor) || account.getBank().isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
 
 		plugin.debug(String.format(executor.getName() + " is retrieving %s account info%s (#" + account.getID() + ")",
 				(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
@@ -431,9 +421,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		executor.sendMessage(" ");
 		executor.spigot().sendMessage(verbose ? account.getInfoVerbose() : account.getInfo());
-		executor.sendMessage(" ");
 	}
 
 	private void set(Player executor, Account account, String[] args) {
