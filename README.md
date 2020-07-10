@@ -10,4 +10,4 @@ If you find any bugs or issues, please report them in the issues section with a 
 
 # Download
 
-For now, this plugin will remain privately listed and not available for direct download. If you wish to obtain a copy, please ask or perform a pull request at the top of this page.
+Download an early-access version of this plugin from the Download section on this page.
