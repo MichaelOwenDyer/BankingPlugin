@@ -10,4 +10,4 @@ If you find any bugs or issues, please report them in the issues section with a 
 
 # Download
 
-Download an early-access version of this plugin from the Download section on this page.
+Download an early-access version of this plugin from the Releases section on this page.
