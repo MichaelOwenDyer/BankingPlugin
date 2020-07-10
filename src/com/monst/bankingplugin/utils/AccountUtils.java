@@ -28,8 +28,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 
-import net.milkbowl.vault.economy.EconomyResponse;
-
 public class AccountUtils {
 
 	private final BankingPlugin plugin;
@@ -142,7 +140,7 @@ public class AccountUtils {
     public void removeAccount(Account account, boolean removeFromDatabase, Callback<Void> callback) {
         plugin.debug("Removing account (#" + account.getID() + ")");
 
-		account.clearNickname();
+		account.clearNickname(); // XXX
 
         InventoryHolder ih = account.getInventoryHolder();
 
@@ -287,17 +285,4 @@ public class AccountUtils {
 		return Optional.ofNullable(essentials.getWorth().getPrice(essentials, items)).orElse(BigDecimal.ZERO);
 	}
 
-	public boolean payInsurance(Account account, BigDecimal loss) {
-		long insurance = Config.insureAccountsUpTo;
-		if (insurance == 0)
-			return false;
-		EconomyResponse response;
-		if (insurance < 0)
-			response = plugin.getEconomy().depositPlayer(account.getOwner(), loss.doubleValue());
-		else {
-			double payoutAmount = loss.doubleValue() > insurance ? insurance : loss.doubleValue();
-			response = plugin.getEconomy().depositPlayer(account.getOwner(), payoutAmount);
-		}
-		return response.transactionSuccess();
-	}
 }

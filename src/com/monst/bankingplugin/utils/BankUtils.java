@@ -476,12 +476,11 @@ public class BankUtils {
             	int[] preReload = { banks.size(), accounts.size() };
 				int[] postReload = new int[2];
             	
-				for (Account account : accounts) {
-					accountUtils.removeAccount(account, false);
-					plugin.debug("Removed account (#" + account.getID() + ")");
-                }
-
 				for (Bank bank : banks) {
+					for (Account account : bank.getAccountsCopy()) {
+						accountUtils.removeAccount(account, false);
+						plugin.debug("Removed account (#" + account.getID() + ")");
+					}
 					removeBank(bank, false);
 					plugin.debug("Removed bank (#" + bank.getID() + ")");
 				}

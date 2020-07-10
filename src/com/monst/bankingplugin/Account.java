@@ -103,31 +103,17 @@ public class Account extends Ownable {
 
 		BigDecimal checkedBalance = plugin.getAccountUtils().appraiseAccountContents(this);
 		if (checkedBalance.compareTo(getBalance()) == 1) {
-			if (getBalance().signum() <= 0) {
-				plugin.debug("Cool! Account #" + id + " was created with a balance of " + checkedBalance.toString()
+			if (getBalance().signum() <= 0)
+				plugin.debug("Cool! Account #" + id + " was created with a balance of " + Utils.formatNumber(checkedBalance)
 						+ " already inside.");
-			} else {
+			else
 				plugin.debug("Value of account #" + id + " was found higher than expected. Expected: $"
-						+ getBalance().toString() + " but was: $" + checkedBalance);
-			}
+						+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance));
 			setBalance(checkedBalance);
-
 		} else if (checkedBalance.compareTo(getBalance()) == -1) {
-			plugin.debug("Unexpected account value (#" + id + ")! Expected: $" + getBalance().toString() + " but was: $"
-					+ checkedBalance.toString());
-			if (plugin.getAccountUtils().payInsurance(this, getBalance().subtract(checkedBalance))) {
-				plugin.debug("Insurance has been paid to account owner (#" + id + ")");
-				setBalance(checkedBalance);
-			} else {
-				if (Config.insureAccountsUpTo < 0) {
-					plugin.debug("There was an error while paying $" + getBalance().subtract(checkedBalance).toString()
-							+ " in insurance.");
-				} else if (Config.insureAccountsUpTo > 0) {
-					double loss = getBalance().subtract(checkedBalance).doubleValue();
-					double insurance = loss > Config.insureAccountsUpTo ? Config.insureAccountsUpTo : loss;
-					plugin.debug("There was an error while paying the maximum $" + insurance + " in insurance.");
-				}
-			}
+			plugin.debug("Value of account #" + id + " was found lower than expected. Expected: $"
+					+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance));
+			setBalance(checkedBalance);
 		}
 
 		created = true;
@@ -153,9 +139,9 @@ public class Account extends Ownable {
 	}
 
 	public void setNickname(String nickname) {
-		this.nickname = nickname;
 		if (nickname == null)
 			nickname = getDefaultNickname();
+		this.nickname = nickname;
 		if (isDoubleChest()) {
 			DoubleChest dc = (DoubleChest) inventoryHolder;
 			if (dc == null)
@@ -289,10 +275,10 @@ public class Account extends Ownable {
 		
 		if (status.getRemainingUntilFirstPayout() != 0)
 			interestRate.addExtra(new TextComponent(
-					ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)\n"));
+					ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)"));
 		
 		TextComponent loc = new TextComponent(
-				"Location: " + ChatColor.AQUA + "(" + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ")");
+				"\nLocation: " + ChatColor.AQUA + "(" + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ")");
 		
 		info.addExtra(message);
 		info.addExtra(multiplier);

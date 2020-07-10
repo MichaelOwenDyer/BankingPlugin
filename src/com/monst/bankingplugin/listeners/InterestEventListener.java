@@ -67,11 +67,9 @@ public class InterestEventListener implements Listener {
 				Map<OfflinePlayer, Integer> bankInterestCounter = new HashMap<>(); // The number of accounts each bank owner must pay interest on
 				Map<OfflinePlayer, Integer> bankFeeCounter = new HashMap<>(); // The number of fees each bank owner receives as income
 				
-				Map<OfflinePlayer, BigDecimal> bankTotalProfit = new HashMap<>(); // The amount of profit each bank owner earns
-
-				for (OfflinePlayer owner : playerAccounts.keySet()) {
+				for (OfflinePlayer accountOwner : playerAccounts.keySet()) {
 					
-					for (Account account : playerAccounts.get(owner)) {
+					for (Account account : playerAccounts.get(accountOwner)) {
 
 						AccountConfig config = account.getBank().getAccountConfig();
 						AccountStatus status = account.getStatus();
@@ -83,14 +81,14 @@ public class InterestEventListener implements Listener {
 						Set<OfflinePlayer> trustedPlayers = account.getTrustedPlayers();
 						if (!account.getBank().isAdminBank())
 							trustedPlayers.remove(account.getBank().getOwner());
-						if (trustedPlayers.isEmpty())
-							continue;
 
-						if ((double) config.getOrDefault(Field.MINIMUM_BALANCE) > 0 && account.getBalance()
-								.compareTo(BigDecimal.valueOf((double) config.getOrDefault(Field.MINIMUM_BALANCE))) == -1) {
-							totalAccountFees.put(owner, totalAccountFees.getOrDefault(owner, BigDecimal.ZERO)
+						if (trustedPlayers.size() != 0 && (double) config.getOrDefault(Field.MINIMUM_BALANCE) > 0
+								&& account.getBalance().compareTo(BigDecimal
+										.valueOf((double) config.getOrDefault(Field.MINIMUM_BALANCE))) == -1) {
+
+							totalAccountFees.put(accountOwner, totalAccountFees.getOrDefault(accountOwner, BigDecimal.ZERO)
 									.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));
-							accountFeeCounter.put(owner, accountFeeCounter.getOrDefault(owner, 0).intValue() + 1);
+							accountFeeCounter.put(accountOwner, accountFeeCounter.getOrDefault(accountOwner, 0).intValue() + 1);
 							if (!account.getBank().isAdminBank()) {
 								totalBankFees.put(account.getBank().getOwner(),
 									totalBankFees.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
@@ -115,7 +113,6 @@ public class InterestEventListener implements Listener {
 
 						status.incrementMultiplier(account.isTrustedPlayerOnline());
 						account.updatePrevBalance();
-
 						
 						final int payoutSplit = trustedPlayers.size();
 						for (OfflinePlayer recipient : trustedPlayers) {
@@ -123,7 +120,7 @@ public class InterestEventListener implements Listener {
 									.add(interest.divide(BigDecimal.valueOf(payoutSplit))));
 							accountInterestCounter.put(recipient, accountInterestCounter.getOrDefault(recipient, 0).intValue() + 1);
 						}
-						if (!account.getBank().isAdminBank()) {
+						if (payoutSplit != 0 && !account.getBank().isAdminBank()) {
 							totalBankInterest.put(account.getBank().getOwner(),
 									totalBankInterest.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
 											.add(interest));
@@ -136,17 +133,19 @@ public class InterestEventListener implements Listener {
 						if (Config.enableInterestLog) {
 							plugin.getDatabase().logInterest(account, baseInterest, multiplier, interest, null);
 						}
-
 					}
-					if (owner.isOnline())
-						plugin.getDatabase().logLogout(owner.getPlayer(), null);
+					if (accountOwner.isOnline())
+						plugin.getDatabase().logLogout(accountOwner.getPlayer(), null);
 				}
 				
 				/**
 				 * Bank owners earn revenue on their banks
 				 */
 				for (OfflinePlayer bankOwner : playerBanks.keySet()) {
+
 					for (Bank bank : playerBanks.get(bankOwner)) {
+						if (!bankOwner.hasPlayedBefore())
+							continue;
 
 						BigDecimal totalValue = bank.getTotalValue();
 
@@ -181,7 +180,10 @@ public class InterestEventListener implements Listener {
 				 * Bank owners receive low balance fees
 				 */
 				for (OfflinePlayer bankOwner : totalBankFees.keySet()) {
+
 					if (totalBankFees.get(bankOwner).signum() == 0)
+						continue;
+					if (!bankOwner.hasPlayedBefore())
 						continue;
 
 					boolean isOnline = bankOwner.isOnline();
@@ -263,6 +265,8 @@ public class InterestEventListener implements Listener {
 				for (OfflinePlayer bankOwner : totalBankInterest.keySet()) {
 					
 					if (totalBankInterest.get(bankOwner).signum() == 0)
+						continue;
+					if (!bankOwner.hasPlayedBefore())
 						continue;
 
 					boolean isOnline = bankOwner.isOnline();

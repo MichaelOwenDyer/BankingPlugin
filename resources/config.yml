@@ -194,12 +194,6 @@ confirm-on-remove: true
 # Default: true
 confirm-on-removeall: true
 
-# Set insurance for every account on the server in case of chest corruption (not expected).
-# Account owners will be reimbursed what was lost up to this amount.
-# Set this value to -1 for no limit.
-# Type: long
-insure-accounts-up-to: -1
-
 # Set whether the plugin will check for updates on server start
 # and notify permitted players on join.
 # The command is not affected by this setting and will continue to

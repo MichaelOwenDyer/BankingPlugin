@@ -120,7 +120,7 @@ public class AccountInteractListener implements Listener {
 				boolean verbose = ((InfoClickType) clickType).isVerbose();
 				info(p, account, verbose);
 				ClickType.removePlayerClickType(p);
-				e.setCancelled(false);
+				e.setCancelled(true);
 				break;
 
 			case SET:
@@ -150,8 +150,10 @@ public class AccountInteractListener implements Listener {
 			case MIGRATE:
 				if (((MigrateClickType) clickType).isFirstClick())
 					migratePartOne(p, account);
-				else
+				else {
 					migratePartTwo(p, b, ((MigrateClickType) clickType).getAccount());
+					ClickType.removePlayerClickType(p);
+				}
 				e.setCancelled(true);
 				break;
 			}
@@ -370,7 +372,7 @@ public class AccountInteractListener implements Listener {
 		creationPrice *= account.getChestSize();
 
 		if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION)
-				&& account.isOwner(executor)) {
+				&& account.isOwner(executor) && !account.getBank().isOwner(executor)) {
 			OfflinePlayer owner = executor.getPlayer();
 			EconomyResponse r = plugin.getEconomy().depositPlayer(owner, account.getLocation().getWorld().getName(),
 					creationPrice);
@@ -381,7 +383,6 @@ public class AccountInteractListener implements Listener {
 			} else {
 				executor.sendMessage(
 						String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.formatNumber(r.amount)));
-				executor.sendMessage(Messages.ACCOUNT_REMOVED);
 			}
 
 			if (!account.getBank().isAdminBank()) {
@@ -399,6 +400,7 @@ public class AccountInteractListener implements Listener {
 			}
 		}
 
+		executor.sendMessage(Messages.ACCOUNT_REMOVED);
 		accountUtils.removeAccount(account, true);
 		plugin.debug("Removed account (#" + account.getID() + ")");
 	}
@@ -577,7 +579,11 @@ public class AccountInteractListener implements Listener {
 		if (!bankUtils.isBank(location)) {
 			p.sendMessage(Messages.CHEST_NOT_IN_BANK);
 			plugin.debug("Chest is not in a bank.");
-			plugin.debug(p.getName() + " is migrating an account...");
+			return;
+		}
+		if (!bankUtils.getBank(location).equals(toMigrate.getBank())) {
+			p.sendMessage(Messages.NOT_SAME_BANK);
+			plugin.debug(p.getName() + " tried to migrate their account outside of the bank.");
 			return;
 		}
 		if (!p.hasPermission(Permissions.ACCOUNT_CREATE)) {
@@ -588,11 +594,11 @@ public class AccountInteractListener implements Listener {
 
 		Bank bank = bankUtils.getBank(location);
 
-		Account account = new Account(toMigrate.getID(), plugin, toMigrate.getOwner(), toMigrate.getCoowners(),
-				toMigrate.getBank(), location, toMigrate.getStatus(), toMigrate.getDefaultNickname(),
+		Account newAccount = new Account(toMigrate.getID(), plugin, toMigrate.getOwner(), toMigrate.getCoowners(),
+				toMigrate.getBank(), location, toMigrate.getStatus(), toMigrate.getNickname(),
 				toMigrate.getBalance(), toMigrate.getPrevBalance());
 
-		AccountCreateEvent event = new AccountCreateEvent(p, account);
+		AccountCreateEvent event = new AccountCreateEvent(p, newAccount);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 			plugin.debug("No permission to create account on a protected chest.");
@@ -619,20 +625,20 @@ public class AccountInteractListener implements Listener {
 				plugin.debug("Economy transaction failed: " + r.errorMessage);
 				p.sendMessage(Messages.ERROR_OCCURRED);
 				return;
-			} else if (!account.getBank().isOwner(account.getOwner()))
+			} else if (!newAccount.getBank().isOwner(newAccount.getOwner()))
 				if (creationPrice > 0)
 					p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.formatNumber(r.amount)));
 				else
 					p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.formatNumber(r.amount)));
 			
-			if (!account.getBank().isAdminBank()) {
-				OfflinePlayer bankOwner = account.getBank().getOwner();
+			if (!newAccount.getBank().isAdminBank()) {
+				OfflinePlayer bankOwner = newAccount.getBank().getOwner();
 				EconomyResponse r2 = plugin.getEconomy().depositPlayer(bankOwner, location.getWorld().getName(), creationPrice);
 				if (!r2.transactionSuccess()) {
 					plugin.debug("Economy transaction failed: " + r2.errorMessage);
 					p.sendMessage(Messages.ERROR_OCCURRED);
 					return;
-				} else if (!account.isOwner(bankOwner) && bankOwner.isOnline())
+				} else if (!newAccount.isOwner(bankOwner) && bankOwner.isOnline())
 					if (creationPrice > 0)
 						bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
 							accountOwner.getName(), Utils.formatNumber(r2.amount)));
@@ -642,16 +648,16 @@ public class AccountInteractListener implements Listener {
 			}
 		}
 
-		if (account.create(true)) {
+		if (newAccount.create(true)) {
 			plugin.debug("Account created");
 			accountUtils.removeAccount(toMigrate, false);
-			accountUtils.addAccount(account, true, new Callback<Integer>(plugin) {
+			accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
 				@Override
 				public void onResult(Integer result) {
-					account.setDefaultNickname();
+					newAccount.setNickname(newAccount.getNickname());
 				}
 			});
-			p.sendMessage(Messages.ACCOUNT_CREATED);
+			p.sendMessage(Messages.ACCOUNT_MIGRATED);
 		}
 	}
 

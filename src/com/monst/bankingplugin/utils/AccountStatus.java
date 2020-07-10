@@ -93,7 +93,7 @@ public class AccountStatus {
 				resetMultiplierStage();
 				return 0;
 			}
-			int increment = (int) accountConfig.getOrDefault(Field.OFFLINE_MULTIPLAYER_BEHAVIOR);
+			int increment = (int) accountConfig.getOrDefault(Field.OFFLINE_MULTIPLIER_BEHAVIOR);
 			int newStage = multiplierStage + increment;
 			
 			if (newStage < 0) {

@@ -323,4 +323,12 @@ public class Utils {
         return Integer.parseInt(getServerVersion().split("_")[1]);
     }
 
+	public static String[] getVersionMessage() {
+		return new String[] { 
+				ChatColor.GREEN + "   __ " + ChatColor.DARK_GREEN + "  __",
+				ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |__)   " + ChatColor.DARK_GREEN + "BankingPlugin" + ChatColor.AQUA + " v" + BankingPlugin.getInstance().getDescription().getVersion(),
+				ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY + "        by monst",
+				"" };
+	}
+
 }

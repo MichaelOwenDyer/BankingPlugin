@@ -3,6 +3,7 @@ package com.monst.bankingplugin;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -265,6 +266,10 @@ public class Bank extends Ownable {
 
 	public Collection<Account> getAccounts() {
 		return accounts;
+	}
+
+	public Collection<Account> getAccountsCopy() {
+		return Collections.unmodifiableCollection(accounts);
 	}
 
 	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {

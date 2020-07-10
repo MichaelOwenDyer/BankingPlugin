@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -151,11 +152,6 @@ public class Config {
 	 * the server.
 	 */
 	public static boolean confirmOnRemoveAll;
-
-	/**
-	 * Amount to insure accounts for in case of chests being corrupted.
-	 */
-	public static long insureAccountsUpTo;
 
     /**
      * <p>Whether the update checker should run on start and notify players on join.</p>
@@ -378,15 +374,14 @@ public class Config {
 		mainCommandNameControl = config.getString("main-command-names.control");
 		interestPayoutTimes = new ArrayList<>();
 		if (config.getStringList("interest-payout-times") != null)
-			config.getStringList("interest-payout-times").stream().forEach(t -> {
+			config.getStringList("interest-payout-times").stream()
+			.map(t -> t.contains(":") ? t : t + ":00")
+			.map(t -> t.substring(0, t.indexOf(":")).length() > 1 ? t : "0" + t)
+			.forEach(t -> {
 				try {
 					interestPayoutTimes.add(LocalTime.parse(t));
 				} catch (DateTimeParseException e) {
-					try {
-						interestPayoutTimes.add(LocalTime.parse(t + ":00"));
-					} catch (DateTimeParseException e2) {
-						plugin.getLogger().severe("Could not parse interest payout time (" + t + ")!");
-					}
+					plugin.getLogger().severe("Could not parse interest payout time (" + t + ")!");
 				}
 			});
 		if (plugin.isEnabled())
@@ -448,7 +443,6 @@ public class Config {
 		allowSelfBanking = config.getBoolean("allow-self-banking");
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");
-		insureAccountsUpTo = config.getLong("insure-accounts-up-to");
         enableUpdateChecker = config.getBoolean("enable-update-checker");
 		enableTransactionLog = config.getBoolean("enable-logs.transaction-log");
 		enableInterestLog = config.getBoolean("enable-logs.interest-log");

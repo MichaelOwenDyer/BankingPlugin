@@ -29,8 +29,8 @@ import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.listeners.AccountBalanceListener;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
-import com.monst.bankingplugin.listeners.ChestTamperingListener;
 import com.monst.bankingplugin.listeners.AccountProtectListener;
+import com.monst.bankingplugin.listeners.ChestTamperingListener;
 import com.monst.bankingplugin.listeners.InterestEventListener;
 import com.monst.bankingplugin.listeners.NotifyPlayerOnJoinListener;
 import com.monst.bankingplugin.listeners.WorldGuardListener;
@@ -68,7 +68,6 @@ public class BankingPlugin extends JavaPlugin {
 	private Database database;
 	private AccountUtils accountUtils;
 	private BankUtils bankUtils;
-	private Utils utils;
 	
 	private Plugin worldGuard;
 	private GriefPrevention griefPrevention;
@@ -117,6 +116,9 @@ public class BankingPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		debug("Enabling BankingPlugin version " + getDescription().getVersion());
+
+		for (String s : Utils.getVersionMessage())
+			Bukkit.getConsoleSender().sendMessage(s);
 
 		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
 			debug("Could not find plugin \"Vault\"");
@@ -223,25 +225,15 @@ public class BankingPlugin extends JavaPlugin {
     private void loadExternalPlugins() {
 
         Plugin griefPreventionPlugin = Bukkit.getServer().getPluginManager().getPlugin("GriefPrevention");
-		if (griefPreventionPlugin != null && griefPreventionPlugin.isEnabled()
-				&& griefPreventionPlugin instanceof GriefPrevention)
+		if (griefPreventionPlugin instanceof GriefPrevention)
             griefPrevention = (GriefPrevention) griefPreventionPlugin;
 
 		Plugin worldEditPlugin = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-		if (worldEditPlugin != null && worldEditPlugin.isEnabled()
-				&& worldEditPlugin instanceof WorldEditPlugin) {
+		if (worldEditPlugin instanceof WorldEditPlugin)
 			worldEdit = (WorldEditPlugin) worldEditPlugin;
-			debug("Hooked with WorldEdit! (" + worldEditPlugin.toString() + ")");
-			getLogger().info("Hooked with WorldEdit.");
-		} else {
-			debug("Could not hook with WorldEdit!");
-			if (worldEditPlugin != null)
-				debug("Found: " + worldEditPlugin.toString());
-		}
 
 		Plugin essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("Essentials");
-		if (essentialsPlugin != null // && essentialsPlugin.isEnabled()
-				&& essentialsPlugin instanceof Essentials)
+		if (essentialsPlugin instanceof Essentials)
 			essentials = (Essentials) essentialsPlugin;
 
 		if (hasWorldGuard())
@@ -426,10 +418,6 @@ public class BankingPlugin extends JavaPlugin {
 		return bankUtils;
 	}
 
-	public Utils getUtils() {
-		return utils;
-	}
-
 	public Config getPluginConfig() {
 		return config;
 	}
@@ -459,7 +447,7 @@ public class BankingPlugin extends JavaPlugin {
 	}
 	
 	public boolean hasGriefPrevention() {
-		return griefPrevention != null & griefPrevention.isEnabled();
+		return griefPrevention != null && griefPrevention.isEnabled();
 	}
 
 	public GriefPrevention getGriefPrevention() {

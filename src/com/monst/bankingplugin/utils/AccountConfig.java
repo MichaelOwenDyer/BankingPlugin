@@ -75,7 +75,7 @@ public class AccountConfig {
 			return Config.allowedOfflinePayouts.getKey();
 		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
 			return Config.allowedOfflineBeforeMultiplierReset.getKey();
-		case OFFLINE_MULTIPLAYER_BEHAVIOR:
+		case OFFLINE_MULTIPLIER_BEHAVIOR:
 			return Config.offlineMultiplierBehavior.getKey();
 		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
 			return Config.withdrawalMultiplierBehavior.getKey();
@@ -110,7 +110,7 @@ public class AccountConfig {
 			return Config.allowedOfflinePayouts.getKey() ? allowedOfflinePayouts : Config.allowedOfflinePayouts.getValue();
 		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
 			return Config.allowedOfflineBeforeMultiplierReset.getKey() ? allowedOfflineBeforeReset : Config.allowedOfflineBeforeMultiplierReset.getValue();
-		case OFFLINE_MULTIPLAYER_BEHAVIOR:
+		case OFFLINE_MULTIPLIER_BEHAVIOR:
 			return Config.offlineMultiplierBehavior.getKey() ? offlineMultiplierBehavior : Config.offlineMultiplierBehavior.getValue();
 		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
 			return Config.withdrawalMultiplierBehavior.getKey() ? withdrawalMultiplierBehavior : Config.withdrawalMultiplierBehavior.getValue();
@@ -159,7 +159,7 @@ public class AccountConfig {
 		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
 			allowedOfflineBeforeReset = Integer.parseInt(s);
 			break;
-		case OFFLINE_MULTIPLAYER_BEHAVIOR:
+		case OFFLINE_MULTIPLIER_BEHAVIOR:
 			offlineMultiplierBehavior = Integer.parseInt(s);
 			break;
 		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
@@ -249,7 +249,7 @@ public class AccountConfig {
 		COUNT_INTEREST_DELAY_OFFLINE ("count-interest-delay-offline", 2), 
 		ALLOWED_OFFLINE_PAYOUTS ("allowed-offline-payouts", 1),
 		ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET ("allowed-offline-payouts-before-multiplier-reset", 1),
-		OFFLINE_MULTIPLAYER_BEHAVIOR ("offline-multiplier-behavior", 1), 
+		OFFLINE_MULTIPLIER_BEHAVIOR ("offline-multiplier-behavior", 1), 
 		WITHDRAWAL_MULTIPLIER_BEHAVIOR ("withdrawal-multiplier-behavior", 1),
 		ACCOUNT_CREATION_PRICE ("account-creation-price", 0), 
 		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation", 2), 

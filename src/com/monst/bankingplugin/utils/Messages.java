@@ -9,6 +9,7 @@ public class Messages {
 	// ACCOUNT, BANK CREATION
 	public static final String BANK_CREATED = ChatColor.GOLD + "Bank created!";
 	public static final String ACCOUNT_CREATED = ChatColor.GOLD + "Account created!";
+	public static final String ACCOUNT_MIGRATED = ChatColor.GOLD + "Account migrated!";
 	public static final String ACCOUNT_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account.";
 	public static final String ACCOUNT_EXTEND_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend your account.";
 	public static final String ACCOUNT_CREATE_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account at your bank.";
@@ -45,7 +46,7 @@ public class Messages {
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to delete %d bank%s and %d account%s.";
 	
 	// SUCCESS NOTIFICATIONS
-	public static final String INTEREST_PAYOUT_TRIGGERED = ChatColor.GOLD + "Interest payout event has been triggered."; // XXX
+	public static final String INTEREST_PAYOUT_TRIGGERED = ChatColor.GOLD + "Interest payout event triggered.";
 	public static final String NICKNAME_SET = ChatColor.GOLD + "Account nickname has been set.";
 	public static final String MULTIPLIER_SET = ChatColor.GOLD + "Account multiplier has been set to %s.";
 	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "Account interest delay has been set.";
@@ -62,6 +63,7 @@ public class Messages {
 	public static final String CANNOT_BREAK_ACCOUNT = ChatColor.RED + "You cannot break that account chest.";
 	public static final String CHEST_NOT_ACCOUNT = ChatColor.RED + "That chest is not an account."; // XXX
 	public static final String CHEST_NOT_IN_BANK = ChatColor.RED + "That chest is not located within a bank.";
+	public static final String NOT_SAME_BANK = ChatColor.RED + "You can only migrate an account within the same bank.";
 	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or specify the name of a bank.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account at this bank.";
 	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found under the identifier \"%s\".";

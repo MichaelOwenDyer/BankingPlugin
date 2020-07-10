@@ -13,21 +13,19 @@ import org.bukkit.entity.Player;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.InterestEvent;
 import com.monst.bankingplugin.events.ReloadEvent;
-import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.UpdateChecker;
+import com.monst.bankingplugin.utils.Utils;
 
 import net.md_5.bungee.api.ChatColor;
 
 public class ControlCommandExecutor implements CommandExecutor {
 
 	private BankingPlugin plugin;
-	private BankUtils bankUtils;
 	
 	public ControlCommandExecutor(BankingPlugin plugin) {
 		this.plugin = plugin;
-		this.bankUtils = plugin.getBankUtils();
 	}
 
 	@Override
@@ -53,7 +51,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 
 		switch (subCommand.getName().toLowerCase()) {
 		case "version":
-			sender.sendMessage(ChatColor.AQUA + "BankingPlugin version " + plugin.getDescription().getVersion());
+			showVersion(sender);
 			break;
 		case "config":
 			if (!changeConfig(sender, args))
@@ -74,12 +72,21 @@ public class ControlCommandExecutor implements CommandExecutor {
 		return true;
 	}
 	
+	private void showVersion(CommandSender sender) {
+		if (sender instanceof Player)
+			sender.sendMessage(ChatColor.GRAY + "-----" + ChatColor.GREEN + "BankingPlugin" + ChatColor.GRAY + "-----\n" 
+								  + "---" + ChatColor.AQUA + "v" + plugin.getDescription().getVersion() + ChatColor.GRAY + "---\n");
+		else
+			for (String s : Utils.getVersionMessage())
+				sender.sendMessage(s);
+	}
+
 	private boolean changeConfig(CommandSender sender, String[] args) {
 
 		if (args.length < 4)
 			return false;
 
-		plugin.debug(sender.getName() + " is changing the configuration");
+		plugin.debug(sender.getName() + " is adjusting the config");
 
 		String property = args[2];
 		StringBuilder sb = new StringBuilder(args[3]);
@@ -122,7 +129,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 			return;
 		}
 
-		bankUtils.reload(true, true, new Callback<int[]>(plugin) {
+		plugin.getBankUtils().reload(true, true, new Callback<int[]>(plugin) {
 			@Override
 			public void onResult(int[] result) {
 				sender.sendMessage(
@@ -181,7 +188,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 
 	private void promptPayout(CommandSender sender) {
 		plugin.debug(sender.getName() + " is triggering an interest payout");
-		sender.sendMessage(ChatColor.GOLD + "Interest payout event triggered.");
+		sender.sendMessage(Messages.INTEREST_PAYOUT_TRIGGERED);
 
 		InterestEvent event = new InterestEvent(plugin);
 		Bukkit.getPluginManager().callEvent(event);

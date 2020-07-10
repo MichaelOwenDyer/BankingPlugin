@@ -66,6 +66,67 @@ public class AccountProtectListener implements Listener {
 		}
 	}
 
+	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
+		AccountConfig accountConfig = account.getBank().getAccountConfig();
+		double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+
+		if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION)
+				&& account.isOwner(p)) {
+			EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
+					creationPrice);
+			if (!r.transactionSuccess()) {
+				plugin.debug("Economy transaction failed: " + r.errorMessage);
+				p.sendMessage(Messages.ERROR_OCCURRED);
+			} else {
+				p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.formatNumber(r.amount)));
+			}
+
+			if (!account.getBank().isAdminBank()) {
+				OfflinePlayer bankOwner = account.getBank().getOwner();
+				EconomyResponse r2 = plugin.getEconomy().withdrawPlayer(bankOwner,
+						account.getLocation().getWorld().getName(), creationPrice);
+				if (!r2.transactionSuccess()) {
+					plugin.debug("Economy transaction failed: " + r2.errorMessage);
+					if (bankOwner.isOnline())
+						bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
+					return;
+				} else if (!account.isOwner(bankOwner) && bankOwner.isOnline())
+					bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
+							account.getOwner().getName(), Utils.formatNumber(r2.amount)));
+			}
+		}
+
+		if (account.getInventoryHolder() instanceof DoubleChest) {
+			DoubleChest dc = (DoubleChest) account.getInventoryHolder();
+			final Chest l = (Chest) dc.getLeftSide();
+			final Chest r = (Chest) dc.getRightSide();
+
+			Location loc = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
+			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
+					account.getBank(), loc, account.getStatus(), account.getNickname(), account.getBalance(),
+					account.getPrevBalance());
+
+			accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
+				@Override
+				public void onResult(Void result) {
+					newAccount.create(true);
+					accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
+						@Override
+						public void onResult(Integer result) {
+							newAccount.setNickname(newAccount.getNickname());
+						}
+					});
+				}
+			});
+
+		} else {
+			accountUtils.removeAccount(account, true);
+			plugin.debug(String.format("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(),
+					account.getID()));
+			p.sendMessage(Messages.ACCOUNT_REMOVED);
+		}
+	}
+
 	@EventHandler(ignoreCancelled = true)
 	public void onAccountExtend(BlockPlaceEvent e) {
         final Player p = e.getPlayer();
@@ -139,7 +200,7 @@ public class AccountProtectListener implements Listener {
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
 		double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
 		
-		if (creationPrice > 0 && account.isOwner(p)) {
+		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
 			EconomyResponse r = plugin.getEconomy().withdrawPlayer(owner, 
 					account.getLocation().getWorld().getName(), creationPrice);
@@ -160,7 +221,7 @@ public class AccountProtectListener implements Listener {
 					plugin.debug("Economy transaction failed: " + r2.errorMessage);
 					p.sendMessage(Messages.ERROR_OCCURRED);
 					return;
-				} else if (!account.isOwner(bankOwner) && bankOwner.isOnline())
+				} else if (bankOwner.isOnline())
 					bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
 							account.getOwner().getName(),
 							BigDecimal.valueOf(r2.amount).setScale(2, RoundingMode.HALF_EVEN)));
@@ -229,63 +290,4 @@ public class AccountProtectListener implements Listener {
 		}
 	}
 
-	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
-		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
-
-		if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION) && account.isOwner(p)) {
-			EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(), creationPrice);
-			if (!r.transactionSuccess()) {
-				plugin.debug("Economy transaction failed: " + r.errorMessage);
-				p.sendMessage(Messages.ERROR_OCCURRED);
-			} else {
-				p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
-						Utils.formatNumber(r.amount)));
-			}
-
-			if (!account.getBank().isAdminBank()) {
-				OfflinePlayer bankOwner = account.getBank().getOwner();
-				EconomyResponse r2 = plugin.getEconomy().withdrawPlayer(bankOwner,
-						account.getLocation().getWorld().getName(), creationPrice);
-				if (!r2.transactionSuccess()) {
-					plugin.debug("Economy transaction failed: " + r2.errorMessage);
-					if (bankOwner.isOnline())
-						bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-					return;
-				} else if (!account.isOwner(bankOwner) && bankOwner.isOnline())
-					bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-							account.getOwner().getName(), Utils.formatNumber(r2.amount)));
-			}
-		}
-
-		if (account.getInventoryHolder() instanceof DoubleChest) {
-			DoubleChest dc = (DoubleChest) account.getInventoryHolder();
-			final Chest l = (Chest) dc.getLeftSide();
-			final Chest r = (Chest) dc.getRightSide();
-
-			Location loc = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
-			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
-					account.getBank(), loc, account.getStatus(), account.getNickname(), account.getBalance(),
-					account.getPrevBalance());
-
-			accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					newAccount.create(true);
-					accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
-						@Override
-						public void onResult(Integer result) {
-							newAccount.setNickname(newAccount.getNickname());
-						}
-					});
-				}
-			});
-
-		} else {
-			accountUtils.removeAccount(account, true);
-			plugin.debug(String.format("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(),
-					account.getID()));
-			p.sendMessage(Messages.ACCOUNT_REMOVED);
-		}
-	}
 }
