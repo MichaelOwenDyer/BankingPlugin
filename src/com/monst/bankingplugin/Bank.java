@@ -167,7 +167,7 @@ public class Bank extends Ownable {
 		
 		TextComponent offlinePayouts = new TextComponent(
 				"\nOffline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS));
-		offlinePayouts.addExtra(ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before reset)\n");
+		offlinePayouts.addExtra(ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before multiplier reset)\n");
 		
 		TextComponent minBalance = new TextComponent("Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
 		if (minBal != 0)

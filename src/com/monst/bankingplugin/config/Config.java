@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.Function;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -373,8 +372,10 @@ public class Config {
         mainCommandNameAccount = config.getString("main-command-names.account");
 		mainCommandNameControl = config.getString("main-command-names.control");
 		interestPayoutTimes = new ArrayList<>();
-		if (config.getStringList("interest-payout-times") != null)
-			config.getStringList("interest-payout-times").stream()
+		List<String> times = config.getStringList("interest-payout-times");
+		if (times != null)
+			times.stream()
+			.map(t -> t.replace(".", ":"))
 			.map(t -> t.contains(":") ? t : t + ":00")
 			.map(t -> t.substring(0, t.indexOf(":")).length() > 1 ? t : "0" + t)
 			.forEach(t -> {

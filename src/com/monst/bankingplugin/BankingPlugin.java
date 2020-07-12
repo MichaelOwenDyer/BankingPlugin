@@ -291,10 +291,10 @@ public class BankingPlugin extends JavaPlugin {
     	debug("Registering listeners...");
 		getServer().getPluginManager().registerEvents(new AccountBalanceListener(this), this);
     	getServer().getPluginManager().registerEvents(new AccountInteractListener(this), this);
+		getServer().getPluginManager().registerEvents(new AccountProtectListener(this), this);
     	getServer().getPluginManager().registerEvents(new ChestTamperingListener(this), this);
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
 		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
-		getServer().getPluginManager().registerEvents(new AccountProtectListener(this), this);
 
 		if (hasWorldGuard())
 			getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);
@@ -360,15 +360,11 @@ public class BankingPlugin extends JavaPlugin {
 		Calendar cal = Calendar.getInstance();
 		long currentTime = cal.getTimeInMillis();
 		
-		int hour = time.getHour();
-		int minute = time.getMinute();
-		int second = time.getSecond();
-		
 		if (LocalTime.now().isAfter(time))
 			cal.add(Calendar.DATE, 1);
-		cal.set(Calendar.HOUR_OF_DAY, hour);
-		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, second);
+		cal.set(Calendar.HOUR_OF_DAY, time.getHour());
+		cal.set(Calendar.MINUTE, time.getMinute());
+		cal.set(Calendar.SECOND, time.getSecond());
 		cal.set(Calendar.MILLISECOND, 0);
 		
 		long offset = cal.getTimeInMillis() - currentTime;

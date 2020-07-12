@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,8 +18,6 @@ import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.UpdateChecker;
 import com.monst.bankingplugin.utils.Utils;
-
-import net.md_5.bungee.api.ChatColor;
 
 public class ControlCommandExecutor implements CommandExecutor {
 
@@ -73,10 +72,11 @@ public class ControlCommandExecutor implements CommandExecutor {
 	}
 	
 	private void showVersion(CommandSender sender) {
-		if (sender instanceof Player)
-			sender.sendMessage(ChatColor.GRAY + "-----" + ChatColor.GREEN + "BankingPlugin" + ChatColor.GRAY + "-----\n" 
-								  + "---" + ChatColor.AQUA + "v" + plugin.getDescription().getVersion() + ChatColor.GRAY + "---\n");
-		else
+		if (sender instanceof Player) {
+			sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Banking" + ChatColor.DARK_GREEN + ChatColor.BOLD + "Plugin" + ChatColor.RESET 
+								  + ChatColor.AQUA + " v" + plugin.getDescription().getVersion()
+								  + ChatColor.DARK_GRAY + "\n         by monst");
+		} else
 			for (String s : Utils.getVersionMessage())
 				sender.sendMessage(s);
 	}
