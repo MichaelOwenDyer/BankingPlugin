@@ -82,7 +82,7 @@ public class BankCommand extends GenericCommand {
 		addSubCommand(new BankSubCommand("resize", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_RESIZE) ? Messages.COMMAND_USAGE_BANK_RESIZE : "";
+				return sender.hasPermission(Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RESIZE : "";
 			}
 		});
 

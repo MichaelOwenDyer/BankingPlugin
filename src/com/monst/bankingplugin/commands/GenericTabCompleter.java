@@ -100,7 +100,7 @@ class GenericTabCompleter implements TabCompleter {
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		onlinePlayers.remove(sender.getName());
 
-		ArrayList<String> flags = new ArrayList<>(Arrays.asList("detailed"));
+		List<String> flags = Arrays.asList("detailed");
 		if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
 			flags.add("all");
 

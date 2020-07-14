@@ -250,7 +250,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_LIST);
+					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
 				}
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
@@ -269,7 +269,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {
 						plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_LIST);
+						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
 					}
 				} else
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
@@ -277,7 +277,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		} else if (args.length == 3) {
 			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) && (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed"))
 					|| (args[2].equalsIgnoreCase("-a") || args[2].equalsIgnoreCase("all")) && (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed"))) {
-				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER_VERBOSE)) {
+				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
 					plugin.debug(sender.getName() + " has listed all accounts verbose");
 					Collection<Account> accounts = accountUtils.getAccountsCopy();
 					if (!accounts.isEmpty()) {
@@ -288,7 +288,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_LIST_VERBOSE);
+					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER_VERBOSE);
 				}
 			} else if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
@@ -296,7 +296,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
 					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
-							|| sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER_VERBOSE)) {
+							|| sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
 						plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
 						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
 						if (!accounts.isEmpty()) {
@@ -307,7 +307,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {
 						plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_LIST_VERBOSE);
+						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER_VERBOSE);
 					}
 				} else
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
@@ -348,7 +348,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to remove all accounts");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_REMOVE);
+					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
 				}
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
@@ -364,7 +364,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 							sender.sendMessage(Messages.NO_PLAYER_ACCOUNTS);
 					} else {
 						plugin.debug(sender.getName() + " does not have permission to remove all accounts");
-						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_REMOVE);
+						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
 					}
 				} else
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
@@ -430,8 +430,11 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		plugin.debug(p.getName() + " wants to configure an account");
 		if (args.length < 2)
 			return false;
-		if (args[1].equalsIgnoreCase("nickname")) {
-			if (p.hasPermission(Permissions.ACCOUNT_SET_NICKNAME)) {
+
+		switch (args[1].toLowerCase()) {
+
+		case "nickname":
+			if (p.hasPermission(Permissions.ACCOUNT_CREATE)) {
 				String nickname;
 				if (args.length < 3)
 					nickname = "";
@@ -448,7 +451,9 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "nickname", nickname }));
 			} else
 				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
-		} else if (args[1].equalsIgnoreCase("multiplier")) {
+			break;
+
+		case "multiplier":
 			if (args.length < 3)
 				return false;
 			if (p.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER)) {
@@ -472,7 +477,9 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				}
 			} else
 				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
-		} else if (args[1].equalsIgnoreCase("interest-delay")) {
+			break;
+
+		case "interest-delay":
 			if (args.length < 3)
 				return false;
 			if (p.hasPermission(Permissions.ACCOUNT_SET_INTEREST_DELAY)) {
@@ -486,8 +493,11 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				}
 			} else
 				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY);
-		} else
+			break;
+
+		default:
 			p.sendMessage(String.format(Messages.NOT_A_FIELD, args[1]));
+		}
 		return true;
 	}
 

@@ -2,6 +2,7 @@ package com.monst.bankingplugin.utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -107,12 +108,12 @@ public class AccountUtils {
 
 			plugin.debug("Added account as double chest. (#" + account.getID() + ")");
 
-			accountLocationMap.put(r.getLocation(), account);
-			accountLocationMap.put(l.getLocation(), account);
+			accountLocationMap.put(Utils.blockifyLocation(r.getLocation()), account);
+			accountLocationMap.put(Utils.blockifyLocation(l.getLocation()), account);
         } else {
             plugin.debug("Added account as single chest. (#" + account.getID() + ")");
 
-            accountLocationMap.put(account.getLocation(), account);
+			accountLocationMap.put(Utils.blockifyLocation(account.getLocation()), account);
         }
 
         if (addToDatabase) {
@@ -149,10 +150,10 @@ public class AccountUtils {
 			Chest r = (Chest) dc.getRightSide();
 			Chest l = (Chest) dc.getLeftSide();
 
-			accountLocationMap.remove(r.getLocation());
-			accountLocationMap.remove(l.getLocation());
+			accountLocationMap.remove(Utils.blockifyLocation(r.getLocation()));
+			accountLocationMap.remove(Utils.blockifyLocation(l.getLocation()));
         } else {
-            accountLocationMap.remove(account.getLocation());
+			accountLocationMap.remove(Utils.blockifyLocation(account.getLocation()));
         }
 
         if (removeFromDatabase) {
@@ -239,14 +240,18 @@ public class AccountUtils {
 
 	public BigDecimal appraiseAccountContents(Account account) {
 
+		plugin.debug("Appraising account contents... (#" + account.getID() + ")");
+		plugin.debug(Arrays.stream(account.getInventoryHolder().getInventory().getContents())
+				.filter(item -> item != null).map(item -> item.toString()).collect(Collectors.joining(", ", "[", "]")));
+
 		BigDecimal sum = BigDecimal.ZERO;
-		sum.setScale(2, RoundingMode.HALF_EVEN);
 		for (ItemStack item : account.getInventoryHolder().getInventory().getContents()) {
 			if (item == null)
 				continue;
 			if (Config.blacklist.contains(item.getType().toString()))
 				continue;
-			BigDecimal itemValue = BigDecimal.ZERO;
+			BigDecimal itemValue = getWorth(item);
+
 			if (item.getItemMeta() instanceof BlockStateMeta) {
 				BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
                 if (im.getBlockState() instanceof ShulkerBox) {
@@ -268,7 +273,7 @@ public class AccountUtils {
                 	}
                 }
 			}
-			itemValue = itemValue.add(getWorth(item));
+
 			if (itemValue.signum() == 1)
 				itemValue = itemValue.multiply(BigDecimal.valueOf(item.getAmount()));
 			else {
@@ -277,6 +282,7 @@ public class AccountUtils {
 			}
 			sum = sum.add(itemValue);
 		}
+		plugin.debug("Appraised account balance: " + sum + " (#" + account.getID() + ")");
 		return sum.setScale(2, RoundingMode.HALF_EVEN);
 	}
 

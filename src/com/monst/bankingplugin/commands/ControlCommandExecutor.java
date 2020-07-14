@@ -16,6 +16,7 @@ import com.monst.bankingplugin.events.InterestEvent;
 import com.monst.bankingplugin.events.ReloadEvent;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.UpdateChecker;
 import com.monst.bankingplugin.utils.Utils;
 
@@ -82,11 +83,16 @@ public class ControlCommandExecutor implements CommandExecutor {
 	}
 
 	private boolean changeConfig(CommandSender sender, String[] args) {
+		plugin.debug(sender.getName() + " is adjusting the config");
+
+		if (!sender.hasPermission(Permissions.CONFIG)) {
+			plugin.debug(sender.getName() + " does not have permission to adjust the config");
+			sender.sendMessage(Messages.NO_PERMISSION_CONFIG);
+			return true;
+		}
 
 		if (args.length < 4)
 			return false;
-
-		plugin.debug(sender.getName() + " is adjusting the config");
 
 		String property = args[2];
 		StringBuilder sb = new StringBuilder(args[3]);
@@ -120,7 +126,13 @@ public class ControlCommandExecutor implements CommandExecutor {
 	 * @param sender The command executor
 	 */
 	private void promptReload(final CommandSender sender) {
-		plugin.debug(sender.getName() + " is reloading the accounts");
+		plugin.debug(sender.getName() + " is reloading the plugin");
+
+		if (!sender.hasPermission(Permissions.RELOAD)) {
+			plugin.debug(sender.getName() + " does not have permission to reload the plugin");
+			sender.sendMessage(Messages.NO_PERMISSION_RELOAD);
+			return;
+		}
 
 		ReloadEvent event = new ReloadEvent(sender);
 		Bukkit.getPluginManager().callEvent(event);
@@ -156,6 +168,12 @@ public class ControlCommandExecutor implements CommandExecutor {
 	 */
 	private void checkUpdates(CommandSender sender) {
 		plugin.debug(sender.getName() + " is checking for updates");
+
+		if (!sender.hasPermission(Permissions.UPDATE)) {
+			plugin.debug(sender.getName() + " does not have permission to update the plugin");
+			sender.sendMessage(Messages.NO_PERMISSION_UPDATE);
+			return;
+		}
 
 		// sender.sendMessage(Messages.UPDATE_CHECKING);
 

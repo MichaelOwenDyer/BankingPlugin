@@ -38,8 +38,8 @@ public class Messages {
 	public static final String INTEREST_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s " + ChatColor.RED + "in interest on %d account%s!";
 	public static final String LOW_BALANCE_FEE_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in low balance fees on %d account%s.";
 	public static final String LOW_BALANCE_FEE_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s" + ChatColor.RED + " in low balance fees on %d account%s.";
-	public static final String MULTIPLIER_INCREASED = ChatColor.GOLD + "Your account multiplier has increased to %d."; // XXX
-	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to %d."; // XXX
+	public static final String MULTIPLIER_INCREASED = ChatColor.GOLD + "Your account multiplier has increased to " + ChatColor.GREEN + "$%d."; // XXX
+	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to " + ChatColor.GREEN + "$%d.";
 	public static final String ACCOUNT_LIMIT = ChatColor.GOLD + "You own %d/%d allowed accounts.";
 	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%d allowed banks.";
 	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to delete %d account%s.";
@@ -61,9 +61,7 @@ public class Messages {
 	// DENY NOTIFICATIONS
 	public static final String MUST_BE_OWNER = ChatColor.RED + "You must be the owner of the account to do that.";
 	public static final String CANNOT_BREAK_ACCOUNT = ChatColor.RED + "You cannot break that account chest.";
-	public static final String CHEST_NOT_ACCOUNT = ChatColor.RED + "That chest is not an account."; // XXX
 	public static final String CHEST_NOT_IN_BANK = ChatColor.RED + "That chest is not located within a bank.";
-	public static final String NOT_SAME_BANK = ChatColor.RED + "You can only migrate an account within the same bank.";
 	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or specify the name of a bank.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account at this bank.";
 	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found under the identifier \"%s\".";
@@ -87,7 +85,7 @@ public class Messages {
 	public static final String NOT_A_LIST = ChatColor.RED + "\"%s\" is not a parseable list!";
 	public static final String ERROR_OCCURRED = ChatColor.DARK_RED + "An error occurred! ";
 	public static final String PLAYER_NOT_FOUND = ChatColor.RED + "No player was found under the name \"%s\".";
-	public static final String BANK_LIMIT_REACHED = "You are not allowed to create any more banks!"; // XXX
+	public static final String BANK_LIMIT_REACHED = "You are not allowed to create any more banks!";
 	public static final String ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create any more accounts!";
 	public static final String NO_SELF_BANKING = ChatColor.RED + "You are not allowed to create an account at your own bank.";
 	public static final String PER_BANK_ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create another account at this bank.";
@@ -108,52 +106,48 @@ public class Messages {
 	
 	
 	private static final String NO_PERMISSION = ChatColor.RED + "You do not have permission to ";
-	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";
-	public static final String NO_PERMISSION_BANK_REMOVE = NO_PERMISSION + "remove a bank.";
-	public static final String NO_PERMISSION_BANK_REMOVEALL = NO_PERMISSION + "remove all banks.";
-	public static final String NO_PERMISSION_BANK_INFO = NO_PERMISSION + "view bank info.";
-	public static final String NO_PERMISSION_BANK_INFO_VERBOSE = NO_PERMISSION + "view detailed bank info."; // XXX
-	public static final String NO_PERMISSION_BANK_LIST = NO_PERMISSION + "view a list of banks.";
-	public static final String NO_PERMISSION_BANK_LIST_VERBOSE = NO_PERMISSION + "view a detailed list of banks.";
-	public static final String NO_PERMISSION_BANK_RESIZE = NO_PERMISSION + "resize a bank.";
-	public static final String NO_PERMISSION_BANK_SET = NO_PERMISSION + "configure a bank."; // XXX
-	public static final String NO_PERMISSION_BANK_OTHER_CREATE = NO_PERMISSION + "create a bank in someone else's name."; // XXX
-	public static final String NO_PERMISSION_BANK_OTHER_REMOVE = NO_PERMISSION + "remove someone else's bank."; // XXX
-	public static final String NO_PERMISSION_BANK_OTHER_INFO = NO_PERMISSION + "view someone else's bank info."; // XXX
-	public static final String NO_PERMISSION_BANK_OTHER_INFO_VERBOSE = NO_PERMISSION + "view someone else's detailed bank info."; // XXX
-	public static final String NO_PERMISSION_BANK_OTHER_RESIZE = NO_PERMISSION + "resize someone else's bank."; // XXX
-	public static final String NO_PERMISSION_BANK_OTHER_SET = NO_PERMISSION + "configure someone else's bank.";
-	public static final String NO_PERMISSION_BANK_ADMIN_CREATE = NO_PERMISSION + "create an admin bank.";
-	public static final String NO_PERMISSION_BANK_ADMIN_REMOVE = NO_PERMISSION + "remove an admin bank.";
-	public static final String NO_PERMISSION_BANK_SELECT = NO_PERMISSION + "select a bank.";
 	public static final String NO_PERMISSION_ACCOUNT_CREATE = NO_PERMISSION + "create an account.";
-	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME = NO_PERMISSION + "set an account nickname.";
-	public static final String NO_PERMISSION_ACCOUNT_SET_MULTIPLIER = NO_PERMISSION + "set an account multiplier.";
-	public static final String NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY = NO_PERMISSION + "set an account interest delay.";
-	public static final String NO_PERMISSION_ACCOUNT_TRUST = NO_PERMISSION + "add a co-owner to your account.";
-	public static final String NO_PERMISSION_ACCOUNT_UNTRUST = NO_PERMISSION + "remove a co-owner from your account.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_SET_NICKNAME = NO_PERMISSION + "set someone else's account nickname."; // XXX
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_SET_MULTIPLIER = NO_PERMISSION + "set someone else's account multiplier."; // XXX
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_SET_INTEREST_DELAY = NO_PERMISSION + "set someone else's account interest delay.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_TRUST = NO_PERMISSION + "add a co-owner to someone else's account.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_UNTRUST = NO_PERMISSION + "remove a co-owner from someone else's account.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_CREATE = NO_PERMISSION + "create an account in someone else's name.";
 	public static final String NO_PERMISSION_ACCOUNT_CREATE_PROTECTED = NO_PERMISSION + "create an account on a protected chest.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_REMOVE = NO_PERMISSION + "remove someone else's account.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_INFO = NO_PERMISSION + "view someone else's account info.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_INFO_VERBOSE = NO_PERMISSION + "view someone else's detailed account info.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_LIST = NO_PERMISSION + "view a list of others' accounts.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_LIST_VERBOSE = NO_PERMISSION + "view a detailed list of others' accounts.";
+	public static final String NO_PERMISSION_ACCOUNT_TRUST = NO_PERMISSION + "add a co-owner to an account.";
+	public static final String NO_PERMISSION_ACCOUNT_TRUST_OTHER = NO_PERMISSION + "add a co-owner to someone else's account.";
+	public static final String NO_PERMISSION_ACCOUNT_UNTRUST = NO_PERMISSION + "remove a co-owner from an account.";
+	public static final String NO_PERMISSION_ACCOUNT_UNTRUST_OTHER = NO_PERMISSION + "remove a co-owner from someone else's account.";
+	public static final String NO_PERMISSION_ACCOUNT_REMOVE_OTHER = NO_PERMISSION + "remove someone else's account.";
+	public static final String NO_PERMISSION_ACCOUNT_LIST_OTHER = NO_PERMISSION + "view a list of others' accounts.";
+	public static final String NO_PERMISSION_ACCOUNT_LIST_OTHER_VERBOSE = NO_PERMISSION + "view a detailed list of others' accounts.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_VIEW = NO_PERMISSION + "open someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_EDIT = NO_PERMISSION + "edit someone else's account contents.";
-	public static final String NO_PERMISSION_ACCOUNT_EXTEND_OTHER = NO_PERMISSION + "extend someone else's account.";
-	public static final String NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED = NO_PERMISSION + "extend a protected account chest.";
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE = NO_PERMISSION + "migrate an account.";
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE_OTHER = NO_PERMISSION + "migrate someone else's account.";
-	public static final String NO_PERMISSION_RELOAD = NO_PERMISSION + "reload the plugin."; // XXX
-	public static final String NO_PERMISSION_CONFIG = NO_PERMISSION + "configure the plugin."; // XXX
-	public static final String NO_PERMISSION_UPDATE = NO_PERMISSION + "update the plugin."; // XXX
+	public static final String NO_PERMISSION_ACCOUNT_MIGRATE_BANK = NO_PERMISSION + "migrate an account to another bank.";
+	public static final String NO_PERMISSION_ACCOUNT_EXTEND_OTHER = NO_PERMISSION + "extend someone else's account.";
+	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME = NO_PERMISSION + "set an account nickname.";
+	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME_OTHER = NO_PERMISSION + "set someone else's account nickname.";
+	public static final String NO_PERMISSION_ACCOUNT_SET_MULTIPLIER = NO_PERMISSION + "set an account multiplier.";
+	public static final String NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY = NO_PERMISSION + "set an account interest delay.";
+	public static final String NO_PERMISSION_ACCOUNT_OTHER_CREATE = NO_PERMISSION + "create an account in someone else's name."; // XXX
+	public static final String NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED = NO_PERMISSION + "extend a protected account chest.";
 	
+	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";
+	public static final String NO_PERMISSION_BANK_CREATE_ADMIN = NO_PERMISSION + "create an admin bank.";
+	public static final String NO_PERMISSION_BANK_REMOVE_OTHER = NO_PERMISSION + "remove someone else's bank.";
+	public static final String NO_PERMISSION_BANK_REMOVE_ADMIN = NO_PERMISSION + "remove an admin bank.";
+	public static final String NO_PERMISSION_BANK_REMOVEALL = NO_PERMISSION + "remove all banks.";
+	public static final String NO_PERMISSION_BANK_INFO_VERBOSE = NO_PERMISSION + "view detailed bank info.";
+	public static final String NO_PERMISSION_BANK_LIST_VERBOSE = NO_PERMISSION + "view a detailed list of banks.";
+	public static final String NO_PERMISSION_BANK_RESIZE = NO_PERMISSION + "resize a bank.";
+	public static final String NO_PERMISSION_BANK_RESIZE_OTHER = NO_PERMISSION + "resize someone else's bank.";
+	public static final String NO_PERMISSION_BANK_RESIZE_ADMIN = NO_PERMISSION + "resize an admin bank.";
+	public static final String NO_PERMISSION_BANK_SET = NO_PERMISSION + "configure a bank."; // XXX
+	public static final String NO_PERMISSION_BANK_SET_OTHER = NO_PERMISSION + "configure someone else's bank.";
+	public static final String NO_PERMISSION_BANK_SET_ADMIN = NO_PERMISSION + "configure an admin bank.";
+	public static final String NO_PERMISSION_BANK_SELECT = NO_PERMISSION + "select a bank.";
+	
+	public static final String NO_PERMISSION_RELOAD = NO_PERMISSION + "reload the plugin.";
+	public static final String NO_PERMISSION_CONFIG = NO_PERMISSION + "configure the plugin.";
+	public static final String NO_PERMISSION_UPDATE = NO_PERMISSION + "update the plugin.";
+
+
 	private static final String USAGE_PREFIX_ACCOUNT = ChatColor.RED + "Usage: /" + Config.mainCommandNameAccount + " ";
 	private static final String USAGE_PREFIX_BANK = ChatColor.RED + "Usage: /" + Config.mainCommandNameBank + " ";
 	private static final String USAGE_PREFIX_CONTROL = ChatColor.RED + "Usage: /" + Config.mainCommandNameControl + " ";

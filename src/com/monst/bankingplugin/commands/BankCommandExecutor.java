@@ -180,7 +180,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 
 		if (isAdminBank && !p.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
 			plugin.debug(p.getName() + " does not have permission to create an admin bank");
-			p.sendMessage(Messages.NO_PERMISSION_BANK_ADMIN_CREATE);
+			p.sendMessage(Messages.NO_PERMISSION_BANK_CREATE_ADMIN);
+			return true;
+		}
+		int limit = bankUtils.getBankLimit(p);
+		if (!isAdminBank && limit != -1 && bankUtils.getNumberOfBanks(p) >= limit) {
+			p.sendMessage(Messages.BANK_LIMIT_REACHED);
+			plugin.debug(p.getName() + " has reached their bank limit");
 			return true;
 		}
 		if (!bankUtils.isExclusiveSelection(selection)) {
@@ -277,13 +283,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		if (!bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_OTHER) && sender instanceof Player
 				&& !bank.isOwner((Player) sender)) {
 			plugin.debug(sender.getName() + " does not have permission to remove another player's bank");
-			sender.sendMessage(Messages.NO_PERMISSION_BANK_OTHER_REMOVE);
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_REMOVE_OTHER);
 			return;
 		}
 
 		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)) {
 			plugin.debug(sender.getName() + " does not have permission to remove an admin bank");
-			sender.sendMessage(Messages.NO_PERMISSION_BANK_ADMIN_REMOVE);
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_REMOVE_ADMIN);
 			return;
 		}
 
@@ -350,12 +356,15 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				if (sender instanceof Player) {
 					Player p = (Player) sender;
 					Bank bank = bankUtils.getBank(p.getLocation());
-					if (bank != null)
-						p.spigot().sendMessage(bank.getInfoVerbose());
-					else {
+					if (bank == null) {
 						plugin.debug(p.getName() + " wasn't standing in a bank");
 						p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+						return true;
 					}
+					if (bank.isTrusted(p) || p.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE))
+						p.spigot().sendMessage(bank.getInfoVerbose());
+					else
+						sender.sendMessage(Messages.NO_PERMISSION_BANK_INFO_VERBOSE);
 				} else
 					sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
 			} else {
@@ -370,12 +379,15 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		} else if (args.length >= 3) {
 			if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
 				Bank bank = bankUtils.lookupBank(args[1]);
-				if (bank != null)
-					sender.spigot().sendMessage(bank.getInfoVerbose());
-				else {
+				if (bank == null) {
 					plugin.debug("No bank could be found under the identifier " + args[1]);
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+					return true;
 				}
+				if ((sender instanceof Player && bank.isTrusted((Player) sender)) || sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE))
+					sender.spigot().sendMessage(bank.getInfoVerbose());
+				else
+					sender.sendMessage(Messages.NO_PERMISSION_BANK_INFO_VERBOSE);
 			} else
 				return false;
 		}
@@ -396,7 +408,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			}
 		} else if (args.length >= 2) {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
-				if (sender.hasPermission(Permissions.BANK_LIST_VERBOSE)) {
+				if (sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE)) {
 					if (bankUtils.getBanksCopy().isEmpty()) {
 						sender.sendMessage(Messages.NO_BANKS);
 					} else {
@@ -464,7 +476,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 	private boolean promptBankResize(Player p, String[] args) {
 		plugin.debug(p.getName() + " wants to resize a bank");
 
-		if (!p.hasPermission(Permissions.BANK_RESIZE)) {
+		if (!p.hasPermission(Permissions.BANK_CREATE)) {
 			plugin.debug(p.getName() + " does not have permission to resize a bank");
 			p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE);
 			return true;
@@ -510,6 +522,16 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		if (bank == null) {
 			plugin.debug("No bank could be found under the identifier " + args[1]);
 			p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			return true;
+		}
+		if (!bank.isAdminBank() && !bank.isOwner(p) && !p.hasPermission(Permissions.BANK_RESIZE_OTHER)) {
+			plugin.debug(p.getName() + " does not have permission to resize another player's bank");
+			p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE_OTHER);
+			return true;
+		}
+		if (bank.isAdminBank() && !p.hasPermission(Permissions.BANK_RESIZE_ADMIN)) {
+			plugin.debug(p.getName() + " does not have permission to resize an admin bank");
+			p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE_ADMIN);
 			return true;
 		}
 		if (!bankUtils.isExclusiveSelectionWithoutThis(selection, bank)) {
@@ -563,11 +585,15 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 
 		if ((sender instanceof Player && !bank.isTrusted((Player) sender))
 				&& !sender.hasPermission(Permissions.BANK_SET_OTHER)) {
-			plugin.debug(sender.getName() + " does not have permission to configure a bank");
-			sender.sendMessage(Messages.NO_PERMISSION_BANK_OTHER_SET);
+			plugin.debug(sender.getName() + " does not have permission to configure another player's bank");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_OTHER);
 			return true;
 		}
-
+		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
+			plugin.debug(sender.getName() + " does not have permission to configure an admin bank");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_ADMIN);
+			return true;
+		}
 		if (Field.getByName(args[2]) == null) {
 			plugin.debug("No account config field could be found with name " + args[2]);
 			sender.sendMessage(String.format(Messages.NOT_A_FIELD, args[2]));
@@ -628,15 +654,15 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 	private void promptBankSelect(Player p, String[] args) {
 		plugin.debug(p.getName() + " wants to select a bank");
 
-		if (!p.hasPermission("worldedit.selection.pos")) {
-			plugin.debug(p.getName() + " does not have permission to select a bank");
-			p.sendMessage(Messages.NO_PERMISSION_BANK_SELECT);
-			return;
-		}
-
 		if (!plugin.hasWorldEdit()) {
 			plugin.debug("WorldEdit is not enabled");
 			p.sendMessage(Messages.WORLDEDIT_NOT_ENABLED);
+			return;
+		}
+
+		if (!p.hasPermission(Permissions.BANK_SELECT)) {
+			plugin.debug(p.getName() + " does not have permission to select a bank");
+			p.sendMessage(Messages.NO_PERMISSION_BANK_SELECT);
 			return;
 		}
 
