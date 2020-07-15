@@ -21,14 +21,14 @@ import com.monst.bankingplugin.BankingPlugin;
 
 public class GenericCommand {
 
-	protected BankingPlugin plugin;
+	private BankingPlugin plugin;
 	protected String name;
 	protected String desc;
 	protected PluginCommand pluginCommand;
 	protected CommandExecutor executor;
 	protected GenericTabCompleter tabCompleter;
 
-	protected List<GenericSubCommand> subCommands = new ArrayList<>();
+	private List<GenericSubCommand> subCommands = new ArrayList<>();
 
 	public GenericCommand(final BankingPlugin plugin) {
 		this.plugin = plugin;

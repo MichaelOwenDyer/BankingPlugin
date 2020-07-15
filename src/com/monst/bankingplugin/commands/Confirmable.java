@@ -13,7 +13,7 @@ import org.bukkit.scheduler.BukkitTask;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Ownable;
 
-public interface Confirmable<T extends Ownable> {
+interface Confirmable<T extends Ownable> {
 	
 	static Map<UUID, String[]> unconfirmedCommands = new HashMap<>();
 	static Map<UUID, BukkitTask> confirmationTimers = new HashMap<>();

@@ -88,7 +88,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				promptBankList(p, args);
 				break;
 			case "limits":
-				promptBankLimit(p);
+				promptBankLimits(p);
 				break;
 			case "removeall":
 				if (!promptBankRemoveAll(p, args))
@@ -198,6 +198,15 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		if (!bankUtils.isExclusiveSelection(selection)) {
 			plugin.debug("Region is not exclusive");
 			p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
+			return true;
+		}
+		if (!bankUtils.isVolumeAllowed(selection, p)) {
+			long currentVolume = bankUtils.getCurrentVolume(p);
+			long volumeLimit = bankUtils.getVolumeLimit(p);
+			long exceededLimitBy = currentVolume + selection.getVolume() - volumeLimit;
+			plugin.debug(p.getName() + " has reached their volume limit (current: " + currentVolume + "/" + volumeLimit
+					+ ", new selection: " + selection.getVolume() + ", exceeded by " + exceededLimitBy + ")");
+			p.sendMessage(String.format(Messages.VOLUME_LIMIT_REACHED, exceededLimitBy));
 			return true;
 		}
 		if (!bankUtils.isUniqueName(args[1])) {
@@ -431,11 +440,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		}
 	}
 
-	private void promptBankLimit(final Player p) {
-		int used = bankUtils.getNumberOfBanks(p);
-		Object limit = bankUtils.getBankLimit(p) < 0 ? "∞" : bankUtils.getBankLimit(p);
-		plugin.debug(p.getName() + " is viewing their bank limits: " + used + " / " + limit);
-		p.sendMessage(String.format(Messages.BANK_LIMIT, used, limit));
+	private void promptBankLimits(final Player p) {
+		int banksUsed = bankUtils.getNumberOfBanks(p);
+		Object bankLimit = bankUtils.getBankLimit(p) < 0 ? "∞" : bankUtils.getBankLimit(p);
+		long volumeUsed = bankUtils.getCurrentVolume(p);
+		Object volumeLimit = bankUtils.getVolumeLimit(p) < 0 ? "∞" : bankUtils.getVolumeLimit(p);
+		plugin.debug(p.getName() + " is viewing their bank limits: " + banksUsed + " / " + bankLimit + ", " + volumeUsed + " / " + volumeLimit);
+		p.sendMessage(String.format(Messages.BANK_LIMIT, banksUsed, bankLimit, volumeUsed, volumeLimit));
 	}
 
 	private boolean promptBankRemoveAll(CommandSender sender, String[] args) {
@@ -539,6 +550,17 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		if (bank.isAdminBank() && !p.hasPermission(Permissions.BANK_RESIZE_ADMIN)) {
 			plugin.debug(p.getName() + " does not have permission to resize an admin bank");
 			p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE_ADMIN);
+			return true;
+		}
+		if (!bankUtils.isVolumeAllowed(selection, p, bank.getSelection())) {
+			long currentWithoutOld = bankUtils.getCurrentVolume(p) - bank.getSelection().getVolume();
+			long volumeLimit = bankUtils.getVolumeLimit(p);
+			long exceededLimitBy = currentWithoutOld + selection.getVolume() - volumeLimit;
+			plugin.debug(p.getName()
+					+ " is not allowed to resize, as they have reached their volume limit (current without replaced: "
+					+ currentWithoutOld + "/" + volumeLimit + ", new selection: " + selection.getVolume()
+					+ ", exceeded by " + exceededLimitBy + ")");
+			p.sendMessage(String.format(Messages.VOLUME_LIMIT_REACHED_RESIZE, exceededLimitBy));
 			return true;
 		}
 		if (!bankUtils.isExclusiveSelectionWithoutThis(selection, bank)) {
@@ -663,8 +685,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, value));
 				break;
 			case 2:
-				plugin.debug("Failed to parse integer: " + value);
-				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, value));
+				plugin.debug("Failed to parse boolean: " + value);
+				sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, value));
 				break;
 			case 3:
 				plugin.debug("Failed to parse list: " + value);
@@ -766,10 +788,25 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					String.format(Messages.ALREADY_OWNER, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
 			return true;
 		}
+		if (bank.isAdminBank() && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)) {
+			plugin.debug(p.getName() + " does not have permission to transfer an admin bank");
+			p.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER_ADMIN);
+			return true;
+		}
+		if (!bank.isAdminBank() && !bank.isOwner(p) && !p.hasPermission(Permissions.BANK_TRANSFER_OTHER)) {
+			if (bank.isTrusted(p)) {
+				plugin.debug(p.getName() + " does not have permission to transfer ownership as a co-owner");
+				p.sendMessage(Messages.MUST_BE_OWNER);
+				return true;
+			}
+			plugin.debug(p.getName() + " does not have permission to transfer ownership of another player's bank");
+			p.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER_OTHER);
+			return true;
+		}
 
 		TransferOwnershipEvent event = new TransferOwnershipEvent(p, bank, newOwner);
 		Bukkit.getPluginManager().callEvent(event);
-		if (!event.isCancelled()) {
+		if (event.isCancelled()) {
 			plugin.debug("Bank transfer ownership event cancelled");
 			return true;
 		}

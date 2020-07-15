@@ -258,7 +258,7 @@ public class AccountConfig {
 		PLAYER_ACCOUNT_LIMIT ("player-account-limit", 1);
 		
 		private String name;
-		private int dataType;
+		private int dataType; // double: 0, integer: 1, boolean: 2, list: 3
 
 		Field(String name, int dataType) {
 			this.name = name;

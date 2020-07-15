@@ -2,7 +2,6 @@ package com.monst.bankingplugin.utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -121,6 +120,7 @@ public class AccountUtils {
         } else {
 			if (callback != null)
 				callback.callSyncResult(account.getID());
+			account.getBank().addAccount(account);
         }
     }
 
@@ -141,7 +141,7 @@ public class AccountUtils {
     public void removeAccount(Account account, boolean removeFromDatabase, Callback<Void> callback) {
         plugin.debug("Removing account (#" + account.getID() + ")");
 
-		account.clearNickname(); // XXX
+		account.clearNickname();
 
         InventoryHolder ih = account.getInventoryHolder();
 
@@ -241,8 +241,6 @@ public class AccountUtils {
 	public BigDecimal appraiseAccountContents(Account account) {
 
 		plugin.debug("Appraising account contents... (#" + account.getID() + ")");
-		plugin.debug(Arrays.stream(account.getInventoryHolder().getInventory().getContents())
-				.filter(item -> item != null).map(item -> item.toString()).collect(Collectors.joining(", ", "[", "]")));
 
 		BigDecimal sum = BigDecimal.ZERO;
 		for (ItemStack item : account.getInventoryHolder().getInventory().getContents()) {

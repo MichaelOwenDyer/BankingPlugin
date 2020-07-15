@@ -27,13 +27,13 @@ import com.monst.bankingplugin.events.account.AccountInitializedEvent;
 import com.monst.bankingplugin.events.bank.BankInitializedEvent;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardBankingFlag;
+import com.monst.bankingplugin.external.WorldGuardListener;
 import com.monst.bankingplugin.listeners.AccountBalanceListener;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
 import com.monst.bankingplugin.listeners.AccountProtectListener;
 import com.monst.bankingplugin.listeners.ChestTamperingListener;
 import com.monst.bankingplugin.listeners.InterestEventListener;
 import com.monst.bankingplugin.listeners.NotifyPlayerOnJoinListener;
-import com.monst.bankingplugin.listeners.WorldGuardListener;
 import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.sql.SQLite;
 import com.monst.bankingplugin.utils.AccountUtils;
@@ -295,16 +295,13 @@ public class BankingPlugin extends JavaPlugin {
     	getServer().getPluginManager().registerEvents(new ChestTamperingListener(this), this);
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
 		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
-
-		if (hasWorldGuard())
-			getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);
 	}
 
 	private void registerExternalListeners() {
 		if (hasGriefPrevention())
 			getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
-    	if (hasWorldGuard())
-        	getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);
+		if (hasWorldGuard())
+			getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);
     }
 
 	/**

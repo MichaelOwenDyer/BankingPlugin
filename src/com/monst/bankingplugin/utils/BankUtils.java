@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -14,7 +12,6 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
@@ -23,7 +20,6 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.CuboidSelection;
-import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
 
 public class BankUtils {
@@ -203,37 +199,6 @@ public class BankUtils {
 		return bank.getAccounts().stream().allMatch(account -> sel.contains(account.getLocation()));
 	}
 
-	public List<Location> getVertices(Selection sel) {
-		List<Location> vertices = new LinkedList<>();
-		World world = sel.getWorld();
-		
-		if (sel instanceof CuboidSelection) {
-			CuboidSelection cuboidSel = (CuboidSelection) sel;
-			
-			int[] minmaxX = {cuboidSel.getMinimumPoint().getBlockX(), cuboidSel.getMaximumPoint().getBlockX()};
-			int[] minmaxY = {cuboidSel.getMinimumPoint().getBlockY(), cuboidSel.getMaximumPoint().getBlockY()};
-			int[] minmaxZ = {cuboidSel.getMinimumPoint().getBlockZ(), cuboidSel.getMaximumPoint().getBlockZ()};
-			
-			for (int x : minmaxX)
-				for (int y : minmaxY)
-					for (int z : minmaxZ)
-						vertices.add(new Location(world,x,y,z));
-			
-		} else if (sel instanceof Polygonal2DSelection) {
-			Polygonal2DSelection polySel = (Polygonal2DSelection) sel;
-			
-			int minY = polySel.getMinimumPoint().getBlockY();
-			int maxY = polySel.getMaximumPoint().getBlockY();
-			
-			for (BlockVector2D bv : polySel.getNativePoints()) {
-				vertices.add(new Location(world, bv.getBlockX(), minY, bv.getBlockZ()));
-				vertices.add(new Location(world, bv.getBlockX(), maxY, bv.getBlockZ()));
-			}
-		}
-		
-		return vertices;
-	}
-
     /**
 	 * Add a bank
 	 * 
@@ -297,52 +262,6 @@ public class BankUtils {
 	 */
 	public void removeBank(Bank bank, boolean removeFromDatabase) {
 		removeBank(bank, removeFromDatabase, null);
-    }
-
-    /**
-	 * Remove a bank by its ID
-	 * 
-	 * @param bankId             ID of the bank to remove
-	 * @param removeFromDatabase Whether the bank should also be removed from the
-	 *                           database
-	 * @param callback           Callback that - if succeeded - returns null
-	 */
-	public void removeBankById(int bankId, boolean removeFromDatabase, Callback<Void> callback) {
-		Map<Selection, Bank> toRemove = bankSelectionMap.entrySet().stream()
-				.filter(e -> e.getValue().getID() == bankId)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-		plugin.debug(String.format("Removing %d bank(s) with ID %d", toRemove.size(), bankId));
-
-        if (toRemove.isEmpty()) {
-			if (callback != null)
-				callback.callSyncResult(null);
-            return;
-        }
-
-		toRemove.forEach((sel, bank) -> {
-			bankSelectionMap.remove(sel);
-        });
-
-		// Database#removeBank removes bank by ID so this only needs to be called
-		// once
-        if (removeFromDatabase) {
-			plugin.getDatabase().removeBank(toRemove.values().iterator().next(), callback);
-        } else {
-			if (callback != null)
-				callback.callSyncResult(null);
-        }
-    }
-
-    /**
-	 * Remove a bank by its ID
-	 * 
-	 * @param bankId             ID of the bank to remove
-	 * @param removeFromDatabase Whether the bank should also be removed from the
-	 *                           database
-	 */
-	public void removeBankById(int bankId, boolean removeFromDatabase) {
-		removeBankById(bankId, removeFromDatabase, null);
     }
 
 	public int removeBank(Collection<Bank> banks, boolean removeFromDatabase) {
@@ -434,9 +353,23 @@ public class BankUtils {
 		return getPlayerBanksCopy(player).stream().mapToLong(bank -> bank.getSelection().getVolume()).sum();
 	}
 
-	public boolean isVolumeAllowed(Bank bank, Player player) {
+	public boolean isVolumeAllowed(Selection sel, Player player) {
+		return isVolumeAllowed(sel, player, null);
+	}
+
+	/**
+	 * Determines whether or not the proposed selection will fit in a player's volume limit.
+	 * @param sel The new selection
+	 * @param player The player
+	 * @param oldSel The selection that is being replaced by the new selection
+	 * @return Whether volume is allowed or not
+	 */
+	public boolean isVolumeAllowed(Selection sel, Player player, Selection oldSel) {
+		long currentVolume = getCurrentVolume(player);
+		if (oldSel != null)
+			currentVolume -= oldSel.getVolume();
 		return getVolumeLimit(player) == -1
-				|| getVolumeLimit(player) > getCurrentVolume(player) + bank.getSelection().getVolume();
+				|| getVolumeLimit(player) > currentVolume + sel.getVolume();
 	}
 
 	/**

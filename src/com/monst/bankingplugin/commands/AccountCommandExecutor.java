@@ -78,7 +78,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					p.sendMessage(subCommand.getHelpMessage(p));
 				break;
 			case "limits":
-				promptAccountLimit(p);
+				promptAccountLimits(p);
 				break;
 			case "removeall":
 				if (!promptAccountRemoveAll(p, args))
@@ -321,7 +321,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		return true;
 	}
 
-	private void promptAccountLimit(final Player p) {
+	private void promptAccountLimits(final Player p) {
 		int used = accountUtils.getNumberOfAccounts(p);
 		Object limit = accountUtils.getAccountLimit(p) < 0 ? "∞" : accountUtils.getAccountLimit(p);
 		plugin.debug(p.getName() + " is viewing their account limits: " + used + " / " + limit);

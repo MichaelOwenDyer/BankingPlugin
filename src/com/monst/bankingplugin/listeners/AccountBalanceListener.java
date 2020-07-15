@@ -2,6 +2,7 @@ package com.monst.bankingplugin.listeners;
 
 import java.math.BigDecimal;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,6 +13,7 @@ import org.bukkit.event.inventory.InventoryType;
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.account.AccountTransactionEvent;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Utils;
@@ -29,16 +31,10 @@ public class AccountBalanceListener implements Listener {
 	@EventHandler
 	public void onAccountInventoryClose(InventoryCloseEvent e) {
 		
-		plugin.debug("InventoryCloseEvent triggered by " + e.getPlayer().getName());
-
-		if (!(e.getPlayer() instanceof Player) || e.getInventory() == null) {
-			plugin.debug("Not a player / null inventory");
+		if (!(e.getPlayer() instanceof Player) || e.getInventory() == null)
 			return;
-		}
-		if (!e.getInventory().getType().equals(InventoryType.CHEST)) {
-			plugin.debug("Not a chest");
+		if (!e.getInventory().getType().equals(InventoryType.CHEST))
 			return;
-		}
 
 		Location loc = e.getInventory().getLocation();
 
@@ -51,11 +47,14 @@ public class AccountBalanceListener implements Listener {
 			BigDecimal valueOnClose = accountUtils.appraiseAccountContents(account);
 
 			BigDecimal difference = valueOnClose.subtract(account.getBalance());
-			if (difference.signum() == 0) {
-				plugin.debug("Same balance:\nvalueOnClose: " + valueOnClose + ", balance: " + account.getBalance()
-						+ ", difference: " + difference);
+			if (difference.signum() == 0)
 				return;
-			}
+
+			AccountTransactionEvent event = new AccountTransactionEvent(executor, account,
+					difference.signum() == 1 ? TransactionType.DEPOSIT : TransactionType.WITHDRAWAL, difference,
+					valueOnClose);
+			Bukkit.getPluginManager().callEvent(event);
+
 			account.setBalance(valueOnClose);
 
 			plugin.debug("Account #" + account.getID() + " has been updated with a new balance ("
@@ -86,8 +85,7 @@ public class AccountBalanceListener implements Listener {
 				plugin.getDatabase().logTransaction(executor, account, difference.abs(), type, null);
 				plugin.debug("Logging transaction to database...");
 			}
-		} else
-			plugin.debug("Wasn't account");
+		}
 	}
 
 	public enum TransactionType {

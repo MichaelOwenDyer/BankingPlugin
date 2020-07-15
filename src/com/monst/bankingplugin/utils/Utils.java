@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.utils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +73,7 @@ public class Utils {
 				|| block.getType().isTransparent());
     }
 
-	public static List<List<Integer>> getStackedList(List<Integer> multipliers) {
+	private static List<List<Integer>> getStackedList(List<Integer> multipliers) {
 		List<List<Integer>> stackedMultipliers = new ArrayList<>();
 		stackedMultipliers.add(new ArrayList<>());
 		stackedMultipliers.get(0).add(multipliers.get(0));
@@ -94,6 +93,7 @@ public class Utils {
 		return getMultiplierView(multipliers, -1);
 	}
 
+	@SuppressWarnings("deprecation")
 	public static TextComponent getMultiplierView(List<Integer> multipliers, int highlightStage) {
 
 		TextComponent message = new TextComponent();
@@ -255,65 +255,12 @@ public class Utils {
     }
 
     /**
-     * @param className Name of the class
-     * @return Class in {@code net.minecraft.server.[VERSION]} package with the specified name or {@code null} if the class was not found
-     */
-    public static Class<?> getNMSClass(String className) {
-        try {
-            return Class.forName("net.minecraft.server." + getServerVersion() + "." + className);
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-
-    /**
-     * Send a packet to a player
-     * @param plugin An instance of the {@link ShopChest} plugin
-     * @param packet Packet to send
-     * @param player Player to which the packet should be sent
-     * @return {@code true} if the packet was sent, or {@code false} if an exception was thrown
-     */
-    public static boolean sendPacket(BankingPlugin plugin, Object packet, Player player) {
-        try {
-            if (packet == null) {
-                plugin.debug("Failed to send packet: Packet is null");
-                return false;
-            }
-
-            Class<?> packetClass = getNMSClass("Packet");
-            if (packetClass == null) {
-                plugin.debug("Failed to send packet: Could not find Packet class");
-                return false;
-            }
-
-            Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
-            Object playerConnection = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
-
-            playerConnection.getClass().getMethod("sendPacket", packetClass).invoke(playerConnection, packet);
-
-            return true;
-        } catch (NoSuchMethodException | NoSuchFieldException | IllegalAccessException | InvocationTargetException e) {
-            //plugin.getLogger().severe("Failed to send packet " + packet.getClass().getName());
-            plugin.debug("Failed to send packet " + packet.getClass().getName());
-            plugin.debug(e);
-            return false;
-        }
-    }
-
-    /**
      * @return The current server version with revision number (e.g. v1_9_R2, v1_10_R1)
      */
     public static String getServerVersion() {
         String packageName = Bukkit.getServer().getClass().getPackage().getName();
 
         return packageName.substring(packageName.lastIndexOf('.') + 1);
-    }
-
-    /**
-     * @return The revision of the current server version (e.g. <i>2</i> for v1_9_R2, <i>1</i> for v1_10_R1)
-     */
-    public static int getRevision() {
-        return Integer.parseInt(getServerVersion().substring(getServerVersion().length() - 1));
     }
 
     /**

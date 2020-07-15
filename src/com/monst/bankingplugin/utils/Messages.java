@@ -41,7 +41,7 @@ public class Messages {
 	public static final String MULTIPLIER_INCREASED = ChatColor.GOLD + "Your account multiplier has increased to " + ChatColor.GREEN + "$%d."; // XXX
 	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to " + ChatColor.GREEN + "$%d.";
 	public static final String ACCOUNT_LIMIT = ChatColor.GOLD + "You own %d/%d allowed accounts.";
-	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%d allowed banks.";
+	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%d allowed banks, making up %d/%d allowed blocks.";
 	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to delete %d account%s.";
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to delete %d bank%s and %d account%s.";
 	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s account to %s. Are you sure?";
@@ -95,6 +95,8 @@ public class Messages {
 	public static final String PER_BANK_ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create another account at this bank.";
 	public static final String PLAYER_COMMAND_ONLY = ChatColor.RED + "Only players can use this command.";
 	public static final String SAME_ACCOUNT = ChatColor.RED + "Nothing happened. That is the same account.";
+	public static final String VOLUME_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create a bank of that size, as it would exceed your bank volume limit by %d blocks.";
+	public static final String VOLUME_LIMIT_REACHED_RESIZE = ChatColor.RED + "You are not allowed to resize a bank to that size, as it would exceed your bank volume limit by %d blocks.";
 	
 	// CLICK PROMPTS
 	public static final String CLICK_CHEST_CREATE = ChatColor.GOLD + "Click a chest to create an account.";
@@ -168,7 +170,6 @@ public class Messages {
 	public static final String COMMAND_USAGE_ACCOUNT_INFO = USAGE_PREFIX_ACCOUNT + "info";
 	public static final String COMMAND_USAGE_ACCOUNT_LIST = USAGE_PREFIX_ACCOUNT + "list <all> <detailed>";
 	public static final String COMMAND_USAGE_ACCOUNT_LIMITS = USAGE_PREFIX_ACCOUNT + "limits";
-	public static final String COMMAND_USAGE_ACCOUNT_REMOVEALL = USAGE_PREFIX_ACCOUNT + "removeall";
 	public static final String COMMAND_USAGE_ACCOUNT_SET = USAGE_PREFIX_ACCOUNT + "set [field] [value]";
 	public static final String COMMAND_USAGE_ACCOUNT_TRUST = USAGE_PREFIX_ACCOUNT + "trust [playername]";
 	public static final String COMMAND_USAGE_ACCOUNT_UNTRUST = USAGE_PREFIX_ACCOUNT + "untrust [playername]";
