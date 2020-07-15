@@ -106,6 +106,7 @@ public class Bank extends Ownable {
 	}
 	
 	public void addAccount(Account account) {
+		removeAccount(account);
 		if (account != null)
 			accounts.add(account);
 	}

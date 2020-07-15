@@ -106,7 +106,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				promptBankSelect(p, args);
 				break;
 			case "transfer":
-				promptBankTransfer(p, args);
+				if (!promptBankTransfer(p, args))
+					p.sendMessage(subCommand.getHelpMessage(sender));
+				break;
 			default:
 				return false;
 			}

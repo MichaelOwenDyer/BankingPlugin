@@ -44,7 +44,7 @@ public class Messages {
 	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%d allowed banks.";
 	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to delete %d account%s.";
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to delete %d bank%s and %d account%s.";
-	public static final String TRANSFER_IS_PERMANENT = ChatColor.RED + "Are you sure you want to transfer ownership? This cannot be undone.";
+	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s account to %s. Are you sure?";
 
 	
 	// SUCCESS NOTIFICATIONS

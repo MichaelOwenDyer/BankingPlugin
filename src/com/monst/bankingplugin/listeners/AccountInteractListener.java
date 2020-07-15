@@ -676,8 +676,15 @@ public class AccountInteractListener implements Listener {
 			if (account.isTrusted(p))
 				p.sendMessage(Messages.MUST_BE_OWNER);
 			else
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER);
 			return !unconfirmed.containsKey(p.getUniqueId());
+		}
+		if (account.isOwner(newOwner)) {
+			boolean isSelf = p.getUniqueId().equals(newOwner.getUniqueId());
+			plugin.debug(p.getName() + " is already owner of account");
+			p.sendMessage(
+					String.format(Messages.ALREADY_OWNER, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
+			return false;
 		}
 
 		boolean confirmed = unconfirmed.containsKey(p.getUniqueId())
@@ -686,7 +693,8 @@ public class AccountInteractListener implements Listener {
 		if (!confirmed && Config.confirmOnTransfer) {
 			plugin.debug("Needs confirmation");
 
-			p.sendMessage(Messages.TRANSFER_IS_PERMANENT);
+			p.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
+					account.isOwner(p) ? "your" : account.getOwner().getName() + "'s", newOwner.getName()));
 			p.sendMessage(Messages.CLICK_TO_CONFIRM);
 			Set<Integer> ids = unconfirmed.containsKey(p.getUniqueId()) ? unconfirmed.get(p.getUniqueId())
 					: new HashSet<>();
@@ -710,14 +718,6 @@ public class AccountInteractListener implements Listener {
 		plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of "
 				+ newOwner.getName());
 
-		if (account.isOwner(newOwner)) {
-			boolean isSelf = p.getUniqueId().equals(newOwner.getUniqueId());
-			plugin.debug(p.getName() + " is already owner of account");
-			p.sendMessage(
-					String.format(Messages.ALREADY_OWNER, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
-			return;
-		}
-
 		TransferOwnershipEvent event = new TransferOwnershipEvent(p, account, newOwner);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
@@ -725,7 +725,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		boolean hasDefaultNickname = account.getDefaultNickname().contentEquals(account.getNickname());
+		boolean hasDefaultNickname = account.getNickname().contentEquals(account.getDefaultNickname());
 
 		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
 		account.transferOwnership(newOwner, Config.trustOnTransfer);

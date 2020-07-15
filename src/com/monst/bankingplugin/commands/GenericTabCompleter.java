@@ -59,7 +59,7 @@ class GenericTabCompleter implements TabCompleter {
 			case "untrust":
 				return completeAccountTrust((Player) sender, args);
 			case "transfer":
-				return completeAccountTrust((Player) sender, args);
+				return completeAccountTransfer((Player) sender, args);
 			default:
 				return new ArrayList<>();
 			}
@@ -187,6 +187,24 @@ class GenericTabCompleter implements TabCompleter {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin); 
 		onlinePlayers.remove(p.getName());
+
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				for (String name : onlinePlayers)
+					if (name.startsWith(args[1]))
+						returnCompletions.add(name);
+				return returnCompletions;
+			}
+			return onlinePlayers;
+		}
+		return new ArrayList<>();
+	}
+
+	private List<String> completeAccountTransfer(Player p, String[] args) {
+		ArrayList<String> returnCompletions = new ArrayList<>();
+		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
+		if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
+			onlinePlayers.remove(p.getName());
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
@@ -378,8 +396,11 @@ class GenericTabCompleter implements TabCompleter {
 						if (bank.getName().startsWith(args[1].toLowerCase()))
 							returnCompletions.add(bank.getName());
 					return returnCompletions;
-				} else
-					return fields.stream().map(Field::getName).collect(Collectors.toList());
+				} else {
+					returnCompletions.addAll(fields.stream().map(Field::getName).collect(Collectors.toList()));
+					returnCompletions.addAll(banks.stream().map(Bank::getName).collect(Collectors.toList()));
+					return returnCompletions;
+				}
 			} else {
 				if (!args[1].isEmpty()) {
 					for (Bank bank : banks)
@@ -428,19 +449,22 @@ class GenericTabCompleter implements TabCompleter {
 		List<String> banks = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName)
 				.collect(Collectors.toList());
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
-		onlinePlayers.remove(p.getName());
+		if (!p.hasPermission(Permissions.BANK_TRANSFER_OTHER) && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN))
+			onlinePlayers.remove(p.getName());
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
 				for (String bankName : banks)
 					if (bankName.toLowerCase().startsWith(args[1].toLowerCase()))
 						returnCompletions.add(bankName);
-				for (String playerName : onlinePlayers)
-					if (playerName.toLowerCase().startsWith(args[1].toLowerCase()))
-						returnCompletions.add(playerName);
+				if (plugin.getBankUtils().isBank(p.getLocation()))
+					for (String playerName : onlinePlayers)
+						if (playerName.toLowerCase().startsWith(args[1].toLowerCase()))
+							returnCompletions.add(playerName);
 				return returnCompletions;
 			} else {
-				banks.addAll(onlinePlayers);
+				if (plugin.getBankUtils().isBank(p.getLocation()))
+					banks.addAll(onlinePlayers);
 				return banks;
 			}
 		} else if (args.length == 3) {
