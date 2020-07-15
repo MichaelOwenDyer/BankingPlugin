@@ -89,7 +89,7 @@ public class ClickType {
     }
 
     public enum EnumClickType {
-		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE
+		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE, TRANSFER
     }
 
 	public static class SetClickType extends ClickType {
@@ -154,4 +154,22 @@ public class ClickType {
 			return toMigrate;
 		}
 	}
+
+	public static class TransferClickType extends ClickType {
+
+		private OfflinePlayer newOwner;
+
+		/**
+		 * @param newOwner the player the account should be transferred to
+		 */
+		public TransferClickType(OfflinePlayer newOwner) {
+			super(EnumClickType.TRANSFER);
+			this.newOwner = newOwner;
+		}
+
+		public OfflinePlayer getNewOwner() {
+			return newOwner;
+		}
+	}
+
 }

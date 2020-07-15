@@ -31,6 +31,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
+import com.monst.bankingplugin.events.account.TransferOwnershipEvent;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountUtils;
@@ -39,6 +40,7 @@ import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.MigrateClickType;
 import com.monst.bankingplugin.utils.ClickType.SetClickType;
+import com.monst.bankingplugin.utils.ClickType.TransferClickType;
 import com.monst.bankingplugin.utils.ClickType.TrustClickType;
 import com.monst.bankingplugin.utils.ClickType.UntrustClickType;
 import com.monst.bankingplugin.utils.Messages;
@@ -100,9 +102,9 @@ public class AccountInteractListener implements Listener {
 
 				if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
-					plugin.debug(p.getName() + " does not have permission to create an account on the selected chest.");
+					plugin.debug(p.getName() + " does not have permission to create an account on a protected chest.");
 				} else
-					tryCreate(p, b);
+					create(p, b);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
 				break;
@@ -110,7 +112,7 @@ public class AccountInteractListener implements Listener {
 			case REMOVE:
 
 				if (confirmRemove(p, account))
-					tryRemove(p, account);
+					remove(p, account);
 				e.setCancelled(true);
 				break;
 
@@ -149,9 +151,20 @@ public class AccountInteractListener implements Listener {
 				if (((MigrateClickType) clickType).isFirstClick())
 					migratePartOne(p, account);
 				else {
-					migratePartTwo(p, b, ((MigrateClickType) clickType).getAccount());
+					if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+						p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED);
+						plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
+					} else
+						migratePartTwo(p, b, ((MigrateClickType) clickType).getAccount());
 					ClickType.removePlayerClickType(p);
 				}
+				e.setCancelled(true);
+				break;
+
+			case TRANSFER:
+				OfflinePlayer newOwner = ((TransferClickType) clickType).getNewOwner();
+				if (confirmTransfer(p, newOwner, account))
+					transfer(p, newOwner, account);
 				e.setCancelled(true);
 				break;
 			}
@@ -210,7 +223,7 @@ public class AccountInteractListener implements Listener {
 	 *                 and become the owner of the account
 	 * @param location Where the account will be located
 	 */
-	private void tryCreate(final Player p, final Block b) {
+	private void create(final Player p, final Block b) {
 
 		if (accountUtils.isAccount(b.getLocation())) {
 			p.sendMessage(Messages.CHEST_ALREADY_ACCOUNT);
@@ -308,7 +321,7 @@ public class AccountInteractListener implements Listener {
 	
 	private boolean confirmRemove(Player executor, Account account) {
 		if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
-				&& account.getBank().isTrusted(executor)) {
+				&& !account.getBank().isTrusted(executor)) {
 			if (account.isTrusted(executor))
 				executor.sendMessage(Messages.MUST_BE_OWNER);
 			else
@@ -351,7 +364,7 @@ public class AccountInteractListener implements Listener {
 	 * @param executor Player, who executed the command and will receive the message
 	 * @param account  Account to be removed
 	 */
-	private void tryRemove(Player executor, Account account) {
+	private void remove(Player executor, Account account) {
 		plugin.debug(executor.getName() + String.format(" is removing %s account (#", 
 				account.isOwner(executor) ? "their" 
 				: account.getOwner().getName() + "'s") + account.getID() + ")");
@@ -656,6 +669,69 @@ public class AccountInteractListener implements Listener {
 			});
 			p.sendMessage(Messages.ACCOUNT_MIGRATED);
 		}
+	}
+
+	private boolean confirmTransfer(Player p, OfflinePlayer newOwner, Account account) {
+		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
+			if (account.isTrusted(p))
+				p.sendMessage(Messages.MUST_BE_OWNER);
+			else
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
+			return !unconfirmed.containsKey(p.getUniqueId());
+		}
+
+		boolean confirmed = unconfirmed.containsKey(p.getUniqueId())
+				&& unconfirmed.get(p.getUniqueId()).contains(account.getID());
+
+		if (!confirmed && Config.confirmOnTransfer) {
+			plugin.debug("Needs confirmation");
+
+			p.sendMessage(Messages.TRANSFER_IS_PERMANENT);
+			p.sendMessage(Messages.CLICK_TO_CONFIRM);
+			Set<Integer> ids = unconfirmed.containsKey(p.getUniqueId()) ? unconfirmed.get(p.getUniqueId())
+					: new HashSet<>();
+			ids.add(account.getID());
+			unconfirmed.put(p.getUniqueId(), ids);
+			return false;
+		} else {
+			Set<Integer> ids = unconfirmed.containsKey(p.getUniqueId()) ? unconfirmed.get(p.getUniqueId())
+					: new HashSet<>();
+			ids.remove(account.getID());
+			if (ids.isEmpty()) {
+				unconfirmed.remove(p.getUniqueId());
+				ClickType.removePlayerClickType(p);
+			} else
+				unconfirmed.put(p.getUniqueId(), ids);
+			return true;
+		}
+	}
+
+	private void transfer(Player p, OfflinePlayer newOwner, Account account) {
+		plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of "
+				+ newOwner.getName());
+
+		if (account.isOwner(newOwner)) {
+			boolean isSelf = p.getUniqueId().equals(newOwner.getUniqueId());
+			plugin.debug(p.getName() + " is already owner of account");
+			p.sendMessage(
+					String.format(Messages.ALREADY_OWNER, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
+			return;
+		}
+
+		TransferOwnershipEvent event = new TransferOwnershipEvent(p, account, newOwner);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			plugin.debug("Account transfer ownership event cancelled");
+			return;
+		}
+
+		boolean hasDefaultNickname = account.getDefaultNickname().contentEquals(account.getNickname());
+
+		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
+		account.transferOwnership(newOwner, Config.trustOnTransfer);
+		if (hasDefaultNickname)
+			account.setDefaultNickname();
+		plugin.getDatabase().addAccount(account, null);
 	}
 
 	public static void clearUnconfirmed(OfflinePlayer p) {

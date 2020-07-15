@@ -190,6 +190,16 @@ confirm-on-remove: true
 # Default: true
 confirm-on-removeall: true
 
+# Set whether to require confirmation of account transfer ownership commands.
+# Type: boolean
+# Default: true
+confirm-on-transfer: true
+
+# Set whether the owner of a bank or account should be automatically added as a co-owner when ownership is transferred to another player.
+# Type: boolean
+# Default: false
+trust-on-transfer: false
+
 # Set whether the plugin will check for updates on server start
 # and notify permitted players on join.
 # The command is not affected by this setting and will continue to

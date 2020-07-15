@@ -139,10 +139,10 @@ public class Config {
 	 * Whether a bank owner should be allowed to create an account at their own
 	 * bank.
 	 */
-	public static boolean allowSelfBanking = false;
+	public static boolean allowSelfBanking;
 
 	/**
-	 * Whether remove requests should be confirmed
+	 * Whether remove requests should be confirmed.
 	 */
 	public static boolean confirmOnRemove;
 
@@ -151,6 +151,17 @@ public class Config {
 	 * the server.
 	 */
 	public static boolean confirmOnRemoveAll;
+
+	/**
+	 * Whether account transfer requests should be confirmed.
+	 */
+	public static boolean confirmOnTransfer;
+
+	/**
+	 * Whether bank or account owners should be automatically added as co-owners
+	 * when ownership is transferred to another player.
+	 */
+	public static boolean trustOnTransfer;
 
     /**
      * <p>Whether the update checker should run on start and notify players on join.</p>
@@ -444,6 +455,8 @@ public class Config {
 		allowSelfBanking = config.getBoolean("allow-self-banking");
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");
+		confirmOnTransfer = config.getBoolean("confirm-on-transfer");
+		trustOnTransfer = config.getBoolean("trust-on-transfer");
         enableUpdateChecker = config.getBoolean("enable-update-checker");
 		enableTransactionLog = config.getBoolean("enable-logs.transaction-log");
 		enableInterestLog = config.getBoolean("enable-logs.interest-log");

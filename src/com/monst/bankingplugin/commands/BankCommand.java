@@ -100,6 +100,13 @@ public class BankCommand extends GenericCommand {
 			}
 		});
 
+		addSubCommand(new BankSubCommand("transfer", true, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return sender.hasPermission(Permissions.BANK_TRANSFER) ? Messages.COMMAND_USAGE_BANK_TRANSFER : "";
+			}
+		});
+
         register();
         commandCreated = true;
     }

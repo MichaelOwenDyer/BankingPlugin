@@ -20,6 +20,7 @@ permissions:
             bankingplugin.config: true
             bankingplugin.reload: true
             bankingplugin.update: true
+            bankingplugin.pay-interest: true
     
     bankingplugin.account.*:
         description: Gives access to all account features.
@@ -28,6 +29,7 @@ permissions:
             bankingplugin.account.create: true
             bankingplugin.account.create.protected: true
             bankingplugin.account.trust: true
+            bankingplugin.account.trust.other: true
             bankingplugin.account.remove-other: true
             bankingplugin.account.info-other-verbose: true
             bankingplugin.account.list-other: true
@@ -35,6 +37,8 @@ permissions:
             bankingplugin.account.edit-other: true
             bankingplugin.account.migrate-other: true
             bankingplugin.account.migrate-bank: true
+            bankingplugin.account.transfer: true
+            bankingplugin.account.transfer.other: true
             bankingplugin.account.extend-other: true
             bankingplugin.account.limit.*: true
             bankingplugin.account.set.*: true
@@ -61,6 +65,9 @@ permissions:
             bankingplugin.bank.other-info-verbose: true
             bankingplugin.bank.resize.other: true
             bankingplugin.bank.resize.admin: true
+            bankingplugin.bank.transfer: true
+            bankingplugin.bank.transfer.other: true
+            bankingplugin.bank.transfer.admin: true
             bankingplugin.bank.set.other: true
             bankingplugin.bank.set.admin: true
     
@@ -82,7 +89,7 @@ permissions:
         
     bankingplugin.account.trust.other:
         description: Add or remove other players as co-owners of another player's account.
-        default: true
+        default: op
         children:
             bankingplugin.account.trust: true
         
@@ -115,10 +122,22 @@ permissions:
             bankingplugin.account.create: true
         
     bankingplugin.account.migrate-bank:
-        description: Migrate any account chest to another chest in a different bank.
+        description: Migrate an account to another chest in a different bank.
         default: op
         children:
             bankingplugin.account.create: true
+    
+    bankingplugin.account.transfer:
+        description: Transfer ownership of your account to another player.
+        default: true
+        children:
+            bankingplugin.account.create: true
+    
+    bankingplugin.account.transfer.other:
+        description: Transfer ownership of another player's account to another player (or yourself).
+        default: op
+        children:
+            bankingplugin.account.transfer: true
             
     bankingplugin.account.extend-other:
         description: Extend another player's account chest.
@@ -192,6 +211,24 @@ permissions:
         children:
             bankingplugin.bank.resize.other: true
             
+    bankingplugin.bank.transfer:
+        description: Transfer ownership of your bank to another player.
+        default: true
+        children:
+            bankingplugin.bank.create: true
+    
+    bankingplugin.bank.transfer.other:
+        description: Transfer ownership of another player's account to another player (or yourself).
+        default: op
+        children:
+            bankingplugin.bank.transfer: true
+    
+    bankingplugin.bank.transfer.admin:
+        description: Transfer ownership of an admin bank to another player (or yourself).
+        default: op
+        children:
+            bankingplugin.bank.transfer.other: true
+    
     bankingplugin.bank.set.other:
         description: Configure another player's bank.
         default: op
@@ -202,7 +239,7 @@ permissions:
         children:
             bankingplugin.bank.set.other: true
     
-    
+    # CONTROL #
     bankingplugin.external-bypass:
         description: Bypass other plugins' attempts to selectively prevent functionality of this plugin.
         default: op
@@ -217,4 +254,8 @@ permissions:
         
     bankingplugin.update:
         description: Update this plugin.
+        default: op
+        
+    bankingplugin.pay-interest:
+        description: Manually trigger an interest payment.
         default: op

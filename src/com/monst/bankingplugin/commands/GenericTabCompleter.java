@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -59,6 +58,8 @@ class GenericTabCompleter implements TabCompleter {
 				return completeAccountTrust((Player) sender, args);
 			case "untrust":
 				return completeAccountTrust((Player) sender, args);
+			case "transfer":
+				return completeAccountTrust((Player) sender, args);
 			default:
 				return new ArrayList<>();
 			}
@@ -78,6 +79,8 @@ class GenericTabCompleter implements TabCompleter {
 				return completeBankResize((Player) sender, args);
 			case "set":
 				return completeBankSet(sender, args);
+			case "transfer":
+				return completeBankTransfer((Player) sender, args);
 			default:
 				return new ArrayList<>();
 			}
@@ -100,7 +103,7 @@ class GenericTabCompleter implements TabCompleter {
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		onlinePlayers.remove(sender.getName());
 
-		List<String> flags = Arrays.asList("detailed");
+		List<String> flags = new ArrayList<>(Arrays.asList("detailed"));
 		if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
 			flags.add("all");
 
@@ -358,36 +361,55 @@ class GenericTabCompleter implements TabCompleter {
 	private List<String> completeBankSet(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		BankUtils bankUtils = plugin.getBankUtils();
-		List<String> bankNames = bankUtils.getBanksCopy().stream().map(Bank::getName).map(Utils::stripColor)
+		List<Bank> banks = bankUtils.getBanksCopy().stream()
+				.filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
+						|| (!bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
+						|| (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
 				.collect(Collectors.toList());
 		List<Field> fields = Field.stream().filter(field -> AccountConfig.isOverrideAllowed(field)).collect(Collectors.toList());
 		
 		if (args.length == 2) {
-			if (!args[1].isEmpty()) {
-				for (String s : bankNames) {
-					if (s.toLowerCase().startsWith(args[1].toLowerCase()))
-						returnCompletions.add(s);
-				}
-				return returnCompletions;
+			if (sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation())) {
+				if (!args[1].isEmpty()) {
+					for (Field field : fields)
+						if (field.getName().startsWith(args[1].toLowerCase()))
+							returnCompletions.add(field.getName());
+					for (Bank bank : banks)
+						if (bank.getName().startsWith(args[1].toLowerCase()))
+							returnCompletions.add(bank.getName());
+					return returnCompletions;
+				} else
+					return fields.stream().map(Field::getName).collect(Collectors.toList());
 			} else {
-				List<String> ownBanks = bankUtils.getBanksCopy().stream()
-						.filter(b -> b.isTrusted((OfflinePlayer) sender)).map(Bank::getName).map(Utils::stripColor)
-						.collect(Collectors.toList());
-				Bank standingIn = bankUtils.getBank(((Player) sender).getLocation());
-
-				if (!ownBanks.isEmpty())
-					return ownBanks;
-				else
-					return standingIn != null ? Arrays.asList(Utils.stripColor(standingIn.getName())) : bankNames;
+				if (!args[1].isEmpty()) {
+					for (Bank bank : banks)
+						if (bank.getName().toLowerCase().startsWith(args[1].toLowerCase()))
+								returnCompletions.add(bank.getName());
+					return returnCompletions;
+				} else
+					return banks.stream().map(Bank::getName).collect(Collectors.toList());
 			}
 		} else if (args.length == 3) {
-			if (!args[2].isEmpty()) {
-				for (Field f : fields)
-					if (f.getName().contains(args[2].toLowerCase()))
-						returnCompletions.add(f.getName());
-				return returnCompletions;
-			} else
-				return fields.stream().map(field -> field.getName()).collect(Collectors.toList());
+			Bank bank = bankUtils.lookupBank(args[1]);
+			if (bank != null) {
+				if (!args[2].isEmpty()) {
+					for (Field f : fields)
+						if (f.getName().contains(args[2].toLowerCase()))
+							returnCompletions.add(f.getName());
+					return returnCompletions;
+				} else
+					return fields.stream().map(Field::getName).collect(Collectors.toList());
+			}
+			if (!(sender instanceof Player))
+				return new ArrayList<>();
+			bank = bankUtils.getBank(((Player) sender).getLocation());
+			Field field = Field.getByName(args[1]);
+			if (bank != null && field != null) {
+				String value = bank.getAccountConfig().getOrDefault(field).toString();
+				if (field.getDataType() == 0)
+					value = Utils.formatNumber(Double.parseDouble(value));
+				return Arrays.asList(value);
+			}
 		} else if (args.length == 4) {
 			Bank bank = bankUtils.getBankByName(args[1]);
 			Field field = Field.getByName(args[2]);
@@ -397,7 +419,39 @@ class GenericTabCompleter implements TabCompleter {
 					value = Utils.formatNumber(Double.parseDouble(value));
 				return Arrays.asList(value);
 			}
+		}
+		return new ArrayList<>();
+	}
 
+	private List<String> completeBankTransfer(Player p, String[] args) {
+		ArrayList<String> returnCompletions = new ArrayList<>();
+		List<String> banks = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName)
+				.collect(Collectors.toList());
+		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
+		onlinePlayers.remove(p.getName());
+
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				for (String bankName : banks)
+					if (bankName.toLowerCase().startsWith(args[1].toLowerCase()))
+						returnCompletions.add(bankName);
+				for (String playerName : onlinePlayers)
+					if (playerName.toLowerCase().startsWith(args[1].toLowerCase()))
+						returnCompletions.add(playerName);
+				return returnCompletions;
+			} else {
+				banks.addAll(onlinePlayers);
+				return banks;
+			}
+		} else if (args.length == 3) {
+			if (!args[2].isEmpty()) {
+				for (String playerName : onlinePlayers)
+					if (playerName.toLowerCase().startsWith(args[1].toLowerCase()))
+						returnCompletions.add(playerName);
+				return returnCompletions;
+			} else {
+				return onlinePlayers;
+			}
 		}
 		return new ArrayList<>();
 	}

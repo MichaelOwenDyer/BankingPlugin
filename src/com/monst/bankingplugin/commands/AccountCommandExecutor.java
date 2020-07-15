@@ -99,6 +99,10 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 			case "migrate":
 				promptAccountMigrate(p);
 				break;
+			case "transfer":
+				if (!promptAccountTransfer(p, args))
+					p.sendMessage(subCommand.getHelpMessage(p));
+				break;
 			default:
 				return false;
 			}
@@ -426,7 +430,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 
 	}
 	
-	public boolean promptAccountSet(final Player p, String[] args) {
+	private boolean promptAccountSet(final Player p, String[] args) {
 		plugin.debug(p.getName() + " wants to configure an account");
 		if (args.length < 2)
 			return false;
@@ -502,7 +506,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 	}
 
 	@SuppressWarnings("deprecation")
-	public boolean promptAccountTrust(Player p, String[] args) {
+	private boolean promptAccountTrust(Player p, String[] args) {
 		if (args.length < 2)
 			return false;
 
@@ -530,7 +534,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 	}
 
 	@SuppressWarnings("deprecation")
-	public boolean promptAccountUntrust(Player p, String[] args) {
+	private boolean promptAccountUntrust(Player p, String[] args) {
 		if (args.length < 2)
 			return false;
 
@@ -557,7 +561,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		return true;
 	}
 
-	public void promptAccountMigrate(Player p) {
+	private void promptAccountMigrate(Player p) {
 		plugin.debug(p.getName() + " wants to migrate an account");
 
 		if (!p.hasPermission(Permissions.ACCOUNT_CREATE)) {
@@ -571,5 +575,31 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		plugin.debug(p.getName() + " is migrating an account");
 	}
 
+	@SuppressWarnings("deprecation")
+	private boolean promptAccountTransfer(Player p, String[] args) {
+		plugin.debug(p.getName() + " wants to transfer ownership of an account");
+		
+		if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER)) {
+			plugin.debug(p.getName() + " does not have permission to transfer ownership of an account");
+			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRANSFER);
+			return true;
+		}
+
+		if (args.length < 2)
+			return false;
+		
+		OfflinePlayer newOwner = Bukkit.getOfflinePlayer(args[1]);
+		if (newOwner == null || !newOwner.hasPlayedBefore()) {
+			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+			return false;
+		}
+		plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
+				+ newOwner.getUniqueId());
+		
+		p.sendMessage(String.format(Messages.CLICK_CHEST_TRANSFER, newOwner.getName()));
+		ClickType.setPlayerClickType(p, new ClickType.TransferClickType(newOwner));
+		plugin.debug(p.getName() + " is transfering ownership of an account to " + newOwner.getName());
+		return true;
+	}
 
 }

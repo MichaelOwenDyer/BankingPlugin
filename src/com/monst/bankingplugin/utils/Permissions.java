@@ -14,6 +14,8 @@ public class Permissions {
 	public static final String ACCOUNT_EDIT_OTHER = "bankingplugin.account.edit-other";
 	public static final String ACCOUNT_MIGRATE_OTHER = "bankingplugin.account.migrate-other";
 	public static final String ACCOUNT_MIGRATE_BANK = "bankingplugin.account.migrate-bank";
+	public static final String ACCOUNT_TRANSFER = "bankingplugin.account.transfer";
+	public static final String ACCOUNT_TRANSFER_OTHER = "bankingplugin.account.transfer.other";
 	public static final String ACCOUNT_EXTEND_OTHER = "bankingplugin.account.extend-other";
 	public static final String ACCOUNT_NO_LIMIT = "bankingplugin.account.limit.*";
 	public static final String ACCOUNT_SET_NICKNAME_OTHER = "bankingplugin.account.set.nickname-other";
@@ -30,6 +32,9 @@ public class Permissions {
 	public static final String BANK_INFO_OTHER_VERBOSE = "bankingplugin.bank.info-other-verbose";
 	public static final String BANK_RESIZE_OTHER = "bankingplugin.bank.resize.other";
 	public static final String BANK_RESIZE_ADMIN = "bankingplugin.bank.resize.admin";
+	public static final String BANK_TRANSFER = "bankingplugin.bank.transfer";
+	public static final String BANK_TRANSFER_OTHER = "bankingplugin.bank.transfer.other";
+	public static final String BANK_TRANSFER_ADMIN = "bankingplugin.bank.transfer.admin";
 	public static final String BANK_SET_OTHER = "bankingplugin.bank.set.other";
 	public static final String BANK_SET_ADMIN = "bankingplugin.bank.set.admin";
 	public static final String BANK_SELECT = "worldedit.selection.pos";

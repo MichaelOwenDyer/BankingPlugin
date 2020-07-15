@@ -206,6 +206,13 @@ public class ControlCommandExecutor implements CommandExecutor {
 
 	private void promptPayout(CommandSender sender) {
 		plugin.debug(sender.getName() + " is triggering an interest payout");
+
+		if (!sender.hasPermission(Permissions.PAY_INTEREST)) {
+			plugin.debug(sender.getName() + " does not have permission to trigger an interest payout");
+			sender.sendMessage(Messages.NO_PERMISSION_PAY_INTEREST);
+			return;
+		}
+
 		sender.sendMessage(Messages.INTEREST_PAYOUT_TRIGGERED);
 
 		InterestEvent event = new InterestEvent(plugin);

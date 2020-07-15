@@ -22,6 +22,7 @@ import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
+import com.monst.bankingplugin.events.bank.TransferOwnershipEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
@@ -75,35 +76,37 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			case "create":
 				if (!promptBankCreate(p, args))
 					p.sendMessage(subCommand.getHelpMessage(sender));
-				return true;
+				break;
 			case "remove":
 				promptBankRemove(p, args);
-				return true;
+				break;
 			case "info":
 				if (!promptBankInfo(p, args))
 					p.sendMessage(subCommand.getHelpMessage(sender));
-				return true;
+				break;
 			case "list":
 				promptBankList(p, args);
-				return true;
+				break;
 			case "limits":
 				promptBankLimit(p);
-				return true;
+				break;
 			case "removeall":
 				if (!promptBankRemoveAll(p, args))
 					p.sendMessage(subCommand.getHelpMessage(sender));
-				return true;
+				break;
 			case "resize":
 				if (!promptBankResize(p, args))
 					p.sendMessage(subCommand.getHelpMessage(sender));
-				return true;
+				break;
 			case "set":
 				if (!promptBankSet(p, args))
 					p.sendMessage(subCommand.getHelpMessage(sender));
-				return true;
+				break;
 			case "select":
 				promptBankSelect(p, args);
-				return true;
+				break;
+			case "transfer":
+				promptBankTransfer(p, args);
 			default:
 				return false;
 			}
@@ -112,20 +115,21 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			switch (subCommand.getName().toLowerCase()) {
 			case "remove":
 				promptBankRemove(sender, args);
-				return true;
+				break;
 			case "info":
 				if (!promptBankInfo(sender, args))
 					sender.sendMessage(subCommand.getHelpMessage(sender));
-				return true;
+				break;
 			case "list":
 				promptBankList(sender, args);
-				return true;
+				break;
 			case "removeall":
 				return promptBankRemoveAll(sender, args);
 			default:
 				return false;
 			}
 		}
+		return true;
 	}
 
 	private boolean promptBankCreate(final Player p, String[] args) {
@@ -384,7 +388,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 					return true;
 				}
-				if ((sender instanceof Player && bank.isTrusted((Player) sender)) || sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE))
+				if ((sender instanceof Player && bank.isTrusted((Player) sender))
+						|| sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE))
 					sender.spigot().sendMessage(bank.getInfoVerbose());
 				else
 					sender.sendMessage(Messages.NO_PERMISSION_BANK_INFO_VERBOSE);
@@ -573,81 +578,102 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 	private boolean promptBankSet(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to configure a bank");
 
-		if (args.length < 4)
+		if (args.length < 3)
 			return false;
 
-		Bank bank = bankUtils.lookupBank(args[1]);
+		if (args.length == 3 && !(sender instanceof Player)) {
+			plugin.debug("Player command only");
+			sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+			return true;
+		}
+
+		Bank bank;
+		String fieldName;
+		String value;
+
+		if (args.length == 3) {
+			bank = bankUtils.getBank(((Player) sender).getLocation());
+			fieldName = args[1];
+			value = args[2];
+		} else {
+			bank = bankUtils.lookupBank(args[1]);
+			fieldName = args[2];
+			value = args[3];
+		}
+
 		if (bank == null) {
+			if (args.length == 3) {
+				plugin.debug(sender.getName() + " was not standing in a bank");
+				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
+				return true;
+			}
 			plugin.debug("No bank could be found under the identifier " + args[1]);
 			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
 
 		if ((sender instanceof Player && !bank.isTrusted((Player) sender))
-				&& !sender.hasPermission(Permissions.BANK_SET_OTHER)) {
+				|| (!(sender instanceof Player) && !sender.hasPermission(Permissions.BANK_SET_OTHER))) {
 			plugin.debug(sender.getName() + " does not have permission to configure another player's bank");
 			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_OTHER);
 			return true;
 		}
+
 		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
 			plugin.debug(sender.getName() + " does not have permission to configure an admin bank");
 			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_ADMIN);
 			return true;
 		}
-		if (Field.getByName(args[2]) == null) {
-			plugin.debug("No account config field could be found with name " + args[2]);
-			sender.sendMessage(String.format(Messages.NOT_A_FIELD, args[2]));
-			return true;
-		}
 
 		AccountConfig config = bank.getAccountConfig();
 		
-		Field field = Field.getByName(args[2]);
+		Field field = Field.getByName(fieldName);
 		if (field == null) {
-			sender.sendMessage(Messages.NOT_A_FIELD);
+			plugin.debug("No account config field could be found with name " + fieldName);
+			sender.sendMessage(String.format(Messages.NOT_A_FIELD, fieldName));
 			return true;
 		}
 		
 		if (field == Field.MULTIPLIERS) {
-			StringBuilder sb = new StringBuilder(args[3]);
+			StringBuilder sb = new StringBuilder(value);
 			for (int i = 4; i < args.length; i++)
 				sb.append(" " + args[i]);
-			args[3] = sb.toString();
+			value = sb.toString();
 		}
 		
 		try {
-			if (config.setOrDefault(field, args[3])) {
+			if (config.setOrDefault(field, value)) {
 				if (field.getDataType() == 0)
-					args[3] = Utils.formatNumber(Double.parseDouble(args[3].replace(",", "")));
+					value = Utils.formatNumber(Double.parseDouble(value.replace(",", "")));
 				else if (field.getDataType() == 3)
-					args[3] = Utils.listifyList(args[3]);
-				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, args[2], args[3], bank.getName()));
+					value = Utils.listifyList(value);
+				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, field.getName(), value, bank.getName()));
 			} else
 				sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
 		} catch (NumberFormatException e) {
 			switch (field.getDataType()) {
 			case 0:
-				plugin.debug("Failed to parse double: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[3]));
+				plugin.debug("Failed to parse double: " + value);
+				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, value));
 				break;
 			case 1:
-				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
+				plugin.debug("Failed to parse integer: " + value);
+				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, value));
 				break;
 			case 2:
-				plugin.debug("Failed to parse integer: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, args[3]));
+				plugin.debug("Failed to parse integer: " + value);
+				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, value));
 				break;
 			case 3:
-				plugin.debug("Failed to parse list: " + args[3]);
-				sender.sendMessage(String.format(Messages.NOT_A_LIST, args[3]));
+				plugin.debug("Failed to parse list: " + value);
+				sender.sendMessage(String.format(Messages.NOT_A_LIST, value));
 				break;
 			}
 			return true;
 		}
 
 		plugin.getDatabase().addBank(bank, null);
-		plugin.debug(sender.getName() + " has set " + args[2] + " at " + bank.getName() + " to " + args[3]);
+		plugin.debug(sender.getName() + " has set " + field.getName() + " at " + bank.getName() + " to " + value);
 		return true;
 	}
 
@@ -689,4 +715,66 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 
 	}
 
+	@SuppressWarnings("deprecation")
+	private boolean promptBankTransfer(Player p, String[] args) {
+		plugin.debug(p.getName() + " wants to transfer bank ownership");
+
+		if (!p.hasPermission(Permissions.BANK_TRANSFER)) {
+			plugin.debug(p.getName() + " does not have permission to transfer bank ownership");
+			p.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER);
+			return true;
+		}
+
+		if (args.length < 2)
+			return false;
+
+		Bank bank = null;
+		OfflinePlayer newOwner = null;
+		if (args.length == 2) {
+			bank = bankUtils.getBank(p.getLocation());
+			if (bank == null) {
+				plugin.debug(p.getName() + " wasnt standing in a bank");
+				p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+				return true;
+			}
+			newOwner = Bukkit.getOfflinePlayer(args[1]);
+			if (newOwner == null || !newOwner.hasPlayedBefore()) {
+				p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+				return true;
+			}
+
+		} else if (args.length >= 3) {
+			bank = bankUtils.lookupBank(args[1]);
+			if (bank == null) {
+				plugin.debug("No bank could be found under the identifier " + args[1]);
+				p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				return true;
+			}
+			newOwner = Bukkit.getOfflinePlayer(args[2]);
+			if (newOwner == null || !newOwner.hasPlayedBefore()) {
+				p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+				return true;
+			}
+		}
+
+		if (bank.isOwner(newOwner)) {
+			boolean isSelf = p.getUniqueId().equals(newOwner.getUniqueId());
+			plugin.debug(p.getName() + " is already owner of bank");
+			p.sendMessage(
+					String.format(Messages.ALREADY_OWNER, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
+			return true;
+		}
+
+		TransferOwnershipEvent event = new TransferOwnershipEvent(p, bank, newOwner);
+		Bukkit.getPluginManager().callEvent(event);
+		if (!event.isCancelled()) {
+			plugin.debug("Bank transfer ownership event cancelled");
+			return true;
+		}
+
+		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
+		bank.transferOwnership(newOwner, Config.trustOnTransfer);
+		plugin.getDatabase().addBank(bank, null);
+		return true;
+	}
 }
