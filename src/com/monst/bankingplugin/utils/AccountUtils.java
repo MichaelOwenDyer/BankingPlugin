@@ -118,9 +118,9 @@ public class AccountUtils {
         if (addToDatabase) {
 			plugin.getDatabase().addAccount(account, callback);
         } else {
+			account.getBank().addAccount(account);
 			if (callback != null)
 				callback.callSyncResult(account.getID());
-			account.getBank().addAccount(account);
         }
     }
 
