@@ -6,10 +6,6 @@ import java.util.Set;
 
 import org.bukkit.OfflinePlayer;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.Bank.BankType;
-
 import net.md_5.bungee.api.ChatColor;
 
 public abstract class Ownable {
@@ -75,16 +71,7 @@ public abstract class Ownable {
 		return Collections.unmodifiableSet(coowners);
 	}
 
-	public void transferOwnership(OfflinePlayer newOwner, boolean trustPrevOwner) {
-		if (this instanceof Account && newOwner == null)
-			return;
-		OfflinePlayer prevOwner = owner;
-		owner = newOwner;
-		if (this instanceof Bank)
-			((Bank) this).setBankType(owner == null ? BankType.ADMIN : BankType.PLAYER);
-		if (trustPrevOwner)
-			coowners.add(prevOwner);
-	}
+	public abstract void transferOwnership(OfflinePlayer newOwner);
 
 	public boolean hasID() {
 		return id != -1;

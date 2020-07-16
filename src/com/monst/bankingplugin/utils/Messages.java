@@ -16,7 +16,8 @@ public class Messages {
 	public static final String ACCOUNT_EXTEND_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend their account at your bank.";
 	public static final String BANK_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create a bank.";
 	public static final String NAME_NOT_UNIQUE = ChatColor.RED + "A bank with that name already exists.";
-	public static final String NAME_NOT_ALLOWED = ChatColor.RED + "Name must consist only of letters.";
+	public static final String NAME_ALREADY = ChatColor.RED + "The bank name was not changed.";
+	public static final String NAME_NOT_ALLOWED = ChatColor.RED + "Name is not allowed.";
 	public static final String CHEST_ALREADY_ACCOUNT = ChatColor.RED + "That chest is already an account!";
 	public static final String CHEST_BLOCKED = ChatColor.RED + "Chest is blocked!";
 	
@@ -60,6 +61,7 @@ public class Messages {
 	public static final String ACCOUNT_NEW_BALANCE = ChatColor.GOLD + "Your new balance is " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String BANK_SELECTED = ChatColor.GOLD + "Bank region selected as %s.";
 	public static final String OWNERSHIP_TRANSFERRED = ChatColor.GOLD + "Ownership successfully transferred to %s.";
+	public static final String NAME_CHANGED = ChatColor.GOLD + "Bank name was successfully changed.";
 	
 	// DENY NOTIFICATIONS
 	public static final String MUST_BE_OWNER = ChatColor.RED + "You must be the owner of the account to do that.";

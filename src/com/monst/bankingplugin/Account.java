@@ -238,6 +238,16 @@ public class Account extends Ownable {
 	}
 
 	@Override
+	public void transferOwnership(OfflinePlayer newOwner) {
+		if (newOwner == null)
+			return;
+		OfflinePlayer previousOwner = owner;
+		owner = newOwner;
+		if (Config.trustOnTransfer)
+			coowners.add(previousOwner);
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;

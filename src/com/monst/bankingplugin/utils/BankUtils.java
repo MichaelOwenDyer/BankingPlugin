@@ -95,10 +95,6 @@ public class BankUtils {
 		return getBanksCopy().stream().noneMatch(bank -> bank.getName().equalsIgnoreCase(name));
 	}
 
-	public boolean isAllowedName(String name) {
-		return name.matches("[a-zA-Z]+");
-	}
-
 	public boolean isExclusiveSelection(Selection sel) {
 		return isExclusiveSelectionWithoutThis(sel, null);
 	}

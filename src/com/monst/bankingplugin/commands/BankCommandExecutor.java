@@ -68,68 +68,49 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			return false;
 		}
 
-		if (sender instanceof Player) {
-			Player p = (Player) sender;
+		switch (subCommand.getName().toLowerCase()) {
 
-			switch (subCommand.getName().toLowerCase()) {
+		case "create":
+			if (!promptBankCreate((Player) sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "remove":
+			promptBankRemove(sender, args);
+			break;
+		case "info":
+			if (!promptBankInfo(sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "list":
+			promptBankList(sender, args);
+			break;
+		case "limits":
+			promptBankLimits((Player) sender);
+			break;
+		case "removeall":
+			if (!promptBankRemoveAll(sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "resize":
+			if (!promptBankResize((Player) sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "rename":
 
-			case "create":
-				if (!promptBankCreate(p, args))
-					p.sendMessage(subCommand.getHelpMessage(sender));
-				break;
-			case "remove":
-				promptBankRemove(p, args);
-				break;
-			case "info":
-				if (!promptBankInfo(p, args))
-					p.sendMessage(subCommand.getHelpMessage(sender));
-				break;
-			case "list":
-				promptBankList(p, args);
-				break;
-			case "limits":
-				promptBankLimits(p);
-				break;
-			case "removeall":
-				if (!promptBankRemoveAll(p, args))
-					p.sendMessage(subCommand.getHelpMessage(sender));
-				break;
-			case "resize":
-				if (!promptBankResize(p, args))
-					p.sendMessage(subCommand.getHelpMessage(sender));
-				break;
-			case "set":
-				if (!promptBankSet(p, args))
-					p.sendMessage(subCommand.getHelpMessage(sender));
-				break;
-			case "select":
-				promptBankSelect(p, args);
-				break;
-			case "transfer":
-				if (!promptBankTransfer(p, args))
-					p.sendMessage(subCommand.getHelpMessage(sender));
-				break;
-			default:
-				return false;
-			}
-		} else {
-
-			switch (subCommand.getName().toLowerCase()) {
-			case "remove":
-				promptBankRemove(sender, args);
-				break;
-			case "info":
-				if (!promptBankInfo(sender, args))
-					sender.sendMessage(subCommand.getHelpMessage(sender));
-				break;
-			case "list":
-				promptBankList(sender, args);
-				break;
-			case "removeall":
-				return promptBankRemoveAll(sender, args);
-			default:
-				return false;
-			}
+			break;
+		case "set":
+			if (!promptBankSet(sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "select":
+			promptBankSelect((Player) sender, args);
+			break;
+		case "transfer":
+			if (!promptBankTransfer(sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		default:
+			return false;
 		}
 		return true;
 	}
@@ -214,7 +195,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			p.sendMessage(Messages.NAME_NOT_UNIQUE);
 			return true;
 		}
-		if (!bankUtils.isAllowedName(args[1])) {
+		if (!Utils.isAllowedName(args[1])) {
 			plugin.debug("Name is not allowed");
 			p.sendMessage(Messages.NAME_NOT_ALLOWED);
 			return true;
@@ -599,6 +580,72 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		return true;
 	}
 
+	private boolean promptBankRename(CommandSender sender, String[] args) {
+		plugin.debug(sender.getName() + " is renaming a bank");
+
+		if (args.length < 2)
+			return false;
+
+		Bank bank = null;
+		String newName = null;
+		if (args.length == 2) {
+			if (!(sender instanceof Player)) {
+				plugin.debug("Must be player");
+				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+				return true;
+			}
+			bank = bankUtils.getBank(((Player) sender).getLocation());
+			if (bank == null) {
+				plugin.debug(sender.getName() + " was not standing in a bank");
+				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
+				return true;
+			}
+			newName = args[1];
+		} else if (args.length >= 3) {
+			bank = bankUtils.lookupBank(args[1]);
+			if (bank == null) {
+				plugin.debug("Could not find bank with name " + args[1]);
+				sender.sendMessage(Messages.BANK_NOT_FOUND);
+				return true;
+			}
+			newName = args[2];
+		}
+
+		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
+			plugin.debug(sender.getName() + " does not have permission to change the name of an admin bank");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_ADMIN);
+			return true;
+		}
+		if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
+				|| sender.hasPermission(Permissions.BANK_SET_OTHER))) {
+			plugin.debug(sender.getName() + " does not have permission to change the name of another player's bank");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_ADMIN);
+			return true;
+		}
+
+		if (bank.getName().contentEquals(newName)) {
+			plugin.debug("Same name");
+			sender.sendMessage(Messages.NAME_ALREADY);
+			return true;
+		}
+		if (!bankUtils.isUniqueName(args[1])) {
+			plugin.debug("Name is not unique");
+			sender.sendMessage(Messages.NAME_NOT_UNIQUE);
+			return true;
+		}
+		if (!Utils.isAllowedName(args[1])) {
+			plugin.debug("Name is not allowed");
+			sender.sendMessage(Messages.NAME_NOT_ALLOWED);
+			return true;
+		}
+
+		plugin.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
+		sender.sendMessage(Messages.NAME_CHANGED);
+		bank.setName(newName);
+		plugin.getDatabase().addBank(bank, null);
+		return true;
+	}
+
 	private boolean promptBankSet(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to configure a bank");
 
@@ -740,12 +787,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 	}
 
 	@SuppressWarnings("deprecation")
-	private boolean promptBankTransfer(Player p, String[] args) {
-		plugin.debug(p.getName() + " wants to transfer bank ownership");
+	private boolean promptBankTransfer(CommandSender sender, String[] args) {
+		plugin.debug(sender.getName() + " wants to transfer bank ownership");
 
-		if (!p.hasPermission(Permissions.BANK_TRANSFER)) {
-			plugin.debug(p.getName() + " does not have permission to transfer bank ownership");
-			p.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER);
+		if (!sender.hasPermission(Permissions.BANK_TRANSFER)) {
+			plugin.debug(sender.getName() + " does not have permission to transfer bank ownership");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER);
 			return true;
 		}
 
@@ -755,15 +802,20 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		Bank bank = null;
 		OfflinePlayer newOwner = null;
 		if (args.length == 2) {
-			bank = bankUtils.getBank(p.getLocation());
+			if (!(sender instanceof Player)) {
+				plugin.debug("Must be player");
+				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+				return true;
+			}
+			bank = bankUtils.getBank(((Player) sender).getLocation());
 			if (bank == null) {
-				plugin.debug(p.getName() + " wasnt standing in a bank");
-				p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+				plugin.debug(sender.getName() + " wasnt standing in a bank");
+				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
 				return true;
 			}
 			newOwner = Bukkit.getOfflinePlayer(args[1]);
 			if (newOwner == null || !newOwner.hasPlayedBefore()) {
-				p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+				sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 				return true;
 			}
 
@@ -771,48 +823,49 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
 				plugin.debug("No bank could be found under the identifier " + args[1]);
-				p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}
 			newOwner = Bukkit.getOfflinePlayer(args[2]);
 			if (newOwner == null || !newOwner.hasPlayedBefore()) {
-				p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+				sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 				return true;
 			}
 		}
 
-		if (bank.isOwner(newOwner)) {
-			boolean isSelf = p.getUniqueId().equals(newOwner.getUniqueId());
-			plugin.debug(p.getName() + " is already owner of bank");
-			p.sendMessage(
+		if (sender instanceof Player && bank.isOwner(newOwner)) {
+			boolean isSelf = ((Player) sender).getUniqueId().equals(newOwner.getUniqueId());
+			plugin.debug(sender.getName() + " is already owner of bank");
+			sender.sendMessage(
 					String.format(Messages.ALREADY_OWNER, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
 			return true;
 		}
-		if (bank.isAdminBank() && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)) {
-			plugin.debug(p.getName() + " does not have permission to transfer an admin bank");
-			p.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER_ADMIN);
+		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRANSFER_ADMIN)) {
+			plugin.debug(sender.getName() + " does not have permission to transfer an admin bank");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER_ADMIN);
 			return true;
 		}
-		if (!bank.isAdminBank() && !bank.isOwner(p) && !p.hasPermission(Permissions.BANK_TRANSFER_OTHER)) {
-			if (bank.isTrusted(p)) {
-				plugin.debug(p.getName() + " does not have permission to transfer ownership as a co-owner");
-				p.sendMessage(Messages.MUST_BE_OWNER);
+		if (!(bank.isAdminBank() || (sender instanceof Player && bank.isOwner((Player) sender))
+				|| sender.hasPermission(Permissions.BANK_TRANSFER_OTHER))) {
+			if (sender instanceof Player && bank.isTrusted((Player) sender)) {
+				plugin.debug(sender.getName() + " does not have permission to transfer ownership as a co-owner");
+				sender.sendMessage(Messages.MUST_BE_OWNER);
 				return true;
 			}
-			plugin.debug(p.getName() + " does not have permission to transfer ownership of another player's bank");
-			p.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER_OTHER);
+			plugin.debug(sender.getName() + " does not have permission to transfer ownership of another player's bank");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER_OTHER);
 			return true;
 		}
 
-		TransferOwnershipEvent event = new TransferOwnershipEvent(p, bank, newOwner);
+		TransferOwnershipEvent event = new TransferOwnershipEvent(sender, bank, newOwner);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Bank transfer ownership event cancelled");
 			return true;
 		}
 
-		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
-		bank.transferOwnership(newOwner, Config.trustOnTransfer);
+		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
+		bank.transferOwnership(newOwner);
 		plugin.getDatabase().addBank(bank, null);
 		return true;
 	}

@@ -26,6 +26,7 @@ import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EnumClickType;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -59,68 +60,49 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 			return false;
 		}
 
-		if (sender instanceof Player) {
-			Player p = (Player) sender;
+		switch (subCommand.getName().toLowerCase()) {
 
-			switch (subCommand.getName().toLowerCase()) {
-
-			case "create":
-				promptAccountCreate(p, args);
-				break;
-			case "remove":
-				promptAccountRemove(p);
-				break;
-			case "info":
-				promptAccountInfo(p, args);
-				break;
-			case "list":
-				if (!promptAccountList(p, args))
-					p.sendMessage(subCommand.getHelpMessage(p));
-				break;
-			case "limits":
-				promptAccountLimits(p);
-				break;
-			case "removeall":
-				if (!promptAccountRemoveAll(p, args))
-					p.sendMessage(subCommand.getHelpMessage(p));
-				break;
-			case "set":
-				if (!promptAccountSet(p, args))
-					p.sendMessage(subCommand.getHelpMessage(p));
-				break;
-			case "trust":
-				if (!promptAccountTrust(p, args))
-					p.sendMessage(subCommand.getHelpMessage(p));
-				break;
-			case "untrust":
-				if (!promptAccountUntrust(p, args))
-					p.sendMessage(subCommand.getHelpMessage(p));
-				break;
-			case "migrate":
-				promptAccountMigrate(p);
-				break;
-			case "transfer":
-				if (!promptAccountTransfer(p, args))
-					p.sendMessage(subCommand.getHelpMessage(p));
-				break;
-			default:
-				return false;
-			}
-		} else {
-
-			switch (subCommand.getName().toLowerCase()) {
-
-			case "list":
-				if (!promptAccountList(sender, args))
-					sender.sendMessage(subCommand.getHelpMessage(sender));
-				return true;
-			case "removeall":
-				if (!promptAccountRemoveAll(sender, args))
-					sender.sendMessage(subCommand.getHelpMessage(sender));
-				return true;
-			default:
-				return false;
-			}
+		case "create":
+			promptAccountCreate((Player) sender, args);
+			break;
+		case "remove":
+			promptAccountRemove((Player) sender);
+			break;
+		case "info":
+			promptAccountInfo((Player) sender, args);
+			break;
+		case "list":
+			if (!promptAccountList(sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "limits":
+			promptAccountLimits((Player) sender);
+			break;
+		case "removeall":
+			if (!promptAccountRemoveAll(sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "set":
+			if (!promptAccountSet((Player) sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "trust":
+			if (!promptAccountTrust((Player) sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "untrust":
+			if (!promptAccountUntrust((Player) sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "migrate":
+			promptAccountMigrate((Player) sender);
+			break;
+		case "transfer":
+			if (!promptAccountTransfer((Player) sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		default:
+			return false;
 		}
 		return true;
 	}
@@ -450,7 +432,11 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 						sb.append(" " + args[i]);
 					nickname = sb.toString();
 				}
-				// Add pattern matching?
+				if (!Utils.isAllowedName(args[1])) {
+					plugin.debug("Name is not allowed");
+					p.sendMessage(Messages.NAME_NOT_ALLOWED);
+					return true;
+				}
 				p.sendMessage(Messages.CLICK_CHEST_SET);
 				ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "nickname", nickname }));
 			} else

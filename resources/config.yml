@@ -254,5 +254,10 @@ bank-revenue-multiplier: 0.10
 worldguard-default-flag-value:
   create-bank: false
   
+# Set the regex pattern that bank names and account nicknames should be matched against. Players will not be allowed to set names that fail to match with this pattern. Invalid patterns will not be considered.
+# Type: String
+# Default: ''
+name-regex: ''
+
 # Set the prefix of all SQLite table names related to this plugin.
 table-prefix: "bankingplugin_"

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -23,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
 
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -38,6 +40,14 @@ public class Utils {
 	public static List<String> getOnlinePlayerNames(BankingPlugin plugin) {
 		return plugin.getServer().getOnlinePlayers().stream().map(player -> player.getName()).sorted()
 				.collect(Collectors.toList());
+	}
+
+	public static boolean isAllowedName(String name) {
+		try {
+			return name.matches(Config.nameRegex);
+		} catch (PatternSyntaxException e) {
+			return true;
+		}
 	}
 
 	public static String colorize(String s) {

@@ -15,6 +15,7 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 
+import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
@@ -287,5 +288,14 @@ public class Bank extends Ownable {
 
 	public void setBankType(BankType type) {
 		this.type = type;
+	}
+
+	@Override
+	public void transferOwnership(OfflinePlayer newOwner) {
+		OfflinePlayer prevOwner = owner;
+		owner = newOwner;
+		setBankType(owner == null ? BankType.ADMIN : BankType.PLAYER);
+		if (Config.trustOnTransfer)
+			coowners.add(prevOwner);
 	}
 }

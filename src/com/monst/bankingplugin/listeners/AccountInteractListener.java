@@ -728,7 +728,7 @@ public class AccountInteractListener implements Listener {
 		boolean hasDefaultNickname = account.getNickname().contentEquals(account.getDefaultNickname());
 
 		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
-		account.transferOwnership(newOwner, Config.trustOnTransfer);
+		account.transferOwnership(newOwner);
 		if (hasDefaultNickname)
 			account.setDefaultNickname();
 		plugin.getDatabase().addAccount(account, null);

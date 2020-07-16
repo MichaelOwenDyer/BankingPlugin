@@ -234,6 +234,12 @@ public class Config {
      * The default value for the custom WorldGuard flag 'create-bank'
      **/
 	public static boolean wgAllowCreateBankDefault;
+
+	/**
+	 * The regex pattern that bank names and account nicknames should be matched
+	 * against.
+	 */
+	public static String nameRegex;
     
     /**
      * The prefix to be used for database tables.
@@ -470,6 +476,7 @@ public class Config {
 				config.getStringList("blacklist") : new ArrayList<>();
 		bankRevenueMultiplier = config.getDouble("bank-revenue-multiplier");
 		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value.create-bank");
+		nameRegex = config.getString("name-regex");
 		databaseTablePrefix = config.getString("table-prefix");
         
     }

@@ -86,6 +86,13 @@ public class BankCommand extends GenericCommand {
 			}
 		});
 
+		addSubCommand(new BankSubCommand("rename", false, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return sender.hasPermission(Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RESIZE : "";
+			}
+		});
+
 		addSubCommand(new BankSubCommand("set", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
@@ -100,7 +107,7 @@ public class BankCommand extends GenericCommand {
 			}
 		});
 
-		addSubCommand(new BankSubCommand("transfer", true, executor, tabCompleter) {
+		addSubCommand(new BankSubCommand("transfer", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
 				return sender.hasPermission(Permissions.BANK_TRANSFER) ? Messages.COMMAND_USAGE_BANK_TRANSFER : "";

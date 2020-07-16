@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.events.bank;
 
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
 import com.monst.bankingplugin.Bank;
@@ -11,8 +11,8 @@ public class TransferOwnershipEvent extends BankEvent implements Cancellable {
 	private OfflinePlayer newOwner;
 	private boolean cancelled;
 
-	public TransferOwnershipEvent(Player p, Bank bank, OfflinePlayer newOwner) {
-		super(p, bank);
+	public TransferOwnershipEvent(CommandSender sender, Bank bank, OfflinePlayer newOwner) {
+		super(sender, bank);
 		this.newOwner = newOwner;
 	}
 
