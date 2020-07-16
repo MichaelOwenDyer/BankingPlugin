@@ -9,7 +9,7 @@ public class AccountStatus {
 	private final AccountConfig accountConfig;
 
 	private int multiplierStage;
-	private int remainingUntilPayout;
+	private int delayUntilNextPayout;
 	private int remainingOfflinePayouts;
 	private int remainingOfflineUntilReset;
 		
@@ -25,15 +25,15 @@ public class AccountStatus {
 	 * Creates an account status with the given values.
 	 * @param multiplierStage
 	 * @param remainingOfflinePayouts
-	 * @param remainingUntilFirstPayout
+	 * @param delayUntilNextPayout
 	 * @param balance
 	 * @param prevBalance
 	 */
-	public AccountStatus(AccountConfig config, int multiplierStage, int remainingUntilFirstPayout,
+	public AccountStatus(AccountConfig config, int multiplierStage, int delayUntilNextPayout,
 			int remainingOfflinePayouts, int remainingOfflineUntilReset) {
 		this.accountConfig = config;
 		this.multiplierStage = multiplierStage;
-		this.remainingUntilPayout = remainingUntilFirstPayout;
+		this.delayUntilNextPayout = delayUntilNextPayout;
 		this.remainingOfflinePayouts = remainingOfflinePayouts;
 		this.remainingOfflineUntilReset = remainingOfflineUntilReset;
 	}
@@ -42,8 +42,8 @@ public class AccountStatus {
 		return multiplierStage;
 	}
 
-	public int getRemainingUntilFirstPayout() {
-		return remainingUntilPayout;
+	public int getDelayUntilNextPayout() {
+		return delayUntilNextPayout;
 	}
 
 	public int getRemainingOfflinePayouts() {
@@ -114,16 +114,16 @@ public class AccountStatus {
 	 */
 	public boolean allowNextPayout(boolean online) {
 		if (online) {
-			if (remainingUntilPayout > 0) {
-				remainingUntilPayout--;
+			if (delayUntilNextPayout > 0) {
+				delayUntilNextPayout--;
 				return false;
 			}
 			remainingOfflineUntilReset = (int) accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET);
 			return true;
 		} else {
-			if (remainingUntilPayout > 0) {
+			if (delayUntilNextPayout > 0) {
 				if ((boolean) accountConfig.getOrDefault(Field.COUNT_INTEREST_DELAY_OFFLINE))
-					remainingUntilPayout--;
+					delayUntilNextPayout--;
 				return false;
 			} else
 				if (remainingOfflinePayouts > 0) {
@@ -189,9 +189,9 @@ public class AccountStatus {
 
 	public int setInterestDelay(int delay) {
 		if (delay <= 0)
-			remainingUntilPayout = 0;
+			delayUntilNextPayout = 0;
 		else
-			remainingUntilPayout = delay;
-		return remainingUntilPayout;
+			delayUntilNextPayout = delay;
+		return delayUntilNextPayout;
 	}
 }

@@ -6,6 +6,7 @@ import java.awt.Shape;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -56,6 +57,14 @@ public class Polygonal2DSelection implements Selection {
 	@Override
 	public World getWorld() {
 		return world;
+	}
+
+	@Override
+	public String getCoordinates() {
+		int minY = getMinimumPoint().getBlockY();
+		int maxY = getMaximumPoint().getBlockY();
+		return getNativePoints().stream().map(vec -> "(" + vec.getBlockX() + ", " + vec.getBlockZ() + ")")
+				.collect(Collectors.joining(", ")) + " at Y = " + minY + " to " + maxY;
 	}
 
 	@Override

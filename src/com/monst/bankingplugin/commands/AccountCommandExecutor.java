@@ -186,7 +186,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		plugin.debug(p.getName() + " can now click an account to get info");
 		p.sendMessage(Messages.CLICK_CHEST_INFO);
 		ClickType.setPlayerClickType(p, new ClickType(EnumClickType.INFO));
-
 	}
 
 	@SuppressWarnings("deprecation")

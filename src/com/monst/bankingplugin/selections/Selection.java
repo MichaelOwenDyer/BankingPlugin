@@ -16,14 +16,14 @@ public interface Selection {
 	/**
 	 * Get the lower point of a selection.
 	 * 
-	 * @return min. point
+	 * @return The minimum point
 	 */
 	public Location getMinimumPoint();
 
 	/**
 	 * Get the upper point of a selection.
 	 * 
-	 * @return max. point
+	 * @return The maximum point
 	 */
 	public Location getMaximumPoint();
 
@@ -33,6 +33,13 @@ public interface Selection {
 	 * @return
 	 */
 	public World getWorld();
+
+	/**
+	 * Get a coordinate string that defines the location of the selection.
+	 * 
+	 * @return A coordinate string.
+	 */
+	public String getCoordinates();
 
 	/**
 	 * Get the number of blocks in the selection.

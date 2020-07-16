@@ -241,6 +241,12 @@ public class AccountConfig {
 		return playerAccountLimit;
 	}
 
+	@Override
+	public String toString() {
+		return Arrays.stream(Field.values()).map(field -> field.getName() + ": " + getOrDefault(field)
+				+ " (Overrideable: " + isOverrideAllowed(field) + ")").collect(Collectors.joining("\n"));
+	}
+	
 	public enum Field {
 
 		INTEREST_RATE ("interest-rate", 0), 
@@ -284,7 +290,5 @@ public class AccountConfig {
 		public static Field getByName(String name) {
 			return stream().filter(field -> field.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
 		}
-
 	}
-	
 }

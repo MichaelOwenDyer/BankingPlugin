@@ -11,15 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.selections.CuboidSelection;
-import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
-import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.Ownable;
@@ -90,22 +86,6 @@ public class Bank extends Ownable {
 		return true;
 	}
 
-	public String getCoordinates() {
-		if (selection.getType() == SelectionType.CUBOID) {
-			CuboidSelection sel = (CuboidSelection) selection;
-			Location min = sel.getMinimumPoint();
-			Location max = sel.getMaximumPoint();
-			return "(" + min.getBlockX() + ", " + min.getBlockY() + ", " + min.getBlockZ() + ") to (" + max.getBlockX()
-					+ ", " + max.getBlockY() + ", " + max.getBlockZ() + ")";
-		} else {
-			Polygonal2DSelection sel = (Polygonal2DSelection) selection;
-			int minY = sel.getMinimumPoint().getBlockY();
-			int maxY = sel.getMaximumPoint().getBlockY();
-			return sel.getNativePoints().stream().map(vec -> "(" + vec.getBlockX() + ", " + vec.getBlockZ() + ")")
-					.collect(Collectors.joining(", ")) + " at Y = " + minY + " to " + maxY;
-		}
-	}
-	
 	public void addAccount(Account account) {
 		removeAccount(account);
 		if (account != null)
@@ -197,7 +177,7 @@ public class Bank extends Ownable {
 		TextComponent totalValue = new TextComponent("Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n");
 		TextComponent equality = new TextComponent("Inequality score: " + String.format("%.2f", getGiniCoefficient()) + "\n"); // TODO: Dynamic color
 		TextComponent selectionType = new TextComponent("Selection type: " + selection.getType() + "\n");
-		TextComponent loc = new TextComponent("Location: " + ChatColor.AQUA + getCoordinates());
+		TextComponent loc = new TextComponent("Location: " + ChatColor.AQUA + getSelection().getCoordinates());
 		
 		info.addExtra(numberOfAccounts);
 		info.addExtra(totalValue);
@@ -209,14 +189,16 @@ public class Bank extends Ownable {
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public String toString() {
-		return ChatColor.GRAY + "\"" + ChatColor.GOLD + getColorizedName() + ChatColor.GRAY + "\" (#" + id + ")\n"
-				+ ChatColor.GRAY + "Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n"
-				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n"
-				+ ChatColor.GRAY + "Multipliers:" + Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)) + "\n"
-				+ ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE));
+		return "ID: " + getID()
+				+ "\nName: " + getName() + " (Raw: " + getRawName() + ")"
+				+ "\nOwner: " + (isAdminBank() ? "ADMIN" : getOwner().getName())
+				+ "\nNumber of accounts: " + getAccounts().size()
+				+ "\nTotal value: " + Utils.formatNumber(getTotalValue())
+				+ "\nEquality score: " + String.format("%.2f", getGiniCoefficient())
+				+ "\nSelection type: " + getSelection().getType()
+				+ "\nLocation: " + getSelection().getCoordinates();
 	}
 
 	@Override
@@ -227,12 +209,12 @@ public class Bank extends Ownable {
 			return false;
 
 		Bank otherBank = (Bank) o;
-		return id != -1 && id == otherBank.id;
+		return getID() != -1 && getID() == otherBank.getID();
 	}
 
 	@Override
 	public int hashCode() {
-		return id != -1 ? id : super.hashCode();
+		return getID() != -1 ? getID() : super.hashCode();
 	}
 
 	public String getName() {
@@ -272,7 +254,7 @@ public class Bank extends Ownable {
 	}
 
 	public boolean isAdminBank() {
-		return type == BankType.ADMIN;
+		return getType() == BankType.ADMIN;
 	}
 
 	public Collection<Account> getAccounts() {
@@ -280,7 +262,7 @@ public class Bank extends Ownable {
 	}
 
 	public Collection<Account> getAccountsCopy() {
-		return Collections.unmodifiableCollection(accounts);
+		return Collections.unmodifiableCollection(getAccounts());
 	}
 
 	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
@@ -302,9 +284,9 @@ public class Bank extends Ownable {
 
 	@Override
 	public void transferOwnership(OfflinePlayer newOwner) {
-		OfflinePlayer prevOwner = owner;
+		OfflinePlayer prevOwner = getOwner();
 		owner = newOwner;
-		setBankType(owner == null ? BankType.ADMIN : BankType.PLAYER);
+		setBankType(newOwner == null ? BankType.ADMIN : BankType.PLAYER);
 		if (Config.trustOnTransfer)
 			coowners.add(prevOwner);
 	}

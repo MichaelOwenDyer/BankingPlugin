@@ -263,7 +263,7 @@ public abstract class Database {
 					ps.setString(i + 7, account.getPrevBalance().toString());
 
 					ps.setInt(i + 8, account.getStatus().getMultiplierStage());
-					ps.setInt(i + 9, account.getStatus().getRemainingUntilFirstPayout());
+					ps.setInt(i + 9, account.getStatus().getDelayUntilNextPayout());
 					ps.setInt(i + 10, account.getStatus().getRemainingOfflinePayouts());
 					ps.setInt(i + 11, account.getStatus().getRemainingOfflineUntilReset());
 

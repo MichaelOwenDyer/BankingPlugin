@@ -60,6 +60,14 @@ public class CuboidSelection implements Selection {
 	}
 
 	@Override
+	public String getCoordinates() {
+		Location min = getMinimumPoint();
+		Location max = getMaximumPoint();
+		return "(" + min.getBlockX() + ", " + min.getBlockY() + ", " + min.getBlockZ() + ") to (" + max.getBlockX()
+				+ ", " + max.getBlockY() + ", " + max.getBlockZ() + ")";
+	}
+
+	@Override
 	public int getVolume() {
 		return (max.getBlockX() - min.getBlockX()) * (max.getBlockZ() - min.getBlockZ())
 				* (max.getBlockY() - min.getBlockY());

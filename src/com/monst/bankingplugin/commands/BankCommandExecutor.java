@@ -339,59 +339,29 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 	private boolean promptBankInfo(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to show bank info");
 
+		Bank bank = null;
 		if (args.length == 1) {
 			if (sender instanceof Player) {
 				Player p = (Player) sender;
-				Bank bank = bankUtils.getBank(p.getLocation());
-				if (bank != null)
-					p.spigot().sendMessage(bank.getInfo());
-				else {
+				bank = bankUtils.getBank(p.getLocation());
+				if (bank == null) {
 					plugin.debug(p.getName() + " wasn't standing in a bank");
 					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+					return true;
 				}
 			} else
 				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-		} else if (args.length == 2) {
-			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
-				if (sender instanceof Player) {
-					Player p = (Player) sender;
-					Bank bank = bankUtils.getBank(p.getLocation());
-					if (bank == null) {
-						plugin.debug(p.getName() + " wasn't standing in a bank");
-						p.sendMessage(Messages.NOT_STANDING_IN_BANK);
-						return true;
-					}
-					if (bank.isTrusted(p) || p.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE))
-						p.spigot().sendMessage(bank.getInfoVerbose());
-					else
-						sender.sendMessage(Messages.NO_PERMISSION_BANK_INFO_VERBOSE);
-				} else
-					sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-			} else {
-				Bank bank = bankUtils.lookupBank(args[1]);
-				if (bank != null)
-					sender.spigot().sendMessage(bank.getInfo());
-				else {
-					plugin.debug("No bank could be found under the identifier " + args[1]);
-					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
-				}
+		} else if (args.length >= 2) {
+			bank = bankUtils.lookupBank(args[1]);
+			if (bank == null) {
+				plugin.debug("No bank could be found under the identifier " + args[1]);
+				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				return true;
 			}
-		} else if (args.length >= 3) {
-			if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
-				Bank bank = bankUtils.lookupBank(args[1]);
-				if (bank == null) {
-					plugin.debug("No bank could be found under the identifier " + args[1]);
-					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
-					return true;
-				}
-				if ((sender instanceof Player && bank.isTrusted((Player) sender))
-						|| sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE))
-					sender.spigot().sendMessage(bank.getInfoVerbose());
-				else
-					sender.sendMessage(Messages.NO_PERMISSION_BANK_INFO_VERBOSE);
-			} else
-				return false;
 		}
+		boolean verbose = (sender instanceof Player && bank.isTrusted((Player) sender))
+				|| sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE);
+		sender.spigot().sendMessage(verbose ? bank.getInfoVerbose() : bank.getInfo());
 		return true;
 	}
 

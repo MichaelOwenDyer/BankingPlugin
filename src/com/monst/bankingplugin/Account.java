@@ -66,7 +66,7 @@ public class Account extends Ownable {
 
 		plugin.debug("Creating account (#" + id + ")");
 
-		Block b = location.getBlock();
+		Block b = getLocation().getBlock();
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST)) {
 			
 			ChestNotFoundException e = new ChestNotFoundException(
@@ -129,7 +129,7 @@ public class Account extends Ownable {
 	}
 
 	public String getDefaultNickname() {
-		return ChatColor.DARK_GREEN + owner.getName() + "'s Account " + ChatColor.GRAY + "(#" + id + ")";
+		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + getID() + ")";
 	}
 
 	public void setDefaultNickname() {
@@ -163,10 +163,6 @@ public class Account extends Ownable {
 
 	public String getNickname() {
 		return nickname;
-	}
-
-	public boolean hasNickname() {
-		return nickname != null;
 	}
 
 	public AccountStatus getStatus() {
@@ -211,7 +207,7 @@ public class Account extends Ownable {
 	}
 
 	private void updateInventory() throws ChestNotFoundException {
-		Block b = location.getBlock();
+		Block b = getLocation().getBlock();
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
 			throw new ChestNotFoundException(String.format("No chest found in world '%s' at location: %d; %d; %d",
 					b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
@@ -241,7 +237,7 @@ public class Account extends Ownable {
 	public void transferOwnership(OfflinePlayer newOwner) {
 		if (newOwner == null)
 			return;
-		OfflinePlayer previousOwner = owner;
+		OfflinePlayer previousOwner = getOwner();
 		owner = newOwner;
 		if (Config.trustOnTransfer)
 			coowners.add(previousOwner);
@@ -255,17 +251,25 @@ public class Account extends Ownable {
 			return false;
 
 		Account otherAccount = (Account) o;
-		return id != -1 && id == otherAccount.id;
+		return getID() != -1 && getID() == otherAccount.getID();
 	}
 
 	@Override
 	public int hashCode() {
-		return id != -1 ? id : super.hashCode();
+		return getID() != -1 ? getID() : super.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "";
+		   return "ID: " + getID()
+				+ "\nOwner: " + getOwner().getName()
+				+ "\nBank: " + getBank().getName()
+				+ "\nBalance: $" + Utils.formatNumber(getBalance())
+				+ "\nPrevious balance: $" + Utils.formatNumber(getPrevBalance())
+				+ "\nMultiplier: " + getStatus().getRealMultiplier() + " (stage " + getStatus().getMultiplierStage() + ")"
+				+ "\nDelay until next payout: " + getStatus().getDelayUntilNextPayout()
+				+ "\nNext payout amount: " + Utils.formatNumber(getBalance().doubleValue() * (double) getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE) * getStatus().getRealMultiplier())
+				+ "\nLocation: " + getLocation().toString();
 	}
 
 	public TextComponent getInfo() {
@@ -273,10 +277,9 @@ public class Account extends Ownable {
 		TextComponent info = new TextComponent();
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 
-		info.addExtra(hasNickname() ? ChatColor.GRAY + "\"" + Utils.colorize(nickname) + ChatColor.GRAY + "\""
-				: ChatColor.GRAY + "Account ID: " + ChatColor.AQUA + id);
+		info.addExtra("\"" + Utils.colorize(getNickname()) + ChatColor.GRAY + "\"");
 		info.addExtra("\nOwner: " + ChatColor.GOLD + getOwnerDisplayName() + "\n");
-		info.addExtra("Bank: " + ChatColor.AQUA + bank.getName());
+		info.addExtra("Bank: " + ChatColor.AQUA + getBank().getName());
 
 		return info;
 	}
@@ -289,21 +292,24 @@ public class Account extends Ownable {
 		TextComponent message = new TextComponent("\nBalance: " + ChatColor.GREEN + "$" + Utils.formatNumber(getBalance()) + "\n");
 		
 		TextComponent multiplier = new TextComponent("Multiplier:");
-		multiplier.addExtra(Utils.getMultiplierView((List<Integer>) bank.getAccountConfig().getOrDefault(Field.MULTIPLIERS),
-						status.getMultiplierStage()));
+		multiplier.addExtra(
+				Utils.getMultiplierView((List<Integer>) getBank().getAccountConfig().getOrDefault(Field.MULTIPLIERS),
+						getStatus().getMultiplierStage()));
 		multiplier.addExtra("\nInterest rate: ");
 		
 		TextComponent interestRate = new TextComponent(ChatColor.GREEN + "" 
-				+ Math.round(((double) bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) * status.getRealMultiplier() * 100))+ "%" 
-				+ ChatColor.GRAY + " (" + bank.getAccountConfig().getOrDefault(Field.INTEREST_RATE) + " x "
-				+ status.getRealMultiplier() + ")");
+				+ Math.round(((double) getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE)
+						* getStatus().getRealMultiplier() * 100))
+				+ "%" + ChatColor.GRAY + " (" + getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE) + " x "
+				+ getStatus().getRealMultiplier() + ")");
 		
-		if (status.getRemainingUntilFirstPayout() != 0)
+		if (getStatus().getDelayUntilNextPayout() != 0)
 			interestRate.addExtra(new TextComponent(
-					ChatColor.RED + " (" + status.getRemainingUntilFirstPayout() + " payouts to go)"));
+					ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)"));
 		
 		TextComponent loc = new TextComponent(
-				"\nLocation: " + ChatColor.AQUA + "(" + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ")");
+				"\nLocation: " + ChatColor.AQUA + "(" + getLocation().getBlockX() + ", " + getLocation().getBlockY()
+						+ ", " + getLocation().getBlockZ() + ")");
 		
 		info.addExtra(message);
 		info.addExtra(multiplier);

@@ -70,7 +70,7 @@ class GenericTabCompleter implements TabCompleter {
 			case "remove":
 				return completeBankRemove(sender, args);
 			case "info":
-				return completeBankInfo((Player) sender, args);
+				return completeBankInfo(sender, args);
 			case "list":
 				return completeBankList(sender, args);
 			case "removeall":
@@ -322,47 +322,31 @@ class GenericTabCompleter implements TabCompleter {
 				.collect(Collectors.toList());
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
-				if (sender instanceof Player) {
-					for (String bankName : banks.stream().map(Bank::getName).collect(Collectors.toList()))
-						if (bankName.toLowerCase().startsWith(args[1].toLowerCase()))
-							returnCompletions.add(bankName);
-				} else
-					return banks.stream().map(Bank::getName).collect(Collectors.toList());
-			} else {
-				if (sender instanceof Player) {
-					for (Bank bank : plugin.getBankUtils().getBanksCopy()) {
-						if (!bank.isAdminBank() && (bank.isOwner((Player) sender)
-								|| sender.hasPermission(Permissions.BANK_REMOVE_OTHER)))
-							returnCompletions.add(bank.getName());
-						if (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN))
-							returnCompletions.add(bank.getName());
-					}
-				} else
-					return plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName)
-							.collect(Collectors.toList());
+				for (String bankName : banks.stream().map(Bank::getName).collect(Collectors.toList()))
+					if (bankName.toLowerCase().startsWith(args[1].toLowerCase()))
+						returnCompletions.add(bankName);
+				return returnCompletions;
 			}
+			return banks.stream().map(Bank::getName).collect(Collectors.toList());
 		}
 		return new ArrayList<>();
 	}
 
-	private List<String> completeBankInfo(Player p, String[] args) {
+	private List<String> completeBankInfo(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
-		List<String> banks = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName).collect(Collectors.toList());
+		List<Bank> banks = plugin.getBankUtils().getBanksCopy().stream()
+				.filter(bank -> (sender instanceof Player && bank.isOwner((Player) sender))
+						|| (sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE)))
+				.collect(Collectors.toList());
 		
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
-				for (String bank : banks)
-					if (bank.toLowerCase().startsWith(args[1].toLowerCase()))
-						returnCompletions.add(bank);
+				for (String bankName : banks.stream().map(Bank::getName).collect(Collectors.toList()))
+					if (bankName.toLowerCase().startsWith(args[1].toLowerCase()))
+						returnCompletions.add(bankName);
 				return returnCompletions;
-			} else
-				return banks;
-		} else if (args.length == 3) {
-			if (!args[1].isEmpty()) {
-				if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
-					return Arrays.asList("detailed");
-			} else
-				return Arrays.asList("detailed");
+			}
+			return banks.stream().map(Bank::getName).collect(Collectors.toList());
 		}
 		return new ArrayList<>();
 	}
