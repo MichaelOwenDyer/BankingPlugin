@@ -96,7 +96,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(subCommand.getHelpMessage(sender));
 			break;
 		case "rename":
-
+			if (!promptBankRename(sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
 			break;
 		case "set":
 			if (!promptBankSet(sender, args))

@@ -77,6 +77,8 @@ class GenericTabCompleter implements TabCompleter {
 				return new ArrayList<>();
 			case "resize":
 				return completeBankResize((Player) sender, args);
+			case "rename":
+				return completeBankRename(sender, args);
 			case "set":
 				return completeBankSet(sender, args);
 			case "transfer":
@@ -311,18 +313,19 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeBankRemove(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
+		List<Bank> banks = plugin.getBankUtils().getBanksCopy().stream()
+				.filter(bank -> (sender instanceof Player && bank.isOwner((Player) sender))
+						|| (!bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
+						|| (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)))
+				.collect(Collectors.toList());
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
 				if (sender instanceof Player) {
-					for (Bank bank : plugin.getBankUtils().getBanksCopy().stream().filter(bank -> bank.getName().startsWith(args[1].toLowerCase())).collect(Collectors.toList())) {
-						if (!bank.isAdminBank() && (bank.isOwner((Player) sender)
-								|| sender.hasPermission(Permissions.BANK_REMOVE_OTHER)))
-							returnCompletions.add(bank.getName());
-						if (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN))
-							returnCompletions.add(bank.getName());
-					}
+					for (String bankName : banks.stream().map(Bank::getName).collect(Collectors.toList()))
+						if (bankName.toLowerCase().startsWith(args[1].toLowerCase()))
+							returnCompletions.add(bankName);
 				} else
-					return plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName).filter(s -> s.contains(args[1])).collect(Collectors.toList());
+					return banks.stream().map(Bank::getName).collect(Collectors.toList());
 			} else {
 				if (sender instanceof Player) {
 					for (Bank bank : plugin.getBankUtils().getBanksCopy()) {
@@ -446,8 +449,11 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeBankTransfer(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
-		List<String> banks = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName)
-				.collect(Collectors.toList());
+		List<String> banks = plugin.getBankUtils().getBanksCopy().stream()
+				.filter(bank -> bank.isOwner(p)
+						|| (!bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
+						|| (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
+				.map(Bank::getName).collect(Collectors.toList());
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		if (!p.hasPermission(Permissions.BANK_TRANSFER_OTHER) && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN))
 			onlinePlayers.remove(p.getName());
@@ -492,6 +498,30 @@ class GenericTabCompleter implements TabCompleter {
 			return returnCompletions;
 		}
 		return completeBankCreate(p, args);
+	}
+
+	private List<String> completeBankRename(CommandSender sender, String[] args) {
+		ArrayList<String> returnCompletions = new ArrayList<>();
+		BankUtils bankUtils = plugin.getBankUtils();
+		List<Bank> banks = bankUtils.getBanksCopy().stream()
+				.filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
+						|| (!bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
+						|| (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
+				.collect(Collectors.toList());
+		if (args.length == 2) {
+			if (!args[1].isEmpty()) {
+				for (String bankName : banks.stream().map(Bank::getName).collect(Collectors.toList()))
+					if (bankName.toLowerCase().startsWith(args[1].toLowerCase()))
+						returnCompletions.add(bankName);
+				return returnCompletions;
+			} else {
+				if (sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation()))
+					return Arrays.asList(bankUtils.getBank(((Player) sender).getLocation()).getName());
+				else
+					return banks.stream().map(Bank::getName).collect(Collectors.toList());
+			}
+		} 
+		return new ArrayList<>();
 	}
 
 	private List<String> completeControlConfig(CommandSender sender, String[] args) {

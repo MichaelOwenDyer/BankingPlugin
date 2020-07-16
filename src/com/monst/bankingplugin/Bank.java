@@ -161,7 +161,8 @@ public class Bank extends Ownable {
 	public TextComponent getInfo() {		
 		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
 		
-		TextComponent info = new TextComponent("\"" + ChatColor.RED + ChatColor.UNDERLINE + Utils.colorize(name) + ChatColor.RESET + ChatColor.GRAY + "\" (#" + id + ")\n");
+		TextComponent info = new TextComponent("\"" + ChatColor.RED + ChatColor.UNDERLINE + getDisplayName()
+				+ ChatColor.RESET + ChatColor.GRAY + "\" (#" + id + ")\n");
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 		
 		TextComponent multipliers = new TextComponent("Multipliers: ");
@@ -210,7 +211,7 @@ public class Bank extends Ownable {
 	@SuppressWarnings("unchecked")
 	@Override
 	public String toString() {
-		return ChatColor.GRAY + "\"" + ChatColor.GOLD + Utils.colorize(name) + ChatColor.GRAY + "\" (#" + id + ")\n"
+		return ChatColor.GRAY + "\"" + ChatColor.GOLD + getDisplayName() + ChatColor.GRAY + "\" (#" + id + ")\n"
 				+ ChatColor.GRAY + "Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n"
 				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n"
 				+ ChatColor.GRAY + "Multipliers:" + Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)) + "\n"
@@ -234,7 +235,11 @@ public class Bank extends Ownable {
 	}
 
 	public String getName() {
-		return name;
+		return Utils.stripColor(name);
+	}
+
+	public String getDisplayName() {
+		return Utils.colorize(name);
 	}
 
 	public void setName(String name) {
