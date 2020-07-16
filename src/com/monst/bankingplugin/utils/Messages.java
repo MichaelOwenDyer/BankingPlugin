@@ -42,7 +42,7 @@ public class Messages {
 	public static final String MULTIPLIER_INCREASED = ChatColor.GOLD + "Your account multiplier has increased to " + ChatColor.GREEN + "$%d."; // XXX
 	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to " + ChatColor.GREEN + "$%d.";
 	public static final String ACCOUNT_LIMIT = ChatColor.GOLD + "You own %d/%d allowed accounts.";
-	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%d allowed banks, making up %d/%d allowed blocks.";
+	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%d allowed banks.";
 	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to delete %d account%s.";
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to delete %d bank%s and %d account%s.";
 	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s account to %s. Are you sure?";
@@ -79,7 +79,9 @@ public class Messages {
 	public static final String SELECTION_NOT_EXCLUSIVE = ChatColor.RED + "Your selection overlaps with another bank.";
 	public static final String SELECTION_CUTS_ACCOUNTS = ChatColor.RED + "Your selection does not contain all accounts at this bank.";
 	public static final String WORLDEDIT_NOT_ENABLED = ChatColor.RED + "WorldEdit is not currently enabled. Please enter coordinates manually.";
-	public static final String ALREADY_OWNER = ChatColor.RED + "%s %s already owner of that account.";
+	public static final String ALREADY_ADMIN_BANK = ChatColor.RED + "That bank is already an admin bank.";
+	public static final String ALREADY_OWNER_BANK = ChatColor.RED + "%s %s already owner of that bank.";
+	public static final String ALREADY_OWNER_ACCOUNT = ChatColor.RED + "%s %s already owner of that account.";
 	public static final String NOT_A_COOWNER = ChatColor.RED + "%s is not a co-owner of that account.";
 	public static final String ALREADY_A_COOWNER = ChatColor.RED + "%s is already a co-owner of that account.";
 	public static final String BANK_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create a bank.";
@@ -97,8 +99,10 @@ public class Messages {
 	public static final String PER_BANK_ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create another account at this bank.";
 	public static final String PLAYER_COMMAND_ONLY = ChatColor.RED + "Only players can use this command.";
 	public static final String SAME_ACCOUNT = ChatColor.RED + "Nothing happened. That is the same account.";
-	public static final String VOLUME_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create a bank of that size, as it would exceed your bank volume limit by %d blocks.";
-	public static final String VOLUME_LIMIT_REACHED_RESIZE = ChatColor.RED + "You are not allowed to resize a bank to that size, as it would exceed your bank volume limit by %d blocks.";
+	public static final String SELECTION_TOO_LARGE = ChatColor.RED + "You are not allowed to create a bank of that size, as it would exceed the volume limit of %d blocks by %d.";
+	public static final String SELECTION_TOO_SMALL = ChatColor.RED + "You are not allowed to create a bank of that size, as it would fall short of the minimum volume of %d blocks by %d.";
+	public static final String SELECTION_TOO_LARGE_RESIZE = ChatColor.RED + "You are not allowed to resize a bank to that size, as it would exceed the volume limit of %d blocks by %d.";
+	public static final String SELECTION_TOO_SMALL_RESIZE = ChatColor.RED + "You are not allowed to resize a bank to that size, as it would fall short of the minimum volume of %d blocks by %d.";
 	
 	// CLICK PROMPTS
 	public static final String CLICK_CHEST_CREATE = ChatColor.GOLD + "Click a chest to create an account.";
@@ -124,7 +128,7 @@ public class Messages {
 	public static final String NO_PERMISSION_ACCOUNT_REMOVE_OTHER = NO_PERMISSION + "remove someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_LIST_OTHER = NO_PERMISSION + "view a list of others' accounts.";
 	public static final String NO_PERMISSION_ACCOUNT_LIST_OTHER_VERBOSE = NO_PERMISSION + "view a detailed list of others' accounts.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_VIEW = NO_PERMISSION + "open someone else's account.";
+	public static final String NO_PERMISSION_ACCOUNT_OTHER_VIEW = NO_PERMISSION + "view someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_EDIT = NO_PERMISSION + "edit someone else's account contents.";
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE = NO_PERMISSION + "migrate an account.";
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE_OTHER = NO_PERMISSION + "migrate someone else's account.";
@@ -153,6 +157,7 @@ public class Messages {
 	public static final String NO_PERMISSION_BANK_TRANSFER = NO_PERMISSION + "transfer ownership of a bank.";
 	public static final String NO_PERMISSION_BANK_TRANSFER_OTHER = NO_PERMISSION + "transfer ownership of another player's bank.";
 	public static final String NO_PERMISSION_BANK_TRANSFER_ADMIN = NO_PERMISSION + "transfer ownership of an admin bank.";
+	public static final String NO_PERMISSION_BANK_TRANSFER_TO_ADMIN = NO_PERMISSION + "transfer ownership of a bank to the admins.";
 	public static final String NO_PERMISSION_BANK_SET = NO_PERMISSION + "configure a bank."; // XXX
 	public static final String NO_PERMISSION_BANK_SET_OTHER = NO_PERMISSION + "configure someone else's bank.";
 	public static final String NO_PERMISSION_BANK_SET_ADMIN = NO_PERMISSION + "configure an admin bank.";

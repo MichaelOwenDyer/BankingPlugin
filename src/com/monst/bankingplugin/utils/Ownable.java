@@ -15,7 +15,7 @@ public abstract class Ownable {
 	protected Set<OfflinePlayer> coowners = new HashSet<>();
 
 	public boolean isOwner(OfflinePlayer player) {
-		if (owner == null)
+		if (owner == null || player == null)
 			return false;
 		return owner.getUniqueId().equals(player.getUniqueId());
 	}
@@ -47,13 +47,15 @@ public abstract class Ownable {
 	}
 
 	public void trustPlayer(OfflinePlayer p) {
-		if (coowners != null)
-			coowners.add(p);
+		if (p == null || coowners == null)
+			return;
+		coowners.add(p);
 	}
 
 	public void untrustPlayer(OfflinePlayer p) {
-		if (coowners != null)
-			coowners.remove(p);
+		if (p == null || coowners == null)
+			return;
+		coowners.remove(p);
 	}
 
 	public Set<OfflinePlayer> getTrustedPlayers() {

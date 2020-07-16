@@ -161,19 +161,22 @@ player-bank-account-limit:
 # A player with permission "bankingplugin.account.limit.*" does not have an account limit.
 # Type: int
 default-limits:
-
   # Set the amount of accounts that anyone who doesn't have a
   # specific permission may have.
   # If you don't want the players to have a limit by default set the value to -1.
   bank: 1
   account: 2
 
-# Bank volume allowance is handled with permissions.
-# A player with permission "bankingplugin.bank.size.X" can create banks with a total volume of up to X blocks.
+# Bank volume limits are handled with permissions.
+# A player with permission "bankingplugin.bank.size.X" can create banks with a volume of up to X.
 # A player with permission "bankingplugin.bank.size.*" can create banks with unlimited volume.
 # Set the volume limit for anyone who doesn't have a specific permission here.
+# The minimum volume cannot by bypassed by a permission.
+# Admin banks are exempt from these restrictions.
 # Type: int
-default-bank-volume-limit: 20000
+bank-size-limits:
+  minimum: 50
+  maximum: 50000
 
 # Whether a bank owner should be able to create an account at their own bank.
 # Type: boolean

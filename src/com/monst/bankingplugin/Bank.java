@@ -152,16 +152,17 @@ public class Bank extends Ownable {
 		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
 		if (valueSum.signum() == 0)
 			return 0;
-		BigDecimal leftEq = weightedValueSum.divide(valueSum);
+		BigDecimal leftEq = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
 		BigDecimal rightEq = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
-		return leftEq.subtract(rightEq).doubleValue();
+		BigDecimal gini = leftEq.subtract(rightEq).setScale(2, RoundingMode.HALF_EVEN);
+		return gini.doubleValue();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public TextComponent getInfo() {		
 		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
 		
-		TextComponent info = new TextComponent("\"" + ChatColor.RED + getDisplayName()
+		TextComponent info = new TextComponent("\"" + ChatColor.RED + getColorizedName()
 				+ ChatColor.RESET + ChatColor.GRAY + "\" (#" + id + ")\n");
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 		
@@ -211,7 +212,7 @@ public class Bank extends Ownable {
 	@SuppressWarnings("unchecked")
 	@Override
 	public String toString() {
-		return ChatColor.GRAY + "\"" + ChatColor.GOLD + getDisplayName() + ChatColor.GRAY + "\" (#" + id + ")\n"
+		return ChatColor.GRAY + "\"" + ChatColor.GOLD + getColorizedName() + ChatColor.GRAY + "\" (#" + id + ")\n"
 				+ ChatColor.GRAY + "Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n"
 				+ ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n"
 				+ ChatColor.GRAY + "Multipliers:" + Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)) + "\n"
@@ -238,8 +239,12 @@ public class Bank extends Ownable {
 		return Utils.stripColor(name);
 	}
 
-	public String getDisplayName() {
+	public String getColorizedName() {
 		return Utils.colorize(name);
+	}
+
+	public String getRawName() {
+		return name;
 	}
 
 	public void setName(String name) {

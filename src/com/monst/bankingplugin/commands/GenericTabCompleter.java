@@ -207,6 +207,8 @@ class GenericTabCompleter implements TabCompleter {
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
 			onlinePlayers.remove(p.getName());
+		if (p.hasPermission(Permissions.BANK_CREATE_ADMIN))
+			onlinePlayers.add("ADMIN");
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {

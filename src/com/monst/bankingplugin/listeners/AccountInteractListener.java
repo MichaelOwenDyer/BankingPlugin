@@ -195,8 +195,7 @@ public class AccountInteractListener implements Listener {
 			}
 
 			if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !p.isSneaking()) {
-				boolean executorIsTrusted = account.isTrusted(p) || account.getBank().isOwner(p);
-				if (!executorIsTrusted && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
+				if (!account.isTrusted(p) && !account.getBank().isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
 					e.setCancelled(true);
 					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
 					plugin.debug(p.getName() + " does not have permission to open " + account.getOwner().getName()
@@ -206,7 +205,7 @@ public class AccountInteractListener implements Listener {
 
 				if (e.isCancelled())
 					e.setCancelled(false);
-				if (!executorIsTrusted)
+				if (!account.isTrusted(p))
 					p.sendMessage(String.format(Messages.ACCOUNT_OPENED, account.getOwner().getName()));
 
 				plugin.debug(String.format(p.getName() + " is opening %s account%s (#" + account.getID() + ")",
@@ -683,7 +682,7 @@ public class AccountInteractListener implements Listener {
 			boolean isSelf = p.getUniqueId().equals(newOwner.getUniqueId());
 			plugin.debug(p.getName() + " is already owner of account");
 			p.sendMessage(
-					String.format(Messages.ALREADY_OWNER, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
+					String.format(Messages.ALREADY_OWNER_ACCOUNT, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
 			return false;
 		}
 

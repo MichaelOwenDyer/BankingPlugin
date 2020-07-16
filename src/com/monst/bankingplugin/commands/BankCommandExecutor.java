@@ -182,13 +182,16 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
 			return true;
 		}
-		if (!bankUtils.isVolumeAllowed(selection, p)) {
-			long currentVolume = bankUtils.getCurrentVolume(p);
-			long volumeLimit = bankUtils.getVolumeLimit(p);
-			long exceededLimitBy = currentVolume + selection.getVolume() - volumeLimit;
-			plugin.debug(p.getName() + " has reached their volume limit (current: " + currentVolume + "/" + volumeLimit
-					+ ", new selection: " + selection.getVolume() + ", exceeded by " + exceededLimitBy + ")");
-			p.sendMessage(String.format(Messages.VOLUME_LIMIT_REACHED, exceededLimitBy));
+		int volume = selection.getVolume();
+		int volumeLimit = bankUtils.getVolumeLimit(p);
+		if (!isAdminBank && volumeLimit != -1 && volume > volumeLimit) {
+			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
+			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE, volumeLimit, volume - volumeLimit));
+			return true;
+		}
+		if (!isAdminBank && volume < Config.minimumBankVolume) {
+			plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume + ")");
+			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Config.minimumBankVolume, Config.minimumBankVolume - volume));
 			return true;
 		}
 		if (!bankUtils.isUniqueName(args[1])) {
@@ -425,10 +428,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 	private void promptBankLimits(final Player p) {
 		int banksUsed = bankUtils.getNumberOfBanks(p);
 		Object bankLimit = bankUtils.getBankLimit(p) < 0 ? "∞" : bankUtils.getBankLimit(p);
-		long volumeUsed = bankUtils.getCurrentVolume(p);
-		Object volumeLimit = bankUtils.getVolumeLimit(p) < 0 ? "∞" : bankUtils.getVolumeLimit(p);
-		plugin.debug(p.getName() + " is viewing their bank limits: " + banksUsed + " / " + bankLimit + ", " + volumeUsed + " / " + volumeLimit);
-		p.sendMessage(String.format(Messages.BANK_LIMIT, banksUsed, bankLimit, volumeUsed, volumeLimit));
+		plugin.debug(p.getName() + " is viewing their bank limits: " + banksUsed + " / " + bankLimit);
+		p.sendMessage(String.format(Messages.BANK_LIMIT, banksUsed, bankLimit));
 	}
 
 	private boolean promptBankRemoveAll(CommandSender sender, String[] args) {
@@ -534,15 +535,16 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE_ADMIN);
 			return true;
 		}
-		if (!bankUtils.isVolumeAllowed(selection, p, bank.getSelection())) {
-			long currentWithoutOld = bankUtils.getCurrentVolume(p) - bank.getSelection().getVolume();
-			long volumeLimit = bankUtils.getVolumeLimit(p);
-			long exceededLimitBy = currentWithoutOld + selection.getVolume() - volumeLimit;
-			plugin.debug(p.getName()
-					+ " is not allowed to resize, as they have reached their volume limit (current without replaced: "
-					+ currentWithoutOld + "/" + volumeLimit + ", new selection: " + selection.getVolume()
-					+ ", exceeded by " + exceededLimitBy + ")");
-			p.sendMessage(String.format(Messages.VOLUME_LIMIT_REACHED_RESIZE, exceededLimitBy));
+		int volume = selection.getVolume();
+		int volumeLimit = bankUtils.getVolumeLimit(p);
+		if (!bank.isAdminBank() && volumeLimit != -1 && volume > volumeLimit) {
+			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
+			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE_RESIZE, volumeLimit, volume - volumeLimit));
+			return true;
+		}
+		if (!bank.isAdminBank() && volume < Config.minimumBankVolume) {
+			plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume + ")");
+			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL_RESIZE, Config.minimumBankVolume, Config.minimumBankVolume - volume));
 			return true;
 		}
 		if (!bankUtils.isExclusiveSelectionWithoutThis(selection, bank)) {
@@ -588,6 +590,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			return false;
 
 		Bank bank = null;
+		StringBuilder sb;
 		String newName = null;
 		if (args.length == 2) {
 			if (!(sender instanceof Player)) {
@@ -601,7 +604,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
 				return true;
 			}
-			newName = args[1];
+			sb = new StringBuilder(args[1]);
+			for (int i = 2; i < args.length; i++)
+				sb.append(" " + args[i]);
+			newName = sb.toString();
 		} else if (args.length >= 3) {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
@@ -609,7 +615,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}
-			newName = args[2];
+			sb = new StringBuilder(args[1]);
+			for (int i = 3; i < args.length; i++)
+				sb.append(" " + args[i]);
+			newName = sb.toString();
 		}
 
 		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
@@ -814,12 +823,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
 				return true;
 			}
-			newOwner = Bukkit.getOfflinePlayer(args[1]);
-			if (newOwner == null || !newOwner.hasPlayedBefore()) {
-				sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
-				return true;
+			if (!args[1].equalsIgnoreCase("admin")) {
+				newOwner = Bukkit.getOfflinePlayer(args[1]);
+				if (newOwner == null || !newOwner.hasPlayedBefore()) {
+					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+					return true;
+				}
 			}
-
 		} else if (args.length >= 3) {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
@@ -827,23 +837,35 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}
-			newOwner = Bukkit.getOfflinePlayer(args[2]);
-			if (newOwner == null || !newOwner.hasPlayedBefore()) {
-				sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
-				return true;
+			if (!args[1].equalsIgnoreCase("admin")) {
+				newOwner = Bukkit.getOfflinePlayer(args[2]);
+				if (newOwner == null || !newOwner.hasPlayedBefore()) {
+					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+					return true;
+				}
 			}
 		}
 
 		if (sender instanceof Player && bank.isOwner(newOwner)) {
-			boolean isSelf = ((Player) sender).getUniqueId().equals(newOwner.getUniqueId());
-			plugin.debug(sender.getName() + " is already owner of bank");
+			boolean isExecutor = ((Player) sender).getUniqueId().equals(newOwner.getUniqueId());
+			plugin.debug(newOwner.getName() + " is already owner of bank");
 			sender.sendMessage(
-					String.format(Messages.ALREADY_OWNER, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
+					String.format(Messages.ALREADY_OWNER_BANK, isExecutor ? "You" : newOwner.getName(), isExecutor ? "are" : "is"));
+			return true;
+		}
+		if (bank.isAdminBank() && newOwner == null) {
+			plugin.debug("Bank is already an admin bank");
+			sender.sendMessage(String.format(Messages.ALREADY_ADMIN_BANK));
 			return true;
 		}
 		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRANSFER_ADMIN)) {
 			plugin.debug(sender.getName() + " does not have permission to transfer an admin bank");
 			sender.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER_ADMIN);
+			return true;
+		}
+		if (newOwner == null && !sender.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
+			plugin.debug(sender.getName() + " does not have permission to transfer a bank to the admins");
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_TRANSFER_TO_ADMIN);
 			return true;
 		}
 		if (!(bank.isAdminBank() || (sender instanceof Player && bank.isOwner((Player) sender))
@@ -865,7 +887,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			return true;
 		}
 
-		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
+		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner != null ? newOwner.getName() : "ADMIN"));
 		bank.transferOwnership(newOwner);
 		bankUtils.addBank(bank, true);
 		return true;

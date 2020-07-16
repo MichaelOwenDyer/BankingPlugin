@@ -131,7 +131,13 @@ public class Config {
 	public static int defaultAccountLimit;
 	
 	/**
-	 * The default bank volume limit for players whose limit is not set via a permission.
+	 * The minimum bank volume.
+	 */
+	public static int minimumBankVolume;
+
+	/**
+	 * The default bank volume limit for players whose limit is not set via a
+	 * permission.
 	 */
 	public static int defaultBankVolumeLimit;
 	
@@ -457,7 +463,8 @@ public class Config {
 
 		defaultBankLimit = config.getInt("default-limits.bank");
 		defaultAccountLimit = config.getInt("default-limits.account");
-		defaultBankVolumeLimit = config.getInt("default-bank-volume-limit");
+		minimumBankVolume = config.getInt("bank-size-limits.minimum");
+		defaultBankVolumeLimit = config.getInt("bank-size-limits.maximum");
 		allowSelfBanking = config.getBoolean("allow-self-banking");
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");

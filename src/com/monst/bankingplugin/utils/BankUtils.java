@@ -345,29 +345,6 @@ public class BankUtils {
 		return (useDefault ? Config.defaultBankVolumeLimit : limit);
 	}
 
-	public long getCurrentVolume(Player player) {
-		return getPlayerBanksCopy(player).stream().mapToLong(bank -> bank.getSelection().getVolume()).sum();
-	}
-
-	public boolean isVolumeAllowed(Selection sel, Player player) {
-		return isVolumeAllowed(sel, player, null);
-	}
-
-	/**
-	 * Determines whether or not the proposed selection will fit in a player's volume limit.
-	 * @param sel The new selection
-	 * @param player The player
-	 * @param oldSel The selection that is being replaced by the new selection
-	 * @return Whether volume is allowed or not
-	 */
-	public boolean isVolumeAllowed(Selection sel, Player player, Selection oldSel) {
-		long currentVolume = getCurrentVolume(player);
-		if (oldSel != null)
-			currentVolume -= oldSel.getVolume();
-		return getVolumeLimit(player) == -1
-				|| getVolumeLimit(player) > currentVolume + sel.getVolume();
-	}
-
 	/**
 	 * Get the number of accounts owned by a certain player
 	 * 

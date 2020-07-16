@@ -163,7 +163,7 @@ permissions:
     # BANK #
     bankingplugin.bank.create:
         description: Create, manage, and remove banks of your own.
-        default: op
+        default: true
         
     bankingplugin.bank.create.admin:
         description: Create, manage, and remove admin banks.
@@ -197,7 +197,7 @@ permissions:
         
     bankingplugin.bank.info-other-verbose:
         description: View detailed info about another player's bank.
-        default: true
+        default: op
         
     bankingplugin.bank.resize.other:
         description: Resize another player's bank.
