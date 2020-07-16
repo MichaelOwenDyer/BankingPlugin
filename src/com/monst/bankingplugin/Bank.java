@@ -161,7 +161,7 @@ public class Bank extends Ownable {
 	public TextComponent getInfo() {		
 		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
 		
-		TextComponent info = new TextComponent("\"" + ChatColor.RED + ChatColor.UNDERLINE + getDisplayName()
+		TextComponent info = new TextComponent("\"" + ChatColor.RED + getDisplayName()
 				+ ChatColor.RESET + ChatColor.GRAY + "\" (#" + id + ")\n");
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 		

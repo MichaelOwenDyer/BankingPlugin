@@ -75,7 +75,7 @@ public class AccountBalanceListener implements Listener {
 							String.format(Messages.MULTIPLIER_DECREASED, account.getStatus().getRealMultiplier()));
 			}
 
-			plugin.getDatabase().addAccount(account, null);
+			accountUtils.addAccount(account, true);
 
 			if (account.getOwner().isOnline())
 				plugin.getDatabase().logLogout(account.getOwner().getPlayer(), null);

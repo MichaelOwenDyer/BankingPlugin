@@ -454,7 +454,7 @@ public class AccountInteractListener implements Listener {
 					plugin.debug(executor.getName() + " has set their account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
 					account.setNickname(args[1]);
 				}
-				plugin.getDatabase().addAccount(account, null);
+				plugin.getAccountUtils().addAccount(account, true);
 				executor.sendMessage(Messages.NICKNAME_SET);
 			} else {
 				plugin.debug(executor.getName() + " does not have permission to change another player's account nickname");
@@ -472,7 +472,7 @@ public class AccountInteractListener implements Listener {
 				else if (args[1].equals("-"))
 					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]) * -1);
 
-				plugin.getDatabase().addAccount(account, null);
+				plugin.getAccountUtils().addAccount(account, true);
 				executor.sendMessage(
 						String.format(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
 				plugin.debug(String.format(
@@ -731,7 +731,7 @@ public class AccountInteractListener implements Listener {
 		account.transferOwnership(newOwner);
 		if (hasDefaultNickname)
 			account.setDefaultNickname();
-		plugin.getDatabase().addAccount(account, null);
+		plugin.getAccountUtils().addAccount(account, true);
 	}
 
 	public static void clearUnconfirmed(OfflinePlayer p) {

@@ -606,7 +606,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
 				plugin.debug("Could not find bank with name " + args[1]);
-				sender.sendMessage(Messages.BANK_NOT_FOUND);
+				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}
 			newName = args[2];
@@ -629,12 +629,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			sender.sendMessage(Messages.NAME_ALREADY);
 			return true;
 		}
-		if (!bankUtils.isUniqueName(args[1])) {
+		if (!bankUtils.isUniqueName(newName)) {
 			plugin.debug("Name is not unique");
 			sender.sendMessage(Messages.NAME_NOT_UNIQUE);
 			return true;
 		}
-		if (!Utils.isAllowedName(args[1])) {
+		if (!Utils.isAllowedName(newName)) {
 			plugin.debug("Name is not allowed");
 			sender.sendMessage(Messages.NAME_NOT_ALLOWED);
 			return true;
@@ -643,7 +643,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		plugin.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
 		sender.sendMessage(Messages.NAME_CHANGED);
 		bank.setName(newName);
-		plugin.getDatabase().addBank(bank, null);
+		bankUtils.addBank(bank, true);
 		return true;
 	}
 
@@ -744,7 +744,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			return true;
 		}
 
-		plugin.getDatabase().addBank(bank, null);
+		bankUtils.addBank(bank, true);
 		plugin.debug(sender.getName() + " has set " + field.getName() + " at " + bank.getName() + " to " + value);
 		return true;
 	}
@@ -867,7 +867,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 
 		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
 		bank.transferOwnership(newOwner);
-		plugin.getDatabase().addBank(bank, null);
+		bankUtils.addBank(bank, true);
 		return true;
 	}
 }

@@ -74,7 +74,7 @@ public class InterestEventListener implements Listener {
 						AccountConfig config = account.getBank().getAccountConfig();
 						AccountStatus status = account.getStatus();
 						if (!status.allowNextPayout(account.isTrustedPlayerOnline())) {
-							plugin.getDatabase().addAccount(account, null);
+							accountUtils.addAccount(account, true);
 							continue;
 						}
 						
@@ -128,7 +128,7 @@ public class InterestEventListener implements Listener {
 									bankInterestCounter.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
 						}
 
-						plugin.getDatabase().addAccount(account, null);
+						accountUtils.addAccount(account, true);
 
 						if (Config.enableInterestLog) {
 							plugin.getDatabase().logInterest(account, baseInterest, multiplier, interest, null);
