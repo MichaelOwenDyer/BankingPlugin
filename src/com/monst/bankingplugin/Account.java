@@ -120,22 +120,8 @@ public class Account extends Ownable {
 		return true;
 	}
 
-	public boolean isCreated() {
-		return created;
-	}
-
-	public void clearNickname() {
-		setNickname("");
-	}
-
-	public String getDefaultNickname() {
-		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + getID() + ")";
-	}
-
-	public void setDefaultNickname() {
-		if (!hasID())
-			return;
-		setNickname(null);
+	public String getNickname() {
+		return nickname;
 	}
 
 	public void setNickname(String nickname) {
@@ -161,8 +147,18 @@ public class Account extends Ownable {
 		}
 	}
 
-	public String getNickname() {
-		return nickname;
+	public String getDefaultNickname() {
+		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + getID() + ")";
+	}
+
+	public void setDefaultNickname() {
+		if (!hasID())
+			return;
+		setNickname(null);
+	}
+
+	public void clearNickname() {
+		setNickname("");
 	}
 
 	public AccountStatus getStatus() {
@@ -177,6 +173,17 @@ public class Account extends Ownable {
 		return balance;
 	}
 
+	/**
+	 * Changes the current balance of this account. Used every time the account
+	 * chest is accessed and the contents are changed.
+	 * 
+	 * @param newBalance the new (positive) balance of the account.
+	 */
+	public void setBalance(BigDecimal newBalance) {
+		if (newBalance != null && newBalance.signum() >= 0)
+			this.balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
+	}
+
 	public BigDecimal getPrevBalance() {
 		return prevBalance;
 	}
@@ -189,17 +196,6 @@ public class Account extends Ownable {
 	 */
 	public void updatePrevBalance() {
 		prevBalance = balance;
-	}
-
-	/**
-	 * Changes the current balance of this account. Used every time the account
-	 * chest is accessed and the contents are changed.
-	 * 
-	 * @param newBalance the new (positive) balance of the account.
-	 */
-	public void setBalance(BigDecimal newBalance) {
-		if (newBalance != null && newBalance.signum() >= 0)
-			this.balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
 	public Location getLocation() {
@@ -254,24 +250,6 @@ public class Account extends Ownable {
 		return getID() != -1 && getID() == otherAccount.getID();
 	}
 
-	@Override
-	public int hashCode() {
-		return getID() != -1 ? getID() : super.hashCode();
-	}
-
-	@Override
-	public String toString() {
-		   return "ID: " + getID()
-				+ "\nOwner: " + getOwner().getName()
-				+ "\nBank: " + getBank().getName()
-				+ "\nBalance: $" + Utils.formatNumber(getBalance())
-				+ "\nPrevious balance: $" + Utils.formatNumber(getPrevBalance())
-				+ "\nMultiplier: " + getStatus().getRealMultiplier() + " (stage " + getStatus().getMultiplierStage() + ")"
-				+ "\nDelay until next payout: " + getStatus().getDelayUntilNextPayout()
-				+ "\nNext payout amount: " + Utils.formatNumber(getBalance().doubleValue() * (double) getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE) * getStatus().getRealMultiplier())
-				+ "\nLocation: " + getLocation().toString();
-	}
-
 	public TextComponent getInfo() {
 
 		TextComponent info = new TextComponent();
@@ -316,5 +294,22 @@ public class Account extends Ownable {
 		info.addExtra(interestRate);
 		info.addExtra(loc);
 		return info;
+	}
+
+	@Override
+	public String toString() {
+		return "ID: " + getID() + "\nOwner: " + getOwner().getName() + "\nBank: " + getBank().getName() + "\nBalance: $"
+				+ Utils.formatNumber(getBalance()) + "\nPrevious balance: $" + Utils.formatNumber(getPrevBalance())
+				+ "\nMultiplier: " + getStatus().getRealMultiplier() + " (stage " + getStatus().getMultiplierStage()
+				+ ")" + "\nDelay until next payout: " + getStatus().getDelayUntilNextPayout() + "\nNext payout amount: "
+				+ Utils.formatNumber(getBalance().doubleValue()
+						* (double) getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE)
+						* getStatus().getRealMultiplier())
+				+ "\nLocation: " + getLocation().toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return getID() != -1 ? getID() : super.hashCode();
 	}
 }

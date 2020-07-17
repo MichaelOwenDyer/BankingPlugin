@@ -97,17 +97,33 @@ public class Bank extends Ownable {
 			accounts.remove(account);
 	}
 
-	public void removeAccount(Collection<Account> accountsToRemove) {
-		if (accountsToRemove != null)
-			accountsToRemove.forEach(account -> removeAccount(account));
-	}
-
 	public BigDecimal getTotalValue() {
 		if (created)
 			return accounts.stream().map(account -> account.getBalance()).reduce(BigDecimal.ZERO,
 					(value, sum) -> sum.add(value)).setScale(2, RoundingMode.HALF_EVEN);
 		else
 			return BigDecimal.ZERO;
+	}
+
+	public Collection<Account> getAccounts() {
+		return accounts;
+	}
+
+	public Collection<Account> getAccountsCopy() {
+		return Collections.unmodifiableCollection(getAccounts());
+	}
+
+	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
+		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
+	}
+
+	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
+		Map<OfflinePlayer, BigDecimal> customerBalances = new HashMap<>();
+		getCustomerAccounts().entrySet().forEach(entry -> {
+			customerBalances.put(entry.getKey(),
+					entry.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, (a, bd) -> a.add(bd)));
+		});
+		return customerBalances;
 	}
 
 	/**
@@ -136,6 +152,59 @@ public class Bank extends Ownable {
 		BigDecimal rightEq = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
 		BigDecimal gini = leftEq.subtract(rightEq).setScale(2, RoundingMode.HALF_EVEN);
 		return gini.doubleValue();
+	}
+
+	public String getName() {
+		return Utils.stripColor(name);
+	}
+
+	public String getColorizedName() {
+		return Utils.colorize(name);
+	}
+
+	public String getRawName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public World getWorld() {
+		return world;
+	}
+
+	public Selection getSelection() {
+		return selection;
+	}
+
+	public void setSelection(Selection sel) {
+		this.selection = sel;
+	}
+
+	public AccountConfig getAccountConfig() {
+		return accountConfig;
+	}
+
+	public BankType getType() {
+		return type;
+	}
+
+	public void setType(BankType type) {
+		this.type = type;
+	}
+
+	public boolean isAdminBank() {
+		return getType() == BankType.ADMIN;
+	}
+
+	@Override
+	public void transferOwnership(OfflinePlayer newOwner) {
+		OfflinePlayer prevOwner = getOwner();
+		owner = newOwner;
+		setType(newOwner == null ? BankType.ADMIN : BankType.PLAYER);
+		if (Config.trustOnTransfer)
+			coowners.add(prevOwner);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -176,13 +245,11 @@ public class Bank extends Ownable {
 		TextComponent numberOfAccounts = new TextComponent("\nCurrent accounts: " + ChatColor.AQUA + accounts.size() + "\n");
 		TextComponent totalValue = new TextComponent("Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n");
 		TextComponent equality = new TextComponent("Inequality score: " + String.format("%.2f", getGiniCoefficient()) + "\n"); // TODO: Dynamic color
-		TextComponent selectionType = new TextComponent("Selection type: " + selection.getType() + "\n");
 		TextComponent loc = new TextComponent("Location: " + ChatColor.AQUA + getSelection().getCoordinates());
 		
 		info.addExtra(numberOfAccounts);
 		info.addExtra(totalValue);
 		info.addExtra(equality);
-		info.addExtra(selectionType);
 		info.addExtra(loc);
 		
 		return info;
@@ -215,79 +282,5 @@ public class Bank extends Ownable {
 	@Override
 	public int hashCode() {
 		return getID() != -1 ? getID() : super.hashCode();
-	}
-
-	public String getName() {
-		return Utils.stripColor(name);
-	}
-
-	public String getColorizedName() {
-		return Utils.colorize(name);
-	}
-
-	public String getRawName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public World getWorld() {
-		return world;
-	}
-
-	public Selection getSelection() {
-		return selection;
-	}
-
-	public void setSelection(Selection sel) {
-		this.selection = sel;
-	}
-
-	public AccountConfig getAccountConfig() {
-		return accountConfig;
-	}
-
-	public BankType getType() {
-		return type;
-	}
-
-	public boolean isAdminBank() {
-		return getType() == BankType.ADMIN;
-	}
-
-	public Collection<Account> getAccounts() {
-		return accounts;
-	}
-
-	public Collection<Account> getAccountsCopy() {
-		return Collections.unmodifiableCollection(getAccounts());
-	}
-
-	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
-		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
-	}
-
-	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
-		Map<OfflinePlayer, BigDecimal> customerBalances = new HashMap<>();
-		getCustomerAccounts().entrySet().forEach(entry -> {
-			customerBalances.put(entry.getKey(),
-					entry.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, (a, bd) -> a.add(bd)));
-		});
-		return customerBalances;
-	}
-
-	public void setBankType(BankType type) {
-		this.type = type;
-	}
-
-	@Override
-	public void transferOwnership(OfflinePlayer newOwner) {
-		OfflinePlayer prevOwner = getOwner();
-		owner = newOwner;
-		setBankType(newOwner == null ? BankType.ADMIN : BankType.PLAYER);
-		if (Config.trustOnTransfer)
-			coowners.add(prevOwner);
 	}
 }
