@@ -55,7 +55,7 @@ public abstract class Database {
 	String tableLogouts;
 	String tableFields;
 
-	BankingPlugin plugin;
+	final BankingPlugin plugin;
 	HikariDataSource dataSource;
 
 	protected Database(BankingPlugin plugin) {

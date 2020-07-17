@@ -16,10 +16,10 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
 
 public class ClickType {
-    private static Map<UUID, ClickType> playerClickType = new HashMap<>();
-    private static Map<UUID, BukkitTask> playerTimers = new HashMap<>();
+	private static final Map<UUID, ClickType> playerClickTypes = new HashMap<>();
+	private static final Map<UUID, BukkitTask> playerTimers = new HashMap<>();
 
-    private EnumClickType enumClickType;
+	private final EnumClickType enumClickType;
 
     public ClickType(EnumClickType enumClickType) {
         this.enumClickType = enumClickType;
@@ -39,7 +39,7 @@ public class ClickType {
 	 * @return The Player's click type or <b>null</b> if they don't have one
 	 */
     public static ClickType getPlayerClickType(OfflinePlayer player) {
-        return playerClickType.get(player.getUniqueId());
+        return playerClickTypes.get(player.getUniqueId());
     }
 
     /**
@@ -49,7 +49,7 @@ public class ClickType {
      */
 	public static void removePlayerClickType(OfflinePlayer player) {
         UUID uuid = player.getUniqueId();
-        playerClickType.remove(uuid);
+        playerClickTypes.remove(uuid);
         
         // If a timer is still running, cancel it
 		Optional.ofNullable(playerTimers.get(uuid)).ifPresent(task -> task.cancel());
@@ -65,7 +65,7 @@ public class ClickType {
     public static void setPlayerClickType(OfflinePlayer player, ClickType clickType) {
 
 		UUID uuid = player.getUniqueId();
-        playerClickType.put(uuid, clickType);
+        playerClickTypes.put(uuid, clickType);
 
         // If a timer is already running, cancel it
         Optional.ofNullable(playerTimers.get(uuid)).ifPresent(task -> task.cancel());
@@ -74,7 +74,7 @@ public class ClickType {
         playerTimers.put(uuid, new BukkitRunnable() {
             @Override
             public void run() {
-				playerClickType.remove(uuid);
+				playerClickTypes.remove(uuid);
 				AccountInteractListener.clearUnconfirmed(player);
             }
 		}.runTaskLater(BankingPlugin.getInstance(), 300));

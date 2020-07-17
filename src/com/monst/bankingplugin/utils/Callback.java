@@ -5,7 +5,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import com.monst.bankingplugin.BankingPlugin;
 
 public abstract class Callback<T> {
-    private BankingPlugin plugin;
+	private final BankingPlugin plugin;
 
     public Callback(BankingPlugin plugin) {
         this.plugin = plugin;

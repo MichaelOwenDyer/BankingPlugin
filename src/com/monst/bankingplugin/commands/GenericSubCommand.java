@@ -10,10 +10,10 @@ import org.bukkit.command.TabCompleter;
 
 public abstract class GenericSubCommand {
 	
-    private String name;
-    private boolean playerCommand;
-    private CommandExecutor executor;
-    private TabCompleter tabCompleter;
+	private final String name;
+	private final boolean playerCommand;
+	private final CommandExecutor executor;
+	private final TabCompleter tabCompleter;
 
     public GenericSubCommand(String name, boolean playerCommand, CommandExecutor executor, TabCompleter tabCompleter) {
     	this.name = name;

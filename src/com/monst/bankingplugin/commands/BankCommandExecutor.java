@@ -41,8 +41,8 @@ import net.milkbowl.vault.economy.EconomyResponse;
 
 public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 
-	private BankingPlugin plugin;
-	private BankUtils bankUtils;
+	private final BankingPlugin plugin;
+	private final BankUtils bankUtils;
 	
 	public BankCommandExecutor(BankingPlugin plugin) {
 		this.plugin = plugin;

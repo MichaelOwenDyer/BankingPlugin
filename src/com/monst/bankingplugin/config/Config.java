@@ -252,7 +252,7 @@ public class Config {
      */
     public static String databaseTablePrefix;
 
-    private BankingPlugin plugin;
+	private final BankingPlugin plugin;
 
     public Config(BankingPlugin plugin) {
         this.plugin = plugin;

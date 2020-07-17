@@ -33,8 +33,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 public class AccountCommandExecutor implements CommandExecutor, Confirmable<Account> {
 
-	private BankingPlugin plugin;
-	private AccountUtils accountUtils;
+	private final BankingPlugin plugin;
+	private final AccountUtils accountUtils;
 
 	public AccountCommandExecutor(BankingPlugin plugin) {
 		this.plugin = plugin;

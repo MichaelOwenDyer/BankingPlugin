@@ -22,7 +22,7 @@ import com.monst.bankingplugin.utils.Utils;
 
 public class ControlCommandExecutor implements CommandExecutor {
 
-	private BankingPlugin plugin;
+	private final BankingPlugin plugin;
 	
 	public ControlCommandExecutor(BankingPlugin plugin) {
 		this.plugin = plugin;

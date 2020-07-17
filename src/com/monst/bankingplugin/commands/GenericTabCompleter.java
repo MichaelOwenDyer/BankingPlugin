@@ -23,7 +23,7 @@ import com.monst.bankingplugin.utils.Utils;
 
 class GenericTabCompleter implements TabCompleter {
 
-	private BankingPlugin plugin;
+	private final BankingPlugin plugin;
 
 	GenericTabCompleter(BankingPlugin plugin) {
 		this.plugin = plugin;
