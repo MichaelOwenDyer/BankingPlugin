@@ -103,7 +103,7 @@ public class AccountProtectListener implements Listener {
 
 			Location loc = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
 			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
-					account.getBank(), loc, account.getStatus(), account.getNickname(), account.getBalance(),
+					account.getBank(), loc, account.getStatus(), account.getRawNickname(), account.getBalance(),
 					account.getPrevBalance());
 
 			accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
@@ -113,7 +113,7 @@ public class AccountProtectListener implements Listener {
 					accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
 						@Override
 						public void onResult(Integer result) {
-							newAccount.setNickname(newAccount.getNickname());
+							newAccount.setNickname(newAccount.getRawNickname());
 						}
 					});
 				}
@@ -229,7 +229,7 @@ public class AccountProtectListener implements Listener {
 		}
 
 		final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
-				account.getBank(), account.getLocation(), account.getStatus(), account.getNickname(),
+				account.getBank(), account.getLocation(), account.getStatus(), account.getRawNickname(),
 				account.getBalance(), account.getPrevBalance());
 
 		accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
@@ -239,7 +239,7 @@ public class AccountProtectListener implements Listener {
 				accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
 					@Override
 					public void onResult(Integer result) {
-						newAccount.setNickname(newAccount.getNickname());
+						newAccount.setNickname(newAccount.getRawNickname());
 					}
 				});
 				plugin.debug(String.format("%s extended %s's account (#%d)", p.getName(), account.getOwner().getName(),

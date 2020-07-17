@@ -8,9 +8,9 @@ import com.monst.bankingplugin.Bank;
 
 public class BankEvent extends Event {
 
-	private static HandlerList handlers = new HandlerList();
-	private CommandSender sender;
-	private Bank bank;
+	private static final HandlerList handlers = new HandlerList();
+	private final CommandSender sender;
+	private final Bank bank;
 	
 	public BankEvent(CommandSender sender, Bank bank) {
 		this.sender = sender;
@@ -25,6 +25,10 @@ public class BankEvent extends Event {
 		return bank;
 	}
 	
+	public static HandlerList getHandlerList() {
+		return handlers;
+	}
+
 	@Override
 	public HandlerList getHandlers() {
 		return handlers;

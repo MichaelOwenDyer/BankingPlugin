@@ -13,12 +13,15 @@ import java.util.stream.Collectors;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.Ownable;
+import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
 import net.md_5.bungee.api.ChatColor;
@@ -113,6 +116,11 @@ public class Bank extends Ownable {
 		return Collections.unmodifiableCollection(getAccounts());
 	}
 
+	public List<OfflinePlayer> getCustomers() {
+		return getAccounts().stream().map(Account::getTrustedPlayers).flatMap(Collection::stream).distinct()
+				.collect(Collectors.toList());
+	}
+
 	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
 		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
 	}
@@ -124,34 +132,6 @@ public class Bank extends Ownable {
 					entry.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, (a, bd) -> a.add(bd)));
 		});
 		return customerBalances;
-	}
-
-	/**
-	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
-	 * inequality among all n accounts at the bank.
-	 * 
-	 * @return G = ( 2 * sum(i,n)(i * value of ith account) / n * sum(i,n)(value of
-	 *         ith account) ) - ( n + 1 / n )
-	 */
-	public double getGiniCoefficient() {
-		if (getAccounts().isEmpty())
-			return 0;
-		List<BigDecimal> orderedValues = getCustomerBalances().values().stream().sorted(BigDecimal::compareTo)
-				.collect(Collectors.toList());
-		BigDecimal valueSum = BigDecimal.ZERO;
-		BigDecimal weightedValueSum = BigDecimal.ZERO;
-		for (int i = 0; i < orderedValues.size(); i++) {
-			valueSum = valueSum.add(orderedValues.get(i));
-			weightedValueSum = weightedValueSum.add(orderedValues.get(i).multiply(BigDecimal.valueOf(i + 1)));
-		}
-		valueSum = valueSum.multiply(BigDecimal.valueOf(orderedValues.size()));
-		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
-		if (valueSum.signum() == 0)
-			return 0;
-		BigDecimal leftEq = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
-		BigDecimal rightEq = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
-		BigDecimal gini = leftEq.subtract(rightEq).setScale(2, RoundingMode.HALF_EVEN);
-		return gini.doubleValue();
 	}
 
 	public String getName() {
@@ -207,53 +187,41 @@ public class Bank extends Ownable {
 			coowners.add(prevOwner);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public TextComponent getInfo() {		
-		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
+	public TextComponent getInformation(CommandSender sender) {
+		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
+		boolean verbose = (sender instanceof Player && isTrusted((Player) sender))
+				|| (getType() == BankType.PLAYER && sender.hasPermission(Permissions.BANK_INFO_OTHER)
+				|| (getType() == BankType.ADMIN && sender.hasPermission(Permissions.BANK_INFO_ADMIN)));
 		
-		TextComponent info = new TextComponent("\"" + ChatColor.RED + getColorizedName()
-				+ ChatColor.RESET + ChatColor.GRAY + "\" (#" + id + ")\n");
+		TextComponent info = new TextComponent();
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 		
-		TextComponent multipliers = new TextComponent("Multipliers: ");
-		multipliers.addExtra(Utils.getMultiplierView((List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS)));
-		
-		TextComponent offlinePayouts = new TextComponent(
-				"\nOffline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS));
-		offlinePayouts.addExtra(ChatColor.GRAY + " (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before multiplier reset)\n");
-		
-		TextComponent minBalance = new TextComponent("Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
+		info.addExtra("\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + id + ")");
+		if (!isOwner)
+			info.addExtra("\n    Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()));
+		if (!getCoowners().isEmpty())
+			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
+		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)));
+		info.addExtra("\n    Multipliers: ");
+		info.addExtra(Utils.getMultiplierView(this));
+		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE)));
+		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS));
+		info.addExtra(" (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before multiplier reset)");
+		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY));
+		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
+		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
 		if (minBal != 0)
-			minBalance.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)");
-		
-		info.addExtra("Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()) + "\n");
-		info.addExtra("Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)) + "\n");
-		info.addExtra(multipliers);
-		info.addExtra("\nAccount creation price: " + ChatColor.GREEN + "$"
-				+ Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE)));
-		info.addExtra(offlinePayouts);
-		info.addExtra("Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY) + "\n");
-		info.addExtra(minBalance);
-		return info;
-		
-	}
-	
-	public TextComponent getInfoVerbose() {
-		
-		TextComponent info = getInfo();
-		
-		TextComponent numberOfAccounts = new TextComponent("\nCurrent accounts: " + ChatColor.AQUA + accounts.size() + "\n");
-		TextComponent totalValue = new TextComponent("Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()) + "\n");
-		TextComponent equality = new TextComponent("Inequality score: " + String.format("%.2f", getGiniCoefficient()) + "\n"); // TODO: Dynamic color
-		TextComponent loc = new TextComponent("Location: " + ChatColor.AQUA + getSelection().getCoordinates());
-		
-		info.addExtra(numberOfAccounts);
-		info.addExtra(totalValue);
-		info.addExtra(equality);
-		info.addExtra(loc);
-		
-		return info;
+			info.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)");
+		if (verbose) {
+			info.addExtra("\n    Accounts: " + ChatColor.AQUA + accounts.size());
+			info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()));
+			info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue().doubleValue() / accounts.size()));
+			info.addExtra("\n    Equality score: ");
+			info.addExtra(Utils.getEqualityView(this));
+		}
+		info.addExtra("\n    Location: " + ChatColor.AQUA + getSelection().getCoordinates());
 
+		return info;
 	}
 
 	@Override
@@ -263,7 +231,7 @@ public class Bank extends Ownable {
 				+ "\nOwner: " + (isAdminBank() ? "ADMIN" : getOwner().getName())
 				+ "\nNumber of accounts: " + getAccounts().size()
 				+ "\nTotal value: " + Utils.formatNumber(getTotalValue())
-				+ "\nEquality score: " + String.format("%.2f", getGiniCoefficient())
+				+ "\nEquality score: " + String.format("%.2f", Utils.getGiniCoefficient(this))
 				+ "\nSelection type: " + getSelection().getType()
 				+ "\nLocation: " + getSelection().getCoordinates();
 	}

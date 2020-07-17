@@ -252,7 +252,7 @@ public abstract class Database {
 					}
 
 					ps.setInt(i + 1, account.getBank().getID());
-					ps.setString(i + 2, account.getNickname());
+					ps.setString(i + 2, account.getRawNickname());
 					ps.setString(i + 3, account.getOwner().getUniqueId().toString());
 					ps.setString(i + 4, account.getCoowners().isEmpty() ? null
 							: account.getCoowners().stream().map(p -> "" + p.getUniqueId())

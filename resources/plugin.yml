@@ -62,7 +62,8 @@ permissions:
             bankingplugin.bank.removeall: true
             bankingplugin.bank.limit.*: true
             bankingplugin.bank.size.*: true
-            bankingplugin.bank.other-info-verbose: true
+            bankingplugin.bank.info.other: true
+            bankingplugin.bank.info.admin: true
             bankingplugin.bank.resize.other: true
             bankingplugin.bank.resize.admin: true
             bankingplugin.bank.transfer: true
@@ -195,8 +196,12 @@ permissions:
         description: Create a bank of unlimited volume.
         default: op
         
-    bankingplugin.bank.info-other-verbose:
-        description: View detailed info about another player's bank.
+    bankingplugin.bank.info.other:
+        description: View detailed information about another player's bank.
+        default: op
+        
+    bankingplugin.bank.info.admin:
+        description: View detailed information about an admin bank.
         default: op
         
     bankingplugin.bank.resize.other:

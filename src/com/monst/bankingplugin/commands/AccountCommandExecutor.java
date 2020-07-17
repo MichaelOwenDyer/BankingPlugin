@@ -21,6 +21,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
 import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
 import com.monst.bankingplugin.events.account.AccountPreRemoveEvent;
+import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EnumClickType;
@@ -200,7 +201,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				if (!accounts.isEmpty()) {
 					int i = 1;
 					for (Account account : accounts)
-						sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfo());
+						sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), new TextComponent(account.getColorizedNickname()));
 				} else
 					p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 			} else {
@@ -214,8 +215,9 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					plugin.debug(p.getName() + " has listed their own accounts detailed");
 					Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(p);
 					if (!accounts.isEmpty()) {
+						int i = 1;
 						for (Account account : accounts)
-							p.spigot().sendMessage(account.getInfoVerbose());
+							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(p));
 					} else
 						p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
@@ -229,7 +231,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					if (!accounts.isEmpty()) {
 						int i = 1;
 						for (Account account : accounts)
-							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfo());
+							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(sender));
 						} else
 						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 
@@ -249,7 +251,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 						if (!accounts.isEmpty()) {
 							int i = 1;
 							for (Account account : accounts)
-								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfo());
+								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(sender));
 						} else
 							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {
@@ -268,7 +270,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					if (!accounts.isEmpty()) {
 						int i = 1;
 						for (Account account : accounts)
-							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfoVerbose());
+							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(sender));
 					} else
 						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
@@ -287,7 +289,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 						if (!accounts.isEmpty()) {
 							int i = 1;
 							for (Account account : accounts)
-								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), account.getInfoVerbose());
+								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(sender));
 						} else
 							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {
@@ -403,7 +405,13 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					return;
 				}
 		}
-		// TODO: Send AccountRemoveAllEvent
+
+		AccountRemoveAllEvent event = new AccountRemoveAllEvent(accounts);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			plugin.debug("Removeall event cancelled");
+			return;
+		}
 
 		accountUtils.removeAccount(accounts, true);
 		sender.sendMessage(String.format(Messages.ACCOUNTS_REMOVED, accounts.size(), accounts.size() == 1 ? "" : "s",

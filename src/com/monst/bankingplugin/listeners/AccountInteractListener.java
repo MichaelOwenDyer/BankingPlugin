@@ -420,21 +420,18 @@ public class AccountInteractListener implements Listener {
 	 * @param account  Account from which the information will be retrieved
 	 */
 	private void info(Player executor, Account account) {
-		boolean verbose = account.isTrusted(executor) || account.getBank().isTrusted(executor)
-				|| executor.hasPermission(Permissions.ACCOUNT_INFO_OTHER_VERBOSE);
-
 		plugin.debug(String.format(executor.getName() + " is retrieving %s account info%s (#" + account.getID() + ")",
 				(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
 				(account.isCoowner(executor) ? " as a co-owner" : "")));
 
-		AccountInfoEvent event = new AccountInfoEvent(executor, account, verbose);
+		AccountInfoEvent event = new AccountInfoEvent(executor, account);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Info event cancelled (#" + account.getID() + ")");
 			return;
 		}
 
-		executor.spigot().sendMessage(verbose ? account.getInfoVerbose() : account.getInfo());
+		executor.spigot().sendMessage(account.getInformation(executor));
 	}
 
 	private void set(Player executor, Account account, String[] args) {
@@ -604,7 +601,7 @@ public class AccountInteractListener implements Listener {
 		Bank bank = bankUtils.getBank(location);
 
 		Account newAccount = new Account(toMigrate.getID(), plugin, toMigrate.getOwner(), toMigrate.getCoowners(),
-				toMigrate.getBank(), location, toMigrate.getStatus(), toMigrate.getNickname(),
+				toMigrate.getBank(), location, toMigrate.getStatus(), toMigrate.getRawNickname(),
 				toMigrate.getBalance(), toMigrate.getPrevBalance());
 
 		AccountCreateEvent event = new AccountCreateEvent(p, newAccount);
@@ -663,7 +660,7 @@ public class AccountInteractListener implements Listener {
 			accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
 				@Override
 				public void onResult(Integer result) {
-					newAccount.setNickname(newAccount.getNickname());
+					newAccount.setNickname(newAccount.getRawNickname());
 				}
 			});
 			p.sendMessage(Messages.ACCOUNT_MIGRATED);
@@ -724,7 +721,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		boolean hasDefaultNickname = account.getNickname().contentEquals(account.getDefaultNickname());
+		boolean hasDefaultNickname = account.getRawNickname().contentEquals(account.getDefaultNickname());
 
 		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
 		account.transferOwnership(newOwner);

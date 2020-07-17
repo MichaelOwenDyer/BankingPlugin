@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -359,38 +360,27 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				return true;
 			}
 		}
-		boolean verbose = (sender instanceof Player && bank.isTrusted((Player) sender))
-				|| sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE);
-		sender.spigot().sendMessage(verbose ? bank.getInfoVerbose() : bank.getInfo());
+		sender.spigot().sendMessage(bank.getInformation(sender));
 		return true;
 	}
 
 	private void promptBankList(CommandSender sender, String[] args) {
+		
+		List<Bank> banks = new ArrayList<>(bankUtils.getBanks());
+		if (banks.isEmpty()) {
+			sender.sendMessage(Messages.NO_BANKS);
+			return;
+		}
 
 		if (args.length == 1) {
-			if (bankUtils.getBanksCopy().isEmpty()) {
-				sender.sendMessage(Messages.NO_BANKS);
-			} else {
-				int i = 1;
-				for (Bank bank : bankUtils.getBanksCopy()) {
-					sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), bank.getInfo());
-					sender.sendMessage("");
-				}
-			}
+			int i = 1;
+			for (Bank bank : bankUtils.getBanksCopy())
+				sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), new TextComponent(bank.getColorizedName()));
 		} else if (args.length >= 2) {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
-				if (sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE)) {
-					if (bankUtils.getBanksCopy().isEmpty()) {
-						sender.sendMessage(Messages.NO_BANKS);
-					} else {
-						int i = 1;
-						for (Bank bank : bankUtils.getBanksCopy()) {
-							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ": "), bank.getInfoVerbose());
-							sender.sendMessage("");
-						}
-					}
-				} else
-					sender.sendMessage(Messages.NO_PERMISSION_BANK_LIST_VERBOSE);
+				int i = 1;
+				for (Bank bank : bankUtils.getBanksCopy())
+					sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), new TextComponent(bank.getInformation(sender)));
 			}
 		}
 	}
@@ -743,7 +733,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			return;
 		}
 
-		Bank bank;
+		Bank bank = null;
 		if (args.length == 1) {
 			bank = bankUtils.getBank(p.getLocation());
 			if (bank == null) {
@@ -751,12 +741,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				p.sendMessage(Messages.NOT_STANDING_IN_BANK);
 				return;
 			}
-		}
-		bank = bankUtils.lookupBank(args[1]);
-		if (bank == null) {
-			plugin.debug("No bank could be found under the identifier " + args[1]);
-			p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
-			return;
+		} else if (args.length >= 2) {
+			bank = bankUtils.lookupBank(args[1]);
+			if (bank == null) {
+				plugin.debug("No bank could be found under the identifier " + args[1]);
+				p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				return;
+			}
 		}
 
 		WorldEditReader.setSelection(plugin, bank.getSelection(), p);
@@ -807,10 +798,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}
-			if (!args[1].equalsIgnoreCase("admin")) {
+			if (!args[2].equalsIgnoreCase("admin")) {
 				newOwner = Bukkit.getOfflinePlayer(args[2]);
 				if (newOwner == null || !newOwner.hasPlayedBefore()) {
-					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[2]));
 					return true;
 				}
 			}

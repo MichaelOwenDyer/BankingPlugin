@@ -63,7 +63,7 @@ public class CuboidSelection implements Selection {
 	public String getCoordinates() {
 		Location min = getMinimumPoint();
 		Location max = getMaximumPoint();
-		return "(" + min.getBlockX() + ", " + min.getBlockY() + ", " + min.getBlockZ() + ") to (" + max.getBlockX()
+		return "(" + min.getBlockX() + ", " + min.getBlockY() + ", " + min.getBlockZ() + ") -> (" + max.getBlockX()
 				+ ", " + max.getBlockY() + ", " + max.getBlockZ() + ")";
 	}
 

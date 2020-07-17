@@ -29,7 +29,8 @@ public class Permissions {
 	public static final String BANK_REMOVEALL = "bankingplugin.bank.removeall";
 	public static final String BANK_NO_LIMIT = "bankingplugin.bank.limit.*";
 	public static final String BANK_NO_SIZE_LIMIT = "bankingplugin.bank.size.*";
-	public static final String BANK_INFO_OTHER_VERBOSE = "bankingplugin.bank.info-other-verbose";
+	public static final String BANK_INFO_OTHER = "bankingplugin.bank.info.other";
+	public static final String BANK_INFO_ADMIN = "bankingplugin.bank.info.admin";
 	public static final String BANK_RESIZE_OTHER = "bankingplugin.bank.resize.other";
 	public static final String BANK_RESIZE_ADMIN = "bankingplugin.bank.resize.admin";
 	public static final String BANK_TRANSFER = "bankingplugin.bank.transfer";

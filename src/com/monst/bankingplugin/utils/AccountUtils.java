@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
@@ -26,7 +25,6 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 
 public class AccountUtils {
 
@@ -174,6 +172,12 @@ public class AccountUtils {
         removeAccount(account, removeFromDatabase, null);
     }
 
+	public int removeAccount(Collection<Account> accounts, boolean removeFromDatabase) {
+		int removed = accounts.size();
+		accounts.forEach(account -> removeAccount(account, removeFromDatabase));
+		return removed;
+	}
+
     /**
      * Get the account limits of a player
      * @param player Player, whose account limits should be returned
@@ -223,20 +227,6 @@ public class AccountUtils {
 		return (int) Math.round(getPlayerAccountsCopy(owner).stream()
 				.mapToDouble(account -> account.getChestSize() == 1 ? 1.0 : 0.5).sum());
     }
-
-	public int removeAccount(Collection<Account> accounts, boolean removeFromDatabase) {
-		int removed = accounts.size();
-
-		AccountRemoveAllEvent event = new AccountRemoveAllEvent(accounts);
-		Bukkit.getPluginManager().callEvent(event);
-		if (event.isCancelled()) {
-			plugin.debug("Removeall event cancelled");
-			return 0;
-		}
-		accounts.forEach(account -> removeAccount(account, removeFromDatabase));
-
-		return removed;
-	}
 
 	public BigDecimal appraiseAccountContents(Account account) {
 

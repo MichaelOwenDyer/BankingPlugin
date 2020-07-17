@@ -65,10 +65,8 @@ public class WorldEditReader {
 		WorldEditPlugin worldEdit = plugin.getWorldEdit();
 		RegionSelector regionSelector;
 		if (sel instanceof CuboidSelection) {
-			BlockVector3 min = BlockVector3.at(sel.getMinimumPoint().getBlockX(), sel.getMinimumPoint().getBlockX(),
-					sel.getMinimumPoint().getBlockZ());
-			BlockVector3 max = BlockVector3.at(sel.getMaximumPoint().getBlockX(), sel.getMaximumPoint().getBlockX(),
-					sel.getMaximumPoint().getBlockZ());
+			BlockVector3 min = BlockVector3.at(sel.getMinimumPoint().getBlockX(), sel.getMinimumPoint().getBlockY(), sel.getMinimumPoint().getBlockZ());
+			BlockVector3 max = BlockVector3.at(sel.getMaximumPoint().getBlockX(), sel.getMaximumPoint().getBlockY(), sel.getMaximumPoint().getBlockZ());
 			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(sel.getWorld()), min, max);
 		} else {
 			List<BlockVector2> points = ((Polygonal2DSelection) sel).getNativePoints().stream()

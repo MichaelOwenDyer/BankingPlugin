@@ -334,10 +334,7 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeBankInfo(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
-		List<Bank> banks = plugin.getBankUtils().getBanksCopy().stream()
-				.filter(bank -> (sender instanceof Player && bank.isOwner((Player) sender))
-						|| (sender.hasPermission(Permissions.BANK_INFO_OTHER_VERBOSE)))
-				.collect(Collectors.toList());
+		List<Bank> banks = new ArrayList<>(plugin.getBankUtils().getBanksCopy());
 		
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {

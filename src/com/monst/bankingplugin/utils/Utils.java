@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.utils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,8 +24,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -99,19 +102,25 @@ public class Utils {
 		return stackedMultipliers;
 	}
 
-	public static TextComponent getMultiplierView(List<Integer> multipliers) {
-		return getMultiplierView(multipliers, -1);
+	public static TextComponent getMultiplierView(Bank bank) {
+		return getMultiplierView(bank, -1);
 	}
 
-	@SuppressWarnings("deprecation")
-	public static TextComponent getMultiplierView(List<Integer> multipliers, int highlightStage) {
+	public static TextComponent getMultiplierView(Account account) {
+		return getMultiplierView(account.getBank(), account.getStatus().getMultiplierStage());
+	}
 
-		TextComponent message = new TextComponent();
-		message.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+	@SuppressWarnings({ "deprecation", "unchecked" })
+	private static TextComponent getMultiplierView(Bank bank, int highlightStage) {
+
+		List<Integer> multipliers = (List<Integer>) bank.getAccountConfig().getOrDefault(Field.MULTIPLIERS);
+
+		TextComponent multiplierView = new TextComponent();
+		multiplierView.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 
 		if (multipliers.size() == 0) {
-			message.setText(ChatColor.GREEN + "1x");
-			return message;
+			multiplierView.setText(ChatColor.GREEN + "1x");
+			return multiplierView;
 		}
 
 		List<List<Integer>> stackedMultipliers = Utils.getStackedList(multipliers);
@@ -127,13 +136,13 @@ public class Utils {
 					highlightStage -= list.size();
 			}
 
-		TextComponent openingBracket = new TextComponent(ChatColor.GOLD + " [");
+		TextComponent openingBracket = new TextComponent(ChatColor.GOLD + "[");
 		openingBracket.setBold(true);
-
-		message.addExtra(openingBracket);
-
 		TextComponent closingBracket = new TextComponent(ChatColor.GOLD + " ]");
 		closingBracket.setBold(true);
+		TextComponent ellipses = new TextComponent(" ...");
+
+		multiplierView.addExtra(openingBracket);
 
 		int lower = 0;
 		int upper = stackedMultipliers.size();
@@ -151,7 +160,7 @@ public class Utils {
 			}
 
 			if (lower > 0)
-				message.addExtra(" ...");
+				multiplierView.addExtra(ellipses);
 		}
 
 		for (int i = lower; i < upper; i++) {
@@ -187,12 +196,95 @@ public class Utils {
 				}
 				number.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, cb.create()));
 			}
-			message.addExtra(number);
+			multiplierView.addExtra(number);
 		}
 		if (upper < stackedMultipliers.size())
-			message.addExtra(" ...");
-		message.addExtra(closingBracket);
-		return message;
+			multiplierView.addExtra(ellipses);
+		multiplierView.addExtra(closingBracket);
+		return multiplierView;
+	}
+
+	@SuppressWarnings("deprecation")
+	public static TextComponent getInterestRateView(Account account) {
+		if (account == null)
+			return null;
+
+		AccountStatus accountStatus = account.getStatus();
+		AccountConfig accountConfig = account.getBank().getAccountConfig();
+
+		TextComponent interestRateView = new TextComponent();
+		interestRateView.setColor(net.md_5.bungee.api.ChatColor.GREEN);
+
+		double baseInterestRate = (double) accountConfig.getOrDefault(Field.INTEREST_RATE);
+		double percentage = baseInterestRate * accountStatus.getRealMultiplier();
+		TextComponent interestRate = new TextComponent(percentage * 100 + "%");
+		if (accountStatus.getDelayUntilNextPayout() == 0
+				&& account.getBalance().doubleValue() >= accountConfig.getMinBalance()) {
+			ComponentBuilder cb = new ComponentBuilder();
+			cb.append("Next payout: ").color(net.md_5.bungee.api.ChatColor.GRAY)
+					.append("$" + Utils.formatNumber(account.getBalance().multiply(BigDecimal.valueOf(percentage))))
+					.color(net.md_5.bungee.api.ChatColor.GREEN);
+			interestRate.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, cb.create()));
+		}
+		interestRate
+				.addExtra(ChatColor.GRAY + " (" + baseInterestRate + " x " + accountStatus.getRealMultiplier() + ")");
+		interestRateView.addExtra(interestRate);
+
+		return interestRateView;
+	}
+
+	/**
+	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
+	 * inequality among all n accounts at the bank.
+	 * 
+	 * @return G = ( 2 * sum(i,n)(i * value of ith account) / n * sum(i,n)(value of
+	 *         ith account) ) - ( n + 1 / n )
+	 */
+	public static double getGiniCoefficient(Bank bank) {
+		if (bank.getAccounts().isEmpty())
+			return 0;
+		List<BigDecimal> orderedValues = bank.getCustomerBalances().values().stream().sorted(BigDecimal::compareTo)
+				.collect(Collectors.toList());
+		BigDecimal valueSum = BigDecimal.ZERO;
+		BigDecimal weightedValueSum = BigDecimal.ZERO;
+		for (int i = 0; i < orderedValues.size(); i++) {
+			valueSum = valueSum.add(orderedValues.get(i));
+			weightedValueSum = weightedValueSum.add(orderedValues.get(i).multiply(BigDecimal.valueOf(i + 1)));
+		}
+		valueSum = valueSum.multiply(BigDecimal.valueOf(orderedValues.size()));
+		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
+		if (valueSum.signum() == 0)
+			return 0;
+		BigDecimal leftEq = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
+		BigDecimal rightEq = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
+		BigDecimal gini = leftEq.subtract(rightEq).setScale(2, RoundingMode.HALF_EVEN);
+		return gini.doubleValue();
+	}
+
+	public static TextComponent getEqualityView(Bank bank) {
+		
+		double gini = getGiniCoefficient(bank);
+		TextComponent equalityView = new TextComponent(String.format("%.2f", gini));
+		
+		switch ((int) (gini * 5d)) {
+		case 0:
+			equalityView.setColor(net.md_5.bungee.api.ChatColor.DARK_GREEN);
+			break;
+		case 1:
+			equalityView.setColor(net.md_5.bungee.api.ChatColor.GREEN);
+			break;
+		case 2:
+			equalityView.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
+			break;
+		case 3:
+			equalityView.setColor(net.md_5.bungee.api.ChatColor.RED);
+			break;
+		case 4: case 5:
+			equalityView.setColor(net.md_5.bungee.api.ChatColor.DARK_RED);
+			break;
+		}
+
+		return equalityView;
 	}
 
     /**

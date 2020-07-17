@@ -3,8 +3,8 @@ package com.monst.bankingplugin;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -14,6 +14,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 
 import com.monst.bankingplugin.config.Config;
@@ -22,6 +24,7 @@ import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.Ownable;
+import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
 import net.md_5.bungee.api.chat.TextComponent;
@@ -120,8 +123,12 @@ public class Account extends Ownable {
 		return true;
 	}
 
-	public String getNickname() {
+	public String getRawNickname() {
 		return nickname;
+	}
+
+	public String getColorizedNickname() {
+		return Utils.colorize(nickname);
 	}
 
 	public void setNickname(String nickname) {
@@ -134,15 +141,15 @@ public class Account extends Ownable {
 				return;
 			Chest left = (Chest) dc.getLeftSide();
 			Chest right = (Chest) dc.getRightSide();
-			left.setCustomName(Utils.colorize(nickname));
+			left.setCustomName(getColorizedNickname());
 			left.update();
-			right.setCustomName(Utils.colorize(nickname));
+			right.setCustomName(getColorizedNickname());
 			right.update();
 		} else {
 			Chest chest = (Chest) inventoryHolder;
 			if (chest == null)
 				return;
-			chest.setCustomName(Utils.colorize(nickname));
+			chest.setCustomName(getColorizedNickname());
 			chest.update();
 		}
 	}
@@ -250,62 +257,50 @@ public class Account extends Ownable {
 		return getID() != -1 && getID() == otherAccount.getID();
 	}
 
-	public TextComponent getInfo() {
+	public TextComponent getInformation(CommandSender sender) {
+		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
+		boolean verbose = (sender instanceof Player
+				&& (isTrusted((Player) sender) || getBank().isTrusted((Player) sender)))
+				|| sender.hasPermission(Permissions.ACCOUNT_INFO_OTHER_VERBOSE);
 
 		TextComponent info = new TextComponent();
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 
-		info.addExtra("\"" + Utils.colorize(getNickname()) + ChatColor.GRAY + "\"");
-		info.addExtra("\nOwner: " + ChatColor.GOLD + getOwnerDisplayName() + "\n");
-		info.addExtra("Bank: " + ChatColor.AQUA + getBank().getName());
+		info.addExtra("\"" + Utils.colorize(getRawNickname()) + ChatColor.GRAY + "\"");
+		info.addExtra("\n    Bank: " + ChatColor.RED + getBank().getColorizedName());
+		if (!isOwner)
+			info.addExtra("\n    Owner: " + ChatColor.GOLD + getOwnerDisplayName());
+		if (!getCoowners().isEmpty())
+			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
+		if (verbose) {
+			info.addExtra("\n    Balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(getBalance()));
+			info.addExtra("\n    Multiplier: ");
+			info.addExtra(Utils.getMultiplierView(this));
+			TextComponent interestRate = new TextComponent("\n    Interest rate: ");
+			interestRate.addExtra(Utils.getInterestRateView(this));
+			if (getStatus().getDelayUntilNextPayout() != 0)
+				interestRate.addExtra(ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)");
+			info.addExtra(interestRate);
+		}
+		info.addExtra("\n    Location: " + ChatColor.AQUA + "(" + getLocation().getBlockX() + ", " + getLocation().getBlockY() + ", " + getLocation().getBlockZ() + ")");
 
-		return info;
-	}
-
-	@SuppressWarnings("unchecked")
-	public TextComponent getInfoVerbose() {
-		TextComponent info = getInfo();
-		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-		
-		TextComponent message = new TextComponent("\nBalance: " + ChatColor.GREEN + "$" + Utils.formatNumber(getBalance()) + "\n");
-		
-		TextComponent multiplier = new TextComponent("Multiplier:");
-		multiplier.addExtra(
-				Utils.getMultiplierView((List<Integer>) getBank().getAccountConfig().getOrDefault(Field.MULTIPLIERS),
-						getStatus().getMultiplierStage()));
-		multiplier.addExtra("\nInterest rate: ");
-		
-		TextComponent interestRate = new TextComponent(ChatColor.GREEN + "" 
-				+ Math.round(((double) getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE)
-						* getStatus().getRealMultiplier() * 100))
-				+ "%" + ChatColor.GRAY + " (" + getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE) + " x "
-				+ getStatus().getRealMultiplier() + ")");
-		
-		if (getStatus().getDelayUntilNextPayout() != 0)
-			interestRate.addExtra(new TextComponent(
-					ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)"));
-		
-		TextComponent loc = new TextComponent(
-				"\nLocation: " + ChatColor.AQUA + "(" + getLocation().getBlockX() + ", " + getLocation().getBlockY()
-						+ ", " + getLocation().getBlockZ() + ")");
-		
-		info.addExtra(message);
-		info.addExtra(multiplier);
-		info.addExtra(interestRate);
-		info.addExtra(loc);
 		return info;
 	}
 
 	@Override
 	public String toString() {
-		return "ID: " + getID() + "\nOwner: " + getOwner().getName() + "\nBank: " + getBank().getName() + "\nBalance: $"
-				+ Utils.formatNumber(getBalance()) + "\nPrevious balance: $" + Utils.formatNumber(getPrevBalance())
-				+ "\nMultiplier: " + getStatus().getRealMultiplier() + " (stage " + getStatus().getMultiplierStage()
-				+ ")" + "\nDelay until next payout: " + getStatus().getDelayUntilNextPayout() + "\nNext payout amount: "
-				+ Utils.formatNumber(getBalance().doubleValue()
-						* (double) getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE)
-						* getStatus().getRealMultiplier())
-				+ "\nLocation: " + getLocation().toString();
+		  return "ID: " + getID() 
+						+ "\nOwner: " + getOwner().getName() 
+						+ "\nBank: " + getBank().getName() 
+						+ "\nBalance: $" + Utils.formatNumber(getBalance()) 
+						+ "\nPrevious balance: $" + Utils.formatNumber(getPrevBalance())
+						+ "\nMultiplier: " + getStatus().getRealMultiplier() 
+						+ " (stage " + getStatus().getMultiplierStage() + ")" 
+						+ "\nDelay until next payout: " + getStatus().getDelayUntilNextPayout() 
+						+ "\nNext payout amount: " + Utils.formatNumber(getBalance().doubleValue()
+								* (double) getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE)
+								* getStatus().getRealMultiplier())
+						+ "\nLocation: " + getLocation().toString();
 	}
 
 	@Override
