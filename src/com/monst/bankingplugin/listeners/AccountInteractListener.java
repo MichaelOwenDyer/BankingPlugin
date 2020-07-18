@@ -8,7 +8,6 @@ import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.events.account.TransferOwnershipEvent;
-import com.monst.bankingplugin.gui.AccountGui;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -37,6 +36,7 @@ import com.monst.bankingplugin.utils.ClickType.SetClickType;
 import com.monst.bankingplugin.utils.ClickType.TransferClickType;
 import com.monst.bankingplugin.utils.ClickType.TrustClickType;
 import com.monst.bankingplugin.utils.ClickType.UntrustClickType;
+import com.monst.bankingplugin.utils.GuiUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -408,10 +408,9 @@ public class AccountInteractListener implements Listener {
 	}
 
 	/**
-	 *
-	 * @param player Player, who executed the command and will retrieve the
-	 *                 information
-	 * @param account  Account from which the information will be retrieved
+	 * @param player  Player who executed the command and will retrieve the
+	 *                information
+	 * @param account Account from which the information will be retrieved
 	 */
 	private void info(Player player, Account account) {
 		plugin.debug(String.format(player.getName() + " is retrieving %s account info%s (#" + account.getID() + ")",
