@@ -31,6 +31,7 @@ import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.GuiUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -361,6 +362,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			}
 		}
 		sender.spigot().sendMessage(bank.getInformation(sender));
+		if (sender instanceof Player)
+			GuiUtils.createGui(bank, (Player) sender).open((Player) sender);
 		return true;
 	}
 

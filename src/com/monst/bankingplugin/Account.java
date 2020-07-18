@@ -154,6 +154,10 @@ public class Account extends Ownable {
 		}
 	}
 
+	public boolean hasDefaultNickname() {
+		return getRawNickname().contentEquals(getDefaultNickname());
+	}
+
 	public String getDefaultNickname() {
 		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + getID() + ")";
 	}

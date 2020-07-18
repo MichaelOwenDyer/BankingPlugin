@@ -43,6 +43,7 @@ import com.monst.bankingplugin.utils.ClickType.SetClickType;
 import com.monst.bankingplugin.utils.ClickType.TransferClickType;
 import com.monst.bankingplugin.utils.ClickType.TrustClickType;
 import com.monst.bankingplugin.utils.ClickType.UntrustClickType;
+import com.monst.bankingplugin.utils.GuiUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -415,23 +416,24 @@ public class AccountInteractListener implements Listener {
 
 	/**
 	 *
-	 * @param executor Player, who executed the command and will retrieve the
-	 *                 information
-	 * @param account  Account from which the information will be retrieved
+	 * @param player  Player who executed the command and will retrieve the
+	 *                information
+	 * @param account Account from which the information will be retrieved
 	 */
-	private void info(Player executor, Account account) {
-		plugin.debug(String.format(executor.getName() + " is retrieving %s account info%s (#" + account.getID() + ")",
-				(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
-				(account.isCoowner(executor) ? " as a co-owner" : "")));
+	private void info(Player player, Account account) {
+		plugin.debug(String.format(player.getName() + " is retrieving %s account info%s (#" + account.getID() + ")",
+				(account.isOwner(player) ? "their" : account.getOwner().getName() + "'s"),
+				(account.isCoowner(player) ? " as a co-owner" : "")));
 
-		AccountInfoEvent event = new AccountInfoEvent(executor, account);
+		AccountInfoEvent event = new AccountInfoEvent(player, account);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Info event cancelled (#" + account.getID() + ")");
 			return;
 		}
 
-		executor.spigot().sendMessage(account.getInformation(executor));
+		GuiUtils.createGui(account, player).open(player);
+		player.spigot().sendMessage(account.getInformation(player));
 	}
 
 	private void set(Player executor, Account account, String[] args) {

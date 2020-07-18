@@ -16,6 +16,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
+import org.ipvp.canvas.MenuFunctionListener;
 
 import com.earth2me.essentials.Essentials;
 import com.monst.bankingplugin.commands.AccountCommand;
@@ -295,6 +296,8 @@ public class BankingPlugin extends JavaPlugin {
     	getServer().getPluginManager().registerEvents(new ChestTamperingListener(this), this);
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
 		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
+
+		getServer().getPluginManager().registerEvents(new MenuFunctionListener(), this); // Third-party GUI listener
 	}
 
 	private void registerExternalListeners() {
