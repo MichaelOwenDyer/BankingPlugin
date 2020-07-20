@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.selections;
 
+import com.monst.bankingplugin.utils.BlockVector2D;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -96,26 +97,6 @@ public class Polygonal2DSelection implements Selection {
 	@Override
 	public SelectionType getType() {
 		return SelectionType.POLYGONAL;
-	}
-
-	class BlockVector2D {
-
-		private final int x;
-		private final int z;
-
-		BlockVector2D(int x, int z) {
-			this.x = x;
-			this.z = z;
-		}
-
-		int getBlockX() {
-			return x;
-		}
-
-		int getBlockZ() {
-			return z;
-		}
-
 	}
 
 }

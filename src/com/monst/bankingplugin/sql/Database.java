@@ -792,8 +792,9 @@ public abstract class Database {
 	 * Log an interest payout to the database
 	 * 
 	 * @param account  The {@link Account} the interest was derived from
-	 * @param amount   The {@link BigDecimal} transaction amount
-	 * @param type     Whether the executor deposited or withdrew
+	 * @param baseAmount   The {@link BigDecimal} base transaction amount
+	 * @param multiplier	The multiplier of the transaction
+	 * @param amount   The {@link BigDecimal} final transaction amount
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
 	public void logInterest(Account account, BigDecimal baseAmount, int multiplier, BigDecimal amount,
