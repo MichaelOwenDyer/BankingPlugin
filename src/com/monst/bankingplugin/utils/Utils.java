@@ -1,15 +1,14 @@
 package com.monst.bankingplugin.utils;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.PatternSyntaxException;
-import java.util.stream.Collectors;
-
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.HoverEvent.Action;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -23,16 +22,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
-
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.HoverEvent.Action;
-import net.md_5.bungee.api.chat.TextComponent;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 public class Utils {
 
@@ -75,7 +69,7 @@ public class Utils {
 		return list.replaceAll("\\p{Punct}", "");
 	}
 
-	public static String listifyList(String list) {
+	public static String formatList(String list) {
 		return "[" + removePunctuation(list).replace(" ", ", ") + "]";
 	}
 	
@@ -102,6 +96,85 @@ public class Utils {
 		return stackedMultipliers;
 	}
 
+	public static List<String> getMultiplierLore(Bank bank) {
+		return getMultiplierLore(bank, -1);
+	}
+
+	public static List<String> getMultiplierLore(Account account) {
+		return getMultiplierLore(account.getBank(), account.getStatus().getMultiplierStage());
+	}
+
+	@SuppressWarnings("unchecked")
+	private static List<String> getMultiplierLore(Bank bank, int highlightStage) {
+		List<Integer> multipliers = (List<Integer>) bank.getAccountConfig().getOrDefault(AccountConfig.Field.MULTIPLIERS);
+
+		if (multipliers.size() == 0)
+			return Arrays.asList(ChatColor.GREEN + "1x");
+
+		List<List<Integer>> stackedMultipliers = Utils.getStackedList(multipliers);
+
+		int stage = -1;
+		if (highlightStage != -1)
+			for (List<Integer> level : stackedMultipliers) {
+				stage++;
+				if (highlightStage - level.size() < 0)
+					break;
+				else
+					highlightStage -= level.size();
+			}
+
+		List<String> multiplierView = new ArrayList<>();
+
+		final int listSize = 5;
+		int lower = 0;
+		int upper = stackedMultipliers.size();
+
+		if (stage != -1 && stackedMultipliers.size() > listSize) {
+			lower = stage - (listSize / 2);
+			upper = stage + (listSize / 2) + 1;
+			while (lower < 0) {
+				lower++;
+				upper++;
+			}
+			while (upper > stackedMultipliers.size()) {
+				lower--;
+				upper--;
+			}
+
+			if (lower > 0)
+				multiplierView.add("...");
+		}
+
+		for (int i = 0; i < stackedMultipliers.size(); i++) {
+			StringBuilder number = new StringBuilder(i == stage ? "" + ChatColor.GREEN + ChatColor.BOLD : "" + ChatColor.GRAY);
+
+			number.append(" " + stackedMultipliers.get(i).get(0) + "x");
+
+			int levelSize = stackedMultipliers.get(i).size();
+			if (levelSize > 1) {
+				if (stage == -1 || i < stage) {
+					number.append(" (" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ")");
+				} else if (i > stage) {
+					number.append(" (" + ChatColor.RED + "0" + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ")");
+				} else {
+					ChatColor color;
+					if (highlightStage * 3 >= levelSize * 2)
+						color = ChatColor.GREEN;
+					else if (highlightStage * 3 >= levelSize)
+						color = ChatColor.GOLD;
+					else
+						color = ChatColor.RED;
+
+					number.append(" (" + color + highlightStage + ChatColor.DARK_GRAY + "/" + levelSize + ")");
+				}
+			}
+			multiplierView.add(number.toString());
+		}
+		if (upper < stackedMultipliers.size())
+			multiplierView.add("...");
+		return multiplierView;
+	}
+
 	public static TextComponent getMultiplierView(Bank bank) {
 		return getMultiplierView(bank, -1);
 	}
@@ -125,7 +198,6 @@ public class Utils {
 
 		List<List<Integer>> stackedMultipliers = Utils.getStackedList(multipliers);
 
-		final int listSize = 5;
 		int stage = -1;
 		if (highlightStage != -1)
 			for (List<Integer> list : stackedMultipliers) {
@@ -147,6 +219,7 @@ public class Utils {
 		int lower = 0;
 		int upper = stackedMultipliers.size();
 
+		final int listSize = 5;
 		if (stage != -1 && stackedMultipliers.size() > listSize) {
 			lower = stage - (listSize / 2);
 			upper = stage + (listSize / 2) + 1;
@@ -261,6 +334,31 @@ public class Utils {
 		return gini.doubleValue();
 	}
 
+	public static String getGiniLore(Bank bank) {
+		double gini = getGiniCoefficient(bank);
+		ChatColor color;
+		switch ((int) (gini * 5)) {
+			case 0:
+				color = ChatColor.DARK_GREEN;
+				break;
+			case 1:
+				color = ChatColor.GREEN;
+				break;
+			case 2:
+				color = ChatColor.YELLOW;
+				break;
+			case 3:
+				color = ChatColor.RED;
+				break;
+			case 4: case 5:
+				color = ChatColor.DARK_RED;
+				break;
+			default:
+				color = ChatColor.GRAY;
+		}
+		return color + String.format("%.2f", gini);
+	}
+
 	public static TextComponent getEqualityView(Bank bank) {
 		
 		double gini = getGiniCoefficient(bank);
@@ -340,8 +438,8 @@ public class Utils {
 
  
     /**
-     * Get a set for the location(s) of the shop's chest(s)
-     * @param shop The shop
+     * Get a set of locations of the account chest
+     * @param account The account
      * @return A set of 1 or 2 locations
      */
     public static Set<Location> getChestLocations(Account account) {

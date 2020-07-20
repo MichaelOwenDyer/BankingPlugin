@@ -51,7 +51,7 @@ public class Messages {
 	// SUCCESS NOTIFICATIONS
 	public static final String INTEREST_PAYOUT_TRIGGERED = ChatColor.GOLD + "Interest payout event triggered.";
 	public static final String NICKNAME_SET = ChatColor.GOLD + "Account nickname has been set.";
-	public static final String MULTIPLIER_SET = ChatColor.GOLD + "Account multiplier has been set to %s.";
+	public static final String MULTIPLIER_SET = ChatColor.GOLD + "Account multiplier has been set to %d.";
 	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "Account interest delay has been set.";
 	public static final String ADDED_COOWNER = ChatColor.GOLD + "%s has been added as a co-owner.";
 	public static final String REMOVED_COOWNER = ChatColor.GOLD + "%s has been removed as a co-owner.";
@@ -90,7 +90,7 @@ public class Messages {
 	public static final String NOT_AN_INTEGER = ChatColor.RED + "\"%s\" is not an integer!";
 	public static final String NOT_A_BOOLEAN = ChatColor.RED + "\"%s\" is not a boolean value!";
 	public static final String NOT_A_FIELD = ChatColor.RED + "\"%s\" is not a valid field!";
-	public static final String NOT_A_LIST = ChatColor.RED + "\"%s\" is not a parseable list!";
+	public static final String NOT_A_LIST = ChatColor.RED + "\"%s\" is not a parsable list!";
 	public static final String ERROR_OCCURRED = ChatColor.DARK_RED + "An error occurred! ";
 	public static final String PLAYER_NOT_FOUND = ChatColor.RED + "No player was found under the name \"%s\".";
 	public static final String BANK_LIMIT_REACHED = "You are not allowed to create any more banks!";

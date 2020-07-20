@@ -1,22 +1,5 @@
 package com.monst.bankingplugin;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.time.LocalTime;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.codemc.worldguardwrapper.WorldGuardWrapper;
-
 import com.earth2me.essentials.Essentials;
 import com.monst.bankingplugin.commands.AccountCommand;
 import com.monst.bankingplugin.commands.BankCommand;
@@ -28,25 +11,31 @@ import com.monst.bankingplugin.events.bank.BankInitializedEvent;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.external.WorldGuardListener;
-import com.monst.bankingplugin.listeners.AccountBalanceListener;
-import com.monst.bankingplugin.listeners.AccountInteractListener;
-import com.monst.bankingplugin.listeners.AccountProtectListener;
-import com.monst.bankingplugin.listeners.ChestTamperingListener;
-import com.monst.bankingplugin.listeners.InterestEventListener;
-import com.monst.bankingplugin.listeners.NotifyPlayerOnJoinListener;
+import com.monst.bankingplugin.listeners.*;
 import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.sql.SQLite;
-import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.BankUtils;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.UpdateChecker;
+import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.UpdateChecker.UpdateCheckerResult;
-import com.monst.bankingplugin.utils.Utils;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.codemc.worldguardwrapper.WorldGuardWrapper;
+import org.ipvp.canvas.MenuFunctionListener;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BankingPlugin extends JavaPlugin {
 
@@ -295,6 +284,8 @@ public class BankingPlugin extends JavaPlugin {
     	getServer().getPluginManager().registerEvents(new ChestTamperingListener(this), this);
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
 		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
+
+		getServer().getPluginManager().registerEvents(new MenuFunctionListener(), this); // Third-party GUI listener
 	}
 
 	private void registerExternalListeners() {
@@ -338,7 +329,7 @@ public class BankingPlugin extends JavaPlugin {
 				debug("Removed interest payout at " + time);
 			}
 		for (LocalTime time : Config.interestPayoutTimes) {
-			if (!payoutTimeIds.containsKey(time)) {
+			if (time != null && !payoutTimeIds.containsKey(time)) {
 				int id = scheduleRepeatAtTime(time);
 				if (id == -1)
 					debug("Interest payout scheduling failed! (" + time + ")");

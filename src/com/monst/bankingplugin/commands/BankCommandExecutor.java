@@ -1,5 +1,26 @@
 package com.monst.bankingplugin.commands;
 
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.bank.*;
+import com.monst.bankingplugin.external.WorldEditReader;
+import com.monst.bankingplugin.gui.BankGui;
+import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.selections.Selection.SelectionType;
+import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -8,39 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.bank.BankCreateEvent;
-import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
-import com.monst.bankingplugin.events.bank.BankRemoveEvent;
-import com.monst.bankingplugin.events.bank.BankResizeEvent;
-import com.monst.bankingplugin.events.bank.TransferOwnershipEvent;
-import com.monst.bankingplugin.external.WorldEditReader;
-import com.monst.bankingplugin.gui.BankGui;
-import com.monst.bankingplugin.selections.Selection;
-import com.monst.bankingplugin.selections.Selection.SelectionType;
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
-import com.monst.bankingplugin.utils.BankUtils;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
-
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.milkbowl.vault.economy.EconomyResponse;
-
-public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
+public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 	private final BankingPlugin plugin;
 	private final BankUtils bankUtils;
@@ -282,8 +271,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			}
 		}
 
-		if (!bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_OTHER) && sender instanceof Player
-				&& !bank.isOwner((Player) sender)) {
+		if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
+				|| sender.hasPermission(Permissions.BANK_REMOVE_OTHER))) {
+			if (bank.isTrusted(((Player) sender))) {
+				plugin.debug(sender.getName() + " does not have permission to remove another player's bank as a co-owner");
+				sender.sendMessage(Messages.MUST_BE_OWNER);
+				return;
+			}
 			plugin.debug(sender.getName() + " does not have permission to remove another player's bank");
 			sender.sendMessage(Messages.NO_PERMISSION_BANK_REMOVE_OTHER);
 			return;
@@ -298,7 +292,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
 			if (Config.confirmOnRemove)
-				if (!commandConfirmed(p, args)) {
+				if (needsConfirmation(p, args)) {
 					p.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, 1, "", bank.getAccounts().size(), bank.getAccounts().size() == 1 ? "" : "s")
 							+ Messages.EXECUTE_AGAIN_TO_CONFIRM);
 					return;
@@ -362,6 +356,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			}
 		}
 		sender.spigot().sendMessage(bank.getInformation(sender));
+		if (sender instanceof Player)
+			new BankGui(bank).open((Player) sender);
 		return true;
 	}
 
@@ -376,12 +372,14 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		if (args.length == 1) {
 			int i = 1;
 			for (Bank bank : bankUtils.getBanksCopy())
-				sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), new TextComponent(bank.getColorizedName()));
+				sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
+						new TextComponent(bank.getColorizedName()));
 		} else if (args.length >= 2) {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
 				int i = 1;
 				for (Bank bank : bankUtils.getBanksCopy())
-					sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), new TextComponent(bank.getInformation(sender)));
+					sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
+							new TextComponent(bank.getInformation(sender)));
 			}
 		}
 	}
@@ -418,7 +416,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
 			if (Config.confirmOnRemoveAll)
-				if (!commandConfirmed(p, args)) {
+				if (needsConfirmation(p, args)) {
 					p.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, banks.size(),
 							banks.size() == 1 ? "" : "s", accounts.size(), accounts.size() == 1 ? "" : "s"));
 					p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
@@ -486,7 +484,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
-		if (!bank.isAdminBank() && !bank.isOwner(p) && !p.hasPermission(Permissions.BANK_RESIZE_OTHER)) {
+		if (bank.isPlayerBank() && !bank.isOwner(p) && !p.hasPermission(Permissions.BANK_RESIZE_OTHER)) {
 			plugin.debug(p.getName() + " does not have permission to resize another player's bank");
 			p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE_OTHER);
 			return true;
@@ -498,12 +496,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		}
 		int volume = selection.getVolume();
 		int volumeLimit = bankUtils.getVolumeLimit(p);
-		if (!bank.isAdminBank() && volumeLimit != -1 && volume > volumeLimit) {
+		if (bank.isPlayerBank() && volumeLimit != -1 && volume > volumeLimit) {
 			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
 			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE_RESIZE, volumeLimit, volume - volumeLimit));
 			return true;
 		}
-		if (!bank.isAdminBank() && volume < Config.minimumBankVolume) {
+		if (bank.isPlayerBank() && volume < Config.minimumBankVolume) {
 			plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume + ")");
 			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL_RESIZE, Config.minimumBankVolume, Config.minimumBankVolume - volume));
 			return true;
@@ -654,8 +652,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 			return true;
 		}
 
-		if ((sender instanceof Player && !bank.isTrusted((Player) sender))
-				|| (!(sender instanceof Player) && !sender.hasPermission(Permissions.BANK_SET_OTHER))) {
+		if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
+				|| sender.hasPermission(Permissions.BANK_SET_OTHER))) {
 			plugin.debug(sender.getName() + " does not have permission to configure another player's bank");
 			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_OTHER);
 			return true;
@@ -688,7 +686,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				if (field.getDataType() == 0)
 					value = Utils.formatNumber(Double.parseDouble(value.replace(",", "")));
 				else if (field.getDataType() == 3)
-					value = Utils.listifyList(value);
+					value = Utils.formatList(value);
 				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, field.getName(), value, bank.getName()));
 			} else
 				sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
