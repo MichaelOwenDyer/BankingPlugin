@@ -1,17 +1,13 @@
 package com.monst.bankingplugin.selections;
 
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Shape;
+import org.bukkit.Location;
+import org.bukkit.World;
+
+import java.awt.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.bukkit.Location;
-import org.bukkit.World;
-
-import com.monst.bankingplugin.utils.BlockVector2D;
 
 public class Polygonal2DSelection implements Selection {
 
@@ -100,6 +96,26 @@ public class Polygonal2DSelection implements Selection {
 	@Override
 	public SelectionType getType() {
 		return SelectionType.POLYGONAL;
+	}
+
+	class BlockVector2D {
+
+		private final int x;
+		private final int z;
+
+		BlockVector2D(int x, int z) {
+			this.x = x;
+			this.z = z;
+		}
+
+		int getBlockX() {
+			return x;
+		}
+
+		int getBlockZ() {
+			return z;
+		}
+
 	}
 
 }

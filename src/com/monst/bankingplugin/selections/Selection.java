@@ -1,11 +1,11 @@
 package com.monst.bankingplugin.selections;
 
-import java.awt.Shape;
-import java.awt.geom.Area;
-import java.util.Collection;
-
 import org.bukkit.Location;
 import org.bukkit.World;
+
+import java.awt.*;
+import java.awt.geom.Area;
+import java.util.Collection;
 
 public interface Selection {
 
