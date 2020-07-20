@@ -1,10 +1,11 @@
 package com.monst.bankingplugin.gui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -13,13 +14,10 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
-
-import net.md_5.bungee.api.ChatColor;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class BankGui extends Gui<Bank> {
 	
@@ -42,12 +40,14 @@ public class BankGui extends Gui<Bank> {
 	@Override
 	ItemStack createSlotItem(int i) {
 		switch (i) {
-		case 0:
-			return createSlotItem(GENERAL_INFO_BLOCK, "Bank Information", getGeneralInfoLore());
-		case 8:
-			return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
-		case 9:
-			return createSlotItem(Material.BOOK, "", Arrays.asList(""));
+			case 0:
+				return createSlotItem(GENERAL_INFO_BLOCK, "Bank Information", getGeneralInfoLore());
+			case 8:
+				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
+			case 9:
+				return createSlotItem(Material.BOOK, "", Arrays.asList(""));
+			case 10:
+				return createSlotItem(MULTIPLIER_INFO_BLOCK, "Multiplier", Utils.getMultiplierLore(guiSubject));
 		default:
 			return new ItemStack(Material.AIR);
 		}
@@ -56,7 +56,6 @@ public class BankGui extends Gui<Bank> {
 	@Override
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
-		case 0:
 
 		default:
 			return (player, info) -> {

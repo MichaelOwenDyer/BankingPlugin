@@ -1,9 +1,9 @@
 package com.monst.bankingplugin.gui;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -12,11 +12,9 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.HopperMenu;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
-
-import net.md_5.bungee.api.ChatColor;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AccountGui extends Gui<Account> {
 
@@ -40,12 +38,12 @@ public class AccountGui extends Gui<Account> {
 	@Override
 	ItemStack createSlotItem(int i) {
 		switch (i) {
-		case 0:
-			return createSlotItem(GENERAL_INFO_BLOCK, "Account Information", getGeneralInfoLore());
-		case 2:
-			return createSlotItem(ACCOUNT_BALANCE_BLOCK, "Account Standing", getBalanceLore());
-		case 4:
-			return createSlotItem(MULTIPLIER_INFO_BLOCK, "Multiplier", Arrays.asList(""));
+			case 0:
+				return createSlotItem(GENERAL_INFO_BLOCK, "Account Information", getGeneralInfoLore());
+			case 2:
+				return createSlotItem(ACCOUNT_BALANCE_BLOCK, "Account Standing", getBalanceLore());
+			case 4:
+				return createSlotItem(MULTIPLIER_INFO_BLOCK, "Multiplier", Utils.getMultiplierLore(guiSubject));
 		default:
 			return new ItemStack(Material.AIR);
 		}
@@ -54,7 +52,6 @@ public class AccountGui extends Gui<Account> {
 	@Override
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
-		case 0:
 
 		default:
 			return (player, info) -> {

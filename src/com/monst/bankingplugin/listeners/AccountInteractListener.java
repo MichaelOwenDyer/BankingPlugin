@@ -8,7 +8,10 @@ import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.events.account.TransferOwnershipEvent;
+import com.monst.bankingplugin.gui.AccountGui;
+import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
+import com.monst.bankingplugin.utils.ClickType.*;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -25,21 +28,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.BankUtils;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.ClickType.MigrateClickType;
-import com.monst.bankingplugin.utils.ClickType.SetClickType;
-import com.monst.bankingplugin.utils.ClickType.TransferClickType;
-import com.monst.bankingplugin.utils.ClickType.TrustClickType;
-import com.monst.bankingplugin.utils.ClickType.UntrustClickType;
-import com.monst.bankingplugin.utils.GuiUtils;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -424,6 +412,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
+		new AccountGui(account).open(player);
 		player.spigot().sendMessage(account.getInformation(player));
 	}
 

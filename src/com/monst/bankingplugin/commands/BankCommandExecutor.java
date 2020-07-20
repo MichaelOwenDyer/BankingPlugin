@@ -1,13 +1,19 @@
 package com.monst.bankingplugin.commands;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.bank.*;
+import com.monst.bankingplugin.external.WorldEditReader;
+import com.monst.bankingplugin.gui.BankGui;
+import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.selections.Selection.SelectionType;
+import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -15,31 +21,13 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.bank.BankCreateEvent;
-import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
-import com.monst.bankingplugin.events.bank.BankRemoveEvent;
-import com.monst.bankingplugin.events.bank.BankResizeEvent;
-import com.monst.bankingplugin.events.bank.TransferOwnershipEvent;
-import com.monst.bankingplugin.external.WorldEditReader;
-import com.monst.bankingplugin.gui.BankGui;
-import com.monst.bankingplugin.selections.Selection;
-import com.monst.bankingplugin.selections.Selection.SelectionType;
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
-import com.monst.bankingplugin.utils.BankUtils;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.GuiUtils;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
-
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.milkbowl.vault.economy.EconomyResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 
@@ -364,7 +352,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 		}
 		sender.spigot().sendMessage(bank.getInformation(sender));
 		if (sender instanceof Player)
-			GuiUtils.createGui(bank, (Player) sender).open((Player) sender);
+			new BankGui(bank).open((Player) sender);
 		return true;
 	}
 
@@ -691,7 +679,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 				if (field.getDataType() == 0)
 					value = Utils.formatNumber(Double.parseDouble(value.replace(",", "")));
 				else if (field.getDataType() == 3)
-					value = Utils.listifyList(value);
+					value = Utils.formatList(value);
 				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, field.getName(), value, bank.getName()));
 			} else
 				sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
