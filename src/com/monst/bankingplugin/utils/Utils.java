@@ -334,6 +334,31 @@ public class Utils {
 		return gini.doubleValue();
 	}
 
+	public static String getGiniLore(Bank bank) {
+		double gini = getGiniCoefficient(bank);
+		ChatColor color;
+		switch ((int) (gini * 5)) {
+			case 0:
+				color = ChatColor.DARK_GREEN;
+				break;
+			case 1:
+				color = ChatColor.GREEN;
+				break;
+			case 2:
+				color = ChatColor.YELLOW;
+				break;
+			case 3:
+				color = ChatColor.RED;
+				break;
+			case 4: case 5:
+				color = ChatColor.DARK_RED;
+				break;
+			default:
+				color = ChatColor.GRAY;
+		}
+		return color + String.format("%.2f", gini);
+	}
+
 	public static TextComponent getEqualityView(Bank bank) {
 		
 		double gini = getGiniCoefficient(bank);

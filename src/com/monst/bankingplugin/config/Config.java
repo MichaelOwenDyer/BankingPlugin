@@ -1,5 +1,10 @@
 package com.monst.bankingplugin.config;
 
+import com.monst.bankingplugin.BankingPlugin;
+import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.inventory.ItemStack;
+
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.AbstractMap.SimpleEntry;
@@ -7,12 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
-
-import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.inventory.ItemStack;
-
-import com.monst.bankingplugin.BankingPlugin;
+import java.util.stream.Collectors;
 
 public class Config {
 
@@ -383,8 +383,6 @@ public class Config {
 
     /**
      * Reload the configuration values from config.yml
-     * @param firstLoad Whether the config values have not been loaded before
-     * @param showMessages Whether console (error) messages should be shown
      */
 	public void reload() {
         plugin.reloadConfig();
@@ -394,20 +392,18 @@ public class Config {
         mainCommandNameBank = config.getString("main-command-names.bank");
         mainCommandNameAccount = config.getString("main-command-names.account");
 		mainCommandNameControl = config.getString("main-command-names.control");
-		interestPayoutTimes = new ArrayList<>();
-		List<String> times = config.getStringList("interest-payout-times");
-		if (times != null)
-			times.stream()
-			.map(t -> t.replace(".", ":"))
-			.map(t -> t.contains(":") ? t : t + ":00")
-			.map(t -> t.substring(0, t.indexOf(":")).length() > 1 ? t : "0" + t)
-			.forEach(t -> {
-				try {
-					interestPayoutTimes.add(LocalTime.parse(t));
-				} catch (DateTimeParseException e) {
-					plugin.getLogger().severe("Could not parse interest payout time (" + t + ")!");
-				}
-			});
+		interestPayoutTimes = config.getStringList("interest-payout-times").stream()
+		.map(t -> t.replace(".", ":"))
+		.map(t -> t.contains(":") ? t : t + ":00")
+		.map(t -> t.substring(0, t.indexOf(":")).length() > 1 ? t : "0" + t)
+		.map(t -> {
+			try {
+				return LocalTime.parse(t);
+			} catch (DateTimeParseException e) {
+				plugin.debug("Could not parse time from config: " + t);
+				return null;
+			}
+		}).collect(Collectors.toList());
 		if (plugin.isEnabled())
 			plugin.scheduleInterestPoints();
 
@@ -415,9 +411,9 @@ public class Config {
 				config.getDouble("interest-rate.default"));
 
 		interestMultipliers = new SimpleEntry<>(config.getBoolean("interest-multipliers.allow-override"),
-				config.getIntegerList("interest-multipliers.default") != null
-				? config.getIntegerList("interest-multipliers.default")
-				: Arrays.asList(1));
+				config.getIntegerList("interest-multipliers.default").isEmpty()
+				? Arrays.asList(1)
+				: config.getIntegerList("interest-multipliers.default"));
 
 		initialInterestDelay = new SimpleEntry<>(config.getBoolean("initial-interest-delay.allow-override"),
 				config.getInt("initial-interest-delay.default"));
@@ -479,8 +475,7 @@ public class Config {
         enableGriefPreventionIntegration = config.getBoolean("enable-griefprevention-integration");
 		enableWorldEditIntegration = config.getBoolean("enable-worldedit-integration");
         removeAccountOnError = config.getBoolean("remove-account-on-error");
-        blacklist = (config.getStringList("blacklist") != null) ? 
-				config.getStringList("blacklist") : new ArrayList<>();
+        blacklist = config.getStringList("blacklist");
 		bankRevenueMultiplier = config.getDouble("bank-revenue-multiplier");
 		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value.create-bank");
 		nameRegex = config.getString("name-regex");

@@ -1,10 +1,16 @@
 package com.monst.bankingplugin.commands;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
+import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
+import com.monst.bankingplugin.events.account.AccountPreRemoveEvent;
+import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
+import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.ClickType.EnumClickType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -14,24 +20,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
-import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
-import com.monst.bankingplugin.events.account.AccountPreRemoveEvent;
-import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
-import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.ClickType.EnumClickType;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import net.md_5.bungee.api.chat.TextComponent;
-
-public class AccountCommandExecutor implements CommandExecutor, Confirmable<Account> {
+public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 
 	private final BankingPlugin plugin;
 	private final AccountUtils accountUtils;
@@ -201,12 +195,13 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				if (!accounts.isEmpty()) {
 					int i = 1;
 					for (Account account : accounts)
-						sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), new TextComponent(account.getColorizedNickname()));
+						sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
+								new TextComponent(account.getColorizedNickname()));
 				} else
 					p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 			} else {
 				plugin.debug("Only players can list their own accounts");
-				sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
+				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
 			}
 		} else if (args.length == 2) {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
@@ -217,12 +212,13 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					if (!accounts.isEmpty()) {
 						int i = 1;
 						for (Account account : accounts)
-							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(p));
+							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
+									account.getInformation(p));
 					} else
 						p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
 					plugin.debug("Only players can list their own accounts");
-					sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
+					sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
 				}
 			} else if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
 				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
@@ -231,7 +227,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					if (!accounts.isEmpty()) {
 						int i = 1;
 						for (Account account : accounts)
-							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(sender));
+							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
+									account.getInformation(sender));
 						} else
 						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 
@@ -251,7 +248,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 						if (!accounts.isEmpty()) {
 							int i = 1;
 							for (Account account : accounts)
-								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(sender));
+								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
+										account.getInformation(sender));
 						} else
 							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {
@@ -270,7 +268,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					if (!accounts.isEmpty()) {
 						int i = 1;
 						for (Account account : accounts)
-							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(sender));
+							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
+									account.getInformation(sender));
 					} else
 						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 				} else {
@@ -289,7 +288,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 						if (!accounts.isEmpty()) {
 							int i = 1;
 							for (Account account : accounts)
-								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "), account.getInformation(sender));
+								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
+										account.getInformation(sender));
 						} else
 							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
 					} else {
@@ -317,22 +317,17 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 		if (args.length == 1) {
 			if (sender instanceof Player) { // account removeall
 				Collection<Account> accounts = accountUtils.getPlayerAccountsCopy((Player) sender);
-				if (!accounts.isEmpty())
-					confirmRemoveAll(sender, accounts, args);
-				else
-					sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
+				confirmRemoveAll(sender, accounts, args);
 			} else {
 				plugin.debug("Only players can remove all of their own accounts");
-				sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
+				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
 			}
 		} else if (args.length == 2) {
 			if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) { // account removeall all
-				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
+				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) || accountUtils.getAccountsCopy().stream()
+						.allMatch(account -> account.isOwner(((Player) sender)))) {
 					Collection<Account> accounts = accountUtils.getAccountsCopy();
-					if (!accounts.isEmpty())
-						confirmRemoveAll(sender, accounts, args);
-					else
-						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
+					confirmRemoveAll(sender, accounts, args);
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to remove all accounts");
 					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
@@ -345,10 +340,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
 							|| sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) { // account removeall player
 						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
-						if (!accounts.isEmpty())
-							confirmRemoveAll(sender, accounts, args);
-						else
-							sender.sendMessage(Messages.NO_PLAYER_ACCOUNTS);
+						confirmRemoveAll(sender, accounts, args);
 					} else {
 						plugin.debug(sender.getName() + " does not have permission to remove all accounts");
 						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
@@ -361,19 +353,16 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				if (args[1].equalsIgnoreCase("-b") || args[1].equalsIgnoreCase("bank")) { // account removeall bank
 					Bank bank = plugin.getBankUtils().lookupBank(args[2]);
 					if (bank != null) {
-						Collection<Account> accounts = accountUtils.getAccountsCopy().stream().filter(account -> 
-						account.isOwner((Player) sender) && account.getBank().equals(bank))
+						Collection<Account> accounts = accountUtils.getBankAccountsCopy(bank).stream()
+								.filter(account -> account.isOwner((Player) sender))
 								.collect(Collectors.toList());
-						if (!accounts.isEmpty())
-							confirmRemoveAll(sender, accounts, args);
-						else
-							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
+						confirmRemoveAll(sender, accounts, args);
 					} else
 						sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[2]));
 				}
 			} else {
 				plugin.debug("Only players can remove all of their own accounts at a certain bank");
-				sender.sendMessage(ChatColor.RED + Messages.PLAYER_COMMAND_ONLY);
+				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
 			}
 		} else if (args.length == 4) {
 			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all"))
@@ -382,10 +371,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 				Bank bank = plugin.getBankUtils().lookupBank(args[3]);
 				if (bank != null) {
 					Collection<Account> accounts = accountUtils.getBankAccountsCopy(bank);
-					if (!accounts.isEmpty())
-						confirmRemoveAll(sender, accounts, args);
-					else
-						sender.sendMessage(Messages.NO_BANK_ACCOUNTS);
+					confirmRemoveAll(sender, accounts, args);
 				} else
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[2]));
 			}
@@ -396,14 +382,15 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable<Acco
 
 	private void confirmRemoveAll(final CommandSender sender, Collection<Account> accounts, String[] args) { // XXX
 
-		if (sender instanceof Player) {
-			Player p = (Player) sender;
-			if (Config.confirmOnRemoveAll)
-				if (!commandConfirmed(p, args)) {
-					p.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_ACCOUNTS, accounts.size(),
-							accounts.size() == 1 ? "" : "s") + Messages.EXECUTE_AGAIN_TO_CONFIRM);
-					return;
-				}
+		if (accounts.isEmpty()) {
+			sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
+			return;
+		}
+
+		if (sender instanceof Player && Config.confirmOnRemoveAll && needsConfirmation(((Player) sender), args)) {
+			sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_ACCOUNTS, accounts.size(),
+					accounts.size() == 1 ? "" : "s") + Messages.EXECUTE_AGAIN_TO_CONFIRM);
+			return;
 		}
 
 		AccountRemoveAllEvent event = new AccountRemoveAllEvent(accounts);

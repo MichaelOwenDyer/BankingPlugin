@@ -1,21 +1,5 @@
 package com.monst.bankingplugin;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.AccountConfig;
@@ -23,9 +7,17 @@ import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Bank extends Ownable {
 	
@@ -178,6 +170,10 @@ public class Bank extends Ownable {
 		return getType() == BankType.ADMIN;
 	}
 
+	public boolean isPlayerBank() {
+		return getType() == BankType.PLAYER;
+	}
+
 	@Override
 	public void transferOwnership(OfflinePlayer newOwner) {
 		OfflinePlayer prevOwner = getOwner();
@@ -198,7 +194,7 @@ public class Bank extends Ownable {
 		
 		info.addExtra("\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + id + ")");
 		if (!isOwner)
-			info.addExtra("\n    Owner: " + (isAdminBank() ? ChatColor.RED + "ADMIN" : getOwnerDisplayName()));
+			info.addExtra("\n    Owner: " + (isPlayerBank() ? getOwnerDisplayName() : ChatColor.RED + "ADMIN"));
 		if (!getCoowners().isEmpty())
 			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
 		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)));
@@ -228,10 +224,10 @@ public class Bank extends Ownable {
 	public String toString() {
 		return "ID: " + getID()
 				+ "\nName: " + getName() + " (Raw: " + getRawName() + ")"
-				+ "\nOwner: " + (isAdminBank() ? "ADMIN" : getOwner().getName())
+				+ "\nOwner: " + (isPlayerBank() ? getOwner().getName() : "ADMIN")
 				+ "\nNumber of accounts: " + getAccounts().size()
 				+ "\nTotal value: " + Utils.formatNumber(getTotalValue())
-				+ "\nEquality score: " + String.format("%.2f", Utils.getGiniCoefficient(this))
+				+ "\nEquality score: " + Utils.getGiniLore(this)
 				+ "\nSelection type: " + getSelection().getType()
 				+ "\nLocation: " + getSelection().getCoordinates();
 	}
