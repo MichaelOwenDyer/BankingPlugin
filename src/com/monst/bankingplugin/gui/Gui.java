@@ -1,8 +1,6 @@
 package com.monst.bankingplugin.gui;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -11,7 +9,8 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 
-import net.md_5.bungee.api.ChatColor;
+import java.util.List;
+import java.util.stream.Collectors;
 
 abstract class Gui<Ownable> {
 
