@@ -32,19 +32,6 @@ import org.bukkit.inventory.ItemStack;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.BankUtils;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.ClickType.MigrateClickType;
-import com.monst.bankingplugin.utils.ClickType.SetClickType;
-import com.monst.bankingplugin.utils.ClickType.TransferClickType;
-import com.monst.bankingplugin.utils.ClickType.TrustClickType;
-import com.monst.bankingplugin.utils.ClickType.UntrustClickType;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 
 
 public class AccountInteractListener implements Listener {
