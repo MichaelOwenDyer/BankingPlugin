@@ -1,13 +1,16 @@
 package com.monst.bankingplugin.listeners;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.account.AccountCreateEvent;
+import com.monst.bankingplugin.events.account.AccountInfoEvent;
+import com.monst.bankingplugin.events.account.AccountRemoveEvent;
+import com.monst.bankingplugin.events.account.TransferOwnershipEvent;
+import com.monst.bankingplugin.gui.AccountGui;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -24,16 +27,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.events.account.AccountInfoEvent;
-import com.monst.bankingplugin.events.account.AccountRemoveEvent;
-import com.monst.bankingplugin.events.account.TransferOwnershipEvent;
 import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
@@ -47,15 +41,17 @@ import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 
-import net.milkbowl.vault.economy.EconomyResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 
 public class AccountInteractListener implements Listener {
 	
-	private static Map<UUID, Set<Integer>> unconfirmed = new HashMap<>();
+	private static final Map<UUID, Set<Integer>> unconfirmed = new HashMap<>();
 
-	private BankingPlugin plugin;
-	private AccountUtils accountUtils;
-	private BankUtils bankUtils;
+	private final BankingPlugin plugin;
+	private final AccountUtils accountUtils;
+	private final BankUtils bankUtils;
 
 	public AccountInteractListener(BankingPlugin plugin) {
 		this.plugin = plugin;
@@ -66,8 +62,6 @@ public class AccountInteractListener implements Listener {
 	/**
 	 * Checks every inventory interact event for an account action attempt, and
 	 * handles the action.
-	 * 
-	 * @param PlayerInteractEvent
 	 */
 	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.HIGH)
@@ -218,9 +212,9 @@ public class AccountInteractListener implements Listener {
 	/**
 	 * Create a new account
 	 *
-	 * @param executor Player, who executed the command, will receive the message
+	 * @param p Player who executed the command will receive the message
 	 *                 and become the owner of the account
-	 * @param location Where the account will be located
+	 * @param b Block where the account will be located
 	 */
 	private void create(final Player p, final Block b) {
 
@@ -415,23 +409,23 @@ public class AccountInteractListener implements Listener {
 
 	/**
 	 *
-	 * @param executor Player, who executed the command and will retrieve the
+	 * @param player Player, who executed the command and will retrieve the
 	 *                 information
 	 * @param account  Account from which the information will be retrieved
 	 */
-	private void info(Player executor, Account account) {
-		plugin.debug(String.format(executor.getName() + " is retrieving %s account info%s (#" + account.getID() + ")",
-				(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
-				(account.isCoowner(executor) ? " as a co-owner" : "")));
+	private void info(Player player, Account account) {
+		plugin.debug(String.format(player.getName() + " is retrieving %s account info%s (#" + account.getID() + ")",
+				(account.isOwner(player) ? "their" : account.getOwner().getName() + "'s"),
+				(account.isCoowner(player) ? " as a co-owner" : "")));
 
-		AccountInfoEvent event = new AccountInfoEvent(executor, account);
+		AccountInfoEvent event = new AccountInfoEvent(player, account);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Info event cancelled (#" + account.getID() + ")");
 			return;
 		}
 
-		executor.spigot().sendMessage(account.getInformation(executor));
+		player.spigot().sendMessage(account.getInformation(player));
 	}
 
 	private void set(Player executor, Account account, String[] args) {
@@ -461,12 +455,17 @@ public class AccountInteractListener implements Listener {
 		case "multiplier":
 			if (executor.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER)) {
 				int stage = 0;
-				if (args[1].equals(""))
-					stage = account.getStatus().setMultiplierStage(Integer.parseInt(args[2]));
-				else if (args[1].equals("+"))
-					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]));
-				else if (args[1].equals("-"))
-					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]) * -1);
+				switch (args[1]) {
+					case "":
+						stage = account.getStatus().setMultiplierStage(Integer.parseInt(args[2]));
+						break;
+					case "+":
+						stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]));
+						break;
+					case "-":
+						stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(args[2]) * -1);
+						break;
+				}
 
 				plugin.getAccountUtils().addAccount(account, true);
 				executor.sendMessage(
@@ -494,9 +493,6 @@ public class AccountInteractListener implements Listener {
 			} else
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY);
 			break;
-
-		default:
-			return;
 		}
 	}
 

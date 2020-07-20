@@ -1,11 +1,11 @@
 package com.monst.bankingplugin.utils;
 
+import com.monst.bankingplugin.config.Config;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.monst.bankingplugin.config.Config;
 
 public class AccountConfig {
 
@@ -140,9 +140,8 @@ public class AccountConfig {
 			interestRate = Double.parseDouble(s.replace(",", ""));
 			break;
 		case MULTIPLIERS:
-			multipliers = Arrays.stream(Utils.simplifyList(s).split(" ")).filter(string -> !string.equals(""))
-					.map(string -> Integer.parseInt(string))
-					.collect(Collectors.toList());
+			multipliers = Arrays.stream(Utils.removePunctuation(s).split(" ")).filter(string -> !string.equals(""))
+					.map(string -> Integer.parseInt(string)).collect(Collectors.toList());
 			break;
 		case INITIAL_INTEREST_DELAY:
 			initialInterestDelay = Integer.parseInt(s);
@@ -263,8 +262,8 @@ public class AccountConfig {
 		LOW_BALANCE_FEE ("low-balance-fee", 0),
 		PLAYER_ACCOUNT_LIMIT ("player-account-limit", 1);
 		
-		private String name;
-		private int dataType; // double: 0, integer: 1, boolean: 2, list: 3
+		private final String name;
+		private final int dataType; // double: 0, integer: 1, boolean: 2, list: 3
 
 		Field(String name, int dataType) {
 			this.name = name;

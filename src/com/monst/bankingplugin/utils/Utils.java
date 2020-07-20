@@ -71,12 +71,12 @@ public class Utils {
 		return String.format("%,.2f", bd);
 	}
 
-	public static String simplifyList(String list) {
+	public static String removePunctuation(String list) {
 		return list.replaceAll("\\p{Punct}", "");
 	}
 
 	public static String listifyList(String list) {
-		return "[" + simplifyList(list).replace(" ", ", ") + "]";
+		return "[" + removePunctuation(list).replace(" ", ", ") + "]";
 	}
 	
 	@SuppressWarnings("deprecation")

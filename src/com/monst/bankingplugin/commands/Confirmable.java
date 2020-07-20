@@ -15,10 +15,10 @@ import com.monst.bankingplugin.utils.Ownable;
 
 interface Confirmable<T extends Ownable> {
 	
-	static Map<UUID, String[]> unconfirmedCommands = new HashMap<>();
-	static Map<UUID, BukkitTask> confirmationTimers = new HashMap<>();
+	Map<UUID, String[]> unconfirmedCommands = new HashMap<>();
+	Map<UUID, BukkitTask> confirmationTimers = new HashMap<>();
 	
-	public default boolean commandConfirmed(Player p, String[] args) {
+	default boolean commandConfirmed(Player p, String[] args) {
 		if (unconfirmedCommands.containsKey(p.getUniqueId()) && Arrays.equals(unconfirmedCommands.get(p.getUniqueId()), args)) {
 			UUID uuid = p.getUniqueId();
 			unconfirmedCommands.remove(uuid);

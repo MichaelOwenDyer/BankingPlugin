@@ -125,9 +125,9 @@ public class BankUtils {
 
 			int x1, x2, y1, y2, z1, z2;
 
-			x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1, argX.length())) : Integer.parseInt(argX);
-			y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1, argY.length())) : Integer.parseInt(argY);
-			z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1, argZ.length())) : Integer.parseInt(argZ);
+			x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1)) : Integer.parseInt(argX);
+			y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1)) : Integer.parseInt(argY);
+			z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1)) : Integer.parseInt(argZ);
 
 			x2 = loc.getBlockX();
 			y2 = loc.getBlockY();
@@ -155,12 +155,12 @@ public class BankUtils {
 
 			int x1, y1, z1, x2, y2, z2;
 
-			x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1, argX1.length())) : Integer.parseInt(argX1);
-			y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1, argY1.length())) : Integer.parseInt(argY1);
-			z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1, argZ1.length())) : Integer.parseInt(argZ1);
-			x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1, argX2.length())) : Integer.parseInt(argX2);
-			y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1, argY2.length())) : Integer.parseInt(argY2);
-			z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1, argZ2.length())) : Integer.parseInt(argZ2);
+			x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1)) : Integer.parseInt(argX1);
+			y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1)) : Integer.parseInt(argY1);
+			z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1)) : Integer.parseInt(argZ1);
+			x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1)) : Integer.parseInt(argX2);
+			y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1)) : Integer.parseInt(argY2);
+			z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1)) : Integer.parseInt(argZ2);
 
 			if (argX1.startsWith("~"))
 				x1 += loc.getBlockX();

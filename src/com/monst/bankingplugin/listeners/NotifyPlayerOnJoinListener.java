@@ -15,7 +15,7 @@ import com.monst.bankingplugin.utils.Utils;
 
 public class NotifyPlayerOnJoinListener implements Listener {
 
-	private BankingPlugin plugin;
+	private final BankingPlugin plugin;
 
 	public NotifyPlayerOnJoinListener(BankingPlugin plugin) {
         this.plugin = plugin;

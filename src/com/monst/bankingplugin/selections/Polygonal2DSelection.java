@@ -15,11 +15,11 @@ import com.monst.bankingplugin.utils.BlockVector2D;
 
 public class Polygonal2DSelection implements Selection {
 
-	private World world;
-	private List<BlockVector2D> points;
-	private int minY;
-	private int maxY;
-	private Polygon poly;
+	private final World world;
+	private final List<BlockVector2D> points;
+	private final int minY;
+	private final int maxY;
+	private final Polygon poly;
 
 	public Polygonal2DSelection(World world, List<BlockVector2D> points, int minY, int maxY) {
 		this.world = world;

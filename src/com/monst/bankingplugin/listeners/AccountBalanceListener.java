@@ -20,8 +20,8 @@ import com.monst.bankingplugin.utils.Utils;
 
 public class AccountBalanceListener implements Listener {
 	
-	private BankingPlugin plugin;
-	private AccountUtils accountUtils;
+	private final BankingPlugin plugin;
+	private final AccountUtils accountUtils;
 
 	public AccountBalanceListener(BankingPlugin plugin) {
 		this.plugin = plugin;

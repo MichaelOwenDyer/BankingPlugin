@@ -1,32 +1,5 @@
 package com.monst.bankingplugin.sql;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.Bank.BankType;
@@ -43,6 +16,19 @@ import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.BlockVector2D;
 import com.monst.bankingplugin.utils.Callback;
 import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class Database {
 	private final Set<String> notFoundWorlds = new HashSet<>();
@@ -108,8 +94,8 @@ public abstract class Database {
 	 * All tables are created if necessary and if the database structure has to be
 	 * updated, that is done as well.
 	 * 
-	 * @param callback Callback that - if succeeded - returns the amount of shops
-	 *                 that were found (as {@code int})
+	 * @param callback Callback that - if succeeded - returns the amount of banks and accounts
+	 *                 that were found (as {@code int[]})
 	 */
 	public void connect(final Callback<int[]> callback) {
 		if (!Config.databaseTablePrefix.matches("^([a-zA-Z0-9\\-\\_]+)?$")) {

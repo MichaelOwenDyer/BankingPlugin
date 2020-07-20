@@ -37,8 +37,8 @@ import net.milkbowl.vault.economy.EconomyResponse;
 
 public class AccountProtectListener implements Listener {
 
-	private BankingPlugin plugin;
-	private AccountUtils accountUtils;
+	private final BankingPlugin plugin;
+	private final AccountUtils accountUtils;
 
 	public AccountProtectListener(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -210,7 +210,7 @@ public class AccountProtectListener implements Listener {
 				return;
 			} else {
 				p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID,
-						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
+						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 			}
 			
 			if (!account.getBank().isAdminBank()) {

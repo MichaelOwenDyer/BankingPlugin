@@ -9,7 +9,7 @@ import com.monst.bankingplugin.selections.Selection;
 public class BankResizeEvent extends BankEvent implements Cancellable {
 	
 	private boolean cancelled;
-	private Selection newSelection;
+	private final Selection newSelection;
 
 	public BankResizeEvent(Player player, Bank bank, Selection newSelection) {
 		super(player, bank);

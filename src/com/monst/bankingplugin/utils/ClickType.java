@@ -94,7 +94,7 @@ public class ClickType {
 
 	public static class SetClickType extends ClickType {
 
-		private String[] args;
+		private final String[] args;
 
 		public SetClickType(String[] args) {
 			super(EnumClickType.SET);
@@ -108,7 +108,7 @@ public class ClickType {
 
 	public static class TrustClickType extends ClickType {
 
-		private OfflinePlayer toTrust;
+		private final OfflinePlayer toTrust;
 
 		public TrustClickType(OfflinePlayer p) {
 			super(EnumClickType.TRUST);
@@ -122,7 +122,7 @@ public class ClickType {
 
 	public static class UntrustClickType extends ClickType {
 
-		private OfflinePlayer toUntrust;
+		private final OfflinePlayer toUntrust;
 
 		public UntrustClickType(OfflinePlayer p) {
 			super(EnumClickType.UNTRUST);
@@ -136,7 +136,7 @@ public class ClickType {
 
 	public static class MigrateClickType extends ClickType {
 
-		private Account toMigrate;
+		private final Account toMigrate;
 
 		/**
 		 * @param toMigrate The account chest to be migrated
@@ -157,7 +157,7 @@ public class ClickType {
 
 	public static class TransferClickType extends ClickType {
 
-		private OfflinePlayer newOwner;
+		private final OfflinePlayer newOwner;
 
 		/**
 		 * @param newOwner the player the account should be transferred to

@@ -25,6 +25,7 @@ import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.events.bank.TransferOwnershipEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
+import com.monst.bankingplugin.gui.BankGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.AccountConfig;
@@ -327,7 +328,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable<Bank> {
 					executor.sendMessage(Messages.ERROR_OCCURRED);
 				} else {
 					executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
-							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)).toString());
+							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 				}
 			}
 		}

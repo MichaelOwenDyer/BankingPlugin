@@ -9,7 +9,7 @@ import com.monst.bankingplugin.Account;
 public class AccountExtendEvent extends AccountEvent implements Cancellable {
 
 	private boolean cancelled;
-    private Location newChestLocation;
+    private final Location newChestLocation;
 
     public AccountExtendEvent(Player player, Account account, Location newChest) {
         super(player, account);

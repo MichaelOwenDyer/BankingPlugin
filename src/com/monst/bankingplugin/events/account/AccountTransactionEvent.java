@@ -9,9 +9,9 @@ import com.monst.bankingplugin.listeners.AccountBalanceListener.TransactionType;
 
 public class AccountTransactionEvent extends AccountEvent {
 	
-	private TransactionType type;
-	private BigDecimal amount;
-	private BigDecimal newBalance;
+	private final TransactionType type;
+	private final BigDecimal amount;
+	private final BigDecimal newBalance;
 	
 	public AccountTransactionEvent(Player executor, Account account, TransactionType type, BigDecimal amount,
 			BigDecimal newBalance) {

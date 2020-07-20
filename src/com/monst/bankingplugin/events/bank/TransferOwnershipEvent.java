@@ -8,7 +8,7 @@ import com.monst.bankingplugin.Bank;
 
 public class TransferOwnershipEvent extends BankEvent implements Cancellable {
 
-	private OfflinePlayer newOwner;
+	private final OfflinePlayer newOwner;
 	private boolean cancelled;
 
 	public TransferOwnershipEvent(CommandSender sender, Bank bank, OfflinePlayer newOwner) {

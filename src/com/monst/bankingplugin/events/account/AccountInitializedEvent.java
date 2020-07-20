@@ -6,7 +6,7 @@ import org.bukkit.event.HandlerList;
 public class AccountInitializedEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
-    private int amount;
+    private final int amount;
 
     public AccountInitializedEvent(int amount) {
         this.amount = amount;

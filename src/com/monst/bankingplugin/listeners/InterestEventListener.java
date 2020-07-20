@@ -31,9 +31,9 @@ import net.milkbowl.vault.economy.EconomyResponse;
 
 public class InterestEventListener implements Listener {
 	
-	private BankingPlugin plugin;
-	private AccountUtils accountUtils;
-	private BankUtils bankUtils;
+	private final BankingPlugin plugin;
+	private final AccountUtils accountUtils;
+	private final BankUtils bankUtils;
 	
 	public InterestEventListener(BankingPlugin plugin) {
 		this.plugin = plugin;

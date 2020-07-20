@@ -2,8 +2,8 @@ package com.monst.bankingplugin.utils;
 
 public class BlockVector2D {
 
-	private int x;
-	private int z;
+	private final int x;
+	private final int z;
 
 	public BlockVector2D(int x, int z) {
 		this.x = x;

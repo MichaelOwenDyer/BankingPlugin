@@ -11,7 +11,7 @@ import org.bukkit.event.HandlerList;
 public class ReloadEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
 
-    private CommandSender sender;
+    private final CommandSender sender;
     private boolean cancelled;
 
     public ReloadEvent(CommandSender sender) {

@@ -104,14 +104,11 @@ public class WorldGuardListener implements Listener {
 		}
 
 		Account account = plugin.getAccountUtils().getAccount(location);
-		if (account != null) {
-			// Don't show 'permission denied' messages for any kind of
-			// account interaction even if block interaction is not
-			// allowed in the region.
-			return true;
-		}
-		return false;
-	}
+        // Don't show 'permission denied' messages for any kind of
+        // account interaction even if block interaction is not
+        // allowed in the region.
+        return account != null;
+    }
 
     private boolean handleForLocation(Player player, Location loc, Cancellable e, IWrappedFlag<WrappedState> flag) {
         if (flag == null) {

@@ -12,7 +12,7 @@ public class AccountRemoveAllEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     
 	private boolean cancelled;
-	private Collection<Account> affectedAccounts;
+	private final Collection<Account> affectedAccounts;
 
 	public AccountRemoveAllEvent(Collection<Account> accounts) {
 		this.affectedAccounts = accounts;

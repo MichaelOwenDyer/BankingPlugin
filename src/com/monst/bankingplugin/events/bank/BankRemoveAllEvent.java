@@ -11,11 +11,11 @@ import com.monst.bankingplugin.Bank;
 
 public class BankRemoveAllEvent extends Event implements Cancellable {
 
-	private static HandlerList handlers = new HandlerList();
-	private CommandSender sender;
+	private static final HandlerList handlers = new HandlerList();
+	private final CommandSender sender;
 
 	private boolean cancelled;
-	private Collection<Bank> banks;
+	private final Collection<Bank> banks;
 
 	public BankRemoveAllEvent(CommandSender sender, Collection<Bank> banks) {
 		this.sender = sender;

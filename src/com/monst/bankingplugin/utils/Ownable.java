@@ -35,15 +35,15 @@ public abstract class Ownable {
 	public boolean isTrustedPlayerOnline() {
 		if (owner == null)
 			return false;
-		return owner.isOnline() || (coowners != null ? coowners.stream().anyMatch(p -> p.isOnline()) : false);
+		return owner.isOnline() || (coowners != null && coowners.stream().anyMatch(p -> p.isOnline()));
 	}
 
 	public boolean isTrusted(OfflinePlayer p) {
-		return p != null ? isOwner(p) || isCoowner(p) : false;
+		return p != null && (isOwner(p) || isCoowner(p));
 	}
 
 	public boolean isCoowner(OfflinePlayer p) {
-		return p != null && coowners != null ? coowners.contains(p) : false;
+		return (p != null && coowners != null) && coowners.contains(p);
 	}
 
 	public void trustPlayer(OfflinePlayer p) {

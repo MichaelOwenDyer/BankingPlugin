@@ -10,10 +10,10 @@ import org.bukkit.World;
 
 public class CuboidSelection implements Selection {
 
-	private World world;
-	private Location min;
-	private Location max;
-	private Rectangle rectangle;
+	private final World world;
+	private final Location min;
+	private final Location max;
+	private final Rectangle rectangle;
 
 	public CuboidSelection(World world, Location loc1, Location loc2) {
 		this.world = world;

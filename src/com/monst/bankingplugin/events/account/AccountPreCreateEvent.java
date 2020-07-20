@@ -6,7 +6,7 @@ import org.bukkit.event.Cancellable;
 public class AccountPreCreateEvent extends AccountEvent implements Cancellable {
 	
 	private boolean cancelled;
-	private String[] args;
+	private final String[] args;
 
 	public AccountPreCreateEvent(Player player, String[] args) {
 		super(player, null);

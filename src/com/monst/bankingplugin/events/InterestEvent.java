@@ -10,8 +10,8 @@ import net.milkbowl.vault.economy.Economy;
 public class InterestEvent extends Event {
 	
 	private static final HandlerList handlers = new HandlerList();
-	private BankingPlugin plugin;
-	private Economy econ;
+	private final BankingPlugin plugin;
+	private final Economy econ;
 
 	public InterestEvent(BankingPlugin plugin) {
 		this.plugin = plugin;

@@ -11,7 +11,7 @@ import com.monst.bankingplugin.BankingPlugin;
 
 public class UpdateChecker {
 
-    private BankingPlugin plugin;
+    private final BankingPlugin plugin;
     private String version;
     private String link;
 

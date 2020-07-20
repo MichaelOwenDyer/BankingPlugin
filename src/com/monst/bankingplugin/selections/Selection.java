@@ -9,7 +9,7 @@ import org.bukkit.World;
 
 public interface Selection {
 
-	public enum SelectionType {
+	enum SelectionType {
 		CUBOID, POLYGONAL
 	}
 
@@ -18,42 +18,42 @@ public interface Selection {
 	 * 
 	 * @return The minimum point
 	 */
-	public Location getMinimumPoint();
+    Location getMinimumPoint();
 
 	/**
 	 * Get the upper point of a selection.
 	 * 
 	 * @return The maximum point
 	 */
-	public Location getMaximumPoint();
+    Location getMaximumPoint();
 
 	/**
 	 * Get the world.
 	 * 
 	 * @return
 	 */
-	public World getWorld();
+    World getWorld();
 
 	/**
 	 * Get a coordinate string that defines the location of the selection.
 	 * 
 	 * @return A coordinate string.
 	 */
-	public String getCoordinates();
+    String getCoordinates();
 
 	/**
 	 * Get the number of blocks in the selection.
 	 * 
 	 * @return number of blocks
 	 */
-	public int getVolume();
+    int getVolume();
 	
 	/**
 	 * Get whether or not this selection overlaps with another one.
 	 * @param sel
 	 * @return
 	 */
-	public default boolean overlaps(Selection sel) {
+	default boolean overlaps(Selection sel) {
 		Area area = new Area(getShape());
 		area.intersect(new Area(sel.getShape()));
 		return !area.isEmpty();
@@ -63,14 +63,14 @@ public interface Selection {
 	 * Get the shape associated with this selection.
 	 * @return
 	 */
-	public Shape getShape();
+    Shape getShape();
 
 	/**
 	 * Get all vertices of the selection.
 	 * 
 	 * @return a Collection<Location> representing all vertices.
 	 */
-	public Collection<Location> getVertices();
+    Collection<Location> getVertices();
 
 	/**
 	 * Returns true based on whether the selection contains the point,
@@ -78,13 +78,13 @@ public interface Selection {
 	 * @param pt
 	 * @return
 	 */
-	public boolean contains(Location pt);
+    boolean contains(Location pt);
 
 	/**
 	 * Returns the type of selection.
 	 * 
 	 * @return SelectionType.CUBOID or SelectionType.POLYGONAL
 	 */
-	public SelectionType getType();
+    SelectionType getType();
 
 }
