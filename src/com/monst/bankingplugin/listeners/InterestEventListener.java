@@ -1,33 +1,23 @@
 package com.monst.bankingplugin.listeners;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.InterestEvent;
+import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.InterestEvent;
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
-import com.monst.bankingplugin.utils.AccountStatus;
-import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.BankUtils;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Utils;
-
-import net.milkbowl.vault.economy.EconomyResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class InterestEventListener implements Listener {
 	
@@ -82,19 +72,19 @@ public class InterestEventListener implements Listener {
 						if (!account.getBank().isAdminBank())
 							trustedPlayers.remove(account.getBank().getOwner());
 
-						if (trustedPlayers.size() != 0 && (double) config.getOrDefault(Field.MINIMUM_BALANCE) > 0
+						if (!trustedPlayers.isEmpty() && (double) config.getOrDefault(Field.MINIMUM_BALANCE) > 0
 								&& account.getBalance().compareTo(BigDecimal
-										.valueOf((double) config.getOrDefault(Field.MINIMUM_BALANCE))) == -1) {
+								.valueOf((double) config.getOrDefault(Field.MINIMUM_BALANCE))) < 0) {
 
 							totalAccountFees.put(accountOwner, totalAccountFees.getOrDefault(accountOwner, BigDecimal.ZERO)
 									.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));
-							accountFeeCounter.put(accountOwner, accountFeeCounter.getOrDefault(accountOwner, 0).intValue() + 1);
+							accountFeeCounter.put(accountOwner, accountFeeCounter.getOrDefault(accountOwner, 0) + 1);
 							if (!account.getBank().isAdminBank()) {
 								totalBankFees.put(account.getBank().getOwner(),
 									totalBankFees.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
 												.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));
 								bankFeeCounter.put(account.getBank().getOwner(),
-									bankFeeCounter.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
+										bankFeeCounter.getOrDefault(account.getBank().getOwner(), 0) + 1);
 							}
 							if (Config.enableInterestLog) {
 								plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
@@ -117,15 +107,15 @@ public class InterestEventListener implements Listener {
 						final int payoutSplit = trustedPlayers.size();
 						for (OfflinePlayer recipient : trustedPlayers) {
 							totalAccountInterest.put(recipient, totalAccountInterest.getOrDefault(recipient, BigDecimal.ZERO)
-									.add(interest.divide(BigDecimal.valueOf(payoutSplit))));
-							accountInterestCounter.put(recipient, accountInterestCounter.getOrDefault(recipient, 0).intValue() + 1);
+									.add(interest.divide(BigDecimal.valueOf(payoutSplit), RoundingMode.HALF_EVEN)));
+							accountInterestCounter.put(recipient, accountInterestCounter.getOrDefault(recipient, 0) + 1);
 						}
 						if (payoutSplit != 0 && !account.getBank().isAdminBank()) {
 							totalBankInterest.put(account.getBank().getOwner(),
 									totalBankInterest.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
 											.add(interest));
 							bankInterestCounter.put(account.getBank().getOwner(),
-									bankInterestCounter.getOrDefault(account.getBank().getOwner(), 0).intValue() + 1);
+									bankInterestCounter.getOrDefault(account.getBank().getOwner(), 0) + 1);
 						}
 
 						accountUtils.addAccount(account, true);
@@ -138,9 +128,7 @@ public class InterestEventListener implements Listener {
 						plugin.getDatabase().logLogout(accountOwner.getPlayer(), null);
 				}
 				
-				/**
-				 * Bank owners earn revenue on their banks
-				 */
+				// Bank owners earn revenue on their banks
 				for (OfflinePlayer bankOwner : playerBanks.keySet()) {
 
 					for (Bank bank : playerBanks.get(bankOwner)) {
@@ -173,12 +161,12 @@ public class InterestEventListener implements Listener {
 					}
 				}
 
-				World fallbackWorld = playerAccounts.values().stream().flatMap(list -> list.stream())
+				World fallbackWorld = playerAccounts.values().stream().flatMap(Collection::stream)
 						.collect(Collectors.toList()).get(0).getLocation().getWorld();
 
-				/**
-				 * Bank owners receive low balance fees
-				 */
+
+				// Bank owners receive low balance fees
+
 				for (OfflinePlayer bankOwner : totalBankFees.keySet()) {
 
 					if (totalBankFees.get(bankOwner).signum() == 0)
@@ -203,9 +191,7 @@ public class InterestEventListener implements Listener {
 										bankFeeCounter.get(bankOwner) == 1 ? "" : "s"));
 				}
 
-				/**
-				 * Customers pay low balance fees
-				 */
+				// Customers pay low balance fees
 				for (OfflinePlayer customer : totalAccountFees.keySet()) {
 
 					if (totalAccountFees.get(customer).signum() == 0)
@@ -230,9 +216,7 @@ public class InterestEventListener implements Listener {
 										accountFeeCounter.get(customer) == 1 ? "" : "s"));
 				}
 
-				/**
-				 * Account owners receive interest payments
-				 */
+				// Account owners receive interest payments
 				for (OfflinePlayer customer : totalAccountInterest.keySet()) {
 
 					if (totalAccountInterest.get(customer).signum() == 0)
@@ -259,9 +243,7 @@ public class InterestEventListener implements Listener {
 
 				}
 
-				/**
-				 * Bank owners pay interest
-				 */
+				// Bank owners pay interest
 				for (OfflinePlayer bankOwner : totalBankInterest.keySet()) {
 					
 					if (totalBankInterest.get(bankOwner).signum() == 0)

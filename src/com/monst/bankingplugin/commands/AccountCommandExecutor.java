@@ -10,6 +10,7 @@ import com.monst.bankingplugin.events.account.AccountPreRemoveEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.ClickType.EnumClickType;
+import com.sun.istack.internal.NotNull;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,7 +21,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +36,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		List<AccountSubCommand> subCommands = plugin.getAccountCommand().getSubCommands().stream()
 				.map(cmd -> (AccountSubCommand) cmd).collect(Collectors.toList());
 
@@ -51,7 +51,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		if (subCommand == null) {
 			plugin.getLogger().severe("Null command!");
 			plugin.debug("Null command! Sender: " + sender.getName()
-					+ ", command: " + command.getName() + " " +  Arrays.stream(args).collect(Collectors.joining(" ")));
+					+ ", command: " + command.getName() + " " + String.join(" ", args));
 			return false;
 		}
 
@@ -423,7 +423,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				if (args.length > 3) {
 					StringBuilder sb = new StringBuilder(nickname);
 					for (int i = 3; i < args.length; i++)
-						sb.append(" " + args[i]);
+						sb.append(" ").append(args[i]);
 					nickname = sb.toString();
 				}
 				if (!Utils.isAllowedName(args[1])) {
@@ -578,7 +578,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		
 		p.sendMessage(String.format(Messages.CLICK_CHEST_TRANSFER, newOwner.getName()));
 		ClickType.setPlayerClickType(p, new ClickType.TransferClickType(newOwner));
-		plugin.debug(p.getName() + " is transfering ownership of an account to " + newOwner.getName());
+		plugin.debug(p.getName() + " is transferring ownership of an account to " + newOwner.getName());
 		return true;
 	}
 

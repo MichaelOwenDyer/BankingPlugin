@@ -140,8 +140,8 @@ public class AccountConfig {
 			interestRate = Double.parseDouble(s.replace(",", ""));
 			break;
 		case MULTIPLIERS:
-			multipliers = Arrays.stream(Utils.removePunctuation(s).split(" ")).filter(string -> !string.equals(""))
-					.map(string -> Integer.parseInt(string)).collect(Collectors.toList());
+			multipliers = Arrays.stream(Utils.removePunctuation(s).split(" ")).filter(string -> !string.isEmpty())
+					.map(Integer::parseInt).collect(Collectors.toList());
 			break;
 		case INITIAL_INTEREST_DELAY:
 			initialInterestDelay = Integer.parseInt(s);

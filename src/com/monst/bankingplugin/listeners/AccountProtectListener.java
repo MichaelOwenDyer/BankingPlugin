@@ -1,8 +1,11 @@
 package com.monst.bankingplugin.listeners;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.events.account.AccountExtendEvent;
+import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,18 +25,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.events.account.AccountExtendEvent;
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
-import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
-
-import net.milkbowl.vault.economy.EconomyResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class AccountProtectListener implements Listener {
 
@@ -164,7 +157,7 @@ public class AccountProtectListener implements Listener {
 			neighborFacing = data.getType() == Type.LEFT ? BlockFace.NORTH : BlockFace.SOUTH;
 			break;
 		default:
-			neighborFacing = null;
+			throw new IllegalStateException("Unknown chest orientation! " + data.toString());
 		}
 
 		b2 = b.getRelative(neighborFacing);
@@ -272,7 +265,7 @@ public class AccountProtectListener implements Listener {
 	/**
 	 * Prevents unauthorized players from editing other players' accounts
 	 * 
-	 * @param InventoryClickEvent e
+	 * @param e InventoryClickEvent
 	 */
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onAccountItemClick(InventoryClickEvent e) {

@@ -1,14 +1,10 @@
 package com.monst.bankingplugin.utils;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
+import com.earth2me.essentials.Essentials;
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
@@ -20,11 +16,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
-import com.earth2me.essentials.Essentials;
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class AccountUtils {
 
@@ -65,7 +61,7 @@ public class AccountUtils {
      * @return Read-only collection of all accounts, may contain duplicates
      */
     public Collection<Account> getAccounts() {
-		return accountLocationMap.values().stream().distinct().collect(Collectors.toSet());
+		return new HashSet<>(accountLocationMap.values());
     }
 
     /**
@@ -166,16 +162,13 @@ public class AccountUtils {
      * Remove an account. May not work properly if double chest doesn't exist!
      * @param account Account to remove
      * @param removeFromDatabase Whether the account should also be removed from the database
-     * @see AccountUtils#removeAccountById(int, boolean)
-     */
+	 */
     public void removeAccount(Account account, boolean removeFromDatabase) {
         removeAccount(account, removeFromDatabase, null);
     }
 
-	public int removeAccount(Collection<Account> accounts, boolean removeFromDatabase) {
-		int removed = accounts.size();
+	public void removeAccount(Collection<Account> accounts, boolean removeFromDatabase) {
 		accounts.forEach(account -> removeAccount(account, removeFromDatabase));
-		return removed;
 	}
 
     /**
@@ -199,7 +192,7 @@ public class AccountUtils {
 
                     if (spl.length > 1) {
                         try {
-                            int newLimit = Integer.valueOf(spl[1]);
+                            int newLimit = Integer.parseInt(spl[1]);
                             if (newLimit < 0) {
                                 limit = -1;
                                 break;
@@ -223,8 +216,8 @@ public class AccountUtils {
 	 * @param player Player whose accounts should be counted
 	 * @return The number of accounts owned by the player
 	 */
-	public int getNumberOfAccounts(OfflinePlayer owner) {
-		return (int) Math.round(getPlayerAccountsCopy(owner).stream()
+	public int getNumberOfAccounts(OfflinePlayer player) {
+		return (int) Math.round(getPlayerAccountsCopy(player).stream()
 				.mapToDouble(account -> account.getChestSize() == 1 ? 1.0 : 0.5).sum());
     }
 

@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.gui;
 
+import com.sun.istack.internal.NotNull;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -38,9 +39,10 @@ abstract class Gui<Ownable> {
 
 	abstract ClickHandler createClickHandler(int i);
 
-	static ItemStack createSlotItem(Material material, String displayName, List<String> lore) {
+	static ItemStack createSlotItem(@NotNull Material material, @NotNull String displayName, @NotNull List<String> lore) {
 		ItemStack item = new ItemStack(material);
 		ItemMeta itemMeta = item.getItemMeta();
+		assert itemMeta != null;
 		itemMeta.setDisplayName(ChatColor.GRAY + displayName);
 		itemMeta.setLore(lore.stream().map(s -> ChatColor.GRAY + s).collect(Collectors.toList()));
 		item.setItemMeta(itemMeta);

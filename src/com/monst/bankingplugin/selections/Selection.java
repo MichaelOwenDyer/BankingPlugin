@@ -1,11 +1,11 @@
 package com.monst.bankingplugin.selections;
 
-import java.awt.Shape;
-import java.awt.geom.Area;
-import java.util.Collection;
-
 import org.bukkit.Location;
 import org.bukkit.World;
+
+import java.awt.*;
+import java.awt.geom.Area;
+import java.util.Collection;
 
 public interface Selection {
 
@@ -30,7 +30,7 @@ public interface Selection {
 	/**
 	 * Get the world.
 	 * 
-	 * @return
+	 * @return World
 	 */
     World getWorld();
 
@@ -50,8 +50,8 @@ public interface Selection {
 	
 	/**
 	 * Get whether or not this selection overlaps with another one.
-	 * @param sel
-	 * @return
+	 * @param sel The other selection
+	 * @return Yes or no
 	 */
 	default boolean overlaps(Selection sel) {
 		Area area = new Area(getShape());
@@ -61,7 +61,7 @@ public interface Selection {
 	
 	/**
 	 * Get the shape associated with this selection.
-	 * @return
+	 * @return the shape.
 	 */
     Shape getShape();
 
@@ -75,8 +75,8 @@ public interface Selection {
 	/**
 	 * Returns true based on whether the selection contains the point,
 	 *
-	 * @param pt
-	 * @return
+	 * @param pt The point that may or may not be contained
+	 * @return Whether or not the point is contained
 	 */
     boolean contains(Location pt);
 

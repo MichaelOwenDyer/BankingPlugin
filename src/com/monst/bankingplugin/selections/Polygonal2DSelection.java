@@ -76,7 +76,7 @@ public class Polygonal2DSelection implements Selection {
 	@Override
 	public Collection<Location> getVertices() {
 		Collection<Location> vertices = new HashSet<>();
-		points.stream().forEach(point -> {
+		points.forEach(point -> {
 			vertices.add(new Location(world, point.getBlockX(), minY, point.getBlockZ()));
 			vertices.add(new Location(world, point.getBlockX(), maxY, point.getBlockZ()));
 		});

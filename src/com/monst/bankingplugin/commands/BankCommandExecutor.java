@@ -11,6 +11,7 @@ import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
+import com.sun.istack.internal.NotNull;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -40,7 +41,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
 		List<BankSubCommand> subCommands = plugin.getBankCommand().getSubCommands().stream()
 				.map(cmd -> (BankSubCommand) cmd).collect(Collectors.toList());
 		
@@ -55,7 +56,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (subCommand == null) {
 			plugin.getLogger().severe("Null command!");
 			plugin.debug("Null command! Sender: " + sender.getName() + ", command: " + command.getName() + " "
-					+ Arrays.stream(args).collect(Collectors.joining(" ")));
+					+ String.join(" ", args));
 			return false;
 		}
 
@@ -69,8 +70,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			promptBankRemove(sender, args);
 			break;
 		case "info":
-			if (!promptBankInfo(sender, args))
-				sender.sendMessage(subCommand.getHelpMessage(sender));
+			promptBankInfo(sender, args);
 			break;
 		case "list":
 			promptBankList(sender, args);
@@ -228,7 +228,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 		}
 
-		if (bank.create(true)) {
+		if (bank.create()) {
 			bankUtils.addBank(bank, true);
 			plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
 			p.sendMessage(Messages.BANK_CREATED);
@@ -332,7 +332,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		sender.sendMessage(Messages.BANK_REMOVED);
 	}
 
-	private boolean promptBankInfo(CommandSender sender, String[] args) {
+	private void promptBankInfo(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to show bank info");
 
 		Bank bank = null;
@@ -343,7 +343,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				if (bank == null) {
 					plugin.debug(p.getName() + " wasn't standing in a bank");
 					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
-					return true;
+					return;
 				}
 			} else
 				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
@@ -352,13 +352,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			if (bank == null) {
 				plugin.debug("No bank could be found under the identifier " + args[1]);
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
-				return true;
+				return;
 			}
 		}
-		sender.spigot().sendMessage(bank.getInformation(sender));
+
 		if (sender instanceof Player)
 			new BankGui(bank).open((Player) sender);
-		return true;
+		sender.spigot().sendMessage(bank.getInformation(sender));
 	}
 
 	private void promptBankList(CommandSender sender, String[] args) {
@@ -469,7 +469,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			try {
 				selection = bankUtils.parseCoordinates(args, p.getLocation());
 			} catch (NumberFormatException e) {
-				plugin.debug("Could not parse coordinates in command args: \"" + args + "\"");
+				plugin.debug("Could not parse coordinates in command args: \"" + Arrays.toString(args) + "\"");
 				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
 				return false;
 			}
@@ -563,11 +563,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
 				return true;
 			}
-			sb = new StringBuilder(args[1]);
-			for (int i = 2; i < args.length; i++)
-				sb.append(" " + args[i]);
-			newName = sb.toString();
-		} else if (args.length >= 3) {
+			newName = args[1];
+		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
 				plugin.debug("Could not find bank with name " + args[1]);
@@ -576,7 +573,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 			sb = new StringBuilder(args[1]);
 			for (int i = 3; i < args.length; i++)
-				sb.append(" " + args[i]);
+				sb.append(" ").append(args[i]);
 			newName = sb.toString();
 		}
 
@@ -677,7 +674,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (field == Field.MULTIPLIERS) {
 			StringBuilder sb = new StringBuilder(value);
 			for (int i = 4; i < args.length; i++)
-				sb.append(" " + args[i]);
+				sb.append(" ").append(args[i]);
 			value = sb.toString();
 		}
 		
@@ -790,7 +787,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 					return true;
 				}
 			}
-		} else if (args.length >= 3) {
+		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
 				plugin.debug("No bank could be found under the identifier " + args[1]);
@@ -815,7 +812,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 		if (bank.isAdminBank() && newOwner == null) {
 			plugin.debug("Bank is already an admin bank");
-			sender.sendMessage(String.format(Messages.ALREADY_ADMIN_BANK));
+			sender.sendMessage(Messages.ALREADY_ADMIN_BANK);
 			return true;
 		}
 		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRANSFER_ADMIN)) {

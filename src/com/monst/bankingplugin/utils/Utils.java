@@ -18,6 +18,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -35,7 +36,7 @@ public class Utils {
 	}
 	
 	public static List<String> getOnlinePlayerNames(BankingPlugin plugin) {
-		return plugin.getServer().getOnlinePlayers().stream().map(player -> player.getName()).sorted()
+		return plugin.getServer().getOnlinePlayers().stream().map(HumanEntity::getName).sorted()
 				.collect(Collectors.toList());
 	}
 
@@ -86,7 +87,7 @@ public class Utils {
 		stackedMultipliers.get(0).add(multipliers.get(0));
 		int level = 0;
 		for (int i = 1; i < multipliers.size(); i++) {
-			if (multipliers.get(i) == stackedMultipliers.get(level).get(0))
+			if (multipliers.get(i).equals(stackedMultipliers.get(level).get(0)))
 				stackedMultipliers.get(level).add(multipliers.get(i));
 			else {
 				stackedMultipliers.add(new ArrayList<>());
@@ -108,8 +109,8 @@ public class Utils {
 	private static List<String> getMultiplierLore(Bank bank, int highlightStage) {
 		List<Integer> multipliers = (List<Integer>) bank.getAccountConfig().getOrDefault(AccountConfig.Field.MULTIPLIERS);
 
-		if (multipliers.size() == 0)
-			return Arrays.asList(ChatColor.GREEN + "1x");
+		if (multipliers.isEmpty())
+			return Collections.singletonList(ChatColor.GREEN + "1x");
 
 		List<List<Integer>> stackedMultipliers = Utils.getStackedList(multipliers);
 
@@ -148,7 +149,7 @@ public class Utils {
 		for (int i = 0; i < stackedMultipliers.size(); i++) {
 			StringBuilder number = new StringBuilder(i == stage ? "" + ChatColor.GREEN + ChatColor.BOLD : "" + ChatColor.GRAY);
 
-			number.append(" " + stackedMultipliers.get(i).get(0) + "x");
+			number.append(" ").append(stackedMultipliers.get(i).get(0)).append("x");
 
 			int levelSize = stackedMultipliers.get(i).size();
 			if (levelSize > 1) {
@@ -191,7 +192,7 @@ public class Utils {
 		TextComponent multiplierView = new TextComponent();
 		multiplierView.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 
-		if (multipliers.size() == 0) {
+		if (multipliers.isEmpty()) {
 			multiplierView.setText(ChatColor.GREEN + "1x");
 			return multiplierView;
 		}

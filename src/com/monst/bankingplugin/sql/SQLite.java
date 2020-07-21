@@ -1,16 +1,15 @@
 package com.monst.bankingplugin.sql;
 
+import com.monst.bankingplugin.BankingPlugin;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.scheduler.BukkitRunnable;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import org.bukkit.scheduler.BukkitRunnable;
-
-import com.monst.bankingplugin.BankingPlugin;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
 public class SQLite extends Database {
 
@@ -45,7 +44,7 @@ public class SQLite extends Database {
         }
         
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(String.format("jdbc:sqlite:" + dbFile));
+        config.setJdbcUrl("jdbc:sqlite:" + dbFile);
         config.setConnectionTestQuery("SELECT 1");
 
         return new HikariDataSource(config);

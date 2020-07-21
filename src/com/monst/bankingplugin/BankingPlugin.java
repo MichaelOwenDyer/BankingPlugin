@@ -124,9 +124,7 @@ public class BankingPlugin extends JavaPlugin {
         }
 
 		switch (Utils.getServerVersion()) {
-		case "v1_15_R1":
-			break;
-		case "v1_16_R1":
+		case "v1_15_R1": case "v1_16_R1":
 			break;
 		default:
 			debug("Server version not officially supported: " + Utils.getServerVersion() + "!");

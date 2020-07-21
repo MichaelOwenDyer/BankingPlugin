@@ -94,6 +94,7 @@ public class AccountInteractListener implements Listener {
 
 			case REMOVE:
 
+				assert account != null;
 				if (confirmRemove(p, account))
 					remove(p, account);
 				e.setCancelled(true);
@@ -101,6 +102,7 @@ public class AccountInteractListener implements Listener {
 
 			case INFO:
 
+				assert account != null;
 				info(p, account);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
@@ -117,6 +119,7 @@ public class AccountInteractListener implements Listener {
 			case TRUST:
 
 				OfflinePlayer playerToTrust = ((TrustClickType) clickType).getPlayerToTrust();
+				assert account != null;
 				trust(p, account, playerToTrust);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
@@ -125,15 +128,17 @@ public class AccountInteractListener implements Listener {
 			case UNTRUST:
 
 				OfflinePlayer playerToUntrust = ((UntrustClickType) clickType).getPlayerToUntrust();
+				assert account != null;
 				untrust(p, account, playerToUntrust);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
 				break;
 
 			case MIGRATE:
-				if (((MigrateClickType) clickType).isFirstClick())
+				if (((MigrateClickType) clickType).isFirstClick()) {
+					assert account != null;
 					migratePartOne(p, account);
-				else {
+				} else {
 					if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 						p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED);
 						plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
@@ -423,7 +428,7 @@ public class AccountInteractListener implements Listener {
 
 		case "nickname":
 			if (account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_SET_NICKNAME_OTHER)) {
-				if (args[1].equals("")) {
+				if (args[1].isEmpty()) {
 					plugin.debug(String.format(
 							executor.getName() + " has reset %s account nickname%s (#" + account.getID() + ")",
 							(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
@@ -706,7 +711,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		boolean hasDefaultNickname = account.getRawNickname().contentEquals(account.getDefaultNickname());
+		boolean hasDefaultNickname = account.hasDefaultNickname();
 
 		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
 		account.transferOwnership(newOwner);

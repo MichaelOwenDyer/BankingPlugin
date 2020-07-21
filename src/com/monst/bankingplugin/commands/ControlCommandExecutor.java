@@ -1,9 +1,10 @@
 package com.monst.bankingplugin.commands;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.events.InterestEvent;
+import com.monst.bankingplugin.events.ReloadEvent;
+import com.monst.bankingplugin.utils.*;
+import com.sun.istack.internal.NotNull;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -11,14 +12,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.events.InterestEvent;
-import com.monst.bankingplugin.events.ReloadEvent;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.UpdateChecker;
-import com.monst.bankingplugin.utils.Utils;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ControlCommandExecutor implements CommandExecutor {
 
@@ -29,11 +24,11 @@ public class ControlCommandExecutor implements CommandExecutor {
 	}
 
 	@Override
-    public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
-		
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+
 		List<ControlSubCommand> subCommands = plugin.getControlCommand().getSubCommands().stream()
 				.map(cmd -> (ControlSubCommand) cmd).collect(Collectors.toList());
-		
+
 		ControlSubCommand subCommand = null;
 
 		for (ControlSubCommand controlSubCommand : subCommands)
@@ -45,29 +40,29 @@ public class ControlCommandExecutor implements CommandExecutor {
 		if (subCommand == null) {
 			plugin.getLogger().severe("Null command!");
 			plugin.debug("Null command! Sender: " + sender.getName() + ", command: " + command.getName() + " "
-					+ Arrays.stream(args).collect(Collectors.joining(" ")));
+					+ String.join(" ", args));
 			return false;
 		}
 
 		switch (subCommand.getName().toLowerCase()) {
-		case "version":
-			showVersion(sender);
-			break;
-		case "config":
-			if (!changeConfig(sender, args))
-				sender.sendMessage(subCommand.getHelpMessage(sender));
-			break;
-		case "reload":
-			promptReload(sender);
-			break;
-		case "update":
-			// checkUpdates(sender);
-			return false;
-		case "payinterest":
-			promptPayout(sender);
-			break;
-		default:
-			return false;
+			case "version":
+				showVersion(sender);
+				break;
+			case "config":
+				if (! changeConfig(sender, args))
+					sender.sendMessage(subCommand.getHelpMessage(sender));
+				break;
+			case "reload":
+				promptReload(sender);
+				break;
+			case "update":
+				// checkUpdates(sender);
+				return false;
+			case "payinterest":
+				promptPayout(sender);
+				break;
+			default:
+				return false;
 		}
 		return true;
 	}
@@ -97,7 +92,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 		String property = args[2];
 		StringBuilder sb = new StringBuilder(args[3]);
 		for (int i = 4; i < args.length; i++) {
-			sb.append(" " + args[i]);
+			sb.append(" ").append(args[i]);
 		}
 		String value = sb.toString();
 

@@ -71,7 +71,7 @@ public class Bank extends Ownable {
 		this.type = type;
 	}
 	
-	public boolean create(boolean showConsoleMessages) {
+	public boolean create() {
 		if (created) {
 			plugin.debug("Bank was already created! (#" + id + ")");
 			return false;
@@ -94,7 +94,7 @@ public class Bank extends Ownable {
 
 	public BigDecimal getTotalValue() {
 		if (created)
-			return accounts.stream().map(account -> account.getBalance()).reduce(BigDecimal.ZERO,
+			return accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO,
 					(value, sum) -> sum.add(value)).setScale(2, RoundingMode.HALF_EVEN);
 		else
 			return BigDecimal.ZERO;
@@ -119,10 +119,8 @@ public class Bank extends Ownable {
 
 	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
 		Map<OfflinePlayer, BigDecimal> customerBalances = new HashMap<>();
-		getCustomerAccounts().entrySet().forEach(entry -> {
-			customerBalances.put(entry.getKey(),
-					entry.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, (a, bd) -> a.add(bd)));
-		});
+		getCustomerAccounts().forEach((key, value) -> customerBalances.put(key,
+				value.stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add)));
 		return customerBalances;
 	}
 

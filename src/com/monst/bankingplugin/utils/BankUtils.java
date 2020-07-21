@@ -1,26 +1,19 @@
 package com.monst.bankingplugin.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Selection;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class BankUtils {
 
@@ -48,7 +41,7 @@ public class BankUtils {
 	/**
 	 * Get the bank in a given selection
 	 *
-	 * @param protectedRegion Region of the bank
+	 * @param selection Region of the bank
 	 * @return Bank in the given region or <b>null</b> if no bank is found there
 	 */
 	public Bank getBank(Selection selection) {
@@ -234,7 +227,6 @@ public class BankUtils {
 	 * @param removeFromDatabase Whether the bank should also be removed from the
 	 *                           database
 	 * @param callback           Callback that - if succeeded - returns null
-	 * @see BankUtils#removeBankById(int, boolean, Callback)
 	 */
 	public void removeBank(Bank bank, boolean removeFromDatabase, Callback<Void> callback) {
 		plugin.debug("Removing bank (#" + bank.getID() + ")");
@@ -254,21 +246,17 @@ public class BankUtils {
 	 * @param bank               Bank to remove
 	 * @param removeFromDatabase Whether the bank should also be removed from the
 	 *                           database
-	 * @see BankUtils#removeBankById(int, boolean)
 	 */
 	public void removeBank(Bank bank, boolean removeFromDatabase) {
 		removeBank(bank, removeFromDatabase, null);
     }
 
-	public int removeBank(Collection<Bank> banks, boolean removeFromDatabase) {
-		int count = banks.size();
-
+	public void removeBank(Collection<Bank> banks, boolean removeFromDatabase) {
 		for (Bank bank : banks) {
 			for (Account account : bank.getAccounts())
 				plugin.getAccountUtils().removeAccount(account, removeFromDatabase);
 			removeBank(bank, removeFromDatabase);
 		}
-		return count;
 	}
 
 	/**
@@ -293,7 +281,7 @@ public class BankUtils {
 
 					if (spl.length > 1) {
 						try {
-							int newLimit = Integer.valueOf(spl[1]);
+							int newLimit = Integer.parseInt(spl[1]);
 							if (newLimit < 0) {
 								limit = -1;
 								break;
@@ -351,8 +339,8 @@ public class BankUtils {
 	 * @param player Player whose accounts should be counted
 	 * @return The number of accounts owned by the player
 	 */
-	public int getNumberOfBanks(OfflinePlayer owner) {
-		return Math.round(getPlayerBanksCopy(owner).stream().count());
+	public int getNumberOfBanks(OfflinePlayer player) {
+		return Math.round((long) getPlayerBanksCopy(player).size());
 	}
 
     /**
@@ -396,7 +384,7 @@ public class BankUtils {
 					public void onResult(Map<Bank, Collection<Account>> result) {
 
 						for (Bank bank : result.keySet()) {
-							if (bank.create(showConsoleMessages)) {
+							if (bank.create()) {
 								addBank(bank, false);
 								postReload[0]++;
 								for (Account account : result.get(bank)) {

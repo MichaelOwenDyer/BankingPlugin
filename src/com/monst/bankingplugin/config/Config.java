@@ -9,9 +9,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Config {
@@ -395,7 +396,7 @@ public class Config {
 		interestPayoutTimes = config.getStringList("interest-payout-times").stream()
 		.map(t -> t.replace(".", ":"))
 		.map(t -> t.contains(":") ? t : t + ":00")
-		.map(t -> t.substring(0, t.indexOf(":")).length() > 1 ? t : "0" + t)
+		.map(t -> t.substring(0, t.indexOf(':')).length() > 1 ? t : "0" + t)
 		.map(t -> {
 			try {
 				return LocalTime.parse(t);
@@ -412,7 +413,7 @@ public class Config {
 
 		interestMultipliers = new SimpleEntry<>(config.getBoolean("interest-multipliers.allow-override"),
 				config.getIntegerList("interest-multipliers.default").isEmpty()
-				? Arrays.asList(1)
+				? Collections.singletonList(1)
 				: config.getIntegerList("interest-multipliers.default"));
 
 		initialInterestDelay = new SimpleEntry<>(config.getBoolean("initial-interest-delay.allow-override"),
@@ -434,7 +435,7 @@ public class Config {
 		withdrawalMultiplierBehavior = new SimpleEntry<>(config.getBoolean("withdrawal-multiplier-behavior.allow-override"),
 				config.getInt("withdrawal-multiplier-behavior.default"));
 
-		accountInfoItem = new ItemStack(Material.getMaterial(config.getString("account-info-item")));
+		accountInfoItem = new ItemStack(Objects.requireNonNull(Material.getMaterial(config.getString("account-info-item"))));
 
 		creationPriceBank = new SimpleEntry<>(config.getDouble("creation-prices.bank.admin"),
 				config.getDouble("creation-prices.bank.player"));

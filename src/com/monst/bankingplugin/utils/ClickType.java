@@ -1,19 +1,18 @@
 package com.monst.bankingplugin.utils;
 
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.listeners.AccountInteractListener;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 // THIS CODE WAS TAKEN FROM de.epiceric.shopchest.utils.ClickType
-
-import org.bukkit.OfflinePlayer;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
-
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.listeners.AccountInteractListener;
 
 public class ClickType {
 	private static final Map<UUID, ClickType> playerClickTypes = new HashMap<>();
@@ -52,7 +51,7 @@ public class ClickType {
         playerClickTypes.remove(uuid);
         
         // If a timer is still running, cancel it
-		Optional.ofNullable(playerTimers.get(uuid)).ifPresent(task -> task.cancel());
+		Optional.ofNullable(playerTimers.get(uuid)).ifPresent(BukkitTask::cancel);
 		playerTimers.remove(uuid);
     }
 
@@ -68,7 +67,7 @@ public class ClickType {
         playerClickTypes.put(uuid, clickType);
 
         // If a timer is already running, cancel it
-        Optional.ofNullable(playerTimers.get(uuid)).ifPresent(task -> task.cancel());
+        Optional.ofNullable(playerTimers.get(uuid)).ifPresent(BukkitTask::cancel);
 
         // Remove ClickType after 15 seconds if player has not clicked a chest
         playerTimers.put(uuid, new BukkitRunnable() {

@@ -98,7 +98,7 @@ public abstract class Database {
 	 *                 that were found (as {@code int[]})
 	 */
 	public void connect(final Callback<int[]> callback) {
-		if (!Config.databaseTablePrefix.matches("^([a-zA-Z0-9\\-\\_]+)?$")) {
+		if (!Config.databaseTablePrefix.matches("^([a-zA-Z0-9\\-_]+)?$")) {
 			// Only letters, numbers dashes and underscores are allowed
 			plugin.getLogger().severe("Database table prefix contains illegal letters, using 'bankingplugin_' prefix.");
 			Config.databaseTablePrefix = "bankingplugin_";
@@ -176,7 +176,7 @@ public abstract class Database {
 
 					// Count accounts entries in database
 					try (Statement s = con.createStatement()) {
-						Integer accounts;
+						int accounts;
 						ResultSet rsAccounts = s.executeQuery("SELECT COUNT(id) FROM " + tableAccounts);
 						if (rsAccounts.next()) {
 							accounts = rsAccounts.getInt(1);
@@ -185,7 +185,7 @@ public abstract class Database {
 							throw new SQLException("Count result set has no account entries");
 						}
 
-						Integer banks;
+						int banks;
 						ResultSet rsBanks = s.executeQuery("SELECT COUNT(id) FROM " + tableBanks);
 						if (rsBanks.next()) {
 							banks = rsBanks.getInt(1);
@@ -378,13 +378,13 @@ public abstract class Database {
 					} else if (bank.getSelection().getType() == SelectionType.CUBOID) {
 						CuboidSelection sel = (CuboidSelection) bank.getSelection();
 
-						StringBuilder sb = new StringBuilder();
+						StringBuilder sb = new StringBuilder(32);
 						Location max = sel.getMaximumPoint();
 						Location min = sel.getMinimumPoint();
 
-						sb.append(max.getBlockX() + "," + max.getBlockY() + "," + max.getBlockZ());
+						sb.append(max.getBlockX()).append(",").append(max.getBlockY()).append(",").append(max.getBlockZ());
 						sb.append(" | ");
-						sb.append(min.getBlockX() + "," + min.getBlockY() + "," + min.getBlockZ());
+						sb.append(min.getBlockX()).append(",").append(min.getBlockY()).append(",").append(min.getBlockZ());
 
 						ps.setInt(i + 6, -1);
 						ps.setInt(i + 7, -1);
@@ -525,7 +525,7 @@ public abstract class Database {
 							owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
 							coowners = rs.getString("co_owners") == null ? null
 								: Arrays.stream(rs.getString("co_owners").split(" \\| "))
-										.filter(uuid -> uuid != null && !uuid.equals(""))
+										.filter(uuid -> uuid != null && !uuid.isEmpty())
 										.map(uuid -> Bukkit.getOfflinePlayer(UUID.fromString(uuid)))
 										.collect(Collectors.toSet());
 						}
@@ -571,7 +571,7 @@ public abstract class Database {
 								.stream(accConfig[1].substring(1, accConfig[1].length() - 1).split(","))
 								.map(Integer::parseInt).collect(Collectors.toList());
 						} catch (NumberFormatException e) {
-							multipliers = Arrays.asList(1);
+							multipliers = Collections.singletonList(1);
 						}
 
 						AccountConfig accountConfig = new AccountConfig(
@@ -692,7 +692,7 @@ public abstract class Database {
 				Location location = new Location(world, x, y, z);
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
 				Set<OfflinePlayer> coowners = rs.getString("co_owners") == null ? null
-						: Arrays.stream(rs.getString("co_owners").split(" \\| ")).filter(uuid -> !uuid.equals(""))
+						: Arrays.stream(rs.getString("co_owners").split(" \\| ")).filter(uuid -> !uuid.isEmpty())
 								.map(uuid -> Bukkit.getOfflinePlayer(UUID.fromString(uuid)))
 								.collect(Collectors.toSet());
 				String nickname = rs.getString("nickname");
@@ -1197,14 +1197,14 @@ public abstract class Database {
 			}
 
 			if (needsUpdate2) {
-				plugin.getLogger().info("Updating database... (#2)");
+				plugin.getLogger().info("Updating database version...");
 
 				// Create fields table
 				try (Statement s = con.createStatement()) {
 					s.executeUpdate(getQueryCreateTableFields());
 				}
 
-				setDatabaseVersion(1);
+				setDatabaseVersion(2);
 			}
 
 			int databaseVersion = getDatabaseVersion();

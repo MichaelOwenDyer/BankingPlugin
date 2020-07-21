@@ -1,7 +1,12 @@
 package com.monst.bankingplugin.listeners;
 
-import java.math.BigDecimal;
-
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.account.AccountTransactionEvent;
+import com.monst.bankingplugin.utils.AccountUtils;
+import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -10,13 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountTransactionEvent;
-import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Utils;
+import java.math.BigDecimal;
 
 public class AccountBalanceListener implements Listener {
 	
@@ -31,7 +30,7 @@ public class AccountBalanceListener implements Listener {
 	@EventHandler
 	public void onAccountInventoryClose(InventoryCloseEvent e) {
 		
-		if (!(e.getPlayer() instanceof Player) || e.getInventory() == null)
+		if (!(e.getPlayer() instanceof Player))
 			return;
 		if (!e.getInventory().getType().equals(InventoryType.CHEST))
 			return;
@@ -68,7 +67,7 @@ public class AccountBalanceListener implements Listener {
 						(account.isOwner(executor)) ? "your" : account.getOwner().getName() + "'s"));
 			executor.sendMessage(String.format(Messages.ACCOUNT_NEW_BALANCE, Utils.formatNumber(valueOnClose)));
 
-			if (difference.signum() == -1 && valueOnClose.compareTo(account.getPrevBalance()) == -1) {
+			if (difference.signum() == -1 && valueOnClose.compareTo(account.getPrevBalance()) < 0) {
 				int multiplier = account.getStatus().getMultiplierStage();
 				if (multiplier != account.getStatus().processWithdrawal())
 					executor.sendMessage(

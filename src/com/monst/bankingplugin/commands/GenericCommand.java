@@ -1,23 +1,18 @@
 package com.monst.bankingplugin.commands;
 
+import com.monst.bankingplugin.BankingPlugin;
+import com.sun.istack.internal.NotNull;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.*;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandMap;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-
-import com.monst.bankingplugin.BankingPlugin;
 
 public class GenericCommand {
 
@@ -26,7 +21,7 @@ public class GenericCommand {
 	protected String desc;
 	protected PluginCommand pluginCommand;
 	protected CommandExecutor executor;
-	protected GenericTabCompleter tabCompleter;
+	protected final GenericTabCompleter tabCompleter;
 
 	private final List<GenericSubCommand> subCommands = new ArrayList<>();
 
@@ -101,7 +96,7 @@ public class GenericCommand {
 	private class GenericBaseCommandExecutor implements CommandExecutor {
 
 		@Override
-		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			if (args.length > 0) {
 				for (GenericSubCommand subCommand : subCommands) {
 					if (subCommand.getName().equalsIgnoreCase(args[0])) {
@@ -115,10 +110,8 @@ public class GenericCommand {
 						return true;
 					}
 				}
-				sendBasicHelpMessage(sender);
-			} else {
-				sendBasicHelpMessage(sender);
 			}
+			sendBasicHelpMessage(sender);
 			return true;
 		}
 	}
@@ -126,7 +119,7 @@ public class GenericCommand {
 	private class GenericBaseTabCompleter implements TabCompleter {
 
 		@Override
-		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
 			List<String> subCommandNames = new ArrayList<>();
 			List<String> tabCompletions = new ArrayList<>();

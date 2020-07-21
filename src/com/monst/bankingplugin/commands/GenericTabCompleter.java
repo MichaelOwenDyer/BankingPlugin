@@ -1,17 +1,5 @@
 package com.monst.bankingplugin.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.bukkit.block.Block;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
-
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
@@ -20,6 +8,15 @@ import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import com.sun.istack.internal.NotNull;
+import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 class GenericTabCompleter implements TabCompleter {
 
@@ -30,7 +27,7 @@ class GenericTabCompleter implements TabCompleter {
 	}
 
 	@Override
-	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
 		final String accountCommand = Config.mainCommandNameAccount.toLowerCase();
 		final String bankCommand = Config.mainCommandNameBank.toLowerCase();
@@ -40,29 +37,22 @@ class GenericTabCompleter implements TabCompleter {
 
 		if (command.getName().equalsIgnoreCase(accountCommand)) {
 			switch (subCommand) {
-			case "create":
-				return new ArrayList<>();
-			case "remove":
-				return new ArrayList<>();
-			case "info":
-				return new ArrayList<>();
+			case "create": case "remove": case "info": case "limits":
+				break;
 			case "list":
 				return completeAccountList(sender, args);
-			case "limits":
-				return new ArrayList<>();
 			case "removeall":
 				return completeAccountRemoveAll(sender, args);
 			case "set":
 				return completeAccountSet((Player) sender, args);
-			case "trust":
-				return completeAccountTrust((Player) sender, args);
-			case "untrust":
+			case "trust": case "untrust":
 				return completeAccountTrust((Player) sender, args);
 			case "transfer":
 				return completeAccountTransfer((Player) sender, args);
 			default:
 				return new ArrayList<>();
 			}
+			return new ArrayList<>();
 		} else if (command.getName().equalsIgnoreCase(bankCommand)) {
 			switch (subCommand) {
 			case "create":
@@ -74,7 +64,7 @@ class GenericTabCompleter implements TabCompleter {
 			case "list":
 				return completeBankList(sender, args);
 			case "removeall":
-				return new ArrayList<>();
+				break;
 			case "resize":
 				return completeBankResize((Player) sender, args);
 			case "rename":
@@ -86,15 +76,17 @@ class GenericTabCompleter implements TabCompleter {
 			default:
 				return new ArrayList<>();
 			}
+			return new ArrayList<>();
 		} else if (command.getName().equalsIgnoreCase(controlCommand)) {
 			switch (subCommand) {
 			case "config":
 				return completeControlConfig(sender, args);
-			case "reload":
-				return new ArrayList<>();
-			case "update":
+			case "reload": case "update":
+				break;
+			default:
 				return new ArrayList<>();
 			}
+			return new ArrayList<>();
 		}
 		return new ArrayList<>();
 	}
@@ -105,7 +97,7 @@ class GenericTabCompleter implements TabCompleter {
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		onlinePlayers.remove(sender.getName());
 
-		List<String> flags = new ArrayList<>(Arrays.asList("detailed"));
+		List<String> flags = new ArrayList<>(Collections.singletonList("detailed"));
 		if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
 			flags.add("all");
 
@@ -128,19 +120,19 @@ class GenericTabCompleter implements TabCompleter {
 			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
 				if (!args[2].isEmpty()) {
 					if ("-a".startsWith(args[2].toLowerCase()) || "all".startsWith(args[2].toLowerCase()))
-						return Arrays.asList("all");
+						return Collections.singletonList("all");
 					else
 						return new ArrayList<>();
 				} else
-					return Arrays.asList("all");
+					return Collections.singletonList("all");
 			} else {
 				if (!args[2].isEmpty()) {
 					if ("-d".startsWith(args[2].toLowerCase()) || "detailed".startsWith(args[2].toLowerCase()))
-						return Arrays.asList("detailed");
+						return Collections.singletonList("detailed");
 					else
 						return new ArrayList<>();
 				} else
-					return Arrays.asList("detailed");
+					return Collections.singletonList("detailed");
 			}
 		} else
 			return new ArrayList<>();
@@ -227,7 +219,7 @@ class GenericTabCompleter implements TabCompleter {
 		
 		if (args.length == 2) {
 			if (args[1].isEmpty())
-				return Arrays.asList("<bankname>");
+				return Collections.singletonList("<bankname>");
 			else
 				return new ArrayList<>();
 		} else if (args.length == 3) {
@@ -238,11 +230,10 @@ class GenericTabCompleter implements TabCompleter {
 			if (!args[2].isEmpty()) {
 				if (args[2].startsWith(coord))
 					returnCompletions.add(coord);
-				return returnCompletions;
 			} else {
 				returnCompletions.add(coord);
-				return returnCompletions;
 			}
+			return returnCompletions;
 		} else if (args.length == 4) {
 			Block b = p.getTargetBlock(null, 150);
 			if (b == null)
@@ -251,11 +242,10 @@ class GenericTabCompleter implements TabCompleter {
 			if (!args[3].isEmpty()) {
 				if (args[3].startsWith(coord))
 					returnCompletions.add(coord);
-				return returnCompletions;
 			} else {
 				returnCompletions.add(coord);
-				return returnCompletions;
 			}
+			return returnCompletions;
 		} else if (args.length == 5) {
 			Block b = p.getTargetBlock(null, 150);
 			if (b == null)
@@ -264,11 +254,10 @@ class GenericTabCompleter implements TabCompleter {
 			if (!args[4].isEmpty()) {
 				if (args[4].startsWith(coord))
 					returnCompletions.add(coord);
-				return returnCompletions;
 			} else {
 				returnCompletions.add(coord);
-				return returnCompletions;
 			}
+			return returnCompletions;
 		} else if (args.length == 6) {
 			Block b = p.getTargetBlock(null, 150);
 			if (b == null)
@@ -277,11 +266,10 @@ class GenericTabCompleter implements TabCompleter {
 			if (!args[5].isEmpty()) {
 				if (args[5].startsWith(coord))
 					returnCompletions.add(coord);
-				return returnCompletions;
 			} else {
 				returnCompletions.add(coord);
-				return returnCompletions;
 			}
+			return returnCompletions;
 		} else if (args.length == 7) {
 			Block b = p.getTargetBlock(null, 150);
 			if (b == null)
@@ -290,11 +278,10 @@ class GenericTabCompleter implements TabCompleter {
 			if (!args[6].isEmpty()) {
 				if (args[6].startsWith(coord))
 					returnCompletions.add(coord);
-				return returnCompletions;
 			} else {
 				returnCompletions.add(coord);
-				return returnCompletions;
 			}
+			return returnCompletions;
 		} else if (args.length == 8) {
 			Block b = p.getTargetBlock(null, 150);
 			if (b == null)
@@ -303,11 +290,10 @@ class GenericTabCompleter implements TabCompleter {
 			if (!args[7].isEmpty()) {
 				if (args[7].startsWith(coord))
 					returnCompletions.add(coord);
-				return returnCompletions;
 			} else {
 				returnCompletions.add(coord);
-				return returnCompletions;
 			}
+			return returnCompletions;
 		}
 
 		return new ArrayList<>();
@@ -357,7 +343,7 @@ class GenericTabCompleter implements TabCompleter {
 					returnCompletions.add("detailed");
 				return returnCompletions;
 			} else
-				return Arrays.asList("detailed");
+				return Collections.singletonList("detailed");
 		}
 		return new ArrayList<>();
 	}
@@ -370,7 +356,7 @@ class GenericTabCompleter implements TabCompleter {
 						|| (!bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
 						|| (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
 				.collect(Collectors.toList());
-		List<Field> fields = Field.stream().filter(field -> AccountConfig.isOverrideAllowed(field)).collect(Collectors.toList());
+		List<Field> fields = Field.stream().filter(AccountConfig::isOverrideAllowed).collect(Collectors.toList());
 		
 		if (args.length == 2) {
 			if (sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation())) {
@@ -381,12 +367,11 @@ class GenericTabCompleter implements TabCompleter {
 					for (Bank bank : banks)
 						if (bank.getName().startsWith(args[1].toLowerCase()))
 							returnCompletions.add(bank.getName());
-					return returnCompletions;
 				} else {
 					returnCompletions.addAll(fields.stream().map(Field::getName).collect(Collectors.toList()));
 					returnCompletions.addAll(banks.stream().map(Bank::getName).collect(Collectors.toList()));
-					return returnCompletions;
 				}
+				return returnCompletions;
 			} else {
 				if (!args[1].isEmpty()) {
 					for (Bank bank : banks)
@@ -415,7 +400,7 @@ class GenericTabCompleter implements TabCompleter {
 				String value = bank.getAccountConfig().getOrDefault(field).toString();
 				if (field.getDataType() == 0)
 					value = Utils.formatNumber(Double.parseDouble(value));
-				return Arrays.asList(value);
+				return Collections.singletonList(value);
 			}
 		} else if (args.length == 4) {
 			Bank bank = bankUtils.getBankByName(args[1]);
@@ -424,7 +409,7 @@ class GenericTabCompleter implements TabCompleter {
 				String value = bank.getAccountConfig().getOrDefault(field).toString();
 				if (field.getDataType() == 0)
 					value = Utils.formatNumber(Double.parseDouble(value));
-				return Arrays.asList(value);
+				return Collections.singletonList(value);
 			}
 		}
 		return new ArrayList<>();
@@ -499,7 +484,7 @@ class GenericTabCompleter implements TabCompleter {
 				return returnCompletions;
 			} else {
 				if (sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation()))
-					return Arrays.asList(bankUtils.getBank(((Player) sender).getLocation()).getName());
+					return Collections.singletonList(bankUtils.getBank(((Player) sender).getLocation()).getName());
 				else
 					return banks.stream().map(Bank::getName).collect(Collectors.toList());
 			}
@@ -510,17 +495,17 @@ class GenericTabCompleter implements TabCompleter {
 	private List<String> completeControlConfig(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		Set<String> configValues = plugin.getConfig().getKeys(true);
-		plugin.getConfig().getKeys(true).stream().forEach(s -> {
+		plugin.getConfig().getKeys(true).forEach(s -> {
 			if (s.contains("."))
-				configValues.remove(s.substring(0, s.lastIndexOf(".")));
+				configValues.remove(s.substring(0, s.lastIndexOf('.')));
 		});
 
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
 				if ("set".startsWith(args[1].toLowerCase()))
-					return Arrays.asList("set");
+					return Collections.singletonList("set");
 			} else
-				return Arrays.asList("set");
+				return Collections.singletonList("set");
 		} else if (args.length == 3) {
 			if (!args[2].isEmpty()) {
 				for (String s : configValues)

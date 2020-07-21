@@ -1,11 +1,14 @@
 package com.monst.bankingplugin;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
+import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
+import com.monst.bankingplugin.utils.AccountStatus;
+import com.monst.bankingplugin.utils.Ownable;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,16 +21,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
-import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
-import com.monst.bankingplugin.utils.AccountStatus;
-import com.monst.bankingplugin.utils.Ownable;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
-
-import net.md_5.bungee.api.chat.TextComponent;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Account extends Ownable {
 
@@ -105,7 +104,7 @@ public class Account extends Ownable {
 		inventoryHolder = chest.getInventory().getHolder();
 
 		BigDecimal checkedBalance = plugin.getAccountUtils().appraiseAccountContents(this);
-		if (checkedBalance.compareTo(getBalance()) == 1) {
+		if (checkedBalance.compareTo(getBalance()) > 0) {
 			if (getBalance().signum() <= 0)
 				plugin.debug("Cool! Account #" + id + " was created with a balance of " + Utils.formatNumber(checkedBalance)
 						+ " already inside.");
@@ -113,7 +112,7 @@ public class Account extends Ownable {
 				plugin.debug("Value of account #" + id + " was found higher than expected. Expected: $"
 						+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance));
 			setBalance(checkedBalance);
-		} else if (checkedBalance.compareTo(getBalance()) == -1) {
+		} else if (checkedBalance.compareTo(getBalance()) < 0) {
 			plugin.debug("Value of account #" + id + " was found lower than expected. Expected: $"
 					+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance));
 			setBalance(checkedBalance);
@@ -131,7 +130,7 @@ public class Account extends Ownable {
 		return Utils.colorize(nickname);
 	}
 
-	public void setNickname(String nickname) {
+	public void setNickname(@Nullable String nickname) {
 		if (nickname == null)
 			nickname = getDefaultNickname();
 		this.nickname = nickname;

@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.utils;
 
-import java.util.List;
-
 import com.monst.bankingplugin.utils.AccountConfig.Field;
+
+import java.util.List;
 
 public class AccountStatus {
 	
@@ -23,11 +23,11 @@ public class AccountStatus {
 	}
 	/**
 	 * Creates an account status with the given values.
-	 * @param multiplierStage
-	 * @param remainingOfflinePayouts
-	 * @param delayUntilNextPayout
-	 * @param balance
-	 * @param prevBalance
+	 * @param config The AccountConfig from the account's bank
+	 * @param multiplierStage The current multiplier stage of the account
+	 * @param delayUntilNextPayout The initial delay value
+	 * @param remainingOfflinePayouts How many offline payouts are currently remaining
+	 * @param remainingOfflineUntilReset How many offline payouts are currently remaining until multiplier reset
 	 */
 	public AccountStatus(AccountConfig config, int multiplierStage, int delayUntilNextPayout,
 			int remainingOfflinePayouts, int remainingOfflineUntilReset) {
@@ -63,21 +63,16 @@ public class AccountStatus {
 		} else if (increment == 0)
 			return multiplierStage;
 
-		int newStage = multiplierStage + increment;
-		if (newStage < 0)
-			multiplierStage = 0;
-		else
-			multiplierStage = newStage;
+		multiplierStage = Math.max(multiplierStage + increment, 0);
 
 		return multiplierStage;
 	}
 
 	/**
 	 * Increments this account's multiplier stage.
-	 * @param boolean whether the player is online or offline
-	 * @return the (possibly unchanged) multiplier stage of this account.
+	 * @param online whether the player is online or offline
 	 */
-	public int incrementMultiplier(boolean online) {
+	public void incrementMultiplier(boolean online) {
 
 		@SuppressWarnings("unchecked")
 		List<Integer> multipliers = (List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS);
@@ -91,7 +86,7 @@ public class AccountStatus {
 				remainingOfflineUntilReset--;
 			else {
 				resetMultiplierStage();
-				return 0;
+				return;
 			}
 			int increment = (int) accountConfig.getOrDefault(Field.OFFLINE_MULTIPLIER_BEHAVIOR);
 			int newStage = multiplierStage + increment;
@@ -103,13 +98,12 @@ public class AccountStatus {
 			} else
 				multiplierStage = newStage;
 		}
-		return multiplierStage;
 	}
 	
 	/**
 	 * Determines whether to allow the next interest payout or not.
 	 * 
-	 * @param boolean whether the player is online or not
+	 * @param online whether the player is online or not
 	 * @return True if interest payout is allowed, or false if not.
 	 */
 	public boolean allowNextPayout(boolean online) {
@@ -188,10 +182,7 @@ public class AccountStatus {
 	}
 
 	public int setInterestDelay(int delay) {
-		if (delay <= 0)
-			delayUntilNextPayout = 0;
-		else
-			delayUntilNextPayout = delay;
+		delayUntilNextPayout = Math.max(delay, 0);
 		return delayUntilNextPayout;
 	}
 }

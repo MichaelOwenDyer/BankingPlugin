@@ -1,12 +1,11 @@
 package com.monst.bankingplugin.utils;
 
+import net.md_5.bungee.api.ChatColor;
+import org.bukkit.OfflinePlayer;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.bukkit.OfflinePlayer;
-
-import net.md_5.bungee.api.ChatColor;
 
 public abstract class Ownable {
 
@@ -35,7 +34,7 @@ public abstract class Ownable {
 	public boolean isTrustedPlayerOnline() {
 		if (owner == null)
 			return false;
-		return owner.isOnline() || (coowners != null && coowners.stream().anyMatch(p -> p.isOnline()));
+		return owner.isOnline() || (coowners != null && coowners.stream().anyMatch(OfflinePlayer::isOnline));
 	}
 
 	public boolean isTrusted(OfflinePlayer p) {
