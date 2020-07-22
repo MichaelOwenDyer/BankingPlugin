@@ -8,11 +8,12 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
-import org.ipvp.canvas.type.HopperMenu;
+import org.ipvp.canvas.type.ChestMenu;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +30,7 @@ public class AccountGui extends Gui<Account> {
 
 	@Override
 	Menu getMenu() {
-		return HopperMenu.builder().title(guiSubject.getColorizedNickname()).build();
+		return ChestMenu.builder(1).title(guiSubject.getColorizedName()).build();
 	}
 
 	@Override
@@ -43,18 +44,18 @@ public class AccountGui extends Gui<Account> {
 		switch (i) {
 			case 0:
 				return createSlotItem(GENERAL_INFO_BLOCK, "Account Information", getGeneralInfoLore());
-			case 1:
-				return createSlotItem(GENERAL_INFO_BLOCK, "Bank Information", getBankInfoLore());
 			case 2:
-				if (verbose)
+				return createSlotItem(GENERAL_INFO_BLOCK, "Bank Information", getBankInfoLore());
+			case 4:
+				if (highClearance)
 					return createSlotItem(ACCOUNT_BALANCE_BLOCK, "Account Standing", getBalanceLore());
 				break;
-			case 3:
-				if (verbose)
-					return createSlotItem(Material.CHEST, "Account Contents", Collections.emptyList());
-				break;
-			case 4:
+			case 6:
 				return createSlotItem(MULTIPLIER_INFO_BLOCK, "Multiplier", Utils.getMultiplierLore(guiSubject));
+			case 8:
+				if (highClearance)
+					return createSlotItem(Material.CHEST, "Account Contents", Collections.singletonList("Click to view account contents."));
+				break;
 			default:
 				return new ItemStack(Material.AIR);
 		}
@@ -72,6 +73,13 @@ public class AccountGui extends Gui<Account> {
 			case 3:
 				return (player, info) -> {
 					player.sendMessage("Not implemented yet!");
+				};
+			case 8:
+				return (player, info) -> {
+					if (highClearance) {
+						Chest chest = (Chest) guiSubject.getLocation().getBlock().getState();
+						player.openInventory(chest.getInventory()); // TODO: Creates chest lid bug
+					}
 				};
 			default:
 				return (player, info) -> {

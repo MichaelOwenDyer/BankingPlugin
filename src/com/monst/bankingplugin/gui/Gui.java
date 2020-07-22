@@ -1,33 +1,32 @@
 package com.monst.bankingplugin.gui;
 
+import com.monst.bankingplugin.utils.Ownable;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-abstract class Gui<Ownable> {
+abstract class Gui<T extends Ownable> {
 
-	Ownable guiSubject;
+	T guiSubject;
 	Menu gui;
-	boolean verbose;
+	boolean highClearance;
 
 	static final Material GENERAL_INFO_BLOCK = Material.PLAYER_HEAD;
 	static final Material MULTIPLIER_INFO_BLOCK = Material.NETHER_STAR;
 
 	public void open(Player player) {
 		gui = getMenu();
-		verbose = getClearance(player);
+		highClearance = getClearance(player);
 		for (int i = 0; i < gui.getDimensions().getArea(); i++) {
 			gui.getSlot(i).setItem(createSlotItem(i));
 			gui.getSlot(i).setClickHandler(createClickHandler(i));
-			gui.getSlot(i).setClickOptions(ClickOptions.DENY_ALL);
 		}
 		gui.open(player);
 	}

@@ -297,7 +297,7 @@ public class AccountInteractListener implements Listener {
 			accountUtils.addAccount(account, true, new Callback<Integer>(plugin) {
 				@Override
 				public void onResult(Integer result) {
-					account.setDefaultNickname();
+					account.resetName();
 				}
 			});
 			p.sendMessage(Messages.ACCOUNT_CREATED);
@@ -432,10 +432,10 @@ public class AccountInteractListener implements Listener {
 							executor.getName() + " has reset %s account nickname%s (#" + account.getID() + ")",
 							(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
 							(account.isCoowner(executor) ? " as a co-owner" : "")));
-					account.setDefaultNickname();
+					account.resetName();
 				} else {
 					plugin.debug(executor.getName() + " has set their account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
-					account.setNickname(args[1]);
+					account.setName(args[1]);
 				}
 				plugin.getAccountUtils().addAccount(account, true);
 				executor.sendMessage(Messages.NICKNAME_SET);
@@ -590,7 +590,7 @@ public class AccountInteractListener implements Listener {
 		Bank bank = bankUtils.getBank(location);
 
 		Account newAccount = new Account(toMigrate.getID(), plugin, toMigrate.getOwner(), toMigrate.getCoowners(),
-				toMigrate.getBank(), location, toMigrate.getStatus(), toMigrate.getRawNickname(),
+				toMigrate.getBank(), location, toMigrate.getStatus(), toMigrate.getRawName(),
 				toMigrate.getBalance(), toMigrate.getPrevBalance());
 
 		AccountCreateEvent event = new AccountCreateEvent(p, newAccount);
@@ -649,7 +649,7 @@ public class AccountInteractListener implements Listener {
 			accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
 				@Override
 				public void onResult(Integer result) {
-					newAccount.setNickname(newAccount.getRawNickname());
+					newAccount.updateName();
 				}
 			});
 			p.sendMessage(Messages.ACCOUNT_MIGRATED);
@@ -710,12 +710,12 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		boolean hasDefaultNickname = account.hasDefaultNickname();
+		boolean hasDefaultNickname = account.isDefaultName();
 
 		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
 		account.transferOwnership(newOwner);
 		if (hasDefaultNickname)
-			account.setDefaultNickname();
+			account.resetName();
 		plugin.getAccountUtils().addAccount(account, true);
 	}
 

@@ -118,10 +118,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		Selection selection;
 		boolean isAdminBank = false;
 
-		if (args.length == 1)
-			return false;
-
-		else if (args.length == 2 || args.length == 3) {
+		if (args.length == 1 || args.length == 2) {
 			
 			if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
 
@@ -140,7 +137,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		} else {
 			try {
-				selection = bankUtils.parseCoordinates(args, p.getLocation());
+				selection = bankUtils.parseCoordinates(args, p.getLocation()); // TODO: Coordinates should parse from one earlier
 			} catch (NumberFormatException e) {
 				plugin.debug("Could not parse coordinates in command args");
 				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
@@ -151,9 +148,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (selection == null)
 			return false;
 
-		if ((args.length == 3 && args[2].equalsIgnoreCase("admin"))
-				|| (args.length == 6 && args[5].equalsIgnoreCase("admin"))
-				|| (args.length == 9 && args[8].equalsIgnoreCase("admin")))
+		if ((args.length == 2 && args[1].equalsIgnoreCase("admin"))
+				|| (args.length == 5 && args[4].equalsIgnoreCase("admin"))
+				|| (args.length == 8 && args[7].equalsIgnoreCase("admin")))
 			isAdminBank = true;
 
 		if (isAdminBank && !p.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
@@ -184,22 +181,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Config.minimumBankVolume, Config.minimumBankVolume - volume));
 			return true;
 		}
-		if (!bankUtils.isUniqueName(args[1])) {
-			plugin.debug("Name is not unique");
-			p.sendMessage(Messages.NAME_NOT_UNIQUE);
-			return true;
-		}
-		if (!Utils.isAllowedName(args[1])) {
-			plugin.debug("Name is not allowed");
-			p.sendMessage(Messages.NAME_NOT_ALLOWED);
-			return true;
-		}
 
 		Bank bank;
 		if (isAdminBank)
-			bank = new Bank(plugin, args[1], selection);
+			bank = new Bank(plugin, selection);
 		else
-			bank = new Bank(plugin, args[1], p, null, selection);
+			bank = new Bank(plugin, p, null, selection);
 
 		BankCreateEvent event = new BankCreateEvent(p, bank);
 		Bukkit.getPluginManager().callEvent(event);
@@ -228,11 +215,16 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		if (bank.create()) {
-			bankUtils.addBank(bank, true);
+			bankUtils.addBank(bank, true, new Callback<Integer>(plugin) {
+				@Override
+				public void onResult(Integer result) {
+					bank.resetName();
+				}
+			});
 			plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
 			p.sendMessage(Messages.BANK_CREATED);
 		} else {
-			plugin.debug("An error occured creating the bank");
+			plugin.debug("An error occurred creating the bank");
 			p.sendMessage(Messages.ERROR_OCCURRED);
 		}
 		return true;
@@ -536,7 +528,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		return true;
 	}
 
-	private boolean promptBankRename(CommandSender sender, String[] args) {
+	private boolean promptBankRename(CommandSender sender, String[] args) { // TODO: Bug here where name is not changed
 		plugin.debug(sender.getName() + " is renaming a bank");
 
 		if (args.length < 2)
@@ -602,7 +594,6 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		plugin.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
 		sender.sendMessage(Messages.NAME_CHANGED);
 		bank.setName(newName);
-		bankUtils.addBank(bank, true);
 		return true;
 	}
 

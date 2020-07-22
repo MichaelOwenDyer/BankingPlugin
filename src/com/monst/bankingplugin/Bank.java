@@ -2,10 +2,7 @@ package com.monst.bankingplugin;
 
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.Selection;
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.Ownable;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.utils.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -21,7 +18,7 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Bank extends Ownable {
+public class Bank extends Ownable implements Nameable {
 	
 	public enum BankType {
 		PLAYER, ADMIN
@@ -38,8 +35,8 @@ public class Bank extends Ownable {
 	private BankType type;
 
 	// New admin bank
-	public Bank(BankingPlugin plugin, String name, Selection selection) {
-		this(-1, plugin, name, null, null, selection, new AccountConfig(), BankType.ADMIN);
+	public Bank(BankingPlugin plugin, Selection selection) {
+		this(-1, plugin, null, null, null, selection, new AccountConfig(), BankType.ADMIN);
 	}
 
 	// Old admin bank
@@ -48,9 +45,9 @@ public class Bank extends Ownable {
 	}
 
 	// New player bank
-	public Bank(BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+	public Bank(BankingPlugin plugin, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 			Selection selection) {
-		this(-1, plugin, name, owner, coowners, selection, new AccountConfig(), BankType.PLAYER);
+		this(-1, plugin, null, owner, coowners, selection, new AccountConfig(), BankType.PLAYER);
 	}
 	
 	// Old player bank
@@ -110,11 +107,6 @@ public class Bank extends Ownable {
 		return Collections.unmodifiableCollection(getAccounts());
 	}
 
-	public List<OfflinePlayer> getCustomers() {
-		return getAccounts().stream().map(Account::getTrustedPlayers).flatMap(Collection::stream).distinct()
-				.collect(Collectors.toList());
-	}
-
 	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
 		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
 	}
@@ -126,20 +118,31 @@ public class Bank extends Ownable {
 		return customerBalances;
 	}
 
-	public String getName() {
-		return Utils.stripColor(name);
-	}
-
-	public String getColorizedName() {
-		return Utils.colorize(name);
-	}
-
+	@Override
 	public String getRawName() {
 		return name;
 	}
 
+	/**
+	 * Sets the name of this bank and updates the value in the database.
+	 * @param name The new name of this bank.
+	 */
+	@Override
 	public void setName(String name) {
 		this.name = name;
+		plugin.getBankUtils().addBank(this, true); // Update bank in database
+	}
+
+	@Override
+	public String getDefaultName() {
+		return ChatColor.RED + (isPlayerBank() ? getOwner().getName() + "'s Bank" : "Admin Bank") + ChatColor.GRAY + " (" + getID() + ")";
+	}
+
+	@Override
+	public void resetName() {
+		if (!hasID())
+			return;
+		setName(getDefaultName());
 	}
 
 	public World getWorld() {

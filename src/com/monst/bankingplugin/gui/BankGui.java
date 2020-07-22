@@ -33,7 +33,7 @@ public class BankGui extends Gui<Bank> {
 	boolean getClearance(Player player) {
 		return guiSubject.isTrusted(player)
 				|| (guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_ADMIN)
-				|| (! guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_OTHER)));
+				|| (!guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_OTHER)));
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class BankGui extends Gui<Bank> {
 			case 4:
 				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
 			case 8:
-				if (verbose)
+				if (highClearance)
 					return createSlotItem(Material.CHEST, "Accounts", Collections.singletonList("Click here to view accounts."));
 				break;
 
@@ -53,11 +53,11 @@ public class BankGui extends Gui<Bank> {
 			case 10:
 				return createSlotItem(MULTIPLIER_INFO_BLOCK, "Multipliers", Utils.getMultiplierLore(guiSubject));
 			case 11:
-				return createSlotItem(DEFAULT_BLOCK, "Balance Restrictions", getMinBalanceLore());
+				return createSlotItem(DEFAULT_BLOCK, "Balance Restrictions", getBalanceRestrictionLore());
 			case 12:
 				return createSlotItem(DEFAULT_BLOCK, "Offline Payouts", getOfflinePayoutsLore());
 			case 13:
-				return createSlotItem(DEFAULT_BLOCK, "", Collections.emptyList());
+				return createSlotItem(DEFAULT_BLOCK, "Interest Delay", getInterestDelayLore());
 			default:
 				return new ItemStack(Material.AIR);
 		}
@@ -83,7 +83,7 @@ public class BankGui extends Gui<Bank> {
 				"Owner: " + (guiSubject.isPlayerBank() ? ChatColor.GOLD + guiSubject.getOwnerDisplayName() : ChatColor.RED + "ADMIN"),
 				"Co-owners: " + (guiSubject.getCoowners().isEmpty() ? org.bukkit.ChatColor.RED + "[none]"
 						: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
-								.collect(Collectors.joining(", ", "[ ", " ]"))),
+						.collect(Collectors.joining(", ", "[ ", " ]"))),
 				"Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates()
 		);
 	}
@@ -93,7 +93,7 @@ public class BankGui extends Gui<Bank> {
 				"Number of accounts: " + ChatColor.AQUA + guiSubject.getAccounts().size(),
 				"Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(guiSubject.getTotalValue()),
 				"Average account value: " + ChatColor.GREEN + "$" +
-						Utils.formatNumber(! guiSubject.getAccounts().isEmpty()
+						Utils.formatNumber(!guiSubject.getAccounts().isEmpty()
 								? guiSubject.getTotalValue().doubleValue() / guiSubject.getAccounts().size()
 								: guiSubject.getAccounts().size()),
 				"Equality score: " + Utils.getGiniLore(guiSubject)
@@ -109,7 +109,7 @@ public class BankGui extends Gui<Bank> {
 		);
 	}
 
-	private List<String> getMinBalanceLore() {
+	private List<String> getBalanceRestrictionLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
 		double minBalance = config.getMinBalance(false);
 		double lowBalanceFee = config.getLowBalanceFee(false);
@@ -130,6 +130,16 @@ public class BankGui extends Gui<Bank> {
 						+ " times while the account holder is offline.",
 				"Account multipliers will be reset after the account holder has been offline for "
 						+ ChatColor.AQUA + beforeReset + ChatColor.GRAY + " interest payouts."
+		);
+	}
+
+	private List<String> getInterestDelayLore() {
+		AccountConfig config = guiSubject.getAccountConfig();
+		int interestDelay = config.getInitialInterestDelay(false);
+		boolean countOffline = config.isCountInterestDelayOffline(false);
+		return Arrays.asList(
+				"New accounts will begin to pay interest after " + ChatColor.AQUA + interestDelay + ChatColor.GRAY + " interest cycles.",
+				"The account owner " + (countOffline ? "does not have to be" : "must be") + " online for these cycles."
 		);
 	}
 }

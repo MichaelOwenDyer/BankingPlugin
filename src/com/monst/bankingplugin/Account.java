@@ -3,10 +3,7 @@ package com.monst.bankingplugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
-import com.monst.bankingplugin.utils.AccountStatus;
-import com.monst.bankingplugin.utils.Ownable;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.utils.*;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -23,14 +20,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Account extends Ownable {
+public class Account extends Ownable implements Nameable {
 
 	private final BankingPlugin plugin;
 	private boolean created;
@@ -124,17 +120,19 @@ public class Account extends Ownable {
 		return true;
 	}
 
-	public String getRawNickname() {
+	@Override
+	public String getRawName() {
 		return nickname;
 	}
 
-	public String getColorizedNickname() {
-		return Utils.colorize(nickname);
-	}
-
-	public void setNickname(@Nullable String nickname) {
+	/**
+	 * Sets the name of this account and updates the chest inventory screen to reflect the new name.
+	 * @param nickname The new name of this account.
+	 */
+	@Override
+	public void setName(String nickname) {
 		if (nickname == null)
-			nickname = getDefaultNickname();
+			nickname = getDefaultName();
 		this.nickname = nickname;
 		if (isDoubleChest()) {
 			DoubleChest dc = (DoubleChest) inventoryHolder;
@@ -142,35 +140,37 @@ public class Account extends Ownable {
 				return;
 			Chest left = (Chest) dc.getLeftSide();
 			Chest right = (Chest) dc.getRightSide();
-			left.setCustomName(getColorizedNickname());
+			left.setCustomName(getColorizedName());
 			left.update();
-			right.setCustomName(getColorizedNickname());
+			right.setCustomName(getColorizedName());
 			right.update();
 		} else {
 			Chest chest = (Chest) inventoryHolder;
 			if (chest == null)
 				return;
-			chest.setCustomName(getColorizedNickname());
+			chest.setCustomName(getColorizedName());
 			chest.update();
 		}
 	}
 
-	public boolean hasDefaultNickname() {
-		return getRawNickname().contentEquals(getDefaultNickname());
-	}
-
-	public String getDefaultNickname() {
+	@Override
+	public String getDefaultName() {
 		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + getID() + ")";
 	}
 
-	public void setDefaultNickname() {
+	@Override
+	public void resetName() {
 		if (!hasID())
 			return;
-		setNickname(null);
+		setName(getDefaultName());
 	}
 
-	public void clearNickname() {
-		setNickname("");
+	public void updateName() {
+		setName(getRawName());
+	}
+
+	public void clearName() {
+		setName("");
 	}
 
 	public AccountStatus getStatus() {
@@ -285,7 +285,7 @@ public class Account extends Ownable {
 		TextComponent info = new TextComponent();
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 
-		info.addExtra("\"" + Utils.colorize(getRawNickname()) + ChatColor.GRAY + "\"");
+		info.addExtra("\"" + Utils.colorize(getRawName()) + ChatColor.GRAY + "\"");
 		info.addExtra("\n    Bank: " + ChatColor.RED + getBank().getColorizedName());
 		if (!isOwner)
 			info.addExtra("\n    Owner: " + ChatColor.GOLD + getOwnerDisplayName());

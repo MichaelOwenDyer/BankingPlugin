@@ -392,7 +392,7 @@ public class BankUtils {
 										accountUtils.addAccount(account, false, new Callback<Integer>(plugin) {
 											@Override
 											public void onResult(Integer result) {
-												account.setNickname(account.getRawNickname());
+												account.updateName();
 											}
 										});
 										postReload[1]++;

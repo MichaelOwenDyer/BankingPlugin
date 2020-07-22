@@ -206,6 +206,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 	private boolean promptAccountList(final CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to list accounts");
 		ArrayList<Account> accounts = null;
+		String noAccountsMessage = "";
 		if (args.length == 1) {
 			if (!(sender instanceof Player)) {
 				plugin.debug("Only players can list their own accounts");
@@ -214,7 +215,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			}
 			plugin.debug(sender.getName() + " has listed their own accounts");
 			accounts = new ArrayList<>(accountUtils.getPlayerAccountsCopy((Player) sender));
-			
+			noAccountsMessage = Messages.NO_ACCOUNTS_FOUND;
 		} else if (args.length == 2) {
 			if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
 				if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
@@ -224,6 +225,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				}
 				plugin.debug(sender.getName() + " has listed all accounts");
 				accounts = new ArrayList<>(accountUtils.getAccountsCopy());
+				noAccountsMessage = Messages.NO_ACCOUNTS_FOUND;
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				if (owner == null || !owner.hasPlayedBefore()) {
@@ -240,6 +242,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				}
 				plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
 				accounts = new ArrayList<>(accountUtils.getPlayerAccountsCopy(owner));
+				noAccountsMessage = Messages.NO_PLAYER_ACCOUNTS;
 			}
 		}
 
@@ -247,11 +250,11 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			int i = 0;
 			for (Account account : accounts)
 				sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i + ". "),
-						new TextComponent(account.getColorizedNickname()
-								+ (account.hasDefaultNickname() ? " " : ChatColor.GREEN + "(" + account.getOwner().getName() + ") ")),
+						new TextComponent(account.getColorizedName()
+								+ (account.isDefaultName() ? " " : ChatColor.GREEN + "(" + account.getOwner().getName() + ") ")),
 						account.getInfoButton(sender));
 		} else
-			sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
+			sender.sendMessage(noAccountsMessage);
 
 		return true;
 	}

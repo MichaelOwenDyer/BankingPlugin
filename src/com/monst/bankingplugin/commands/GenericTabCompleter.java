@@ -49,9 +49,9 @@ class GenericTabCompleter implements TabCompleter {
 			case "transfer":
 				return completeAccountTransfer((Player) sender, args);
 			default:
-				return new ArrayList<>();
+				return Collections.emptyList();
 			}
-			return new ArrayList<>();
+			return Collections.emptyList();
 		} else if (command.getName().equalsIgnoreCase(bankCommand)) {
 			switch (subCommand) {
 			case "create":
@@ -60,9 +60,7 @@ class GenericTabCompleter implements TabCompleter {
 				return completeBankRemove(sender, args);
 			case "info":
 				return completeBankInfo(sender, args);
-			case "list":
-				return completeBankList(sender, args);
-			case "removeall":
+			case "list": case "removeall":
 				break;
 			case "resize":
 				return completeBankResize((Player) sender, args);
@@ -73,9 +71,9 @@ class GenericTabCompleter implements TabCompleter {
 			case "transfer":
 				return completeBankTransfer((Player) sender, args);
 			default:
-				return new ArrayList<>();
+				return Collections.emptyList();
 			}
-			return new ArrayList<>();
+			return Collections.emptyList();
 		} else if (command.getName().equalsIgnoreCase(controlCommand)) {
 			switch (subCommand) {
 			case "config":
@@ -83,11 +81,11 @@ class GenericTabCompleter implements TabCompleter {
 			case "reload": case "update":
 				break;
 			default:
-				return new ArrayList<>();
+				return Collections.emptyList();
 			}
-			return new ArrayList<>();
+			return Collections.emptyList();
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeAccountList(CommandSender sender, String[] args) {
@@ -107,7 +105,7 @@ class GenericTabCompleter implements TabCompleter {
 				return onlinePlayers;
 			}
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeAccountRemoveAll(CommandSender sender, String[] args) {
@@ -130,7 +128,7 @@ class GenericTabCompleter implements TabCompleter {
 				return onlinePlayers;
 			}
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeAccountSet(Player p, String[] args) {
@@ -146,7 +144,7 @@ class GenericTabCompleter implements TabCompleter {
 			} else
 				return fields;
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeAccountTrust(Player p, String[] args) {
@@ -163,7 +161,7 @@ class GenericTabCompleter implements TabCompleter {
 			}
 			return onlinePlayers;
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeAccountTransfer(Player p, String[] args) {
@@ -183,21 +181,19 @@ class GenericTabCompleter implements TabCompleter {
 			}
 			return onlinePlayers;
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeBankCreate(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
+
+		if (args.length > 2 && args[1].equalsIgnoreCase("admin"))
+			return Collections.emptyList();
 		
 		if (args.length == 2) {
-			if (args[1].isEmpty())
-				return Collections.singletonList("<bankname>");
-			else
-				return new ArrayList<>();
-		} else if (args.length == 3) {
+			if (p.hasPermission(Permissions.BANK_CREATE_ADMIN))
+				returnCompletions.add("admin");
 			Block b = p.getTargetBlock(null, 150);
-			if (b == null)
-				return returnCompletions;
 			String coord = "" + b.getLocation().getBlockX();
 			if (!args[2].isEmpty()) {
 				if (args[2].startsWith(coord))
@@ -206,10 +202,8 @@ class GenericTabCompleter implements TabCompleter {
 				returnCompletions.add(coord);
 			}
 			return returnCompletions;
-		} else if (args.length == 4) {
+		} else if (args.length == 3) {
 			Block b = p.getTargetBlock(null, 150);
-			if (b == null)
-				return returnCompletions;
 			String coord = "" + b.getLocation().getBlockY();
 			if (!args[3].isEmpty()) {
 				if (args[3].startsWith(coord))
@@ -218,10 +212,8 @@ class GenericTabCompleter implements TabCompleter {
 				returnCompletions.add(coord);
 			}
 			return returnCompletions;
-		} else if (args.length == 5) {
+		} else if (args.length == 4) {
 			Block b = p.getTargetBlock(null, 150);
-			if (b == null)
-				return returnCompletions;
 			String coord = "" + b.getLocation().getBlockZ();
 			if (!args[4].isEmpty()) {
 				if (args[4].startsWith(coord))
@@ -230,10 +222,8 @@ class GenericTabCompleter implements TabCompleter {
 				returnCompletions.add(coord);
 			}
 			return returnCompletions;
-		} else if (args.length == 6) {
+		} else if (args.length == 5) {
 			Block b = p.getTargetBlock(null, 150);
-			if (b == null)
-				return returnCompletions;
 			String coord = "" + b.getLocation().getBlockX();
 			if (!args[5].isEmpty()) {
 				if (args[5].startsWith(coord))
@@ -242,10 +232,8 @@ class GenericTabCompleter implements TabCompleter {
 				returnCompletions.add(coord);
 			}
 			return returnCompletions;
-		} else if (args.length == 7) {
+		} else if (args.length == 6) {
 			Block b = p.getTargetBlock(null, 150);
-			if (b == null)
-				return returnCompletions;
 			String coord = "" + b.getLocation().getBlockY();
 			if (!args[6].isEmpty()) {
 				if (args[6].startsWith(coord))
@@ -254,10 +242,8 @@ class GenericTabCompleter implements TabCompleter {
 				returnCompletions.add(coord);
 			}
 			return returnCompletions;
-		} else if (args.length == 8) {
+		} else if (args.length == 7) {
 			Block b = p.getTargetBlock(null, 150);
-			if (b == null)
-				return returnCompletions;
 			String coord = "" + b.getLocation().getBlockZ();
 			if (!args[7].isEmpty()) {
 				if (args[7].startsWith(coord))
@@ -267,8 +253,7 @@ class GenericTabCompleter implements TabCompleter {
 			}
 			return returnCompletions;
 		}
-
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeBankRemove(CommandSender sender, String[] args) {
@@ -287,7 +272,7 @@ class GenericTabCompleter implements TabCompleter {
 			}
 			return banks.stream().map(Bank::getName).collect(Collectors.toList());
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeBankInfo(CommandSender sender, String[] args) {
@@ -303,21 +288,7 @@ class GenericTabCompleter implements TabCompleter {
 			}
 			return banks.stream().map(Bank::getName).collect(Collectors.toList());
 		}
-		return new ArrayList<>();
-	}
-
-	private List<String> completeBankList(CommandSender sender, String[] args) {
-		ArrayList<String> returnCompletions = new ArrayList<>();
-
-		if (args.length == 2) {
-			if (!args[1].isEmpty()) {
-				if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
-					returnCompletions.add("detailed");
-				return returnCompletions;
-			} else
-				return Collections.singletonList("detailed");
-		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 	
 	private List<String> completeBankSet(CommandSender sender, String[] args) {
@@ -384,7 +355,7 @@ class GenericTabCompleter implements TabCompleter {
 				return Collections.singletonList(value);
 			}
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeBankTransfer(Player p, String[] args) {
@@ -423,7 +394,7 @@ class GenericTabCompleter implements TabCompleter {
 				return onlinePlayers;
 			}
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeBankResize(Player p, String[] args) {
@@ -461,7 +432,7 @@ class GenericTabCompleter implements TabCompleter {
 					return banks.stream().map(Bank::getName).collect(Collectors.toList());
 			}
 		} 
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 	private List<String> completeControlConfig(CommandSender sender, String[] args) {
@@ -502,6 +473,6 @@ class GenericTabCompleter implements TabCompleter {
 			}
 			return returnCompletions;
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 }
