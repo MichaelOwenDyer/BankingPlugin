@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.InterestEvent;
 import com.monst.bankingplugin.events.ReloadEvent;
 import com.monst.bankingplugin.utils.*;
-import com.sun.istack.internal.NotNull;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -24,7 +23,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 	}
 
 	@Override
-	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+	public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
 
 		List<ControlSubCommand> subCommands = plugin.getControlCommand().getSubCommands().stream()
 				.map(cmd -> (ControlSubCommand) cmd).collect(Collectors.toList());

@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.commands;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.sun.istack.internal.NotNull;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
@@ -96,7 +95,7 @@ public class GenericCommand {
 	private class GenericBaseCommandExecutor implements CommandExecutor {
 
 		@Override
-		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length > 0) {
 				for (GenericSubCommand subCommand : subCommands) {
 					if (subCommand.getName().equalsIgnoreCase(args[0])) {
@@ -119,7 +118,7 @@ public class GenericCommand {
 	private class GenericBaseTabCompleter implements TabCompleter {
 
 		@Override
-		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 
 			List<String> subCommandNames = new ArrayList<>();
 			List<String> tabCompletions = new ArrayList<>();

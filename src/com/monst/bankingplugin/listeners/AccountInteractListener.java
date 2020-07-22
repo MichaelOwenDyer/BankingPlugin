@@ -10,7 +10,6 @@ import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.events.account.TransferOwnershipEvent;
 import com.monst.bankingplugin.gui.AccountGui;
 import com.monst.bankingplugin.utils.*;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.ClickType.*;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -243,7 +242,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		int playerAccountLimit = (int) bank.getAccountConfig().getOrDefault(Field.PLAYER_ACCOUNT_LIMIT);
+		int playerAccountLimit = bank.getAccountConfig().getPlayerAccountLimit(false);
 		if (playerAccountLimit > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(p)).count() >= playerAccountLimit) {
 			p.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
 			plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
@@ -260,7 +259,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		double creationPrice = (double) bank.getAccountConfig().getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+		double creationPrice = bank.getAccountConfig().getAccountCreationPrice(false);
 		creationPrice *= ((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1;
 
 		if (creationPrice > 0 && !bank.isOwner(p)) {
@@ -364,10 +363,10 @@ public class AccountInteractListener implements Listener {
 		}
 		
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+		double creationPrice = accountConfig.getAccountCreationPrice(false);
 		creationPrice *= account.getChestSize();
 
-		if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION)
+		if (creationPrice > 0 && accountConfig.isReimburseAccountCreation(false)
 				&& account.isOwner(executor) && !account.getBank().isOwner(executor)) {
 			OfflinePlayer owner = executor.getPlayer();
 			EconomyResponse r = plugin.getEconomy().depositPlayer(owner, account.getLocation().getWorld().getName(),
@@ -602,7 +601,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		double creationPrice = (double) bank.getAccountConfig().getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+		double creationPrice = bank.getAccountConfig().getAccountCreationPrice(false);
 		creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1) - toMigrate.getChestSize();
 
 		if (creationPrice != 0 && !bank.isOwner(p)) {

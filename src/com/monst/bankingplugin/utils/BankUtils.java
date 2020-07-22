@@ -430,22 +430,14 @@ public class BankUtils {
         });
     }
 
-	public Bank getBankByName(String name) {
-		return getBanksCopy().stream().filter(bank -> bank.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
-	}
-
-	public Bank getBankByID(int id) {
-		return getBanksCopy().stream().filter(bank -> bank.getID() == id).findFirst().orElse(null);
-	}
-	
-	public Bank lookupBank(String string) {
+	public Bank lookupBank(String identifier) {
 		Bank bank = null;
 		try {
-			int id = Integer.parseInt(string);
-			bank = getBankByID(id);
+			int id = Integer.parseInt(identifier);
+			bank = getBanksCopy().stream().filter(b -> b.getID() == id).findFirst().orElse(null);
 		} catch (NumberFormatException e) {}
 		if (bank == null)
-			bank = getBankByName(string);
+			bank = getBanksCopy().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
 		return bank;
 	}
 }

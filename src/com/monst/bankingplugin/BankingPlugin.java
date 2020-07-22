@@ -106,8 +106,7 @@ public class BankingPlugin extends JavaPlugin {
 	public void onEnable() {
 		debug("Enabling BankingPlugin version " + getDescription().getVersion());
 
-		for (String s : Utils.getVersionMessage())
-			Bukkit.getConsoleSender().sendMessage(s);
+		Bukkit.getConsoleSender().sendMessage(Utils.getVersionMessage());
 
 		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
 			debug("Could not find plugin \"Vault\"");

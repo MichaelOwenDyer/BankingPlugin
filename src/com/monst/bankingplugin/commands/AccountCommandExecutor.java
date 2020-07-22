@@ -8,9 +8,9 @@ import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
 import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
 import com.monst.bankingplugin.events.account.AccountPreRemoveEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
+import com.monst.bankingplugin.gui.AccountGui;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.ClickType.EnumClickType;
-import com.sun.istack.internal.NotNull;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -21,6 +21,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +37,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 	}
 
 	@Override
-	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		List<AccountSubCommand> subCommands = plugin.getAccountCommand().getSubCommands().stream()
 				.map(cmd -> (AccountSubCommand) cmd).collect(Collectors.toList());
 
@@ -168,139 +169,90 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		ClickType.setPlayerClickType(p, new ClickType(ClickType.EnumClickType.REMOVE));
 	}
 
-	private void promptAccountInfo(final Player p, String[] args) {
-		plugin.debug(p.getName() + " wants to retrieve account info");
+	private void promptAccountInfo(final CommandSender sender, String[] args) {
+		plugin.debug(sender.getName() + " wants to retrieve account info");
 
-		AccountPreInfoEvent event = new AccountPreInfoEvent(p);
+		AccountPreInfoEvent event = new AccountPreInfoEvent(sender);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Account pre-info event cancelled");
 			return;
 		}
 
-		plugin.debug(p.getName() + " can now click an account to get info");
-		p.sendMessage(Messages.CLICK_CHEST_INFO);
-		ClickType.setPlayerClickType(p, new ClickType(EnumClickType.INFO));
+		if (args.length > 1) {
+			try {
+				int id = Integer.parseInt(args[1]);
+				Account account = accountUtils.getAccount(id);
+				plugin.debug(sender.getName() + " is displaying info for account #" + id);
+				sender.spigot().sendMessage(account.getInformation(sender));
+				if (sender instanceof Player)
+					new AccountGui(account).open(((Player) sender));
+				return;
+			} catch (NumberFormatException e) {}
+		}
+
+		if (!(sender instanceof Player)) {
+			plugin.debug(sender.getName() + " is not a player");
+			sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+			return;
+		}
+
+		plugin.debug(sender.getName() + " can now click an account to get info");
+		sender.sendMessage(Messages.CLICK_CHEST_INFO);
+		ClickType.setPlayerClickType(((Player) sender), new ClickType(EnumClickType.INFO));
 	}
 
 	@SuppressWarnings("deprecation")
 	private boolean promptAccountList(final CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to list accounts");
-
+		ArrayList<Account> accounts = null;
 		if (args.length == 1) {
-			if (sender instanceof Player) {
-				Player p = (Player) sender;
-				plugin.debug(p.getName() + " has listed their own accounts");
-				Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(p);
-				if (!accounts.isEmpty()) {
-					int i = 1;
-					for (Account account : accounts)
-						sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
-								new TextComponent(account.getColorizedNickname()));
-				} else
-					p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
-			} else {
+			if (!(sender instanceof Player)) {
 				plugin.debug("Only players can list their own accounts");
 				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+				return true;
 			}
+			plugin.debug(sender.getName() + " has listed their own accounts");
+			accounts = new ArrayList<>(accountUtils.getPlayerAccountsCopy((Player) sender));
+			
 		} else if (args.length == 2) {
-			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
-				if (sender instanceof Player) {
-					Player p = (Player) sender;
-					plugin.debug(p.getName() + " has listed their own accounts detailed");
-					Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(p);
-					if (!accounts.isEmpty()) {
-						int i = 1;
-						for (Account account : accounts)
-							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
-									account.getInformation(p));
-					} else
-						p.sendMessage(Messages.NO_ACCOUNTS_FOUND);
-				} else {
-					plugin.debug("Only players can list their own accounts");
-					sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-				}
-			} else if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
-				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
-					plugin.debug(sender.getName() + " has listed all accounts");
-					Collection<Account> accounts = accountUtils.getAccountsCopy();
-					if (!accounts.isEmpty()) {
-						int i = 1;
-						for (Account account : accounts)
-							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
-									account.getInformation(sender));
-						} else
-						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
-
-				} else {
+			if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
+				if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
 					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
 					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
+					return true;
 				}
+				plugin.debug(sender.getName() + " has listed all accounts");
+				accounts = new ArrayList<>(accountUtils.getAccountsCopy());
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				if (owner.hasPlayedBefore()) {
-					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
-							+ owner.getUniqueId());
-					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
-							|| sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
-						plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
-						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
-						if (!accounts.isEmpty()) {
-							int i = 1;
-							for (Account account : accounts)
-								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
-										account.getInformation(sender));
-						} else
-							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
-					} else {
-						plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
-					}
-				} else
+				if (owner == null || !owner.hasPlayedBefore()) {
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
-			}
-		} else if (args.length == 3) {
-			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) && (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed"))
-					|| (args[2].equalsIgnoreCase("-a") || args[2].equalsIgnoreCase("all")) && (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed"))) {
-				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
-					plugin.debug(sender.getName() + " has listed all accounts verbose");
-					Collection<Account> accounts = accountUtils.getAccountsCopy();
-					if (!accounts.isEmpty()) {
-						int i = 1;
-						for (Account account : accounts)
-							sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
-									account.getInformation(sender));
-					} else
-						sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
-				} else {
-					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER_VERBOSE);
+					return true;
 				}
-			} else if (args[2].equalsIgnoreCase("-d") || args[2].equalsIgnoreCase("detailed")) {
-				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				if (owner.hasPlayedBefore()) {
-					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
-							+ owner.getUniqueId());
-					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
-							|| sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
-						plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
-						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
-						if (!accounts.isEmpty()) {
-							int i = 1;
-							for (Account account : accounts)
-								sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
-										account.getInformation(sender));
-						} else
-							sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
-					} else {
-						plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
-						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER_VERBOSE);
-					}
-				} else
-					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+				plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
+						+ owner.getUniqueId());
+				if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER) && (!(sender instanceof Player)
+						|| !((Player) sender).getUniqueId().equals(owner.getUniqueId()))) {
+					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
+					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
+					return true;
+				}
+				plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
+				accounts = new ArrayList<>(accountUtils.getPlayerAccountsCopy(owner));
 			}
+		}
+
+		if (accounts != null && !accounts.isEmpty()) {
+			int i = 0;
+			for (Account account : accounts)
+				sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i + ". "),
+						new TextComponent(account.getColorizedNickname()
+								+ (account.hasDefaultNickname() ? " " : ChatColor.GREEN + "(" + account.getOwner().getName() + ") ")),
+						account.getInfoButton(sender));
 		} else
-			return false;
+			sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
+
 		return true;
 	}
 

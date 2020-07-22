@@ -1,7 +1,5 @@
 package com.monst.bankingplugin.utils;
 
-import com.monst.bankingplugin.utils.AccountConfig.Field;
-
 import java.util.List;
 
 public class AccountStatus {
@@ -17,9 +15,9 @@ public class AccountStatus {
 	 * <p>Default AccountStatus constructor for a brand new account.</p>
 	 */
 	public AccountStatus(AccountConfig config) {
-		this(config, 0, (int) config.getOrDefault(Field.INITIAL_INTEREST_DELAY),
-				(int) config.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS),
-				(int) config.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET));
+		this(config, 0, config.getInitialInterestDelay(false),
+				config.getAllowedOfflinePayouts(false),
+				config.getAllowedOfflineBeforeReset(false));
 	}
 	/**
 	 * Creates an account status with the given values.
@@ -55,7 +53,7 @@ public class AccountStatus {
 	}
 	
 	public int processWithdrawal() {
-		int increment = (int) accountConfig.getOrDefault(Field.WITHDRAWAL_MULTIPLIER_BEHAVIOR);
+		int increment = accountConfig.getWithdrawalMultiplierBehavior(false);
 
 		if (increment > 0) {
 			resetMultiplierStage();
@@ -74,21 +72,20 @@ public class AccountStatus {
 	 */
 	public void incrementMultiplier(boolean online) {
 
-		@SuppressWarnings("unchecked")
-		List<Integer> multipliers = (List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS);
+		List<Integer> multipliers = accountConfig.getMultipliers(false);
 
 		if (online) {
 			if (multiplierStage < multipliers.size() - 1)
 				multiplierStage++;
-			
+			remainingOfflineUntilReset = accountConfig.getAllowedOfflineBeforeReset(false);
 		} else {
-			if (remainingOfflineUntilReset > 0)
-				remainingOfflineUntilReset--;
-			else {
+			if (remainingOfflineUntilReset == 0) {
 				resetMultiplierStage();
 				return;
-			}
-			int increment = (int) accountConfig.getOrDefault(Field.OFFLINE_MULTIPLIER_BEHAVIOR);
+			} else
+				remainingOfflineUntilReset--;
+
+			int increment = accountConfig.getOfflineMultiplierBehavior(false);
 			int newStage = multiplierStage + increment;
 			
 			if (newStage < 0) {
@@ -112,11 +109,11 @@ public class AccountStatus {
 				delayUntilNextPayout--;
 				return false;
 			}
-			remainingOfflineUntilReset = (int) accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET);
+
 			return true;
 		} else {
 			if (delayUntilNextPayout > 0) {
-				if ((boolean) accountConfig.getOrDefault(Field.COUNT_INTEREST_DELAY_OFFLINE))
+				if (accountConfig.isCountInterestDelayOffline(false))
 					delayUntilNextPayout--;
 				return false;
 			} else
@@ -134,8 +131,7 @@ public class AccountStatus {
 	 */
 	public int getRealMultiplier() {
 		
-		@SuppressWarnings("unchecked")
-		List<Integer> multipliers = (List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS);
+		List<Integer> multipliers = accountConfig.getMultipliers(false);
 
 		if (multiplierStage < 0)
 			multiplierStage = 0;
@@ -153,8 +149,7 @@ public class AccountStatus {
 	
 	public int setMultiplierStage(int stage) {
 
-		@SuppressWarnings("unchecked")
-		List<Integer> multipliers = (List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS);
+		List<Integer> multipliers = accountConfig.getMultipliers(false);
 
 		stage--;
 		if (stage < 0)
@@ -168,8 +163,7 @@ public class AccountStatus {
 
 	public int setMultiplierStageRelative(int stage) {
 
-		@SuppressWarnings("unchecked")
-		List<Integer> multipliers = (List<Integer>) accountConfig.getOrDefault(Field.MULTIPLIERS);
+		List<Integer> multipliers = accountConfig.getMultipliers(false);
 
 		int newStage = multiplierStage + stage;
 		if (newStage < 0)

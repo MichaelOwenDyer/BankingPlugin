@@ -399,19 +399,20 @@ public abstract class Database {
 
 					AccountConfig config = bank.getAccountConfig();
 					ps.setString(i + 9,
-							config.getInterestRate() + " | " 
-									+ config.getMultipliers().stream().map(num -> "" + num).collect(Collectors.joining(",", "[", "]")) + " | " 
-									+ config.getInitialInterestDelay() + " | " 
-									+ config.isCountInterestDelayOffline() + " | " 
-									+ config.getAllowedOfflinePayouts() + " | "
-									+ config.getAllowedOfflineBeforeReset() + " | "
-									+ config.getOfflineMultiplierBehavior() + " | "
-									+ config.getWithdrawalMultiplierBehavior() + " | "
-									+ config.getAccountCreationPrice() + " | "
-									+ config.isReimburseAccountCreation() + " | " 
-									+ config.getMinBalance() + " | "
-									+ config.getLowBalanceFee() + " | "
-									+ config.getPlayerAccountLimit());
+							config.getInterestRate(true) + " | "
+									+ config.getMultipliers(true).stream().map(num -> "" + num).collect(Collectors.joining(",", "[", "]")) + " | "
+									+ config.getInitialInterestDelay(true) + " | "
+									+ config.isCountInterestDelayOffline(true) + " | "
+									+ config.getAllowedOfflinePayouts(true) + " | "
+									+ config.getAllowedOfflineBeforeReset(true) + " | "
+									+ config.getOfflineMultiplierBehavior(true) + " | "
+									+ config.getWithdrawalMultiplierBehavior(true) + " | "
+									+ config.getAccountCreationPrice(true) + " | "
+									+ config.isReimburseAccountCreation(true) + " | "
+									+ config.getMinBalance(true) + " | "
+									+ config.getLowBalanceFee(true) + " | "
+									+ config.isPayOnLowBalance(true) + " | "
+									+ config.getPlayerAccountLimit(true));
 
 					ps.executeUpdate();
 
@@ -587,7 +588,8 @@ public abstract class Database {
 								Boolean.parseBoolean(accConfig[9]),
 								Double.parseDouble(accConfig[10]),
 								Double.parseDouble(accConfig[11]),
-								(accConfig.length == 13 ? Integer.parseInt(accConfig[12]) : Config.playerBankAccountLimit.getValue())); // For update
+								accConfig.length == 14 ? Boolean.parseBoolean(accConfig[12]) : Config.payOnLowBalance.getValue(), // Update banks to 1.9
+								accConfig.length == 14 ? Integer.parseInt(accConfig[13]) : Integer.parseInt(accConfig[12]));
 
 						plugin.debug("Initializing bank \"" + name + "\"... (#" + bankId + ")");
 

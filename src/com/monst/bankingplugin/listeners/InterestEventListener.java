@@ -6,7 +6,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.InterestEvent;
 import com.monst.bankingplugin.utils.*;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -72,29 +71,28 @@ public class InterestEventListener implements Listener {
 						if (!account.getBank().isAdminBank())
 							trustedPlayers.remove(account.getBank().getOwner());
 
-						if (!trustedPlayers.isEmpty() && (double) config.getOrDefault(Field.MINIMUM_BALANCE) > 0
-								&& account.getBalance().compareTo(BigDecimal
-								.valueOf((double) config.getOrDefault(Field.MINIMUM_BALANCE))) < 0) {
+						if (!trustedPlayers.isEmpty() && config.getMinBalance(false) > 0
+								&& account.getBalance().compareTo(BigDecimal.valueOf(config.getMinBalance(false))) < 0) {
 
 							totalAccountFees.put(accountOwner, totalAccountFees.getOrDefault(accountOwner, BigDecimal.ZERO)
-									.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));
+									.add(BigDecimal.valueOf(config.getLowBalanceFee(false))));
 							accountFeeCounter.put(accountOwner, accountFeeCounter.getOrDefault(accountOwner, 0) + 1);
 							if (!account.getBank().isAdminBank()) {
 								totalBankFees.put(account.getBank().getOwner(),
 									totalBankFees.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
-												.add(BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE))));
+												.add(BigDecimal.valueOf(config.getLowBalanceFee(false))));
 								bankFeeCounter.put(account.getBank().getOwner(),
 										bankFeeCounter.getOrDefault(account.getBank().getOwner(), 0) + 1);
 							}
 							if (Config.enableInterestLog) {
 								plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
-										BigDecimal.valueOf((double) config.getOrDefault(Field.LOW_BALANCE_FEE) * -1), null);
+										BigDecimal.valueOf(config.getLowBalanceFee(false) * -1), null);
 							}
 							continue; // Config value for paying interest on low balance or not?
 						}
 
 						BigDecimal baseInterest = account.getBalance()
-								.multiply(BigDecimal.valueOf((double) config.getOrDefault(Field.INTEREST_RATE)))
+								.multiply(BigDecimal.valueOf(config.getInterestRate(false)))
 								.setScale(2, RoundingMode.HALF_EVEN);
 						BigDecimal interest = baseInterest;
 

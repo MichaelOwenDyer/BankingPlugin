@@ -3,12 +3,14 @@ package com.monst.bankingplugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -180,7 +182,17 @@ public class Bank extends Ownable {
 		if (Config.trustOnTransfer)
 			coowners.add(prevOwner);
 	}
-	
+
+	@Override
+	public TextComponent getInfoButton(CommandSender sender) {
+		TextComponent button = new TextComponent("[Info]");
+		button.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(org.bukkit.ChatColor.GRAY + "Click for bank info.")));
+		button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bank info " + getID()));
+		return button;
+	}
+
+	@Override
 	public TextComponent getInformation(CommandSender sender) {
 		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
 		boolean verbose = (sender instanceof Player && isTrusted((Player) sender))
@@ -195,17 +207,17 @@ public class Bank extends Ownable {
 			info.addExtra("\n    Owner: " + (isPlayerBank() ? getOwnerDisplayName() : ChatColor.RED + "ADMIN"));
 		if (!getCoowners().isEmpty())
 			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
-		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + Utils.formatNumber((double) accountConfig.getOrDefault(Field.INTEREST_RATE)));
+		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + Utils.formatNumber(accountConfig.getInterestRate(false)));
 		info.addExtra("\n    Multipliers: ");
 		info.addExtra(Utils.getMultiplierView(this));
-		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE)));
-		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS));
-		info.addExtra(" (" + ChatColor.AQUA + accountConfig.getOrDefault(Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before multiplier reset)");
-		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.getOrDefault(Field.INITIAL_INTEREST_DELAY));
-		double minBal = (double) accountConfig.getOrDefault(Field.MINIMUM_BALANCE);
+		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.getAccountCreationPrice(false)));
+		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.getAllowedOfflinePayouts(false));
+		info.addExtra(" (" + ChatColor.AQUA + accountConfig.getAllowedOfflineBeforeReset(false) + ChatColor.GRAY + " before multiplier reset)");
+		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.getInitialInterestDelay(false));
+		double minBal = accountConfig.getMinBalance(false);
 		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
 		if (minBal != 0)
-			info.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber((double) accountConfig.getOrDefault(Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)");
+			info.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber(accountConfig.getLowBalanceFee(false)) + ChatColor.GRAY + " fee)");
 		if (verbose) {
 			info.addExtra("\n    Accounts: " + ChatColor.AQUA + accounts.size());
 			info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()));

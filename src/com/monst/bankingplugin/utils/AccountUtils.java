@@ -44,6 +44,10 @@ public class AccountUtils {
 		return accountLocationMap.get(Utils.blockifyLocation(location));
     }
 
+    public Account getAccount(int id) {
+		return getAccounts().stream().filter(account -> account.getID() == id).findFirst().orElse(null);
+	}
+
     /**
      * Checks whether there is a account at a given location
      * @param location Location to check

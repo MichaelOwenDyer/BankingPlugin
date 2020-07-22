@@ -21,6 +21,7 @@ public class AccountConfig {
 	private boolean reimburseAccountCreation;
 	private double minBalance;
 	private double lowBalanceFee;
+	private boolean payOnLowBalance;
 	private int playerAccountLimit;
 
 	public AccountConfig() {
@@ -36,6 +37,7 @@ public class AccountConfig {
 				Config.reimburseAccountCreation.getValue(),
 				Config.minBalance.getValue(),
 				Config.lowBalanceFee.getValue(),
+				Config.payOnLowBalance.getValue(),
 				Config.playerBankAccountLimit.getValue()
 				);
 	}
@@ -43,7 +45,7 @@ public class AccountConfig {
 	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
 			boolean countInterestDelayOffline, int allowedOffline, int allowedOfflineBeforeReset,
 			int offlineMultiplierBehavior, int withdrawalMultiplierBehavior, double accountCreationPrice,
-			boolean reimburseAccountCreation, double minBalance, double lowBalanceFee, int playerAccountLimit) {
+			boolean reimburseAccountCreation, double minBalance, double lowBalanceFee, boolean payOnLowBalance, int playerAccountLimit) {
 
 		this.interestRate = interestRate;
 		this.multipliers = multipliers;
@@ -57,6 +59,7 @@ public class AccountConfig {
 		this.reimburseAccountCreation = reimburseAccountCreation;
 		this.minBalance = minBalance;
 		this.lowBalanceFee = lowBalanceFee;
+		this.payOnLowBalance = payOnLowBalance;
 		this.playerAccountLimit = playerAccountLimit;
 	}
 
@@ -95,41 +98,44 @@ public class AccountConfig {
 		}
 	}
 
-	public Object getOrDefault(Field field) {
+	public Object getField(Field field) {
 		switch (field) {
 
 		case INTEREST_RATE:
-			return Config.interestRate.getKey() ? interestRate : Config.interestRate.getValue();
+			return getInterestRate(false);
 		case MULTIPLIERS:
-			return Config.interestMultipliers.getKey() ? multipliers : Config.interestMultipliers.getValue();
+			return getMultipliers(false);
 		case INITIAL_INTEREST_DELAY:
-			return Config.initialInterestDelay.getKey() ? initialInterestDelay : Config.initialInterestDelay.getValue();
+			return getInitialInterestDelay(false);
 		case COUNT_INTEREST_DELAY_OFFLINE:
-			return Config.countInterestDelayOffline.getKey() ? countInterestDelayOffline : Config.countInterestDelayOffline.getValue();
+			return isCountInterestDelayOffline(false);
 		case ALLOWED_OFFLINE_PAYOUTS:
-			return Config.allowedOfflinePayouts.getKey() ? allowedOfflinePayouts : Config.allowedOfflinePayouts.getValue();
+			return getAllowedOfflinePayouts(false);
 		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
-			return Config.allowedOfflineBeforeMultiplierReset.getKey() ? allowedOfflineBeforeReset : Config.allowedOfflineBeforeMultiplierReset.getValue();
+			return getAllowedOfflineBeforeReset(false);
 		case OFFLINE_MULTIPLIER_BEHAVIOR:
-			return Config.offlineMultiplierBehavior.getKey() ? offlineMultiplierBehavior : Config.offlineMultiplierBehavior.getValue();
+			return getOfflineMultiplierBehavior(false);
 		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
-			return Config.withdrawalMultiplierBehavior.getKey() ? withdrawalMultiplierBehavior : Config.withdrawalMultiplierBehavior.getValue();
+			return getWithdrawalMultiplierBehavior(false);
 		case ACCOUNT_CREATION_PRICE:
-			return Config.creationPriceAccount.getKey() ? accountCreationPrice : Config.creationPriceAccount.getValue();
+			return getAccountCreationPrice(false);
 		case REIMBURSE_ACCOUNT_CREATION:
-			return Config.reimburseAccountCreation.getKey() ? reimburseAccountCreation : Config.reimburseAccountCreation.getValue();
+			return isReimburseAccountCreation(false);
 		case MINIMUM_BALANCE:
-			return Config.minBalance.getKey() ? minBalance : Config.minBalance.getValue();
+			return getMinBalance(false);
 		case LOW_BALANCE_FEE:
-			return Config.lowBalanceFee.getKey() ? lowBalanceFee : Config.lowBalanceFee.getValue();
+			return getLowBalanceFee(false);
+		case PAY_ON_LOW_BALANCE:
+			return isPayOnLowBalance(false);
 		case PLAYER_ACCOUNT_LIMIT:
-			return Config.playerBankAccountLimit.getKey() ? playerAccountLimit : Config.playerBankAccountLimit.getValue();
+			return getPlayerAccountLimit(false);
 		default:
 			return null;
 		}
+
 	}
 	
-	public boolean setOrDefault(Field field, String s) throws NumberFormatException {
+	public boolean setField(Field field, String s) throws NumberFormatException {
 		
 		if (!isOverrideAllowed(field))
 			return false;
@@ -179,6 +185,12 @@ public class AccountConfig {
 		case LOW_BALANCE_FEE:
 			lowBalanceFee = Double.parseDouble(s.replace(",", ""));
 			break;
+		case PAY_ON_LOW_BALANCE:
+			if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
+				payOnLowBalance = Boolean.parseBoolean(s);
+			else
+				throw new NumberFormatException();
+			break;
 		case PLAYER_ACCOUNT_LIMIT:
 			playerAccountLimit = Integer.parseInt(s);
 			break;
@@ -188,61 +200,107 @@ public class AccountConfig {
 		return true;
 	}
 
-	public double getInterestRate() {
-		return interestRate;
+	public double getInterestRate(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return interestRate;
+		else
+			return Config.interestRate.getKey() ? interestRate : Config.interestRate.getValue();
 	}
 
-	public List<Integer> getMultipliers() {
-		return multipliers;
+	public List<Integer> getMultipliers(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return multipliers;
+		else
+			return Config.interestMultipliers.getKey() ? multipliers : Config.interestMultipliers.getValue();
 	}
 
-	public int getInitialInterestDelay() {
-		return initialInterestDelay;
+	public int getInitialInterestDelay(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return initialInterestDelay;
+		else
+			return Config.initialInterestDelay.getKey() ? initialInterestDelay : Config.initialInterestDelay.getValue();
 	}
 
-	public boolean isCountInterestDelayOffline() {
-		return countInterestDelayOffline;
+	public boolean isCountInterestDelayOffline(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return countInterestDelayOffline;
+		else
+			return Config.countInterestDelayOffline.getKey() ? countInterestDelayOffline : Config.countInterestDelayOffline.getValue();
 	}
 
-	public int getAllowedOfflinePayouts() {
-		return allowedOfflinePayouts;
+	public int getAllowedOfflinePayouts(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return allowedOfflinePayouts;
+		else
+			return Config.allowedOfflinePayouts.getKey() ? allowedOfflinePayouts : Config.allowedOfflinePayouts.getValue();
 	}
 
-	public int getAllowedOfflineBeforeReset() {
-		return allowedOfflineBeforeReset;
+	public int getAllowedOfflineBeforeReset(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return allowedOfflineBeforeReset;
+		else
+			return Config.allowedOfflineBeforeMultiplierReset.getKey() ? allowedOfflineBeforeReset : Config.allowedOfflineBeforeMultiplierReset.getValue();
 	}
 
-	public int getOfflineMultiplierBehavior() {
-		return offlineMultiplierBehavior;
+	public int getOfflineMultiplierBehavior(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return offlineMultiplierBehavior;
+		else
+			return Config.offlineMultiplierBehavior.getKey() ? offlineMultiplierBehavior : Config.offlineMultiplierBehavior.getValue();
 	}
 
-	public int getWithdrawalMultiplierBehavior() {
-		return withdrawalMultiplierBehavior;
+	public int getWithdrawalMultiplierBehavior(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return withdrawalMultiplierBehavior;
+		else
+			return Config.withdrawalMultiplierBehavior.getKey() ? withdrawalMultiplierBehavior : Config.withdrawalMultiplierBehavior.getValue();
 	}
 
-	public double getAccountCreationPrice() {
-		return accountCreationPrice;
+	public double getAccountCreationPrice(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return accountCreationPrice;
+		else
+			return Config.creationPriceAccount.getKey() ? accountCreationPrice : Config.creationPriceAccount.getValue();
 	}
 
-	public boolean isReimburseAccountCreation() {
-		return reimburseAccountCreation;
+	public boolean isReimburseAccountCreation(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return reimburseAccountCreation;
+		else
+			return Config.reimburseAccountCreation.getKey() ? reimburseAccountCreation : Config.reimburseAccountCreation.getValue();
 	}
 
-	public double getMinBalance() {
-		return minBalance;
+	public double getMinBalance(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return minBalance;
+		else
+			return Config.minBalance.getKey() ? minBalance : Config.minBalance.getValue();
 	}
 
-	public double getLowBalanceFee() {
-		return lowBalanceFee;
+	public double getLowBalanceFee(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return lowBalanceFee;
+		else
+			return Config.lowBalanceFee.getKey() ? lowBalanceFee : Config.lowBalanceFee.getValue();
 	}
 
-	public int getPlayerAccountLimit() {
-		return playerAccountLimit;
+	public boolean isPayOnLowBalance(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return payOnLowBalance;
+		else
+			return Config.payOnLowBalance.getKey() ? payOnLowBalance : Config.payOnLowBalance.getValue();
+	}
+
+	public int getPlayerAccountLimit(boolean ignoreConfig) {
+		if (ignoreConfig)
+			return playerAccountLimit;
+		else
+			return Config.playerBankAccountLimit.getKey() ? playerAccountLimit : Config.playerBankAccountLimit.getValue();
 	}
 
 	@Override
 	public String toString() {
-		return Arrays.stream(Field.values()).map(field -> field.getName() + ": " + getOrDefault(field)
+		return Arrays.stream(Field.values()).map(field -> field.getName() + ": " + getField(field)
 				+ " (Overrideable: " + isOverrideAllowed(field) + ")").collect(Collectors.joining("\n"));
 	}
 	
@@ -260,6 +318,7 @@ public class AccountConfig {
 		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation", 2), 
 		MINIMUM_BALANCE ("min-balance", 0), 
 		LOW_BALANCE_FEE ("low-balance-fee", 0),
+		PAY_ON_LOW_BALANCE ("pay-on-low-balance", 2),
 		PLAYER_ACCOUNT_LIMIT ("player-account-limit", 1);
 		
 		private final String name;

@@ -1,7 +1,9 @@
 package com.monst.bankingplugin.utils;
 
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -73,6 +75,10 @@ public abstract class Ownable {
 	}
 
 	public abstract void transferOwnership(OfflinePlayer newOwner);
+
+	public abstract TextComponent getInfoButton(CommandSender sender);
+
+	public abstract TextComponent getInformation(CommandSender sender);
 
 	public boolean hasID() {
 		return id != -1;

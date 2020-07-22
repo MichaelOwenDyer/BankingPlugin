@@ -8,7 +8,6 @@ import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import com.sun.istack.internal.NotNull;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -27,7 +26,7 @@ class GenericTabCompleter implements TabCompleter {
 	}
 
 	@Override
-	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 
 		final String accountCommand = Config.mainCommandNameAccount.toLowerCase();
 		final String bankCommand = Config.mainCommandNameBank.toLowerCase();
@@ -97,45 +96,18 @@ class GenericTabCompleter implements TabCompleter {
 		List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
 		onlinePlayers.remove(sender.getName());
 
-		List<String> flags = new ArrayList<>(Collections.singletonList("detailed"));
-		if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
-			flags.add("all");
-
 		if (args.length == 2) {
 			if (!args[1].isEmpty()) {
-				if ("-d".startsWith(args[1].toLowerCase()) || "detailed".startsWith(args[1].toLowerCase()))
-					returnCompletions.add("detailed");
-				if ("-a".startsWith(args[1].toLowerCase()) || "all".startsWith(args[1].toLowerCase()))
-					if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
+				if (sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER) && ("-a".startsWith(args[1].toLowerCase()) || "all".startsWith(args[1].toLowerCase())))
 						returnCompletions.add("all");
-				for (String name : onlinePlayers)
-					if (name.toLowerCase().startsWith(args[1].toLowerCase()))
-						returnCompletions.add(name);
+				returnCompletions.addAll(onlinePlayers.stream().filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase())).collect(Collectors.toList()));
 				return returnCompletions;
 			} else {
-				onlinePlayers.addAll(flags);
+				onlinePlayers.add("all");
 				return onlinePlayers;
 			}
-		} else if (args.length == 3) {
-			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
-				if (!args[2].isEmpty()) {
-					if ("-a".startsWith(args[2].toLowerCase()) || "all".startsWith(args[2].toLowerCase()))
-						return Collections.singletonList("all");
-					else
-						return new ArrayList<>();
-				} else
-					return Collections.singletonList("all");
-			} else {
-				if (!args[2].isEmpty()) {
-					if ("-d".startsWith(args[2].toLowerCase()) || "detailed".startsWith(args[2].toLowerCase()))
-						return Collections.singletonList("detailed");
-					else
-						return new ArrayList<>();
-				} else
-					return Collections.singletonList("detailed");
-			}
-		} else
-			return new ArrayList<>();
+		}
+		return new ArrayList<>();
 	}
 
 	private List<String> completeAccountRemoveAll(CommandSender sender, String[] args) {
@@ -397,16 +369,16 @@ class GenericTabCompleter implements TabCompleter {
 			bank = bankUtils.getBank(((Player) sender).getLocation());
 			Field field = Field.getByName(args[1]);
 			if (bank != null && field != null) {
-				String value = bank.getAccountConfig().getOrDefault(field).toString();
+				String value = bank.getAccountConfig().getField(field).toString();
 				if (field.getDataType() == 0)
 					value = Utils.formatNumber(Double.parseDouble(value));
 				return Collections.singletonList(value);
 			}
 		} else if (args.length == 4) {
-			Bank bank = bankUtils.getBankByName(args[1]);
+			Bank bank = bankUtils.lookupBank(args[1]);
 			Field field = Field.getByName(args[2]);
 			if (bank != null && field != null) {
-				String value = bank.getAccountConfig().getOrDefault(field).toString();
+				String value = bank.getAccountConfig().getField(field).toString();
 				if (field.getDataType() == 0)
 					value = Utils.formatNumber(Double.parseDouble(value));
 				return Collections.singletonList(value);

@@ -3,12 +3,14 @@ package com.monst.bankingplugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -212,6 +214,10 @@ public class Account extends Ownable {
 		return location;
 	}
 
+	public String getCoordinates() {
+		return location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
+	}
+
 	private void updateInventory() throws ChestNotFoundException {
 		Block b = getLocation().getBlock();
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
@@ -260,6 +266,16 @@ public class Account extends Ownable {
 		return getID() != -1 && getID() == otherAccount.getID();
 	}
 
+	@Override
+	public TextComponent getInfoButton(CommandSender sender) {
+		TextComponent button = new TextComponent("[Info]");
+		button.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.GRAY + "Click for account info.")));
+		button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/account info " + getID()));
+		return button;
+	}
+
+	@Override
 	public TextComponent getInformation(CommandSender sender) {
 		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
 		boolean verbose = (sender instanceof Player
@@ -285,7 +301,7 @@ public class Account extends Ownable {
 				interestRate.addExtra(ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)");
 			info.addExtra(interestRate);
 		}
-		info.addExtra("\n    Location: " + ChatColor.AQUA + "(" + getLocation().getBlockX() + ", " + getLocation().getBlockY() + ", " + getLocation().getBlockZ() + ")");
+		info.addExtra("\n    Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")");
 
 		return info;
 	}
@@ -298,12 +314,12 @@ public class Account extends Ownable {
 						+ "\nBalance: $" + Utils.formatNumber(getBalance()) 
 						+ "\nPrevious balance: $" + Utils.formatNumber(getPrevBalance())
 						+ "\nMultiplier: " + getStatus().getRealMultiplier() 
-						+ " (stage " + getStatus().getMultiplierStage() + ")" 
+							+ " (stage " + getStatus().getMultiplierStage() + ")"
 						+ "\nDelay until next payout: " + getStatus().getDelayUntilNextPayout() 
 						+ "\nNext payout amount: " + Utils.formatNumber(getBalance().doubleValue()
-								* (double) getBank().getAccountConfig().getOrDefault(Field.INTEREST_RATE)
+								* getBank().getAccountConfig().getInterestRate(false)
 								* getStatus().getRealMultiplier())
-						+ "\nLocation: " + getLocation().toString();
+						+ "\nLocation: " + getCoordinates();
 	}
 
 	@Override

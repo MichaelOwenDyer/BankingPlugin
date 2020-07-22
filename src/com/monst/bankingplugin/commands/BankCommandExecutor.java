@@ -11,7 +11,6 @@ import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
-import com.sun.istack.internal.NotNull;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -41,7 +40,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 	}
 
 	@Override
-	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+	public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
 		List<BankSubCommand> subCommands = plugin.getBankCommand().getSubCommands().stream()
 				.map(cmd -> (BankSubCommand) cmd).collect(Collectors.toList());
 		
@@ -129,7 +128,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				selection = WorldEditReader.getSelection(plugin, p);
 
 				if (selection == null) {
-					plugin.debug(p.getName() + " tried to create a bank with no worldedit selection");
+					plugin.debug(p.getName() + " tried to create a bank with no WorldEdit selection");
 					p.sendMessage(Messages.NO_SELECTION_FOUND);
 					return true;
 				}
@@ -232,12 +231,11 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			bankUtils.addBank(bank, true);
 			plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
 			p.sendMessage(Messages.BANK_CREATED);
-			return true;
 		} else {
 			plugin.debug("An error occured creating the bank");
 			p.sendMessage(Messages.ERROR_OCCURRED);
-			return true;
 		}
+		return true;
 	}
 
 	/**
@@ -347,7 +345,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				}
 			} else
 				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-		} else if (args.length >= 2) {
+		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
 				plugin.debug("No bank could be found under the identifier " + args[1]);
@@ -362,26 +360,22 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 	}
 
 	private void promptBankList(CommandSender sender, String[] args) {
-		
-		List<Bank> banks = new ArrayList<>(bankUtils.getBanks());
+		plugin.debug(sender.getName() + " is listing banks.");
+
+		List<Bank> banks;
+
+		banks = new ArrayList<>(bankUtils.getBanksCopy());
+
 		if (banks.isEmpty()) {
 			sender.sendMessage(Messages.NO_BANKS);
 			return;
 		}
 
-		if (args.length == 1) {
-			int i = 1;
-			for (Bank bank : bankUtils.getBanksCopy())
-				sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
-						new TextComponent(bank.getColorizedName()));
-		} else if (args.length >= 2) {
-			if (args[1].equalsIgnoreCase("-d") || args[1].equalsIgnoreCase("detailed")) {
-				int i = 1;
-				for (Bank bank : bankUtils.getBanksCopy())
-					sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i++ + ". "),
-							new TextComponent(bank.getInformation(sender)));
-			}
-		}
+		int i = 0;
+		for (Bank bank : bankUtils.getBanksCopy())
+			sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + ++i + ". "),
+					new TextComponent(bank.getColorizedName() + " "),
+					bank.getInfoButton(sender));
 	}
 
 	private void promptBankLimits(final Player p) {
@@ -679,7 +673,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 		
 		try {
-			if (config.setOrDefault(field, value)) {
+			if (config.setField(field, value)) {
 				if (field.getDataType() == 0)
 					value = Utils.formatNumber(Double.parseDouble(value.replace(",", "")));
 				else if (field.getDataType() == 3)

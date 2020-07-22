@@ -14,11 +14,13 @@ main-command-names:
 
 # Set the daily times at which players should receive interest payments from their accounts.
 # The time zone will be that of the server, not of the individual players.
-# These are real times (0 <= time < 24) written in the standard 24-hour format (for example '00:00' for midnight, '13:45', '17:15:30').
-# Equivalent values will be considered one.
+# These are real times (0 <= time < 24) written in the standard 24-hour format (for example, '00:00' for midnight, '13:45', '17:15:30', etc.).
+# Equivalent values will not be counted twice.
 # Type: List<LocalTime>
-# Default: '9:00', '15:00', '21:00'
 interest-payout-times:
+  # - '09:00'
+  # - '12:00'
+  # - '15:00'
   
 # Set the base interest rate for all bank accounts on the server.
 # Value should be a floating point number greater than 0.
@@ -62,7 +64,7 @@ count-interest-delay-offline:
     default: false
     allow-override: false
 
-# Set the number of times a player can be offline and still collect interest on their accounts.
+# Set the number of consecutive times a player may collect interest on their accounts while offline.
 # Set this to 0 for no interest while offline.
 # Type: int
 # Default: 1
@@ -70,11 +72,10 @@ allowed-offline-payouts:
     default: 1
     allow-override: true
 
-# Set the number of times a player can be offline at the interest payout times before their multiplier is reset.
+# Set the number of consecutive times a player can be offline for an interest payout before their account multiplier is reset.
 # This is independent of the number of times a player can collect interest payouts offline.
 # A player could continue to receive baseline interest payouts offline after the multiplier reset if allowed-offline-payouts is set higher than this.
-# If allowed-offline-payouts is set lower than this, an offline player will stop receiving payouts but will not lose their multiplier
-# until after they are offline for this number of interest payout times.
+# If allowed-offline-payouts is set lower than this, an offline player will stop receiving payouts but will not lose their multiplier until this number is reached.
 # Set this value to 0 for a no-tolerance policy on missing payouts (multiplier reset at first offline payout)
 # Type: int
 # Default: 1
@@ -86,7 +87,7 @@ allowed-offline-payouts-before-multiplier-reset:
 # Setting this value to -1 causes the multiplier to decrease by one stage per payout time while the player is offline.
 # Setting this value to 0 causes the multiplier to freeze until the player comes back online. It will remain the same as long as it is not reset.
 # Setting this value to 1 causes the multiplier to iterate like normal, even when the player is offline (discouraged)
-# Absolute values greater than 1 *are* allowed, but are to be used sparingly (-2 would decrease a player's multiplier by two stages for every missed payout)
+# Absolute values greater than 1 *are* allowed, but are to be used sparingly (for example, -2 would decrease a player's multiplier by two stages for every missed payout)
 # Type: int
 # Default: 0
 offline-multiplier-behavior:
@@ -99,14 +100,14 @@ offline-multiplier-behavior:
 # Setting this value to any positive integer causes the multiplier to be RESET when the player makes a withdrawal.
 # Absolute values greater than 1 are, similarly to above, allowed but to be used sparingly.
 # Type: int
-# Default: 1
+# Default: -1
 withdrawal-multiplier-behavior:
-    default: 1
+    default: -1
     allow-override: true
 
-# Set the item with which a player can click a account to retrieve information.
+# Set the item with which a player can click an account to retrieve information.
 # You can set this to an empty string ("") to disable this feature.
-# Type: String, converted to ItemStack
+# Type: String, converted to Material
 # Default: "STICK"
 account-info-item: "STICK"
 
@@ -120,7 +121,17 @@ creation-prices:
     account:
         default: 2500
         allow-override: true
-  
+
+# Set whether the (current) creation price should be refunded when the bank or account is removed.
+# Type: boolean
+reimburse-creation:
+  bank:
+    player: false
+    admin: false
+  account:
+    default: false
+    allow-override: true
+
 # Set the lowest account balance a player must have to earn interest on their account.
 # Set this to 0 to disable this feature (also disables low-balance-fee).
 # Type: double
@@ -135,16 +146,12 @@ low-balance-fee:
     default: 5000
     allow-override: true
 
-# Set whether the (current) creation price should be refunded
-# when the bank or account is removed.
+# Set whether or not interest should still be paid to the account owner if the account balance is below the minimum.
+# If this is set to false, no interest will be earned and the account owner will only pay the low balance fee.
 # Type: boolean
-reimburse-creation:
-    bank:
-        player: false
-        admin: false
-    account:
-        default: false
-        allow-override: true
+pay-interest-on-low-balance:
+    default: false
+    allow-override: true
 
 # Set the number of accounts a player may have at any given bank.
 # For example, a value of 2 would allow a player to create no more than two accounts at a single bank.

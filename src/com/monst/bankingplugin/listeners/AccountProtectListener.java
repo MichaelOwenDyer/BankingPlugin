@@ -4,7 +4,6 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.utils.*;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -61,9 +60,9 @@ public class AccountProtectListener implements Listener {
 
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+		double creationPrice = accountConfig.getAccountCreationPrice(false);
 
-		if (creationPrice > 0 && (boolean) accountConfig.getOrDefault(Field.REIMBURSE_ACCOUNT_CREATION)
+		if (creationPrice > 0 && accountConfig.isReimburseAccountCreation(false)
 				&& account.isOwner(p)) {
 			EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
 					creationPrice);
@@ -191,7 +190,7 @@ public class AccountProtectListener implements Listener {
 		}
 		
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = (double) accountConfig.getOrDefault(Field.ACCOUNT_CREATION_PRICE);
+		double creationPrice = accountConfig.getAccountCreationPrice(false);
 		
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();

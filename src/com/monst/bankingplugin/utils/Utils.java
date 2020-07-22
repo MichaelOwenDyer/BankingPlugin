@@ -4,7 +4,6 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.HoverEvent.Action;
@@ -105,9 +104,8 @@ public class Utils {
 		return getMultiplierLore(account.getBank(), account.getStatus().getMultiplierStage());
 	}
 
-	@SuppressWarnings("unchecked")
 	private static List<String> getMultiplierLore(Bank bank, int highlightStage) {
-		List<Integer> multipliers = (List<Integer>) bank.getAccountConfig().getOrDefault(AccountConfig.Field.MULTIPLIERS);
+		List<Integer> multipliers = bank.getAccountConfig().getMultipliers(false);
 
 		if (multipliers.isEmpty())
 			return Collections.singletonList(ChatColor.GREEN + "1x");
@@ -147,16 +145,16 @@ public class Utils {
 		}
 
 		for (int i = 0; i < stackedMultipliers.size(); i++) {
-			StringBuilder number = new StringBuilder(i == stage ? "" + ChatColor.GREEN + ChatColor.BOLD : "" + ChatColor.GRAY);
+			StringBuilder number = new StringBuilder("" + ChatColor.GOLD + (i == stage ? ChatColor.BOLD : ""));
 
-			number.append(" ").append(stackedMultipliers.get(i).get(0)).append("x");
+			number.append(" - ").append(stackedMultipliers.get(i).get(0)).append("x" + ChatColor.DARK_GRAY);
 
 			int levelSize = stackedMultipliers.get(i).size();
-			if (levelSize > 1) {
-				if (stage == -1 || i < stage) {
-					number.append(" (" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ")");
+			if (stage != -1 && levelSize > 1) {
+				if (i < stage) {
+					number.append(" (" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
 				} else if (i > stage) {
-					number.append(" (" + ChatColor.RED + "0" + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ")");
+					number.append(" (" + ChatColor.RED + "0" + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
 				} else {
 					ChatColor color;
 					if (highlightStage * 3 >= levelSize * 2)
@@ -165,8 +163,7 @@ public class Utils {
 						color = ChatColor.GOLD;
 					else
 						color = ChatColor.RED;
-
-					number.append(" (" + color + highlightStage + ChatColor.DARK_GRAY + "/" + levelSize + ")");
+					number.append(" (" + color + highlightStage + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
 				}
 			}
 			multiplierView.add(number.toString());
@@ -184,10 +181,10 @@ public class Utils {
 		return getMultiplierView(account.getBank(), account.getStatus().getMultiplierStage());
 	}
 
-	@SuppressWarnings({ "deprecation", "unchecked" })
+	@SuppressWarnings("deprecation")
 	private static TextComponent getMultiplierView(Bank bank, int highlightStage) {
 
-		List<Integer> multipliers = (List<Integer>) bank.getAccountConfig().getOrDefault(Field.MULTIPLIERS);
+		List<Integer> multipliers = bank.getAccountConfig().getMultipliers(false);
 
 		TextComponent multiplierView = new TextComponent();
 		multiplierView.setColor(net.md_5.bungee.api.ChatColor.GRAY);
@@ -289,11 +286,11 @@ public class Utils {
 		TextComponent interestRateView = new TextComponent();
 		interestRateView.setColor(net.md_5.bungee.api.ChatColor.GREEN);
 
-		double baseInterestRate = (double) accountConfig.getOrDefault(Field.INTEREST_RATE);
+		double baseInterestRate = accountConfig.getInterestRate(false);
 		double percentage = baseInterestRate * accountStatus.getRealMultiplier();
 		TextComponent interestRate = new TextComponent(percentage * 100 + "%");
 		if (accountStatus.getDelayUntilNextPayout() == 0
-				&& account.getBalance().doubleValue() >= accountConfig.getMinBalance()) {
+				&& account.getBalance().doubleValue() >= accountConfig.getMinBalance(false)) {
 			ComponentBuilder cb = new ComponentBuilder();
 			cb.append("Next payout: ").color(net.md_5.bungee.api.ChatColor.GRAY)
 					.append("$" + Utils.formatNumber(account.getBalance().multiply(BigDecimal.valueOf(percentage))))
@@ -336,28 +333,34 @@ public class Utils {
 	}
 
 	public static String getGiniLore(Bank bank) {
-		double gini = getGiniCoefficient(bank);
+		double gini = 1 - getGiniCoefficient(bank);
 		ChatColor color;
+		String assessment = "";
 		switch ((int) (gini * 5)) {
 			case 0:
-				color = ChatColor.DARK_GREEN;
+				color = ChatColor.DARK_RED;
+				assessment = "(Very Poor)";
 				break;
 			case 1:
-				color = ChatColor.GREEN;
+				color = ChatColor.RED;
+				assessment = "(Poor)";
 				break;
 			case 2:
 				color = ChatColor.YELLOW;
+				assessment = "(Good)";
 				break;
 			case 3:
-				color = ChatColor.RED;
+				color = ChatColor.GREEN;
+				assessment = "(Very Good)";
 				break;
 			case 4: case 5:
-				color = ChatColor.DARK_RED;
+				color = ChatColor.DARK_GREEN;
+				assessment = "(Excellent)";
 				break;
 			default:
 				color = ChatColor.GRAY;
 		}
-		return color + String.format("%.2f", gini);
+		return "" + color + Math.round(gini * 100) + "% " + assessment;
 	}
 
 	public static TextComponent getEqualityView(Bank bank) {

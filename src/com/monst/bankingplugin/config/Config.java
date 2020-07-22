@@ -97,6 +97,11 @@ public class Config {
 	public static Entry<Boolean, Double> creationPriceAccount;
 
 	/**
+	 * Whether the account creation price should be refunded at removal.
+	 */
+	public static Entry<Boolean, Boolean> reimburseAccountCreation;
+
+	/**
 	 * The default minimum balance.
 	 */
 	public static Entry<Boolean, Double> minBalance;
@@ -107,14 +112,14 @@ public class Config {
 	public static Entry<Boolean, Double> lowBalanceFee;
 
 	/**
+	 * Whether or not accounts still earn interest on a balance lower than the minimum.
+	 */
+	public static Entry<Boolean, Boolean> payOnLowBalance;
+
+	/**
 	 * Whether the bank creation price should be refunded at removal.
 	 */
 	public static Entry<Boolean, Boolean> reimburseBankCreation;
-
-    /**
-     * Whether the account creation price should be refunded at removal.
-     */
-	public static Entry<Boolean, Boolean> reimburseAccountCreation;
 
 	/**
 	 * The default account limit per player per bank.
@@ -443,17 +448,20 @@ public class Config {
 		creationPriceAccount = new SimpleEntry<>(config.getBoolean("creation-prices.account.allow-override"),
 				config.getDouble("creation-prices.account.default"));
 
+		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.allow-override"),
+				config.getBoolean("reimburse-account-creation.default"));
+
 		minBalance = new SimpleEntry<>(config.getBoolean("minimum-account-balance.allow-override"),
 				config.getDouble("minimum-account-balance.default"));
 
 		lowBalanceFee = new SimpleEntry<>(config.getBoolean("low-balance-fee.allow-override"),
 				config.getDouble("low-balance-fee.default"));
 
+		payOnLowBalance = new SimpleEntry<>(config.getBoolean("pay-interest-on-low-balance.allow-override"),
+				config.getBoolean("pay-interest-on-low-balance.default"));
+
 		reimburseBankCreation = new SimpleEntry<>(config.getBoolean("reimburse-creation.bank.admin"),
 				config.getBoolean("reimburse-creation.bank.player"));
-
-		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.allow-override"),
-				config.getBoolean("reimburse-account-creation.default"));
 
 		playerBankAccountLimit = new SimpleEntry<>(config.getBoolean("player-bank-account-limit.allow-override"),
 				config.getInt("player-bank-account-limit.default"));
