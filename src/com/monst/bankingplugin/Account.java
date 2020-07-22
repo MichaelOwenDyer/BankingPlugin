@@ -270,7 +270,11 @@ public class Account extends Ownable implements Nameable {
 	public TextComponent getInfoButton(CommandSender sender) {
 		TextComponent button = new TextComponent("[Info]");
 		button.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.GRAY + "Click for account info.")));
+		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+				new Text(ChatColor.GRAY + "Bank: " + getBank().getColorizedName()),
+						new Text(ChatColor.GRAY + "Owner: " + getOwnerDisplayName()),
+						new Text(ChatColor.GRAY + "Click for more info.")
+		));
 		button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/account info " + getID()));
 		return button;
 	}

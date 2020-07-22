@@ -186,7 +186,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				plugin.debug(sender.getName() + " is displaying info for account #" + id);
 				sender.spigot().sendMessage(account.getInformation(sender));
 				if (sender instanceof Player)
-					new AccountGui(account).open(((Player) sender));
+					new AccountGui(account).open((Player) sender);
 				return;
 			} catch (NumberFormatException e) {}
 		}
@@ -249,9 +249,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		if (accounts != null && !accounts.isEmpty()) {
 			int i = 0;
 			for (Account account : accounts)
-				sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + i + ". "),
-						new TextComponent(account.getColorizedName()
-								+ (account.isDefaultName() ? " " : ChatColor.GREEN + "(" + account.getOwner().getName() + ") ")),
+				sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + ++i + ". "),
+						new TextComponent(account.getColorizedName() + " "),
 						account.getInfoButton(sender));
 		} else
 			sender.sendMessage(noAccountsMessage);

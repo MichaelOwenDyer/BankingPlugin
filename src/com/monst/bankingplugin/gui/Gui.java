@@ -7,8 +7,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.ipvp.canvas.Menu;
+import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +18,7 @@ abstract class Gui<T extends Ownable> {
 
 	T guiSubject;
 	Menu gui;
+	Gui prevGui;
 	boolean highClearance;
 
 	static final Material GENERAL_INFO_BLOCK = Material.PLAYER_HEAD;
@@ -23,12 +26,23 @@ abstract class Gui<T extends Ownable> {
 
 	public void open(Player player) {
 		gui = getMenu();
+		if (prevGui != null) {
+			gui.setCloseHandler((player1, menu1) -> {
+				prevGui.open(player);
+			});
+		}
 		highClearance = getClearance(player);
 		for (int i = 0; i < gui.getDimensions().getArea(); i++) {
 			gui.getSlot(i).setItem(createSlotItem(i));
 			gui.getSlot(i).setClickHandler(createClickHandler(i));
+			gui.getSlot(i).setClickOptions(ClickOptions.DENY_ALL);
 		}
 		gui.open(player);
+	}
+
+	public Gui<T> setPrevGui(@Nullable Gui prevGui) {
+		this.prevGui = prevGui;
+		return this;
 	}
 
 	abstract Menu getMenu();

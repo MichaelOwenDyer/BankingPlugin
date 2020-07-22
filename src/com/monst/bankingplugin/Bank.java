@@ -226,7 +226,7 @@ public class Bank extends Ownable implements Nameable {
 			info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()));
 			info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue().doubleValue() / accounts.size()));
 			info.addExtra("\n    Equality score: ");
-			info.addExtra(Utils.getEqualityView(this));
+			info.addExtra(Utils.getEqualityLore(this));
 		}
 		info.addExtra("\n    Location: " + ChatColor.AQUA + getSelection().getCoordinates());
 
@@ -240,7 +240,7 @@ public class Bank extends Ownable implements Nameable {
 				+ "\nOwner: " + (isPlayerBank() ? getOwner().getName() : "ADMIN")
 				+ "\nNumber of accounts: " + getAccounts().size()
 				+ "\nTotal value: " + Utils.formatNumber(getTotalValue())
-				+ "\nEquality score: " + Utils.getGiniLore(this)
+				+ "\nEquality score: " + Utils.getEqualityLore(this)
 				+ "\nSelection type: " + getSelection().getType()
 				+ "\nLocation: " + getSelection().getCoordinates();
 	}

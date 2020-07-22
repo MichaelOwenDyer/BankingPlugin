@@ -97,7 +97,7 @@ public class Messages {
 	public static final String ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create any more accounts!";
 	public static final String NO_SELF_BANKING = ChatColor.RED + "You are not allowed to create an account at your own bank.";
 	public static final String PER_BANK_ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create another account at this bank.";
-	public static final String PLAYER_COMMAND_ONLY = ChatColor.RED + "Only players can use this command.";
+	public static final String PLAYER_COMMAND_ONLY = ChatColor.RED + "Only players can use that command.";
 	public static final String SAME_ACCOUNT = ChatColor.RED + "Nothing happened. That is the same account.";
 	public static final String SELECTION_TOO_LARGE = ChatColor.RED + "You are not allowed to create a bank of that size, as it would exceed the volume limit of %d blocks by %d.";
 	public static final String SELECTION_TOO_SMALL = ChatColor.RED + "You are not allowed to create a bank of that size, as it would fall short of the minimum volume of %d blocks by %d.";

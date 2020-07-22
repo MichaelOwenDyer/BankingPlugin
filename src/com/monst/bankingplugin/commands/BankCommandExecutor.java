@@ -335,8 +335,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
 					return;
 				}
-			} else
+			} else {
 				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+				return;
+			}
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {

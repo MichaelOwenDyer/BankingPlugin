@@ -69,7 +69,7 @@ public class BankGui extends Gui<Bank> {
 		switch (i) {
 			case 8:
 				return (player, info) -> {
-					player.sendMessage("Not yet implemented.");
+					new AccountListGui(guiSubject).setPrevGui(this).open(player);
 					player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, SoundCategory.MASTER, 1.0f, 1.0f);
 				};
 			default:
@@ -96,7 +96,7 @@ public class BankGui extends Gui<Bank> {
 						Utils.formatNumber(!guiSubject.getAccounts().isEmpty()
 								? guiSubject.getTotalValue().doubleValue() / guiSubject.getAccounts().size()
 								: guiSubject.getAccounts().size()),
-				"Equality score: " + Utils.getGiniLore(guiSubject)
+				"Equality score: " + Utils.getEqualityLore(guiSubject)
 		);
 	}
 

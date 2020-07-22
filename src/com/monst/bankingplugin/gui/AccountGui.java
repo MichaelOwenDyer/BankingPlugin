@@ -8,7 +8,6 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
@@ -44,9 +43,9 @@ public class AccountGui extends Gui<Account> {
 		switch (i) {
 			case 0:
 				return createSlotItem(GENERAL_INFO_BLOCK, "Account Information", getGeneralInfoLore());
-			case 2:
+			case 1:
 				return createSlotItem(GENERAL_INFO_BLOCK, "Bank Information", getBankInfoLore());
-			case 4:
+			case 2:
 				if (highClearance)
 					return createSlotItem(ACCOUNT_BALANCE_BLOCK, "Account Standing", getBalanceLore());
 				break;
@@ -68,7 +67,7 @@ public class AccountGui extends Gui<Account> {
 			case 1:
 				return (player, info) -> {
 					player.sendMessage("You have opened the bank gui.");
-					new BankGui(guiSubject.getBank()).open(player);
+					new BankGui(guiSubject.getBank()).setPrevGui(this).open(player);
 				};
 			case 3:
 				return (player, info) -> {
@@ -77,8 +76,7 @@ public class AccountGui extends Gui<Account> {
 			case 8:
 				return (player, info) -> {
 					if (highClearance) {
-						Chest chest = (Chest) guiSubject.getLocation().getBlock().getState();
-						player.openInventory(chest.getInventory()); // TODO: Creates chest lid bug
+						new ChestMirrorGui(guiSubject).setPrevGui(this).open(player);
 					}
 				};
 			default:

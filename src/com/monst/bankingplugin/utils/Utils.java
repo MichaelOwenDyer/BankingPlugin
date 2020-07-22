@@ -332,7 +332,7 @@ public class Utils {
 		return gini.doubleValue();
 	}
 
-	public static String getGiniLore(Bank bank) {
+	public static String getEqualityLore(Bank bank) {
 		double gini = 1 - getGiniCoefficient(bank);
 		ChatColor color;
 		String assessment = "";

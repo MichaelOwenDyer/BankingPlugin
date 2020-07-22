@@ -2,12 +2,9 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.utils.Permissions;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.type.ChestMenu;
 
@@ -35,7 +32,9 @@ public class ChestMirrorGui extends Gui<Account> {
 
     @Override
     Slot.ClickHandler createClickHandler(int i) {
-        if (highClearance)
+        return (player, info) -> {
+        };
+        /*if (highClearance)
             gui.getSlot(i).setClickOptions(ClickOptions.ALLOW_ALL);
         return (player, info) -> {
             ItemStack item = gui.getSlot(i).getItem(player);
@@ -48,6 +47,6 @@ public class ChestMirrorGui extends Gui<Account> {
                 Chest chest = (Chest) guiSubject.getInventoryHolder();
                 chest.update();
             }
-        };
+        };*/
     }
 }
