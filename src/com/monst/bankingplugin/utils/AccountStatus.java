@@ -82,7 +82,7 @@ public class AccountStatus {
 			if (remainingOfflineUntilReset == 0) {
 				resetMultiplierStage();
 				return;
-			} else
+			} else if (remainingOfflineUntilReset > 0)
 				remainingOfflineUntilReset--;
 
 			int increment = accountConfig.getOfflineMultiplierBehavior(false);

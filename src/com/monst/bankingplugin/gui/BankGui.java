@@ -56,6 +56,8 @@ public class BankGui extends Gui<Bank> {
 				return createSlotItem(DEFAULT_BLOCK, "Balance Restrictions", getMinBalanceLore());
 			case 12:
 				return createSlotItem(DEFAULT_BLOCK, "Offline Payouts", getOfflinePayoutsLore());
+			case 13:
+				return createSlotItem(DEFAULT_BLOCK, "", Collections.emptyList());
 			default:
 				return new ItemStack(Material.AIR);
 		}
@@ -121,6 +123,7 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getOfflinePayoutsLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
 		int offlinePayouts = config.getAllowedOfflinePayouts(false);
+		int offlineIncrement = config.getOfflineMultiplierBehavior(false);
 		int beforeReset = config.getAllowedOfflineBeforeReset(false);
 		return Arrays.asList(
 				"Accounts will pay interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY

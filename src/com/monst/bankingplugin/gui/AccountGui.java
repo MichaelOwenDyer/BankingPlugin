@@ -55,8 +55,8 @@ public class AccountGui extends Gui<Account> {
 				break;
 			case 4:
 				return createSlotItem(MULTIPLIER_INFO_BLOCK, "Multiplier", Utils.getMultiplierLore(guiSubject));
-		default:
-			return new ItemStack(Material.AIR);
+			default:
+				return new ItemStack(Material.AIR);
 		}
 		return new ItemStack(Material.AIR);
 	}
@@ -66,16 +66,16 @@ public class AccountGui extends Gui<Account> {
 		switch (i) {
 			case 1:
 				return (player, info) -> {
+					player.sendMessage("You have opened the bank gui.");
 					new BankGui(guiSubject.getBank()).open(player);
 				};
 			case 3:
 				return (player, info) -> {
 					player.sendMessage("Not implemented yet!");
 				};
-
-		default:
-			return (player, info) -> {
-			};
+			default:
+				return (player, info) -> {
+				};
 		}
 	}
 
@@ -112,5 +112,4 @@ public class AccountGui extends Gui<Account> {
 				"Next payout: " + ChatColor.GREEN + "$" + Utils.formatNumber(guiSubject.getBalance().doubleValue() * interestRate * multiplier)
 		);
 	}
-
 }

@@ -76,7 +76,8 @@ allowed-offline-payouts:
 # This is independent of the number of times a player can collect interest payouts offline.
 # A player could continue to receive baseline interest payouts offline after the multiplier reset if allowed-offline-payouts is set higher than this.
 # If allowed-offline-payouts is set lower than this, an offline player will stop receiving payouts but will not lose their multiplier until this number is reached.
-# Set this value to 0 for a no-tolerance policy on missing payouts (multiplier reset at first offline payout)
+# Set this value to 0 for a no-tolerance policy on missing payouts (multiplier reset at first offline payout).
+# Set this value to -1 to disable this feature.
 # Type: int
 # Default: 1
 allowed-offline-payouts-before-multiplier-reset:

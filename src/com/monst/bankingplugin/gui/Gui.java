@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.ipvp.canvas.Menu;
+import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 
 import java.util.List;
@@ -26,6 +27,7 @@ abstract class Gui<Ownable> {
 		for (int i = 0; i < gui.getDimensions().getArea(); i++) {
 			gui.getSlot(i).setItem(createSlotItem(i));
 			gui.getSlot(i).setClickHandler(createClickHandler(i));
+			gui.getSlot(i).setClickOptions(ClickOptions.DENY_ALL);
 		}
 		gui.open(player);
 	}
@@ -47,5 +49,4 @@ abstract class Gui<Ownable> {
 		item.setItemMeta(itemMeta);
 		return item;
 	}
-
 }
