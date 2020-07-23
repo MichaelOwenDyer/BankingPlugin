@@ -350,7 +350,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		if (sender instanceof Player)
 			new BankGui(bank).open((Player) sender);
-		sender.spigot().sendMessage(bank.getInformation(sender));
+		else
+			sender.spigot().sendMessage(bank.getInformation(sender));
 	}
 
 	private void promptBankList(CommandSender sender, String[] args) {

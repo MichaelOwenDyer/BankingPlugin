@@ -1,11 +1,13 @@
 package com.monst.bankingplugin.gui;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Ownable;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
@@ -24,14 +26,23 @@ abstract class Gui<T extends Ownable> {
 	static final Material GENERAL_INFO_BLOCK = Material.PLAYER_HEAD;
 	static final Material MULTIPLIER_INFO_BLOCK = Material.NETHER_STAR;
 
+	public Gui(T t) {
+		this.guiSubject = t;
+	}
+
 	public void open(Player player) {
 		gui = getMenu();
 		if (prevGui != null) {
 			gui.setCloseHandler((player1, menu1) -> {
-				prevGui.open(player);
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						prevGui.open(player);
+					}
+				}.runTaskLater(BankingPlugin.getInstance(), 1);
 			});
 		}
-		highClearance = getClearance(player);
+		getClearance(player);
 		for (int i = 0; i < gui.getDimensions().getArea(); i++) {
 			gui.getSlot(i).setItem(createSlotItem(i));
 			gui.getSlot(i).setClickHandler(createClickHandler(i));
@@ -47,7 +58,7 @@ abstract class Gui<T extends Ownable> {
 
 	abstract Menu getMenu();
 
-	abstract boolean getClearance(Player player);
+	abstract void getClearance(Player player);
 
 	abstract ItemStack createSlotItem(int i);
 

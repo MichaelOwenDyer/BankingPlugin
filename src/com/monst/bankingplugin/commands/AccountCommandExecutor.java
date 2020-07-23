@@ -184,9 +184,10 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				int id = Integer.parseInt(args[1]);
 				Account account = accountUtils.getAccount(id);
 				plugin.debug(sender.getName() + " is displaying info for account #" + id);
-				sender.spigot().sendMessage(account.getInformation(sender));
 				if (sender instanceof Player)
 					new AccountGui(account).open((Player) sender);
+				else
+					sender.spigot().sendMessage(account.getInformation(sender));
 				return;
 			} catch (NumberFormatException e) {}
 		}

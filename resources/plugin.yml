@@ -31,12 +31,12 @@ permissions:
             bankingplugin.account.trust: true
             bankingplugin.account.trust.other: true
             bankingplugin.account.remove-other: true
-            bankingplugin.account.info-other-verbose: true
+            bankingplugin.account.info-other: true
             bankingplugin.account.list-other: true
             bankingplugin.account.view-other: true
             bankingplugin.account.edit-other: true
-            bankingplugin.account.migrate-other: true
-            bankingplugin.account.migrate-bank: true
+            bankingplugin.account.migrate.other: true
+            bankingplugin.account.migrate.bank: true
             bankingplugin.account.transfer: true
             bankingplugin.account.transfer.other: true
             bankingplugin.account.extend-other: true
@@ -98,7 +98,7 @@ permissions:
         description: Remove another player's account.
         default: op
         
-    bankingplugin.account.info-other-verbose:
+    bankingplugin.account.info-other:
         description: View detailed information about another player's account.
         default: op
         
@@ -116,13 +116,13 @@ permissions:
         children:
             bankingplugin.account.view-other: true
     
-    bankingplugin.account.migrate-other:
+    bankingplugin.account.migrate.other:
         description: Migrate another player's account chest to another chest.
         default: op
         children:
             bankingplugin.account.create: true
         
-    bankingplugin.account.migrate-bank:
+    bankingplugin.account.migrate.bank:
         description: Migrate an account to another chest in a different bank.
         default: op
         children:

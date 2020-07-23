@@ -284,7 +284,7 @@ public class Account extends Ownable implements Nameable {
 		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
 		boolean verbose = (sender instanceof Player
 				&& (isTrusted((Player) sender) || getBank().isTrusted((Player) sender)))
-				|| sender.hasPermission(Permissions.ACCOUNT_INFO_OTHER_VERBOSE);
+				|| sender.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
 
 		TextComponent info = new TextComponent();
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);

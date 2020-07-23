@@ -72,8 +72,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 								  + ChatColor.AQUA + " v" + plugin.getDescription().getVersion()
 								  + ChatColor.DARK_GRAY + "\n         by monst");
 		} else
-			for (String s : Utils.getVersionMessage())
-				sender.sendMessage(s);
+			sender.sendMessage(Utils.getVersionMessage());
 	}
 
 	private boolean changeConfig(CommandSender sender, String[] args) {

@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 public class AccountGui extends Gui<Account> {
 
 	static final Material ACCOUNT_BALANCE_BLOCK = Material.GOLD_INGOT;
-	
+
 	public AccountGui(Account account) {
-		this.guiSubject = account;
+		super(account);
 	}
 
 	@Override
@@ -33,9 +33,9 @@ public class AccountGui extends Gui<Account> {
 	}
 
 	@Override
-	boolean getClearance(Player player) {
-		return guiSubject.isTrusted(player) || guiSubject.getBank().isTrusted(player)
-				|| player.hasPermission(Permissions.ACCOUNT_INFO_OTHER_VERBOSE);
+	void getClearance(Player player) {
+		highClearance = guiSubject.isTrusted(player) || guiSubject.getBank().isTrusted(player)
+				|| player.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
 	}
 
 	@Override
@@ -66,7 +66,6 @@ public class AccountGui extends Gui<Account> {
 		switch (i) {
 			case 1:
 				return (player, info) -> {
-					player.sendMessage("You have opened the bank gui.");
 					new BankGui(guiSubject.getBank()).setPrevGui(this).open(player);
 				};
 			case 3:
@@ -75,9 +74,8 @@ public class AccountGui extends Gui<Account> {
 				};
 			case 8:
 				return (player, info) -> {
-					if (highClearance) {
+					if (highClearance)
 						new ChestMirrorGui(guiSubject).setPrevGui(this).open(player);
-					}
 				};
 			default:
 				return (player, info) -> {

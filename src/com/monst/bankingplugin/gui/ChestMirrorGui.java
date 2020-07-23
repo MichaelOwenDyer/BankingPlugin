@@ -11,7 +11,7 @@ import org.ipvp.canvas.type.ChestMenu;
 public class ChestMirrorGui extends Gui<Account> {
 
     public ChestMirrorGui(Account account) {
-        this.guiSubject = account;
+        super(account);
     }
 
     @Override
@@ -21,8 +21,8 @@ public class ChestMirrorGui extends Gui<Account> {
     }
 
     @Override
-    boolean getClearance(Player player) {
-        return player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
+    void getClearance(Player player) {
+        highClearance = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
     }
 
     @Override

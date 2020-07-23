@@ -62,7 +62,6 @@ public class BankingPlugin extends JavaPlugin {
 	private GriefPrevention griefPrevention;
 	private WorldEditPlugin worldEdit;
 	
-	// To be used for hot-swapping interest payout times
 	private static final Map<LocalTime, Integer> payoutTimeIds = new HashMap<>();
 
 	/**
@@ -95,6 +94,7 @@ public class BankingPlugin extends JavaPlugin {
         }
 
         debug("Loading BankingPlugin version " + getDescription().getVersion());
+        Bukkit.getConsoleSender().sendMessage(Utils.getVersionMessage());
 
         worldGuard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard != null) {
@@ -105,8 +105,6 @@ public class BankingPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		debug("Enabling BankingPlugin version " + getDescription().getVersion());
-
-		Bukkit.getConsoleSender().sendMessage(Utils.getVersionMessage());
 
 		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
 			debug("Could not find plugin \"Vault\"");

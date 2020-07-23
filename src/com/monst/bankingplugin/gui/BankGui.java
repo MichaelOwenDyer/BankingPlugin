@@ -21,7 +21,7 @@ public class BankGui extends Gui<Bank> {
 	private static final Material DEFAULT_BLOCK = Material.ANVIL;
 
 	public BankGui(Bank bank) {
-		guiSubject = bank;
+		super(bank);
 	}
 
 	@Override
@@ -30,8 +30,8 @@ public class BankGui extends Gui<Bank> {
 	}
 
 	@Override
-	boolean getClearance(Player player) {
-		return guiSubject.isTrusted(player)
+	void getClearance(Player player) {
+		highClearance = guiSubject.isTrusted(player)
 				|| (guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_ADMIN)
 				|| (!guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_OTHER)));
 	}
@@ -44,7 +44,7 @@ public class BankGui extends Gui<Bank> {
 			case 4:
 				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
 			case 8:
-				if (highClearance)
+				if (highClearance && !guiSubject.getAccounts().isEmpty())
 					return createSlotItem(Material.CHEST, "Accounts", Collections.singletonList("Click here to view accounts."));
 				break;
 
@@ -53,11 +53,11 @@ public class BankGui extends Gui<Bank> {
 			case 10:
 				return createSlotItem(MULTIPLIER_INFO_BLOCK, "Multipliers", Utils.getMultiplierLore(guiSubject));
 			case 11:
-				return createSlotItem(DEFAULT_BLOCK, "Balance Restrictions", getBalanceRestrictionLore());
+				return createSlotItem(Material.IRON_BARS, "Balance Restrictions", getBalanceRestrictionLore());
 			case 12:
 				return createSlotItem(DEFAULT_BLOCK, "Offline Payouts", getOfflinePayoutsLore());
 			case 13:
-				return createSlotItem(DEFAULT_BLOCK, "Interest Delay", getInterestDelayLore());
+				return createSlotItem(Material.CLOCK, "Interest Delay", getInterestDelayLore());
 			default:
 				return new ItemStack(Material.AIR);
 		}
@@ -68,10 +68,10 @@ public class BankGui extends Gui<Bank> {
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
 			case 8:
-				return (player, info) -> {
-					new AccountListGui(guiSubject).setPrevGui(this).open(player);
-					player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, SoundCategory.MASTER, 1.0f, 1.0f);
-				};
+				if (highClearance && !guiSubject.getAccounts().isEmpty())
+					return (player, info) -> {
+						new AccountListGui(guiSubject).open(player);
+					};
 			default:
 				return (player, info) -> {
 				};

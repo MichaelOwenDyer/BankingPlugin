@@ -2,18 +2,18 @@ package com.monst.bankingplugin.utils;
 
 public class Permissions {
 	public static final String ACCOUNT_SET = "bankingplugin.account.set.*";
-	
+
 	public static final String ACCOUNT_CREATE = "bankingplugin.account.create";
 	public static final String ACCOUNT_CREATE_PROTECTED = "bankingplugin.account.create.protected";
 	public static final String ACCOUNT_TRUST = "bankingplugin.account.trust";
 	public static final String ACCOUNT_TRUST_OTHER = "bankingplugin.account.trust.other";
 	public static final String ACCOUNT_REMOVE_OTHER = "bankingplugin.account.remove-other";
-	public static final String ACCOUNT_INFO_OTHER_VERBOSE = "bankingplugin.account.info-other-verbose";
+	public static final String ACCOUNT_INFO_OTHER = "bankingplugin.account.info-other";
 	public static final String ACCOUNT_LIST_OTHER = "bankingplugin.account.list-other";
 	public static final String ACCOUNT_VIEW_OTHER = "bankingplugin.account.view-other";
 	public static final String ACCOUNT_EDIT_OTHER = "bankingplugin.account.edit-other";
-	public static final String ACCOUNT_MIGRATE_OTHER = "bankingplugin.account.migrate-other";
-	public static final String ACCOUNT_MIGRATE_BANK = "bankingplugin.account.migrate-bank";
+	public static final String ACCOUNT_MIGRATE_OTHER = "bankingplugin.account.migrate.other";
+	public static final String ACCOUNT_MIGRATE_BANK = "bankingplugin.account.migrate.bank";
 	public static final String ACCOUNT_TRANSFER = "bankingplugin.account.transfer";
 	public static final String ACCOUNT_TRANSFER_OTHER = "bankingplugin.account.transfer.other";
 	public static final String ACCOUNT_EXTEND_OTHER = "bankingplugin.account.extend-other";

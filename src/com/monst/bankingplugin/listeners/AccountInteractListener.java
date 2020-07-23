@@ -418,7 +418,6 @@ public class AccountInteractListener implements Listener {
 		}
 
 		new AccountGui(account).open(player);
-		player.spigot().sendMessage(account.getInformation(player));
 	}
 
 	private void set(Player executor, Account account, String[] args) {
