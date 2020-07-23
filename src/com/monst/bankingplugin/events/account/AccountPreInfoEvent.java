@@ -8,8 +8,8 @@ import org.bukkit.event.HandlerList;
 public class AccountPreInfoEvent extends Event implements Cancellable {
 
 	private boolean cancelled;
-	private CommandSender sender;
-	private static HandlerList handlers = new HandlerList();
+	private final CommandSender sender;
+	private static final HandlerList handlers = new HandlerList();
 
 	public AccountPreInfoEvent(CommandSender sender) {
 		this.sender = sender;

@@ -23,8 +23,8 @@ import java.util.List;
 
 public class AccountListGui extends Gui<Bank> {
 
-    private static Material NEXT_BUTTON = Material.ARROW;
-    private static Material PREVIOUS_BUTTON = Material.ARROW;
+    private static final Material NEXT_BUTTON = Material.ARROW;
+    private static final Material PREVIOUS_BUTTON = Material.ARROW;
 
     public AccountListGui(Bank bank) {
         super(bank);

@@ -65,7 +65,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			promptAccountRemove((Player) sender);
 			break;
 		case "info":
-			promptAccountInfo((Player) sender, args);
+			promptAccountInfo(sender, args);
 			break;
 		case "list":
 			if (!promptAccountList(sender, args))
