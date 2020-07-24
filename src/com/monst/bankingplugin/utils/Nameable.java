@@ -43,6 +43,6 @@ public interface Nameable {
      * Set the name of this object to its default.
      * @see this.getDefaultName()
      */
-    void resetName();
+    void setToDefaultName();
 
 }

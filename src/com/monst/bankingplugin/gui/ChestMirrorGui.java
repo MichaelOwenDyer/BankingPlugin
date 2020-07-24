@@ -19,8 +19,7 @@ public class ChestMirrorGui extends Gui<Account> {
 
     @Override
     Menu getMenu() {
-        int chestSize = guiSubject.getChestSize() * 3;
-        return ChestMenu.builder(chestSize).title(guiSubject.getColorizedName()).build();
+        return ChestMenu.builder(guiSubject.getChestSize() * 3).title(guiSubject.getColorizedName()).build();
     }
 
     @Override

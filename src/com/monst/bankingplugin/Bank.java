@@ -139,7 +139,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	@Override
-	public void resetName() {
+	public void setToDefaultName() {
 		if (!hasID())
 			return;
 		setName(getDefaultName());

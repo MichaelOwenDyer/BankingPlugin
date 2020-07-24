@@ -1,12 +1,11 @@
 package com.monst.bankingplugin.selections;
 
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.util.Collection;
-import java.util.HashSet;
-
 import org.bukkit.Location;
 import org.bukkit.World;
+
+import java.awt.*;
+import java.util.Collection;
+import java.util.HashSet;
 
 public class CuboidSelection implements Selection {
 
@@ -97,9 +96,9 @@ public class CuboidSelection implements Selection {
 		int x = pt.getBlockX();
 		int y = pt.getBlockY();
 		int z = pt.getBlockZ();
-		boolean inX = (x < max.getBlockX() && x > min.getBlockX());
-		boolean inY = (y < max.getBlockY() && y > min.getBlockY());
-		boolean inZ = (z < max.getBlockZ() && z > min.getBlockZ());
+		boolean inX = (x <= max.getBlockX() && x >= min.getBlockX());
+		boolean inY = (y <= max.getBlockY() && y >= min.getBlockY());
+		boolean inZ = (z <= max.getBlockZ() && z >= min.getBlockZ());
 		return inX && inY && inZ;
 	}
 

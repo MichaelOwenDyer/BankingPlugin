@@ -1,13 +1,5 @@
 package com.monst.bankingplugin.external;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
@@ -24,6 +16,13 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
 import com.sk89q.worldedit.regions.selector.CuboidRegionSelector;
 import com.sk89q.worldedit.regions.selector.Polygonal2DRegionSelector;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class WorldEditReader {
 
@@ -76,9 +75,9 @@ public class WorldEditReader {
 			regionSelector = new Polygonal2DRegionSelector(BukkitAdapter.adapt(sel.getWorld()), points, minY, maxY);
 		}
 
+		plugin.debug(p.getName() + " has selected the bank at " + sel.getCoordinates());
 		worldEdit.getWorldEdit().getSessionManager().get(BukkitAdapter.adapt(p))
 				.setRegionSelector(BukkitAdapter.adapt(sel.getWorld()), regionSelector);
-		
 	}
 
 }

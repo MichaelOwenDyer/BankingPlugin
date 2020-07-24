@@ -80,7 +80,7 @@ public class BankGui extends Gui<Bank> {
 			case 8:
 				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
 					return (player, info) -> {
-						new AccountListGui(guiSubject).setPrevGui(this).open(player);
+						new AccountListGui(guiSubject).setPrevMenu(this).open(player);
 					};
 			default:
 				return null;

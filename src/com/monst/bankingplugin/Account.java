@@ -159,7 +159,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	@Override
-	public void resetName() {
+	public void setToDefaultName() {
 		if (!hasID())
 			return;
 		setName(getDefaultName());
@@ -169,7 +169,7 @@ public class Account extends Ownable implements Nameable {
 		setName(getRawName() != null ? getRawName() : getDefaultName());
 	}
 
-	public void clearName() {
+	public void clearChestName() {
 		setName("");
 	}
 

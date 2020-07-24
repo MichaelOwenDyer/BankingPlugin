@@ -424,7 +424,7 @@ public abstract class Database {
 						}
 
 						bank.setID(bankId);
-						bank.resetName();
+						bank.setToDefaultName();
 					}
 
 					if (callback != null) {
@@ -600,7 +600,7 @@ public abstract class Database {
 							bank = new Bank(bankId, plugin, name, owner, coowners, selection, accountConfig);
 
 						if (name == null)
-							bank.resetName();
+							bank.setToDefaultName();
 
 						getAccountsAtBank(bank, showConsoleMessages, new Callback<Collection<Account>>(plugin) {
 							@Override
@@ -1063,11 +1063,11 @@ public abstract class Database {
 		String queryGetTable = getQueryGetTable();
 
 		try (Connection con = dataSource.getConnection()) {
-			boolean needsUpdate1 = true; // update table content
-			boolean needsUpdate2 = true; // create field table and set database version
+			boolean needsUpdate1 = false; // update table content
+			boolean needsUpdate2 = false; // create field table and set database version
 
 			try (PreparedStatement ps = con.prepareStatement(queryGetTable)) {
-				ps.setString(1, "");
+				ps.setString(1, "accounts");
 				ResultSet rs = ps.executeQuery();
 				if (rs.next()) {
 					needsUpdate1 = true;

@@ -10,7 +10,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 
 import javax.annotation.Nullable;
@@ -21,42 +20,41 @@ abstract class Gui<T extends Ownable> {
 
 	BankingPlugin plugin;
 	T guiSubject;
-	Menu gui;
-	Gui<T> prevGui;
+	Menu menu;
+	Gui<T> prevMenu;
 	boolean openInBackground = false;
 
 	static final Material GENERAL_INFO_BLOCK = Material.PLAYER_HEAD;
 	static final Material MULTIPLIER_INFO_BLOCK = Material.NETHER_STAR;
 
-	public Gui(BankingPlugin plugin, T t) {
+	Gui(BankingPlugin plugin, T t) {
 		this.plugin = plugin;
 		this.guiSubject = t;
 	}
 
 	public void open(Player player) {
-		gui = getMenu();
-		gui.setCloseHandler((player1, menu1) -> new BukkitRunnable() {
+		menu = getMenu();
+		menu.setCloseHandler((player1, menu1) -> new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (prevGui != null && !openInBackground) {
-					prevGui.openInBackground = false;
-					prevGui.open(player);
+				if (prevMenu != null && !openInBackground) {
+					prevMenu.openInBackground = false;
+					prevMenu.open(player);
 				}
 			}
 		}.runTaskLater(plugin, 0));
 		evaluateClearance(player);
-		for (int i = 0; i < gui.getDimensions().getArea(); i++) {
-			gui.getSlot(i).setItem(createSlotItem(i));
-			gui.getSlot(i).setClickHandler(createClickHandler(i));
-			gui.getSlot(i).setClickOptions(ClickOptions.DENY_ALL);
+		for (int i = 0; i < menu.getDimensions().getArea(); i++) {
+			menu.getSlot(i).setItem(createSlotItem(i));
+			menu.getSlot(i).setClickHandler(createClickHandler(i));
 		}
-		gui.open(player);
+		menu.open(player);
 	}
 
-	public Gui<T> setPrevGui(@Nullable Gui prevGui) {
-		if (prevGui != null)
-			prevGui.openInBackground = true;
-		this.prevGui = prevGui;
+	public Gui<T> setPrevMenu(@Nullable Gui prevMenu) {
+		if (prevMenu != null)
+			prevMenu.openInBackground = true;
+		this.prevMenu = prevMenu;
 		return this;
 	}
 

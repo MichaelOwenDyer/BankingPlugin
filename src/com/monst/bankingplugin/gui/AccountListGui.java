@@ -40,9 +40,9 @@ public class AccountListGui extends Gui<Bank> {
             menu.setCloseHandler((player1, menu1) -> new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (prevGui != null && !openInBackground) {
-                        prevGui.openInBackground = false;
-                        prevGui.open(player);
+                    if (prevMenu != null && !openInBackground) {
+                        prevMenu.openInBackground = false;
+                        prevMenu.open(player);
                     }
                 }
             }.runTaskLater(plugin, 0));
@@ -66,7 +66,7 @@ public class AccountListGui extends Gui<Bank> {
         for (Account account : guiSubject.getAccounts()) {
             ItemStack item = createSlotItem(Material.CHEST, account.getColorizedName(), Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
             ItemStackTemplate template = new StaticItemTemplate(item);
-            Slot.ClickHandler clickHandler = (player, info) -> new AccountGui(account).setPrevGui(this).open(player);
+            Slot.ClickHandler clickHandler = (player, info) -> new AccountGui(account).setPrevMenu(this).open(player);
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
         }
         ArrayList<Menu> pages = (ArrayList<Menu>) builder.build();

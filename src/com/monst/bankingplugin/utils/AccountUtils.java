@@ -139,7 +139,7 @@ public class AccountUtils {
     public void removeAccount(Account account, boolean removeFromDatabase, Callback<Void> callback) {
         plugin.debug("Removing account (#" + account.getID() + ")");
 
-		account.clearName();
+		account.clearChestName();
 
         InventoryHolder ih = account.getInventoryHolder();
 

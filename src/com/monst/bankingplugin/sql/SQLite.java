@@ -95,8 +95,8 @@ public class SQLite extends Database {
         
         	+ "account_config TEXT NOT NULL)";
         
-		// id,name,owner,co_owners,selection_type,world,maxY,minY,points
-		// ?,?,?,?,?,?,?,?,?
+		// id,name,owner,co_owners,selection_type,world,maxY,minY,points,account_config
+		// ?,?,?,?,?,?,?,?,?,?
     }
     
     @Override

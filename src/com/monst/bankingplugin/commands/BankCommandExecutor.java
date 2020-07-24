@@ -712,7 +712,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return;
 		}
 
-		Bank bank = null;
+		Bank bank;
 		if (args.length == 1) {
 			bank = bankUtils.getBank(p.getLocation());
 			if (bank == null) {
@@ -759,7 +759,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 			bank = bankUtils.getBank(((Player) sender).getLocation());
 			if (bank == null) {
-				plugin.debug(sender.getName() + " wasnt standing in a bank");
+				plugin.debug(sender.getName() + " wasn't standing in a bank");
 				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
 				return true;
 			}
@@ -828,7 +828,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner != null ? newOwner.getName() : "ADMIN"));
+		boolean hasDefaultName = bank.isDefaultName();
 		bank.transferOwnership(newOwner);
+		if (hasDefaultName)
+			bank.setToDefaultName();
 		bankUtils.addBank(bank, true);
 		return true;
 	}

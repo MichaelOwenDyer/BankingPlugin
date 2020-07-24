@@ -16,9 +16,7 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AccountGui extends Gui<Account> {
@@ -76,12 +74,12 @@ public class AccountGui extends Gui<Account> {
 		switch (i) {
 			case 1:
 				return (player, info) -> {
-					new BankGui(guiSubject.getBank()).setPrevGui(this).open(player);
+					new BankGui(guiSubject.getBank()).setPrevMenu(this).open(player);
 				};
 			case 8:
 				return (player, info) -> {
 					if (isTrusted)
-						new ChestMirrorGui(guiSubject).setPrevGui(this).open(player);
+						new ChestMirrorGui(guiSubject).setPrevMenu(this).open(player);
 				};
 			default:
 				return (player, info) -> {

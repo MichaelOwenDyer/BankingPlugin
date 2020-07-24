@@ -292,7 +292,7 @@ public class AccountInteractListener implements Listener {
 			accountUtils.addAccount(account, true, new Callback<Integer>(plugin) {
 				@Override
 				public void onResult(Integer result) {
-					account.resetName();
+					account.setToDefaultName();
 				}
 			});
 			p.sendMessage(Messages.ACCOUNT_CREATED);
@@ -426,7 +426,7 @@ public class AccountInteractListener implements Listener {
 							executor.getName() + " has reset %s account nickname%s (#" + account.getID() + ")",
 							(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
 							(account.isCoowner(executor) ? " as a co-owner" : "")));
-					account.resetName();
+					account.setToDefaultName();
 				} else {
 					plugin.debug(executor.getName() + " has set their account nickname to \"" + args[1] + "\" (#" + account.getID() + ")");
 					account.setName(args[1]);
@@ -710,7 +710,7 @@ public class AccountInteractListener implements Listener {
 		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
 		account.transferOwnership(newOwner);
 		if (hasDefaultNickname)
-			account.resetName();
+			account.setToDefaultName();
 		plugin.getAccountUtils().addAccount(account, true);
 	}
 
