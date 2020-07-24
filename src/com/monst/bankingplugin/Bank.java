@@ -40,8 +40,8 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	// Old admin bank
-	public Bank(int id, BankingPlugin plugin, String name, Selection selection, AccountConfig config) {
-		this(id, plugin, name, null, null, selection, config, BankType.ADMIN);
+	public Bank(int id, BankingPlugin plugin, String name, Set<OfflinePlayer> coowners, Selection selection, AccountConfig config) {
+		this(id, plugin, name, null, coowners, selection, config, BankType.ADMIN);
 	}
 
 	// New player bank
@@ -207,7 +207,7 @@ public class Bank extends Ownable implements Nameable {
 		
 		info.addExtra("\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + id + ")");
 		if (!isOwner)
-			info.addExtra("\n    Owner: " + (isPlayerBank() ? getOwnerDisplayName() : ChatColor.RED + "ADMIN"));
+			info.addExtra("\n    Owner: " + getOwnerDisplayName());
 		if (!getCoowners().isEmpty())
 			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
 		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + Utils.formatNumber(accountConfig.getInterestRate(false)));

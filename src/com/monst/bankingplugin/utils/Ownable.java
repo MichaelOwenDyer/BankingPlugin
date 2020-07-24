@@ -23,7 +23,7 @@ public abstract class Ownable {
 
 	public String getOwnerDisplayName() {
 		if (owner == null)
-			return "";
+			return ChatColor.RED + "ADMIN";
 		if (!owner.hasPlayedBefore())
 			return ChatColor.DARK_GRAY + owner.getUniqueId().toString();
 		return owner.isOnline() ? owner.getPlayer().getDisplayName() : owner.getName();

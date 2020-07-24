@@ -89,7 +89,7 @@ public class BankGui extends Gui<Bank> {
 
 	private List<String> getGeneralInfoLore() {
 		return Arrays.asList(
-				"Owner: " + (guiSubject.isPlayerBank() ? ChatColor.GOLD + guiSubject.getOwnerDisplayName() : ChatColor.RED + "ADMIN"),
+				"Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName(),
 				"Co-owners: " + (guiSubject.getCoowners().isEmpty() ? org.bukkit.ChatColor.RED + "[none]"
 						: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
 						.collect(Collectors.joining(", ", "[ ", " ]"))),

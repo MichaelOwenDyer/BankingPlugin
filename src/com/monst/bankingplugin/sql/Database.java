@@ -480,7 +480,7 @@ public abstract class Database {
 	}
 
 	/**
-	 * Get all banks from the database
+	 * Get all banks and accounts from the database
 	 * 
 	 * @param showConsoleMessages Whether console messages (errors or warnings)
 	 *                            should be shown
@@ -521,17 +521,16 @@ public abstract class Database {
 
 						String name = rs.getString("name");
 						boolean isAdminBank = rs.getString("owner").equals("$ADMIN$");
+						Set<OfflinePlayer> coowners = rs.getString("co_owners") == null ? null
+								: Arrays.stream(rs.getString("co_owners").split(" \\| "))
+								.filter(uuid -> uuid != null && !uuid.isEmpty())
+								.map(uuid -> Bukkit.getOfflinePlayer(UUID.fromString(uuid)))
+								.collect(Collectors.toSet());
 						OfflinePlayer owner = null;
-						Set<OfflinePlayer> coowners = null;
 						if (!isAdminBank) {
 							owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
-							coowners = rs.getString("co_owners") == null ? null
-								: Arrays.stream(rs.getString("co_owners").split(" \\| "))
-										.filter(uuid -> uuid != null && !uuid.isEmpty())
-										.map(uuid -> Bukkit.getOfflinePlayer(UUID.fromString(uuid)))
-										.collect(Collectors.toSet());
 						}
-						
+
 						String[] pointArray = rs.getString("points").split(" \\| ");
 						Selection selection;
 						if (rs.getString("selection_type").equals("POLYGONAL")) {
@@ -592,18 +591,18 @@ public abstract class Database {
 								accConfig.length == 14 ? Boolean.parseBoolean(accConfig[12]) : Config.payOnLowBalance.getValue(), // Update banks to 1.9
 								accConfig.length == 14 ? Integer.parseInt(accConfig[13]) : Integer.parseInt(accConfig[12]));
 
-						plugin.debug("Initializing bank \"" + name + "\"... (#" + bankId + ")");
+						plugin.debug("Initializing bank" + (name != null ? " \"" + name + "\"" : "") + "... (#" + bankId + ")");
 
 						Bank bank;
 						if (isAdminBank)
-							bank = new Bank(bankId, plugin, name, selection, accountConfig);
+							bank = new Bank(bankId, plugin, name, coowners, selection, accountConfig);
 						else
 							bank = new Bank(bankId, plugin, name, owner, coowners, selection, accountConfig);
 
 						if (name == null)
 							bank.resetName();
 
-						getAccountsByBank(bank, showConsoleMessages, new Callback<Collection<Account>>(plugin) {
+						getAccountsAtBank(bank, showConsoleMessages, new Callback<Collection<Account>>(plugin) {
 							@Override
 							public void onResult(Collection<Account> result) {
 								banksAndAccounts.put(bank, result);
@@ -643,8 +642,7 @@ public abstract class Database {
 	 *                            collection of all accounts (as
 	 *                            {@code Collection<Account>})
 	 */
-	private void getAccountsByBank(Bank bank, final boolean showConsoleMessages,
-			final Callback<Collection<Account>> callback) {
+	private void getAccountsAtBank(Bank bank, final boolean showConsoleMessages, final Callback<Collection<Account>> callback) {
 		ArrayList<Account> accounts = new ArrayList<>();
 
 		try (Connection con = dataSource.getConnection();
@@ -1065,11 +1063,11 @@ public abstract class Database {
 		String queryGetTable = getQueryGetTable();
 
 		try (Connection con = dataSource.getConnection()) {
-			boolean needsUpdate1 = false; // update "transaction_log" to "economy_logs" and update "accounts" with prefixes
-			boolean needsUpdate2 = false; // create field table and set database version
+			boolean needsUpdate1 = true; // update table content
+			boolean needsUpdate2 = true; // create field table and set database version
 
 			try (PreparedStatement ps = con.prepareStatement(queryGetTable)) {
-				ps.setString(1, "account_log");
+				ps.setString(1, "");
 				ResultSet rs = ps.executeQuery();
 				if (rs.next()) {
 					needsUpdate1 = true;
@@ -1085,64 +1083,36 @@ public abstract class Database {
 			}
 
 			if (needsUpdate1) {
-				String queryRenameTableBanks = "ALTER TABLE banks RENAME TO backup_banks"; // for backup
-				String queryRenameTableAccounts = "ALTER TABLE accounts RENAME TO backup_accounts"; // for backup
-				String queryRenameTableTransactionLog = "ALTER TABLE transaction_log RENAME TO backup_transaction_log"; // for backup
-				String queryRenameTableInterestLog = "ALTER TABLE interest_log RENAME TO backup_interest_log"; // for backup
-				String queryRenameTableLogouts = "ALTER TABLE player_logout RENAME TO " + tableLogouts;
+
+				List<String> renameQueries = new ArrayList<>();
+				List<String> createQueries = new ArrayList<>();
+
+				renameQueries.add("ALTER TABLE " + tableBanks + " RENAME TO backup_banks"); // for backup
+				renameQueries.add("ALTER TABLE " + tableAccounts + " RENAME TO backup_accounts"); // for backup
+				// renameQueries.add("ALTER TABLE " + tableTransactionLog + " RENAME TO backup_transaction_log"); // for backup
+				// renameQueries.add("ALTER TABLE " + tableInterestLog + " RENAME TO backup_interest_log"); // for backup
+
+				createQueries.add(getQueryCreateTableBanks());
+				createQueries.add(getQueryCreateTableAccounts());
+				// createQueries.add(getQueryCreateTableTransactionLog());
+				// createQueries.add(getQueryCreateTableInterestLog());
 
 				plugin.getLogger().info("Updating database... (#1)");
 
-				// Rename banks table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableBanks);
-				}
+				for (String query : renameQueries)
+					try (Statement s = con.createStatement()) {
+						s.executeUpdate(query);
+					}
 
-				// Rename accounts table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableAccounts);
-				}
-
-				// Rename transaction log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableTransactionLog);
-				}
-
-				// Rename interest log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableInterestLog);
-				}
-
-				// Rename logout table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(queryRenameTableLogouts);
-				}
-
-				// Create new banks table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableBanks());
-				}
-
-				// Create new accounts table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableAccounts());
-				}
-
-				// Create new transaction log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableTransactionLog());
-				}
-
-				// Create new interest log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableInterestLog());
-				}
+				for (String query : createQueries)
+					try (Statement s = con.createStatement()) {
+						s.executeUpdate(query);
+					}
 
 				// Convert banks table
 				try (Statement s = con.createStatement()) {
 					ResultSet rs = s.executeQuery("SELECT id FROM backup_banks");
 					while (rs.next()) {
-
 						String insertQuery = "INSERT INTO " + tableBanks
 								+ " SELECT id,name,world,selection_type,minY,maxY,points FROM backup_banks"
 								+ " WHERE id = ?";
@@ -1157,7 +1127,6 @@ public abstract class Database {
 				try (Statement s = con.createStatement()) {
 					ResultSet rs = s.executeQuery("SELECT id FROM backup_accounts");
 					while (rs.next()) {
-
 						String insertQuery = "INSERT INTO " + tableAccounts
 								+ " SELECT id,bank_id,owner,size,balance,prev_balance,multiplier_stage,"
 								+ "until_payout,remaining_offline_payout,remaining_offline_until_reset,"
@@ -1169,36 +1138,6 @@ public abstract class Database {
 					}
 				}
 
-				// Convert transaction log table
-				try (Statement s = con.createStatement()) {
-					ResultSet rs = s.executeQuery("SELECT id FROM backup_transaction_log");
-					while (rs.next()) {
-
-						String insertQuery = "INSERT INTO " + tableTransactionLog
-								+ " SELECT id,account_id,bank_id,timestamp,time,owner_name,"
-								+ "owner_uuid,executor_name,executor_uuid,transaction_type,"
-								+ "amount,new_balance,world,x,y,z FROM backup_transaction_log WHERE id = ?";
-						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
-							ps.setInt(1, rs.getInt("id"));
-							ps.executeUpdate();
-						}
-					}
-				}
-
-				// Convert interest log table
-				try (Statement s = con.createStatement()) {
-					ResultSet rs = s.executeQuery("SELECT id FROM backup_interest_log");
-					while (rs.next()) {
-
-						String insertQuery = "INSERT INTO " + tableInterestLog
-								+ " SELECT id,account_id,bank_id,owner_name,owner_uuid,base_amount,"
-								+ "multiplier,amount,timestamp,time FROM backup_interest_log WHERE id = ?";
-						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
-							ps.setInt(1, rs.getInt("id"));
-							ps.executeUpdate();
-						}
-					}
-				}
 			}
 
 			if (needsUpdate2) {
@@ -1236,5 +1175,4 @@ public abstract class Database {
 			dataSource = null;
 		}
 	}
-
 }

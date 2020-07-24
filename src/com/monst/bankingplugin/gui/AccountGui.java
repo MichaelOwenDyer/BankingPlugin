@@ -104,7 +104,7 @@ public class AccountGui extends Gui<Account> {
 		Bank bank = guiSubject.getBank();
 		return Arrays.asList(
 				"Name: \"" + ChatColor.RED + bank.getColorizedName() + ChatColor.GRAY + "\"",
-				"Owner: " + (bank.isPlayerBank() ? ChatColor.GOLD + bank.getOwnerDisplayName() : ChatColor.RED + "ADMIN"),
+				"Owner: " + ChatColor.GOLD + bank.getOwnerDisplayName(),
 				"Co-owners: " + (bank.getCoowners().isEmpty() ? org.bukkit.ChatColor.RED + "[none]"
 						: ChatColor.AQUA + bank.getCoowners().stream().map(OfflinePlayer::getName)
 						.collect(Collectors.joining(", ", "[ ", " ]"))),
