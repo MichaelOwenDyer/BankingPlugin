@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Ownable;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -18,31 +19,32 @@ import java.util.stream.Collectors;
 
 abstract class Gui<T extends Ownable> {
 
+	BankingPlugin plugin;
 	T guiSubject;
 	Menu gui;
-	Gui prevGui;
-	boolean highClearance;
+	Gui<T> prevGui;
+	boolean openInBackground = false;
 
 	static final Material GENERAL_INFO_BLOCK = Material.PLAYER_HEAD;
 	static final Material MULTIPLIER_INFO_BLOCK = Material.NETHER_STAR;
 
-	public Gui(T t) {
+	public Gui(BankingPlugin plugin, T t) {
+		this.plugin = plugin;
 		this.guiSubject = t;
 	}
 
 	public void open(Player player) {
 		gui = getMenu();
-		if (prevGui != null) {
-			gui.setCloseHandler((player1, menu1) -> {
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						prevGui.open(player);
-					}
-				}.runTaskLater(BankingPlugin.getInstance(), 1);
-			});
-		}
-		getClearance(player);
+		gui.setCloseHandler((player1, menu1) -> new BukkitRunnable() {
+			@Override
+			public void run() {
+				if (prevGui != null && !openInBackground) {
+					prevGui.openInBackground = false;
+					prevGui.open(player);
+				}
+			}
+		}.runTaskLater(plugin, 0));
+		evaluateClearance(player);
 		for (int i = 0; i < gui.getDimensions().getArea(); i++) {
 			gui.getSlot(i).setItem(createSlotItem(i));
 			gui.getSlot(i).setClickHandler(createClickHandler(i));
@@ -52,13 +54,15 @@ abstract class Gui<T extends Ownable> {
 	}
 
 	public Gui<T> setPrevGui(@Nullable Gui prevGui) {
+		if (prevGui != null)
+			prevGui.openInBackground = true;
 		this.prevGui = prevGui;
 		return this;
 	}
 
 	abstract Menu getMenu();
 
-	abstract void getClearance(Player player);
+	abstract void evaluateClearance(Player player);
 
 	abstract ItemStack createSlotItem(int i);
 
@@ -67,10 +71,15 @@ abstract class Gui<T extends Ownable> {
 	static ItemStack createSlotItem(Material material, String displayName, List<String> lore) {
 		ItemStack item = new ItemStack(material);
 		ItemMeta itemMeta = item.getItemMeta();
-		assert itemMeta != null;
+		if (itemMeta == null)
+			return null;
 		itemMeta.setDisplayName(ChatColor.GRAY + displayName);
 		itemMeta.setLore(lore.stream().map(s -> ChatColor.GRAY + s).collect(Collectors.toList()));
 		item.setItemMeta(itemMeta);
 		return item;
+	}
+
+	static ItemStack createSlotItem(OfflinePlayer owner, String displayName, List<String> lore) {
+		return null; // TODO: Use for generating custom player heads in GUI
 	}
 }

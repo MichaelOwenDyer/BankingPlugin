@@ -93,7 +93,6 @@ public class AccountInteractListener implements Listener {
 
 			case REMOVE:
 
-				assert account != null;
 				if (confirmRemove(p, account))
 					remove(p, account);
 				e.setCancelled(true);
@@ -101,7 +100,6 @@ public class AccountInteractListener implements Listener {
 
 			case INFO:
 
-				assert account != null;
 				info(p, account);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
@@ -118,7 +116,6 @@ public class AccountInteractListener implements Listener {
 			case TRUST:
 
 				OfflinePlayer playerToTrust = ((TrustClickType) clickType).getPlayerToTrust();
-				assert account != null;
 				trust(p, account, playerToTrust);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
@@ -127,7 +124,6 @@ public class AccountInteractListener implements Listener {
 			case UNTRUST:
 
 				OfflinePlayer playerToUntrust = ((UntrustClickType) clickType).getPlayerToUntrust();
-				assert account != null;
 				untrust(p, account, playerToUntrust);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
@@ -135,7 +131,6 @@ public class AccountInteractListener implements Listener {
 
 			case MIGRATE:
 				if (((MigrateClickType) clickType).isFirstClick()) {
-					assert account != null;
 					migratePartOne(p, account);
 				} else {
 					if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
@@ -477,6 +472,7 @@ public class AccountInteractListener implements Listener {
 		case "interest-delay":
 			if (executor.hasPermission(Permissions.ACCOUNT_SET_INTEREST_DELAY)) {
 				int delay = account.getStatus().setInterestDelay(Integer.parseInt(args[1]));
+				plugin.getAccountUtils().addAccount(account, true);
 				plugin.debug(String.format(
 						executor.getName() + " has set %s account interest delay to %d%s (#" + account.getID() + ")",
 						(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"), delay,
@@ -644,8 +640,8 @@ public class AccountInteractListener implements Listener {
 
 		if (newAccount.create(true)) {
 			plugin.debug("Account created");
-			accountUtils.removeAccount(toMigrate, false);
-			accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
+			accountUtils.removeAccount(toMigrate, false); // Database entry is preserved
+			accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) { // Database entry is overwritten with new location
 				@Override
 				public void onResult(Integer result) {
 					newAccount.updateName();

@@ -166,7 +166,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	public void updateName() {
-		setName(getRawName());
+		setName(getRawName() != null ? getRawName() : getDefaultName());
 	}
 
 	public void clearName() {

@@ -349,7 +349,7 @@ public abstract class Database {
 						ps.setInt(1, bank.getID());
 					}
 
-					ps.setString(i + 1, bank.getRawName());
+					ps.setString(i + 1, null);
 					
 					if (bank.getType() == BankType.ADMIN) {
 						ps.setString(i + 2, "$ADMIN$");
@@ -405,8 +405,8 @@ public abstract class Database {
 									+ config.isCountInterestDelayOffline(true) + " | "
 									+ config.getAllowedOfflinePayouts(true) + " | "
 									+ config.getAllowedOfflineBeforeReset(true) + " | "
-									+ config.getOfflineMultiplierBehavior(true) + " | "
-									+ config.getWithdrawalMultiplierBehavior(true) + " | "
+									+ config.getOfflineMultiplierDecrement(true) + " | "
+									+ config.getWithdrawalMultiplierDecrement(true) + " | "
 									+ config.getAccountCreationPrice(true) + " | "
 									+ config.isReimburseAccountCreation(true) + " | "
 									+ config.getMinBalance(true) + " | "
@@ -424,6 +424,7 @@ public abstract class Database {
 						}
 
 						bank.setID(bankId);
+						bank.resetName();
 					}
 
 					if (callback != null) {
@@ -598,6 +599,9 @@ public abstract class Database {
 							bank = new Bank(bankId, plugin, name, selection, accountConfig);
 						else
 							bank = new Bank(bankId, plugin, name, owner, coowners, selection, accountConfig);
+
+						if (name == null)
+							bank.resetName();
 
 						getAccountsByBank(bank, showConsoleMessages, new Callback<Collection<Account>>(plugin) {
 							@Override
@@ -1061,8 +1065,7 @@ public abstract class Database {
 		String queryGetTable = getQueryGetTable();
 
 		try (Connection con = dataSource.getConnection()) {
-			boolean needsUpdate1 = false; // update "transaction_log" to "economy_logs" and update "accounts" with
-											// prefixes
+			boolean needsUpdate1 = false; // update "transaction_log" to "economy_logs" and update "accounts" with prefixes
 			boolean needsUpdate2 = false; // create field table and set database version
 
 			try (PreparedStatement ps = con.prepareStatement(queryGetTable)) {

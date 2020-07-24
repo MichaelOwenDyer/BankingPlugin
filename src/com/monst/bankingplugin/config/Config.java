@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Config {
@@ -74,12 +73,12 @@ public class Config {
     /**
 	 * The behavior of an offline player's multiplier.
 	 **/
-	public static Entry<Boolean, Integer> offlineMultiplierBehavior;
+	public static Entry<Boolean, Integer> offlineMultiplierDecrement;
     
     /**
 	 * The behavior of a player's multiplier at a withdrawal event.
 	 **/
-	public static Entry<Boolean, Integer> withdrawalMultiplierBehavior;
+	public static Entry<Boolean, Integer> withdrawalMultiplierDecrement;
     
     /**
      * The item with which a player can click an account chest to retrieve information.
@@ -434,13 +433,19 @@ public class Config {
 				config.getBoolean("allowed-offline-before-multiplier-reset.allow-override"),
 				config.getInt("allowed-offline-before-multiplier-reset.default"));
 
-		offlineMultiplierBehavior = new SimpleEntry<>(config.getBoolean("offline-multiplier-behavior.allow-override"),
-				config.getInt("offline-multiplier-behavior.default"));
+		offlineMultiplierDecrement = new SimpleEntry<>(config.getBoolean("offline-multiplier-behavior.allow-override"),
+				Math.abs(config.getInt("offline-multiplier-behavior.default")));
 
-		withdrawalMultiplierBehavior = new SimpleEntry<>(config.getBoolean("withdrawal-multiplier-behavior.allow-override"),
-				config.getInt("withdrawal-multiplier-behavior.default"));
+		withdrawalMultiplierDecrement = new SimpleEntry<>(config.getBoolean("withdrawal-multiplier-behavior.allow-override"),
+				Math.abs(config.getInt("withdrawal-multiplier-behavior.default"))); // TODO: Make this value always positive
 
-		accountInfoItem = new ItemStack(Objects.requireNonNull(Material.getMaterial(config.getString("account-info-item"))));
+		try {
+			accountInfoItem = new ItemStack(Material.getMaterial(config.getString("account-info-item")));
+		} catch (Exception e) {
+			plugin.debug("Error reading in account info item from config");
+			plugin.debug(e);
+			accountInfoItem = new ItemStack(Material.STICK);
+		}
 
 		creationPriceBank = new SimpleEntry<>(config.getDouble("creation-prices.bank.admin"),
 				config.getDouble("creation-prices.bank.player"));

@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -10,8 +11,10 @@ import org.ipvp.canvas.type.ChestMenu;
 
 public class ChestMirrorGui extends Gui<Account> {
 
+    boolean canEdit;
+
     public ChestMirrorGui(Account account) {
-        super(account);
+        super(BankingPlugin.getInstance(), account);
     }
 
     @Override
@@ -21,8 +24,8 @@ public class ChestMirrorGui extends Gui<Account> {
     }
 
     @Override
-    void getClearance(Player player) {
-        highClearance = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
+    void evaluateClearance(Player player) {
+        canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
     }
 
     @Override

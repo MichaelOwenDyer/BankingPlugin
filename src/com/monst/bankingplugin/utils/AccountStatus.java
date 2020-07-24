@@ -53,16 +53,11 @@ public class AccountStatus {
 	}
 	
 	public int processWithdrawal() {
-		int increment = accountConfig.getWithdrawalMultiplierBehavior(false);
-
-		if (increment > 0) {
+		int increment = accountConfig.getWithdrawalMultiplierDecrement(false);
+		if (increment > 0)
+			multiplierStage = Math.max(multiplierStage - increment, 0);
+		else if (increment < 0)
 			resetMultiplierStage();
-			return 0;
-		} else if (increment == 0)
-			return multiplierStage;
-
-		multiplierStage = Math.max(multiplierStage + increment, 0);
-
 		return multiplierStage;
 	}
 
@@ -85,7 +80,7 @@ public class AccountStatus {
 			} else if (remainingOfflineUntilReset > 0)
 				remainingOfflineUntilReset--;
 
-			int increment = accountConfig.getOfflineMultiplierBehavior(false);
+			int increment = accountConfig.getOfflineMultiplierDecrement(false);
 			int newStage = multiplierStage + increment;
 			
 			if (newStage < 0) {
@@ -162,21 +157,10 @@ public class AccountStatus {
 	}
 
 	public int setMultiplierStageRelative(int stage) {
-
-		List<Integer> multipliers = accountConfig.getMultipliers(false);
-
-		int newStage = multiplierStage + stage;
-		if (newStage < 0)
-			multiplierStage = 0;
-		else if (newStage >= multipliers.size())
-			multiplierStage = multipliers.size() - 1;
-		else
-			multiplierStage = newStage;
-		return multiplierStage;
+		return setMultiplierStage(multiplierStage + ++stage);
 	}
 
 	public int setInterestDelay(int delay) {
-		delayUntilNextPayout = Math.max(delay, 0);
-		return delayUntilNextPayout;
+		return delayUntilNextPayout = Math.max(delay, 0);
 	}
 }

@@ -137,7 +137,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		} else {
 			try {
-				selection = bankUtils.parseCoordinates(args, p.getLocation()); // TODO: Coordinates should parse from one earlier
+				selection = bankUtils.parseCoordinates(args, p.getLocation());
 			} catch (NumberFormatException e) {
 				plugin.debug("Could not parse coordinates in command args");
 				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
@@ -166,7 +166,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 		if (!bankUtils.isExclusiveSelection(selection)) {
 			plugin.debug("Region is not exclusive");
-			p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
+			p.sendMessage(Messages.SELECTION_OVERLAPS_EXISTING);
 			return true;
 		}
 		int volume = selection.getVolume();
@@ -215,12 +215,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		if (bank.create()) {
-			bankUtils.addBank(bank, true, new Callback<Integer>(plugin) {
-				@Override
-				public void onResult(Integer result) {
-					bank.resetName();
-				}
-			});
+			bankUtils.addBank(bank, true);
 			plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
 			p.sendMessage(Messages.BANK_CREATED);
 		} else {
@@ -325,7 +320,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 	private void promptBankInfo(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to show bank info");
 
-		Bank bank = null;
+		Bank bank;
 		if (args.length == 1) {
 			if (sender instanceof Player) {
 				Player p = (Player) sender;
@@ -342,8 +337,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("No bank could be found under the identifier " + args[1]);
-				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				plugin.debug("No bank could be found under the identifier \"" + args[1] + "\"");
+				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, "\"" + args[1] + "\""));
 				return;
 			}
 		}
@@ -362,7 +357,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		banks = new ArrayList<>(bankUtils.getBanksCopy());
 
 		if (banks.isEmpty()) {
-			sender.sendMessage(Messages.NO_BANKS);
+			sender.sendMessage(Messages.NO_BANKS_FOUND);
 			return;
 		}
 
@@ -456,7 +451,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		} else {
 			try {
-				selection = bankUtils.parseCoordinates(args, p.getLocation());
+				selection = bankUtils.parseCoordinates(args, p.getLocation(), 1);
 			} catch (NumberFormatException e) {
 				plugin.debug("Could not parse coordinates in command args: \"" + Arrays.toString(args) + "\"");
 				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
@@ -496,8 +491,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 		if (!bankUtils.isExclusiveSelectionWithoutThis(selection, bank)) {
-			plugin.debug("New selection is not exclusive");
-			p.sendMessage(Messages.SELECTION_NOT_EXCLUSIVE);
+			plugin.debug("New selection is overlaps with an existing bank selection");
+			p.sendMessage(Messages.SELECTION_OVERLAPS_EXISTING);
 			return true;
 		}
 		if (!bankUtils.containsAllAccounts(bank, selection)) {
@@ -537,9 +532,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (args.length < 2)
 			return false;
 
-		Bank bank = null;
+		Bank bank;
 		StringBuilder sb;
-		String newName = null;
+		String newName;
 		if (args.length == 2) {
 			if (!(sender instanceof Player)) {
 				plugin.debug("Must be player");
@@ -560,7 +555,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}
-			sb = new StringBuilder(args[1]);
+			sb = new StringBuilder(args[2]);
 			for (int i = 3; i < args.length; i++)
 				sb.append(" ").append(args[i]);
 			newName = sb.toString();
@@ -725,7 +720,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				p.sendMessage(Messages.NOT_STANDING_IN_BANK);
 				return;
 			}
-		} else if (args.length >= 2) {
+		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
 				plugin.debug("No bank could be found under the identifier " + args[1]);
@@ -754,7 +749,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (args.length < 2)
 			return false;
 
-		Bank bank = null;
+		Bank bank;
 		OfflinePlayer newOwner = null;
 		if (args.length == 2) {
 			if (!(sender instanceof Player)) {

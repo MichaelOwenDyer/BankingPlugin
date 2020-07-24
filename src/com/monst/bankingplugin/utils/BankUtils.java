@@ -107,66 +107,50 @@ public class BankUtils {
 		bankSelectionMap.put(newSel, bank);
 		bank.setSelection(newSel);
 	}
-	
+
 	public Selection parseCoordinates(String[] args, Location loc) throws NumberFormatException {
+		return parseCoordinates(args, loc, 0);
+	}
+	
+	public Selection parseCoordinates(String[] args, Location loc, int offset) throws NumberFormatException {
 
-		if (args.length == 5 || args.length == 6) {
+		if (args.length == 4 || args.length == 5) {
 
-			String argX = args[2];
-			String argY = args[3];
-			String argZ = args[4];
+			String argX = args[1 + offset];
+			String argY = args[2 + offset];
+			String argZ = args[3 + offset];
 
-			int x1, x2, y1, y2, z1, z2;
-
-			x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1)) : Integer.parseInt(argX);
-			y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1)) : Integer.parseInt(argY);
-			z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1)) : Integer.parseInt(argZ);
+			int x1, y1, z1, x2, y2, z2;
 
 			x2 = loc.getBlockX();
 			y2 = loc.getBlockY();
 			z2 = loc.getBlockZ();
 
-			if (argX.startsWith("~"))
-				x1 += x2;
-			if (argY.startsWith("~"))
-				y1 += y2;
-			if (argZ.startsWith("~"))
-				z1 += z2;
+			x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1)) + x2 : Integer.parseInt(argX);
+			y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1)) + y2 : Integer.parseInt(argY);
+			z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1)) + z2 : Integer.parseInt(argZ);
 
 			Location loc1 = new Location(loc.getWorld(), x1, y1, z1);
 			Location loc2 = new Location(loc.getWorld(), x2, y2, z2);
 			return new CuboidSelection(loc.getWorld(), loc1, loc2);
 
-		} else if (args.length == 8 || args.length == 9) {
+		} else if (args.length == 7 || args.length == 8) {
 
-			String argX1 = args[2];
-			String argY1 = args[3];
-			String argZ1 = args[4];
-			String argX2 = args[5];
-			String argY2 = args[6];
-			String argZ2 = args[7];
+			String argX1 = args[1 + offset];
+			String argY1 = args[2 + offset];
+			String argZ1 = args[3 + offset];
+			String argX2 = args[4 + offset];
+			String argY2 = args[5 + offset];
+			String argZ2 = args[6 + offset];
 
 			int x1, y1, z1, x2, y2, z2;
 
-			x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1)) : Integer.parseInt(argX1);
-			y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1)) : Integer.parseInt(argY1);
-			z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1)) : Integer.parseInt(argZ1);
-			x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1)) : Integer.parseInt(argX2);
-			y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1)) : Integer.parseInt(argY2);
-			z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1)) : Integer.parseInt(argZ2);
-
-			if (argX1.startsWith("~"))
-				x1 += loc.getBlockX();
-			if (argY1.startsWith("~"))
-				y1 += loc.getBlockY();
-			if (argZ1.startsWith("~"))
-				z1 += loc.getBlockZ();
-			if (argX2.startsWith("~"))
-				x2 += loc.getBlockX();
-			if (argY2.startsWith("~"))
-				y2 += loc.getBlockY();
-			if (argZ2.startsWith("~"))
-				z2 += loc.getBlockZ();
+			x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1)) + loc.getBlockX() : Integer.parseInt(argX1);
+			y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1)) + loc.getBlockY() : Integer.parseInt(argY1);
+			z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1)) + loc.getBlockZ() : Integer.parseInt(argZ1);
+			x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1)) + loc.getBlockX() : Integer.parseInt(argX2);
+			y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1)) + loc.getBlockY() : Integer.parseInt(argY2);
+			z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1)) + loc.getBlockZ() : Integer.parseInt(argZ2);
 
 			Location loc1 = new Location(loc.getWorld(), x1, y1, z1);
 			Location loc2 = new Location(loc.getWorld(), x2, y2, z2);
@@ -368,7 +352,7 @@ public class BankUtils {
             	Collection<Account> accounts = accountUtils.getAccountsCopy();
             	
             	int[] preReload = { banks.size(), accounts.size() };
-				int[] postReload = new int[2];
+				int[] afterReload = new int[2];
             	
 				for (Bank bank : banks) {
 					for (Account account : bank.getAccountsCopy()) {
@@ -386,7 +370,7 @@ public class BankUtils {
 						for (Bank bank : result.keySet()) {
 							if (bank.create()) {
 								addBank(bank, false);
-								postReload[0]++;
+								afterReload[0]++;
 								for (Account account : result.get(bank)) {
 									if (account.create(showConsoleMessages)) {
 										accountUtils.addAccount(account, false, new Callback<Integer>(plugin) {
@@ -395,7 +379,7 @@ public class BankUtils {
 												account.updateName();
 											}
 										});
-										postReload[1]++;
+										afterReload[1]++;
 									} else
 										plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");
 								}
@@ -403,15 +387,15 @@ public class BankUtils {
 								plugin.debug("Could not re-create bank \"" + bank.getName() + "\" from database! (#" + bank.getID() + ")");
 						}
 
-						if (preReload[0] != postReload[0])
+						if (preReload[0] != afterReload[0])
 							plugin.debug("Number of banks before load was " + preReload[0] + ", and is now "
-									+ postReload[0]);
-						if (preReload[1] != postReload[1])
+									+ afterReload[0]);
+						if (preReload[1] != afterReload[1])
 							plugin.debug("Number of accounts before load was " + preReload[1]
-									+ ", and is now " + postReload[1]);
+									+ ", and is now " + afterReload[1]);
 						
 						if (callback != null)
-							callback.callSyncResult(postReload);
+							callback.callSyncResult(afterReload);
 					}
 					
 					@Override

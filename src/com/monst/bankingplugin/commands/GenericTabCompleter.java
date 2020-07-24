@@ -8,7 +8,7 @@ import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.block.Block;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -187,73 +187,30 @@ class GenericTabCompleter implements TabCompleter {
 	private List<String> completeBankCreate(Player p, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
 
-		if (args.length > 2 && args[1].equalsIgnoreCase("admin"))
+		if ((args.length == 2 || args.length == 5 || args.length == 8)
+				&& p.hasPermission(Permissions.BANK_CREATE_ADMIN))
+			returnCompletions.add("admin");
+
+		if ((args.length > 2 && args[1].equalsIgnoreCase("admin"))
+				|| (args.length > 5 && args[4].equalsIgnoreCase("admin")))
 			return Collections.emptyList();
-		
-		if (args.length == 2) {
-			if (p.hasPermission(Permissions.BANK_CREATE_ADMIN))
-				returnCompletions.add("admin");
-			Block b = p.getTargetBlock(null, 150);
-			String coord = "" + b.getLocation().getBlockX();
-			if (!args[2].isEmpty()) {
-				if (args[2].startsWith(coord))
-					returnCompletions.add(coord);
-			} else {
-				returnCompletions.add(coord);
-			}
+
+		if (args.length > 7)
 			return returnCompletions;
-		} else if (args.length == 3) {
-			Block b = p.getTargetBlock(null, 150);
-			String coord = "" + b.getLocation().getBlockY();
-			if (!args[3].isEmpty()) {
-				if (args[3].startsWith(coord))
-					returnCompletions.add(coord);
-			} else {
-				returnCompletions.add(coord);
-			}
-			return returnCompletions;
-		} else if (args.length == 4) {
-			Block b = p.getTargetBlock(null, 150);
-			String coord = "" + b.getLocation().getBlockZ();
-			if (!args[4].isEmpty()) {
-				if (args[4].startsWith(coord))
-					returnCompletions.add(coord);
-			} else {
-				returnCompletions.add(coord);
-			}
-			return returnCompletions;
-		} else if (args.length == 5) {
-			Block b = p.getTargetBlock(null, 150);
-			String coord = "" + b.getLocation().getBlockX();
-			if (!args[5].isEmpty()) {
-				if (args[5].startsWith(coord))
-					returnCompletions.add(coord);
-			} else {
-				returnCompletions.add(coord);
-			}
-			return returnCompletions;
-		} else if (args.length == 6) {
-			Block b = p.getTargetBlock(null, 150);
-			String coord = "" + b.getLocation().getBlockY();
-			if (!args[6].isEmpty()) {
-				if (args[6].startsWith(coord))
-					returnCompletions.add(coord);
-			} else {
-				returnCompletions.add(coord);
-			}
-			return returnCompletions;
-		} else if (args.length == 7) {
-			Block b = p.getTargetBlock(null, 150);
-			String coord = "" + b.getLocation().getBlockZ();
-			if (!args[7].isEmpty()) {
-				if (args[7].startsWith(coord))
-					returnCompletions.add(coord);
-			} else {
-				returnCompletions.add(coord);
-			}
-			return returnCompletions;
+
+		Location loc = p.getTargetBlock(null, 150).getLocation();
+		String coord = "";
+		switch (args.length % 3) {
+			case 2: coord = "" + loc.getBlockX(); break;
+			case 0: coord = "" + loc.getBlockY(); break;
+			case 1: coord = "" + loc.getBlockZ();
 		}
-		return Collections.emptyList();
+		if (!args[args.length - 1].isEmpty()) {
+			if (coord.startsWith(args[args.length - 1]))
+				returnCompletions.add(coord);
+		} else
+			returnCompletions.add(coord);
+		return returnCompletions;
 	}
 
 	private List<String> completeBankRemove(CommandSender sender, String[] args) {
@@ -398,17 +355,36 @@ class GenericTabCompleter implements TabCompleter {
 	}
 
 	private List<String> completeBankResize(Player p, String[] args) {
+
+		if (args.length < 2)
+			return Collections.emptyList();
+
 		ArrayList<String> returnCompletions = new ArrayList<>();
 		List<String> banks = plugin.getBankUtils().getBanksCopy().stream().map(Bank::getName)
 				.collect(Collectors.toList());
 
 		if (args.length == 2) {
 			for (String name : banks)
-				if (name.startsWith(args[1]))
+				if (!args[1].isEmpty()) {
+					if (name.startsWith(args[1]))
+						returnCompletions.add(name);
+				} else
 					returnCompletions.add(name);
-			return returnCompletions;
+		} else {
+			Location loc = p.getTargetBlock(null, 150).getLocation();
+			String coord = "";
+			switch (args.length % 3) {
+				case 0: coord = "" + loc.getBlockX(); break;
+				case 1: coord = "" + loc.getBlockY(); break;
+				case 2: coord = "" + loc.getBlockZ();
+			}
+			if (!args[args.length - 1].isEmpty()) {
+				if (coord.startsWith(args[args.length - 1]))
+					returnCompletions.add(coord);
+			} else
+				returnCompletions.add(coord);
 		}
-		return completeBankCreate(p, args);
+		return returnCompletions;
 	}
 
 	private List<String> completeBankRename(CommandSender sender, String[] args) {
@@ -437,19 +413,21 @@ class GenericTabCompleter implements TabCompleter {
 
 	private List<String> completeControlConfig(CommandSender sender, String[] args) {
 		ArrayList<String> returnCompletions = new ArrayList<>();
+
+		if (args.length == 2)
+			if (!args[1].isEmpty()) {
+				if ("set".startsWith(args[1].toLowerCase()))
+					return Collections.singletonList("set");
+			} else
+				return Collections.singletonList("set");
+
 		Set<String> configValues = plugin.getConfig().getKeys(true);
 		plugin.getConfig().getKeys(true).forEach(s -> {
 			if (s.contains("."))
 				configValues.remove(s.substring(0, s.lastIndexOf('.')));
 		});
 
-		if (args.length == 2) {
-			if (!args[1].isEmpty()) {
-				if ("set".startsWith(args[1].toLowerCase()))
-					return Collections.singletonList("set");
-			} else
-				return Collections.singletonList("set");
-		} else if (args.length == 3) {
+		if (args.length == 3) {
 			if (!args[2].isEmpty()) {
 				for (String s : configValues)
 					if (s.contains(args[2]))

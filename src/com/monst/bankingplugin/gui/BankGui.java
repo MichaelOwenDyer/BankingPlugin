@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -20,20 +21,29 @@ public class BankGui extends Gui<Bank> {
 
 	private static final Material DEFAULT_BLOCK = Material.ANVIL;
 
+	boolean verbose;
+	boolean canEdit;
+	boolean canListAccounts;
+
 	public BankGui(Bank bank) {
-		super(bank);
+		super(BankingPlugin.getInstance(), bank);
 	}
 
 	@Override
 	Menu getMenu() {
-		return ChestMenu.builder(2).title(ChatColor.DARK_GRAY + "Bank Management").build();
+		return ChestMenu.builder(2).title(guiSubject.getColorizedName()).build();
 	}
 
 	@Override
-	void getClearance(Player player) {
-		highClearance = guiSubject.isTrusted(player)
+	void evaluateClearance(Player player) {
+		verbose = guiSubject.isTrusted(player)
 				|| (guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_ADMIN)
 				|| (!guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_OTHER)));
+		canEdit = guiSubject.isTrusted(player)
+				|| (guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_SET_ADMIN)
+				|| (!guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_SET_OTHER)));
+		canListAccounts = guiSubject.isTrusted(player)
+				|| player.hasPermission(Permissions.ACCOUNT_LIST_OTHER);
 	}
 
 	@Override
@@ -44,10 +54,10 @@ public class BankGui extends Gui<Bank> {
 			case 4:
 				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
 			case 8:
-				if (highClearance && !guiSubject.getAccounts().isEmpty())
-					return createSlotItem(Material.CHEST, "Accounts", Collections.singletonList("Click here to view accounts."));
-				break;
-
+				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
+					return createSlotItem(Material.CHEST, "Account List", Collections.singletonList("Click here to view accounts."));
+				return createSlotItem(Material.CHEST, "Account List", Collections.singletonList(
+						canListAccounts ? "There are no accounts at this bank." : "You do not have permission to view this."));
 			case 9:
 				return createSlotItem(DEFAULT_BLOCK, "Account Creation", getCreationLore());
 			case 10:
@@ -61,20 +71,19 @@ public class BankGui extends Gui<Bank> {
 			default:
 				return new ItemStack(Material.AIR);
 		}
-		return new ItemStack(Material.AIR);
+		// return new ItemStack(Material.AIR);
 	}
 
 	@Override
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
 			case 8:
-				if (highClearance && !guiSubject.getAccounts().isEmpty())
+				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
 					return (player, info) -> {
-						new AccountListGui(guiSubject).open(player);
+						new AccountListGui(guiSubject).setPrevGui(this).open(player);
 					};
 			default:
-				return (player, info) -> {
-				};
+				return null;
 		}
 	}
 
@@ -123,7 +132,7 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getOfflinePayoutsLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
 		int offlinePayouts = config.getAllowedOfflinePayouts(false);
-		int offlineIncrement = config.getOfflineMultiplierBehavior(false);
+		int offlineIncrement = config.getOfflineMultiplierDecrement(false);
 		int beforeReset = config.getAllowedOfflineBeforeReset(false);
 		return Arrays.asList(
 				"Accounts will pay interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
@@ -139,7 +148,7 @@ public class BankGui extends Gui<Bank> {
 		boolean countOffline = config.isCountInterestDelayOffline(false);
 		return Arrays.asList(
 				"New accounts will begin to pay interest after " + ChatColor.AQUA + interestDelay + ChatColor.GRAY + " interest cycles.",
-				"The account owner " + (countOffline ? "does not have to be" : "must be") + " online for these cycles."
+				"The account owner " + (countOffline ? "does not have to be" : "must be ") + " online for these cycles."
 		);
 	}
 }

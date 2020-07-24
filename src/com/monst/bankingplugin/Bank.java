@@ -135,7 +135,7 @@ public class Bank extends Ownable implements Nameable {
 
 	@Override
 	public String getDefaultName() {
-		return ChatColor.RED + (isPlayerBank() ? getOwner().getName() + "'s Bank" : "Admin Bank") + ChatColor.GRAY + " (" + getID() + ")";
+		return ChatColor.RED + (isAdminBank() ? "Admin" : "") + "Bank" + ChatColor.GRAY + "(#" + getID() + ")";
 	}
 
 	@Override

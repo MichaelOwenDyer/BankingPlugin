@@ -15,8 +15,8 @@ public class AccountConfig {
 	private boolean countInterestDelayOffline;
 	private int allowedOfflinePayouts;
 	private int allowedOfflineBeforeReset;
-	private int offlineMultiplierBehavior;
-	private int withdrawalMultiplierBehavior;
+	private int offlineMultiplierDecrement;
+	private int withdrawalMultiplierDecrement;
 	private double accountCreationPrice;
 	private boolean reimburseAccountCreation;
 	private double minBalance;
@@ -31,8 +31,8 @@ public class AccountConfig {
 				Config.countInterestDelayOffline.getValue(),
 				Config.allowedOfflinePayouts.getValue(),
 				Config.allowedOfflineBeforeMultiplierReset.getValue(),
-				Config.offlineMultiplierBehavior.getValue(),
-				Config.withdrawalMultiplierBehavior.getValue(),
+				Config.offlineMultiplierDecrement.getValue(),
+				Config.withdrawalMultiplierDecrement.getValue(),
 				Config.creationPriceAccount.getValue(),
 				Config.reimburseAccountCreation.getValue(),
 				Config.minBalance.getValue(),
@@ -43,9 +43,9 @@ public class AccountConfig {
 	}
 
 	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
-			boolean countInterestDelayOffline, int allowedOffline, int allowedOfflineBeforeReset,
-			int offlineMultiplierBehavior, int withdrawalMultiplierBehavior, double accountCreationPrice,
-			boolean reimburseAccountCreation, double minBalance, double lowBalanceFee, boolean payOnLowBalance, int playerAccountLimit) {
+						 boolean countInterestDelayOffline, int allowedOffline, int allowedOfflineBeforeReset,
+						 int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, double accountCreationPrice,
+						 boolean reimburseAccountCreation, double minBalance, double lowBalanceFee, boolean payOnLowBalance, int playerAccountLimit) {
 
 		this.interestRate = interestRate;
 		this.multipliers = multipliers;
@@ -53,8 +53,8 @@ public class AccountConfig {
 		this.countInterestDelayOffline = countInterestDelayOffline;
 		this.allowedOfflinePayouts = allowedOffline;
 		this.allowedOfflineBeforeReset = allowedOfflineBeforeReset;
-		this.offlineMultiplierBehavior = offlineMultiplierBehavior;
-		this.withdrawalMultiplierBehavior = withdrawalMultiplierBehavior;
+		this.offlineMultiplierDecrement = offlineMultiplierDecrement;
+		this.withdrawalMultiplierDecrement = withdrawalMultiplierDecrement;
 		this.accountCreationPrice = accountCreationPrice;
 		this.reimburseAccountCreation = reimburseAccountCreation;
 		this.minBalance = minBalance;
@@ -78,10 +78,10 @@ public class AccountConfig {
 			return Config.allowedOfflinePayouts.getKey();
 		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
 			return Config.allowedOfflineBeforeMultiplierReset.getKey();
-		case OFFLINE_MULTIPLIER_BEHAVIOR:
-			return Config.offlineMultiplierBehavior.getKey();
-		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
-			return Config.withdrawalMultiplierBehavior.getKey();
+		case OFFLINE_MULTIPLIER_DECREMENT:
+			return Config.offlineMultiplierDecrement.getKey();
+		case WITHDRAWAL_MULTIPLIER_DECREMENT:
+			return Config.withdrawalMultiplierDecrement.getKey();
 		case ACCOUNT_CREATION_PRICE:
 			return Config.creationPriceAccount.getKey();
 		case REIMBURSE_ACCOUNT_CREATION:
@@ -113,10 +113,10 @@ public class AccountConfig {
 			return getAllowedOfflinePayouts(false);
 		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
 			return getAllowedOfflineBeforeReset(false);
-		case OFFLINE_MULTIPLIER_BEHAVIOR:
-			return getOfflineMultiplierBehavior(false);
-		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
-			return getWithdrawalMultiplierBehavior(false);
+		case OFFLINE_MULTIPLIER_DECREMENT:
+			return getOfflineMultiplierDecrement(false);
+		case WITHDRAWAL_MULTIPLIER_DECREMENT:
+			return getWithdrawalMultiplierDecrement(false);
 		case ACCOUNT_CREATION_PRICE:
 			return getAccountCreationPrice(false);
 		case REIMBURSE_ACCOUNT_CREATION:
@@ -164,11 +164,11 @@ public class AccountConfig {
 		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
 			allowedOfflineBeforeReset = Integer.parseInt(s);
 			break;
-		case OFFLINE_MULTIPLIER_BEHAVIOR:
-			offlineMultiplierBehavior = Integer.parseInt(s);
+		case OFFLINE_MULTIPLIER_DECREMENT:
+			offlineMultiplierDecrement = Integer.parseInt(s);
 			break;
-		case WITHDRAWAL_MULTIPLIER_BEHAVIOR:
-			withdrawalMultiplierBehavior = Integer.parseInt(s);
+		case WITHDRAWAL_MULTIPLIER_DECREMENT:
+			withdrawalMultiplierDecrement = Integer.parseInt(s);
 			break;
 		case ACCOUNT_CREATION_PRICE:
 			accountCreationPrice = Double.parseDouble(s.replace(",", ""));
@@ -242,18 +242,18 @@ public class AccountConfig {
 			return Config.allowedOfflineBeforeMultiplierReset.getKey() ? allowedOfflineBeforeReset : Config.allowedOfflineBeforeMultiplierReset.getValue();
 	}
 
-	public int getOfflineMultiplierBehavior(boolean ignoreConfig) {
+	public int getOfflineMultiplierDecrement(boolean ignoreConfig) {
 		if (ignoreConfig)
-			return offlineMultiplierBehavior;
+			return offlineMultiplierDecrement;
 		else
-			return Config.offlineMultiplierBehavior.getKey() ? offlineMultiplierBehavior : Config.offlineMultiplierBehavior.getValue();
+			return Config.offlineMultiplierDecrement.getKey() ? offlineMultiplierDecrement : Config.offlineMultiplierDecrement.getValue();
 	}
 
-	public int getWithdrawalMultiplierBehavior(boolean ignoreConfig) {
+	public int getWithdrawalMultiplierDecrement(boolean ignoreConfig) {
 		if (ignoreConfig)
-			return withdrawalMultiplierBehavior;
+			return withdrawalMultiplierDecrement;
 		else
-			return Config.withdrawalMultiplierBehavior.getKey() ? withdrawalMultiplierBehavior : Config.withdrawalMultiplierBehavior.getValue();
+			return Config.withdrawalMultiplierDecrement.getKey() ? withdrawalMultiplierDecrement : Config.withdrawalMultiplierDecrement.getValue();
 	}
 
 	public double getAccountCreationPrice(boolean ignoreConfig) {
@@ -312,8 +312,8 @@ public class AccountConfig {
 		COUNT_INTEREST_DELAY_OFFLINE ("count-interest-delay-offline", 2), 
 		ALLOWED_OFFLINE_PAYOUTS ("allowed-offline-payouts", 1),
 		ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET ("allowed-offline-payouts-before-multiplier-reset", 1),
-		OFFLINE_MULTIPLIER_BEHAVIOR ("offline-multiplier-behavior", 1), 
-		WITHDRAWAL_MULTIPLIER_BEHAVIOR ("withdrawal-multiplier-behavior", 1),
+		OFFLINE_MULTIPLIER_DECREMENT ("offline-multiplier-decrement", 1),
+		WITHDRAWAL_MULTIPLIER_DECREMENT ("withdrawal-multiplier-decrement", 1),
 		ACCOUNT_CREATION_PRICE ("account-creation-price", 0), 
 		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation", 2), 
 		MINIMUM_BALANCE ("min-balance", 0), 

@@ -70,13 +70,13 @@ public class Messages {
 	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or specify the name of a bank.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account at this bank.";
 	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found under the identifier \"%s\".";
-	public static final String NO_ACCOUNTS_FOUND = ChatColor.RED + "No accounts found!";
+	public static final String NO_ACCOUNTS_FOUND = ChatColor.RED + "There are no accounts to list.";
 	public static final String NO_PLAYER_ACCOUNTS = ChatColor.RED + "That player does not own any accounts.";
 	public static final String NO_BANK_ACCOUNTS = ChatColor.RED + "There are no accounts at that bank.";
-	public static final String NO_BANKS = ChatColor.RED + "There are no banks to list.";
+	public static final String NO_BANKS_FOUND = ChatColor.RED + "There are no banks to list.";
 	public static final String NO_SELECTION_FOUND = ChatColor.RED + "Select a WorldEdit region first.";
 	public static final String COORDINATES_PARSE_ERROR = ChatColor.RED + "Invalid coordinates.";
-	public static final String SELECTION_NOT_EXCLUSIVE = ChatColor.RED + "Your selection overlaps with another bank.";
+	public static final String SELECTION_OVERLAPS_EXISTING = ChatColor.RED + "Your selection overlaps with another bank.";
 	public static final String SELECTION_CUTS_ACCOUNTS = ChatColor.RED + "Your selection does not contain all accounts at this bank.";
 	public static final String WORLDEDIT_NOT_ENABLED = ChatColor.RED + "WorldEdit is not currently enabled. Please enter coordinates manually.";
 	public static final String ALREADY_ADMIN_BANK = ChatColor.RED + "That bank is already an admin bank.";
@@ -91,7 +91,7 @@ public class Messages {
 	public static final String NOT_A_BOOLEAN = ChatColor.RED + "\"%s\" is not a boolean value!";
 	public static final String NOT_A_FIELD = ChatColor.RED + "\"%s\" is not a valid field!";
 	public static final String NOT_A_LIST = ChatColor.RED + "\"%s\" is not a parsable list!";
-	public static final String ERROR_OCCURRED = ChatColor.DARK_RED + "An error occurred! ";
+	public static final String ERROR_OCCURRED = ChatColor.RED + "An error occurred! ";
 	public static final String PLAYER_NOT_FOUND = ChatColor.RED + "No player was found under the name \"%s\".";
 	public static final String BANK_LIMIT_REACHED = "You are not allowed to create any more banks!";
 	public static final String ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create any more accounts!";

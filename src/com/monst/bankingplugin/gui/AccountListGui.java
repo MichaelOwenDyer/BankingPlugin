@@ -11,61 +11,82 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.mask.BinaryMask;
 import org.ipvp.canvas.mask.Mask;
 import org.ipvp.canvas.paginate.PaginatedMenuBuilder;
-import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.slot.SlotSettings;
 import org.ipvp.canvas.template.ItemStackTemplate;
 import org.ipvp.canvas.template.StaticItemTemplate;
 import org.ipvp.canvas.type.ChestMenu;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 public class AccountListGui extends Gui<Bank> {
 
     private static final Material NEXT_BUTTON = Material.ARROW;
     private static final Material PREVIOUS_BUTTON = Material.ARROW;
 
+    private int page = 0;
+
     public AccountListGui(Bank bank) {
-        super(bank);
+        super(BankingPlugin.getInstance(), bank);
     }
 
     @Override
     public void open(Player player) {
-        getPaginatedMenu().stream().map(menu -> {
-            if (prevGui != null) {
-                menu.setCloseHandler((player1, menu1) -> {
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            prevGui.open(player);
-                        }
-                    }.runTaskLater(BankingPlugin.getInstance(), 1);
-                });
-            }
-            return menu;
-        }).findFirst().ifPresent(menu -> {
-            menu.open(player);
-        });
+        ArrayList<Menu> pages = getPaginatedMenu();
+        if (pages.isEmpty())
+            return;
+        for (Menu menu : pages)
+            menu.setCloseHandler((player1, menu1) -> new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (prevGui != null && !openInBackground) {
+                        prevGui.openInBackground = false;
+                        prevGui.open(player);
+                    }
+                }
+            }.runTaskLater(plugin, 0));
+        pages.get(page).open(player);
     }
 
-    private List<Menu> getPaginatedMenu() {
+    private ArrayList<Menu> getPaginatedMenu() {
         Menu.Builder pageTemplate = ChestMenu.builder(3).title("Account List").redraw(true);
         Mask itemSlots = BinaryMask.builder(pageTemplate.getDimensions())
+                .pattern("010101010")
+                .pattern("101010101")
                 .pattern("010101010").build();
+        int prevButtonSlot = 18;
+        int nextButtonSlot = 26;
         PaginatedMenuBuilder builder = PaginatedMenuBuilder.builder(pageTemplate)
                 .slots(itemSlots)
-                .previousButton(Gui.createSlotItem(NEXT_BUTTON, "Next Page", Collections.emptyList()))
-                .previousButtonSlot(18)
-                .nextButton(Gui.createSlotItem(PREVIOUS_BUTTON, "Previous Page", Collections.emptyList()))
-                .nextButtonSlot(26);
+                .previousButton(createSlotItem(PREVIOUS_BUTTON, "Previous Page", Collections.emptyList()))
+                .previousButtonSlot(prevButtonSlot)
+                .nextButton(createSlotItem(NEXT_BUTTON, "Next Page", Collections.emptyList()))
+                .nextButtonSlot(nextButtonSlot);
         for (Account account : guiSubject.getAccounts()) {
-            ItemStack item = Gui.createSlotItem(Material.CHEST, account.getColorizedName(), Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
+            ItemStack item = createSlotItem(Material.CHEST, account.getColorizedName(), Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
             ItemStackTemplate template = new StaticItemTemplate(item);
             Slot.ClickHandler clickHandler = (player, info) -> new AccountGui(account).setPrevGui(this).open(player);
-            builder.addItem(SlotSettings.builder().clickOptions(ClickOptions.DENY_ALL).itemTemplate(template).clickHandler(clickHandler).build());
+            builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
         }
-        return builder.build();
+        ArrayList<Menu> pages = (ArrayList<Menu>) builder.build();
+        for (Menu menu : pages) {
+            Slot prevSlot = menu.getSlot(prevButtonSlot);
+            Slot.ClickHandler prevHandler = prevSlot.getClickHandler().orElse(null);
+            prevSlot.setClickHandler((player, info) -> {
+                if (prevHandler != null)
+                    prevHandler.click(player, info);
+                page--;
+            });
+            Slot nextSlot = menu.getSlot(nextButtonSlot);
+            Slot.ClickHandler nextHandler = nextSlot.getClickHandler().orElse(null);
+            nextSlot.setClickHandler((player, info) -> {
+                if (nextHandler != null)
+                    nextHandler.click(player, info);
+                page++;
+            });
+        }
+        return pages;
     }
 
     @Override
@@ -74,7 +95,7 @@ public class AccountListGui extends Gui<Bank> {
     }
 
     @Override
-    void getClearance(Player player) {
+    void evaluateClearance(Player player) {
     }
 
     @Override
