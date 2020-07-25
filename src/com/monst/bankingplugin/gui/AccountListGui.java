@@ -16,14 +16,16 @@ import org.ipvp.canvas.template.ItemStackTemplate;
 import org.ipvp.canvas.template.StaticItemTemplate;
 import org.ipvp.canvas.type.ChestMenu;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class AccountListGui extends Gui<Bank> {
 
     private List<Menu> pages;
-    private int page = 0;
+    private int currentPage = 0;
+
+    private final int prevButtonSlot = 18;
+    private final int nextButtonSlot = 26;
 
     public AccountListGui(Bank bank) {
         super(BankingPlugin.getInstance(), bank);
@@ -32,22 +34,22 @@ public class AccountListGui extends Gui<Bank> {
     @Override
     void open(Player player, boolean update) {
         if (update) {
-            pages = getPaginatedMenu();
+            createMenu();
+            setClickHandler();
             setCloseHandler(CLOSE_HANDLER);
         }
         if (pages.isEmpty())
             return;
-        pages.get(page).open(player);
+        pages.get(currentPage).open(player);
     }
 
-    private ArrayList<Menu> getPaginatedMenu() {
+    @Override
+    void createMenu() {
         Menu.Builder pageTemplate = ChestMenu.builder(3).title("Account List").redraw(true);
         Mask itemSlots = BinaryMask.builder(pageTemplate.getDimensions())
                 .pattern("010101010")
                 .pattern("101010101")
                 .pattern("010101010").build();
-        int prevButtonSlot = 18;
-        int nextButtonSlot = 26;
         PaginatedMenuBuilder builder = PaginatedMenuBuilder.builder(pageTemplate)
                 .slots(itemSlots)
                 .previousButton(createSlotItem(Material.ARROW, "Previous Page", Collections.emptyList()))
@@ -60,29 +62,20 @@ public class AccountListGui extends Gui<Bank> {
             Slot.ClickHandler clickHandler = (player, info) -> new AccountGui(account).setPrevGui(this).open(player);
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
         }
-        ArrayList<Menu> pages = (ArrayList<Menu>) builder.build();
-        for (Menu menu : pages) {
-            Slot prevSlot = menu.getSlot(prevButtonSlot);
-            Slot.ClickHandler prevHandler = prevSlot.getClickHandler().orElse(null);
-            if (prevHandler != null)
-                prevSlot.setClickHandler((player, info) -> {
-                    prevHandler.click(player, info);
-                    page--;
-                });
-            Slot nextSlot = menu.getSlot(nextButtonSlot);
-            Slot.ClickHandler nextHandler = nextSlot.getClickHandler().orElse(null);
-            if (nextHandler != null)
-                nextSlot.setClickHandler((player, info) -> {
-                    nextHandler.click(player, info);
-                    page++;
-                });
-        }
-        return pages;
+        pages = builder.build();
     }
 
-    @Override
-    Menu getMenu() {
-        return null;
+    private void setClickHandler() {
+        for (Menu page : pages) {
+            for (Slot slot : new Slot[]{page.getSlot(prevButtonSlot), page.getSlot(nextButtonSlot)}) {
+                Slot.ClickHandler prevHandler = slot.getClickHandler().orElse(null);
+                if (prevHandler != null)
+                    slot.setClickHandler((player, info) -> {
+                        prevHandler.click(player, info);
+                        currentPage--;
+                    });
+            }
+        }
     }
 
     @Override

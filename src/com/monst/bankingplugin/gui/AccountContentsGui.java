@@ -20,12 +20,13 @@ public class AccountContentsGui extends Gui<Account> {
     }
 
     @Override
-    Menu getMenu() {
-        return ChestMenu.builder(guiSubject.getChestSize() * 3).title(guiSubject.getColorizedName()).build();
+    void createMenu() {
+        menu = ChestMenu.builder(guiSubject.getChestSize() * 3).title(guiSubject.getColorizedName()).redraw(true).build();
     }
 
     @Override
     void evaluateClearance(Player player) {
+        guiSubject.updateInventory(); // Must call this before reading from the inventory later
         canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
     }
 
@@ -45,7 +46,7 @@ public class AccountContentsGui extends Gui<Account> {
             }
         }
         return null;
-        /*if (highClearance)
+        /*if (canEdit)
             gui.getSlot(i).setClickOptions(ClickOptions.ALLOW_ALL);
         return (player, info) -> {
             ItemStack item = gui.getSlot(i).getItem(player);
@@ -81,8 +82,8 @@ public class AccountContentsGui extends Gui<Account> {
         }
 
         @Override
-        Menu getMenu() {
-            return ChestMenu.builder(3).title(shulkerBox.getCustomName()).build();
+        void createMenu() {
+            menu = ChestMenu.builder(3).title(shulkerBox.getCustomName()).redraw(true).build();
         }
 
         @Override

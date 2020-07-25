@@ -30,8 +30,8 @@ public class BankGui extends Gui<Bank> {
 	}
 
 	@Override
-	Menu getMenu() {
-		return ChestMenu.builder(2).title(guiSubject.getColorizedName()).build();
+	void createMenu() {
+		menu = ChestMenu.builder(2).title(guiSubject.getColorizedName()).build();
 	}
 
 	@Override

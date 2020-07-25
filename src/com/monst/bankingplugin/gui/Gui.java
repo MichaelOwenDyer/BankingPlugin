@@ -5,7 +5,6 @@ import com.monst.bankingplugin.utils.Ownable;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.block.Skull;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -50,7 +49,7 @@ abstract class Gui<T extends Ownable> {
 
 	void open(Player player, boolean update) {
 		if (update) {
-			menu = getMenu();
+			createMenu();
 			setCloseHandler(CLOSE_HANDLER);
 			shortenGuiChain(prevGui);
 		}
@@ -70,7 +69,7 @@ abstract class Gui<T extends Ownable> {
 		return this;
 	}
 
-	abstract Menu getMenu();
+	abstract void createMenu();
 
 	abstract void evaluateClearance(Player player);
 

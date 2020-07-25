@@ -32,8 +32,8 @@ public class AccountGui extends Gui<Account> {
 	}
 
 	@Override
-	Menu getMenu() {
-		return ChestMenu.builder(1).title(guiSubject.getColorizedName()).build();
+	void createMenu() {
+		menu = ChestMenu.builder(1).title(guiSubject.getColorizedName()).build();
 	}
 
 	@Override
