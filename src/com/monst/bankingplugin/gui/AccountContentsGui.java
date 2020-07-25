@@ -9,11 +9,11 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.type.ChestMenu;
 
-public class ChestMirrorGui extends Gui<Account> {
+public class AccountContentsGui extends Gui<Account> {
 
     boolean canEdit;
 
-    public ChestMirrorGui(Account account) {
+    public AccountContentsGui(Account account) {
         super(BankingPlugin.getInstance(), account);
     }
 
@@ -50,5 +50,10 @@ public class ChestMirrorGui extends Gui<Account> {
                 chest.update();
             }
         };*/
+    }
+
+    @Override
+    GuiType getType() {
+        return GuiType.ACCOUNT_CONTENTS;
     }
 }

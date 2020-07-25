@@ -107,4 +107,9 @@ public class AccountListGui extends Gui<Bank> {
     Slot.ClickHandler createClickHandler(int i) {
         return null;
     }
+
+    @Override
+    GuiType getType() {
+        return GuiType.ACCOUNT_LIST;
+    }
 }

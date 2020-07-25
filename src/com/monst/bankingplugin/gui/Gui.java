@@ -48,6 +48,7 @@ abstract class Gui<T extends Ownable> {
 			menu.getSlot(i).setItem(createSlotItem(i));
 			menu.getSlot(i).setClickHandler(createClickHandler(i));
 		}
+		shortenGuiChain(prevMenu, 0);
 		menu.open(player);
 	}
 
@@ -66,6 +67,8 @@ abstract class Gui<T extends Ownable> {
 
 	abstract ClickHandler createClickHandler(int i);
 
+	abstract GuiType getType();
+
 	static ItemStack createSlotItem(Material material, String displayName, List<String> lore) {
 		ItemStack item = new ItemStack(material);
 		ItemMeta itemMeta = item.getItemMeta();
@@ -79,5 +82,26 @@ abstract class Gui<T extends Ownable> {
 
 	static ItemStack createSlotItem(OfflinePlayer owner, String displayName, List<String> lore) {
 		return null; // TODO: Use for generating custom player heads in GUI
+	}
+
+	/**
+	 * Descends down the list of previous open menus, and severs the link when it
+	 * finds a certain number of the same type as the current menu. This prevents the menu chain
+	 * from becoming uncontrollably long.
+	 * @param menu The menu to compare to the current one
+	 */
+	private void shortenGuiChain(Gui<T> menu, int count) {
+		if (menu == null)
+			return;
+		if (menu.getType() == this.getType())
+			count++;
+		if (count >= 2)
+			menu = null;
+		else
+			shortenGuiChain(menu.prevMenu, count);
+	}
+
+	enum GuiType {
+		ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, BANK
 	}
 }

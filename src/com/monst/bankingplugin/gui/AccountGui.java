@@ -73,18 +73,21 @@ public class AccountGui extends Gui<Account> {
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
 			case 1:
-				return (player, info) -> {
-					new BankGui(guiSubject.getBank()).setPrevMenu(this).open(player);
-				};
+				return (player, info) -> new BankGui(guiSubject.getBank()).setPrevMenu(this).open(player);
 			case 8:
 				return (player, info) -> {
 					if (isTrusted)
-						new ChestMirrorGui(guiSubject).setPrevMenu(this).open(player);
+						new AccountContentsGui(guiSubject).setPrevMenu(this).open(player);
 				};
 			default:
 				return (player, info) -> {
 				};
 		}
+	}
+
+	@Override
+	GuiType getType() {
+		return GuiType.ACCOUNT;
 	}
 
 	private List<String> getGeneralInfoLore() {

@@ -87,6 +87,11 @@ public class BankGui extends Gui<Bank> {
 		}
 	}
 
+	@Override
+	GuiType getType() {
+		return GuiType.BANK;
+	}
+
 	private List<String> getGeneralInfoLore() {
 		return Arrays.asList(
 				"Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName(),
