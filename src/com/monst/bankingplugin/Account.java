@@ -218,22 +218,18 @@ public class Account extends Ownable implements Nameable {
 		return location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
 	}
 
-	private void updateInventory() throws ChestNotFoundException {
+	public void updateInventory() {
 		Block b = getLocation().getBlock();
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
-			throw new ChestNotFoundException(String.format("No chest found in world '%s' at location: %d; %d; %d",
-					b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
+			plugin.debug(new ChestNotFoundException(String.format("No chest found in world '%s' at location: %d; %d; %d",
+					b.getWorld().getName(), b.getX(), b.getY(), b.getZ())));
 		Chest chest = (Chest) b.getState();
 		inventoryHolder = chest.getInventory().getHolder();
 	}
 
-	public InventoryHolder getInventoryHolder() {
-		try {
+	public InventoryHolder getInventoryHolder(boolean update) {
+		if (update)
 			updateInventory();
-		} catch (ChestNotFoundException e) {
-			plugin.debug(e);
-			return null;
-		}
 		return inventoryHolder;
 	}
 	

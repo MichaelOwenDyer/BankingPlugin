@@ -95,7 +95,7 @@ public class AccountUtils {
      * @param callback Callback that - if succeeded - returns the ID the account had or was given (as {@code int})
      */
     public void addAccount(Account account, boolean addToDatabase, Callback<Integer> callback) {
-        InventoryHolder ih = account.getInventoryHolder();
+        InventoryHolder ih = account.getInventoryHolder(true);
         plugin.debug("Adding account... (#" + account.getID() + ")");
 
         if (ih instanceof DoubleChest) {
@@ -141,7 +141,7 @@ public class AccountUtils {
 
 		account.clearChestName();
 
-        InventoryHolder ih = account.getInventoryHolder();
+        InventoryHolder ih = account.getInventoryHolder(true);
 
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
@@ -230,7 +230,7 @@ public class AccountUtils {
 		plugin.debug("Appraising account contents... (#" + account.getID() + ")");
 
 		BigDecimal sum = BigDecimal.ZERO;
-		for (ItemStack item : account.getInventoryHolder().getInventory().getContents()) {
+		for (ItemStack item : account.getInventoryHolder(true).getInventory().getContents()) {
 			if (item == null)
 				continue;
 			if (Config.blacklist.contains(item.getType().toString()))

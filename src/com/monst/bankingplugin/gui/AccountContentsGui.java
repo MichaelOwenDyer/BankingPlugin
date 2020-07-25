@@ -31,12 +31,12 @@ public class AccountContentsGui extends Gui<Account> {
 
     @Override
     ItemStack createSlotItem(int i) {
-        return guiSubject.getInventoryHolder().getInventory().getItem(i);
+        return guiSubject.getInventoryHolder(false).getInventory().getItem(i);
     }
 
     @Override
     Slot.ClickHandler createClickHandler(int i) {
-        ItemStack item = guiSubject.getInventoryHolder().getInventory().getItem(i);
+        ItemStack item = guiSubject.getInventoryHolder(false).getInventory().getItem(i);
         if (item != null && item.getItemMeta() instanceof BlockStateMeta) {
             BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
             if (im.getBlockState() instanceof ShulkerBox) {

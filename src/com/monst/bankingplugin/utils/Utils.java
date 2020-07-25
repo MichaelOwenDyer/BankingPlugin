@@ -434,7 +434,7 @@ public class Utils {
      */
     public static Set<Location> getChestLocations(Account account) {
         Set<Location> chestLocations = new HashSet<>();
-        InventoryHolder ih = account.getInventoryHolder();
+        InventoryHolder ih = account.getInventoryHolder(true);
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
             chestLocations.add(((Chest) dc.getLeftSide()).getLocation());
