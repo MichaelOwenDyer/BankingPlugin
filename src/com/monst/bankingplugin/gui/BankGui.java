@@ -52,18 +52,18 @@ public class BankGui extends Gui<Bank> {
 			case 0:
 				if (guiSubject.isPlayerBank())
 					return createSlotItem(guiSubject.getOwner(), "General Information", getGeneralInfoLore());
-				return createSlotItem(GENERAL_INFO_BLOCK, "General Information", getGeneralInfoLore());
+				return createSlotItem(Material.PLAYER_HEAD, "General Information", getGeneralInfoLore());
 			case 4:
 				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
 			case 8:
-				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
-					return createSlotItem(Material.CHEST, "Account List", Collections.singletonList("Click here to view accounts."));
-				return createSlotItem(Material.CHEST, "Account List", Collections.singletonList(
-						canListAccounts ? "There are no accounts at this bank." : "You do not have permission to view this."));
+				if (canListAccounts)
+					return createSlotItem(Material.CHEST, "Account List", Collections.singletonList(guiSubject
+							.getAccounts().isEmpty() ? "There are no accounts at this bank." : "Click here to view accounts."));
+				return createSlotItem(Material.CHEST, "Account List", NO_PERMISSION);
 			case 9:
 				return createSlotItem(Material.ENCHANTED_BOOK, "Account Creation", getCreationLore());
 			case 10:
-				return createSlotItem(MULTIPLIER_INFO_BLOCK, "Multipliers", Utils.getMultiplierLore(guiSubject));
+				return createSlotItem(Material.NETHER_STAR, "Multipliers", Utils.getMultiplierLore(guiSubject));
 			case 11:
 				return createSlotItem(Material.IRON_BARS, "Balance Restrictions", getBalanceRestrictionLore());
 			case 12:
@@ -72,10 +72,11 @@ public class BankGui extends Gui<Bank> {
 				return createSlotItem(Material.CLOCK, "Interest Delay", getInterestDelayLore());
 			case 14:
 				return createSlotItem(Material.BELL, "Withdrawal Policy", getWithdrawalPolicyLore());
+			case 15:
+				return createSlotItem(Material.TOTEM_OF_UNDYING, "Account Limit", getAccountLimitLore());
 			default:
 				return new ItemStack(Material.AIR);
 		}
-		// return new ItemStack(Material.AIR);
 	}
 
 	@Override
@@ -136,11 +137,14 @@ public class BankGui extends Gui<Bank> {
 		AccountConfig config = guiSubject.getAccountConfig();
 		double minBalance = config.getMinBalance(false);
 		double lowBalanceFee = config.getLowBalanceFee(false);
-		boolean strikethrough = minBalance == 0;
+		boolean strikethrough = minBalance == 0; // TODO: When minbalance is set make sure >=0
+		boolean payOnLowBalance = config.isPayOnLowBalance(false);
 		return Arrays.asList(
 				"Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBalance),
 				"Low balance fee: " + ChatColor.RED
-						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.formatNumber(lowBalanceFee)
+						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.formatNumber(lowBalanceFee),
+				"Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
+						+ " continue to be paid out when the account balance is low."
 		);
 	}
 
@@ -178,6 +182,14 @@ public class BankGui extends Gui<Bank> {
 				"Account multipliers will " + (withdrawalDecrement == 0 ? "not be affected" : "decrease by "
 						+ ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY
 						+ String.format("stage%s", withdrawalDecrement == 1 ? "" : "s")) + " on withdrawal."
+		);
+	}
+
+	private List<String> getAccountLimitLore() {
+		int accountLimit = guiSubject.getAccountConfig().getPlayerAccountLimit(false);
+		return Collections.singletonList(
+				"Players may " + (accountLimit == 0 ? "not " : "") + "create " + (accountLimit > 0 ? "up to "
+						+ ChatColor.AQUA + accountLimit + ChatColor.GRAY : "") + " accounts at this bank."
 		);
 	}
 }

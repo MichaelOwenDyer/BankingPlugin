@@ -50,27 +50,26 @@ public class AccountGui extends Gui<Account> {
 			case 1:
 				if (guiSubject.getBank().isPlayerBank())
 					return createSlotItem(guiSubject.getBank().getOwner(), "Bank Information", getBankInfoLore());
-				return createSlotItem(GENERAL_INFO_BLOCK, "Bank Information", getBankInfoLore());
+				return createSlotItem(Material.PLAYER_HEAD, "Bank Information", getBankInfoLore());
 			case 3:
 				if (isTrusted)
-					return createSlotItem(ACCOUNT_BALANCE_BLOCK, "Account Standing", getBalanceLore());
-				return createSlotItem(Material.BRICK, "Account Standing", Collections.singletonList("You do not have permission to view this."));
+					return createSlotItem(Material.GOLD_INGOT, "Account Standing", getBalanceLore());
+				return createSlotItem(Material.BRICK, "Account Standing", NO_PERMISSION);
 			case 4:
 				if (isTrusted)
-					return createSlotItem(MULTIPLIER_INFO_BLOCK, "Current Multiplier", Utils.getMultiplierLore(guiSubject));
-				return createSlotItem(MULTIPLIER_INFO_BLOCK, "Multipliers", Utils.getMultiplierLore(guiSubject.getBank()));
+					return createSlotItem(Material.NETHER_STAR, "Current Multiplier", Utils.getMultiplierLore(guiSubject));
+				return createSlotItem(Material.NETHER_STAR, "Multipliers", Utils.getMultiplierLore(guiSubject.getBank()));
 			case 5:
 				if (isTrusted)
 					return createSlotItem(Material.IRON_BARS, "Account Restrictions", getAccountRestrictionsLore());
-				return createSlotItem(Material.IRON_BARS, "Account Restrictions", Collections.singletonList("You do not have permission to view this."));
+				return createSlotItem(Material.IRON_BARS, "Account Restrictions", NO_PERMISSION);
 			case 8:
 				if (isTrusted)
 					return createSlotItem(Material.CHEST, "Account Contents", Collections.singletonList("Click to view account contents."));
-				return createSlotItem(Material.CHEST, "Account Contents", Collections.singletonList("You do not have permission to view this."));
+				return createSlotItem(Material.CHEST, "Account Contents", NO_PERMISSION);
 			default:
 				return new ItemStack(Material.AIR);
 		}
-		// return new ItemStack(Material.AIR);
 	}
 
 	@Override

@@ -608,6 +608,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		Bank bank;
+		boolean standingInBank = true;
 		String fieldName;
 		String value;
 
@@ -616,13 +617,22 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			fieldName = args[1];
 			value = args[2];
 		} else {
+			if (args[1].equalsIgnoreCase("multipliers")) {
+				bank = bankUtils.getBank(((Player) sender).getLocation());
+				fieldName = args[1];
+				StringBuilder sb = new StringBuilder(args[2]);
+				for (int i = 3; i < args.length; i++)
+					sb.append(" ").append(args[i]);
+				value = sb.toString();
+			}
 			bank = bankUtils.lookupBank(args[1]);
+			standingInBank = false;
 			fieldName = args[2];
 			value = args[3];
 		}
 
 		if (bank == null) {
-			if (args.length == 3) {
+			if (standingInBank) {
 				plugin.debug(sender.getName() + " was not standing in a bank");
 				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
 				return true;
@@ -654,46 +664,42 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 		
-		if (field == Field.MULTIPLIERS) {
-			StringBuilder sb = new StringBuilder(value);
-			for (int i = 4; i < args.length; i++)
-				sb.append(" ").append(args[i]);
-			value = sb.toString();
-		}
-		
-		try {
-			if (config.setField(field, value)) {
-				if (field.getDataType() == 0)
-					value = Utils.formatNumber(Double.parseDouble(value.replace(",", "")));
-				else if (field.getDataType() == 3)
-					value = Utils.formatList(value);
-				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, field.getName(), value, bank.getName()));
-			} else
-				sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
-		} catch (NumberFormatException e) {
-			switch (field.getDataType()) {
-			case 0:
-				plugin.debug("Failed to parse double: " + value);
-				sender.sendMessage(String.format(Messages.NOT_A_NUMBER, value));
-				break;
-			case 1:
-				plugin.debug("Failed to parse integer: " + value);
-				sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, value));
-				break;
-			case 2:
-				plugin.debug("Failed to parse boolean: " + value);
-				sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, value));
-				break;
-			case 3:
-				plugin.debug("Failed to parse list: " + value);
-				sender.sendMessage(String.format(Messages.NOT_A_LIST, value));
-				break;
+
+		Bank finalBank = bank;
+		String finalValue = value;
+		Callback<String> callback = new Callback<String>(plugin) {
+			@Override
+			public void onResult(String result) {
+				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, field.getName(), result, finalBank.getName()));
+				plugin.debug(sender.getName() + " has set " + field.getName() + " at " + finalBank.getName() + " to " + result);
+
 			}
-			return true;
-		}
+			@Override
+			public void onError(Throwable throwable) {
+				switch (field.getDataType()) {
+					case 0:
+						plugin.debug("Failed to parse double: " + finalValue);
+						sender.sendMessage(String.format(Messages.NOT_A_NUMBER, finalValue));
+						break;
+					case 1:
+						plugin.debug("Failed to parse integer: " + finalValue);
+						sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, finalValue));
+						break;
+					case 2:
+						plugin.debug("Failed to parse boolean: " + finalValue);
+						sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, finalValue));
+						break;
+					case 3:
+						plugin.debug("Failed to parse list: " + finalValue);
+						sender.sendMessage(String.format(Messages.NOT_A_LIST, finalValue));
+						break;
+				}
+			}
+		};
+		if (!config.setField(field, value, callback))
+			sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
 
 		bankUtils.addBank(bank, true);
-		plugin.debug(sender.getName() + " has set " + field.getName() + " at " + bank.getName() + " to " + value);
 		return true;
 	}
 

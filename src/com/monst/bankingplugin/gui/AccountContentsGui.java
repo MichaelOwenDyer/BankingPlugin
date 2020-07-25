@@ -3,8 +3,10 @@ package com.monst.bankingplugin.gui;
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Permissions;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.type.ChestMenu;
@@ -34,6 +36,14 @@ public class AccountContentsGui extends Gui<Account> {
 
     @Override
     Slot.ClickHandler createClickHandler(int i) {
+        ItemStack item = guiSubject.getInventoryHolder().getInventory().getItem(i);
+        if (item != null && item.getItemMeta() instanceof BlockStateMeta) {
+            BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
+            if (im.getBlockState() instanceof ShulkerBox) {
+                ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
+                return (player, info) -> new ShulkerContentsGui(guiSubject, shulkerBox).setPrevGui(this).open(player);
+            }
+        }
         return null;
         /*if (highClearance)
             gui.getSlot(i).setClickOptions(ClickOptions.ALLOW_ALL);
@@ -59,5 +69,31 @@ public class AccountContentsGui extends Gui<Account> {
     @Override
     GuiType getType() {
         return GuiType.ACCOUNT_CONTENTS;
+    }
+
+    class ShulkerContentsGui extends AccountContentsGui {
+
+        private final ShulkerBox shulkerBox;
+
+        public ShulkerContentsGui(Account account, ShulkerBox shulkerBox) {
+            super(account);
+            this.shulkerBox = shulkerBox;
+        }
+
+        @Override
+        Menu getMenu() {
+            return ChestMenu.builder(3).title(shulkerBox.getCustomName()).build();
+        }
+
+        @Override
+        ItemStack createSlotItem(int i) {
+            return shulkerBox.getInventory().getItem(i);
+        }
+
+        @Override
+        Slot.ClickHandler createClickHandler(int i) {
+            return null;
+        }
+
     }
 }

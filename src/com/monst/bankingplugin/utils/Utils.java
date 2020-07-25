@@ -70,8 +70,8 @@ public class Utils {
 		return list.replaceAll("\\p{Punct}", "");
 	}
 
-	public static String formatList(String list) {
-		return "[" + removePunctuation(list).replace(" ", ", ") + "]";
+	public static String formatList(List<? extends Number> list) {
+		return list.stream().map(String::valueOf).collect(Collectors.joining(", ", "[", "]"));
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -87,11 +87,8 @@ public class Utils {
 
     public static List<String> wordWrapAll(int lineLength, String... args) {
 		ArrayList<String> lines = new ArrayList<>();
-		for (String sentence : args) {
-			String[] wrapped = ChatPaginator.wordWrap(sentence, lineLength);
-			for (String line : wrapped)
-				lines.add(line);
-		}
+		for (String sentence : args)
+			Collections.addAll(lines, ChatPaginator.wordWrap(sentence, lineLength));
 		return lines;
 	}
 
@@ -378,33 +375,7 @@ public class Utils {
 		return "" + color + Math.round(gini * 100) + "% " + assessment;
 	}
 
-	public static TextComponent getEqualityView(Bank bank) {
-		
-		double gini = getGiniCoefficient(bank);
-		TextComponent equalityView = new TextComponent(String.format("%.2f", gini));
-		
-		switch ((int) (gini * 5d)) {
-		case 0:
-			equalityView.setColor(net.md_5.bungee.api.ChatColor.DARK_GREEN);
-			break;
-		case 1:
-			equalityView.setColor(net.md_5.bungee.api.ChatColor.GREEN);
-			break;
-		case 2:
-			equalityView.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
-			break;
-		case 3:
-			equalityView.setColor(net.md_5.bungee.api.ChatColor.RED);
-			break;
-		case 4: case 5:
-			equalityView.setColor(net.md_5.bungee.api.ChatColor.DARK_RED);
-			break;
-		}
-
-		return equalityView;
-	}
-
-    /**
+	/**
      * @param p Player whose item in his main hand should be returned
      * @return {@link ItemStack} in his main hand, or {@code null} if he doesn't hold one
      */

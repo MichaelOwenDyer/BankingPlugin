@@ -23,10 +23,6 @@ import java.util.List;
 public class AccountListGui extends Gui<Bank> {
 
     private List<Menu> pages;
-
-    private static final Material NEXT_BUTTON = Material.ARROW;
-    private static final Material PREVIOUS_BUTTON = Material.ARROW;
-
     private int page = 0;
 
     public AccountListGui(Bank bank) {
@@ -54,9 +50,9 @@ public class AccountListGui extends Gui<Bank> {
         int nextButtonSlot = 26;
         PaginatedMenuBuilder builder = PaginatedMenuBuilder.builder(pageTemplate)
                 .slots(itemSlots)
-                .previousButton(createSlotItem(PREVIOUS_BUTTON, "Previous Page", Collections.emptyList()))
+                .previousButton(createSlotItem(Material.ARROW, "Previous Page", Collections.emptyList()))
                 .previousButtonSlot(prevButtonSlot)
-                .nextButton(createSlotItem(NEXT_BUTTON, "Next Page", Collections.emptyList()))
+                .nextButton(createSlotItem(Material.ARROW, "Next Page", Collections.emptyList()))
                 .nextButtonSlot(nextButtonSlot);
         for (Account account : guiSubject.getAccounts()) {
             ItemStack item = createSlotItem(Material.CHEST, account.getColorizedName(), Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
@@ -68,18 +64,18 @@ public class AccountListGui extends Gui<Bank> {
         for (Menu menu : pages) {
             Slot prevSlot = menu.getSlot(prevButtonSlot);
             Slot.ClickHandler prevHandler = prevSlot.getClickHandler().orElse(null);
-            prevSlot.setClickHandler((player, info) -> {
-                if (prevHandler != null)
+            if (prevHandler != null)
+                prevSlot.setClickHandler((player, info) -> {
                     prevHandler.click(player, info);
-                page--;
-            });
+                    page--;
+                });
             Slot nextSlot = menu.getSlot(nextButtonSlot);
             Slot.ClickHandler nextHandler = nextSlot.getClickHandler().orElse(null);
-            nextSlot.setClickHandler((player, info) -> {
-                if (nextHandler != null)
+            if (nextHandler != null)
+                nextSlot.setClickHandler((player, info) -> {
                     nextHandler.click(player, info);
-                page++;
-            });
+                    page++;
+                });
         }
         return pages;
     }

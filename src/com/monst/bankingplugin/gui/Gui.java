@@ -15,6 +15,7 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ abstract class Gui<T extends Ownable> {
 	Gui<T> prevGui;
 	boolean openInBackground = false;
 
+	final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
 	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) -> new BukkitRunnable() {
 		@Override
 		public void run() {
@@ -36,8 +38,6 @@ abstract class Gui<T extends Ownable> {
 			}
 		}
 	}.runTaskLater(plugin, 0);
-	static final Material GENERAL_INFO_BLOCK = Material.PLAYER_HEAD;
-	static final Material MULTIPLIER_INFO_BLOCK = Material.NETHER_STAR;
 
 	Gui(BankingPlugin plugin, T t) {
 		this.plugin = plugin;

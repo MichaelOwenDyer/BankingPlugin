@@ -135,68 +135,87 @@ public class AccountConfig {
 
 	}
 	
-	public boolean setField(Field field, String s) throws NumberFormatException {
+	public boolean setField(Field field, String s, Callback<String> callback) {
 		
 		if (!isOverrideAllowed(field))
 			return false;
-		
-		switch (field) {
-		
-		case INTEREST_RATE:
-			interestRate = Double.parseDouble(s.replace(",", ""));
-			break;
-		case MULTIPLIERS:
-			multipliers = Arrays.stream(Utils.removePunctuation(s).split(" ")).filter(string -> !string.isEmpty())
-					.map(Integer::parseInt).collect(Collectors.toList());
-			break;
-		case INITIAL_INTEREST_DELAY:
-			initialInterestDelay = Integer.parseInt(s);
-			break;
-		case COUNT_INTEREST_DELAY_OFFLINE:
-			if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
-				countInterestDelayOffline = Boolean.parseBoolean(s);
-			else
-				throw new NumberFormatException();
-			break;
-		case ALLOWED_OFFLINE_PAYOUTS:
-			allowedOfflinePayouts = Integer.parseInt(s);
-			break;
-		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
-			allowedOfflineBeforeReset = Integer.parseInt(s);
-			break;
-		case OFFLINE_MULTIPLIER_DECREMENT:
-			offlineMultiplierDecrement = Integer.parseInt(s);
-			break;
-		case WITHDRAWAL_MULTIPLIER_DECREMENT:
-			withdrawalMultiplierDecrement = Integer.parseInt(s);
-			break;
-		case ACCOUNT_CREATION_PRICE:
-			accountCreationPrice = Double.parseDouble(s.replace(",", ""));
-			break;
-		case REIMBURSE_ACCOUNT_CREATION:
-			if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
-				reimburseAccountCreation = Boolean.parseBoolean(s);
-			else
-				throw new NumberFormatException();
-			break;
-		case MINIMUM_BALANCE:
-			minBalance = Double.parseDouble(s.replace(",", ""));
-			break;
-		case LOW_BALANCE_FEE:
-			lowBalanceFee = Double.parseDouble(s.replace(",", ""));
-			break;
-		case PAY_ON_LOW_BALANCE:
-			if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
-				payOnLowBalance = Boolean.parseBoolean(s);
-			else
-				throw new NumberFormatException();
-			break;
-		case PLAYER_ACCOUNT_LIMIT:
-			playerAccountLimit = Integer.parseInt(s);
-			break;
-		default:
-			return false;
+
+		String result = "";
+		try {
+			switch (field) {
+				case INTEREST_RATE:
+					interestRate = Double.parseDouble(s.replace(",", ""));
+					result = Utils.formatNumber(interestRate);
+					break;
+				case MULTIPLIERS:
+					multipliers = Arrays.stream(Utils.removePunctuation(s).split(" ")).filter(t -> !t.isEmpty())
+							.map(Integer::parseInt).collect(Collectors.toList());
+					result = Utils.formatList(multipliers);
+					break;
+				case INITIAL_INTEREST_DELAY:
+					initialInterestDelay = Math.abs(Integer.parseInt(s));
+					result = "" + initialInterestDelay;
+					break;
+				case COUNT_INTEREST_DELAY_OFFLINE:
+					if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
+						countInterestDelayOffline = Boolean.parseBoolean(s);
+					else
+						throw new NumberFormatException();
+					result = "" + countInterestDelayOffline;
+					break;
+				case ALLOWED_OFFLINE_PAYOUTS:
+					allowedOfflinePayouts = Math.abs(Integer.parseInt(s));
+					result = "" + allowedOfflinePayouts;
+					break;
+				case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
+					allowedOfflineBeforeReset = Math.abs(Integer.parseInt(s));
+					result = "" + allowedOfflineBeforeReset;
+					break;
+				case OFFLINE_MULTIPLIER_DECREMENT:
+					offlineMultiplierDecrement = Math.abs(Integer.parseInt(s));
+					result = "" + offlineMultiplierDecrement;
+					break;
+				case WITHDRAWAL_MULTIPLIER_DECREMENT:
+					withdrawalMultiplierDecrement = Math.abs(Integer.parseInt(s));
+					result = "" + withdrawalMultiplierDecrement;
+					break;
+				case ACCOUNT_CREATION_PRICE:
+					accountCreationPrice = Math.abs(Double.parseDouble(s.replace(",", "")));
+					result = Utils.formatNumber(accountCreationPrice);
+					break;
+				case REIMBURSE_ACCOUNT_CREATION:
+					if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
+						reimburseAccountCreation = Boolean.parseBoolean(s);
+					else
+						throw new NumberFormatException();
+					result = "" + reimburseAccountCreation;
+					break;
+				case MINIMUM_BALANCE:
+					minBalance = Math.abs(Double.parseDouble(s.replace(",", "")));
+					result = Utils.formatNumber(minBalance);
+					break;
+				case LOW_BALANCE_FEE:
+					lowBalanceFee = Math.abs(Double.parseDouble(s.replace(",", "")));
+					result = Utils.formatNumber(lowBalanceFee);
+					break;
+				case PAY_ON_LOW_BALANCE:
+					if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
+						payOnLowBalance = Boolean.parseBoolean(s);
+					else
+						throw new NumberFormatException();
+					result = "" + payOnLowBalance;
+					break;
+				case PLAYER_ACCOUNT_LIMIT:
+					playerAccountLimit = Math.abs(Integer.parseInt(s));
+					result = "" + playerAccountLimit;
+					break;
+				default:
+					return false;
+			}
+		} catch (NumberFormatException e) {
+			callback.callSyncError(e);
 		}
+		callback.callSyncResult(result);
 		return true;
 	}
 
@@ -339,10 +358,6 @@ public class AccountConfig {
 
 		public static Stream<Field> stream() {
 			return Stream.of(Field.values());
-		}
-
-		public static List<String> names() {
-			return stream().map(Field::getName).collect(Collectors.toList());
 		}
 
 		public static Field getByName(String name) {
