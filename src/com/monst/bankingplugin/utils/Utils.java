@@ -21,6 +21,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.ChatPaginator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -79,6 +80,20 @@ public class Utils {
 				|| block.getBlockData() instanceof Slab || block.getBlockData() instanceof Stairs
 				|| block.getType().isTransparent());
     }
+
+    public static List<String> wordWrapAll(String... args) {
+		return wordWrapAll(30, args);
+	}
+
+    public static List<String> wordWrapAll(int lineLength, String... args) {
+		ArrayList<String> lines = new ArrayList<>();
+		for (String sentence : args) {
+			String[] wrapped = ChatPaginator.wordWrap(sentence, lineLength);
+			for (String line : wrapped)
+				lines.add(line);
+		}
+		return lines;
+	}
 
 	private static List<List<Integer>> getStackedList(List<Integer> multipliers) {
 		List<List<Integer>> stackedMultipliers = new ArrayList<>();

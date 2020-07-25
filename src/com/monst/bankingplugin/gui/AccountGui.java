@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.ChatPaginator;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
@@ -137,21 +138,22 @@ public class AccountGui extends Gui<Account> {
 		int remainingOffline = status.getRemainingOfflinePayouts();
 		int untilReset = status.getRemainingOfflineUntilReset();
 		int offlineDecrement = guiSubject.getBank().getAccountConfig().getOfflineMultiplierDecrement(false);
-		return Arrays.asList(
+		return Utils.wordWrapAll(
 				delay == 0
 						? "Account will generate interest in the next payout cycle."
 						: "Account will begin generating interest in " + ChatColor.AQUA + delay + ChatColor.GRAY + String.format(" payout cycle%s.", delay == 1 ? "" : "s"),
+
 				"Account can generate interest for " + ChatColor.AQUA + remainingOffline + ChatColor.GRAY + String.format(" offline payout cycle%s.", remainingOffline == 1 ? "" : "s"),
+
 				"Account multiplier will " + (untilReset < 0
 						? "not reset while offline."
-						: (untilReset == 0
-								? "reset immediately on an offline payout."
-								: "reset after " + ChatColor.AQUA + untilReset + ChatColor.GRAY + String.format(" offline payout cycle%s.", untilReset == 1 ? "" : "s"))),
+						: (untilReset == 0 ? "reset immediately on an offline payout."
+								: "reset after " + ChatColor.AQUA + untilReset + ChatColor.GRAY
+								+ String.format(" offline payout cycle%s.", untilReset == 1 ? "" : "s"))),
+
 				"Account multiplier will " + (offlineDecrement < 0
 						? "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " stages for every offline payout."
-						: (offlineDecrement == 0
-								? " freeze while offline."
-								: " reset"))
+						: (offlineDecrement == 0 ? " freeze while offline." : " reset"))
 		);
 	}
 }
