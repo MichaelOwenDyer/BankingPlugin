@@ -19,8 +19,11 @@ import org.ipvp.canvas.type.ChestMenu;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class AccountListGui extends Gui<Bank> {
+
+    private List<Menu> pages;
 
     private static final Material NEXT_BUTTON = Material.ARROW;
     private static final Material PREVIOUS_BUTTON = Material.ARROW;
@@ -33,19 +36,19 @@ public class AccountListGui extends Gui<Bank> {
 
     @Override
     public void open(Player player) {
-        ArrayList<Menu> pages = getPaginatedMenu();
+        pages = getPaginatedMenu();
         if (pages.isEmpty())
             return;
-        for (Menu menu : pages)
-            menu.setCloseHandler((player1, menu1) -> new BukkitRunnable() {
+        setCloseHandler((player1, menu1) -> new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (prevMenu != null && !openInBackground) {
-                        prevMenu.openInBackground = false;
-                        prevMenu.open(player);
+                    if (prevGui != null && !openInBackground) {
+                        prevGui.openInBackground = false;
+                        prevGui.open(player);
                     }
                 }
-            }.runTaskLater(plugin, 0));
+            }.runTaskLater(plugin, 0)
+        );
         pages.get(page).open(player);
     }
 
@@ -66,7 +69,7 @@ public class AccountListGui extends Gui<Bank> {
         for (Account account : guiSubject.getAccounts()) {
             ItemStack item = createSlotItem(Material.CHEST, account.getColorizedName(), Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
             ItemStackTemplate template = new StaticItemTemplate(item);
-            Slot.ClickHandler clickHandler = (player, info) -> new AccountGui(account).setPrevMenu(this).open(player);
+            Slot.ClickHandler clickHandler = (player, info) -> new AccountGui(account).setPrevGui(this).open(player);
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
         }
         ArrayList<Menu> pages = (ArrayList<Menu>) builder.build();
@@ -106,6 +109,12 @@ public class AccountListGui extends Gui<Bank> {
     @Override
     Slot.ClickHandler createClickHandler(int i) {
         return null;
+    }
+
+    @Override
+    void setCloseHandler(Menu.CloseHandler handler) {
+        for (Menu page : pages)
+            page.setCloseHandler(handler);
     }
 
     @Override

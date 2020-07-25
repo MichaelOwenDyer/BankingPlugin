@@ -34,8 +34,7 @@ public class AccountContentsGui extends Gui<Account> {
 
     @Override
     Slot.ClickHandler createClickHandler(int i) {
-        return (player, info) -> {
-        };
+        return null;
         /*if (highClearance)
             gui.getSlot(i).setClickOptions(ClickOptions.ALLOW_ALL);
         return (player, info) -> {
@@ -50,6 +49,11 @@ public class AccountContentsGui extends Gui<Account> {
                 chest.update();
             }
         };*/
+    }
+
+    @Override
+    void setCloseHandler(Menu.CloseHandler handler) {
+        menu.setCloseHandler(handler);
     }
 
     @Override

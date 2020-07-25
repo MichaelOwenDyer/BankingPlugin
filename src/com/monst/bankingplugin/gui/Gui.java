@@ -13,6 +13,7 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 
 import javax.annotation.Nullable;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,7 @@ abstract class Gui<T extends Ownable> {
 	BankingPlugin plugin;
 	T guiSubject;
 	Menu menu;
-	Gui<T> prevMenu;
+	Gui<T> prevGui;
 	boolean openInBackground = false;
 
 	static final Material GENERAL_INFO_BLOCK = Material.PLAYER_HEAD;
@@ -34,28 +35,30 @@ abstract class Gui<T extends Ownable> {
 
 	public void open(Player player) {
 		menu = getMenu();
-		menu.setCloseHandler((player1, menu1) -> new BukkitRunnable() {
-			@Override
-			public void run() {
-				if (prevMenu != null && !openInBackground) {
-					prevMenu.openInBackground = false;
-					prevMenu.open(player);
+		setCloseHandler((player1, menu1) -> new BukkitRunnable() {
+				@Override
+				public void run() {
+					if (prevGui != null && !openInBackground) {
+						prevGui.openInBackground = false;
+						prevGui.open(player);
+					}
 				}
-			}
-		}.runTaskLater(plugin, 0));
+			}.runTaskLater(plugin, 0)
+		);
 		evaluateClearance(player);
 		for (int i = 0; i < menu.getDimensions().getArea(); i++) {
 			menu.getSlot(i).setItem(createSlotItem(i));
 			menu.getSlot(i).setClickHandler(createClickHandler(i));
 		}
-		shortenGuiChain(prevMenu, 0);
+		shortenGuiChain(prevGui);
 		menu.open(player);
 	}
 
-	public Gui<T> setPrevMenu(@Nullable Gui prevMenu) {
-		if (prevMenu != null)
-			prevMenu.openInBackground = true;
-		this.prevMenu = prevMenu;
+	@SuppressWarnings("rawtypes")
+	public Gui<T> setPrevGui(@Nullable Gui prevGui) {
+		if (prevGui != null)
+			prevGui.openInBackground = true;
+		this.prevGui = prevGui;
 		return this;
 	}
 
@@ -66,6 +69,8 @@ abstract class Gui<T extends Ownable> {
 	abstract ItemStack createSlotItem(int i);
 
 	abstract ClickHandler createClickHandler(int i);
+
+	abstract void setCloseHandler(Menu.CloseHandler handler);
 
 	abstract GuiType getType();
 
@@ -86,19 +91,24 @@ abstract class Gui<T extends Ownable> {
 
 	/**
 	 * Descends down the list of previous open menus, and severs the link when it
-	 * finds a certain number of the same type as the current menu. This prevents the menu chain
+	 * finds a certain number of the same type as the current gui. This prevents the gui chain
 	 * from becoming uncontrollably long.
-	 * @param menu The menu to compare to the current one
+	 * @param gui The gui to compare to the current one
 	 */
-	private void shortenGuiChain(Gui<T> menu, int count) {
-		if (menu == null)
+	private void shortenGuiChain(Gui gui) {
+		shortenGuiChain(gui, EnumSet.noneOf(GuiType.class));
+	}
+
+	private void shortenGuiChain(Gui gui, EnumSet<GuiType> types) {
+		if (gui == null)
 			return;
-		if (menu.getType() == this.getType())
-			count++;
-		if (count >= 2)
-			menu = null;
-		else
-			shortenGuiChain(menu.prevMenu, count);
+		if (!types.contains(gui.getType())) {
+			types.add(gui.getType());
+			shortenGuiChain(gui.prevGui, types);
+		} else {
+			gui.prevGui = null;
+			gui.setCloseHandler(null);
+		}
 	}
 
 	enum GuiType {

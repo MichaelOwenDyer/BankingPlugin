@@ -82,11 +82,16 @@ public class BankGui extends Gui<Bank> {
 			case 8:
 				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
 					return (player, info) -> {
-						new AccountListGui(guiSubject).setPrevMenu(this).open(player);
+						new AccountListGui(guiSubject).setPrevGui(this).open(player);
 					};
 			default:
 				return null;
 		}
+	}
+
+	@Override
+	void setCloseHandler(Menu.CloseHandler handler) {
+		menu.setCloseHandler(handler);
 	}
 
 	@Override
@@ -144,7 +149,7 @@ public class BankGui extends Gui<Bank> {
 		int beforeReset = config.getAllowedOfflineBeforeReset(false);
 		return Utils.wordWrapAll(
 				"Accounts will pay interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
-						+ " times while the account holder is offline.",
+						+ String.format("time%s", offlinePayouts == 1 ? "" : "s") + " while the account holder is offline.",
 				"Account multipliers will be reset after the account holder has been offline for "
 						+ ChatColor.AQUA + beforeReset + ChatColor.GRAY + " interest payouts.",
 				"Account multipliers will " + (offlineDecrement == 0 ? "remain frozen"
@@ -169,8 +174,8 @@ public class BankGui extends Gui<Bank> {
 		int withdrawalDecrement = guiSubject.getAccountConfig().getWithdrawalMultiplierDecrement(false);
 		return Utils.wordWrapAll(
 				"Account multipliers will " + (withdrawalDecrement == 0 ? "not be affected" : "decrease by "
-						+ ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY)
-						+ String.format("stage%s", withdrawalDecrement == 1 ? "" : "s") + " on withdrawal."
+						+ ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY
+						+ String.format("stage%s", withdrawalDecrement == 1 ? "" : "s")) + " on withdrawal."
 		);
 	}
 }

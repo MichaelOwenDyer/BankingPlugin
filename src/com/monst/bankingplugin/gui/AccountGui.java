@@ -12,12 +12,13 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.ChatPaginator;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class AccountGui extends Gui<Account> {
@@ -74,16 +75,20 @@ public class AccountGui extends Gui<Account> {
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
 			case 1:
-				return (player, info) -> new BankGui(guiSubject.getBank()).setPrevMenu(this).open(player);
+				return (player, info) -> new BankGui(guiSubject.getBank()).setPrevGui(this).open(player);
 			case 8:
 				return (player, info) -> {
 					if (isTrusted)
-						new AccountContentsGui(guiSubject).setPrevMenu(this).open(player);
+						new AccountContentsGui(guiSubject).setPrevGui(this).open(player);
 				};
 			default:
-				return (player, info) -> {
-				};
+				return null;
 		}
+	}
+
+	@Override
+	void setCloseHandler(Menu.CloseHandler handler) {
+		menu.setCloseHandler(handler);
 	}
 
 	@Override
