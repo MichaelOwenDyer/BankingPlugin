@@ -260,6 +260,7 @@ class GenericTabCompleter implements TabCompleter {
 		
 		if (args.length == 2) {
 			if (sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation())) {
+				banks.remove(bankUtils.getBank(((Player) sender).getLocation()));
 				if (!args[1].isEmpty()) {
 					for (Field field : fields)
 						if (field.getName().startsWith(args[1].toLowerCase()))

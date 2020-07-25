@@ -6,7 +6,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.mask.BinaryMask;
 import org.ipvp.canvas.mask.Mask;
@@ -35,11 +34,13 @@ public class AccountListGui extends Gui<Bank> {
     }
 
     @Override
-    public void open(Player player) {
-        pages = getPaginatedMenu();
+    void open(Player player, boolean update) {
+        if (update) {
+            pages = getPaginatedMenu();
+            setCloseHandler(CLOSE_HANDLER);
+        }
         if (pages.isEmpty())
             return;
-        setCloseHandler(CLOSE_HANDLER);
         pages.get(page).open(player);
     }
 
