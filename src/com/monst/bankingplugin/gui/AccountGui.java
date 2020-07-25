@@ -46,8 +46,10 @@ public class AccountGui extends Gui<Account> {
 	ItemStack createSlotItem(int i) {
 		switch (i) {
 			case 0:
-				return createSlotItem(GENERAL_INFO_BLOCK, "Account Information", getGeneralInfoLore());
+				return createSlotItem(guiSubject.getOwner(), "Account Information", getGeneralInfoLore());
 			case 1:
+				if (guiSubject.getBank().isPlayerBank())
+					return createSlotItem(guiSubject.getBank().getOwner(), "Bank Information", getBankInfoLore());
 				return createSlotItem(GENERAL_INFO_BLOCK, "Bank Information", getBankInfoLore());
 			case 3:
 				if (isTrusted)

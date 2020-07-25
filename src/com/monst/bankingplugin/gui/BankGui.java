@@ -50,6 +50,8 @@ public class BankGui extends Gui<Bank> {
 	ItemStack createSlotItem(int i) {
 		switch (i) {
 			case 0:
+				if (guiSubject.isPlayerBank())
+					return createSlotItem(guiSubject.getOwner(), "General Information", getGeneralInfoLore());
 				return createSlotItem(GENERAL_INFO_BLOCK, "General Information", getGeneralInfoLore());
 			case 4:
 				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());

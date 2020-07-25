@@ -39,16 +39,7 @@ public class AccountListGui extends Gui<Bank> {
         pages = getPaginatedMenu();
         if (pages.isEmpty())
             return;
-        setCloseHandler((player1, menu1) -> new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (prevGui != null && !openInBackground) {
-                        prevGui.openInBackground = false;
-                        prevGui.open(player);
-                    }
-                }
-            }.runTaskLater(plugin, 0)
-        );
+        setCloseHandler(CLOSE_HANDLER);
         pages.get(page).open(player);
     }
 
