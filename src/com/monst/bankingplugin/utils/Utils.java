@@ -93,28 +93,36 @@ public class Utils {
 		return lines;
 	}
 
-	public static void depositPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {
-		if (amount <= 0 || recipient == null)
-			return;
+	public static boolean depositPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {
+		if (recipient == null)
+			return false;
+		if (amount <= 0)
+			return true;
 
 		Economy economy = BankingPlugin.getInstance().getEconomy();
 		EconomyResponse response = economy.depositPlayer(recipient, worldName, amount);
-		if (response.transactionSuccess())
+		if (response.transactionSuccess()) {
 			callback.callSyncResult(null);
-		else
+			return true;
+		} else
 			callback.callSyncError(new TransactionFailedException(response.errorMessage));
+		return false;
 	}
 
-	public static void withdrawPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {
-		if (amount <= 0 || recipient == null)
-			return;
+	public static boolean withdrawPlayer(OfflinePlayer payer, String worldName, double amount, Callback<Void> callback) {
+		if (payer == null)
+			return false;
+		if (amount <= 0)
+			return true;
 
 		Economy economy = BankingPlugin.getInstance().getEconomy();
-		EconomyResponse response = economy.withdrawPlayer(recipient, worldName, amount);
-		if (response.transactionSuccess())
+		EconomyResponse response = economy.withdrawPlayer(payer, worldName, amount);
+		if (response.transactionSuccess()) {
 			callback.callSyncResult(null);
-		else
+			return true;
+		} else
 			callback.callSyncError(new TransactionFailedException(response.errorMessage));
+		return false;
 	}
 
 	private static List<List<Integer>> getStackedList(List<Integer> multipliers) {

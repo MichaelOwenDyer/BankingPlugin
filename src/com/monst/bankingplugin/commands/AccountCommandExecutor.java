@@ -365,74 +365,74 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 
 		switch (args[1].toLowerCase()) {
 
-		case "nickname":
-			if (p.hasPermission(Permissions.ACCOUNT_CREATE)) {
-				String nickname;
-				if (args.length < 3)
-					nickname = "";
-				else
-					nickname = args[2];
-				if (args.length > 3) {
-					StringBuilder sb = new StringBuilder(nickname);
-					for (int i = 3; i < args.length; i++)
-						sb.append(" ").append(args[i]);
-					nickname = sb.toString();
+			case "nickname":
+				if (!p.hasPermission(Permissions.ACCOUNT_CREATE)) {
+					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
+					return true;
 				}
-				if (!Utils.isAllowedName(args[1])) {
+
+				StringBuilder sb = new StringBuilder(args.length < 3 ? "" : args[2]);
+				for (int i = 3; i < args.length; i++)
+					sb.append(" ").append(args[i]);
+				String nickname = sb.toString();
+
+				if (!Utils.isAllowedName(nickname)) {
 					plugin.debug("Name is not allowed");
 					p.sendMessage(Messages.NAME_NOT_ALLOWED);
 					return true;
 				}
+				ClickType.setPlayerClickType(p,
+						new ClickType.SetClickType(ClickType.SetClickType.SetClickTypeField.NICKNAME, nickname));
 				p.sendMessage(Messages.CLICK_CHEST_SET);
-				ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "nickname", nickname }));
-			} else
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
-			break;
+				break;
 
-		case "multiplier":
-			if (args.length < 3)
-				return false;
-			if (p.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER)) {
+			case "multiplier":
+				if (args.length < 3)
+					return false;
+				if (!p.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER)) {
+					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
+					return true;
+				}
+
 				try {
-					String sign;
-					String multiplier;
-					if (args[2].startsWith("+")) {
-						sign = "+";
-						multiplier = "" + Integer.parseInt(args[2].substring(1));
-					} else if (args[2].startsWith("-")) {
-						sign = "-";
-						multiplier = "" + Integer.parseInt(args[2].substring(1));
-					} else {
-						sign = "";
-						multiplier = "" + Integer.parseInt(args[2]);
-					}
-					p.sendMessage(Messages.CLICK_CHEST_SET);
-					ClickType.setPlayerClickType(p, new ClickType.SetClickType(new String[] { "multiplier", sign, multiplier }));
+					if (args[2].startsWith("+") || args[2].startsWith("-"))
+						Integer.parseInt(args[2].substring(1));
+					else
+						Integer.parseInt(args[2]);
+				} catch (NumberFormatException e) {
+					p.sendMessage(String.format(Messages.NOT_A_NUMBER, args[2]));
+					return true;
+				}
+
+				ClickType.setPlayerClickType(p,
+						new ClickType.SetClickType(ClickType.SetClickType.SetClickTypeField.MULTIPLIER, args[2]));
+				p.sendMessage(Messages.CLICK_CHEST_SET);
+				break;
+
+			case "interest-delay":
+				if (args.length < 3)
+					return false;
+				if (p.hasPermission(Permissions.ACCOUNT_SET_INTEREST_DELAY)) {
+					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY);
+					return true;
+				}
+
+				try {
+					if (args[2].startsWith("+") || args[2].startsWith("-"))
+						Integer.parseInt(args[2].substring(1));
+					else
+						Integer.parseInt(args[2]);
 				} catch (NumberFormatException e) {
 					p.sendMessage(String.format(Messages.NOT_A_NUMBER, args[2]));
 				}
-			} else
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
-			break;
 
-		case "interest-delay":
-			if (args.length < 3)
-				return false;
-			if (p.hasPermission(Permissions.ACCOUNT_SET_INTEREST_DELAY)) {
-				try {
-					Integer.parseInt(args[2]);
+				ClickType.setPlayerClickType(p,
+						new ClickType.SetClickType(ClickType.SetClickType.SetClickTypeField.DELAY, args[2]));
+				p.sendMessage(Messages.CLICK_CHEST_SET);
+				break;
 
-					p.sendMessage(Messages.CLICK_CHEST_SET);
-					ClickType.setPlayerClickType(p, new ClickType.SetClickType(args));
-				} catch (NumberFormatException e) {
-					p.sendMessage(String.format(Messages.NOT_A_NUMBER, args[2]));
-				}
-			} else
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY);
-			break;
-
-		default:
-			p.sendMessage(String.format(Messages.NOT_A_FIELD, args[1]));
+			default:
+				p.sendMessage(String.format(Messages.NOT_A_FIELD, args[1]));
 		}
 		return true;
 	}

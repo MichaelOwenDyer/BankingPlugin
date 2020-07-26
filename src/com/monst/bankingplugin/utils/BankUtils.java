@@ -336,7 +336,8 @@ public class BankUtils {
 	 * @param callback            Callback that - if succeeded - returns the amount
 	 *                            of accounts that were reloaded (as {@code int})
 	 */
-	public void reload(boolean reloadConfig, final boolean showConsoleMessages, final Callback<int[]> callback) {
+	public void reload(boolean reloadConfig, final boolean showConsoleMessages,
+					   final Callback<AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>>> callback) {
 		plugin.debug("Loading banks and accounts from database...");
 
 		AccountUtils accountUtils = plugin.getAccountUtils();
@@ -351,8 +352,10 @@ public class BankUtils {
             	Collection<Bank> banks = getBanksCopy();
             	Collection<Account> accounts = accountUtils.getAccountsCopy();
             	
-            	int[] preReload = { banks.size(), accounts.size() };
 				int[] afterReload = new int[2];
+
+				Set<Bank> loadedBanks = new HashSet<>();
+				Set<Account> loadedAccounts = new HashSet<>();
             	
 				for (Bank bank : banks) {
 					for (Account account : bank.getAccountsCopy()) {
@@ -369,7 +372,7 @@ public class BankUtils {
 
 						for (Bank bank : result.keySet()) {
 							addBank(bank, false);
-							afterReload[0]++;
+							loadedBanks.add(bank);
 							for (Account account : result.get(bank)) {
 								if (account.create(showConsoleMessages)) {
 									accountUtils.addAccount(account, false, new Callback<Integer>(plugin) {
@@ -378,21 +381,21 @@ public class BankUtils {
 											account.updateName();
 										}
 									});
-									afterReload[1]++;
+									loadedAccounts.add(account);
 								} else
 									plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");
 							}
 						}
 
-						if (preReload[0] != afterReload[0])
-							plugin.debug("Number of banks before load was " + preReload[0] + ", and is now "
-									+ afterReload[0]);
-						if (preReload[1] != afterReload[1])
-							plugin.debug("Number of accounts before load was " + preReload[1]
-									+ ", and is now " + afterReload[1]);
+						if (banks.size() != loadedBanks.size())
+							plugin.debug(String.format("Number of banks before load was %d and is now %d.",
+									banks.size(), loadedBanks.size()));
+						if (accounts.size() != loadedAccounts.size())
+							plugin.debug(String.format("Number of accounts before load was %d and is now %d",
+									accounts.size(), loadedAccounts.size()));
 						
 						if (callback != null)
-							callback.callSyncResult(afterReload);
+							callback.callSyncResult(new AbstractMap.SimpleEntry<>(loadedBanks, loadedAccounts));
 					}
 					
 					@Override

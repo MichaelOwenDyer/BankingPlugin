@@ -34,9 +34,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BankingPlugin extends JavaPlugin {
 
@@ -316,16 +314,22 @@ public class BankingPlugin extends JavaPlugin {
 	 * Initializes all banks and accounts stored in the {@link Database}.
 	 */
 	private void initializeBanksAndAccounts() {
-		bankUtils.reload(false, true, new Callback<int[]>(this) {
+		bankUtils.reload(false, true,
+                new Callback<AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>>>(this) {
 			@Override
-			public void onResult(int[] result) {
-				Bukkit.getServer().getPluginManager().callEvent(new BankInitializedEvent(result[0]));
-				getLogger().info(String.format("Initialized " + result[0] + " bank%s", result[0] == 1 ? "" : "s"));
-				debug(String.format("Initialized " + result[0] + " bank%s", result[0] == 1 ? "" : "s"));
+			public void onResult(AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>> result) {
+			    Collection<Bank> banks = result.getKey();
+                Collection<Account> accounts = result.getValue();
 
-				Bukkit.getServer().getPluginManager().callEvent(new AccountInitializedEvent(result[1]));
-				getLogger().info(String.format("Initialized " + result[1] + " account%s", result[1] == 1 ? "" : "s"));
-				debug(String.format("Initialized " + result[1] + " account%s", result[1] == 1 ? "" : "s"));
+				Bukkit.getServer().getPluginManager().callEvent(new BankInitializedEvent(banks));
+                Bukkit.getServer().getPluginManager().callEvent(new AccountInitializedEvent(accounts));
+
+				String message = String.format("Initialized %s bank%s and %s account%s.",
+                        banks.size(), banks.size() == 1 ? "" : "s",
+                        accounts.size(), accounts.size() == 1 ? "" : "s");
+
+                getLogger().info(message);
+                debug(message);
 			}
 
 			@Override
@@ -334,6 +338,7 @@ public class BankingPlugin extends JavaPlugin {
 				getLogger().severe("No database access. Disabling BankingPlugin");
 				if (throwable != null)
 					getLogger().severe(throwable.getMessage());
+
 				getServer().getPluginManager().disablePlugin(BankingPlugin.this);
 			}
 		});

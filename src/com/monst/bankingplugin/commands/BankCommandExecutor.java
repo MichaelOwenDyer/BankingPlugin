@@ -193,29 +193,28 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		double creationPrice = isAdminBank ? Config.creationPriceBank.getKey() : Config.creationPriceBank.getValue();
-		if (creationPrice > 0) {
-			if (plugin.getEconomy().getBalance(p) < creationPrice) {
-				plugin.debug(p.getName() + " does not have enough money to create a bank");
-				p.sendMessage(Messages.BANK_CREATE_INSUFFICIENT_FUNDS);
-				return true;
-			}
+		if (creationPrice > 0 && plugin.getEconomy().getBalance(p) < creationPrice) {
+			plugin.debug(p.getName() + " does not have enough money to create a bank");
+			p.sendMessage(Messages.BANK_CREATE_INSUFFICIENT_FUNDS);
+			return true;
 		}
 
-		Utils.withdrawPlayer(p.getPlayer(), p.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
+		if (!Utils.withdrawPlayer(p.getPlayer(), p.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
 			@Override
 			public void onResult(Void result) {
 				p.sendMessage(String.format(Messages.BANK_CREATE_FEE_PAID, Utils.formatNumber(creationPrice)));
-				bankUtils.addBank(bank, true);
-				plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
-				p.sendMessage(Messages.BANK_CREATED);
 			}
 			@Override
 			public void onError(Throwable throwable) {
 				plugin.debug(throwable);
 				p.sendMessage(Messages.ERROR_OCCURRED);
 			}
-		});
+		}))
+			return true;
 
+		bankUtils.addBank(bank, true);
+		plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
+		p.sendMessage(Messages.BANK_CREATED);
 		return true;
 	}
 
@@ -307,6 +306,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				});
 			}
 		}
+
 		bankUtils.removeBank(bank, true);
 		plugin.debug("Bank #" + bank.getID() + " removed from the database");
 		sender.sendMessage(Messages.BANK_REMOVED);

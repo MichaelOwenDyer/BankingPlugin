@@ -163,4 +163,8 @@ public class AccountStatus {
 	public int setInterestDelay(int delay) {
 		return delayUntilNextPayout = Math.max(delay, 0);
 	}
+
+	public int setInterestDelayRelative(int delay) {
+		return setInterestDelay(delayUntilNextPayout + delay);
+	}
 }

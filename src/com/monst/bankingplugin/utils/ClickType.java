@@ -93,15 +93,25 @@ public class ClickType {
 
 	public static class SetClickType extends ClickType {
 
-		private final String[] args;
+    	private final SetClickTypeField field;
+		private final String value;
 
-		public SetClickType(String[] args) {
+		public SetClickType(SetClickTypeField field, String value) {
 			super(EnumClickType.SET);
-			this.args = args;
+			this.field = field;
+			this.value = value;
 		}
 
-		public String[] getArgs() {
-			return args;
+		public SetClickTypeField getField() {
+			return field;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public enum SetClickTypeField {
+			NICKNAME, MULTIPLIER, DELAY
 		}
 	}
 
@@ -170,5 +180,4 @@ public class ClickType {
 			return newOwner;
 		}
 	}
-
 }

@@ -1,19 +1,22 @@
 package com.monst.bankingplugin.events.bank;
 
+import com.monst.bankingplugin.Bank;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+
+import java.util.Collection;
 
 public class BankInitializedEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
-    private final int amount;
+    private final Collection<Bank> banks;
 
-    public BankInitializedEvent(int amount) {
-        this.amount = amount;
+    public BankInitializedEvent(Collection<Bank> banks) {
+        this.banks = banks;
     }
 
-    public int getAmount() {
-        return amount;
+    public Collection<Bank> getBanks() {
+        return banks;
     }
 
     public static HandlerList getHandlerList() {

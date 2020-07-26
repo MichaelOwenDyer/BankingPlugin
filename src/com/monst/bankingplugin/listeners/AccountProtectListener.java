@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.utils.*;
@@ -61,30 +62,41 @@ public class AccountProtectListener implements Listener {
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
 		double creationPrice = accountConfig.getAccountCreationPrice(false);
+		creationPrice *= accountConfig.isReimburseAccountCreation(false) ? 1 : 0;
 
-		if (creationPrice > 0 && accountConfig.isReimburseAccountCreation(false)
-				&& account.isOwner(p)) {
-			EconomyResponse r = plugin.getEconomy().depositPlayer(p, account.getLocation().getWorld().getName(),
-					creationPrice);
-			if (!r.transactionSuccess()) {
-				plugin.debug("Economy transaction failed: " + r.errorMessage);
-				p.sendMessage(Messages.ERROR_OCCURRED);
-			} else {
-				p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.formatNumber(r.amount)));
-			}
+		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
+			double finalCreationPrice = creationPrice;
+			// Account owner is reimbursed for the part of the chest that was broken
+			Utils.depositPlayer(p, account.getLocation().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
+				@Override
+				public void onResult(Void result) {
+					p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.formatNumber(finalCreationPrice)));
+				}
+				@Override
+				public void onError(Throwable throwable) {
+					super.onError(throwable);
+					p.sendMessage(Messages.ERROR_OCCURRED);
+				}
+			});
 
-			if (!account.getBank().isAdminBank()) {
-				OfflinePlayer bankOwner = account.getBank().getOwner();
-				EconomyResponse r2 = plugin.getEconomy().withdrawPlayer(bankOwner,
-						account.getLocation().getWorld().getName(), creationPrice);
-				if (!r2.transactionSuccess()) {
-					plugin.debug("Economy transaction failed: " + r2.errorMessage);
-					if (bankOwner.isOnline())
-						bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-					return;
-				} else if (!account.isOwner(bankOwner) && bankOwner.isOnline())
-					bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-							account.getOwner().getName(), Utils.formatNumber(r2.amount)));
+			Bank bank = account.getBank();
+			// Bank owner reimburses the customer
+			if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
+				OfflinePlayer bankOwner = bank.getOwner();
+				Utils.withdrawPlayer(bankOwner, account.getLocation().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
+					@Override
+					public void onResult(Void result) {
+						if (bankOwner.isOnline())
+							bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
+									account.getOwner().getName(), Utils.formatNumber(finalCreationPrice)));
+					}
+					@Override
+					public void onError(Throwable throwable) {
+						super.onError(throwable);
+						if (bankOwner.isOnline())
+							bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
+					}
+				});
 			}
 		}
 
@@ -110,7 +122,6 @@ public class AccountProtectListener implements Listener {
 					});
 				}
 			});
-
 		} else {
 			accountUtils.removeAccount(account, true);
 			plugin.debug(String.format("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(),
@@ -170,8 +181,7 @@ public class AccountProtectListener implements Listener {
 
 		AccountExtendEvent event = new AccountExtendEvent(p, account, b.getLocation());
         Bukkit.getPluginManager().callEvent(event);
-		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)
-				&& !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             e.setCancelled(true);
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED);
             return;
@@ -188,35 +198,41 @@ public class AccountProtectListener implements Listener {
 			p.sendMessage(Messages.CHEST_BLOCKED);
             return;
 		}
-		
-		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = accountConfig.getAccountCreationPrice(false);
-		
+
+		AccountConfig config = account.getBank().getAccountConfig();
+		double creationPrice = config.getAccountCreationPrice(false);
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
-			EconomyResponse r = plugin.getEconomy().withdrawPlayer(owner, 
-					account.getLocation().getWorld().getName(), creationPrice);
-			if (!r.transactionSuccess()) {
-				plugin.debug("Economy transaction failed: " + r.errorMessage);
-				p.sendMessage(Messages.ERROR_OCCURRED);
-				return;
-			} else {
-				p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID,
-						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
-			}
-			
-			if (!account.getBank().isAdminBank()) {
-				OfflinePlayer bankOwner = account.getBank().getOwner();
-				EconomyResponse r2 = plugin.getEconomy().depositPlayer(bankOwner, 
-						account.getLocation().getWorld().getName(), creationPrice);
-				if (!r2.transactionSuccess()) {
-					plugin.debug("Economy transaction failed: " + r2.errorMessage);
+			if (!Utils.withdrawPlayer(owner, account.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
+				@Override
+				public void onResult(Void result) {
+					p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID, Utils.formatNumber(creationPrice)));
+				}
+				@Override
+				public void onError(Throwable throwable) {
+					super.onError(throwable);
 					p.sendMessage(Messages.ERROR_OCCURRED);
-					return;
-				} else if (bankOwner.isOnline())
-					bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
-							account.getOwner().getName(),
-							BigDecimal.valueOf(r2.amount).setScale(2, RoundingMode.HALF_EVEN)));
+				}
+			})) {
+				e.setCancelled(true);
+				return;
+			}
+
+			if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
+				OfflinePlayer bankOwner = account.getBank().getOwner();
+				Utils.depositPlayer(bankOwner, account.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
+					@Override
+					public void onResult(Void result) {
+						if (bankOwner.isOnline())
+							bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
+									account.getOwner().getName(), Utils.formatNumber(creationPrice)));
+					}
+					@Override
+					public void onError(Throwable throwable) {
+						super.onError(throwable);
+						p.sendMessage(Messages.ERROR_OCCURRED);
+					}
+				});
 			}
 		}
 
@@ -225,19 +241,21 @@ public class AccountProtectListener implements Listener {
 				account.getBalance(), account.getPrevBalance());
 
 		accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
-            @Override
-            public void onResult(Void result) {
-				newAccount.create(true);
-				accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
-					@Override
-					public void onResult(Integer result) {
-						newAccount.updateName();
-					}
-				});
-				plugin.debug(String.format("%s extended %s's account (#%d)", p.getName(), account.getOwner().getName(),
-						account.getID()));
-            }
-        });
+			@Override
+			public void onResult(Void result) {
+				if (newAccount.create(true)) {
+					accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
+						@Override
+						public void onResult(Integer result) {
+							newAccount.updateName();
+						}
+					});
+					plugin.debug(String.format("%s extended %s's account (#%d)", p.getName(), account.getOwner().getName(),
+							account.getID()));
+				} else
+					p.sendMessage(Messages.ERROR_OCCURRED);
+			}
+		});
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
