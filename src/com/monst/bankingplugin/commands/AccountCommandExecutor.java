@@ -68,8 +68,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			promptAccountInfo(sender, args);
 			break;
 		case "list":
-			if (!promptAccountList(sender, args))
-				sender.sendMessage(subCommand.getHelpMessage(sender));
+			promptAccountList(sender, args);
 			break;
 		case "limits":
 			promptAccountLimits((Player) sender);
@@ -204,7 +203,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 	}
 
 	@SuppressWarnings("deprecation")
-	private boolean promptAccountList(final CommandSender sender, String[] args) {
+	private void promptAccountList(final CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to list accounts");
 		ArrayList<Account> accounts = null;
 		String noAccountsMessage = "";
@@ -212,7 +211,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			if (!(sender instanceof Player)) {
 				plugin.debug("Only players can list their own accounts");
 				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-				return true;
+				return;
 			}
 			plugin.debug(sender.getName() + " has listed their own accounts");
 			accounts = new ArrayList<>(accountUtils.getPlayerAccountsCopy((Player) sender));
@@ -222,7 +221,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
 					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
 					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
-					return true;
+					return;
 				}
 				plugin.debug(sender.getName() + " has listed all accounts");
 				accounts = new ArrayList<>(accountUtils.getAccountsCopy());
@@ -231,7 +230,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				if (owner == null || !owner.hasPlayedBefore()) {
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
-					return true;
+					return;
 				}
 				plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 						+ owner.getUniqueId());
@@ -239,7 +238,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 						|| !((Player) sender).getUniqueId().equals(owner.getUniqueId()))) {
 					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
 					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
-					return true;
+					return;
 				}
 				plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
 				accounts = new ArrayList<>(accountUtils.getPlayerAccountsCopy(owner));
@@ -255,8 +254,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 						account.getInfoButton(sender));
 		} else
 			sender.sendMessage(noAccountsMessage);
-
-		return true;
 	}
 
 	private void promptAccountLimits(final Player p) {

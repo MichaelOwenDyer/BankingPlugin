@@ -2,6 +2,7 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
@@ -21,23 +22,25 @@ public class AccountContentsGui extends Gui<Account> {
 
     @Override
     void createMenu() {
-        menu = ChestMenu.builder(guiSubject.getChestSize() * 3).title(guiSubject.getColorizedName()).redraw(true).build();
+        menu = ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getColorizedName()).redraw(true).build();
     }
 
     @Override
     void evaluateClearance(Player player) {
-        guiSubject.updateInventory(); // Must call this before reading from the inventory later
+        try {
+            guiSubject.updateInventory(); // Must call this before reading from the inventory later
+        } catch (ChestNotFoundException e) { plugin.debug(e); }
         canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
     }
 
     @Override
     ItemStack createSlotItem(int i) {
-        return guiSubject.getInventoryHolder(false).getInventory().getItem(i);
+        return guiSubject.getInventory(false).getItem(i);
     }
 
     @Override
     Slot.ClickHandler createClickHandler(int i) {
-        ItemStack item = guiSubject.getInventoryHolder(false).getInventory().getItem(i);
+        ItemStack item = guiSubject.getInventory(false).getItem(i);
         if (item != null && item.getItemMeta() instanceof BlockStateMeta) {
             BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
             if (im.getBlockState() instanceof ShulkerBox) {

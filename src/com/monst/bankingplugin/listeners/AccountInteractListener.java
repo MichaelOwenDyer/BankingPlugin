@@ -4,10 +4,7 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.events.account.AccountInfoEvent;
-import com.monst.bankingplugin.events.account.AccountRemoveEvent;
-import com.monst.bankingplugin.events.account.TransferOwnershipEvent;
+import com.monst.bankingplugin.events.account.*;
 import com.monst.bankingplugin.gui.AccountGui;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.ClickType.*;
@@ -359,7 +356,7 @@ public class AccountInteractListener implements Listener {
 		
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
 		double creationPrice = accountConfig.getAccountCreationPrice(false);
-		creationPrice *= account.getChestSize();
+		creationPrice *= account.getSize();
 
 		if (creationPrice > 0 && accountConfig.isReimburseAccountCreation(false)
 				&& account.isOwner(executor) && !account.getBank().isOwner(executor)) {
@@ -571,24 +568,21 @@ public class AccountInteractListener implements Listener {
 			plugin.debug("Chest is not in a bank.");
 			return;
 		}
-		if (!bankUtils.getBank(location).equals(toMigrate.getBank()) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
+		if (!toMigrate.getBank().equals(bankUtils.getBank(location))
+				&& !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_BANK);
-			plugin.debug(p.getName() + " does not have permission to migrate their account outside of the bank.");
-			return;
-		}
-		if (!p.hasPermission(Permissions.ACCOUNT_CREATE)) {
-			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE);
-			plugin.debug(p.getName() + " is not permitted to migrate the account");
+			plugin.debug(p.getName() + " does not have permission to migrate their account to another bank.");
 			return;
 		}
 
-		Bank bank = bankUtils.getBank(location);
+		Bank oldBank = toMigrate.getBank();
+		Bank newBank = bankUtils.getBank(location); // May or may not be the same as oldBank
 
-		Account newAccount = new Account(toMigrate.getID(), plugin, toMigrate.getOwner(), toMigrate.getCoowners(),
-				toMigrate.getBank(), location, toMigrate.getStatus(), toMigrate.getRawName(),
-				toMigrate.getBalance(), toMigrate.getPrevBalance());
+		Account newAccount = new Account(toMigrate.getID(), plugin, toMigrate.getOwner(),
+				toMigrate.getCoowners(), newBank, location, toMigrate.getStatus(),
+				toMigrate.getRawName(), toMigrate.getBalance(), toMigrate.getPrevBalance());
 
-		AccountCreateEvent event = new AccountCreateEvent(p, newAccount);
+		AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, location);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 			plugin.debug("No permission to create account on a protected chest.");
@@ -596,50 +590,108 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		double creationPrice = bank.getAccountConfig().getAccountCreationPrice(false);
-		creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1) - toMigrate.getChestSize();
+		double creationPrice = newBank.getAccountConfig().getAccountCreationPrice(false);
+		creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1);
+		creationPrice *= (newBank.isOwner(p) ? 0 : 1);
 
-		if (creationPrice != 0 && !bank.isOwner(p)) {
-			if (plugin.getEconomy().getBalance(p) < creationPrice) {
+		AccountConfig oldConfig = oldBank.getAccountConfig();
+		double reimbursement = oldConfig.isReimburseAccountCreation(false)
+				? oldConfig.getAccountCreationPrice(false) : 0.0d;
+		reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
+		reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
+
+		double net = reimbursement - creationPrice;
+
+		if (net != 0) {
+			if (plugin.getEconomy().getBalance(p) < net * -1) {
 				p.sendMessage(Messages.ACCOUNT_CREATE_INSUFFICIENT_FUNDS);
 				return;
 			}
-			
-			OfflinePlayer accountOwner = p.getPlayer();
-			EconomyResponse r;
-			if (creationPrice > 0)
-				r = plugin.getEconomy().withdrawPlayer(accountOwner, location.getWorld().getName(), creationPrice);
-			else
-				r = plugin.getEconomy().depositPlayer(accountOwner, location.getWorld().getName(), Math.abs(creationPrice));
-			if (!r.transactionSuccess()) {
-				plugin.debug("Economy transaction failed: " + r.errorMessage);
-				p.sendMessage(Messages.ERROR_OCCURRED);
-				return;
-			} else if (!newAccount.getBank().isOwner(newAccount.getOwner()))
-				if (creationPrice > 0)
-					p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.formatNumber(r.amount)));
-				else
-					p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.formatNumber(r.amount)));
-			
-			if (!newAccount.getBank().isAdminBank()) {
-				OfflinePlayer bankOwner = newAccount.getBank().getOwner();
-				EconomyResponse r2 = plugin.getEconomy().depositPlayer(bankOwner, location.getWorld().getName(), creationPrice);
-				if (!r2.transactionSuccess()) {
-					plugin.debug("Economy transaction failed: " + r2.errorMessage);
-					p.sendMessage(Messages.ERROR_OCCURRED);
-					return;
-				} else if (!newAccount.isOwner(bankOwner) && bankOwner.isOnline())
-					if (creationPrice > 0)
-						bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
-							accountOwner.getName(), Utils.formatNumber(r2.amount)));
-					else
-						bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-								accountOwner.getName(), Utils.formatNumber(r2.amount)));
+
+			final double finalReimbursement = reimbursement;
+			final double finalCreationPrice = creationPrice;
+
+			if (reimbursement > 0) {
+				Callback<Void> onReimbursementReceived = new Callback<Void>(plugin) {
+					@Override
+					public void onResult(Void result) {
+						p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
+								Utils.formatNumber(finalReimbursement)));
+					}
+					@Override
+					public void onError(Throwable throwable) {
+						plugin.debug(throwable);
+						p.sendMessage(Messages.ERROR_OCCURRED);
+					}
+				};
+				Utils.depositPlayer(p.getPlayer(), toMigrate.getLocation().getWorld().getName(),
+						finalReimbursement, onReimbursementReceived);
+			}
+
+			if (creationPrice > 0 && newBank.isPlayerBank()) {
+				OfflinePlayer bankOwner = newBank.getOwner();
+				Callback<Void> onCreateFeeReceived = new Callback<Void>(plugin) {
+					@Override
+					public void onResult(Void result) {
+						if (bankOwner.isOnline())
+							bankOwner.getPlayer().sendMessage(String.format(
+									Messages.ACCOUNT_CREATE_FEE_RECEIVED,
+									Utils.formatNumber(finalCreationPrice)
+							));
+					}
+					@Override
+					public void onError(Throwable throwable) {
+						plugin.debug(throwable);
+						if (bankOwner.isOnline())
+							bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
+					}
+				};
+				Utils.depositPlayer(bankOwner, toMigrate.getLocation().getWorld().getName(),
+						finalCreationPrice, onCreateFeeReceived);
+			}
+
+			if (creationPrice > 0) {
+				Callback<Void> onCreateFeePaid = new Callback<Void>(plugin) {
+					@Override
+					public void onResult(Void result) {
+						p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
+								Utils.formatNumber(finalCreationPrice)));
+					}
+					@Override
+					public void onError(Throwable throwable) {
+						plugin.debug(throwable);
+						p.sendMessage(Messages.ERROR_OCCURRED);
+					}
+				};
+				Utils.withdrawPlayer(p, location.getWorld().getName(),
+						finalCreationPrice, onCreateFeePaid);
+			}
+
+			if (reimbursement > 0 && oldBank.isPlayerBank()) {
+				OfflinePlayer bankOwner = oldBank.getOwner();
+				Callback<Void> onReimbursementPaid = new Callback<Void>(plugin) {
+					@Override
+					public void onResult(Void result) {
+						if (bankOwner.isOnline())
+							bankOwner.getPlayer().sendMessage(String.format(
+									Messages.ACCOUNT_REIMBURSEMENT_PAID,
+									p.getName(), Utils.formatNumber(finalReimbursement)
+							));
+					}
+					@Override
+					public void onError(Throwable throwable) {
+						plugin.debug(throwable);
+						if (bankOwner.isOnline())
+							bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
+					}
+				};
+				Utils.withdrawPlayer(bankOwner, location.getWorld().getName(),
+						finalReimbursement, onReimbursementPaid);
 			}
 		}
 
 		if (newAccount.create(true)) {
-			plugin.debug("Account created");
+			plugin.debug("Account migrated (#" + newAccount.getID() + ")");
 			accountUtils.removeAccount(toMigrate, false); // Database entry is preserved
 			accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) { // Database entry is overwritten with new location
 				@Override

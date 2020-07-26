@@ -95,7 +95,7 @@ public class AccountUtils {
      * @param callback Callback that - if succeeded - returns the ID the account had or was given (as {@code int})
      */
     public void addAccount(Account account, boolean addToDatabase, Callback<Integer> callback) {
-        InventoryHolder ih = account.getInventoryHolder(true);
+        InventoryHolder ih = account.getInventory(true).getHolder();
         plugin.debug("Adding account... (#" + account.getID() + ")");
 
         if (ih instanceof DoubleChest) {
@@ -116,7 +116,7 @@ public class AccountUtils {
         if (addToDatabase) {
 			plugin.getDatabase().addAccount(account, callback);
         } else {
-			account.getBank().addAccount(account);
+			account.getBank().addAccount(account); // Account is otherwise added to the bank in Database
 			if (callback != null)
 				callback.callSyncResult(account.getID());
         }
@@ -140,8 +140,9 @@ public class AccountUtils {
         plugin.debug("Removing account (#" + account.getID() + ")");
 
 		account.clearChestName();
+		account.getBank().removeAccount(account);
 
-        InventoryHolder ih = account.getInventoryHolder(true);
+		InventoryHolder ih = account.getInventory(true).getHolder();
 
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
@@ -156,7 +157,6 @@ public class AccountUtils {
 
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);
-			account.getBank().removeAccount(account);
         } else {
             if (callback != null) callback.callSyncResult(null);
         }
@@ -222,7 +222,7 @@ public class AccountUtils {
 	 */
 	public int getNumberOfAccounts(OfflinePlayer player) {
 		return (int) Math.round(getPlayerAccountsCopy(player).stream()
-				.mapToDouble(account -> account.getChestSize() == 1 ? 1.0 : 0.5).sum());
+				.mapToDouble(account -> account.getSize() == 1 ? 1.0 : 0.5).sum());
     }
 
 	public BigDecimal appraiseAccountContents(Account account) {
@@ -230,7 +230,7 @@ public class AccountUtils {
 		plugin.debug("Appraising account contents... (#" + account.getID() + ")");
 
 		BigDecimal sum = BigDecimal.ZERO;
-		for (ItemStack item : account.getInventoryHolder(true).getInventory().getContents()) {
+		for (ItemStack item : account.getInventory(true).getContents()) {
 			if (item == null)
 				continue;
 			if (Config.blacklist.contains(item.getType().toString()))

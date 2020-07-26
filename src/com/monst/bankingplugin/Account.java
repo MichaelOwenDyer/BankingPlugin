@@ -18,7 +18,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.Inventory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -34,16 +34,33 @@ public class Account extends Ownable implements Nameable {
 	private String nickname;
 	private final Location location;
 	private final Bank bank;
-	private InventoryHolder inventoryHolder;
+	private Inventory inventory;
 	
 	private final AccountStatus status;
 	private BigDecimal balance;
 	private BigDecimal prevBalance;
 
+	/**
+	 * Create a new account.
+	 */
 	public Account(BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc) {
 		this(-1, plugin, owner, null, bank, loc, new AccountStatus(bank.getAccountConfig()), null, BigDecimal.ZERO, BigDecimal.ZERO);
 	}
-	
+
+	/**
+	 * Re-create an account that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 *
+	 * @param id the account ID {@link Ownable}
+	 * @param plugin the current instance of {@link BankingPlugin}
+	 * @param owner the owner of the account {@link Ownable}
+	 * @param coowners the co-owners of the account {@link Ownable}
+	 * @param bank the {@link Bank} the account is registered at
+	 * @param loc the {@link Location} of the account chest
+	 * @param status the {@link AccountStatus} of the account
+	 * @param nickname the account nickname {@link Nameable}
+	 * @param balance the current account balance {@link #getBalance()}
+	 * @param prevBalance the previous account balance {@link #getPrevBalance()}
+	 */
 	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank,
 			Location loc, AccountStatus status, String nickname, BigDecimal balance, BigDecimal prevBalance) {
 		this.id = id;
@@ -58,63 +75,50 @@ public class Account extends Ownable implements Nameable {
 		this.prevBalance = prevBalance.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
+	/**
+	 * Attempt to load the account. This method will ensure that the chest exists at
+	 * the specified {@link Location} and is able to be opened.
+	 * @param showConsoleMessages whether any error messages should be sent to the console
+	 * @return whether the account was successfully created
+	 */
 	public boolean create(boolean showConsoleMessages) {
+
 		if (created) {
 			plugin.debug("Account was already created! (#" + id + ")");
 			return false;
 		}
-
 		plugin.debug("Creating account (#" + id + ")");
 
-		Block b = getLocation().getBlock();
-		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST)) {
-			
-			ChestNotFoundException e = new ChestNotFoundException(
-					String.format("No Chest found in world '%s' at location: %d; %d; %d", b.getWorld().getName(),
-							b.getX(), b.getY(), b.getZ()));
-			
+		try {
+			updateInventory();
+			checkSpaceAbove();
+		} catch (ChestNotFoundException | NotEnoughSpaceException e) {
+
 			plugin.getAccountUtils().removeAccount(this, Config.removeAccountOnError);
-			
+
 			if (showConsoleMessages)
 				plugin.getLogger().severe(e.getMessage());
-			
-			plugin.debug("Failed to create account (#" + id + ")");
-			plugin.debug(e);
-			return false;
-			
-		} else if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
-			
-			NotEnoughSpaceException e = new NotEnoughSpaceException(
-					String.format("No space above chest in world '%s' at location: %d; %d; %d", b.getWorld().getName(),
-							b.getX(), b.getY(), b.getZ()));
-			
-			plugin.getAccountUtils().removeAccount(this, Config.removeAccountOnError);
-			
-			if (showConsoleMessages)
-				plugin.getLogger().severe(e.getMessage());
-			
-			plugin.debug("Failed to create account (#" + id + ")");
+			plugin.debug("Failed to create account (#" + getID() + ")");
 			plugin.debug(e);
 			return false;
 		}
 
-		Chest chest = (Chest) b.getState();
-		inventoryHolder = chest.getInventory().getHolder();
-
-		BigDecimal checkedBalance = plugin.getAccountUtils().appraiseAccountContents(this);
-		if (checkedBalance.compareTo(getBalance()) > 0) {
-			if (getBalance().signum() <= 0)
-				plugin.debug("Cool! Account #" + id + " was created with a balance of " + Utils.formatNumber(checkedBalance)
-						+ " already inside.");
-			else
-				plugin.debug("Value of account #" + id + " was found higher than expected. Expected: $"
-						+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance));
-			setBalance(checkedBalance);
-		} else if (checkedBalance.compareTo(getBalance()) < 0) {
-			plugin.debug("Value of account #" + id + " was found lower than expected. Expected: $"
-					+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance));
-			setBalance(checkedBalance);
-		}
+		final BigDecimal checkedBalance = plugin.getAccountUtils().appraiseAccountContents(this);
+		final int diff = checkedBalance.compareTo(getBalance());
+		if (diff > 0)
+			plugin.debug(
+				getBalance().signum() == 0
+					? "Cool! Account #" + getID() + " was created with a balance of "
+						+ Utils.formatNumber(checkedBalance) + " already inside."
+					: "Value of account #" + getID() + " was found higher than expected. Expected: $"
+						+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance)
+			);
+		else if (diff < 0)
+			plugin.debug(
+					"Value of account #" + id + " was found lower than expected. Expected: $"
+					+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance)
+			);
+		setBalance(checkedBalance);
 
 		created = true;
 		return true;
@@ -127,7 +131,7 @@ public class Account extends Ownable implements Nameable {
 
 	/**
 	 * Sets the name of this account and updates the chest inventory screen to reflect the new name.
-	 * @param nickname The new name of this account.
+	 * @param nickname the new name of this account.
 	 */
 	@Override
 	public void setName(String nickname) {
@@ -135,24 +139,32 @@ public class Account extends Ownable implements Nameable {
 			nickname = getDefaultName();
 		this.nickname = nickname;
 		if (isDoubleChest()) {
-			DoubleChest dc = (DoubleChest) inventoryHolder;
+			DoubleChest dc = (DoubleChest) inventory.getHolder();
 			if (dc == null)
 				return;
 			Chest left = (Chest) dc.getLeftSide();
 			Chest right = (Chest) dc.getRightSide();
-			left.setCustomName(getColorizedName());
-			left.update();
-			right.setCustomName(getColorizedName());
-			right.update();
+			if (left != null) {
+				left.setCustomName(getColorizedName());
+				left.update();
+			}
+			if (right != null) {
+				right.setCustomName(getColorizedName());
+				right.update();
+			}
 		} else {
-			Chest chest = (Chest) inventoryHolder;
-			if (chest == null)
-				return;
-			chest.setCustomName(getColorizedName());
-			chest.update();
+			Chest chest = (Chest) inventory.getHolder();
+			if (chest != null) {
+				chest.setCustomName(getColorizedName());
+				chest.update();
+			}
 		}
 	}
 
+	/**
+	 * The default name of a given account includes the name of the owner and the account ID in parentheses.
+	 * @return the default name of this account.
+	 */
 	@Override
 	public String getDefaultName() {
 		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + getID() + ")";
@@ -165,37 +177,62 @@ public class Account extends Ownable implements Nameable {
 		setName(getDefaultName());
 	}
 
+	/**
+	 * Ensure that the current account name is valid and reflected in the chest inventory screen.
+	 * If it is null, make it the default name.
+	 */
 	public void updateName() {
 		setName(getRawName() != null ? getRawName() : getDefaultName());
 	}
 
+	/**
+	 * Reset the name in the account chest to the default, e.g. "Chest" or "Large Chest"
+	 */
 	public void clearChestName() {
 		setName("");
 	}
 
+	/**
+	 * Get the status of this account.
+	 * This includes information about the current multiplier and interest delay, among other things.
+	 * @return the {@link AccountStatus} object associated with this account
+	 */
 	public AccountStatus getStatus() {
 		return status;
 	}
-	
+
+	/**
+	 * Get the bank this account is registered at.
+	 * @return the {@link Bank} of this account.
+	 */
 	public Bank getBank() {
 		return bank;
 	}
 
+	/**
+	 * Get this account's current balance in {@link BigDecimal} format.
+	 * The balance will always be positive.
+	 * @return the current account balance
+	 * @see AccountUtils#appraiseAccountContents(Account)
+	 */
 	public BigDecimal getBalance() {
 		return balance;
 	}
 
 	/**
-	 * Changes the current balance of this account. Used every time the account
-	 * chest is accessed and the contents are changed.
-	 * 
+	 * Updates the current balance of this account.
+	 * Called every time the account chest is <b>closed</b> and the contents have changed.
 	 * @param newBalance the new (positive) balance of the account.
 	 */
 	public void setBalance(BigDecimal newBalance) {
 		if (newBalance != null && newBalance.signum() >= 0)
-			this.balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
+			balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
+	/**
+	 * Get the balance of this account as it was at the previous interest payout.
+	 * @return the previous account balance.
+	 */
 	public BigDecimal getPrevBalance() {
 		return prevBalance;
 	}
@@ -203,42 +240,84 @@ public class Account extends Ownable implements Nameable {
 	/**
 	 * Saves the current balance of this account into the previous balance. Used
 	 * only at interest payout events. Should only be used AFTER refreshing the
-	 * account balance with AccountUtils.appraiseAccountContents() to ensure the
-	 * balance is fully up-to-date.
+	 * account balance to ensure it is fully up-to-date.
+	 * @see AccountUtils#appraiseAccountContents(Account)
 	 */
 	public void updatePrevBalance() {
 		prevBalance = balance;
 	}
 
+	/**
+	 * Get the location of this account.
+	 * @return the {@link Location} of the account chest.
+	 */
 	public Location getLocation() {
 		return location;
 	}
 
+	/**
+	 * Get a nicer-looking description of the account's location.
+	 * @return a {@link String} describing the location of the account chest.
+	 */
 	public String getCoordinates() {
 		return location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
 	}
 
-	public void updateInventory() {
+	/**
+	 * Ensure that the account chest is able to be opened.
+	 * @throws NotEnoughSpaceException if the chest cannot be opened.
+	 * @see Utils#isTransparent(Block)
+	 */
+	private void checkSpaceAbove() throws NotEnoughSpaceException {
+		Block b = getLocation().getBlock();
+		if (!Utils.isTransparent(b.getRelative(BlockFace.UP)))
+			throw new NotEnoughSpaceException(
+					String.format("No space above chest in world '%s' at location: %d; %d; %d", b.getWorld().getName(),
+					b.getX(), b.getY(), b.getZ()));
+	}
+
+	/**
+	 * Ensure that the account chest is able to be located and the inventory saved.
+	 * @throws ChestNotFoundException If the chest cannot be located.
+	 */
+	public void updateInventory() throws ChestNotFoundException {
 		Block b = getLocation().getBlock();
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
-			plugin.debug(new ChestNotFoundException(String.format("No chest found in world '%s' at location: %d; %d; %d",
-					b.getWorld().getName(), b.getX(), b.getY(), b.getZ())));
+			throw new ChestNotFoundException(String.format("No chest found in world '%s' at location: %d; %d; %d",
+					b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
 		Chest chest = (Chest) b.getState();
-		inventoryHolder = chest.getInventory().getHolder();
+		inventory = chest.getInventory();
 	}
 
-	public InventoryHolder getInventoryHolder(boolean update) {
-		if (update)
+	/**
+	 * Get the {@link Inventory} of this account chest.
+	 * @param update Whether to track down and save the inventory in the world again.
+	 * @return the account inventory.
+	 * @see #updateInventory()
+	 */
+	public Inventory getInventory(boolean update) {
+		if (update) try {
 			updateInventory();
-		return inventoryHolder;
-	}
-	
-	public short getChestSize() {
-		return isDoubleChest() ? (short) 2 : 1;
+		} catch (ChestNotFoundException e) {
+			plugin.debug(e);
+			return null;
+		}
+		return inventory;
 	}
 
+	/**
+	 * @return Whether this account is a double chest or a single chest.
+	 */
 	public boolean isDoubleChest() {
-		return inventoryHolder instanceof DoubleChest;
+		return getInventory(true).getHolder() instanceof DoubleChest;
+	}
+
+	/**
+	 * @return 1 if single chest, 2 if double.
+	 * @see #isDoubleChest()
+	 */
+	public short getSize() {
+		return isDoubleChest() ? (short) 2 : 1;
 	}
 
 	@Override
@@ -249,17 +328,6 @@ public class Account extends Ownable implements Nameable {
 		owner = newOwner;
 		if (Config.trustOnTransfer)
 			coowners.add(previousOwner);
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-
-		Account otherAccount = (Account) o;
-		return getID() != -1 && getID() == otherAccount.getID();
 	}
 
 	@Override
@@ -320,6 +388,17 @@ public class Account extends Ownable implements Nameable {
 								* getBank().getAccountConfig().getInterestRate(false)
 								* getStatus().getRealMultiplier())
 						+ "\nLocation: " + getCoordinates();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Account otherAccount = (Account) o;
+		return getID() != -1 && getID() == otherAccount.getID();
 	}
 
 	@Override

@@ -214,14 +214,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 		}
 
-		if (bank.create()) {
-			bankUtils.addBank(bank, true);
-			plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
-			p.sendMessage(Messages.BANK_CREATED);
-		} else {
-			plugin.debug("An error occurred creating the bank");
-			p.sendMessage(Messages.ERROR_OCCURRED);
-		}
+		bankUtils.addBank(bank, true);
+		plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
+		p.sendMessage(Messages.BANK_CREATED);
 		return true;
 	}
 

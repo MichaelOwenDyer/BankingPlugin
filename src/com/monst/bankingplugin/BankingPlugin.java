@@ -24,6 +24,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.ipvp.canvas.MenuFunctionListener;
 
@@ -65,7 +66,7 @@ public class BankingPlugin extends JavaPlugin {
 	private static final Map<LocalTime, Integer> payoutTimeIds = new HashMap<>();
 
 	/**
-	 * @return An instance of BankingPlugin
+	 * @return an instance of BankingPlugin
 	 */
 	public static BankingPlugin getInstance() {
 		return instance;
@@ -195,8 +196,8 @@ public class BankingPlugin extends JavaPlugin {
 	}
 	
 	/**
-     * Sets up the economy of Vault
-     * @return Whether an economy plugin has been registered
+     * Set up the Vault economy
+     * @return whether an economy plugin has been registered with Vault
      */
     private boolean setupEconomy() {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -207,8 +208,11 @@ public class BankingPlugin extends JavaPlugin {
 		econ = rsp.getProvider();
 		return econ != null;
     }
-    
-    private void loadExternalPlugins() {
+
+	/**
+	 * Find other plugins running on the server that BankingPlugin can integrate with.
+	 */
+	private void loadExternalPlugins() {
 
         Plugin griefPreventionPlugin = Bukkit.getServer().getPluginManager().getPlugin("GriefPrevention");
 		if (griefPreventionPlugin instanceof GriefPrevention)
@@ -225,7 +229,11 @@ public class BankingPlugin extends JavaPlugin {
 		if (hasWorldGuard())
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
-    
+
+	/**
+	 * Initialize the {@link Database}
+	 * @see SQLite
+	 */
 	private void initDatabase() {
 		database = new SQLite(this);
 		debug("Database initialized.");
@@ -270,8 +278,17 @@ public class BankingPlugin extends JavaPlugin {
             }
         }.runTaskAsynchronously(this);
     }
-    
-    private void registerListeners() {
+
+	/**
+	 * Register all listeners necessary for BankingPlugin to function.
+	 * @see AccountBalanceListener
+	 * @see AccountInteractListener
+	 * @see AccountProtectListener
+	 * @see ChestTamperingListener
+	 * @see InterestEventListener
+	 * @see NotifyPlayerOnJoinListener
+	 */
+	private void registerListeners() {
     	debug("Registering listeners...");
 		getServer().getPluginManager().registerEvents(new AccountBalanceListener(this), this);
     	getServer().getPluginManager().registerEvents(new AccountInteractListener(this), this);
@@ -283,6 +300,11 @@ public class BankingPlugin extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new MenuFunctionListener(), this); // Third-party GUI listener
 	}
 
+	/**
+	 * Register listeners specific to external plugins that may or may not be enabled.
+	 * @see GriefPreventionListener
+	 * @see WorldGuardListener
+	 */
 	private void registerExternalListeners() {
 		if (hasGriefPrevention())
 			getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
@@ -291,7 +313,7 @@ public class BankingPlugin extends JavaPlugin {
     }
 
 	/**
-	 * Initializes banks and accounts
+	 * Initializes all banks and accounts stored in the {@link Database}.
 	 */
 	private void initializeBanksAndAccounts() {
 		bankUtils.reload(false, true, new Callback<int[]>(this) {
@@ -317,6 +339,12 @@ public class BankingPlugin extends JavaPlugin {
 		});
 	}
 
+	/**
+	 * Create Bukkit tasks to trigger interest events at the times specified in the {@link Config}
+	 * @see #scheduleRepeatAtTime(LocalTime)
+	 * @see InterestEvent
+	 * @see InterestEventListener
+	 */
 	public void scheduleInterestPoints() {
 		for (LocalTime time : payoutTimeIds.keySet())
 			if (!Config.interestPayoutTimes.contains(time)) {
@@ -336,6 +364,12 @@ public class BankingPlugin extends JavaPlugin {
 		}
 	}
 
+	/**
+	 * Perform the necessary arithmetic to schedule a {@link LocalTime} from the {@link Config}
+	 * as a {@link org.bukkit.scheduler.BukkitTask} repeating every 24 hours.
+	 * @param time the time to be scheduled
+	 * @return the ID of the scheduled task, or -1 if the task was not scheduled
+	 */
 	private int scheduleRepeatAtTime(LocalTime time) {
 		// 24 hours/day * 60 minutes/hour * 60 seconds/minute *  20 ticks/second = 1728000 ticks/day
 		final long ticksInADay = 1728000L;
@@ -359,6 +393,10 @@ public class BankingPlugin extends JavaPlugin {
 				() -> Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(this)), ticks, ticksInADay);
 	}
 
+	/**
+	 * Print a message to the <i>/plugins/BankingPlugin/debug.txt</i> file.
+	 * @param message the message to be printed
+	 */
 	public void debug(String message) {
 		if (Config.enableDebugLog && fw != null) {
 			try {
@@ -377,7 +415,7 @@ public class BankingPlugin extends JavaPlugin {
 	 * Print a {@link Throwable}'s stacktrace to the
 	 * <i>/plugins/BankingPlugin/debug.txt</i> file
 	 * 
-	 * @param throwable {@link Throwable} whose stacktrace will be printed
+	 * @param throwable the {@link Throwable} of which the stacktrace will be printed
 	 */
 	public void debug(Throwable throwable) {
 		if (Config.enableDebugLog && fw != null) {
@@ -387,62 +425,107 @@ public class BankingPlugin extends JavaPlugin {
 		}
 	}
 
+	/**
+	 * @return BankingPlugin's {@link Database}
+	 */
 	public Database getDatabase() {
 		return database;
 	}
 
+	/**
+	 * @return the instance of {@link AccountUtils}
+	 */
 	public AccountUtils getAccountUtils() {
 		return accountUtils;
 	}
 
+	/**
+	 * @return the instance of {@link BankUtils}
+	 */
 	public BankUtils getBankUtils() {
 		return bankUtils;
 	}
 
+	/**
+	 * @return BankingPlugin's {@link Config}
+	 */
 	public Config getPluginConfig() {
 		return config;
 	}
-	
+
+	/**
+	 * @return the {@link Economy} registered by Vault
+	 */
 	public Economy getEconomy() {
 		return econ;
 	}
 
+	/**
+	 * @return whether the plugin is integrated with {@link Essentials}
+	 */
 	public boolean hasEssentials() {
 		return essentials != null && essentials.isEnabled();
 	}
 
+	/**
+	 * @return the instance of {@link Essentials} the plugin is integrated with, if it exists
+	 */
 	public Essentials getEssentials() {
 		return essentials;
 	}
 
+	/**
+	 * @return whether the plugin is integrated with {@link com.sk89q.worldedit.WorldEdit}
+	 */
 	public boolean hasWorldEdit() {
 		return worldEdit != null && worldEdit.isEnabled();
 	}
 
+	/**
+	 * @return the instance of {@link com.sk89q.worldedit.WorldEdit} the plugin is integrated with, if it exists
+	 */
 	public WorldEditPlugin getWorldEdit() {
 		return worldEdit;
 	}
 
+	/**
+	 * @return whether the plugin is integrated with WorldGuard
+	 */
 	public boolean hasWorldGuard() {
 		return worldGuard != null && worldGuard.isEnabled();
 	}
-	
+
+	/**
+	 * @return whether the plugin is integrated with {@link GriefPrevention}
+	 */
 	public boolean hasGriefPrevention() {
 		return griefPrevention != null && griefPrevention.isEnabled();
 	}
 
+	/**
+	 * @return the instance of {@link GriefPrevention} the plugin is integrated with, if it exists
+	 */
 	public GriefPrevention getGriefPrevention() {
 		return griefPrevention;
 	}
 
+	/**
+	 * @return the instance of {@link AccountCommand}
+	 */
 	public AccountCommand getAccountCommand() {
 		return accountCommand;
 	}
-	
+
+	/**
+	 * @return the instance of {@link BankCommand}
+	 */
 	public BankCommand getBankCommand() {
 		return bankCommand;
 	}
-	
+
+	/**
+	 * @return the instance of {@link ControlCommand}
+	 */
 	public ControlCommand getControlCommand() {
 		return controlCommand;
 	}

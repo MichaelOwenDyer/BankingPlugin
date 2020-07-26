@@ -19,43 +19,63 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Bank extends Ownable implements Nameable {
-	
+
+	/**
+	 * Banks are either owned and operated by players or by the admins.
+	 * Admin banks cannot run out of money, whereas a player bank relies on its owner to pay interest to the customers.
+	 */
 	public enum BankType {
 		PLAYER, ADMIN
 	}
 
 	private final BankingPlugin plugin;
-	private boolean created;
-	
+
 	private String name;
-	private final World world;
 	private Selection selection;
 	private final AccountConfig accountConfig;
 	private final Set<Account> accounts;
 	private BankType type;
 
-	// New admin bank
+	/**
+	 * Create a new admin bank.
+	 */
 	public Bank(BankingPlugin plugin, Selection selection) {
 		this(-1, plugin, null, null, null, selection, new AccountConfig(), BankType.ADMIN);
 	}
 
-	// Old admin bank
-	public Bank(int id, BankingPlugin plugin, String name, Set<OfflinePlayer> coowners, Selection selection, AccountConfig config) {
-		this(id, plugin, name, null, coowners, selection, config, BankType.ADMIN);
+	/**
+	 * Re-create an admin bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 */
+	public Bank(int id, BankingPlugin plugin, String name, Set<OfflinePlayer> coowners, Selection selection,
+				AccountConfig accountConfig) {
+		this(id, plugin, name, null, coowners, selection, accountConfig, BankType.ADMIN);
 	}
 
-	// New player bank
-	public Bank(BankingPlugin plugin, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-			Selection selection) {
+	/**
+	 * Create a new player bank.
+	 */
+	public Bank(BankingPlugin plugin, OfflinePlayer owner, Set<OfflinePlayer> coowners, Selection selection) {
 		this(-1, plugin, null, owner, coowners, selection, new AccountConfig(), BankType.PLAYER);
 	}
-	
-	// Old player bank
+
+	/**
+	 * Re-create a player bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 */
 	public Bank(int id, BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-			Selection selection, AccountConfig config) {
-		this(id, plugin, name, owner, coowners, selection, config, BankType.PLAYER);
+			Selection selection, AccountConfig accountConfig) {
+		this(id, plugin, name, owner, coowners, selection, accountConfig, BankType.PLAYER);
 	}
 
+	/**
+	 * @param id the bank ID {@link Ownable}
+	 * @param plugin the current instance of {@link BankingPlugin}
+	 * @param name the name of the bank {@link Nameable}
+	 * @param owner the owner of the bank {@link Ownable}
+	 * @param coowners the co-owners of the bank {@link Ownable}
+	 * @param selection the {@link Selection} representing the bounds of the bank
+	 * @param accountConfig the {@link AccountConfig} of the bank
+	 * @param type the {@link BankType} of the bank
+	 */
 	public Bank(int id, BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 			Selection selection, AccountConfig accountConfig, BankType type) {
 		this.id = id;
@@ -63,54 +83,69 @@ public class Bank extends Ownable implements Nameable {
 		this.owner = owner;
 		this.coowners = coowners;
 		this.name = name;
-		this.world = selection.getWorld();
 		this.selection = selection;
 		this.accounts = new HashSet<>();
 		this.accountConfig = accountConfig;
 		this.type = type;
 	}
-	
-	public boolean create() {
-		if (created) {
-			plugin.debug("Bank was already created! (#" + id + ")");
-			return false;
-		}
-		plugin.debug("Creating bank (#" + id + ")");
-		created = true;
-		return true;
-	}
 
+	/**
+	 * Add an account to this bank.
+	 * @param account the account to be added
+	 */
 	public void addAccount(Account account) {
 		removeAccount(account);
 		if (account != null)
 			accounts.add(account);
 	}
 
+	/**
+	 * Remove an account from this bank.
+	 * @param account the account to be removed
+	 */
 	public void removeAccount(Account account) {
 		if (account != null)
 			accounts.remove(account);
 	}
 
+	/**
+	 * Calculate the sum of all {@link Account} balances at this bank.
+	 * @return the total value of the accounts at this bank
+	 * @see Account#getBalance()
+	 */
 	public BigDecimal getTotalValue() {
-		if (created)
-			return accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO,
-					(value, sum) -> sum.add(value)).setScale(2, RoundingMode.HALF_EVEN);
-		else
-			return BigDecimal.ZERO;
+		return accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO,
+					(value, sum) -> sum.add(value));
 	}
 
+	/**
+	 * @return a {@link Collection<Account>} containing all accounts at this bank
+	 */
 	public Collection<Account> getAccounts() {
 		return accounts;
 	}
 
+	/**
+	 * This is the same as {@link #getAccounts()} but is safe
+	 * to use for removing all accounts from the bank.
+	 * @return a {@link Collection<Account>} containing a copy of all accounts at this bank
+	 */
 	public Collection<Account> getAccountsCopy() {
 		return Collections.unmodifiableCollection(getAccounts());
 	}
 
+	/**
+	 * @return a {@link Map<OfflinePlayer, List<Account>>} containing
+	 * all accounts at this bank grouped by owner
+	 */
 	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
 		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
 	}
 
+	/**
+	 * @return a {@link Map<OfflinePlayer, BigDecimal>} containing
+	 * all account owners at this bank and their total account balances
+	 */
 	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
 		Map<OfflinePlayer, BigDecimal> customerBalances = new HashMap<>();
 		getCustomerAccounts().forEach((key, value) -> customerBalances.put(key,
@@ -125,7 +160,7 @@ public class Bank extends Ownable implements Nameable {
 
 	/**
 	 * Sets the name of this bank and updates the value in the database.
-	 * @param name The new name of this bank.
+	 * @param name the new name of this bank
 	 */
 	@Override
 	public void setName(String name) {
@@ -145,34 +180,53 @@ public class Bank extends Ownable implements Nameable {
 		setName(getDefaultName());
 	}
 
-	public World getWorld() {
-		return world;
-	}
-
+	/**
+	 * @return the {@link Selection} representing the bounds of this bank
+	 */
 	public Selection getSelection() {
 		return selection;
 	}
 
+	/**
+	 * @param sel the new {@link Selection} to represent the bounds of this bank
+	 */
 	public void setSelection(Selection sel) {
 		this.selection = sel;
 	}
 
+	/**
+	 * @return the {@link AccountConfig} of this bank
+	 */
 	public AccountConfig getAccountConfig() {
 		return accountConfig;
 	}
 
+	/**
+	 * @return the {@link BankType} of this bank
+	 */
 	public BankType getType() {
 		return type;
 	}
 
+	/**
+	 * @param type the new {@link BankType} of this bank
+	 */
 	public void setType(BankType type) {
 		this.type = type;
 	}
 
+	/**
+	 * @return whether the bank is an admin bank
+	 * @see BankType
+	 */
 	public boolean isAdminBank() {
 		return getType() == BankType.ADMIN;
 	}
 
+	/**
+	 * @return whether the bank is a player bank
+	 * @see BankType
+	 */
 	public boolean isPlayerBank() {
 		return getType() == BankType.PLAYER;
 	}

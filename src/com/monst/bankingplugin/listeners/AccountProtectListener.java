@@ -88,8 +88,8 @@ public class AccountProtectListener implements Listener {
 			}
 		}
 
-		if (account.getInventoryHolder(true) instanceof DoubleChest) {
-			DoubleChest dc = (DoubleChest) account.getInventoryHolder(false);
+		if (account.getInventory(true).getHolder() instanceof DoubleChest) {
+			DoubleChest dc = (DoubleChest) account.getInventory(false).getHolder();
 			final Chest l = (Chest) dc.getLeftSide();
 			final Chest r = (Chest) dc.getRightSide();
 

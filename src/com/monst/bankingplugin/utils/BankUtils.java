@@ -368,23 +368,20 @@ public class BankUtils {
 					public void onResult(Map<Bank, Collection<Account>> result) {
 
 						for (Bank bank : result.keySet()) {
-							if (bank.create()) {
-								addBank(bank, false);
-								afterReload[0]++;
-								for (Account account : result.get(bank)) {
-									if (account.create(showConsoleMessages)) {
-										accountUtils.addAccount(account, false, new Callback<Integer>(plugin) {
-											@Override
-											public void onResult(Integer result) {
-												account.updateName();
-											}
-										});
-										afterReload[1]++;
-									} else
-										plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");
-								}
-							} else
-								plugin.debug("Could not re-create bank \"" + bank.getName() + "\" from database! (#" + bank.getID() + ")");
+							addBank(bank, false);
+							afterReload[0]++;
+							for (Account account : result.get(bank)) {
+								if (account.create(showConsoleMessages)) {
+									accountUtils.addAccount(account, false, new Callback<Integer>(plugin) {
+										@Override
+										public void onResult(Integer result) {
+											account.updateName();
+										}
+									});
+									afterReload[1]++;
+								} else
+									plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");
+							}
 						}
 
 						if (preReload[0] != afterReload[0])

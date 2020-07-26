@@ -126,8 +126,10 @@ public class AccountGui extends Gui<Account> {
 		boolean isLowBalance = guiSubject.getBalance().doubleValue() < config.getMinBalance(false);
 		double interestRate = config.getInterestRate(false);
 		int multiplier = guiSubject.getStatus().getRealMultiplier();
-		double fullPayout = !(isLowBalance && !config.isPayOnLowBalance(false)) ? guiSubject.getBalance().doubleValue() * interestRate * multiplier : 0.0d;
-		double lowBalanceFee = isLowBalance && config.getLowBalanceFee(false) > 0 ? config.getLowBalanceFee(false) : 0.0d;
+		double fullPayout = !(isLowBalance && !config.isPayOnLowBalance(false))
+				? guiSubject.getBalance().doubleValue() * interestRate * multiplier : 0.0d;
+		double lowBalanceFee = isLowBalance && config.getLowBalanceFee(false) > 0
+				? config.getLowBalanceFee(false) : 0.0d;
 		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
 				"Balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(guiSubject.getBalance()) + (isLowBalance ? ChatColor.RED + " (low)" : ""),

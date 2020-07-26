@@ -3,45 +3,47 @@ package com.monst.bankingplugin.utils;
 public interface Nameable {
 
     /**
-     * @return The name stripped of all colors.
+     * @return the name of this nameable, stripped of all colors
+     * @see Utils#stripColor(String)
      */
     default String getName() {
         return Utils.stripColor(getRawName());
     }
 
     /**
-     * @return The raw string representing the name, including color codes.
+     * @return the name of this nameable, including color codes
      */
     String getRawName();
 
     /**
-     * @return The colorized name.
+     * @return the colorized name of this nameable
+     * @see Utils#colorize(String)
      */
     default String getColorizedName() {
         return Utils.colorize(getRawName());
     }
 
     /**
-     * Set the name of this object.
-     * @param name The new raw name of this object.
+     * Set the raw name of this nameable.
+     * @param name The new raw name of this nameable
      */
     void setName(String name);
 
     /**
-     * @return Whether the object is currently using its default name.
+     * @return whether the nameable is currently using its default name
      */
     default boolean isDefaultName() {
         return getRawName().contentEquals(getDefaultName());
     }
 
     /**
-     * @return The default name of this object.
+     * @return the default name of this nameable
      */
     String getDefaultName();
 
     /**
-     * Set the name of this object to its default.
-     * @see this.getDefaultName()
+     * Set the name of this nameable to its default.
+     * @see #getDefaultName()
      */
     void setToDefaultName();
 

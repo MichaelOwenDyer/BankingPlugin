@@ -148,7 +148,8 @@ public class InterestEventListener implements Listener {
 								.setScale(2, RoundingMode.HALF_EVEN);
 
 						boolean online = bankOwner.isOnline();
-						EconomyResponse r = plugin.getEconomy().depositPlayer(bankOwner, bank.getWorld().getName(), revenue.doubleValue());
+						EconomyResponse r = plugin.getEconomy().depositPlayer(bankOwner,
+								bank.getSelection().getWorld().getName(), revenue.doubleValue());
 						if (!r.transactionSuccess()) {
 							plugin.debug("Economy transaction failed: " + r.errorMessage);
 							if (online)

@@ -243,7 +243,7 @@ public abstract class Database {
 					ps.setString(i + 4, account.getCoowners().isEmpty() ? null
 							: account.getCoowners().stream().map(p -> "" + p.getUniqueId())
 									.collect(Collectors.joining(" | ")));
-					ps.setInt(i + 5, account.getChestSize());
+					ps.setInt(i + 5, account.getSize());
 
 					ps.setString(i + 6, account.getBalance().toString());
 					ps.setString(i + 7, account.getPrevBalance().toString());
@@ -361,7 +361,7 @@ public abstract class Database {
 									.collect(Collectors.joining(" | ")));
 					}
 					ps.setString(i + 4, bank.getSelection().getType().toString());
-					ps.setString(i + 5, bank.getWorld().getName());
+					ps.setString(i + 5, bank.getSelection().getWorld().getName());
 
 					if (bank.getSelection().getType() == SelectionType.POLYGONAL) {
 						Polygonal2DSelection sel = (Polygonal2DSelection) bank.getSelection();

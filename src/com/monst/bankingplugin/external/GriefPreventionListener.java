@@ -2,7 +2,10 @@ package com.monst.bankingplugin.external;
 
 import java.util.Set;
 
+import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -28,22 +31,20 @@ public class GriefPreventionListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onCreateAccount(AccountCreateEvent e) {
+	public void onAccountCreate(AccountCreateEvent e) {
         if (!Config.enableGriefPreventionIntegration)
             return;
 
-		Set<Location> chestLocations = Utils.getChestLocations(e.getAccount());
-        for (Location loc : chestLocations) {
+        for (Location loc : Utils.getChestLocations(e.getAccount()))
 			if (handleForLocation(e.getPlayer(), loc, e)) {
 				e.setCancelled(true);
 				plugin.debug("Account create event cancelled by GriefPrevention");
                 return;
 			}
-        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onExtendAccount(AccountExtendEvent e) {
+	public void onAccountExtend(AccountExtendEvent e) {
 		if (!Config.enableGriefPreventionIntegration)
             return;
 
@@ -51,6 +52,21 @@ public class GriefPreventionListener implements Listener {
 			e.setCancelled(true);
 			plugin.debug("Account extend event cancelled by GriefPrevention");
 		}
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onAccountMigrate(AccountMigrateEvent e) {
+	    if (!Config.enableGriefPreventionIntegration)
+	        return;
+
+	    Block b = e.getNewAccountLocation().getBlock();
+	    Chest chest = (Chest) b.getBlockData();
+	    for (Location loc : Utils.getChestLocations(chest.getInventory()))
+            if (handleForLocation(e.getPlayer(), loc, e)) {
+                e.setCancelled(true);
+                plugin.debug("Account migrate event cancelled by GriefPrevention");
+                return;
+            }
     }
 
     private boolean handleForLocation(Player player, Location loc, Cancellable e) {

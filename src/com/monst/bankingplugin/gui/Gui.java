@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 abstract class Gui<T extends Ownable> {
 
 	BankingPlugin plugin;
-	T guiSubject;
+	final T guiSubject;
 	Menu menu;
 	Gui<T> prevGui;
 	boolean openInBackground = false;

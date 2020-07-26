@@ -4,14 +4,14 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.TransactionFailedException;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.HoverEvent.Action;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
@@ -19,6 +19,7 @@ import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.ChatPaginator;
@@ -90,6 +91,32 @@ public class Utils {
 		for (String sentence : args)
 			Collections.addAll(lines, ChatPaginator.wordWrap(sentence, lineLength));
 		return lines;
+	}
+
+	public static boolean depositPlayer(OfflinePlayer recipient, String worldname, double amount, Callback<Void> callback) {
+		if (amount <= 0 || recipient == null)
+			return false;
+
+		Economy economy = BankingPlugin.getInstance().getEconomy();
+		EconomyResponse response = economy.depositPlayer(recipient, worldname, amount);
+		if (response.transactionSuccess())
+			callback.callSyncResult(null);
+		else
+			callback.callSyncError(new TransactionFailedException(response.errorMessage));
+		return true;
+	}
+
+	public static boolean withdrawPlayer(OfflinePlayer recipient, String worldname, double amount, Callback<Void> callback) {
+		if (amount <= 0 || recipient == null)
+			return false;
+
+		Economy economy = BankingPlugin.getInstance().getEconomy();
+		EconomyResponse response = economy.withdrawPlayer(recipient, worldname, amount);
+		if (response.transactionSuccess())
+			callback.callSyncResult(null);
+		else
+			callback.callSyncError(new TransactionFailedException(response.errorMessage));
+		return true;
 	}
 
 	private static List<List<Integer>> getStackedList(List<Integer> multipliers) {
@@ -309,8 +336,8 @@ public class Utils {
 					.color(net.md_5.bungee.api.ChatColor.GREEN);
 			interestRate.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, cb.create()));
 		}
-		interestRate
-				.addExtra(ChatColor.GRAY + " (" + baseInterestRate + " x " + accountStatus.getRealMultiplier() + ")");
+		interestRate.addExtra(
+				ChatColor.GRAY + " (" + baseInterestRate + " x " + accountStatus.getRealMultiplier() + ")");
 		interestRateView.addExtra(interestRate);
 
 		return interestRateView;
@@ -433,16 +460,20 @@ public class Utils {
      * @return A set of 1 or 2 locations
      */
     public static Set<Location> getChestLocations(Account account) {
-        Set<Location> chestLocations = new HashSet<>();
-        InventoryHolder ih = account.getInventoryHolder(true);
-        if (ih instanceof DoubleChest) {
-            DoubleChest dc = (DoubleChest) ih;
-            chestLocations.add(((Chest) dc.getLeftSide()).getLocation());
-            chestLocations.add(((Chest) dc.getRightSide()).getLocation());
-		} else
-            chestLocations.add(account.getLocation());
-        return chestLocations;
+        return getChestLocations(account.getInventory(true));
     }
+
+    public static Set<Location> getChestLocations(Inventory inv) {
+		Set<Location> chestLocations = new HashSet<>();
+		InventoryHolder ih = inv.getHolder();
+		if (ih instanceof DoubleChest) {
+			DoubleChest dc = (DoubleChest) ih;
+			chestLocations.add(((Chest) dc.getLeftSide()).getLocation());
+			chestLocations.add(((Chest) dc.getRightSide()).getLocation());
+		} else
+			chestLocations.add(inv.getLocation());
+		return chestLocations;
+	}
 
     /**
      * @return The current server version with revision number (e.g. v1_9_R2, v1_10_R1)
