@@ -13,7 +13,6 @@ import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -21,8 +20,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -196,27 +193,29 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		double creationPrice = isAdminBank ? Config.creationPriceBank.getKey() : Config.creationPriceBank.getValue();
-		if (creationPrice > 0 && !isAdminBank) {
+		if (creationPrice > 0) {
 			if (plugin.getEconomy().getBalance(p) < creationPrice) {
 				plugin.debug(p.getName() + " does not have enough money to create a bank");
 				p.sendMessage(Messages.BANK_CREATE_INSUFFICIENT_FUNDS);
 				return true;
 			}
-			OfflinePlayer player = p.getPlayer();
-			EconomyResponse r = plugin.getEconomy().withdrawPlayer(player, p.getLocation().getWorld().getName(),
-					creationPrice);
-			if (!r.transactionSuccess()) {
-				plugin.debug("Economy transaction failed: " + r.errorMessage);
-				p.sendMessage(Messages.ERROR_OCCURRED);
-				return true;
-			} else
-				p.sendMessage(String.format(Messages.BANK_CREATE_FEE_PAID,
-						BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
 		}
 
-		bankUtils.addBank(bank, true);
-		plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
-		p.sendMessage(Messages.BANK_CREATED);
+		Utils.withdrawPlayer(p.getPlayer(), p.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
+			@Override
+			public void onResult(Void result) {
+				p.sendMessage(String.format(Messages.BANK_CREATE_FEE_PAID, Utils.formatNumber(creationPrice)));
+				bankUtils.addBank(bank, true);
+				plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
+				p.sendMessage(Messages.BANK_CREATED);
+			}
+			@Override
+			public void onError(Throwable throwable) {
+				plugin.debug(throwable);
+				p.sendMessage(Messages.ERROR_OCCURRED);
+			}
+		});
+
 		return true;
 	}
 
@@ -287,26 +286,27 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		if (sender instanceof Player) {
-			Player executor = (Player) sender;
-			double creationPrice = bank.isAdminBank() ? Config.creationPriceBank.getKey()
-					: Config.creationPriceBank.getValue();
-			boolean reimburse = bank.isAdminBank() ? Config.reimburseBankCreation.getKey()
-					: Config.reimburseBankCreation.getValue();
-			if (creationPrice > 0 && reimburse && (bank.isAdminBank() || bank.isOwner(executor))) {
-				OfflinePlayer owner = executor.getPlayer();
-				EconomyResponse r = plugin.getEconomy().depositPlayer(owner, bank.getSelection().getWorld().getName(),
-						creationPrice);
+			double creationPrice = bank.isAdminBank() ? Config.creationPriceBank.getKey() : Config.creationPriceBank.getValue();
+			boolean reimburse = bank.isAdminBank() ? Config.reimburseBankCreation.getKey() : Config.reimburseBankCreation.getValue();
+			creationPrice *= reimburse ? 1 : 0;
 
-				if (!r.transactionSuccess()) {
-					plugin.debug("Economy transaction failed: " + r.errorMessage);
-					executor.sendMessage(Messages.ERROR_OCCURRED);
-				} else {
-					executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
-							BigDecimal.valueOf(r.amount).setScale(2, RoundingMode.HALF_EVEN)));
-				}
+			Player executor = (Player) sender;
+			if (creationPrice > 0 && (bank.isAdminBank() || bank.isOwner(executor))) {
+				double finalCreationPrice = creationPrice;
+				Utils.depositPlayer(executor.getPlayer(), bank.getSelection().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
+					@Override
+					public void onResult(Void result) {
+						executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
+								Utils.formatNumber(finalCreationPrice)));
+					}
+					@Override
+					public void onError(Throwable throwable) {
+						plugin.debug(throwable);
+						executor.sendMessage(Messages.ERROR_OCCURRED);
+					}
+				});
 			}
 		}
-
 		bankUtils.removeBank(bank, true);
 		plugin.debug("Bank #" + bank.getID() + " removed from the database");
 		sender.sendMessage(Messages.BANK_REMOVED);

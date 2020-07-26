@@ -13,7 +13,9 @@ public abstract class Callback<T> {
 
     public void onResult(T result) {}
 
-    public void onError(Throwable throwable) {}
+    public void onError(Throwable throwable) {
+        plugin.debug(throwable);
+    }
 
     public final void callSyncResult(final T result) {
         new BukkitRunnable() {
