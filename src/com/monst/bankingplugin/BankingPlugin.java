@@ -24,7 +24,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.ipvp.canvas.MenuFunctionListener;
 
@@ -93,7 +92,6 @@ public class BankingPlugin extends JavaPlugin {
         }
 
         debug("Loading BankingPlugin version " + getDescription().getVersion());
-        Bukkit.getConsoleSender().sendMessage(Utils.getVersionMessage());
 
         worldGuard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard != null) {
@@ -104,6 +102,7 @@ public class BankingPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		debug("Enabling BankingPlugin version " + getDescription().getVersion());
+		Bukkit.getConsoleSender().sendMessage(Utils.getVersionMessage());
 
 		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
 			debug("Could not find plugin \"Vault\"");
@@ -124,9 +123,7 @@ public class BankingPlugin extends JavaPlugin {
 			break;
 		default:
 			debug("Server version not officially supported: " + Utils.getServerVersion() + "!");
-			debug("Plugin may still work, but more errors are expected!");
-			getLogger().warning("Server version not officially supported: " +
-			Utils.getServerVersion() + "!");
+			getLogger().warning("Server version not officially supported: " + Utils.getServerVersion() + "!");
 			getLogger().warning("Plugin may still work, but more errors are expected!");
 		}
 		

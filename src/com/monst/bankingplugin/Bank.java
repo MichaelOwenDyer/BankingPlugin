@@ -9,12 +9,10 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -269,7 +267,7 @@ public class Bank extends Ownable implements Nameable {
 		info.addExtra(Utils.getMultiplierView(this));
 		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.getAccountCreationPrice(false)));
 		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.getAllowedOfflinePayouts(false));
-		info.addExtra(" (" + ChatColor.AQUA + accountConfig.getAllowedOfflineBeforeReset(false) + ChatColor.GRAY + " before multiplier reset)");
+		info.addExtra(" (" + ChatColor.AQUA + accountConfig.getAllowedOfflinePayoutsBeforeReset(false) + ChatColor.GRAY + " before multiplier reset)");
 		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.getInitialInterestDelay(false));
 		double minBal = accountConfig.getMinBalance(false);
 		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));

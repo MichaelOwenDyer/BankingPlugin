@@ -10,7 +10,7 @@ import com.monst.bankingplugin.gui.BankGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.*;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
+import com.monst.bankingplugin.utils.AccountConfig.BankField;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -653,8 +653,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		AccountConfig config = bank.getAccountConfig();
 		
-		Field field = Field.getByName(fieldName);
-		if (field == null) {
+		BankField bankField = BankField.getByName(fieldName);
+		if (bankField == null) {
 			plugin.debug("No account config field could be found with name " + fieldName);
 			sender.sendMessage(String.format(Messages.NOT_A_FIELD, fieldName));
 			return true;
@@ -666,13 +666,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		Callback<String> callback = new Callback<String>(plugin) {
 			@Override
 			public void onResult(String result) {
-				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, field.getName(), result, finalBank.getName()));
-				plugin.debug(sender.getName() + " has set " + field.getName() + " at " + finalBank.getName() + " to " + result);
+				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, bankField.getName(), result, finalBank.getName()));
+				plugin.debug(sender.getName() + " has set " + bankField.getName() + " at " + finalBank.getName() + " to " + result);
 
 			}
 			@Override
 			public void onError(Throwable throwable) {
-				switch (field.getDataType()) {
+				switch (bankField.getDataType()) {
 					case 0:
 						plugin.debug("Failed to parse double: " + finalValue);
 						sender.sendMessage(String.format(Messages.NOT_A_NUMBER, finalValue));
@@ -692,7 +692,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				}
 			}
 		};
-		if (!config.setField(field, value, callback))
+		if (!config.set(bankField, value, callback))
 			sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
 
 		bankUtils.addBank(bank, true);

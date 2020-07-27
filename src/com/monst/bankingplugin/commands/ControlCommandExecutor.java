@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.commands;
 
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.InterestEvent;
 import com.monst.bankingplugin.events.ReloadEvent;
@@ -11,6 +13,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -134,12 +138,14 @@ public class ControlCommandExecutor implements CommandExecutor {
 			return;
 		}
 
-		plugin.getBankUtils().reload(true, true, new Callback<int[]>(plugin) {
+		plugin.getBankUtils().reload(true, true,
+				new Callback<AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>>>(plugin) {
 			@Override
-			public void onResult(int[] result) {
-				sender.sendMessage(
-						String.format(Messages.RELOADED_BANKS, result[0], result[1]));
-				plugin.debug(sender.getName() + " has reloaded " + result[0] + " banks and " + result[1] + " accounts.");
+			public void onResult(AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>> result) {
+				sender.sendMessage(String.format(Messages.RELOADED_BANKS,
+						result.getKey().size(), result.getValue().size()));
+				plugin.debug(String.format(sender.getName() + " has reloaded %d banks and %d accounts.",
+						result.getKey().size(), result.getValue().size()));
 			}
 
 			@Override

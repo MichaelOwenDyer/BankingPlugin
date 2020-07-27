@@ -5,7 +5,6 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.utils.*;
-import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -24,9 +23,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 public class AccountProtectListener implements Listener {
 
@@ -62,7 +58,7 @@ public class AccountProtectListener implements Listener {
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
 		double creationPrice = accountConfig.getAccountCreationPrice(false);
-		creationPrice *= accountConfig.isReimburseAccountCreation(false) ? 1 : 0;
+		creationPrice *= accountConfig.getReimburseAccountCreation(false) ? 1 : 0;
 
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			double finalCreationPrice = creationPrice;

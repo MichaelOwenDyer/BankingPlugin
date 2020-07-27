@@ -86,7 +86,7 @@ public class InterestEventListener implements Listener {
 								plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
 										BigDecimal.valueOf(config.getLowBalanceFee(false) * -1), null);
 							}
-							if (!config.isPayOnLowBalance(false))
+							if (!config.getPayOnLowBalance(false))
 								continue;
 						}
 

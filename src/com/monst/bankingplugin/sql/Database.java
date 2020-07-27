@@ -402,16 +402,16 @@ public abstract class Database {
 							config.getInterestRate(true) + " | "
 									+ config.getMultipliers(true).stream().map(num -> "" + num).collect(Collectors.joining(",", "[", "]")) + " | "
 									+ config.getInitialInterestDelay(true) + " | "
-									+ config.isCountInterestDelayOffline(true) + " | "
+									+ config.getCountInterestDelayOffline(true) + " | "
 									+ config.getAllowedOfflinePayouts(true) + " | "
-									+ config.getAllowedOfflineBeforeReset(true) + " | "
+									+ config.getAllowedOfflinePayoutsBeforeReset(true) + " | "
 									+ config.getOfflineMultiplierDecrement(true) + " | "
 									+ config.getWithdrawalMultiplierDecrement(true) + " | "
 									+ config.getAccountCreationPrice(true) + " | "
-									+ config.isReimburseAccountCreation(true) + " | "
+									+ config.getReimburseAccountCreation(true) + " | "
 									+ config.getMinBalance(true) + " | "
 									+ config.getLowBalanceFee(true) + " | "
-									+ config.isPayOnLowBalance(true) + " | "
+									+ config.getPayOnLowBalance(true) + " | "
 									+ config.getPlayerAccountLimit(true));
 
 					ps.executeUpdate();

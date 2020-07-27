@@ -4,7 +4,7 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
+import com.monst.bankingplugin.utils.AccountConfig.BankField;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -256,20 +256,20 @@ class GenericTabCompleter implements TabCompleter {
 						|| (!bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
 						|| (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
 				.collect(Collectors.toList());
-		List<Field> fields = Field.stream().filter(AccountConfig::isOverrideAllowed).collect(Collectors.toList());
+		List<BankField> bankFields = BankField.stream().filter(AccountConfig::isOverrideAllowed).collect(Collectors.toList());
 		
 		if (args.length == 2) {
 			if (sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation())) {
 				banks.remove(bankUtils.getBank(((Player) sender).getLocation()));
 				if (!args[1].isEmpty()) {
-					for (Field field : fields)
-						if (field.getName().startsWith(args[1].toLowerCase()))
-							returnCompletions.add(field.getName());
+					for (BankField bankField : bankFields)
+						if (bankField.getName().startsWith(args[1].toLowerCase()))
+							returnCompletions.add(bankField.getName());
 					for (Bank bank : banks)
 						if (bank.getName().startsWith(args[1].toLowerCase()))
 							returnCompletions.add(bank.getName());
 				} else {
-					returnCompletions.addAll(fields.stream().map(Field::getName).collect(Collectors.toList()));
+					returnCompletions.addAll(bankFields.stream().map(BankField::getName).collect(Collectors.toList()));
 					returnCompletions.addAll(banks.stream().map(Bank::getName).collect(Collectors.toList()));
 				}
 				return returnCompletions;
@@ -286,29 +286,29 @@ class GenericTabCompleter implements TabCompleter {
 			Bank bank = bankUtils.lookupBank(args[1]);
 			if (bank != null) {
 				if (!args[2].isEmpty()) {
-					for (Field f : fields)
+					for (BankField f : bankFields)
 						if (f.getName().contains(args[2].toLowerCase()))
 							returnCompletions.add(f.getName());
 					return returnCompletions;
 				} else
-					return fields.stream().map(Field::getName).collect(Collectors.toList());
+					return bankFields.stream().map(BankField::getName).collect(Collectors.toList());
 			}
 			if (!(sender instanceof Player))
 				return new ArrayList<>();
 			bank = bankUtils.getBank(((Player) sender).getLocation());
-			Field field = Field.getByName(args[1]);
-			if (bank != null && field != null) {
-				String value = bank.getAccountConfig().getField(field).toString();
-				if (field.getDataType() == 0)
+			BankField bankField = BankField.getByName(args[1]);
+			if (bank != null && bankField != null) {
+				String value = bank.getAccountConfig().get(bankField).toString();
+				if (bankField.getDataType() == 0)
 					value = Utils.formatNumber(Double.parseDouble(value));
 				return Collections.singletonList(value);
 			}
 		} else if (args.length == 4) {
 			Bank bank = bankUtils.lookupBank(args[1]);
-			Field field = Field.getByName(args[2]);
-			if (bank != null && field != null) {
-				String value = bank.getAccountConfig().getField(field).toString();
-				if (field.getDataType() == 0)
+			BankField bankField = BankField.getByName(args[2]);
+			if (bank != null && bankField != null) {
+				String value = bank.getAccountConfig().get(bankField).toString();
+				if (bankField.getDataType() == 0)
 					value = Utils.formatNumber(Double.parseDouble(value));
 				return Collections.singletonList(value);
 			}

@@ -68,7 +68,7 @@ public class Config {
 	 * The number of payouts a player is allowed to be offline for (but not
 	 * necessarily collect) before their multiplier is reset.
 	 **/
-	public static Entry<Boolean, Integer> allowedOfflineBeforeMultiplierReset;
+	public static Entry<Boolean, Integer> allowedOfflinePayoutsBeforeMultiplierReset;
 
     /**
 	 * The behavior of an offline player's multiplier.
@@ -429,7 +429,7 @@ public class Config {
 		allowedOfflinePayouts = new SimpleEntry<>(config.getBoolean("allowed-offline-payouts.allow-override"),
 				config.getInt("allowed-offline-payouts.default"));
 
-		allowedOfflineBeforeMultiplierReset = new SimpleEntry<>(
+		allowedOfflinePayoutsBeforeMultiplierReset = new SimpleEntry<>(
 				config.getBoolean("allowed-offline-before-multiplier-reset.allow-override"),
 				config.getInt("allowed-offline-before-multiplier-reset.default"));
 

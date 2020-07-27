@@ -126,7 +126,7 @@ public class AccountGui extends Gui<Account> {
 		boolean isLowBalance = guiSubject.getBalance().doubleValue() < config.getMinBalance(false);
 		double interestRate = config.getInterestRate(false);
 		int multiplier = guiSubject.getStatus().getRealMultiplier();
-		double fullPayout = !(isLowBalance && !config.isPayOnLowBalance(false))
+		double fullPayout = !(isLowBalance && !config.getPayOnLowBalance(false))
 				? guiSubject.getBalance().doubleValue() * interestRate * multiplier : 0.0d;
 		double lowBalanceFee = isLowBalance && config.getLowBalanceFee(false) > 0
 				? config.getLowBalanceFee(false) : 0.0d;
@@ -147,19 +147,19 @@ public class AccountGui extends Gui<Account> {
 		int untilReset = status.getRemainingOfflineUntilReset();
 		int offlineDecrement = guiSubject.getBank().getAccountConfig().getOfflineMultiplierDecrement(false);
 		return Utils.wordWrapAll(
-				delay == 0
+				ChatColor.GRAY + (delay == 0
 						? "Account will generate interest in the next payout cycle."
-						: "Account will begin generating interest in " + ChatColor.AQUA + delay + ChatColor.GRAY + String.format(" payout cycle%s.", delay == 1 ? "" : "s"),
+						: "Account will begin generating interest in " + ChatColor.AQUA + delay + ChatColor.GRAY + String.format(" payout cycle%s.", delay == 1 ? "" : "s")),
 
-				"Account can generate interest for " + ChatColor.AQUA + remainingOffline + ChatColor.GRAY + String.format(" offline payout cycle%s.", remainingOffline == 1 ? "" : "s"),
+				ChatColor.GRAY + "Account can generate interest for " + ChatColor.AQUA + remainingOffline + ChatColor.GRAY + String.format(" offline payout cycle%s.", remainingOffline == 1 ? "" : "s"),
 
-				"Account multiplier will " + (untilReset < 0
+				ChatColor.GRAY + "Account multiplier will " + (untilReset < 0
 						? "not reset while offline."
 						: (untilReset == 0 ? "reset immediately on an offline payout."
 								: "reset after " + ChatColor.AQUA + untilReset + ChatColor.GRAY
 								+ String.format(" offline payout cycle%s.", untilReset == 1 ? "" : "s"))),
 
-				"Account multiplier will " + (offlineDecrement < 0
+				ChatColor.GRAY + "Account multiplier will " + (offlineDecrement < 0
 						? "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " stages for every offline payout."
 						: (offlineDecrement == 0 ? " freeze while offline." : " reset"))
 		);

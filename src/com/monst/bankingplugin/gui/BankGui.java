@@ -126,10 +126,10 @@ public class BankGui extends Gui<Bank> {
 
 	private List<String> getCreationLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
-		boolean reimburse = config.isReimburseAccountCreation(false);
+		boolean reimburse = config.getReimburseAccountCreation(false);
 		return Arrays.asList(
-				"Fee: " + ChatColor.GREEN + "$" + Utils.formatNumber(config.getAccountCreationPrice(false)),
-				"Fee Reimbursement: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
+				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + Utils.formatNumber(config.getAccountCreationPrice(false)),
+				ChatColor.GRAY + "Fee Reimbursement: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}
 
@@ -138,13 +138,13 @@ public class BankGui extends Gui<Bank> {
 		double minBalance = config.getMinBalance(false);
 		double lowBalanceFee = config.getLowBalanceFee(false);
 		boolean strikethrough = minBalance == 0; // TODO: When minbalance is set make sure >=0
-		boolean payOnLowBalance = config.isPayOnLowBalance(false);
-		return Arrays.asList(
-				"Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBalance),
-				"Low balance fee: " + ChatColor.RED
+		boolean payOnLowBalance = config.getPayOnLowBalance(false);
+		return Utils.wordWrapAll(
+				ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBalance),
+				ChatColor.GRAY + "Low balance fee: " + ChatColor.RED
 						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.formatNumber(lowBalanceFee),
-				"Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
-						+ " continue to be paid out when the account balance is low."
+				ChatColor.GRAY + "Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
+						+ ChatColor.GRAY + " continue to be paid out when the account balance is low."
 		);
 	}
 
@@ -152,13 +152,13 @@ public class BankGui extends Gui<Bank> {
 		AccountConfig config = guiSubject.getAccountConfig();
 		int offlinePayouts = config.getAllowedOfflinePayouts(false);
 		int offlineDecrement = config.getOfflineMultiplierDecrement(false);
-		int beforeReset = config.getAllowedOfflineBeforeReset(false);
+		int beforeReset = config.getAllowedOfflinePayoutsBeforeReset(false);
 		return Utils.wordWrapAll(
-				"Accounts will pay interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
+				ChatColor.GRAY + "Accounts will pay interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
 						+ String.format("time%s", offlinePayouts == 1 ? "" : "s") + " while the account holder is offline.",
-				"Account multipliers will be reset after the account holder has been offline for "
+				ChatColor.GRAY + "Account multipliers will be reset after the account holder has been offline for "
 						+ ChatColor.AQUA + beforeReset + ChatColor.GRAY + " interest payouts.",
-				"Account multipliers will " + (offlineDecrement == 0 ? "remain frozen"
+				ChatColor.GRAY + "Account multipliers will " + (offlineDecrement == 0 ? "remain frozen"
 						: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY
 						+ " for every payout event") + " while offline."
 		);
@@ -167,11 +167,11 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getInterestDelayLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
 		int interestDelay = config.getInitialInterestDelay(false);
-		boolean countOffline = config.isCountInterestDelayOffline(false);
+		boolean countOffline = config.getCountInterestDelayOffline(false);
 		return Utils.wordWrapAll(
-				"New accounts will begin to pay interest after "
+				ChatColor.GRAY + "New accounts will begin to pay interest after "
 						+ ChatColor.AQUA + interestDelay + ChatColor.GRAY + " interest cycles.",
-				"The account owner " + (countOffline ? "does not have to be" : "must be ")
+				ChatColor.GRAY + "The account owner " + (countOffline ? "does not have to be" : "must be ")
 						+ " online for these cycles."
 		);
 	}
@@ -179,7 +179,7 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getWithdrawalPolicyLore() {
 		int withdrawalDecrement = guiSubject.getAccountConfig().getWithdrawalMultiplierDecrement(false);
 		return Utils.wordWrapAll(
-				"Account multipliers will " + (withdrawalDecrement == 0 ? "not be affected" : "decrease by "
+				ChatColor.GRAY + "Account multipliers will " + (withdrawalDecrement == 0 ? "not be affected" : "decrease by "
 						+ ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY
 						+ String.format("stage%s", withdrawalDecrement == 1 ? "" : "s")) + " on withdrawal."
 		);
@@ -188,8 +188,8 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getAccountLimitLore() {
 		int accountLimit = guiSubject.getAccountConfig().getPlayerAccountLimit(false);
 		return Collections.singletonList(
-				"Players may " + (accountLimit == 0 ? "not " : "") + "create " + (accountLimit > 0 ? "up to "
-						+ ChatColor.AQUA + accountLimit + ChatColor.GRAY : "") + " accounts at this bank."
+				ChatColor.GRAY + "Players may " + (accountLimit == 0 ? "not " : "") + "create " + (accountLimit > 0 ? "up to "
+						+ ChatColor.AQUA + accountLimit + ChatColor.GRAY : "unlimited") + " accounts at this bank."
 		);
 	}
 }

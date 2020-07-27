@@ -17,7 +17,7 @@ public class AccountStatus {
 	public AccountStatus(AccountConfig config) {
 		this(config, 0, config.getInitialInterestDelay(false),
 				config.getAllowedOfflinePayouts(false),
-				config.getAllowedOfflineBeforeReset(false));
+				config.getAllowedOfflinePayoutsBeforeReset(false));
 	}
 	/**
 	 * Creates an account status with the given values.
@@ -72,7 +72,7 @@ public class AccountStatus {
 		if (online) {
 			if (multiplierStage < multipliers.size() - 1)
 				multiplierStage++;
-			remainingOfflineUntilReset = accountConfig.getAllowedOfflineBeforeReset(false);
+			remainingOfflineUntilReset = accountConfig.getAllowedOfflinePayoutsBeforeReset(false);
 		} else {
 			if (remainingOfflineUntilReset == 0) {
 				resetMultiplierStage();
@@ -108,7 +108,7 @@ public class AccountStatus {
 			return true;
 		} else {
 			if (delayUntilNextPayout > 0) {
-				if (accountConfig.isCountInterestDelayOffline(false))
+				if (accountConfig.getCountInterestDelayOffline(false))
 					delayUntilNextPayout--;
 				return false;
 			} else

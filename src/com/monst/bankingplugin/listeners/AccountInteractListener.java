@@ -8,7 +8,6 @@ import com.monst.bankingplugin.events.account.*;
 import com.monst.bankingplugin.gui.AccountGui;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.ClickType.*;
-import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,8 +24,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 
 
@@ -367,7 +364,7 @@ public class AccountInteractListener implements Listener {
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
 		double creationPrice = accountConfig.getAccountCreationPrice(false);
 		creationPrice *= account.getSize();
-		creationPrice *= accountConfig.isReimburseAccountCreation(false) ? 1 : 0;
+		creationPrice *= accountConfig.getReimburseAccountCreation(false) ? 1 : 0;
 
 		if (creationPrice > 0 && account.isOwner(executor) && !account.getBank().isOwner(executor)) {
 
@@ -610,7 +607,7 @@ public class AccountInteractListener implements Listener {
 		creationPrice *= (newBank.isOwner(p) ? 0 : 1);
 
 		AccountConfig oldConfig = oldBank.getAccountConfig();
-		double reimbursement = oldConfig.isReimburseAccountCreation(false)
+		double reimbursement = oldConfig.getReimburseAccountCreation(false)
 				? oldConfig.getAccountCreationPrice(false) : 0.0d;
 		reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
 		reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
