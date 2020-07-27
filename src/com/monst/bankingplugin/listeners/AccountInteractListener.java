@@ -232,7 +232,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		int playerAccountLimit = bank.getAccountConfig().get(AccountConfig.BankField.PLAYER_BANK_ACCOUNT_LIMIT);
+		int playerAccountLimit = bank.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
 		if (playerAccountLimit > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(p)).count() >= playerAccountLimit) {
 			p.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
 			plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
@@ -249,7 +249,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		double creationPrice = bank.getAccountConfig().get(AccountConfig.BankField.ACCOUNT_CREATION_PRICE);
+		double creationPrice = bank.getAccountConfig().get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
 		creationPrice *= ((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1;
 
 		if (creationPrice > 0 && creationPrice > plugin.getEconomy().getBalance(p) && !bank.isOwner(p)) {
@@ -362,9 +362,9 @@ public class AccountInteractListener implements Listener {
 		}
 		
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = accountConfig.get(AccountConfig.BankField.ACCOUNT_CREATION_PRICE);
+		double creationPrice = accountConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
 		creationPrice *= account.getSize();
-		creationPrice *= accountConfig.get(AccountConfig.BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
+		creationPrice *= accountConfig.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
 
 		if (creationPrice > 0 && account.isOwner(executor) && !account.getBank().isOwner(executor)) {
 
@@ -602,13 +602,13 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		double creationPrice = newBank.getAccountConfig().get(AccountConfig.BankField.ACCOUNT_CREATION_PRICE);
+		double creationPrice = newBank.getAccountConfig().get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
 		creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1);
 		creationPrice *= (newBank.isOwner(p) ? 0 : 1);
 
 		AccountConfig oldConfig = oldBank.getAccountConfig();
-		double reimbursement = oldConfig.get(AccountConfig.BankField.REIMBURSE_ACCOUNT_CREATION)
-				? oldConfig.get(AccountConfig.BankField.ACCOUNT_CREATION_PRICE) : 0.0d;
+		double reimbursement = oldConfig.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION)
+				? oldConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE) : 0.0d;
 		reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
 		reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
 

@@ -399,7 +399,7 @@ public abstract class Database {
 
 					AccountConfig config = bank.getAccountConfig();
 					ps.setString(i + 9,
-							AccountConfig.BankField.stream().map(field -> "" + config.get(field, true))
+							AccountConfig.Field.stream().map(field -> "" + config.get(field, true))
 									.collect(Collectors.joining(" | "))
 					);
 

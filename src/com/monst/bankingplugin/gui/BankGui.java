@@ -126,19 +126,19 @@ public class BankGui extends Gui<Bank> {
 
 	private List<String> getCreationLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
-		boolean reimburse = config.get(AccountConfig.BankField.REIMBURSE_ACCOUNT_CREATION);
+		boolean reimburse = config.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION);
 		return Arrays.asList(
-				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + Utils.formatNumber(config.get(AccountConfig.BankField.ACCOUNT_CREATION_PRICE)),
+				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + Utils.formatNumber(config.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE)),
 				ChatColor.GRAY + "Fee Reimbursement: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}
 
 	private List<String> getBalanceRestrictionLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
-		double minBalance = config.get(AccountConfig.BankField.MINIMUM_BALANCE);
-		double lowBalanceFee = config.get(AccountConfig.BankField.LOW_BALANCE_FEE);
+		double minBalance = config.get(AccountConfig.Field.MINIMUM_BALANCE);
+		double lowBalanceFee = config.get(AccountConfig.Field.LOW_BALANCE_FEE);
 		boolean strikethrough = minBalance == 0; // TODO: When minbalance is set make sure >=0
-		boolean payOnLowBalance = config.get(AccountConfig.BankField.PAY_ON_LOW_BALANCE);
+		boolean payOnLowBalance = config.get(AccountConfig.Field.PAY_ON_LOW_BALANCE);
 		return Utils.wordWrapAll(
 				ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBalance),
 				ChatColor.GRAY + "Low balance fee: " + ChatColor.RED
@@ -150,9 +150,9 @@ public class BankGui extends Gui<Bank> {
 
 	private List<String> getOfflinePayoutsLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
-		int offlinePayouts = config.get(AccountConfig.BankField.ALLOWED_OFFLINE_PAYOUTS);
-		int offlineDecrement = config.get(AccountConfig.BankField.OFFLINE_MULTIPLIER_DECREMENT);
-		int beforeReset = config.get(AccountConfig.BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET);
+		int offlinePayouts = config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS);
+		int offlineDecrement = config.get(AccountConfig.Field.OFFLINE_MULTIPLIER_DECREMENT);
+		int beforeReset = config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
 		return Utils.wordWrapAll(
 				ChatColor.GRAY + "Accounts will pay interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
 						+ String.format("time%s", offlinePayouts == 1 ? "" : "s") + " while the account holder is offline.",
@@ -166,8 +166,8 @@ public class BankGui extends Gui<Bank> {
 
 	private List<String> getInterestDelayLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
-		int interestDelay = config.get(AccountConfig.BankField.INITIAL_INTEREST_DELAY);
-		boolean countOffline = config.get(AccountConfig.BankField.COUNT_INTEREST_DELAY_OFFLINE);
+		int interestDelay = config.get(AccountConfig.Field.INITIAL_INTEREST_DELAY);
+		boolean countOffline = config.get(AccountConfig.Field.COUNT_INTEREST_DELAY_OFFLINE);
 		return Utils.wordWrapAll(
 				ChatColor.GRAY + "New accounts will begin to pay interest after "
 						+ ChatColor.AQUA + interestDelay + ChatColor.GRAY + " interest cycles.",
@@ -177,7 +177,7 @@ public class BankGui extends Gui<Bank> {
 	}
 
 	private List<String> getWithdrawalPolicyLore() {
-		int withdrawalDecrement = guiSubject.getAccountConfig().get(AccountConfig.BankField.WITHDRAWAL_MULTIPLIER_DECREMENT);
+		int withdrawalDecrement = guiSubject.getAccountConfig().get(AccountConfig.Field.WITHDRAWAL_MULTIPLIER_DECREMENT);
 		return Utils.wordWrapAll(
 				ChatColor.GRAY + "Account multipliers will " + (withdrawalDecrement == 0 ? "not be affected" : "decrease by "
 						+ ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY
@@ -186,7 +186,7 @@ public class BankGui extends Gui<Bank> {
 	}
 
 	private List<String> getAccountLimitLore() {
-		int accountLimit = guiSubject.getAccountConfig().get(AccountConfig.BankField.PLAYER_BANK_ACCOUNT_LIMIT);
+		int accountLimit = guiSubject.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
 		return Collections.singletonList(
 				ChatColor.GRAY + "Players may " + (accountLimit == 0 ? "not " : "") + "create " + (accountLimit > 0 ? "up to "
 						+ ChatColor.AQUA + accountLimit + ChatColor.GRAY : "unlimited") + " accounts at this bank."

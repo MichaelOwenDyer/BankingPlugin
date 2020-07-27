@@ -57,8 +57,8 @@ public class AccountProtectListener implements Listener {
 
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = accountConfig.get(AccountConfig.BankField.ACCOUNT_CREATION_PRICE);
-		creationPrice *= accountConfig.get(AccountConfig.BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
+		double creationPrice = accountConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
+		creationPrice *= accountConfig.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
 
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			double finalCreationPrice = creationPrice;
@@ -196,7 +196,7 @@ public class AccountProtectListener implements Listener {
 		}
 
 		AccountConfig config = account.getBank().getAccountConfig();
-		double creationPrice = config.get(AccountConfig.BankField.ACCOUNT_CREATION_PRICE);
+		double creationPrice = config.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
 			if (!Utils.withdrawPlayer(owner, account.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {

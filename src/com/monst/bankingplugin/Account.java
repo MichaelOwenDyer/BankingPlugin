@@ -385,7 +385,7 @@ public class Account extends Ownable implements Nameable {
 							+ " (stage " + getStatus().getMultiplierStage() + ")"
 						+ "\nDelay until next payout: " + getStatus().getDelayUntilNextPayout() 
 						+ "\nNext payout amount: " + Utils.formatNumber(getBalance().doubleValue()
-								* (double) getBank().getAccountConfig().get(AccountConfig.BankField.INTEREST_RATE)
+								* (double) getBank().getAccountConfig().get(AccountConfig.Field.INTEREST_RATE)
 								* getStatus().getRealMultiplier())
 						+ "\nLocation: " + getCoordinates();
 	}

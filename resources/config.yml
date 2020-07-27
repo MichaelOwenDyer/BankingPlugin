@@ -182,7 +182,7 @@ default-limits:
 # Type: int
 bank-size-limits:
   minimum: 125
-  maximum: 50000
+  maximum: 100000
 
 # Whether a bank owner should be able to create an account at their own bank.
 # Type: boolean

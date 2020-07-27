@@ -262,17 +262,17 @@ public class Bank extends Ownable implements Nameable {
 			info.addExtra("\n    Owner: " + getOwnerDisplayName());
 		if (!getCoowners().isEmpty())
 			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
-		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + Utils.formatNumber(accountConfig.get(AccountConfig.BankField.INTEREST_RATE)));
+		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + Utils.formatNumber(accountConfig.get(AccountConfig.Field.INTEREST_RATE)));
 		info.addExtra("\n    Multipliers: ");
 		info.addExtra(Utils.getMultiplierView(this));
-		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.get(AccountConfig.BankField.ACCOUNT_CREATION_PRICE)));
-		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.get(AccountConfig.BankField.ALLOWED_OFFLINE_PAYOUTS));
-		info.addExtra(" (" + ChatColor.AQUA + accountConfig.get(AccountConfig.BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET) + ChatColor.GRAY + " before multiplier reset)");
-		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.get(AccountConfig.BankField.INITIAL_INTEREST_DELAY));
-		double minBal = accountConfig.get(AccountConfig.BankField.MINIMUM_BALANCE);
+		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE)));
+		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS));
+		info.addExtra(" (" + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");
+		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.INITIAL_INTEREST_DELAY));
+		double minBal = accountConfig.get(AccountConfig.Field.MINIMUM_BALANCE);
 		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
 		if (minBal != 0)
-			info.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber(accountConfig.get(AccountConfig.BankField.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)");
+			info.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber(accountConfig.get(AccountConfig.Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)");
 		if (verbose) {
 			info.addExtra("\n    Accounts: " + ChatColor.AQUA + accounts.size());
 			info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()));

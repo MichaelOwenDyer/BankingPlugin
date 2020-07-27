@@ -5,7 +5,6 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -17,25 +16,26 @@ import java.util.stream.Stream;
  * Bank owners are allowed to customize these configuration values in-game if the
  * corresponding "allow-override" value in the {@link Config} is marked as <b>true</b>.
  */
+@SuppressWarnings("unused")
 public class AccountConfig {
 
 	private static boolean initialized = false;
-	private static final Map<BankField, Method> SETTERS = new EnumMap<>(BankField.class);
-	private static final Map<BankField, Field> CONFIG_FIELDS = new EnumMap<>(BankField.class);
-	private static final Map<BankField, Field> LOCAL_FIELDS = new EnumMap<>(BankField.class);
+	private static final Map<Field, Method> SETTERS = new EnumMap<>(Field.class);
+	private static final Map<Field, java.lang.reflect.Field> CONFIG_FIELDS = new EnumMap<>(Field.class);
+	private static final Map<Field, java.lang.reflect.Field> LOCAL_FIELDS = new EnumMap<>(Field.class);
 
 	public static void initialize() {
 		if (initialized)
 			return;
-		for (BankField bankField : BankField.values()) {
+		for (Field field : Field.values()) {
 			try {
-				SETTERS.put(bankField, AccountConfig.class.getMethod(bankField.getSetterName(), String.class));
-				LOCAL_FIELDS.put(bankField, AccountConfig.class.getField(bankField.getFieldName()));
-				CONFIG_FIELDS.put(bankField, Config.class.getField(bankField.getFieldName()));
+				SETTERS.put(field, AccountConfig.class.getDeclaredMethod(field.getSetterName(), String.class));
+				LOCAL_FIELDS.put(field, AccountConfig.class.getDeclaredField(field.getFieldName()));
+				CONFIG_FIELDS.put(field, Config.class.getField(field.getFieldName()));
 			} catch (NoSuchMethodException e) {
-				BankingPlugin.getInstance().debug("BankField method error: could not find method for \"" + bankField.getGetterName() + "\"");
+				BankingPlugin.getInstance().debug("BankField method error: could not find method for \"" + field.getSetterName() + "\"");
 			} catch (NoSuchFieldException e) {
-				BankingPlugin.getInstance().debug("BankField field error: could not find field for \"" + bankField.getGetterName() + "\"");
+				BankingPlugin.getInstance().debug("BankField field error: could not find field for \"" + field.getFieldName() + "\"");
 			}
 		}
 		initialized = true;
@@ -66,7 +66,7 @@ public class AccountConfig {
 				Config.initialInterestDelay.getValue(),
 				Config.countInterestDelayOffline.getValue(),
 				Config.allowedOfflinePayouts.getValue(),
-				Config.allowedOfflinePayoutsBeforeMultiplierReset.getValue(),
+				Config.allowedOfflinePayoutsBeforeReset.getValue(),
 				Config.offlineMultiplierDecrement.getValue(),
 				Config.withdrawalMultiplierDecrement.getValue(),
 				Config.accountCreationPrice.getValue(),
@@ -84,7 +84,7 @@ public class AccountConfig {
 	 * @param multipliers a {@link List<Integer>} of multiplier values for the {@link Account}s at this {@link Bank}
 	 * @param initialInterestDelay the number of interest events until an account will generate interest for the first time
 	 * @param countInterestDelayOffline whether the waiting period will decrease while the account owner is offline
-	 * @param allowedOffline the number of consecutive times an account may generate interest for an offline owner
+	 * @param allowedOfflinePayouts the number of consecutive times an account may generate interest for an offline owner
 	 * @param allowedOfflinePayoutsBeforeReset the number of offline payouts before an account multiplier resets
 	 * @param offlineMultiplierDecrement how much an account multiplier will decrease before every offline payout
 	 * @param withdrawalMultiplierDecrement how much an account multiplier will decrease on withdrawal
@@ -96,7 +96,7 @@ public class AccountConfig {
 	 * @param playerBankAccountLimit the number of accounts each player is allowed to create at this bank
 	 */
 	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
-						 boolean countInterestDelayOffline, int allowedOffline, int allowedOfflinePayoutsBeforeReset,
+						 boolean countInterestDelayOffline, int allowedOfflinePayouts, int allowedOfflinePayoutsBeforeReset,
 						 int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, double accountCreationPrice,
 						 boolean reimburseAccountCreation, double minBalance, double lowBalanceFee, boolean payOnLowBalance, int playerBankAccountLimit) {
 
@@ -104,7 +104,7 @@ public class AccountConfig {
 		this.multipliers = multipliers;
 		this.initialInterestDelay = initialInterestDelay;
 		this.countInterestDelayOffline = countInterestDelayOffline;
-		this.allowedOfflinePayouts = allowedOffline;
+		this.allowedOfflinePayouts = allowedOfflinePayouts;
 		this.allowedOfflinePayoutsBeforeReset = allowedOfflinePayoutsBeforeReset;
 		this.offlineMultiplierDecrement = offlineMultiplierDecrement;
 		this.withdrawalMultiplierDecrement = withdrawalMultiplierDecrement;
@@ -118,12 +118,12 @@ public class AccountConfig {
 	}
 
 	/**
-	 * Reports whether or not a {@link BankField} is set as "allow-override: true" in the {@link Config}.
+	 * Reports whether or not a {@link Field} is set as "allow-override: true" in the {@link Config}.
 	 * @param field the configuration value
 	 * @return whether a config value can be set independently for each bank
 	 */
 	@SuppressWarnings("rawtypes")
-	public static boolean isOverrideAllowed(BankField field) {
+	public static boolean isOverrideAllowed(Field field) {
 		try {
 			return (boolean) ((AbstractMap.SimpleEntry) CONFIG_FIELDS.get(field).get(null)).getKey();
 		} catch (IllegalAccessException e) {
@@ -133,14 +133,14 @@ public class AccountConfig {
 	}
 
 	/**
-	 * Set a value to the specified {@link BankField}. If the field cannot accept the
+	 * Set a value to the specified {@link Field}. If the field cannot accept the
 	 * provided value, a {@link NumberFormatException} is returned in the {@link Callback}
 	 * @param field the field to set
 	 * @param value the value to set the field to
 	 * @param callback the {@link Callback} that returns how the value was parsed and interpreted
 	 * @return whether the field was successfully set or not
 	 */
-	public boolean set(BankField field, String value, Callback<String> callback) {
+	public boolean set(Field field, String value, Callback<String> callback) {
 		
 		if (!isOverrideAllowed(field))
 			return false;
@@ -156,20 +156,20 @@ public class AccountConfig {
 		return true;
 	}
 
-	public <T> T get(BankField field) {
+	public <T> T get(Field field) {
 		return get(field, false);
 	}
 
 	/**
-	 * A handy lookup method that takes a {@link BankField} and returns its current value.
+	 * A handy lookup method that takes a {@link Field} and returns its current value.
 	 * @param field the field to be looked up
 	 * @param ignoreConfig whether to force returning the bank-specific value as opposed to potentially
 	 *                     the default value from the {@link Config}
 	 * @return the bank-specific value, or the default value if the field is currently not overridable
-	 * @see #isOverrideAllowed(BankField)
+	 * @see #isOverrideAllowed(Field)
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T get(BankField field, boolean ignoreConfig) {
+	public <T> T get(Field field, boolean ignoreConfig) {
 		switch (field.getDataType()) {
 			case 0:
 				return (T) get(field, ignoreConfig, 0.0d);
@@ -184,7 +184,7 @@ public class AccountConfig {
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	private <T> T get(BankField field, boolean ignoreConfig, T type) {
+	private <T> T get(Field field, boolean ignoreConfig, T type) {
 		try {
 			if (ignoreConfig)
 				return (T) LOCAL_FIELDS.get(field).get(this);
@@ -280,35 +280,34 @@ public class AccountConfig {
 
 	@Override
 	public String toString() {
-		return Arrays.stream(BankField.values()).map(bankField -> bankField.getName() + ": " + get(bankField)
-				+ " (Overrideable: " + isOverrideAllowed(bankField) + ")").collect(Collectors.joining("\n"));
+		return Arrays.stream(Field.values()).map(field -> field.getName() + ": " + isOverrideAllowed(field)).collect(Collectors.joining("\n"));
 	}
 
 	/**
 	 * Represents all the bank configuration values for a given bank.
 	 */
-	public enum BankField {
+	public enum Field {
 
 		INTEREST_RATE ("interest-rate", "InterestRate", 0),
 		MULTIPLIERS ("multipliers", "Multipliers", 3),
 		INITIAL_INTEREST_DELAY ("initial-interest-delay", "InitialInterestDelay", 1),
 		COUNT_INTEREST_DELAY_OFFLINE ("count-interest-delay-offline", "CountInterestDelayOffline", 2),
 		ALLOWED_OFFLINE_PAYOUTS ("allowed-offline-payouts", "AllowedOfflinePayouts", 1),
-		ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET ("allowed-offline-payouts-before-multiplier-reset", "AllowedOfflinePayoutsBeforeReset", 1),
+		ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET("allowed-offline-payouts-before-reset", "AllowedOfflinePayoutsBeforeReset", 1),
 		OFFLINE_MULTIPLIER_DECREMENT ("offline-multiplier-decrement", "OfflineMultiplierDecrement", 1),
 		WITHDRAWAL_MULTIPLIER_DECREMENT ("withdrawal-multiplier-decrement", "WithdrawalMultiplierDecrement", 1),
 		ACCOUNT_CREATION_PRICE ("account-creation-price", "AccountCreationPrice", 0),
 		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation", "ReimburseAccountCreation", 2),
-		MINIMUM_BALANCE ("min-balance", "MinBalance", 0),
+		MINIMUM_BALANCE ("minimum-balance", "MinBalance", 0),
 		LOW_BALANCE_FEE ("low-balance-fee", "LowBalanceFee", 0),
 		PAY_ON_LOW_BALANCE ("pay-on-low-balance", "PayOnLowBalance", 2),
-		PLAYER_BANK_ACCOUNT_LIMIT("player-bank-account-limit", "PlayerBankAccountLimit", 1);
+		PLAYER_BANK_ACCOUNT_LIMIT("player-account-limit", "PlayerBankAccountLimit", 1);
 		
 		private final String name;
 		private final String methodName;
 		private final int dataType; // double: 0, integer: 1, boolean: 2, list: 3
 
-		BankField(String name, String methodName, int dataType) {
+		Field(String name, String methodName, int dataType) {
 			this.name = name;
 			this.methodName = methodName;
 			this.dataType = dataType;
@@ -318,15 +317,15 @@ public class AccountConfig {
 			return name;
 		}
 
-		String getGetterName() {
+		private String getGetterName() {
 			return "get" + methodName;
 		}
 
-		String getSetterName() {
+		private String getSetterName() {
 			return "set" + methodName;
 		}
 
-		String getFieldName() {
+		private String getFieldName() {
 			return methodName.substring(0, 1).toLowerCase() + methodName.substring(1);
 		}
 
@@ -334,11 +333,11 @@ public class AccountConfig {
 			return dataType;
 		}
 
-		public static Stream<BankField> stream() {
-			return Stream.of(BankField.values());
+		public static Stream<Field> stream() {
+			return Stream.of(Field.values());
 		}
 
-		public static BankField getByName(String name) {
+		public static Field getByName(String name) {
 			return stream().filter(bankField -> bankField.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
 		}
 	}

@@ -15,9 +15,9 @@ public class AccountStatus {
 	 * <p>Default AccountStatus constructor for a brand new account.</p>
 	 */
 	public AccountStatus(AccountConfig config) {
-		this(config, 0, config.get(AccountConfig.BankField.INITIAL_INTEREST_DELAY),
-				config.get(AccountConfig.BankField.ALLOWED_OFFLINE_PAYOUTS),
-				config.get(AccountConfig.BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET));
+		this(config, 0, config.get(AccountConfig.Field.INITIAL_INTEREST_DELAY),
+				config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS),
+				config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET));
 	}
 	/**
 	 * Creates an account status with the given values.
@@ -53,7 +53,7 @@ public class AccountStatus {
 	}
 	
 	public int processWithdrawal() {
-		int increment = accountConfig.get(AccountConfig.BankField.WITHDRAWAL_MULTIPLIER_DECREMENT);
+		int increment = accountConfig.get(AccountConfig.Field.WITHDRAWAL_MULTIPLIER_DECREMENT);
 		if (increment > 0)
 			multiplierStage = Math.max(multiplierStage - increment, 0);
 		else if (increment < 0)
@@ -67,12 +67,12 @@ public class AccountStatus {
 	 */
 	public void incrementMultiplier(boolean online) {
 
-		List<Integer> multipliers = accountConfig.get(AccountConfig.BankField.MULTIPLIERS);
+		List<Integer> multipliers = accountConfig.get(AccountConfig.Field.MULTIPLIERS);
 
 		if (online) {
 			if (multiplierStage < multipliers.size() - 1)
 				multiplierStage++;
-			remainingOfflineUntilReset = accountConfig.get(AccountConfig.BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET);
+			remainingOfflineUntilReset = accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
 		} else {
 			if (remainingOfflineUntilReset == 0) {
 				resetMultiplierStage();
@@ -80,7 +80,7 @@ public class AccountStatus {
 			} else if (remainingOfflineUntilReset > 0)
 				remainingOfflineUntilReset--;
 
-			int increment = accountConfig.get(AccountConfig.BankField.OFFLINE_MULTIPLIER_DECREMENT);
+			int increment = accountConfig.get(AccountConfig.Field.OFFLINE_MULTIPLIER_DECREMENT);
 			int newStage = multiplierStage + increment;
 			
 			if (newStage < 0) {
@@ -108,7 +108,7 @@ public class AccountStatus {
 			return true;
 		} else {
 			if (delayUntilNextPayout > 0) {
-				if (accountConfig.get(AccountConfig.BankField.COUNT_INTEREST_DELAY_OFFLINE))
+				if (accountConfig.get(AccountConfig.Field.COUNT_INTEREST_DELAY_OFFLINE))
 					delayUntilNextPayout--;
 				return false;
 			} else
@@ -126,7 +126,7 @@ public class AccountStatus {
 	 */
 	public int getRealMultiplier() {
 		
-		List<Integer> multipliers = accountConfig.get(AccountConfig.BankField.MULTIPLIERS);
+		List<Integer> multipliers = accountConfig.get(AccountConfig.Field.MULTIPLIERS);
 
 		if (multiplierStage < 0)
 			multiplierStage = 0;
@@ -144,7 +144,7 @@ public class AccountStatus {
 	
 	public int setMultiplierStage(int stage) {
 
-		List<Integer> multipliers = accountConfig.get(AccountConfig.BankField.MULTIPLIERS);
+		List<Integer> multipliers = accountConfig.get(AccountConfig.Field.MULTIPLIERS);
 
 		stage--;
 		if (stage < 0)

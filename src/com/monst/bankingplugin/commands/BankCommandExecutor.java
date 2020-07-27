@@ -10,7 +10,7 @@ import com.monst.bankingplugin.gui.BankGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.*;
-import com.monst.bankingplugin.utils.AccountConfig.BankField;
+import com.monst.bankingplugin.utils.AccountConfig.Field;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -20,10 +20,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BankCommandExecutor implements CommandExecutor, Confirmable {
@@ -170,12 +167,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		int volumeLimit = bankUtils.getVolumeLimit(p);
 		if (!isAdminBank && volumeLimit != -1 && volume > volumeLimit) {
 			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
-			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE, volumeLimit, volume - volumeLimit));
+			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE, Utils.formatNumber(volumeLimit), Utils.formatNumber(volume - volumeLimit)));
 			return true;
 		}
 		if (!isAdminBank && volume < Config.minimumBankVolume) {
 			plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume + ")");
-			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Config.minimumBankVolume, Config.minimumBankVolume - volume));
+			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Utils.formatNumber(Config.minimumBankVolume), Utils.formatNumber(Config.minimumBankVolume - volume)));
 			return true;
 		}
 
@@ -349,7 +346,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		List<Bank> banks;
 
-		banks = new ArrayList<>(bankUtils.getBanksCopy());
+		// TODO: Allow for more specific bank searching
+
+		banks = bankUtils.getBanksCopy().stream().sorted(Comparator.comparing(Bank::getTotalValue)).collect(Collectors.toList());
 
 		if (banks.isEmpty()) {
 			sender.sendMessage(Messages.NO_BANKS_FOUND);
@@ -653,8 +652,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		AccountConfig config = bank.getAccountConfig();
 		
-		BankField bankField = BankField.getByName(fieldName);
-		if (bankField == null) {
+		Field field = Field.getByName(fieldName);
+		if (field == null) {
 			plugin.debug("No account config field could be found with name " + fieldName);
 			sender.sendMessage(String.format(Messages.NOT_A_FIELD, fieldName));
 			return true;
@@ -666,13 +665,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		Callback<String> callback = new Callback<String>(plugin) {
 			@Override
 			public void onResult(String result) {
-				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, bankField.getName(), result, finalBank.getName()));
-				plugin.debug(sender.getName() + " has set " + bankField.getName() + " at " + finalBank.getName() + " to " + result);
+				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, field.getName(), result, finalBank.getName()));
+				plugin.debug(sender.getName() + " has set " + field.getName() + " at " + finalBank.getName() + " to " + result);
 
 			}
 			@Override
 			public void onError(Throwable throwable) {
-				switch (bankField.getDataType()) {
+				switch (field.getDataType()) {
 					case 0:
 						plugin.debug("Failed to parse double: " + finalValue);
 						sender.sendMessage(String.format(Messages.NOT_A_NUMBER, finalValue));
@@ -692,7 +691,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				}
 			}
 		};
-		if (!config.set(bankField, value, callback))
+		if (!config.set(field, value, callback))
 			sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
 
 		bankUtils.addBank(bank, true);

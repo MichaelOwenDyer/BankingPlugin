@@ -69,29 +69,29 @@ public class InterestEventListener implements Listener {
 						if (!account.getBank().isAdminBank())
 							trustedPlayers.remove(account.getBank().getOwner());
 
-						if (!trustedPlayers.isEmpty() && (double) config.get(AccountConfig.BankField.MINIMUM_BALANCE) > 0
-								&& account.getBalance().compareTo(BigDecimal.valueOf(config.get(AccountConfig.BankField.MINIMUM_BALANCE))) < 0) {
+						if (!trustedPlayers.isEmpty() && (double) config.get(AccountConfig.Field.MINIMUM_BALANCE) > 0
+								&& account.getBalance().compareTo(BigDecimal.valueOf(config.get(AccountConfig.Field.MINIMUM_BALANCE))) < 0) {
 
 							totalAccountFees.put(accountOwner, totalAccountFees.getOrDefault(accountOwner, BigDecimal.ZERO)
-									.add(BigDecimal.valueOf(config.get(AccountConfig.BankField.LOW_BALANCE_FEE))));
+									.add(BigDecimal.valueOf(config.get(AccountConfig.Field.LOW_BALANCE_FEE))));
 							accountFeeCounter.put(accountOwner, accountFeeCounter.getOrDefault(accountOwner, 0) + 1);
 							if (!account.getBank().isAdminBank()) {
 								totalBankFees.put(account.getBank().getOwner(),
 									totalBankFees.getOrDefault(account.getBank().getOwner(), BigDecimal.ZERO)
-												.add(BigDecimal.valueOf(config.get(AccountConfig.BankField.LOW_BALANCE_FEE))));
+												.add(BigDecimal.valueOf(config.get(AccountConfig.Field.LOW_BALANCE_FEE))));
 								bankFeeCounter.put(account.getBank().getOwner(),
 										bankFeeCounter.getOrDefault(account.getBank().getOwner(), 0) + 1);
 							}
 							if (Config.enableInterestLog) {
 								plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
-										BigDecimal.valueOf((double) config.get(AccountConfig.BankField.LOW_BALANCE_FEE) * -1), null);
+										BigDecimal.valueOf((double) config.get(AccountConfig.Field.LOW_BALANCE_FEE) * -1), null);
 							}
-							if (!(boolean) config.get(AccountConfig.BankField.PAY_ON_LOW_BALANCE))
+							if (!(boolean) config.get(AccountConfig.Field.PAY_ON_LOW_BALANCE))
 								continue;
 						}
 
 						BigDecimal baseInterest = account.getBalance()
-								.multiply(BigDecimal.valueOf(config.get(AccountConfig.BankField.INTEREST_RATE)))
+								.multiply(BigDecimal.valueOf(config.get(AccountConfig.Field.INTEREST_RATE)))
 								.setScale(2, RoundingMode.HALF_EVEN);
 						BigDecimal interest = baseInterest;
 
