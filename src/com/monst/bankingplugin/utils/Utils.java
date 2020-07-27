@@ -150,7 +150,7 @@ public class Utils {
 	}
 
 	private static List<String> getMultiplierLore(Bank bank, int highlightStage) {
-		List<Integer> multipliers = bank.getAccountConfig().getMultipliers(false);
+		List<Integer> multipliers = bank.getAccountConfig().get(AccountConfig.BankField.MULTIPLIERS);
 
 		if (multipliers.isEmpty())
 			return Collections.singletonList(ChatColor.GREEN + "1x");
@@ -229,7 +229,7 @@ public class Utils {
 	@SuppressWarnings("deprecation")
 	private static TextComponent getMultiplierView(Bank bank, int highlightStage) {
 
-		List<Integer> multipliers = bank.getAccountConfig().getMultipliers(false);
+		List<Integer> multipliers = bank.getAccountConfig().get(AccountConfig.BankField.MULTIPLIERS);
 
 		TextComponent multiplierView = new TextComponent();
 		multiplierView.setColor(net.md_5.bungee.api.ChatColor.GRAY);
@@ -331,11 +331,11 @@ public class Utils {
 		TextComponent interestRateView = new TextComponent();
 		interestRateView.setColor(net.md_5.bungee.api.ChatColor.GREEN);
 
-		double baseInterestRate = accountConfig.getInterestRate(false);
+		double baseInterestRate = accountConfig.get(AccountConfig.BankField.INTEREST_RATE);
 		double percentage = baseInterestRate * accountStatus.getRealMultiplier();
 		TextComponent interestRate = new TextComponent(percentage * 100 + "%");
 		if (accountStatus.getDelayUntilNextPayout() == 0
-				&& account.getBalance().doubleValue() >= accountConfig.getMinBalance(false)) {
+				&& account.getBalance().doubleValue() >= (double) accountConfig.get(AccountConfig.BankField.MINIMUM_BALANCE)) {
 			ComponentBuilder cb = new ComponentBuilder();
 			cb.append("Next payout: ").color(net.md_5.bungee.api.ChatColor.GRAY)
 					.append("$" + Utils.formatNumber(account.getBalance().multiply(BigDecimal.valueOf(percentage))))

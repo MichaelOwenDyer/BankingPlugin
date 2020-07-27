@@ -123,13 +123,13 @@ public class AccountGui extends Gui<Account> {
 
 	private List<String> getBalanceLore() {
 		AccountConfig config = guiSubject.getBank().getAccountConfig();
-		boolean isLowBalance = guiSubject.getBalance().doubleValue() < config.getMinBalance(false);
-		double interestRate = config.getInterestRate(false);
+		boolean isLowBalance = guiSubject.getBalance().doubleValue() < (double) config.get(AccountConfig.BankField.MINIMUM_BALANCE);
+		double interestRate = config.get(AccountConfig.BankField.INTEREST_RATE);
 		int multiplier = guiSubject.getStatus().getRealMultiplier();
-		double fullPayout = !(isLowBalance && !config.getPayOnLowBalance(false))
+		double fullPayout = !(isLowBalance && !(boolean) config.get(AccountConfig.BankField.PAY_ON_LOW_BALANCE))
 				? guiSubject.getBalance().doubleValue() * interestRate * multiplier : 0.0d;
-		double lowBalanceFee = isLowBalance && config.getLowBalanceFee(false) > 0
-				? config.getLowBalanceFee(false) : 0.0d;
+		double lowBalanceFee = isLowBalance && (double) config.get(AccountConfig.BankField.LOW_BALANCE_FEE) > 0
+				? config.get(AccountConfig.BankField.LOW_BALANCE_FEE) : 0.0d;
 		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
 				"Balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(guiSubject.getBalance()) + (isLowBalance ? ChatColor.RED + " (low)" : ""),
@@ -145,7 +145,7 @@ public class AccountGui extends Gui<Account> {
 		int delay = status.getDelayUntilNextPayout();
 		int remainingOffline = status.getRemainingOfflinePayouts();
 		int untilReset = status.getRemainingOfflineUntilReset();
-		int offlineDecrement = guiSubject.getBank().getAccountConfig().getOfflineMultiplierDecrement(false);
+		int offlineDecrement = guiSubject.getBank().getAccountConfig().get(AccountConfig.BankField.OFFLINE_MULTIPLIER_DECREMENT);
 		return Utils.wordWrapAll(
 				ChatColor.GRAY + (delay == 0
 						? "Account will generate interest in the next payout cycle."

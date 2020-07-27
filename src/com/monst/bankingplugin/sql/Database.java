@@ -399,20 +399,9 @@ public abstract class Database {
 
 					AccountConfig config = bank.getAccountConfig();
 					ps.setString(i + 9,
-							config.getInterestRate(true) + " | "
-									+ config.getMultipliers(true).stream().map(num -> "" + num).collect(Collectors.joining(",", "[", "]")) + " | "
-									+ config.getInitialInterestDelay(true) + " | "
-									+ config.getCountInterestDelayOffline(true) + " | "
-									+ config.getAllowedOfflinePayouts(true) + " | "
-									+ config.getAllowedOfflinePayoutsBeforeReset(true) + " | "
-									+ config.getOfflineMultiplierDecrement(true) + " | "
-									+ config.getWithdrawalMultiplierDecrement(true) + " | "
-									+ config.getAccountCreationPrice(true) + " | "
-									+ config.getReimburseAccountCreation(true) + " | "
-									+ config.getMinBalance(true) + " | "
-									+ config.getLowBalanceFee(true) + " | "
-									+ config.getPayOnLowBalance(true) + " | "
-									+ config.getPlayerAccountLimit(true));
+							AccountConfig.BankField.stream().map(field -> "" + config.get(field, true))
+									.collect(Collectors.joining(" | "))
+					);
 
 					ps.executeUpdate();
 

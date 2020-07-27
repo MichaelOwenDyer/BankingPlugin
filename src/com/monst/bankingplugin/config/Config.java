@@ -37,17 +37,17 @@ public class Config {
 	public static List<LocalTime> interestPayoutTimes;
     
     /**
-     * The baseline interest rate for all accounts.
+     * The default baseline account interest rate.
      **/
 	public static Entry<Boolean, Double> interestRate;
     
     /**
-     * The list of interest multipliers in sequential order.
+     * The list of default interest multipliers in sequential order.
      **/
-	public static Entry<Boolean, List<Integer>> interestMultipliers;
+	public static Entry<Boolean, List<Integer>> multipliers;
 
     /**
-	 * The number of interest payout events a player has to own their account for
+	 * The default number of interest payout events a player has to own their account for
 	 * before they start collecting interest
 	 **/
 	public static Entry<Boolean, Integer> initialInterestDelay;
@@ -79,26 +79,26 @@ public class Config {
 	 * The behavior of a player's multiplier at a withdrawal event.
 	 **/
 	public static Entry<Boolean, Integer> withdrawalMultiplierDecrement;
-    
-    /**
-     * The item with which a player can click an account chest to retrieve information.
-     **/
-    public static ItemStack accountInfoItem;
 
     /**
      * The price a player has to pay in order to create a bank.
      **/
-	public static Entry<Double, Double> creationPriceBank;
+	public static Entry<Double, Double> bankCreationPrice;
     
     /**
      * The price a player has to pay in order to create an account.
      **/
-	public static Entry<Boolean, Double> creationPriceAccount;
+	public static Entry<Boolean, Double> accountCreationPrice;
 
 	/**
 	 * Whether the account creation price should be refunded at removal.
 	 */
 	public static Entry<Boolean, Boolean> reimburseAccountCreation;
+
+	/**
+	 * Whether the bank creation price should be refunded at removal.
+	 */
+	public static Entry<Boolean, Boolean> reimburseBankCreation;
 
 	/**
 	 * The default minimum balance.
@@ -114,11 +114,6 @@ public class Config {
 	 * Whether or not accounts still earn interest on a balance lower than the minimum.
 	 */
 	public static Entry<Boolean, Boolean> payOnLowBalance;
-
-	/**
-	 * Whether the bank creation price should be refunded at removal.
-	 */
-	public static Entry<Boolean, Boolean> reimburseBankCreation;
 
 	/**
 	 * The default account limit per player per bank.
@@ -173,6 +168,11 @@ public class Config {
 	 * when ownership is transferred to another player.
 	 */
 	public static boolean trustOnTransfer;
+
+	/**
+	 * The item with which a player can click an account chest to retrieve information.
+	 **/
+	public static ItemStack accountInfoItem;
 
     /**
      * <p>Whether the update checker should run on start and notify players on join.</p>
@@ -415,7 +415,7 @@ public class Config {
 		interestRate = new SimpleEntry<>(config.getBoolean("interest-rate.allow-override"),
 				config.getDouble("interest-rate.default"));
 
-		interestMultipliers = new SimpleEntry<>(config.getBoolean("interest-multipliers.allow-override"),
+		multipliers = new SimpleEntry<>(config.getBoolean("interest-multipliers.allow-override"),
 				config.getIntegerList("interest-multipliers.default").isEmpty()
 				? Collections.singletonList(1)
 				: config.getIntegerList("interest-multipliers.default"));
@@ -447,10 +447,10 @@ public class Config {
 			accountInfoItem = new ItemStack(Material.STICK);
 		}
 
-		creationPriceBank = new SimpleEntry<>(config.getDouble("creation-prices.bank.admin"),
+		bankCreationPrice = new SimpleEntry<>(config.getDouble("creation-prices.bank.admin"),
 				config.getDouble("creation-prices.bank.player"));
 
-		creationPriceAccount = new SimpleEntry<>(config.getBoolean("creation-prices.account.allow-override"),
+		accountCreationPrice = new SimpleEntry<>(config.getBoolean("creation-prices.account.allow-override"),
 				config.getDouble("creation-prices.account.default"));
 
 		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.allow-override"),

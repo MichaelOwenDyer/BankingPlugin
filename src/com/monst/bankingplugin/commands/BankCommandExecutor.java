@@ -192,7 +192,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		double creationPrice = isAdminBank ? Config.creationPriceBank.getKey() : Config.creationPriceBank.getValue();
+		double creationPrice = isAdminBank ? Config.bankCreationPrice.getKey() : Config.bankCreationPrice.getValue();
 		if (creationPrice > 0 && plugin.getEconomy().getBalance(p) < creationPrice) {
 			plugin.debug(p.getName() + " does not have enough money to create a bank");
 			p.sendMessage(Messages.BANK_CREATE_INSUFFICIENT_FUNDS);
@@ -285,7 +285,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		if (sender instanceof Player) {
-			double creationPrice = bank.isAdminBank() ? Config.creationPriceBank.getKey() : Config.creationPriceBank.getValue();
+			double creationPrice = bank.isAdminBank() ? Config.bankCreationPrice.getKey() : Config.bankCreationPrice.getValue();
 			boolean reimburse = bank.isAdminBank() ? Config.reimburseBankCreation.getKey() : Config.reimburseBankCreation.getValue();
 			creationPrice *= reimburse ? 1 : 0;
 

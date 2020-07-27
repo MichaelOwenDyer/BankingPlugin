@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 
 /**
  * Continuously updates account balances.
- * @see AccountUtils#appraiseAccountContents(Account) 
+ * @see AccountUtils#appraiseAccountContents(Account)
  */
 public class AccountBalanceListener implements Listener {
 	

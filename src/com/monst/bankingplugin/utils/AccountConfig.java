@@ -5,12 +5,10 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,16 +19,34 @@ import java.util.stream.Stream;
  */
 public class AccountConfig {
 
-	private static final Map<BankField, Method> GETTERS = new EnumMap<>(BankField.class);
+	private static boolean initialized = false;
 	private static final Map<BankField, Method> SETTERS = new EnumMap<>(BankField.class);
-	private static final Map<BankField, Method> CONFIG_FIELDS = new EnumMap<>(BankField.class);
+	private static final Map<BankField, Field> CONFIG_FIELDS = new EnumMap<>(BankField.class);
+	private static final Map<BankField, Field> LOCAL_FIELDS = new EnumMap<>(BankField.class);
+
+	public static void initialize() {
+		if (initialized)
+			return;
+		for (BankField bankField : BankField.values()) {
+			try {
+				SETTERS.put(bankField, AccountConfig.class.getMethod(bankField.getSetterName(), String.class));
+				LOCAL_FIELDS.put(bankField, AccountConfig.class.getField(bankField.getFieldName()));
+				CONFIG_FIELDS.put(bankField, Config.class.getField(bankField.getFieldName()));
+			} catch (NoSuchMethodException e) {
+				BankingPlugin.getInstance().debug("BankField method error: could not find method for \"" + bankField.getGetterName() + "\"");
+			} catch (NoSuchFieldException e) {
+				BankingPlugin.getInstance().debug("BankField field error: could not find field for \"" + bankField.getGetterName() + "\"");
+			}
+		}
+		initialized = true;
+	}
 
 	private double interestRate;
 	private List<Integer> multipliers;
 	private int initialInterestDelay;
 	private boolean countInterestDelayOffline;
 	private int allowedOfflinePayouts;
-	private int allowedOfflineBeforeReset;
+	private int allowedOfflinePayoutsBeforeReset;
 	private int offlineMultiplierDecrement;
 	private int withdrawalMultiplierDecrement;
 	private double accountCreationPrice;
@@ -38,7 +54,7 @@ public class AccountConfig {
 	private double minBalance;
 	private double lowBalanceFee;
 	private boolean payOnLowBalance;
-	private int playerAccountLimit;
+	private int playerBankAccountLimit;
 
 	/**
 	 * Create a new AccountConfig with the default values from the {@link Config}.
@@ -46,14 +62,14 @@ public class AccountConfig {
 	public AccountConfig() {
 		this(
 				Config.interestRate.getValue(),
-				Config.interestMultipliers.getValue(),
+				Config.multipliers.getValue(),
 				Config.initialInterestDelay.getValue(),
 				Config.countInterestDelayOffline.getValue(),
 				Config.allowedOfflinePayouts.getValue(),
 				Config.allowedOfflinePayoutsBeforeMultiplierReset.getValue(),
 				Config.offlineMultiplierDecrement.getValue(),
 				Config.withdrawalMultiplierDecrement.getValue(),
-				Config.creationPriceAccount.getValue(),
+				Config.accountCreationPrice.getValue(),
 				Config.reimburseAccountCreation.getValue(),
 				Config.minBalance.getValue(),
 				Config.lowBalanceFee.getValue(),
@@ -69,7 +85,7 @@ public class AccountConfig {
 	 * @param initialInterestDelay the number of interest events until an account will generate interest for the first time
 	 * @param countInterestDelayOffline whether the waiting period will decrease while the account owner is offline
 	 * @param allowedOffline the number of consecutive times an account may generate interest for an offline owner
-	 * @param allowedOfflineBeforeReset the number of offline payouts before an account multiplier resets
+	 * @param allowedOfflinePayoutsBeforeReset the number of offline payouts before an account multiplier resets
 	 * @param offlineMultiplierDecrement how much an account multiplier will decrease before every offline payout
 	 * @param withdrawalMultiplierDecrement how much an account multiplier will decrease on withdrawal
 	 * @param accountCreationPrice the price to create an account at this bank
@@ -77,19 +93,19 @@ public class AccountConfig {
 	 * @param minBalance the minimum balance for an account
 	 * @param lowBalanceFee the fee that will be charged to the account owner for each account he owns with a low balance
 	 * @param payOnLowBalance whether interest will continue to be generated while an account balance is low
-	 * @param playerAccountLimit the number of accounts each player is allowed to create at this bank
+	 * @param playerBankAccountLimit the number of accounts each player is allowed to create at this bank
 	 */
 	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
-						 boolean countInterestDelayOffline, int allowedOffline, int allowedOfflineBeforeReset,
+						 boolean countInterestDelayOffline, int allowedOffline, int allowedOfflinePayoutsBeforeReset,
 						 int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, double accountCreationPrice,
-						 boolean reimburseAccountCreation, double minBalance, double lowBalanceFee, boolean payOnLowBalance, int playerAccountLimit) {
+						 boolean reimburseAccountCreation, double minBalance, double lowBalanceFee, boolean payOnLowBalance, int playerBankAccountLimit) {
 
 		this.interestRate = interestRate;
 		this.multipliers = multipliers;
 		this.initialInterestDelay = initialInterestDelay;
 		this.countInterestDelayOffline = countInterestDelayOffline;
 		this.allowedOfflinePayouts = allowedOffline;
-		this.allowedOfflineBeforeReset = allowedOfflineBeforeReset;
+		this.allowedOfflinePayoutsBeforeReset = allowedOfflinePayoutsBeforeReset;
 		this.offlineMultiplierDecrement = offlineMultiplierDecrement;
 		this.withdrawalMultiplierDecrement = withdrawalMultiplierDecrement;
 		this.accountCreationPrice = accountCreationPrice;
@@ -97,182 +113,108 @@ public class AccountConfig {
 		this.minBalance = minBalance;
 		this.lowBalanceFee = lowBalanceFee;
 		this.payOnLowBalance = payOnLowBalance;
-		this.playerAccountLimit = playerAccountLimit;
+		this.playerBankAccountLimit = playerBankAccountLimit;
 
-		for (BankField bankField : BankField.values()) {
-			try {
-				GETTERS.put(bankField, AccountConfig.class.getMethod("get" + bankField.getMethodName(), boolean.class));
-				SETTERS.put(bankField, AccountConfig.class.getMethod("set" + bankField.getMethodName(), String.class));
-				CONFIG_FIELDS.put(bankField, Config.class.getField(""))
-			} catch (NoSuchMethodException e) {
-				BankingPlugin.getInstance().debug("Field method error: could not find method \"get" + bankField.getMethodName() + "\"");
-			}
-		}
 	}
 
 	/**
 	 * Reports whether or not a {@link BankField} is set as "allow-override: true" in the {@link Config}.
-	 * @param bankField the configuration value
+	 * @param field the configuration value
 	 * @return whether a config value can be set independently for each bank
 	 */
-	public static boolean isOverrideAllowed(BankField bankField) {
-		switch (bankField) {
-
-		case INTEREST_RATE:
-			return Config.interestRate.getKey();
-		case MULTIPLIERS:
-			return Config.interestMultipliers.getKey();
-		case INITIAL_INTEREST_DELAY:
-			return Config.initialInterestDelay.getKey();
-		case COUNT_INTEREST_DELAY_OFFLINE:
-			return Config.countInterestDelayOffline.getKey();
-		case ALLOWED_OFFLINE_PAYOUTS:
-			return Config.allowedOfflinePayouts.getKey();
-		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
-			return Config.allowedOfflinePayoutsBeforeMultiplierReset.getKey();
-		case OFFLINE_MULTIPLIER_DECREMENT:
-			return Config.offlineMultiplierDecrement.getKey();
-		case WITHDRAWAL_MULTIPLIER_DECREMENT:
-			return Config.withdrawalMultiplierDecrement.getKey();
-		case ACCOUNT_CREATION_PRICE:
-			return Config.creationPriceAccount.getKey();
-		case REIMBURSE_ACCOUNT_CREATION:
-			return Config.reimburseAccountCreation.getKey();
-		case MINIMUM_BALANCE:
-			return Config.minBalance.getKey();
-		case LOW_BALANCE_FEE:
-			return Config.lowBalanceFee.getKey();
-		case PLAYER_ACCOUNT_LIMIT:
-			return Config.playerBankAccountLimit.getKey();
-		default:
-			return false;
-
-		}
-	}
-
-	/**
-	 * A handy lookup method that takes a {@link BankField} and returns its current value in an {@link Object}
-	 * @param bankField the field to be looked up
-	 * @return the bank-specific value, or the default value if the field is currently not overridable
-	 * @see #isOverrideAllowed(BankField)
-	 */
-	public Object get(BankField bankField, boolean ignoreConfig) {
+	@SuppressWarnings("rawtypes")
+	public static boolean isOverrideAllowed(BankField field) {
 		try {
-			return GETTERS.get(bankField).invoke(this, ignoreConfig);
-		} catch (IllegalAccessException | InvocationTargetException e) {
-			return null;
+			return (boolean) ((AbstractMap.SimpleEntry) CONFIG_FIELDS.get(field).get(null)).getKey();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			return false;
 		}
-/*
-		switch (bankField) {
-
-		case INTEREST_RATE:
-			return getInterestRate(false);
-		case MULTIPLIERS:
-			return getMultipliers(false);
-		case INITIAL_INTEREST_DELAY:
-			return getInitialInterestDelay(false);
-		case COUNT_INTEREST_DELAY_OFFLINE:
-			return getCountInterestDelayOffline(false);
-		case ALLOWED_OFFLINE_PAYOUTS:
-			return getAllowedOfflinePayouts(false);
-		case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
-			return getAllowedOfflinePayoutsBeforeReset(false);
-		case OFFLINE_MULTIPLIER_DECREMENT:
-			return getOfflineMultiplierDecrement(false);
-		case WITHDRAWAL_MULTIPLIER_DECREMENT:
-			return getWithdrawalMultiplierDecrement(false);
-		case ACCOUNT_CREATION_PRICE:
-			return getAccountCreationPrice(false);
-		case REIMBURSE_ACCOUNT_CREATION:
-			return getReimburseAccountCreation(false);
-		case MINIMUM_BALANCE:
-			return getMinBalance(false);
-		case LOW_BALANCE_FEE:
-			return getLowBalanceFee(false);
-		case PAY_ON_LOW_BALANCE:
-			return isPayOnLowBalance(false);
-		case PLAYER_ACCOUNT_LIMIT:
-			return getPlayerAccountLimit(false);
-		default:
-			return null;
-		}
-*/
 	}
 
 	/**
 	 * Set a value to the specified {@link BankField}. If the field cannot accept the
 	 * provided value, a {@link NumberFormatException} is returned in the {@link Callback}
-	 * @param bankField the field to set
+	 * @param field the field to set
 	 * @param value the value to set the field to
 	 * @param callback the {@link Callback} that returns how the value was parsed and interpreted
 	 * @return whether the field was successfully set or not
 	 */
-	public boolean set(BankField bankField, String value, Callback<String> callback) {
+	public boolean set(BankField field, String value, Callback<String> callback) {
 		
-		if (!isOverrideAllowed(bankField))
+		if (!isOverrideAllowed(field))
 			return false;
 
 		try {
-			callback.callSyncResult((String) SETTERS.get(bankField).invoke(this, value));
+			callback.callSyncResult((String) SETTERS.get(field).invoke(this, value));
 		} catch (NumberFormatException e) {
 			callback.callSyncError(e);
+			return false;
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			e.printStackTrace();
 		}
 		return true;
 	}
 
-	/**
-	 * @param ignoreConfig whether or not to force return the specific value at this bank, as opposed to
-	 *                     potentially the default value from the {@link Config}
-	 * @return the value at this bank or the default value if ignoreConfig=false and allow-override=false
-	 */
-	public double getInterestRate(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return interestRate;
-		else
-			return Config.interestRate.getKey() ? interestRate : Config.interestRate.getValue();
+	public <T> T get(BankField field) {
+		return get(field, false);
 	}
 
-	public String setInterestRate(String value) throws NumberFormatException {
+	/**
+	 * A handy lookup method that takes a {@link BankField} and returns its current value.
+	 * @param field the field to be looked up
+	 * @param ignoreConfig whether to force returning the bank-specific value as opposed to potentially
+	 *                     the default value from the {@link Config}
+	 * @return the bank-specific value, or the default value if the field is currently not overridable
+	 * @see #isOverrideAllowed(BankField)
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T get(BankField field, boolean ignoreConfig) {
+		switch (field.getDataType()) {
+			case 0:
+				return (T) get(field, ignoreConfig, 0.0d);
+			case 1:
+				return (T) get(field, ignoreConfig, 0);
+			case 2:
+				return (T) get(field, ignoreConfig, true);
+			case 3:
+				return (T) get(field, ignoreConfig, new ArrayList<Integer>());
+		}
+		return null;
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	private <T> T get(BankField field, boolean ignoreConfig, T type) {
+		try {
+			if (ignoreConfig)
+				return (T) LOCAL_FIELDS.get(field).get(this);
+			else {
+				return isOverrideAllowed(field)
+						? (T) LOCAL_FIELDS.get(field).get(this)
+						: (T) ((AbstractMap.SimpleEntry) CONFIG_FIELDS.get(field).get(null)).getValue();
+			}
+		} catch (IllegalAccessException ignored) {}
+		return null;
+	}
+
+	private String setInterestRate(String value) throws NumberFormatException {
 		interestRate = Double.parseDouble(value.replace(",", ""));
 		return Utils.formatNumber(interestRate);
 	}
 
-	public List<Integer> getMultipliers(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return multipliers;
-		else
-			return Config.interestMultipliers.getKey() ? multipliers : Config.interestMultipliers.getValue();
-	}
-
-	public String setMultipliers(String value) throws NumberFormatException {
+	private String setMultipliers(String value) throws NumberFormatException {
 		multipliers = Arrays.stream(Utils.removePunctuation(value)
 				.split(" ")).filter(t -> !t.isEmpty())
 				.map(Integer::parseInt).collect(Collectors.toList());
 		return Utils.formatList(multipliers);
 	}
 
-	public int getInitialInterestDelay(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return initialInterestDelay;
-		else
-			return Config.initialInterestDelay.getKey() ? initialInterestDelay : Config.initialInterestDelay.getValue();
-	}
-
-	public String setInitialInterestDelay(String value) throws NumberFormatException {
+	private String setInitialInterestDelay(String value) throws NumberFormatException {
 		initialInterestDelay = Math.abs(Integer.parseInt(value));
 		return "" + initialInterestDelay;
 	}
 
-	public boolean getCountInterestDelayOffline(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return countInterestDelayOffline;
-		else
-			return Config.countInterestDelayOffline.getKey() ? countInterestDelayOffline : Config.countInterestDelayOffline.getValue();
-	}
-
-	public String setCountInterestDelayOffline(String value) throws NumberFormatException {
+	private String setCountInterestDelayOffline(String value) throws NumberFormatException {
 		if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))
 			countInterestDelayOffline = Boolean.parseBoolean(value);
 		else
@@ -280,74 +222,32 @@ public class AccountConfig {
 		return "" + countInterestDelayOffline;
 	}
 
-	public int getAllowedOfflinePayouts(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return allowedOfflinePayouts;
-		else
-			return Config.allowedOfflinePayouts.getKey() ? allowedOfflinePayouts : Config.allowedOfflinePayouts.getValue();
-	}
-
-	public String setAllowedOfflinePayouts(String value) throws NumberFormatException {
+	private String setAllowedOfflinePayouts(String value) throws NumberFormatException {
 		allowedOfflinePayouts = Math.abs(Integer.parseInt(value));
 		return "" + allowedOfflinePayouts;
 	}
 
-	public int getAllowedOfflinePayoutsBeforeReset(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return allowedOfflineBeforeReset;
-		else
-			return Config.allowedOfflinePayoutsBeforeMultiplierReset.getKey() ? allowedOfflineBeforeReset : Config.allowedOfflinePayoutsBeforeMultiplierReset.getValue();
+	private String setAllowedOfflinePayoutsBeforeReset(String value) throws NumberFormatException {
+		allowedOfflinePayoutsBeforeReset = Math.abs(Integer.parseInt(value));
+		return "" + allowedOfflinePayoutsBeforeReset;
 	}
 
-	public String setAllowedOfflinePayoutsBeforeReset(String value) throws NumberFormatException {
-		allowedOfflineBeforeReset = Math.abs(Integer.parseInt(value));
-		return "" + allowedOfflineBeforeReset;
-	}
-
-	public int getOfflineMultiplierDecrement(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return offlineMultiplierDecrement;
-		else
-			return Config.offlineMultiplierDecrement.getKey() ? offlineMultiplierDecrement : Config.offlineMultiplierDecrement.getValue();
-	}
-
-	public String setOfflineMultiplierDecrement(String value) throws NumberFormatException {
+	private String setOfflineMultiplierDecrement(String value) throws NumberFormatException {
 		offlineMultiplierDecrement = Math.abs(Integer.parseInt(value));
 		return "" + offlineMultiplierDecrement;
 	}
 
-	public int getWithdrawalMultiplierDecrement(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return withdrawalMultiplierDecrement;
-		else
-			return Config.withdrawalMultiplierDecrement.getKey() ? withdrawalMultiplierDecrement : Config.withdrawalMultiplierDecrement.getValue();
-	}
-
-	public String setWithdrawalMultiplierDecrement(String value) throws NumberFormatException {
+	private String setWithdrawalMultiplierDecrement(String value) throws NumberFormatException {
 		withdrawalMultiplierDecrement = Math.abs(Integer.parseInt(value));
 		return "" + withdrawalMultiplierDecrement;
 	}
 
-	public double getAccountCreationPrice(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return accountCreationPrice;
-		else
-			return Config.creationPriceAccount.getKey() ? accountCreationPrice : Config.creationPriceAccount.getValue();
-	}
-
-	public String setAccountCreationPrice(String value) throws NumberFormatException {
+	private String setAccountCreationPrice(String value) throws NumberFormatException {
 		accountCreationPrice = Math.abs(Double.parseDouble(value.replace(",", "")));
 		return Utils.formatNumber(accountCreationPrice);
 	}
 
-	public boolean getReimburseAccountCreation(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return reimburseAccountCreation;
-		else
-			return Config.reimburseAccountCreation.getKey() ? reimburseAccountCreation : Config.reimburseAccountCreation.getValue();
-	}
-
-	public String setReimburseAccountCreation(String value) throws NumberFormatException {
+	private String setReimburseAccountCreation(String value) throws NumberFormatException {
 		if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))
 			reimburseAccountCreation = Boolean.parseBoolean(value);
 		else
@@ -355,38 +255,17 @@ public class AccountConfig {
 		return "" + reimburseAccountCreation;
 	}
 
-	public double getMinBalance(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return minBalance;
-		else
-			return Config.minBalance.getKey() ? minBalance : Config.minBalance.getValue();
-	}
-
-	public String setMinBalance(String value) throws NumberFormatException {
+	private String setMinBalance(String value) throws NumberFormatException {
 		minBalance = Math.abs(Double.parseDouble(value.replace(",", "")));
 		return Utils.formatNumber(minBalance);
 	}
 
-	public double getLowBalanceFee(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return lowBalanceFee;
-		else
-			return Config.lowBalanceFee.getKey() ? lowBalanceFee : Config.lowBalanceFee.getValue();
-	}
-
-	public String setLowBalanceFee(String value) throws NumberFormatException {
+	private String setLowBalanceFee(String value) throws NumberFormatException {
 		lowBalanceFee = Math.abs(Double.parseDouble(value.replace(",", "")));
 		return Utils.formatNumber(lowBalanceFee);
 	}
 
-	public boolean getPayOnLowBalance(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return payOnLowBalance;
-		else
-			return Config.payOnLowBalance.getKey() ? payOnLowBalance : Config.payOnLowBalance.getValue();
-	}
-
-	public String setPayOnLowBalance(String value) throws NumberFormatException {
+	private String setPayOnLowBalance(String value) throws NumberFormatException {
 		if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))
 			payOnLowBalance = Boolean.parseBoolean(value);
 		else
@@ -394,21 +273,14 @@ public class AccountConfig {
 		return "" + payOnLowBalance;
 	}
 
-	public int getPlayerAccountLimit(boolean ignoreConfig) {
-		if (ignoreConfig)
-			return playerAccountLimit;
-		else
-			return Config.playerBankAccountLimit.getKey() ? playerAccountLimit : Config.playerBankAccountLimit.getValue();
-	}
-
-	public String setPlayerAccountLimit(String value) throws NumberFormatException {
-		playerAccountLimit = Math.abs(Integer.parseInt(value));
-		return "" + playerAccountLimit;
+	private String setPlayerBankAccountLimit(String value) throws NumberFormatException {
+		playerBankAccountLimit = Math.abs(Integer.parseInt(value));
+		return "" + playerBankAccountLimit;
 	}
 
 	@Override
 	public String toString() {
-		return Arrays.stream(BankField.values()).map(bankField -> bankField.getName() + ": " + get(bankField, false)
+		return Arrays.stream(BankField.values()).map(bankField -> bankField.getName() + ": " + get(bankField)
 				+ " (Overrideable: " + isOverrideAllowed(bankField) + ")").collect(Collectors.joining("\n"));
 	}
 
@@ -430,7 +302,7 @@ public class AccountConfig {
 		MINIMUM_BALANCE ("min-balance", "MinBalance", 0),
 		LOW_BALANCE_FEE ("low-balance-fee", "LowBalanceFee", 0),
 		PAY_ON_LOW_BALANCE ("pay-on-low-balance", "PayOnLowBalance", 2),
-		PLAYER_ACCOUNT_LIMIT ("player-account-limit", "PlayerAccountLimit", 1);
+		PLAYER_BANK_ACCOUNT_LIMIT("player-bank-account-limit", "PlayerBankAccountLimit", 1);
 		
 		private final String name;
 		private final String methodName;
@@ -446,8 +318,16 @@ public class AccountConfig {
 			return name;
 		}
 
-		public String getMethodName() {
-			return methodName;
+		String getGetterName() {
+			return "get" + methodName;
+		}
+
+		String getSetterName() {
+			return "set" + methodName;
+		}
+
+		String getFieldName() {
+			return methodName.substring(0, 1).toLowerCase() + methodName.substring(1);
 		}
 
 		public int getDataType() {
