@@ -188,7 +188,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				else
 					sender.spigot().sendMessage(account.getInformation(sender));
 				return;
-			} catch (NumberFormatException e) {}
+			} catch (NumberFormatException ignored) {}
 		}
 
 		if (!(sender instanceof Player)) {

@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.utils;
 
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.config.Config;
 
 import java.util.Arrays;
@@ -7,6 +9,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Defines the {@link Account} configuration for a specific {@link Bank}.
+ * Bank owners are allowed to customize these configuration values in-game if the
+ * corresponding "allow-override" value in the {@link Config} is marked as <b>true</b>.
+ */
 public class AccountConfig {
 
 	private double interestRate;
@@ -24,8 +31,12 @@ public class AccountConfig {
 	private boolean payOnLowBalance;
 	private int playerAccountLimit;
 
+	/**
+	 * Create a new AccountConfig with the default values from the {@link Config}.
+	 */
 	public AccountConfig() {
-		this(Config.interestRate.getValue(),
+		this(
+				Config.interestRate.getValue(),
 				Config.interestMultipliers.getValue(),
 				Config.initialInterestDelay.getValue(),
 				Config.countInterestDelayOffline.getValue(),
@@ -39,9 +50,26 @@ public class AccountConfig {
 				Config.lowBalanceFee.getValue(),
 				Config.payOnLowBalance.getValue(),
 				Config.playerBankAccountLimit.getValue()
-				);
+			);
 	}
 
+	/**
+	 * Re-create an AccountConfig that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 * @param interestRate the base interest rate, e.g. .01 or 1%
+	 * @param multipliers a {@link List<Integer>} of multiplier values for the {@link Account}s at this {@link Bank}
+	 * @param initialInterestDelay the number of interest events until an account will generate interest for the first time
+	 * @param countInterestDelayOffline whether the waiting period will decrease while the account owner is offline
+	 * @param allowedOffline the number of consecutive times an account may generate interest for an offline owner
+	 * @param allowedOfflineBeforeReset the number of offline payouts before an account multiplier resets
+	 * @param offlineMultiplierDecrement how much an account multiplier will decrease before every offline payout
+	 * @param withdrawalMultiplierDecrement how much an account multiplier will decrease on withdrawal
+	 * @param accountCreationPrice the price to create an account at this bank
+	 * @param reimburseAccountCreation whether account owners are reimbursed the (current) account creation price when removing an account
+	 * @param minBalance the minimum balance for an account
+	 * @param lowBalanceFee the fee that will be charged to the account owner for each account he owns with a low balance
+	 * @param payOnLowBalance whether interest will continue to be generated while an account balance is low
+	 * @param playerAccountLimit the number of accounts each player is allowed to create at this bank
+	 */
 	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
 						 boolean countInterestDelayOffline, int allowedOffline, int allowedOfflineBeforeReset,
 						 int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, double accountCreationPrice,
@@ -63,6 +91,11 @@ public class AccountConfig {
 		this.playerAccountLimit = playerAccountLimit;
 	}
 
+	/**
+	 * Reports whether or not a {@link Field} is set as "allow-override: true" in the {@link Config}.
+	 * @param field the configuration value
+	 * @return whether a config value can be set independently for each bank
+	 */
 	public static boolean isOverrideAllowed(Field field) {
 		switch (field) {
 
@@ -98,6 +131,12 @@ public class AccountConfig {
 		}
 	}
 
+	/**
+	 * A handy lookup method that takes a {@link Field} and returns its current value in an {@link Object}
+	 * @param field the field to be looked up
+	 * @return the bank-specific value, or the default value if the field is currently not overridable
+	 * @see #isOverrideAllowed(Field)
+	 */
 	public Object getField(Field field) {
 		switch (field) {
 
@@ -134,8 +173,16 @@ public class AccountConfig {
 		}
 
 	}
-	
-	public boolean setField(Field field, String s, Callback<String> callback) {
+
+	/**
+	 * Set a value to the specified {@link Field}. If the field cannot accept the
+	 * provided value, a {@link NumberFormatException} is returned in the {@link Callback}
+	 * @param field the field to set
+	 * @param value the value to set the field to
+	 * @param callback the {@link Callback} that returns how the value was parsed and interpreted
+	 * @return whether the field was successfully set or not
+	 */
+	public boolean setField(Field field, String value, Callback<String> callback) {
 		
 		if (!isOverrideAllowed(field))
 			return false;
@@ -144,69 +191,70 @@ public class AccountConfig {
 		try {
 			switch (field) {
 				case INTEREST_RATE:
-					interestRate = Double.parseDouble(s.replace(",", ""));
+					interestRate = Double.parseDouble(value.replace(",", ""));
 					result = Utils.formatNumber(interestRate);
 					break;
 				case MULTIPLIERS:
-					multipliers = Arrays.stream(Utils.removePunctuation(s).split(" ")).filter(t -> !t.isEmpty())
+					multipliers = Arrays.stream(Utils.removePunctuation(value)
+							.split(" ")).filter(t -> !t.isEmpty())
 							.map(Integer::parseInt).collect(Collectors.toList());
 					result = Utils.formatList(multipliers);
 					break;
 				case INITIAL_INTEREST_DELAY:
-					initialInterestDelay = Math.abs(Integer.parseInt(s));
+					initialInterestDelay = Math.abs(Integer.parseInt(value));
 					result = "" + initialInterestDelay;
 					break;
 				case COUNT_INTEREST_DELAY_OFFLINE:
-					if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
-						countInterestDelayOffline = Boolean.parseBoolean(s);
+					if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))
+						countInterestDelayOffline = Boolean.parseBoolean(value);
 					else
 						throw new NumberFormatException();
 					result = "" + countInterestDelayOffline;
 					break;
 				case ALLOWED_OFFLINE_PAYOUTS:
-					allowedOfflinePayouts = Math.abs(Integer.parseInt(s));
+					allowedOfflinePayouts = Math.abs(Integer.parseInt(value));
 					result = "" + allowedOfflinePayouts;
 					break;
 				case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
-					allowedOfflineBeforeReset = Math.abs(Integer.parseInt(s));
+					allowedOfflineBeforeReset = Math.abs(Integer.parseInt(value));
 					result = "" + allowedOfflineBeforeReset;
 					break;
 				case OFFLINE_MULTIPLIER_DECREMENT:
-					offlineMultiplierDecrement = Math.abs(Integer.parseInt(s));
+					offlineMultiplierDecrement = Math.abs(Integer.parseInt(value));
 					result = "" + offlineMultiplierDecrement;
 					break;
 				case WITHDRAWAL_MULTIPLIER_DECREMENT:
-					withdrawalMultiplierDecrement = Math.abs(Integer.parseInt(s));
+					withdrawalMultiplierDecrement = Math.abs(Integer.parseInt(value));
 					result = "" + withdrawalMultiplierDecrement;
 					break;
 				case ACCOUNT_CREATION_PRICE:
-					accountCreationPrice = Math.abs(Double.parseDouble(s.replace(",", "")));
+					accountCreationPrice = Math.abs(Double.parseDouble(value.replace(",", "")));
 					result = Utils.formatNumber(accountCreationPrice);
 					break;
 				case REIMBURSE_ACCOUNT_CREATION:
-					if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
-						reimburseAccountCreation = Boolean.parseBoolean(s);
+					if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))
+						reimburseAccountCreation = Boolean.parseBoolean(value);
 					else
 						throw new NumberFormatException();
 					result = "" + reimburseAccountCreation;
 					break;
 				case MINIMUM_BALANCE:
-					minBalance = Math.abs(Double.parseDouble(s.replace(",", "")));
+					minBalance = Math.abs(Double.parseDouble(value.replace(",", "")));
 					result = Utils.formatNumber(minBalance);
 					break;
 				case LOW_BALANCE_FEE:
-					lowBalanceFee = Math.abs(Double.parseDouble(s.replace(",", "")));
+					lowBalanceFee = Math.abs(Double.parseDouble(value.replace(",", "")));
 					result = Utils.formatNumber(lowBalanceFee);
 					break;
 				case PAY_ON_LOW_BALANCE:
-					if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
-						payOnLowBalance = Boolean.parseBoolean(s);
+					if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))
+						payOnLowBalance = Boolean.parseBoolean(value);
 					else
 						throw new NumberFormatException();
 					result = "" + payOnLowBalance;
 					break;
 				case PLAYER_ACCOUNT_LIMIT:
-					playerAccountLimit = Math.abs(Integer.parseInt(s));
+					playerAccountLimit = Math.abs(Integer.parseInt(value));
 					result = "" + playerAccountLimit;
 					break;
 				default:
@@ -219,6 +267,11 @@ public class AccountConfig {
 		return true;
 	}
 
+	/**
+	 * @param ignoreConfig whether or not to force return the specific value at this bank, as opposed to
+	 *                     potentially the default value from the {@link Config}
+	 * @return the value at this bank or the default value if ignoreConfig=false and allow-override=false
+	 */
 	public double getInterestRate(boolean ignoreConfig) {
 		if (ignoreConfig)
 			return interestRate;
@@ -322,7 +375,10 @@ public class AccountConfig {
 		return Arrays.stream(Field.values()).map(field -> field.getName() + ": " + getField(field)
 				+ " (Overrideable: " + isOverrideAllowed(field) + ")").collect(Collectors.joining("\n"));
 	}
-	
+
+	/**
+	 * Represents all the bank configuration values for a given bank.
+	 */
 	public enum Field {
 
 		INTEREST_RATE ("interest-rate", 0), 

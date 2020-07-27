@@ -619,11 +619,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				for (int i = 3; i < args.length; i++)
 					sb.append(" ").append(args[i]);
 				value = sb.toString();
+			} else {
+				bank = bankUtils.lookupBank(args[1]);
+				standingInBank = false;
+				fieldName = args[2];
+				value = args[3];
 			}
-			bank = bankUtils.lookupBank(args[1]);
-			standingInBank = false;
-			fieldName = args[2];
-			value = args[3];
 		}
 
 		if (bank == null) {

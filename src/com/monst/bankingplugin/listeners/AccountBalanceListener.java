@@ -17,6 +17,10 @@ import org.bukkit.event.inventory.InventoryType;
 
 import java.math.BigDecimal;
 
+/**
+ * Continuously updates account balances.
+ * @see AccountUtils#appraiseAccountContents(Account) 
+ */
 public class AccountBalanceListener implements Listener {
 	
 	private final BankingPlugin plugin;
