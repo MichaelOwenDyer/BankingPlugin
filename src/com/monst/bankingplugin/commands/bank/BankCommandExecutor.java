@@ -1,8 +1,9 @@
-package com.monst.bankingplugin.commands;
+package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.commands.Confirmable;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.*;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
@@ -197,7 +198,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		if (!Utils.withdrawPlayer(p.getPlayer(), p.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
+		String worldName = p.getLocation().getWorld() != null ? p.getLocation().getWorld().getName() : "World";
+		if (!Utils.withdrawPlayer(p.getPlayer(), worldName, creationPrice, new Callback<Void>(plugin) {
 			@Override
 			public void onResult(Void result) {
 				p.sendMessage(String.format(Messages.BANK_CREATE_FEE_PAID, Utils.format(creationPrice)));
@@ -336,12 +338,14 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 		}
 
+		plugin.debug(sender.getName() + " is displaying bank info");
 		if (sender instanceof Player)
 			new BankGui(bank).open((Player) sender);
 		else
 			sender.spigot().sendMessage(bank.getInformation(sender));
 	}
 
+	@SuppressWarnings("unused")
 	private void promptBankList(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " is listing banks.");
 
@@ -434,7 +438,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				selection = WorldEditReader.getSelection(plugin, p);
 
 				if (selection == null) {
-					plugin.debug(p.getName() + " tried to resize a bank with no worldedit selection");
+					plugin.debug(p.getName() + " tried to resize a bank with no WorldEdit selection");
 					p.sendMessage(Messages.NO_SELECTION_FOUND);
 					return true;
 				}
@@ -750,7 +754,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 			if (!args[1].equalsIgnoreCase("admin")) {
 				newOwner = Bukkit.getOfflinePlayer(args[1]);
-				if (newOwner == null || !newOwner.hasPlayedBefore()) {
+				if (!newOwner.hasPlayedBefore()) {
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 					return true;
 				}
@@ -764,14 +768,14 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 			if (!args[2].equalsIgnoreCase("admin")) {
 				newOwner = Bukkit.getOfflinePlayer(args[2]);
-				if (newOwner == null || !newOwner.hasPlayedBefore()) {
+				if (!newOwner.hasPlayedBefore()) {
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[2]));
 					return true;
 				}
 			}
 		}
 
-		if (sender instanceof Player && bank.isOwner(newOwner)) {
+		if (sender instanceof Player && newOwner != null && bank.isOwner(newOwner)) {
 			boolean isExecutor = ((Player) sender).getUniqueId().equals(newOwner.getUniqueId());
 			plugin.debug(newOwner.getName() + " is already owner of bank");
 			sender.sendMessage(

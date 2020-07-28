@@ -1,9 +1,9 @@
 package com.monst.bankingplugin;
 
 import com.earth2me.essentials.Essentials;
-import com.monst.bankingplugin.commands.AccountCommand;
-import com.monst.bankingplugin.commands.BankCommand;
-import com.monst.bankingplugin.commands.ControlCommand;
+import com.monst.bankingplugin.commands.account.AccountCommand;
+import com.monst.bankingplugin.commands.bank.BankCommand;
+import com.monst.bankingplugin.commands.control.ControlCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.InterestEvent;
 import com.monst.bankingplugin.events.account.AccountInitializedEvent;

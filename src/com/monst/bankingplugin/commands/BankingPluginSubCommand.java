@@ -8,14 +8,14 @@ import org.bukkit.command.TabCompleter;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GenericSubCommand {
+public abstract class BankingPluginSubCommand {
 	
 	private final String name;
 	private final boolean playerCommand;
 	private final CommandExecutor executor;
 	private final TabCompleter tabCompleter;
 
-    public GenericSubCommand(String name, boolean playerCommand, CommandExecutor executor, TabCompleter tabCompleter) {
+    public BankingPluginSubCommand(String name, boolean playerCommand, CommandExecutor executor, TabCompleter tabCompleter) {
     	this.name = name;
         this.playerCommand = playerCommand;
         this.executor = executor;

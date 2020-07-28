@@ -1,8 +1,9 @@
-package com.monst.bankingplugin.commands;
+package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.commands.Confirmable;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
 import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
@@ -228,7 +229,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				noAccountsMessage = Messages.NO_ACCOUNTS_FOUND;
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				if (owner == null || !owner.hasPlayedBefore()) {
+				if (!owner.hasPlayedBefore()) {
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 					return;
 				}
@@ -521,7 +522,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			return false;
 		
 		OfflinePlayer newOwner = Bukkit.getOfflinePlayer(args[1]);
-		if (newOwner == null || !newOwner.hasPlayedBefore()) {
+		if (!newOwner.hasPlayedBefore()) {
 			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 			return false;
 		}

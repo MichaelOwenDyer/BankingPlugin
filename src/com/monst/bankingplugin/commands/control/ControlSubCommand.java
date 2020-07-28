@@ -1,12 +1,13 @@
-package com.monst.bankingplugin.commands;
+package com.monst.bankingplugin.commands.control;
 
+import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
-public abstract class AccountSubCommand extends GenericSubCommand {
+public abstract class ControlSubCommand extends BankingPluginSubCommand {
 
-    public AccountSubCommand(String name, boolean playerCommand, CommandExecutor executor, TabCompleter tabCompleter) {
+    public ControlSubCommand(String name, boolean playerCommand, CommandExecutor executor, TabCompleter tabCompleter) {
         super(name, playerCommand, executor, tabCompleter);
     }
 

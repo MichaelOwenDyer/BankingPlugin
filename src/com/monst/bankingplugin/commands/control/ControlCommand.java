@@ -1,5 +1,6 @@
-package com.monst.bankingplugin.commands;
+package com.monst.bankingplugin.commands.control;
 
+import com.monst.bankingplugin.commands.BankingPluginCommand;
 import org.bukkit.command.CommandSender;
 
 import com.monst.bankingplugin.BankingPlugin;
@@ -7,7 +8,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 
-public class ControlCommand extends GenericCommand {
+public class ControlCommand extends BankingPluginCommand {
 
 	private static boolean commandCreated = false;
 
@@ -25,6 +26,7 @@ public class ControlCommand extends GenericCommand {
         this.desc = Messages.COMMAND_DESC_CONTROL;
 		this.pluginCommand = super.createPluginCommand();
         this.executor = new ControlCommandExecutor(plugin);
+        this.tabCompleter = new ControlTabCompleter(plugin);
 
 		addSubCommand(new ControlSubCommand("version", false, executor, tabCompleter) {
 			@Override

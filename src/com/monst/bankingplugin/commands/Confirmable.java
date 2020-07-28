@@ -7,7 +7,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
-interface Confirmable {
+public interface Confirmable {
 	
 	Map<UUID, String[]> unconfirmedCommands = new HashMap<>();
 	Map<UUID, BukkitTask> confirmationTimers = new HashMap<>();

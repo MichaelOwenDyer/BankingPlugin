@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.commands;
+package com.monst.bankingplugin.commands.control;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;

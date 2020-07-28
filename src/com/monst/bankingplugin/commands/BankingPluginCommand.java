@@ -11,22 +11,23 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class GenericCommand {
+public class BankingPluginCommand {
 
 	private final BankingPlugin plugin;
 	protected String name;
 	protected String desc;
 	protected PluginCommand pluginCommand;
 	protected CommandExecutor executor;
-	protected final GenericTabCompleter tabCompleter;
+	protected TabCompleter tabCompleter;
 
-	private final List<GenericSubCommand> subCommands = new ArrayList<>();
+	private final List<BankingPluginSubCommand> subCommands = new ArrayList<>();
 
-	public GenericCommand(final BankingPlugin plugin) {
+	public BankingPluginCommand(final BankingPlugin plugin) {
 		this.plugin = plugin;
-		this.tabCompleter = new GenericTabCompleter(plugin);
 	}
 
 	protected PluginCommand createPluginCommand() {
@@ -83,7 +84,7 @@ public class GenericCommand {
 		plugin.debug("Sending basic help message to " + sender.getName());
 
 		sender.sendMessage(" ");
-		for (GenericSubCommand subCommand : subCommands) {
+		for (BankingPluginSubCommand subCommand : subCommands) {
 			String msg = subCommand.getHelpMessage(sender);
 			if (msg == null || msg.isEmpty())
 				continue;
@@ -97,9 +98,8 @@ public class GenericCommand {
 		@Override
 		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length > 0) {
-				for (GenericSubCommand subCommand : subCommands) {
+				for (BankingPluginSubCommand subCommand : subCommands) {
 					if (subCommand.getName().equalsIgnoreCase(args[0])) {
-
 						if (!(sender instanceof Player) && subCommand.isPlayerCommand()) {
 							sender.sendMessage(ChatColor.RED + "Only players can use this command.");
 							return true;
@@ -120,46 +120,38 @@ public class GenericCommand {
 		@Override
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 
-			List<String> subCommandNames = new ArrayList<>();
+			List<String> subCommandNames = subCommands.stream().map(BankingPluginSubCommand::getName)
+					.collect(Collectors.toList());
 			List<String> tabCompletions = new ArrayList<>();
 			
-			subCommands.forEach(sc -> subCommandNames.add(sc.getName()));
-
 			if (args.length == 1) {
 				if (!args[0].isEmpty()) {
-					for (String s : subCommandNames) {
-						if (s.startsWith(args[0])) {
+					for (String s : subCommandNames)
+						if (s.startsWith(args[0]))
 							tabCompletions.add(s);
-						}
-					}
 					return tabCompletions;
-				} else {
+				} else
 					return subCommandNames;
-				}
 			} else if (args.length > 1) {
-				for (GenericSubCommand subCmd : subCommands) {
-					if (subCmd.getName().equalsIgnoreCase(args[0])) {
+				for (BankingPluginSubCommand subCmd : subCommands)
+					if (subCmd.getName().equalsIgnoreCase(args[0]))
 						if (sender instanceof Player)
 							return subCmd.getTabCompletions(sender, command, label, args);
-					}
-				}
 			}
-
-			return new ArrayList<>();
+			return Collections.emptyList();
 		}
-
 	}
 
 	public PluginCommand getCommand() {
 		return pluginCommand;
 	}
 
-	public void addSubCommand(GenericSubCommand subCommand) {
+	public void addSubCommand(BankingPluginSubCommand subCommand) {
 		plugin.debug("Adding " + name + " subcommand \"" + subCommand.getName() + "\"");
 		this.subCommands.add(subCommand);
 	}
 
-	public List<? extends GenericSubCommand> getSubCommands() {
+	public List<? extends BankingPluginSubCommand> getSubCommands() {
 		return new ArrayList<>(subCommands);
 	}
 
