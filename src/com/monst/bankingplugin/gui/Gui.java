@@ -31,16 +31,16 @@ abstract class Gui<T extends Ownable> {
 	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) -> new BukkitRunnable() {
 		@Override
 		public void run() {
-			if (prevGui != null && !openInBackground) {
+			if (isLinked() && !isOpenInBackground()) {
 				prevGui.openInBackground = false;
 				prevGui.open(player, false);
 			}
 		}
 	}.runTaskLater(plugin, 0);
 
-	Gui(BankingPlugin plugin, T t) {
+	Gui(BankingPlugin plugin, T guiSubject) {
 		this.plugin = plugin;
-		this.guiSubject = t;
+		this.guiSubject = guiSubject;
 	}
 
 	public void open(Player player) {
@@ -51,7 +51,7 @@ abstract class Gui<T extends Ownable> {
 		if (update) {
 			createMenu();
 			setCloseHandler(CLOSE_HANDLER);
-			shortenGuiChain(prevGui);
+			shortenGuiChain();
 		}
 		evaluateClearance(player);
 		for (int i = 0; i < menu.getDimensions().getArea(); i++) {
@@ -61,7 +61,7 @@ abstract class Gui<T extends Ownable> {
 		menu.open(player);
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	public Gui<T> setPrevGui(@Nullable Gui prevGui) {
 		if (prevGui != null)
 			prevGui.openInBackground = true;
@@ -108,22 +108,29 @@ abstract class Gui<T extends Ownable> {
 	 * Descends down the list of previous open menus, and severs the link when it
 	 * finds a certain number of the same type as the current gui. This prevents the gui chain
 	 * from becoming uncontrollably long.
-	 * @param gui The gui to compare to the current one
 	 */
-	private void shortenGuiChain(Gui<T> gui) {
-		shortenGuiChain(gui, EnumSet.noneOf(GuiType.class));
+	private void shortenGuiChain() {
+		shortenGuiChain(this, EnumSet.noneOf(GuiType.class));
 	}
 
 	private void shortenGuiChain(Gui<T> gui, EnumSet<GuiType> types) {
-		if (gui == null)
+		Gui<T> previous = gui.prevGui;
+		if (previous == null)
 			return;
-		if (!types.contains(gui.getType())) {
-			types.add(gui.getType());
-			shortenGuiChain(gui.prevGui, types);
+		if (!types.contains(previous.getType())) {
+			types.add(previous.getType());
+			shortenGuiChain(previous, types);
 		} else {
 			gui.prevGui = null;
-			gui.setCloseHandler(null); // TODO: Would just one of these be sufficient?
 		}
+	}
+
+	boolean isOpenInBackground() {
+		return openInBackground;
+	}
+
+	boolean isLinked() {
+		return prevGui != null;
 	}
 
 	enum GuiType {

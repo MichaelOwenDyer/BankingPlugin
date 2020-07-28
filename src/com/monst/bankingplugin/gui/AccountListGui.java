@@ -45,6 +45,7 @@ public class AccountListGui extends Gui<Bank> {
 
     @Override
     void createMenu() {
+        @SuppressWarnings("rawtypes")
         Menu.Builder pageTemplate = ChestMenu.builder(3).title("Account List").redraw(true);
         Mask itemSlots = BinaryMask.builder(pageTemplate.getDimensions())
                 .pattern("010101010")
