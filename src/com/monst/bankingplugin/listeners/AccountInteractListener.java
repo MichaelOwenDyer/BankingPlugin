@@ -264,7 +264,7 @@ public class AccountInteractListener implements Listener {
 			@Override
 			public void onResult(Void result) {
 				p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
-						Utils.formatNumber(finalCreationPrice)));
+						Utils.format(finalCreationPrice)));
 			}
 			@Override
 			public void onError(Throwable throwable) {
@@ -282,7 +282,7 @@ public class AccountInteractListener implements Listener {
 				public void onResult(Void result) {
 					if (bankOwner.isOnline())
 						bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
-								accountOwner.getName(), Utils.formatNumber(finalCreationPrice)));
+								accountOwner.getName(), Utils.format(finalCreationPrice)));
 				}
 				@Override
 				public void onError(Throwable throwable) {
@@ -372,7 +372,7 @@ public class AccountInteractListener implements Listener {
 			Utils.depositPlayer(executor.getPlayer(), account.getLocation().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
 				@Override
 				public void onResult(Void result) {
-					executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.formatNumber(finalCreationPrice)));
+					executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice)));
 				}
 				@Override
 				public void onError(Throwable throwable) {
@@ -388,7 +388,7 @@ public class AccountInteractListener implements Listener {
 					public void onResult(Void result) {
 						if (!account.isOwner(bankOwner) && bankOwner.isOnline())
 							bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-									account.getOwner().getName(), Utils.formatNumber(finalCreationPrice)));
+									account.getOwner().getName(), Utils.format(finalCreationPrice)));
 					}
 					@Override
 					public void onError(Throwable throwable) {
@@ -628,7 +628,7 @@ public class AccountInteractListener implements Listener {
 						@Override
 						public void onResult(Void result) {
 							p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
-									Utils.formatNumber(finalReimbursement)));
+									Utils.format(finalReimbursement)));
 						}
 						@Override
 						public void onError(Throwable throwable) {
@@ -648,7 +648,7 @@ public class AccountInteractListener implements Listener {
 							if (bankOwner.isOnline())
 								bankOwner.getPlayer().sendMessage(String.format(
 										Messages.ACCOUNT_CREATE_FEE_RECEIVED,
-										Utils.formatNumber(finalCreationPrice)
+										Utils.format(finalCreationPrice)
 								));
 						}
 						@Override
@@ -666,7 +666,7 @@ public class AccountInteractListener implements Listener {
 						@Override
 						public void onResult(Void result) {
 							p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
-									Utils.formatNumber(finalCreationPrice)));
+									Utils.format(finalCreationPrice)));
 						}
 						@Override
 						public void onError(Throwable throwable) {
@@ -687,7 +687,7 @@ public class AccountInteractListener implements Listener {
 							if (bankOwner.isOnline())
 								bankOwner.getPlayer().sendMessage(String.format(
 										Messages.ACCOUNT_REIMBURSEMENT_PAID,
-										p.getName(), Utils.formatNumber(finalReimbursement)
+										p.getName(), Utils.format(finalReimbursement)
 								));
 						}
 						@Override

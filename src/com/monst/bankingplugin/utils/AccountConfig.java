@@ -2,12 +2,12 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.ArgumentParseException;
+import org.apache.commons.lang.WordUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,30 +16,10 @@ import java.util.stream.Stream;
  * Bank owners are allowed to customize these configuration values in-game if the
  * corresponding "allow-override" value in the {@link Config} is marked as <b>true</b>.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("all")
 public class AccountConfig {
 
-	private static boolean initialized = false;
-	private static final Map<Field, Method> SETTERS = new EnumMap<>(Field.class);
-	private static final Map<Field, java.lang.reflect.Field> CONFIG_FIELDS = new EnumMap<>(Field.class);
-	private static final Map<Field, java.lang.reflect.Field> LOCAL_FIELDS = new EnumMap<>(Field.class);
-
-	public static void initialize() {
-		if (initialized)
-			return;
-		for (Field field : Field.values()) {
-			try {
-				SETTERS.put(field, AccountConfig.class.getDeclaredMethod(field.getSetterName(), String.class));
-				LOCAL_FIELDS.put(field, AccountConfig.class.getDeclaredField(field.getFieldName()));
-				CONFIG_FIELDS.put(field, Config.class.getField(field.getFieldName()));
-			} catch (NoSuchMethodException e) {
-				BankingPlugin.getInstance().debug("BankField method error: could not find method for \"" + field.getSetterName() + "\"");
-			} catch (NoSuchFieldException e) {
-				BankingPlugin.getInstance().debug("BankField field error: could not find field for \"" + field.getFieldName() + "\"");
-			}
-		}
-		initialized = true;
-	}
+	private final Map<Field, Function<String, String>> SETTERS = new EnumMap<>(Field.class);
 
 	private double interestRate;
 	private List<Integer> multipliers;
@@ -115,6 +95,7 @@ public class AccountConfig {
 		this.payOnLowBalance = payOnLowBalance;
 		this.playerBankAccountLimit = playerBankAccountLimit;
 
+		initialize();
 	}
 
 	/**
@@ -125,9 +106,8 @@ public class AccountConfig {
 	@SuppressWarnings("rawtypes")
 	public static boolean isOverrideAllowed(Field field) {
 		try {
-			return (boolean) ((AbstractMap.SimpleEntry) CONFIG_FIELDS.get(field).get(null)).getKey();
+			return (boolean) ((AbstractMap.SimpleEntry) field.getConfigField().get(null)).getKey();
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
 			return false;
 		}
 	}
@@ -141,17 +121,13 @@ public class AccountConfig {
 	 * @return whether the field was successfully set or not
 	 */
 	public boolean set(Field field, String value, Callback<String> callback) {
-		
 		if (!isOverrideAllowed(field))
 			return false;
-
 		try {
-			callback.callSyncResult((String) SETTERS.get(field).invoke(this, value));
+			callback.callSyncResult(SETTERS.get(field).apply(value));
 		} catch (NumberFormatException e) {
-			callback.callSyncError(e);
+			callback.callSyncError(new ArgumentParseException(field.getDataType(), value));
 			return false;
-		} catch (IllegalAccessException | InvocationTargetException e) {
-			e.printStackTrace();
 		}
 		return true;
 	}
@@ -168,119 +144,60 @@ public class AccountConfig {
 	 * @return the bank-specific value, or the default value if the field is currently not overridable
 	 * @see #isOverrideAllowed(Field)
 	 */
-	@SuppressWarnings("unchecked")
-	public <T> T get(Field field, boolean ignoreConfig) {
-		switch (field.getDataType()) {
-			case 0:
-				return (T) get(field, ignoreConfig, 0.0d);
-			case 1:
-				return (T) get(field, ignoreConfig, 0);
-			case 2:
-				return (T) get(field, ignoreConfig, true);
-			case 3:
-				return (T) get(field, ignoreConfig, new ArrayList<Integer>());
-		}
-		return null;
-	}
-
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	private <T> T get(Field field, boolean ignoreConfig, T type) {
-		try {
-			if (ignoreConfig)
-				return (T) LOCAL_FIELDS.get(field).get(this);
-			else {
-				return isOverrideAllowed(field)
-						? (T) LOCAL_FIELDS.get(field).get(this)
-						: (T) ((AbstractMap.SimpleEntry) CONFIG_FIELDS.get(field).get(null)).getValue();
-			}
-		} catch (IllegalAccessException ignored) {}
-		return null;
-	}
+	public <T> T get(Field field, boolean ignoreConfig) {
+	    try {
+	        if (ignoreConfig)
+                return (T) field.getDataType().cast(field.getLocalField().get(this));
+	        else
+	            return isOverrideAllowed(field)
+                            ? (T) field.getDataType().cast(field.getLocalField().get(this))
+                            : (T) field.getDataType().cast(((AbstractMap.SimpleEntry) field.getConfigField().get(null)).getValue());
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	private String setInterestRate(String value) throws NumberFormatException {
-		interestRate = Double.parseDouble(value.replace(",", ""));
-		return Utils.formatNumber(interestRate);
-	}
+	private void initialize() {
 
-	private String setMultipliers(String value) throws NumberFormatException {
-		multipliers = Arrays.stream(Utils.removePunctuation(value)
-				.split(" ")).filter(t -> !t.isEmpty())
-				.map(Integer::parseInt).collect(Collectors.toList());
-		return Utils.formatList(multipliers);
-	}
+		Field.stream(Boolean.class).forEach(field -> SETTERS.put(field, (value) -> {
+			try {
+				field.getLocalField().set(this, Boolean.parseBoolean(value));
+				return "" + field.getLocalField().get(this);
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		}));
 
-	private String setInitialInterestDelay(String value) throws NumberFormatException {
-		initialInterestDelay = Math.abs(Integer.parseInt(value));
-		return "" + initialInterestDelay;
-	}
+		Field.stream(Double.class).forEach(field -> SETTERS.put(field, (value) -> {
+			try {
+				field.getLocalField().set(this, Math.abs(Double.parseDouble(value.replace(",", ""))));
+				return Utils.format((double) field.getLocalField().get(this));
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		}));
 
-	private String setCountInterestDelayOffline(String value) throws NumberFormatException {
-		if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))
-			countInterestDelayOffline = Boolean.parseBoolean(value);
-		else
-			throw new NumberFormatException();
-		return "" + countInterestDelayOffline;
-	}
+		SETTERS.put(Field.PLAYER_BANK_ACCOUNT_LIMIT, (value) -> {
+			playerBankAccountLimit = Integer.parseInt(value); // Special setter without Math.abs for this field
+			return "" + playerBankAccountLimit;
+		});
+		Field.stream(Integer.class).forEach(field -> SETTERS.putIfAbsent(field, (value) -> {
+			try {
+				field.getLocalField().set(this, Math.abs(Integer.parseInt(value)));
+				return "" + field.getLocalField().get(this);
+			} catch (IllegalAccessException e) {}
+			return "";
+		}));
 
-	private String setAllowedOfflinePayouts(String value) throws NumberFormatException {
-		allowedOfflinePayouts = Math.abs(Integer.parseInt(value));
-		return "" + allowedOfflinePayouts;
-	}
-
-	private String setAllowedOfflinePayoutsBeforeReset(String value) throws NumberFormatException {
-		allowedOfflinePayoutsBeforeReset = Math.abs(Integer.parseInt(value));
-		return "" + allowedOfflinePayoutsBeforeReset;
-	}
-
-	private String setOfflineMultiplierDecrement(String value) throws NumberFormatException {
-		offlineMultiplierDecrement = Math.abs(Integer.parseInt(value));
-		return "" + offlineMultiplierDecrement;
-	}
-
-	private String setWithdrawalMultiplierDecrement(String value) throws NumberFormatException {
-		withdrawalMultiplierDecrement = Math.abs(Integer.parseInt(value));
-		return "" + withdrawalMultiplierDecrement;
-	}
-
-	private String setAccountCreationPrice(String value) throws NumberFormatException {
-		accountCreationPrice = Math.abs(Double.parseDouble(value.replace(",", "")));
-		return Utils.formatNumber(accountCreationPrice);
-	}
-
-	private String setReimburseAccountCreation(String value) throws NumberFormatException {
-		if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))
-			reimburseAccountCreation = Boolean.parseBoolean(value);
-		else
-			throw new NumberFormatException();
-		return "" + reimburseAccountCreation;
-	}
-
-	private String setMinBalance(String value) throws NumberFormatException {
-		minBalance = Math.abs(Double.parseDouble(value.replace(",", "")));
-		return Utils.formatNumber(minBalance);
-	}
-
-	private String setLowBalanceFee(String value) throws NumberFormatException {
-		lowBalanceFee = Math.abs(Double.parseDouble(value.replace(",", "")));
-		return Utils.formatNumber(lowBalanceFee);
-	}
-
-	private String setPayOnLowBalance(String value) throws NumberFormatException {
-		if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))
-			payOnLowBalance = Boolean.parseBoolean(value);
-		else
-			throw new NumberFormatException();
-		return "" + payOnLowBalance;
-	}
-
-	private String setPlayerBankAccountLimit(String value) throws NumberFormatException {
-		playerBankAccountLimit = Math.abs(Integer.parseInt(value));
-		return "" + playerBankAccountLimit;
-	}
-
-	@Override
-	public String toString() {
-		return Arrays.stream(Field.values()).map(field -> field.getName() + ": " + isOverrideAllowed(field)).collect(Collectors.joining("\n"));
+		Field.stream(List.class).forEach(field -> SETTERS.put(field, (value) -> {
+			try {
+				field.getLocalField().set(this, Arrays.stream(Utils.removePunctuation(value)
+						.split(" ")).filter(t -> !t.isEmpty())
+						.map(Integer::parseInt).map(Math::abs).collect(Collectors.toList()));
+				return Utils.formatList((List<? extends Number>) field.getLocalField().get(this));
+			} catch (IllegalAccessException e) {}
+			return "";
+		}));
 	}
 
 	/**
@@ -288,55 +205,84 @@ public class AccountConfig {
 	 */
 	public enum Field {
 
-		INTEREST_RATE ("interest-rate", "InterestRate", 0),
-		MULTIPLIERS ("multipliers", "Multipliers", 3),
-		INITIAL_INTEREST_DELAY ("initial-interest-delay", "InitialInterestDelay", 1),
-		COUNT_INTEREST_DELAY_OFFLINE ("count-interest-delay-offline", "CountInterestDelayOffline", 2),
-		ALLOWED_OFFLINE_PAYOUTS ("allowed-offline-payouts", "AllowedOfflinePayouts", 1),
-		ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET("allowed-offline-payouts-before-reset", "AllowedOfflinePayoutsBeforeReset", 1),
-		OFFLINE_MULTIPLIER_DECREMENT ("offline-multiplier-decrement", "OfflineMultiplierDecrement", 1),
-		WITHDRAWAL_MULTIPLIER_DECREMENT ("withdrawal-multiplier-decrement", "WithdrawalMultiplierDecrement", 1),
-		ACCOUNT_CREATION_PRICE ("account-creation-price", "AccountCreationPrice", 0),
-		REIMBURSE_ACCOUNT_CREATION ("reimburse-account-creation", "ReimburseAccountCreation", 2),
-		MINIMUM_BALANCE ("minimum-balance", "MinBalance", 0),
-		LOW_BALANCE_FEE ("low-balance-fee", "LowBalanceFee", 0),
-		PAY_ON_LOW_BALANCE ("pay-on-low-balance", "PayOnLowBalance", 2),
-		PLAYER_BANK_ACCOUNT_LIMIT("player-account-limit", "PlayerBankAccountLimit", 1);
-		
-		private final String name;
-		private final String methodName;
-		private final int dataType; // double: 0, integer: 1, boolean: 2, list: 3
+		INTEREST_RATE (Double.class),
+		MULTIPLIERS (List.class),
+		INITIAL_INTEREST_DELAY (Integer.class),
+		COUNT_INTEREST_DELAY_OFFLINE (Boolean.class),
+		ALLOWED_OFFLINE_PAYOUTS (Integer.class),
+		ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET (Integer.class),
+		OFFLINE_MULTIPLIER_DECREMENT (Integer.class),
+		WITHDRAWAL_MULTIPLIER_DECREMENT (Integer.class),
+		ACCOUNT_CREATION_PRICE (Double.class),
+		REIMBURSE_ACCOUNT_CREATION (Boolean.class),
+		MINIMUM_BALANCE (Double.class),
+		LOW_BALANCE_FEE (Double.class),
+		PAY_ON_LOW_BALANCE (Boolean.class),
+		PLAYER_BANK_ACCOUNT_LIMIT (Integer.class);
 
-		Field(String name, String methodName, int dataType) {
-			this.name = name;
-			this.methodName = methodName;
+		private final String name;
+		private final Class<?> dataType;
+		private java.lang.reflect.Field localField;
+		private java.lang.reflect.Field configField;
+
+		Field(Class<?> dataType) {
+			this.name = toString().toLowerCase().replace("_", "-");
 			this.dataType = dataType;
+            try {
+                String fieldName = WordUtils.capitalize(toString().replace("_", " ")).replace(" ", "");
+                this.localField = AccountConfig.class.getDeclaredField(fieldName);
+                this.configField = Config.class.getField(fieldName);
+            } catch (NoSuchFieldException ignored) {}
 		}
 
+		/**
+		 * @return the name of this field
+		 */
 		public String getName() {
 			return name;
 		}
 
-		private String getGetterName() {
-			return "get" + methodName;
-		}
-
-		private String getSetterName() {
-			return "set" + methodName;
-		}
-
-		private String getFieldName() {
-			return methodName.substring(0, 1).toLowerCase() + methodName.substring(1);
-		}
-
-		public int getDataType() {
+		/**
+		 * @return the type of this field, e.g. Double, Integer, Boolean, or List
+		 */
+		public Class<?> getDataType() {
 			return dataType;
 		}
 
+		/**
+		 * @return the bank-specific value of this field, stored in {@link AccountConfig}
+		 */
+		private java.lang.reflect.Field getLocalField() {
+		    return localField;
+        }
+
+		/**
+		 * @return the default value of this field, stored in {@link Config}
+		 */
+		private java.lang.reflect.Field getConfigField() {
+		    return configField;
+        }
+
+		/**
+		 * @return a {@link Stream<Field>} containing all fields
+		 */
 		public static Stream<Field> stream() {
 			return Stream.of(Field.values());
 		}
 
+		/**
+		 * @param types the types to match
+		 * @return a {@link Stream<Field>} containing all fields that match one of the specified data types
+		 * @see #getDataType()
+		 */
+		public static Stream<Field> stream(Class<?>... types) {
+			return stream().filter(f -> Arrays.asList(types).contains(f.getDataType()));
+		}
+
+		/**
+		 * @param name the name of the field
+		 * @return the field with the specified name
+		 */
 		public static Field getByName(String name) {
 			return stream().filter(bankField -> bankField.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
 		}

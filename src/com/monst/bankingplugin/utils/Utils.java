@@ -59,20 +59,20 @@ public class Utils {
 		return ChatColor.stripColor(colorize(s));
 	}
 
-	public static String formatNumber(double d) {
-		return formatNumber(BigDecimal.valueOf(d));
+	public static String format(double d) {
+		return format(BigDecimal.valueOf(d));
 	}
 
-	public static String formatNumber(BigDecimal bd) {
+	public static String format(BigDecimal bd) {
 		return String.format("%,.2f", bd);
-	}
-
-	public static String removePunctuation(String list) {
-		return list.replaceAll("\\p{Punct}", "");
 	}
 
 	public static String formatList(List<? extends Number> list) {
 		return list.stream().map(String::valueOf).collect(Collectors.joining(", ", "[", "]"));
+	}
+
+	public static String removePunctuation(String list) {
+		return list.replaceAll("\\p{Punct}", "");
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -87,10 +87,8 @@ public class Utils {
 	}
 
     public static List<String> wordWrapAll(int lineLength, String... args) {
-		ArrayList<String> lines = new ArrayList<>();
-		for (String sentence : args)
-			Collections.addAll(lines, ChatPaginator.wordWrap(sentence, lineLength));
-		return lines;
+		return Arrays.stream(args).map(s -> ChatPaginator.wordWrap(s, lineLength))
+				.flatMap(Arrays::stream).collect(Collectors.toList());
 	}
 
 	public static boolean depositPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {
@@ -338,7 +336,7 @@ public class Utils {
 				&& account.getBalance().doubleValue() >= (double) accountConfig.get(AccountConfig.Field.MINIMUM_BALANCE)) {
 			ComponentBuilder cb = new ComponentBuilder();
 			cb.append("Next payout: ").color(net.md_5.bungee.api.ChatColor.GRAY)
-					.append("$" + Utils.formatNumber(account.getBalance().multiply(BigDecimal.valueOf(percentage))))
+					.append("$" + Utils.format(account.getBalance().multiply(BigDecimal.valueOf(percentage))))
 					.color(net.md_5.bungee.api.ChatColor.GREEN);
 			interestRate.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, cb.create()));
 		}

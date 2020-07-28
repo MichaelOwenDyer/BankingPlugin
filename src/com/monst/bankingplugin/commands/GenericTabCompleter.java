@@ -298,19 +298,17 @@ class GenericTabCompleter implements TabCompleter {
 			bank = bankUtils.getBank(((Player) sender).getLocation());
 			Field field = Field.getByName(args[1]);
 			if (bank != null && field != null) {
-				String value = bank.getAccountConfig().get(field).toString();
-				if (field.getDataType() == 0)
-					value = Utils.formatNumber(Double.parseDouble(value));
-				return Collections.singletonList(value);
+				if (field.getDataType().equals(List.class)) // TODO: Generify
+					return Collections.singletonList(Utils.formatList(bank.getAccountConfig().get(field)));
+				return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
 			}
 		} else if (args.length == 4) {
 			Bank bank = bankUtils.lookupBank(args[1]);
 			Field field = Field.getByName(args[2]);
 			if (bank != null && field != null) {
-				String value = bank.getAccountConfig().get(field).toString();
-				if (field.getDataType() == 0)
-					value = Utils.formatNumber(Double.parseDouble(value));
-				return Collections.singletonList(value);
+				if (field.getDataType().equals(List.class)) // TODO: Generify
+					return Collections.singletonList(Utils.formatList(bank.getAccountConfig().get(field)));
+				return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
 			}
 		}
 		return Collections.emptyList();

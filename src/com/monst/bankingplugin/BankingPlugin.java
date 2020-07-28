@@ -136,8 +136,6 @@ public class BankingPlugin extends JavaPlugin {
 		bankCommand = new BankCommand(this);
 		controlCommand = new ControlCommand(this);
 
-		AccountConfig.initialize();
-
 		// checkForUpdates();
 		initDatabase();
         registerListeners();

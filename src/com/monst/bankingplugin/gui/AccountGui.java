@@ -132,11 +132,11 @@ public class AccountGui extends Gui<Account> {
 				? config.get(AccountConfig.Field.LOW_BALANCE_FEE) : 0.0d;
 		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
-				"Balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(guiSubject.getBalance()) + (isLowBalance ? ChatColor.RED + " (low)" : ""),
+				"Balance: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getBalance()) + (isLowBalance ? ChatColor.RED + " (low)" : ""),
 				"Interest rate: " + ChatColor.GREEN + (interestRate * multiplier * 100) + "% " + ChatColor.GRAY + "(" + interestRate + " x " + multiplier + ")",
-				"Next payout: " + (nextPayout > 0 ? ChatColor.GREEN : ChatColor.RED) + "$" + Utils.formatNumber(nextPayout)
-						+ (isLowBalance ? ChatColor.GRAY + " (" + ChatColor.GREEN + "$" + Utils.formatNumber(fullPayout)
-						+ ChatColor.GRAY + " - " + ChatColor.RED + "$" + Utils.formatNumber(lowBalanceFee) + ChatColor.GRAY + ")" : "")
+				"Next payout: " + (nextPayout > 0 ? ChatColor.GREEN : ChatColor.RED) + "$" + Utils.format(nextPayout)
+						+ (isLowBalance ? ChatColor.GRAY + " (" + ChatColor.GREEN + "$" + Utils.format(fullPayout)
+						+ ChatColor.GRAY + " - " + ChatColor.RED + "$" + Utils.format(lowBalanceFee) + ChatColor.GRAY + ")" : "")
 		);
 	}
 

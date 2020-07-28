@@ -109,14 +109,14 @@ public class Account extends Ownable implements Nameable {
 			plugin.debug(
 				getBalance().signum() == 0
 					? "Cool! Account #" + getID() + " was created with a balance of "
-						+ Utils.formatNumber(checkedBalance) + " already inside."
+						+ Utils.format(checkedBalance) + " already inside."
 					: "Value of account #" + getID() + " was found higher than expected. Expected: $"
-						+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance)
+						+ Utils.format(getBalance()) + " but was: $" + Utils.format(checkedBalance)
 			);
 		else if (diff < 0)
 			plugin.debug(
 					"Value of account #" + id + " was found lower than expected. Expected: $"
-					+ Utils.formatNumber(getBalance()) + " but was: $" + Utils.formatNumber(checkedBalance)
+					+ Utils.format(getBalance()) + " but was: $" + Utils.format(checkedBalance)
 			);
 		setBalance(checkedBalance);
 
@@ -360,7 +360,7 @@ public class Account extends Ownable implements Nameable {
 		if (!getCoowners().isEmpty())
 			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
 		if (verbose) {
-			info.addExtra("\n    Balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(getBalance()));
+			info.addExtra("\n    Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
 			info.addExtra("\n    Multiplier: ");
 			info.addExtra(Utils.getMultiplierView(this));
 			TextComponent interestRate = new TextComponent("\n    Interest rate: ");
@@ -379,12 +379,12 @@ public class Account extends Ownable implements Nameable {
 		  return "ID: " + getID() 
 						+ "\nOwner: " + getOwner().getName() 
 						+ "\nBank: " + getBank().getName() 
-						+ "\nBalance: $" + Utils.formatNumber(getBalance()) 
-						+ "\nPrevious balance: $" + Utils.formatNumber(getPrevBalance())
+						+ "\nBalance: $" + Utils.format(getBalance())
+						+ "\nPrevious balance: $" + Utils.format(getPrevBalance())
 						+ "\nMultiplier: " + getStatus().getRealMultiplier() 
 							+ " (stage " + getStatus().getMultiplierStage() + ")"
 						+ "\nDelay until next payout: " + getStatus().getDelayUntilNextPayout() 
-						+ "\nNext payout amount: " + Utils.formatNumber(getBalance().doubleValue()
+						+ "\nNext payout amount: " + Utils.format(getBalance().doubleValue()
 								* (double) getBank().getAccountConfig().get(AccountConfig.Field.INTEREST_RATE)
 								* getStatus().getRealMultiplier())
 						+ "\nLocation: " + getCoordinates();

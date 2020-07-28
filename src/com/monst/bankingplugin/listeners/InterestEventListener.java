@@ -152,7 +152,7 @@ public class InterestEventListener implements Listener {
 							public void onResult(Void result) {
 								if (online)
 									bankOwner.getPlayer().sendMessage(String.format(Messages.REVENUE_EARNED,
-											Utils.formatNumber(revenue), bank.getName()));
+											Utils.format(revenue), bank.getName()));
 							}
 							@Override
 							public void onError(Throwable throwable) {
@@ -182,7 +182,7 @@ public class InterestEventListener implements Listener {
 						public void onResult(Void result) {
 							if (isOnline)
 								bankOwner.getPlayer().sendMessage(String.format(Messages.LOW_BALANCE_FEE_EARNED,
-												Utils.formatNumber(totalBankFees.get(bankOwner)),
+												Utils.format(totalBankFees.get(bankOwner)),
 												bankFeeCounter.get(bankOwner),
 												bankFeeCounter.get(bankOwner) == 1 ? "" : "s"));
 						}
@@ -211,7 +211,7 @@ public class InterestEventListener implements Listener {
 						public void onResult(Void result) {
 							if (isOnline)
 								bankOwner.getPlayer().sendMessage(String.format(Messages.INTEREST_PAID,
-												Utils.formatNumber(totalBankInterest.get(bankOwner)),
+												Utils.format(totalBankInterest.get(bankOwner)),
 												bankInterestCounter.get(bankOwner),
 												bankInterestCounter.get(bankOwner) == 1 ? "" : "s"));
 						}
@@ -240,7 +240,7 @@ public class InterestEventListener implements Listener {
 						public void onResult(Void result) {
 							if (online)
 								customer.getPlayer().sendMessage(String.format(Messages.INTEREST_EARNED,
-												Utils.formatNumber(totalAccountInterest.get(customer)),
+												Utils.format(totalAccountInterest.get(customer)),
 												accountInterestCounter.get(customer),
 												accountInterestCounter.get(customer) == 1 ? "" : "s"));
 						}
@@ -270,7 +270,7 @@ public class InterestEventListener implements Listener {
 						public void onResult(Void result) {
 							if (online)
 								customer.getPlayer().sendMessage(String.format(Messages.LOW_BALANCE_FEE_PAID,
-												Utils.formatNumber(totalAccountFees.get(customer)),
+												Utils.format(totalAccountFees.get(customer)),
 												accountFeeCounter.get(customer),
 												accountFeeCounter.get(customer) == 1 ? "" : "s"));
 						}

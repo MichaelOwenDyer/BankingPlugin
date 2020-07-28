@@ -5,6 +5,7 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.*;
+import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.gui.BankGui;
 import com.monst.bankingplugin.selections.Selection;
@@ -167,12 +168,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		int volumeLimit = bankUtils.getVolumeLimit(p);
 		if (!isAdminBank && volumeLimit != -1 && volume > volumeLimit) {
 			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
-			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE, Utils.formatNumber(volumeLimit), Utils.formatNumber(volume - volumeLimit)));
+			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE, Utils.format(volumeLimit), Utils.format(volume - volumeLimit)));
 			return true;
 		}
 		if (!isAdminBank && volume < Config.minimumBankVolume) {
 			plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume + ")");
-			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Utils.formatNumber(Config.minimumBankVolume), Utils.formatNumber(Config.minimumBankVolume - volume)));
+			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Utils.format(Config.minimumBankVolume), Utils.format(Config.minimumBankVolume - volume)));
 			return true;
 		}
 
@@ -199,7 +200,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (!Utils.withdrawPlayer(p.getPlayer(), p.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
 			@Override
 			public void onResult(Void result) {
-				p.sendMessage(String.format(Messages.BANK_CREATE_FEE_PAID, Utils.formatNumber(creationPrice)));
+				p.sendMessage(String.format(Messages.BANK_CREATE_FEE_PAID, Utils.format(creationPrice)));
 			}
 			@Override
 			public void onError(Throwable throwable) {
@@ -248,7 +249,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
 				|| sender.hasPermission(Permissions.BANK_REMOVE_OTHER))) {
-			if (bank.isTrusted(((Player) sender))) {
+			if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
 				plugin.debug(sender.getName() + " does not have permission to remove another player's bank as a co-owner");
 				sender.sendMessage(Messages.MUST_BE_OWNER);
 				return;
@@ -293,7 +294,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 					@Override
 					public void onResult(Void result) {
 						executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
-								Utils.formatNumber(finalCreationPrice)));
+								Utils.format(finalCreationPrice)));
 					}
 					@Override
 					public void onError(Throwable throwable) {
@@ -661,7 +662,6 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		
 
 		Bank finalBank = bank;
-		String finalValue = value;
 		Callback<String> callback = new Callback<String>(plugin) {
 			@Override
 			public void onResult(String result) {
@@ -671,24 +671,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 			@Override
 			public void onError(Throwable throwable) {
-				switch (field.getDataType()) {
-					case 0:
-						plugin.debug("Failed to parse double: " + finalValue);
-						sender.sendMessage(String.format(Messages.NOT_A_NUMBER, finalValue));
-						break;
-					case 1:
-						plugin.debug("Failed to parse integer: " + finalValue);
-						sender.sendMessage(String.format(Messages.NOT_AN_INTEGER, finalValue));
-						break;
-					case 2:
-						plugin.debug("Failed to parse boolean: " + finalValue);
-						sender.sendMessage(String.format(Messages.NOT_A_BOOLEAN, finalValue));
-						break;
-					case 3:
-						plugin.debug("Failed to parse list: " + finalValue);
-						sender.sendMessage(String.format(Messages.NOT_A_LIST, finalValue));
-						break;
-				}
+				plugin.debug(((ArgumentParseException) throwable).getErrorMessage());
+				sender.sendMessage(((ArgumentParseException) throwable).getErrorMessage());
 			}
 		};
 		if (!config.set(field, value, callback))

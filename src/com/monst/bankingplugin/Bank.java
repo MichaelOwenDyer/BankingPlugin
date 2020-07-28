@@ -262,21 +262,21 @@ public class Bank extends Ownable implements Nameable {
 			info.addExtra("\n    Owner: " + getOwnerDisplayName());
 		if (!getCoowners().isEmpty())
 			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
-		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + Utils.formatNumber(accountConfig.get(AccountConfig.Field.INTEREST_RATE)));
+		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + Utils.format(accountConfig.get(AccountConfig.Field.INTEREST_RATE)));
 		info.addExtra("\n    Multipliers: ");
 		info.addExtra(Utils.getMultiplierView(this));
-		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + Utils.formatNumber(accountConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE)));
+		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + Utils.format(accountConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE)));
 		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS));
 		info.addExtra(" (" + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");
 		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.INITIAL_INTEREST_DELAY));
 		double minBal = accountConfig.get(AccountConfig.Field.MINIMUM_BALANCE);
-		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBal));
+		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBal));
 		if (minBal != 0)
-			info.addExtra(" (" + ChatColor.RED + "$" + Utils.formatNumber(accountConfig.get(AccountConfig.Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)");
+			info.addExtra(" (" + ChatColor.RED + "$" + Utils.format(accountConfig.get(AccountConfig.Field.LOW_BALANCE_FEE)) + ChatColor.GRAY + " fee)");
 		if (verbose) {
 			info.addExtra("\n    Accounts: " + ChatColor.AQUA + accounts.size());
-			info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue()));
-			info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.formatNumber(getTotalValue().doubleValue() / accounts.size()));
+			info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
+			info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().doubleValue() / accounts.size()));
 			info.addExtra("\n    Equality score: ");
 			info.addExtra(Utils.getEqualityLore(this));
 		}
@@ -291,7 +291,7 @@ public class Bank extends Ownable implements Nameable {
 				+ "\nName: " + getName() + " (Raw: " + getRawName() + ")"
 				+ "\nOwner: " + (isPlayerBank() ? getOwner().getName() : "ADMIN")
 				+ "\nNumber of accounts: " + getAccounts().size()
-				+ "\nTotal value: " + Utils.formatNumber(getTotalValue())
+				+ "\nTotal value: " + Utils.format(getTotalValue())
 				+ "\nEquality score: " + Utils.getEqualityLore(this)
 				+ "\nSelection type: " + getSelection().getType()
 				+ "\nLocation: " + getSelection().getCoordinates();

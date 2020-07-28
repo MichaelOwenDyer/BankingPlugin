@@ -66,7 +66,7 @@ public class AccountProtectListener implements Listener {
 			Utils.depositPlayer(p, account.getLocation().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
 				@Override
 				public void onResult(Void result) {
-					p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.formatNumber(finalCreationPrice)));
+					p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice)));
 				}
 				@Override
 				public void onError(Throwable throwable) {
@@ -84,7 +84,7 @@ public class AccountProtectListener implements Listener {
 					public void onResult(Void result) {
 						if (bankOwner.isOnline())
 							bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-									account.getOwner().getName(), Utils.formatNumber(finalCreationPrice)));
+									account.getOwner().getName(), Utils.format(finalCreationPrice)));
 					}
 					@Override
 					public void onError(Throwable throwable) {
@@ -202,7 +202,7 @@ public class AccountProtectListener implements Listener {
 			if (!Utils.withdrawPlayer(owner, account.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
 				@Override
 				public void onResult(Void result) {
-					p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID, Utils.formatNumber(creationPrice)));
+					p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID, Utils.format(creationPrice)));
 				}
 				@Override
 				public void onError(Throwable throwable) {
@@ -221,7 +221,7 @@ public class AccountProtectListener implements Listener {
 					public void onResult(Void result) {
 						if (bankOwner.isOnline())
 							bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
-									account.getOwner().getName(), Utils.formatNumber(creationPrice)));
+									account.getOwner().getName(), Utils.format(creationPrice)));
 					}
 					@Override
 					public void onError(Throwable throwable) {

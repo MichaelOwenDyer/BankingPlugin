@@ -115,9 +115,9 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getStatisticsLore() {
 		return Arrays.asList(
 				"Number of accounts: " + ChatColor.AQUA + guiSubject.getAccounts().size(),
-				"Total value: " + ChatColor.GREEN + "$" + Utils.formatNumber(guiSubject.getTotalValue()),
+				"Total value: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getTotalValue()),
 				"Average account value: " + ChatColor.GREEN + "$" +
-						Utils.formatNumber(!guiSubject.getAccounts().isEmpty()
+						Utils.format(!guiSubject.getAccounts().isEmpty()
 								? guiSubject.getTotalValue().doubleValue() / guiSubject.getAccounts().size()
 								: guiSubject.getAccounts().size()),
 				"Equality score: " + Utils.getEqualityLore(guiSubject)
@@ -128,7 +128,7 @@ public class BankGui extends Gui<Bank> {
 		AccountConfig config = guiSubject.getAccountConfig();
 		boolean reimburse = config.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION);
 		return Arrays.asList(
-				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + Utils.formatNumber(config.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE)),
+				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + Utils.format(config.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE)),
 				ChatColor.GRAY + "Fee Reimbursement: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}
@@ -140,9 +140,9 @@ public class BankGui extends Gui<Bank> {
 		boolean strikethrough = minBalance == 0; // TODO: When minbalance is set make sure >=0
 		boolean payOnLowBalance = config.get(AccountConfig.Field.PAY_ON_LOW_BALANCE);
 		return Utils.wordWrapAll(
-				ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.formatNumber(minBalance),
+				ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBalance),
 				ChatColor.GRAY + "Low balance fee: " + ChatColor.RED
-						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.formatNumber(lowBalanceFee),
+						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.format(lowBalanceFee),
 				ChatColor.GRAY + "Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
 						+ ChatColor.GRAY + " continue to be paid out when the account balance is low."
 		);
