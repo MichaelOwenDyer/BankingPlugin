@@ -36,7 +36,7 @@ interest-rate:
 # At least the first value should be 1, so that the baseline interest rate is used.
 # For example: setting the sequence [1, 2, 2, 3, 3, 3, 4, 4, 4, 4] would result in one 1x multiplier stage,
 # two 2x stages, three 3x stages, and four 4x stages.
-# Multipliers will never go past the final stage, nor further back than the first stage.
+# An account multiplier will never go past the final stage, nor further back than the first stage.
 # Type: List<Integer>
 interest-multipliers:
     default:

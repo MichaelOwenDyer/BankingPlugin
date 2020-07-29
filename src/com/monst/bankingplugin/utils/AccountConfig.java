@@ -2,6 +2,7 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import org.apache.commons.lang.WordUtils;
@@ -31,7 +32,7 @@ public class AccountConfig {
 	private int withdrawalMultiplierDecrement;
 	private double accountCreationPrice;
 	private boolean reimburseAccountCreation;
-	private double minBalance;
+	private double minimumBalance;
 	private double lowBalanceFee;
 	private boolean payOnLowBalance;
 	private int playerBankAccountLimit;
@@ -51,7 +52,7 @@ public class AccountConfig {
 				Config.withdrawalMultiplierDecrement.getValue(),
 				Config.accountCreationPrice.getValue(),
 				Config.reimburseAccountCreation.getValue(),
-				Config.minBalance.getValue(),
+				Config.minimumBalance.getValue(),
 				Config.lowBalanceFee.getValue(),
 				Config.payOnLowBalance.getValue(),
 				Config.playerBankAccountLimit.getValue()
@@ -70,7 +71,7 @@ public class AccountConfig {
 	 * @param withdrawalMultiplierDecrement how much an account multiplier will decrease on withdrawal
 	 * @param accountCreationPrice the price to create an account at this bank
 	 * @param reimburseAccountCreation whether account owners are reimbursed the (current) account creation price when removing an account
-	 * @param minBalance the minimum balance for an account
+	 * @param minimumBalance the minimum balance for an account
 	 * @param lowBalanceFee the fee that will be charged to the account owner for each account he owns with a low balance
 	 * @param payOnLowBalance whether interest will continue to be generated while an account balance is low
 	 * @param playerBankAccountLimit the number of accounts each player is allowed to create at this bank
@@ -78,7 +79,7 @@ public class AccountConfig {
 	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
 						 boolean countInterestDelayOffline, int allowedOfflinePayouts, int allowedOfflinePayoutsBeforeReset,
 						 int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, double accountCreationPrice,
-						 boolean reimburseAccountCreation, double minBalance, double lowBalanceFee, boolean payOnLowBalance, int playerBankAccountLimit) {
+						 boolean reimburseAccountCreation, double minimumBalance, double lowBalanceFee, boolean payOnLowBalance, int playerBankAccountLimit) {
 
 		this.interestRate = interestRate;
 		this.multipliers = multipliers;
@@ -90,7 +91,7 @@ public class AccountConfig {
 		this.withdrawalMultiplierDecrement = withdrawalMultiplierDecrement;
 		this.accountCreationPrice = accountCreationPrice;
 		this.reimburseAccountCreation = reimburseAccountCreation;
-		this.minBalance = minBalance;
+		this.minimumBalance = minimumBalance;
 		this.lowBalanceFee = lowBalanceFee;
 		this.payOnLowBalance = payOnLowBalance;
 		this.playerBankAccountLimit = playerBankAccountLimit;
@@ -114,7 +115,7 @@ public class AccountConfig {
 
 	/**
 	 * Set a value to the specified {@link Field}. If the field cannot accept the
-	 * provided value, a {@link NumberFormatException} is returned in the {@link Callback}
+	 * provided value, a {@link ArgumentParseException} is returned in the {@link Callback}
 	 * @param field the field to set
 	 * @param value the value to set the field to
 	 * @param callback the {@link Callback} that returns how the value was parsed and interpreted
@@ -153,8 +154,8 @@ public class AccountConfig {
 	            return isOverrideAllowed(field)
                             ? (T) field.getDataType().cast(field.getLocalField().get(this))
                             : (T) field.getDataType().cast(((AbstractMap.SimpleEntry) field.getConfigField().get(null)).getValue());
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (IllegalAccessException | NullPointerException e) {
+            BankingPlugin.getInstance().debug(e);
             return null;
         }
     }
@@ -194,7 +195,7 @@ public class AccountConfig {
 				field.getLocalField().set(this, Arrays.stream(Utils.removePunctuation(value)
 						.split(" ")).filter(t -> !t.isEmpty())
 						.map(Integer::parseInt).map(Math::abs).collect(Collectors.toList()));
-				return Utils.formatList((List<? extends Number>) field.getLocalField().get(this));
+				return Utils.format((List<? extends Number>) field.getLocalField().get(this));
 			} catch (IllegalAccessException e) {}
 			return "";
 		}));
@@ -229,10 +230,13 @@ public class AccountConfig {
 			this.name = toString().toLowerCase().replace("_", "-");
 			this.dataType = dataType;
             try {
-                String fieldName = WordUtils.capitalize(toString().replace("_", " ")).replace(" ", "");
+                String fieldName = WordUtils.capitalizeFully(toString().replace("_", " ")).replace(" ", "");
+                fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
                 this.localField = AccountConfig.class.getDeclaredField(fieldName);
                 this.configField = Config.class.getField(fieldName);
-            } catch (NoSuchFieldException ignored) {}
+            } catch (NoSuchFieldException e) {
+				BankingPlugin.getInstance().debug(e);
+			}
 		}
 
 		/**

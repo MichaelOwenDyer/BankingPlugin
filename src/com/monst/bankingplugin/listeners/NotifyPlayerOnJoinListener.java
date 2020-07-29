@@ -1,17 +1,16 @@
 package com.monst.bankingplugin.listeners;
 
-import java.math.BigDecimal;
-
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Utils;
+import java.math.BigDecimal;
 
 public class NotifyPlayerOnJoinListener implements Listener {
 

@@ -164,7 +164,7 @@ public class BankTabCompleter implements TabCompleter {
             AccountConfig.Field field = AccountConfig.Field.getByName(args[1]);
             if (bank != null && field != null) {
                 if (field.getDataType().equals(List.class)) // TODO: Generify
-                    return Collections.singletonList(Utils.formatList(bank.getAccountConfig().get(field)));
+                    return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
                 return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
             }
         } else if (args.length == 4) {
@@ -172,7 +172,7 @@ public class BankTabCompleter implements TabCompleter {
             AccountConfig.Field field = AccountConfig.Field.getByName(args[2]);
             if (bank != null && field != null) {
                 if (field.getDataType().equals(List.class)) // TODO: Generify
-                    return Collections.singletonList(Utils.formatList(bank.getAccountConfig().get(field)));
+                    return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
                 return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
             }
         }

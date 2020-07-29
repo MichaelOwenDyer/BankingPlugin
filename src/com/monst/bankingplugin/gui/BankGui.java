@@ -137,12 +137,13 @@ public class BankGui extends Gui<Bank> {
 		AccountConfig config = guiSubject.getAccountConfig();
 		double minBalance = config.get(AccountConfig.Field.MINIMUM_BALANCE);
 		double lowBalanceFee = config.get(AccountConfig.Field.LOW_BALANCE_FEE);
-		boolean strikethrough = minBalance == 0; // TODO: When minbalance is set make sure >=0
+		boolean strikethrough = minBalance == 0;
 		boolean payOnLowBalance = config.get(AccountConfig.Field.PAY_ON_LOW_BALANCE);
 		return Utils.wordWrapAll(
 				ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBalance),
 				ChatColor.GRAY + "Low balance fee: " + ChatColor.RED
 						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.format(lowBalanceFee),
+				"",
 				ChatColor.GRAY + "Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
 						+ ChatColor.GRAY + " continue to be paid out when the account balance is low."
 		);

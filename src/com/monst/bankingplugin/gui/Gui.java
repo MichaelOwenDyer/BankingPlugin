@@ -109,7 +109,7 @@ abstract class Gui<T extends Ownable> {
 	 * finds a certain number of the same type as the current gui. This prevents the gui chain
 	 * from becoming uncontrollably long.
 	 */
-	private void shortenGuiChain() {
+	void shortenGuiChain() {
 		shortenGuiChain(this, EnumSet.noneOf(GuiType.class));
 	}
 

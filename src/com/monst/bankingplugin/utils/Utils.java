@@ -59,15 +59,25 @@ public class Utils {
 		return ChatColor.stripColor(colorize(s));
 	}
 
-	public static String format(double d) {
+	public static String format(Object o) {
+		if (o instanceof Double)
+			return format((Double) o);
+		if (o instanceof BigDecimal)
+			return format((BigDecimal) o);
+		if (o instanceof List)
+			return format((List<? extends Number>) o);
+		return "" + o;
+	}
+
+	private static String format(Double d) {
 		return format(BigDecimal.valueOf(d));
 	}
 
-	public static String format(BigDecimal bd) {
+	private static String format(BigDecimal bd) {
 		return String.format("%,.2f", bd);
 	}
 
-	public static String formatList(List<? extends Number> list) {
+	private static String format(List<? extends Number> list) {
 		return list.stream().map(String::valueOf).collect(Collectors.joining(", ", "[", "]"));
 	}
 

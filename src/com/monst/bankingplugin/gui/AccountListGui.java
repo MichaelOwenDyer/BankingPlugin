@@ -37,6 +37,7 @@ public class AccountListGui extends Gui<Bank> {
             createMenu();
             setClickHandler();
             setCloseHandler(CLOSE_HANDLER);
+            shortenGuiChain();
         }
         if (pages.isEmpty())
             return;

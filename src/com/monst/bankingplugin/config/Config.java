@@ -103,7 +103,7 @@ public class Config {
 	/**
 	 * The default minimum balance.
 	 */
-	public static Entry<Boolean, Double> minBalance;
+	public static Entry<Boolean, Double> minimumBalance;
 
 	/**
 	 * The fee that must be paid for a balance lower than the minimum.
@@ -456,7 +456,7 @@ public class Config {
 		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.allow-override"),
 				config.getBoolean("reimburse-account-creation.default"));
 
-		minBalance = new SimpleEntry<>(config.getBoolean("minimum-account-balance.allow-override"),
+		minimumBalance = new SimpleEntry<>(config.getBoolean("minimum-account-balance.allow-override"),
 				config.getDouble("minimum-account-balance.default"));
 
 		lowBalanceFee = new SimpleEntry<>(config.getBoolean("low-balance-fee.allow-override"),
