@@ -349,15 +349,16 @@ public abstract class Database {
 						ps.setInt(1, bank.getID());
 					}
 
-					ps.setString(i + 1, bank.getName());
+					ps.setString(i + 1, bank.getName() != null ? bank.getName() : "Bank");
 					
 					if (bank.getType() == BankType.ADMIN) {
 						ps.setString(i + 2, "$ADMIN$");
 						ps.setString(i + 3, null);
 					} else {
 						ps.setString(i + 2, bank.getOwner().getUniqueId().toString());
-						ps.setString(i + 3, bank.getCoowners().isEmpty() ? null
-							: bank.getCoowners().stream().map(p -> p.getUniqueId().toString())
+						ps.setString(i + 3, bank.getCoowners().isEmpty()
+								? null
+								: bank.getCoowners().stream().map(p -> p.getUniqueId().toString())
 									.collect(Collectors.joining(" | ")));
 					}
 					ps.setString(i + 4, bank.getSelection().getType().toString());

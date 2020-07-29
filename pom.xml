@@ -11,6 +11,13 @@
 	<name>BankingPlugin</name>
 	<description>Create bank accounts in bank vault chests and earn interest on your investments!</description>
 
+	<scm>
+		<connection>scm:git:https://github.com/FreshLlamanade/BankingPlugin.git</connection>
+		<developerConnection>scm:git:git@github.com:FreshLlamanade/BankingPlugin.git</developerConnection>
+		<url>https://github.com/FreshLlamanade/BankingPlugin</url>
+		<tag>HEAD</tag>
+	</scm>
+
 	<properties>
 		<!-- Encoding Properties -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -102,6 +109,12 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.ipvp</groupId>
+			<artifactId>canvas</artifactId>
+			<version>1.6.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.zaxxer</groupId>
 			<artifactId>HikariCP</artifactId>
 			<version>3.4.5</version>
@@ -120,10 +133,9 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.ipvp</groupId>
-		    <artifactId>canvas</artifactId>
-		    <version>1.6.0-SNAPSHOT</version>
-		    <scope>compile</scope>
+			<groupId>org.bstats</groupId>
+			<artifactId>bstats-bukkit</artifactId>
+			<version>1.7</version>
 		</dependency>
 	</dependencies>
 
@@ -154,28 +166,33 @@
 					<createDependencyReducedPom>false</createDependencyReducedPom>
 					<artifactSet>
 						<includes>
-							<include>com.zaxxer:HikariCP</include>
 							<include>org.codemc.worldguardwrapper:worldguardwrapper</include>
-							<include>org.slf4j</include>
 							<include>org.ipvp:canvas</include>
+							<include>com.zaxxer:HikariCP</include>
+							<include>org.slf4j</include>
+							<include>org.bstats</include>
 						</includes>
 					</artifactSet>
 					<relocations>
 						<relocation>
-							<pattern>com.zaxxer.hikari</pattern>
-							<shadedPattern>com.monst.bankingplugin.dependencies.hikari</shadedPattern>
-						</relocation>
-						<relocation>
 							<pattern>org.codemc.worldguardwrapper</pattern>
 							<shadedPattern>com.monst.bankingplugin.dependencies.worldguardwrapper</shadedPattern>
+						</relocation>
+						<relocation>
+							<pattern>org.ipvp.canvas</pattern>
+							<shadedPattern>com.monst.bankingplugin.dependencies.canvas</shadedPattern>
+						</relocation>
+						<relocation>
+							<pattern>com.zaxxer.hikari</pattern>
+							<shadedPattern>com.monst.bankingplugin.dependencies.hikari</shadedPattern>
 						</relocation>
 						<relocation>
 							<pattern>org.slf4j</pattern>
 							<shadedPattern>com.monst.bankingplugin.dependencies.slf4j</shadedPattern>
 						</relocation>
 						<relocation>
-							<pattern>org.ipvp.canvas</pattern>
-							<shadedPattern>com.monst.bankingplugin.dependencies.canvas</shadedPattern>
+							<pattern>org.bstats.bukkit</pattern>
+							<shadedPattern>com.monst.bankingplugin.dependencies.bstats</shadedPattern>
 						</relocation>
 					</relocations>
 					<filters>

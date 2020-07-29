@@ -19,6 +19,7 @@ import com.monst.bankingplugin.utils.UpdateChecker.UpdateCheckerResult;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -137,6 +138,7 @@ public class BankingPlugin extends JavaPlugin {
 		controlCommand = new ControlCommand(this);
 
 		// checkForUpdates();
+		// enableMetrics();
 		initDatabase();
         registerListeners();
         registerExternalListeners();
@@ -224,6 +226,28 @@ public class BankingPlugin extends JavaPlugin {
 		if (hasWorldGuard())
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
+
+    private void enableMetrics() {
+		debug("Initializing Metrics...");
+
+		Metrics metrics = new Metrics(this, -1);
+		metrics.addCustomChart(new Metrics.AdvancedPie("bank-types", () -> {
+			Map<String, Integer> typeFrequency = new HashMap<>();
+			int playerBanks = 0;
+			int adminBanks = 0;
+
+			for (Bank bank : bankUtils.getBanks())
+				if (bank.getType() == Bank.BankType.PLAYER)
+					playerBanks++;
+				else if (bank.getType() == Bank.BankType.ADMIN)
+					adminBanks++;
+
+			typeFrequency.put("Admin", adminBanks);
+			typeFrequency.put("Player", playerBanks);
+
+			return typeFrequency;
+		}));
+	}
 
 	/**
 	 * Initialize the {@link Database}

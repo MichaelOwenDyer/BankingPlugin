@@ -11,6 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.ipvp.canvas.Menu;
+import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 
 import javax.annotation.Nullable;
@@ -98,7 +99,7 @@ abstract class Gui<T extends Ownable> {
 		ItemMeta itemMeta = item.getItemMeta();
 		if (itemMeta == null)
 			return null;
-		itemMeta.setDisplayName(ChatColor.GRAY + displayName);
+		itemMeta.setDisplayName("" + ChatColor.GRAY + ChatColor.ITALIC + displayName);
 		itemMeta.setLore(lore.stream().map(s -> ChatColor.GRAY + s).collect(Collectors.toList()));
 		item.setItemMeta(itemMeta);
 		return item;

@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
 
 public class BankGui extends Gui<Bank> {
 
-	private static final Material DEFAULT_BLOCK = Material.ANVIL;
-
 	boolean verbose;
 	boolean canEdit;
 	boolean canListAccounts;
@@ -80,13 +78,12 @@ public class BankGui extends Gui<Bank> {
 	}
 
 	@Override
+	@SuppressWarnings("all")
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
 			case 8:
 				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
-					return (player, info) -> {
-						new AccountListGui(guiSubject).setPrevGui(this).open(player);
-					};
+					return (player, info) -> new AccountListGui(guiSubject).setPrevGui(this).open(player);
 			default:
 				return null;
 		}
@@ -145,7 +142,7 @@ public class BankGui extends Gui<Bank> {
 						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.format(lowBalanceFee),
 				"",
 				ChatColor.GRAY + "Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
-						+ ChatColor.GRAY + " continue to be paid out when the account balance is low."
+						+ " continue to be" + ChatColor.GRAY + "paid out when the account balance is low."
 		);
 	}
 
@@ -155,13 +152,18 @@ public class BankGui extends Gui<Bank> {
 		int offlineDecrement = config.get(AccountConfig.Field.OFFLINE_MULTIPLIER_DECREMENT);
 		int beforeReset = config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
 		return Utils.wordWrapAll(
-				ChatColor.GRAY + "Accounts will pay interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
-						+ String.format("time%s", offlinePayouts == 1 ? "" : "s") + " while the account holder is offline.",
-				ChatColor.GRAY + "Account multipliers will be reset after the account holder has been offline for "
-						+ ChatColor.AQUA + beforeReset + ChatColor.GRAY + " interest payouts.",
-				ChatColor.GRAY + "Account multipliers will " + (offlineDecrement == 0 ? "remain frozen"
-						: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY
-						+ " for every payout event") + " while offline."
+				ChatColor.GRAY + "Accounts may generate interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
+						+ String.format(" time%s", offlinePayouts == 1 ? "" : "s") + " while account holders are offline.",
+				"",
+				ChatColor.GRAY + "Account multipliers will reset " + (beforeReset == 0
+						? "immediately"
+						: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY + " consecutive "
+							+ String.format("time%s", beforeReset == 1 ? "" : "s") + " while account holders are offline."),
+				"",
+				ChatColor.GRAY + "Multipliers will " + (offlineDecrement == 0
+						? "freeze"
+						: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " for every payout")
+						+ " while account holders are offline."
 		);
 	}
 
@@ -170,27 +172,34 @@ public class BankGui extends Gui<Bank> {
 		int interestDelay = config.get(AccountConfig.Field.INITIAL_INTEREST_DELAY);
 		boolean countOffline = config.get(AccountConfig.Field.COUNT_INTEREST_DELAY_OFFLINE);
 		return Utils.wordWrapAll(
-				ChatColor.GRAY + "New accounts will begin to pay interest after "
-						+ ChatColor.AQUA + interestDelay + ChatColor.GRAY + " interest cycles.",
-				ChatColor.GRAY + "The account owner " + (countOffline ? "does not have to be" : "must be ")
-						+ " online for these cycles."
+				ChatColor.GRAY + "New accounts will begin to generate interest after "
+						+ ChatColor.AQUA + interestDelay + ChatColor.GRAY + " preliminary interest cycles.",
+				"",
+				ChatColor.GRAY + "The account owner " + (countOffline
+						? ChatColor.GREEN + "does not have to be online"
+						: ChatColor.RED + "must be online")
+						+ " for these cycles to be counted toward the delay."
 		);
 	}
 
 	private List<String> getWithdrawalPolicyLore() {
 		int withdrawalDecrement = guiSubject.getAccountConfig().get(AccountConfig.Field.WITHDRAWAL_MULTIPLIER_DECREMENT);
 		return Utils.wordWrapAll(
-				ChatColor.GRAY + "Account multipliers will " + (withdrawalDecrement == 0 ? "not be affected" : "decrease by "
-						+ ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY
-						+ String.format("stage%s", withdrawalDecrement == 1 ? "" : "s")) + " on withdrawal."
+				ChatColor.GRAY + "Account multipliers will " + (withdrawalDecrement == 0
+						? ChatColor.GREEN + "not be affected" + ChatColor.GRAY
+						: "decrease by " + ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY
+						+ String.format(" stage%s", withdrawalDecrement == 1 ? "" : "s")) + " on withdrawal."
 		);
 	}
 
 	private List<String> getAccountLimitLore() {
 		int accountLimit = guiSubject.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
 		return Collections.singletonList(
-				ChatColor.GRAY + "Players may " + (accountLimit == 0 ? "not " : "") + "create " + (accountLimit > 0 ? "up to "
-						+ ChatColor.AQUA + accountLimit + ChatColor.GRAY : "unlimited") + " accounts at this bank."
+				ChatColor.GRAY + (accountLimit == 0
+						? "Account creation is currently " + ChatColor.RED + "disabled" + ChatColor.GRAY
+						: "Players may create " + (accountLimit > 0
+								? "up to " + ChatColor.AQUA + accountLimit
+								: ChatColor.GREEN + "unlimited") + ChatColor.GRAY + " accounts at this bank.")
 		);
 	}
 }

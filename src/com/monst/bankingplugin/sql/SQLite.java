@@ -83,7 +83,7 @@ public class SQLite extends Database {
     String getQueryCreateTableBanks() {
         return "CREATE TABLE IF NOT EXISTS " + tableBanks + " ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-			+ "name TEXT," // Bank name
+			+ "name TEXT NOT NULL," // Bank name
             + "owner TEXT NOT NULL," // Owner UUID
             + "co_owners TEXT,"
 			
