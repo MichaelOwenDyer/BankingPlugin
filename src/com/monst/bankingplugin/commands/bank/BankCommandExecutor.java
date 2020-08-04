@@ -796,7 +796,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		if (sender instanceof Player && newOwner != null && bank.isOwner(newOwner)) {
-			boolean isExecutor = ((Player) sender).getUniqueId().equals(newOwner.getUniqueId());
+			boolean isExecutor = Utils.samePlayer((Player) sender, newOwner);
 			plugin.debug(newOwner.getName() + " is already owner of bank");
 			sender.sendMessage(
 					String.format(Messages.ALREADY_OWNER_BANK, isExecutor ? "You" : newOwner.getName(), isExecutor ? "are" : "is"));

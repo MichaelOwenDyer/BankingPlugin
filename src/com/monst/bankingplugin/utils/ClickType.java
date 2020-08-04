@@ -77,7 +77,6 @@ public class ClickType {
 				AccountInteractListener.clearUnconfirmed(player);
             }
 		}.runTaskLater(BankingPlugin.getInstance(), 300));
-    
     }
 
     /**
@@ -90,6 +89,20 @@ public class ClickType {
     public enum EnumClickType {
 		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE, TRANSFER
     }
+
+	public static class CreateClickType extends ClickType {
+
+		private final OfflinePlayer newOwner;
+
+		public CreateClickType(OfflinePlayer newOwner) {
+			super(EnumClickType.CREATE);
+			this.newOwner = newOwner;
+		}
+
+		public OfflinePlayer getNewOwner() {
+			return newOwner;
+		}
+	}
 
 	public static class SetClickType extends ClickType {
 

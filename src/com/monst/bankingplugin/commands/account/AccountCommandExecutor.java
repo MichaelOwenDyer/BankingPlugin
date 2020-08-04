@@ -113,11 +113,13 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 	private void promptAccountCreate(final Player p, String[] args) {
 		plugin.debug(p.getName() + " wants to create an account");
 
-		boolean hasPermission = p.hasPermission(Permissions.ACCOUNT_CREATE);
+		boolean forSelf = args.length == 1;
+		String permission = forSelf ? Permissions.ACCOUNT_CREATE : Permissions.ACCOUNT_CREATE_OTHER;
+		boolean hasPermission = p.hasPermission(permission);
 		if (!hasPermission) {
 			for (PermissionAttachmentInfo permInfo : p.getEffectivePermissions()) {
 				String perm = permInfo.getPermission();
-				if (perm.startsWith(Permissions.ACCOUNT_CREATE) && p.hasPermission(perm)) {
+				if (perm.startsWith(permission) && p.hasPermission(perm)) {
 					hasPermission = true;
 					break;
 				}
@@ -125,16 +127,30 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		}
 		
 		if (!hasPermission) {
+			if (!forSelf) {
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_OTHER);
+				plugin.debug(p.getName() + " is not permitted to create an account in another player's name");
+				return;
+			}
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE);
 			plugin.debug(p.getName() + " is not permitted to create an account");
 			return;
 		}
 
-		int limit = accountUtils.getAccountLimit(p);
-		if (limit != -1 && accountUtils.getNumberOfAccounts(p) >= limit) {
-			p.sendMessage(Messages.ACCOUNT_LIMIT_REACHED);
-			plugin.debug(p.getName() + " has reached their account limit");
+		OfflinePlayer owner = forSelf ? p.getPlayer() : Bukkit.getOfflinePlayer(args[1]);
+		if (!forSelf && !owner.hasPlayedBefore()) {
+			p.sendMessage(Messages.PLAYER_NOT_FOUND);
+			plugin.debug("Could not find player with name \"" + args[1] + "\"");
 			return;
+		}
+
+		if (forSelf) {
+			int limit = accountUtils.getAccountLimit(p);
+			if (limit != -1 && accountUtils.getNumberOfAccounts(p) >= limit) {
+				p.sendMessage(Messages.ACCOUNT_LIMIT_REACHED);
+				plugin.debug(p.getName() + " has reached their account limit");
+				return;
+			}
 		}
 
 		AccountPreCreateEvent event = new AccountPreCreateEvent(p, args);
@@ -146,7 +162,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 
 		plugin.debug(p.getName() + " can now click a chest to create an account");
 		p.sendMessage(Messages.CLICK_CHEST_CREATE);
-		ClickType.setPlayerClickType(p, new ClickType(EnumClickType.CREATE));
+		ClickType.setPlayerClickType(p, new ClickType.CreateClickType(owner));
 	}
 
 	/**
@@ -236,7 +252,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 						+ owner.getUniqueId());
 				if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER) && (!(sender instanceof Player)
-						|| !((Player) sender).getUniqueId().equals(owner.getUniqueId()))) {
+						|| !Utils.samePlayer((Player) sender, owner))) {
 					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
 					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_LIST_OTHER);
 					return;
@@ -290,7 +306,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				if (owner.hasPlayedBefore()) {
 					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
 							+ owner.getUniqueId());
-					if ((sender instanceof Player && ((Player) sender).getUniqueId().equals(owner.getUniqueId()))
+					if ((sender instanceof Player && Utils.samePlayer((Player) sender, owner))
 							|| sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) { // account removeall player
 						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
 						confirmRemoveAll(sender, accounts, args);
@@ -454,7 +470,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 			return false;
 		}
-		if (playerToTrust.getUniqueId().equals(p.getUniqueId()))
+		if (Utils.samePlayer(playerToTrust, p))
 			return false;
 
 		plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
@@ -482,7 +498,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 			return false;
 		}
-		if (playerToUntrust.getUniqueId().equals(p.getUniqueId()))
+		if (Utils.samePlayer(playerToUntrust, p))
 			return false;
 
 		plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "

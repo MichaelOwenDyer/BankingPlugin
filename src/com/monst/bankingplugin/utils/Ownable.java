@@ -28,7 +28,7 @@ public abstract class Ownable {
 	public boolean isOwner(OfflinePlayer p) {
 		if (owner == null || p == null)
 			return false;
-		return owner.getUniqueId().equals(p.getUniqueId());
+		return Utils.samePlayer(owner, p);
 	}
 
 	/**

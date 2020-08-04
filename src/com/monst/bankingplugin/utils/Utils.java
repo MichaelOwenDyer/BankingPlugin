@@ -54,7 +54,7 @@ public class Utils {
 	public static String colorize(String s) {
 		if (s == null)
 			return null;
-		return s.replaceAll("&([0-9a-f])", "\u00A7$1");
+		return ChatColor.translateAlternateColorCodes('&', s);
 	}
 
 	public static String stripColor(String s) {
@@ -447,6 +447,12 @@ public class Utils {
 		} else
 			chestLocations.add(inv.getLocation());
 		return chestLocations;
+	}
+
+	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {
+    	if (p1 == null || p2 == null)
+    		return false;
+    	return p1.getUniqueId().equals(p2.getUniqueId());
 	}
 
     /**

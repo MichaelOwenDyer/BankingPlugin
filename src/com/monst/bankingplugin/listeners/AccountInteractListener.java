@@ -79,8 +79,10 @@ public class AccountInteractListener implements Listener {
 				if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
 					plugin.debug(p.getName() + " does not have permission to create an account on a protected chest.");
-				} else
-					create(p, b);
+				} else {
+					OfflinePlayer newOwner = ((CreateClickType) clickType).getNewOwner();
+					create(p, newOwner, b);
+				}
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
 				break;
@@ -195,87 +197,86 @@ public class AccountInteractListener implements Listener {
 	/**
 	 * Create a new account
 	 *
-	 * @param p Player who executed the command will receive the message
+	 * @param executor Player who executed the command will receive the message
 	 *                 and become the owner of the account
 	 * @param b Block where the account will be located
 	 */
-	private void create(final Player p, final Block b) {
+	private void create(final Player executor, final OfflinePlayer newOwner, final Block b) {
 
 		if (accountUtils.isAccount(b.getLocation())) {
-			p.sendMessage(Messages.CHEST_ALREADY_ACCOUNT);
+			executor.sendMessage(Messages.CHEST_ALREADY_ACCOUNT);
 			plugin.debug("Chest is already an account.");
 			return;
 		}
 		if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
-			p.sendMessage(Messages.CHEST_BLOCKED);
+			executor.sendMessage(Messages.CHEST_BLOCKED);
 			plugin.debug("Chest is blocked.");
 			return;
 		}
 		if (!bankUtils.isBank(b.getLocation())) {
-			p.sendMessage(Messages.CHEST_NOT_IN_BANK);
+			executor.sendMessage(Messages.CHEST_NOT_IN_BANK);
 			plugin.debug("Chest is not in a bank.");
-			plugin.debug(p.getName() + " is creating new account...");
-			return;
-		}
-		if (!p.hasPermission(Permissions.ACCOUNT_CREATE)) {
-			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE);
-			plugin.debug(p.getName() + " is not permitted to create the account");
+			plugin.debug(executor.getName() + " is creating new account...");
 			return;
 		}
 
+		boolean forSelf = Utils.samePlayer(executor, newOwner);
 		Location location = b.getLocation();
 		Bank bank = bankUtils.getBank(location);
 
-		if (!Config.allowSelfBanking && bank.isOwner(p)) {
-			p.sendMessage(Messages.NO_SELF_BANKING);
-			plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
+		if (!Config.allowSelfBanking && forSelf && bank.isOwner(executor)) {
+			executor.sendMessage(Messages.NO_SELF_BANKING);
+			plugin.debug(executor.getName() + " is not permitted to create an account at their own bank");
 			return;
 		}
 
-		int playerAccountLimit = bank.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
-		if (playerAccountLimit > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(p)).count() >= playerAccountLimit) {
-			p.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
-			plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
-			return;
+		if (!forSelf) {
+			int playerAccountLimit = bank.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
+			if (playerAccountLimit > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(executor)).count() >= playerAccountLimit) {
+				executor.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
+				plugin.debug(executor.getName() + " is not permitted to create another account at bank " + bank.getName());
+				return;
+			}
 		}
 
-		Account account = new Account(plugin, p, bank, location);
+		Account account = new Account(plugin, newOwner, bank, location);
 		
-		AccountCreateEvent event = new AccountCreateEvent(p, account);
+		AccountCreateEvent event = new AccountCreateEvent(executor, newOwner, account);
 		Bukkit.getPluginManager().callEvent(event);
-		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+		if (event.isCancelled() && !executor.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 			plugin.debug("No permission to create account on a protected chest.");
-			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
+			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
 			return;
 		}
 
 		double creationPrice = bank.getAccountConfig().get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
 		creationPrice *= ((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1;
 
-		if (creationPrice > 0 && creationPrice > plugin.getEconomy().getBalance(p) && !bank.isOwner(p)) {
-			p.sendMessage(Messages.ACCOUNT_CREATE_INSUFFICIENT_FUNDS);
+		if (creationPrice > 0 && creationPrice > plugin.getEconomy().getBalance(executor)
+				&& forSelf && !bank.isOwner(executor)) {
+			executor.sendMessage(Messages.ACCOUNT_CREATE_INSUFFICIENT_FUNDS);
 			return;
 		}
 
-		OfflinePlayer accountOwner = p.getPlayer();
+		OfflinePlayer accountOwner = executor.getPlayer();
 		double finalCreationPrice = creationPrice;
 		// Account owner pays the bank owner the creation fee
 		if (!Utils.withdrawPlayer(accountOwner, location.getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
 			@Override
 			public void onResult(Void result) {
-				p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
+				executor.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
 						Utils.format(finalCreationPrice)));
 			}
 			@Override
 			public void onError(Throwable throwable) {
 				super.onError(throwable);
-				p.sendMessage(Messages.ERROR_OCCURRED);
+				executor.sendMessage(Messages.ERROR_OCCURRED);
 			}
 		}))
 			return;
 
 		// Bank owner receives the payment from the customer
-		if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
+		if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(executor)) {
 			OfflinePlayer bankOwner = account.getBank().getOwner();
 			Utils.depositPlayer(bankOwner, location.getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
 				@Override
@@ -287,7 +288,7 @@ public class AccountInteractListener implements Listener {
 				@Override
 				public void onError(Throwable throwable) {
 					super.onError(throwable);
-					p.sendMessage(Messages.ERROR_OCCURRED);
+					executor.sendMessage(Messages.ERROR_OCCURRED);
 				}
 			});
 		}
@@ -300,7 +301,7 @@ public class AccountInteractListener implements Listener {
 					account.setToDefaultName();
 				}
 			});
-			p.sendMessage(Messages.ACCOUNT_CREATED);
+			executor.sendMessage(Messages.ACCOUNT_CREATED);
 		}
 	}
 	
@@ -721,10 +722,10 @@ public class AccountInteractListener implements Listener {
 			return !unconfirmed.containsKey(p.getUniqueId());
 		}
 		if (account.isOwner(newOwner)) {
-			boolean isSelf = p.getUniqueId().equals(newOwner.getUniqueId());
+			boolean isSelf = Utils.samePlayer(p, newOwner);
 			plugin.debug(p.getName() + " is already owner of account");
-			p.sendMessage(
-					String.format(Messages.ALREADY_OWNER_ACCOUNT, isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
+			p.sendMessage(String.format(Messages.ALREADY_OWNER_ACCOUNT,
+					isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
 			return false;
 		}
 
