@@ -27,6 +27,7 @@ import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EnumClickType;
 
+@SuppressWarnings("unused")
 public class WorldGuardListener implements Listener {
 
 	private final BankingPlugin plugin;
@@ -125,6 +126,7 @@ public class WorldGuardListener implements Listener {
         return false;
     }
 
+    @SuppressWarnings("SameParameterValue")
     private IWrappedFlag<WrappedState> getStateFlag(String flagName) {
         Optional<IWrappedFlag<WrappedState>> flagOptional = wgWrapper.getFlag(flagName, WrappedState.class);
         if (!flagOptional.isPresent()) {

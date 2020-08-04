@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.math.BigDecimal;
 
+@SuppressWarnings("unused")
 public class NotifyPlayerOnJoinListener implements Listener {
 
 	private final BankingPlugin plugin;

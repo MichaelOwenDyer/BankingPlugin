@@ -23,7 +23,13 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
 
+/**
+ * This listener is intended to prevent all physical damage to {@link Account} chests,
+ * as well as to ensure accounts always correspond with the size of the chest they reside in.
+ */
+@SuppressWarnings("unused")
 public class AccountProtectListener implements Listener {
 
 	private final BankingPlugin plugin;
@@ -34,7 +40,11 @@ public class AccountProtectListener implements Listener {
 		this.accountUtils = plugin.getAccountUtils();
     }
 
-    @EventHandler(ignoreCancelled = true)
+	/**
+	 * Listen for block break events, and cancel the event if the block in question
+	 * is an account chest. Allow the breaking of the account if the player has permission to do so.
+	 */
+	@EventHandler(ignoreCancelled = true)
 	public void onAccountChestBreak(BlockBreakEvent e) {
 		final Block b = e.getBlock();
 
@@ -55,6 +65,15 @@ public class AccountProtectListener implements Listener {
 		}
 	}
 
+	/**
+	 * Converts a large account chest to a small account chest by removing the account and creating
+	 * an identical small account in the remaining chest. Also removes accounts entirely when the
+	 * broken account was already a small chest.
+	 * @param account the account whose chest was broken
+	 * @param b the block where the account is located
+	 * @param p the player who broke the account chest
+	 */
+	@SuppressWarnings("ConstantConditions")
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
 		AccountConfig accountConfig = account.getBank().getAccountConfig();
 		double creationPrice = accountConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
@@ -62,8 +81,9 @@ public class AccountProtectListener implements Listener {
 
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			double finalCreationPrice = creationPrice;
+			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
 			// Account owner is reimbursed for the part of the chest that was broken
-			Utils.depositPlayer(p, account.getLocation().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
+			Utils.depositPlayer(p, worldName, finalCreationPrice, new Callback<Void>(plugin) {
 				@Override
 				public void onResult(Void result) {
 					p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice)));
@@ -126,6 +146,15 @@ public class AccountProtectListener implements Listener {
 		}
 	}
 
+	/**
+	 * Listens for block place events, and handles the expansion of a small account chest into a large
+	 * account chest.
+	 * {@link Utils#getChestLocations(Inventory)} performs largely the same task as a good portion of this {@link EventHandler},
+	 * but cannot be used since {@link BlockPlaceEvent}s are fired before the {@link org.bukkit.inventory.InventoryHolder}
+	 * of the new chest has been updated.
+	 * This means that when an account chest is extended and this handler is executed,
+	 * for all intents and purposes the account chest is actually still a single chest.
+	 */
 	@EventHandler(ignoreCancelled = true)
 	public void onAccountExtend(BlockPlaceEvent e) {
         final Player p = e.getPlayer();
@@ -137,10 +166,6 @@ public class AccountProtectListener implements Listener {
         
         Chest c = (Chest) b.getState();
         Block b2;
-
-        // Can't use Utils::getChestLocations since inventory holder
-        // has not been updated yet in this event (for 1.13+)
-
 		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) c.getBlockData();
 
 		if (data.getType() == Type.SINGLE) {
@@ -199,7 +224,8 @@ public class AccountProtectListener implements Listener {
 		double creationPrice = config.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
-			if (!Utils.withdrawPlayer(owner, account.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
+			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
+			if (!Utils.withdrawPlayer(owner, worldName, creationPrice, new Callback<Void>(plugin) {
 				@Override
 				public void onResult(Void result) {
 					p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID, Utils.format(creationPrice)));
@@ -254,31 +280,36 @@ public class AccountProtectListener implements Listener {
 		});
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+	/**
+	 * Stops any and all non-player (e.g. hopper) item movement into and out of account chests.
+	 */
+	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onAccountItemMove(InventoryMoveItemEvent e) {
         if ((e.getSource().getType().equals(InventoryType.CHEST)) && (!e.getInitiator().getType().equals(InventoryType.PLAYER))) {
 
-            if (e.getSource().getHolder() instanceof DoubleChest) {
-                DoubleChest dc = (DoubleChest) e.getSource().getHolder();
-                Chest r = (Chest) dc.getRightSide();
-                Chest l = (Chest) dc.getLeftSide();
+        	for (Inventory inv : new Inventory[]{e.getSource(), e.getDestination()}) {
 
-				if (accountUtils.isAccount(r.getLocation()) || accountUtils.isAccount(l.getLocation()))
-					e.setCancelled(true);
+				if (inv.getHolder() instanceof DoubleChest) {
+					DoubleChest dc = (DoubleChest) inv.getHolder();
+					Chest r = (Chest) dc.getRightSide();
+					Chest l = (Chest) dc.getLeftSide();
 
-            } else if (e.getSource().getHolder() instanceof Chest) {
-                Chest c = (Chest) e.getSource().getHolder();
+					if ((r != null && accountUtils.isAccount(r.getLocation()))
+							|| (l != null && accountUtils.isAccount(l.getLocation())))
+						e.setCancelled(true);
 
-				if (accountUtils.isAccount(c.getLocation()))
-					e.setCancelled(true);
-            }
+				} else if (inv.getHolder() instanceof Chest) {
+					Chest c = (Chest) inv.getHolder();
+
+					if (accountUtils.isAccount(c.getLocation()))
+						e.setCancelled(true);
+				}
+			}
         }
     }
 
 	/**
-	 * Prevents unauthorized players from editing other players' accounts
-	 * 
-	 * @param e InventoryClickEvent
+	 * Prevents unauthorized players from editing the items in other players' account chests
 	 */
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onAccountItemClick(InventoryClickEvent e) {

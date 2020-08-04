@@ -32,6 +32,7 @@ public class AccountBalanceListener implements Listener {
 	}
 
 	@EventHandler
+	@SuppressWarnings("unused")
 	public void onAccountInventoryClose(InventoryCloseEvent e) {
 		
 		if (!(e.getPlayer() instanceof Player))

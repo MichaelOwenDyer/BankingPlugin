@@ -17,6 +17,7 @@ import org.bukkit.event.world.StructureGrowEvent;
 
 import java.util.ArrayList;
 
+@SuppressWarnings("unused")
 public class ChestTamperingListener implements Listener {
 
 	private final BankingPlugin plugin;

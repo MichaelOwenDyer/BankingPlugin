@@ -16,6 +16,7 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class InterestEventListener implements Listener {
 	
 	private final BankingPlugin plugin;

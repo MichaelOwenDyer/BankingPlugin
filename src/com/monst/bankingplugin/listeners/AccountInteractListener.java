@@ -26,7 +26,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
-
+@SuppressWarnings("unused")
 public class AccountInteractListener implements Listener {
 	
 	private static final Map<UUID, Set<Integer>> unconfirmed = new HashMap<>();

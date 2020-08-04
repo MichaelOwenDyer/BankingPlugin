@@ -1,7 +1,5 @@
 package com.monst.bankingplugin.external;
 
-import java.util.Set;
-
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -21,6 +19,7 @@ import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 
+@SuppressWarnings("unused")
 public class GriefPreventionListener implements Listener {
 	private final BankingPlugin plugin;
     private final GriefPrevention griefPrevention;

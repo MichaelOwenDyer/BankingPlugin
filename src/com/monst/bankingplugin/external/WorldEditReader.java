@@ -6,6 +6,7 @@ import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.BlockVector2D;
 import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.math.BlockVector2;
@@ -31,8 +32,10 @@ public class WorldEditReader {
 		WorldEditPlugin worldEdit = plugin.getWorldEdit();
 		Region region;
 		try {
-			region = worldEdit.getWorldEdit().getSessionManager().findByName(p.getName())
-					.getSelection(BukkitAdapter.adapt(p.getWorld()));
+			LocalSession session = worldEdit.getWorldEdit().getSessionManager().findByName(p.getName());
+			if (session == null)
+				return null;
+			region = session.getSelection(BukkitAdapter.adapt(p.getWorld()));
 
 			if (region instanceof CuboidRegion) {
 				CuboidRegion cuboid = (CuboidRegion) region;
@@ -54,7 +57,7 @@ public class WorldEditReader {
 				return new Polygonal2DSelection(world, points, minY, maxY);
 			}
 
-		} catch (IncompleteRegionException e1) {}
+		} catch (IncompleteRegionException ignored) {}
 
 		return null;
 	}
