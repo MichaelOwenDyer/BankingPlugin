@@ -46,6 +46,10 @@ public class Messages {
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to remove %d bank%s and %d account%s.";
 	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s to %s. Are you sure?";
 
+	public static final String OFFLINE_INTEREST_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in interest while you were offline!";
+	public static final String OFFLINE_BALANCE_INCREASED = ChatColor.GOLD + "Your account increased in value by " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " while you were offline.";
+	public static final String OFFLINE_TRANSACTION_EXPENDITURE = ChatColor.RED + "Your account decreased in value by $%s while you were offline.";
+
 	public static final String PLAYER_REMOVED_BANK = ChatColor.RED + "%s has removed bank %s.";
 	public static final String PLAYER_RENAMED_BANK = ChatColor.GOLD + "%s has renamed bank %s to %s.";
 
@@ -146,7 +150,7 @@ public class Messages {
 	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME_OTHER = NO_PERMISSION + "set someone else's account nickname.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_MULTIPLIER = NO_PERMISSION + "set an account multiplier.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY = NO_PERMISSION + "set an account interest delay.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_CREATE = NO_PERMISSION + "create an account in someone else's name."; // XXX
+	public static final String NO_PERMISSION_ACCOUNT_CREATE_OTHER = NO_PERMISSION + "create an account in someone else's name."; // XXX
 	public static final String NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED = NO_PERMISSION + "extend a protected account chest.";
 	
 	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";
@@ -171,45 +175,42 @@ public class Messages {
 	public static final String NO_PERMISSION_PAY_INTEREST = NO_PERMISSION + "trigger an interest payment.";
 
 
-	private static final String USAGE_PREFIX_ACCOUNT = ChatColor.RED + "/" + Config.mainCommandNameAccount + " ";
-	private static final String USAGE_PREFIX_BANK = ChatColor.RED + "/" + Config.mainCommandNameBank + " ";
-	private static final String USAGE_PREFIX_CONTROL = ChatColor.RED + "/" + Config.mainCommandNameControl + " ";
-	public static final String COMMAND_USAGE_ACCOUNT_CREATE = USAGE_PREFIX_ACCOUNT + "create";
-	public static final String COMMAND_USAGE_ACCOUNT_REMOVE = USAGE_PREFIX_ACCOUNT + "remove";
-	public static final String COMMAND_USAGE_ACCOUNT_INFO = USAGE_PREFIX_ACCOUNT + "info";
-	public static final String COMMAND_USAGE_ACCOUNT_LIST = USAGE_PREFIX_ACCOUNT + "list <all>";
-	public static final String COMMAND_USAGE_ACCOUNT_LIMITS = USAGE_PREFIX_ACCOUNT + "limits";
-	public static final String COMMAND_USAGE_ACCOUNT_SET = USAGE_PREFIX_ACCOUNT + "set [field] [value]";
-	public static final String COMMAND_USAGE_ACCOUNT_TRUST = USAGE_PREFIX_ACCOUNT + "trust [playername]";
-	public static final String COMMAND_USAGE_ACCOUNT_UNTRUST = USAGE_PREFIX_ACCOUNT + "untrust [playername]";
-	public static final String COMMAND_USAGE_ACCOUNT_MIGRATE = USAGE_PREFIX_ACCOUNT + "migrate";
-	public static final String COMMAND_USAGE_ACCOUNT_TRANSFER = USAGE_PREFIX_ACCOUNT + "transfer [playername]";
-	public static final String COMMAND_USAGE_BANK_CREATE = USAGE_PREFIX_BANK + "create <xyz> <xyz> <admin>";
-	public static final String COMMAND_USAGE_BANK_REMOVE = USAGE_PREFIX_BANK + "remove <bankname>";
-	public static final String COMMAND_USAGE_BANK_INFO = USAGE_PREFIX_BANK + "info";
-	public static final String COMMAND_USAGE_BANK_LIST = USAGE_PREFIX_BANK + "list";
-	public static final String COMMAND_USAGE_BANK_LIMITS = USAGE_PREFIX_BANK + "limits";
-	public static final String COMMAND_USAGE_BANK_REMOVEALL = USAGE_PREFIX_BANK + "removeall";
-	public static final String COMMAND_USAGE_BANK_RESIZE = USAGE_PREFIX_BANK + "resize [bankname] <xyz> <xyz>";
-	public static final String COMMAND_USAGE_BANK_SET = USAGE_PREFIX_BANK + "set <bankname> [field] [value]";
-	public static final String COMMAND_USAGE_BANK_SELECT = USAGE_PREFIX_BANK + "select";
-	public static final String COMMAND_USAGE_BANK_TRANSFER = USAGE_PREFIX_BANK + "transfer <bankname> [playername]";
-	public static final String COMMAND_USAGE_VERSION = USAGE_PREFIX_CONTROL + "version";
-	public static final String COMMAND_USAGE_RELOAD = USAGE_PREFIX_CONTROL + "reload";
-	public static final String COMMAND_USAGE_CONFIG = USAGE_PREFIX_CONTROL + "config [set | add | remove] [field] <newvalue>";
-	public static final String COMMAND_USAGE_UPDATE = USAGE_PREFIX_CONTROL + "update";
-	public static final String COMMAND_USAGE_PAYINTEREST = USAGE_PREFIX_CONTROL + "payinterest";
+	private static final String ACCOUNT_USAGE_PREFIX = ChatColor.RED + "/" + Config.mainCommandNameAccount + " ";
+	private static final String BANK_USAGE_PREFIX = ChatColor.RED + "/" + Config.mainCommandNameBank + " ";
+	private static final String CONTROL_USAGE_PREFIX = ChatColor.RED + "/" + Config.mainCommandNameControl + " ";
+	public static final String COMMAND_USAGE_ACCOUNT_CREATE = ACCOUNT_USAGE_PREFIX + "create";
+	public static final String COMMAND_USAGE_ACCOUNT_REMOVE = ACCOUNT_USAGE_PREFIX + "remove";
+	public static final String COMMAND_USAGE_ACCOUNT_INFO = ACCOUNT_USAGE_PREFIX + "info";
+	public static final String COMMAND_USAGE_ACCOUNT_LIST = ACCOUNT_USAGE_PREFIX + "list <all>";
+	public static final String COMMAND_USAGE_ACCOUNT_LIMITS = ACCOUNT_USAGE_PREFIX + "limits";
+	public static final String COMMAND_USAGE_ACCOUNT_SET = ACCOUNT_USAGE_PREFIX + "set [field] [value]";
+	public static final String COMMAND_USAGE_ACCOUNT_TRUST = ACCOUNT_USAGE_PREFIX + "trust [playername]";
+	public static final String COMMAND_USAGE_ACCOUNT_UNTRUST = ACCOUNT_USAGE_PREFIX + "untrust [playername]";
+	public static final String COMMAND_USAGE_ACCOUNT_MIGRATE = ACCOUNT_USAGE_PREFIX + "migrate";
+	public static final String COMMAND_USAGE_ACCOUNT_TRANSFER = ACCOUNT_USAGE_PREFIX + "transfer [playername]";
+	public static final String COMMAND_USAGE_BANK_CREATE = BANK_USAGE_PREFIX + "create <xyz> <xyz> <admin>";
+	public static final String COMMAND_USAGE_BANK_REMOVE = BANK_USAGE_PREFIX + "remove <bankname>";
+	public static final String COMMAND_USAGE_BANK_INFO = BANK_USAGE_PREFIX + "info";
+	public static final String COMMAND_USAGE_BANK_LIST = BANK_USAGE_PREFIX + "list";
+	public static final String COMMAND_USAGE_BANK_LIMITS = BANK_USAGE_PREFIX + "limits";
+	public static final String COMMAND_USAGE_BANK_REMOVEALL = BANK_USAGE_PREFIX + "removeall";
+	public static final String COMMAND_USAGE_BANK_RESIZE = BANK_USAGE_PREFIX + "resize [bankname] <xyz> <xyz>";
+	public static final String COMMAND_USAGE_BANK_RENAME = BANK_USAGE_PREFIX + "rename <bankname> [bankname]";
+	public static final String COMMAND_USAGE_BANK_SET = BANK_USAGE_PREFIX + "set <bankname> [field] [value]";
+	public static final String COMMAND_USAGE_BANK_SELECT = BANK_USAGE_PREFIX + "select";
+	public static final String COMMAND_USAGE_BANK_TRANSFER = BANK_USAGE_PREFIX + "transfer <bankname> [playername]";
+	public static final String COMMAND_USAGE_VERSION = CONTROL_USAGE_PREFIX + "version";
+	public static final String COMMAND_USAGE_RELOAD = CONTROL_USAGE_PREFIX + "reload";
+	public static final String COMMAND_USAGE_CONFIG = CONTROL_USAGE_PREFIX + "config [set | add | remove] [field] <newvalue>";
+	public static final String COMMAND_USAGE_UPDATE = CONTROL_USAGE_PREFIX + "update";
+	public static final String COMMAND_USAGE_PAY_INTEREST = CONTROL_USAGE_PREFIX + "payinterest";
 	
-	public static final String COMMAND_DESC_ACCOUNT = ChatColor.GOLD + "Create, manage, and remove accounts.";
-	public static final String COMMAND_DESC_BANK = ChatColor.GOLD + "Create, manage, and remove banks.";
-	public static final String COMMAND_DESC_CONTROL = ChatColor.GOLD + "Configure this plugin.";
+	public static final String ACCOUNT_COMMAND_DESC = ChatColor.GOLD + "Create, manage, and remove accounts.";
+	public static final String BANK_COMMAND_DESC = ChatColor.GOLD + "Create, manage, and remove banks.";
+	public static final String CONTROL_COMMAND_DESC = ChatColor.GOLD + "Configure this plugin.";
 
-	public static final String CHANGED_CONFIG_ADDED = ChatColor.GOLD + "Added the config value " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
-	public static final String CHANGED_CONFIG_REMOVED = ChatColor.GOLD + "Removed the config value " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
-	public static final String CHANGED_CONFIG_SET = ChatColor.GOLD + "Config value " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " has been set to " + ChatColor.GREEN + "%s" + ChatColor.GOLD + ".";
+	public static final String CONFIG_VALUE_ADDED = ChatColor.GOLD + "Added the config value " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
+	public static final String CONFIG_VALUE_REMOVED = ChatColor.GOLD + "Removed the config value " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
+	public static final String CONFIG_VALUE_SET = ChatColor.GOLD + "Config value " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " has been set to " + ChatColor.GREEN + "%s" + ChatColor.GOLD + ".";
 
-	public static final String OFFLINE_INTEREST_REVENUE = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in interest while you were offline!";
-	public static final String OFFLINE_TRANSACTION_REVENUE = ChatColor.GOLD + "Your account increased in value by " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " while you were offline.";
-	public static final String OFFLINE_TRANSACTION_EXPENDITURE = ChatColor.RED + "Your account decreased in value by $%s while you were offline.";
-	
 }

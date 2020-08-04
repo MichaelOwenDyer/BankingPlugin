@@ -24,7 +24,7 @@ public class BankCommand extends BankingPluginCommand {
         }
         
         this.name = Config.mainCommandNameBank;
-        this.desc = Messages.COMMAND_DESC_BANK;
+        this.desc = Messages.BANK_COMMAND_DESC;
 		this.pluginCommand = super.createPluginCommand();
 		this.executor = new BankCommandExecutor(plugin);
 		this.tabCompleter = new BankTabCompleter(plugin);
@@ -91,7 +91,7 @@ public class BankCommand extends BankingPluginCommand {
 		addSubCommand(new BankSubCommand("rename", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RESIZE : "";
+				return sender.hasPermission(Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RENAME : "";
 			}
 		});
 

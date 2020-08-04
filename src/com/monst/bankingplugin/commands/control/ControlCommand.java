@@ -23,7 +23,7 @@ public class ControlCommand extends BankingPluginCommand {
         }
         
         this.name = Config.mainCommandNameControl;
-        this.desc = Messages.COMMAND_DESC_CONTROL;
+        this.desc = Messages.CONTROL_COMMAND_DESC;
 		this.pluginCommand = super.createPluginCommand();
         this.executor = new ControlCommandExecutor(plugin);
         this.tabCompleter = new ControlTabCompleter(plugin);
@@ -59,7 +59,7 @@ public class ControlCommand extends BankingPluginCommand {
 		addSubCommand(new ControlSubCommand("payinterest", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_PAYINTEREST : "";
+				return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_PAY_INTEREST : "";
 			}
 		});
 

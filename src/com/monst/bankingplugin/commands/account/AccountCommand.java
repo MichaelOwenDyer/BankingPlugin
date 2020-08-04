@@ -25,7 +25,7 @@ public class AccountCommand extends BankingPluginCommand {
 		}
 
 		this.name = Config.mainCommandNameAccount;
-		this.desc = Messages.COMMAND_DESC_ACCOUNT;
+		this.desc = Messages.ACCOUNT_COMMAND_DESC;
 		this.pluginCommand = super.createPluginCommand();
 		this.executor = new AccountCommandExecutor(plugin);
 		this.tabCompleter = new AccountTabCompleter(plugin);

@@ -101,15 +101,15 @@ public class ControlCommandExecutor implements CommandExecutor {
 		switch (args[1].toLowerCase()) {
 		case "set":
 			plugin.getPluginConfig().set(property, value);
-			sender.sendMessage(String.format(Messages.CHANGED_CONFIG_SET, property, value));
+			sender.sendMessage(String.format(Messages.CONFIG_VALUE_SET, property, value));
 			break;
 		case "add":
 			plugin.getPluginConfig().add(property, value);
-			sender.sendMessage(String.format(Messages.CHANGED_CONFIG_ADDED, property));
+			sender.sendMessage(String.format(Messages.CONFIG_VALUE_ADDED, property));
 			break;
 		case "remove":
 			plugin.getPluginConfig().remove(property, value);
-			sender.sendMessage(String.format(Messages.CHANGED_CONFIG_REMOVED, property));
+			sender.sendMessage(String.format(Messages.CONFIG_VALUE_REMOVED, property));
 			break;
 		default:
 			return false;
