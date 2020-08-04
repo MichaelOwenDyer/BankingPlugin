@@ -6,12 +6,12 @@ import org.bukkit.event.Cancellable;
 
 import com.monst.bankingplugin.Bank;
 
-public class TransferOwnershipEvent extends BankEvent implements Cancellable {
+public class BankTransferEvent extends BankEvent implements Cancellable {
 
 	private final OfflinePlayer newOwner;
 	private boolean cancelled;
 
-	public TransferOwnershipEvent(CommandSender sender, Bank bank, OfflinePlayer newOwner) {
+	public BankTransferEvent(CommandSender sender, Bank bank, OfflinePlayer newOwner) {
 		super(sender, bank);
 		this.newOwner = newOwner;
 	}

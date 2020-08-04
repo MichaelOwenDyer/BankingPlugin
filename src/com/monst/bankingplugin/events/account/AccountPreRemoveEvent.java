@@ -7,8 +7,8 @@ public class AccountPreRemoveEvent extends AccountEvent implements Cancellable {
 
 	private boolean cancelled;
 
-	public AccountPreRemoveEvent(Player p) {
-		super(p, null);
+	public AccountPreRemoveEvent(Player player) {
+		super(player, null);
 	}
 
 	@Override

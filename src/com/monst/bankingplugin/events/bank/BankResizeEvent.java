@@ -17,11 +17,11 @@ public class BankResizeEvent extends BankEvent implements Cancellable {
 	}
 	
 	public Player getPlayer() {
-		return (Player) super.getSender();
+		return (Player) getSender();
 	}
 
 	public Selection getOldSelection() {
-		return super.getBank().getSelection();
+		return getBank().getSelection();
 	}
 
 	public Selection getNewSelection() {

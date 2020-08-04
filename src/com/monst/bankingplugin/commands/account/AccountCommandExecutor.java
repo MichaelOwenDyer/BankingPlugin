@@ -172,13 +172,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 	private void promptAccountInfo(final CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to retrieve account info");
 
-		AccountPreInfoEvent event = new AccountPreInfoEvent(sender);
-		Bukkit.getPluginManager().callEvent(event);
-		if (event.isCancelled()) {
-			plugin.debug("Account pre-info event cancelled");
-			return;
-		}
-
 		if (args.length > 1) {
 			try {
 				int id = Integer.parseInt(args[1]);
@@ -195,6 +188,13 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		if (!(sender instanceof Player)) {
 			plugin.debug(sender.getName() + " is not a player");
 			sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+			return;
+		}
+
+		AccountPreInfoEvent event = new AccountPreInfoEvent((Player) sender);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			plugin.debug("Account pre-info event cancelled");
 			return;
 		}
 
@@ -346,7 +346,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			return;
 		}
 
-		AccountRemoveAllEvent event = new AccountRemoveAllEvent(accounts);
+		AccountRemoveAllEvent event = new AccountRemoveAllEvent(sender, accounts);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Removeall event cancelled");

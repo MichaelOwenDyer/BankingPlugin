@@ -44,7 +44,7 @@ public class WorldGuardListener implements Listener {
 
 		IWrappedFlag<WrappedState> flag = getStateFlag("create-bank");
 		for (Location loc : e.getBank().getSelection().getVertices())
-			if (handleForLocation(e.getPlayer(), loc, e, flag))
+			if (handleForLocation((Player) e.getSender(), loc, e, flag))
 				return;
 	}
 

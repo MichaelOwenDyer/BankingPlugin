@@ -9,17 +9,12 @@ import org.bukkit.event.HandlerList;
 
 import com.monst.bankingplugin.Bank;
 
-public class BankRemoveAllEvent extends Event implements Cancellable {
-
-	private static final HandlerList handlers = new HandlerList();
-	private final CommandSender sender;
+public class BankRemoveAllEvent extends MultiBankEvent implements Cancellable {
 
 	private boolean cancelled;
-	private final Collection<Bank> banks;
 
 	public BankRemoveAllEvent(CommandSender sender, Collection<Bank> banks) {
-		this.sender = sender;
-		this.banks = banks;
+		super(sender, banks);
 	}
 
 	@Override
@@ -32,16 +27,4 @@ public class BankRemoveAllEvent extends Event implements Cancellable {
 		cancelled = cancel;
 	}
 
-	@Override
-	public HandlerList getHandlers() {
-		return handlers;
-	}
-
-	public Collection<Bank> getBanks() {
-		return banks;
-	}
-
-	public CommandSender getSender() {
-		return sender;
-	}
 }

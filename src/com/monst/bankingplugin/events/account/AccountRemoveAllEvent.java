@@ -2,20 +2,21 @@ package com.monst.bankingplugin.events.account;
 
 import java.util.Collection;
 
+import com.sun.org.apache.xpath.internal.operations.Mult;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 import com.monst.bankingplugin.Account;
 
-public class AccountRemoveAllEvent extends Event implements Cancellable {
-    private static final HandlerList handlers = new HandlerList();
-    
-	private boolean cancelled;
-	private final Collection<Account> affectedAccounts;
+public class AccountRemoveAllEvent extends MultiAccountEvent implements Cancellable {
 
-	public AccountRemoveAllEvent(Collection<Account> accounts) {
-		this.affectedAccounts = accounts;
+	private boolean cancelled;
+
+	public AccountRemoveAllEvent(CommandSender sender, Collection<Account> accounts) {
+		super(sender, accounts);
 	}
 
 	@Override
@@ -26,19 +27,6 @@ public class AccountRemoveAllEvent extends Event implements Cancellable {
 	@Override
 	public void setCancelled(boolean cancel) {
 		cancelled = cancel;		
-	}
-
-	public Collection<Account> getAffectedAccounts() {
-		return affectedAccounts;
-	}
-
-	@Override
-	public HandlerList getHandlers() {
-		return handlers;
-	}
-	
-	public static HandlerList getHandlerList() {
-		return handlers;
 	}
 
 }

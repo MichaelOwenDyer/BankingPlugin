@@ -840,7 +840,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				return true;
 			}
 
-		TransferOwnershipEvent event = new TransferOwnershipEvent(sender, bank, newOwner);
+		BankTransferEvent event = new BankTransferEvent(sender, bank, newOwner);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Bank transfer ownership event cancelled");

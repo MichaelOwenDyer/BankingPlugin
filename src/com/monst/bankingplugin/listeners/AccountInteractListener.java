@@ -759,7 +759,7 @@ public class AccountInteractListener implements Listener {
 		plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of "
 				+ newOwner.getName());
 
-		TransferOwnershipEvent event = new TransferOwnershipEvent(p, account, newOwner);
+		AccountTransferEvent event = new AccountTransferEvent(p, account, newOwner);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Account transfer ownership event cancelled");

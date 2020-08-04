@@ -11,11 +11,9 @@ public class InterestEvent extends Event {
 	
 	private static final HandlerList handlers = new HandlerList();
 	private final BankingPlugin plugin;
-	private final Economy econ;
 
 	public InterestEvent(BankingPlugin plugin) {
 		this.plugin = plugin;
-		this.econ = plugin.getEconomy();
 	}
 
 	@Override
@@ -29,10 +27,6 @@ public class InterestEvent extends Event {
 
 	public BankingPlugin getPlugin() {
 		return plugin;
-	}
-	
-	public Economy getEconomy() {
-		return econ;
 	}
 	
 }

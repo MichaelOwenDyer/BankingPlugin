@@ -17,7 +17,7 @@ public class AccountExtendEvent extends AccountEvent implements Cancellable {
     }
 
     /**
-     * @return Location of the placed chest
+     * @return location of the placed chest
      */
     public Location getNewChestLocation() {
         return newChestLocation;

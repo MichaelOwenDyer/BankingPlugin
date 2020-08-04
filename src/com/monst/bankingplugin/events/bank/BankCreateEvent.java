@@ -13,10 +13,6 @@ public class BankCreateEvent extends BankEvent implements Cancellable {
 		super(player, bank);
 	}
 
-	public Player getPlayer() {
-		return (Player) super.getSender();
-	}
-
 	@Override
 	public boolean isCancelled() {
 		return cancelled;
