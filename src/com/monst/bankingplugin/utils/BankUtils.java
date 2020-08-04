@@ -6,12 +6,16 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Selection;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -314,7 +318,7 @@ public class BankUtils {
 		}
 		if (limit < -1)
 			limit = -1;
-		return (useDefault ? Config.defaultBankVolumeLimit : limit);
+		return (useDefault ? Config.maximumBankVolume : limit);
 	}
 
 	/**
@@ -423,5 +427,73 @@ public class BankUtils {
 		if (bank == null)
 			bank = getBanksCopy().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
 		return bank;
+	}
+
+	/**
+	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
+	 * inequality among all n accounts at the bank.
+	 *
+	 * @return G = ( 2 * sum(i,n)(i * value of ith account) / n * sum(i,n)(value of
+	 *         ith account) ) - ( n + 1 / n )
+	 */
+	public static double getGiniCoefficient(Bank bank) {
+		if (bank.getAccounts().isEmpty())
+			return 0;
+		List<BigDecimal> orderedValues = bank.getCustomerBalances().values().stream().sorted(BigDecimal::compareTo)
+				.collect(Collectors.toList());
+		BigDecimal valueSum = BigDecimal.ZERO;
+		BigDecimal weightedValueSum = BigDecimal.ZERO;
+		for (int i = 0; i < orderedValues.size(); i++) {
+			valueSum = valueSum.add(orderedValues.get(i));
+			weightedValueSum = weightedValueSum.add(orderedValues.get(i).multiply(BigDecimal.valueOf(i + 1)));
+		}
+		valueSum = valueSum.multiply(BigDecimal.valueOf(orderedValues.size()));
+		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
+		if (valueSum.signum() == 0)
+			return 0;
+		BigDecimal leftEq = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
+		BigDecimal rightEq = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
+		BigDecimal gini = leftEq.subtract(rightEq).setScale(2, RoundingMode.HALF_EVEN);
+		return gini.doubleValue();
+	}
+
+	public static String getEqualityLore(Bank bank) {
+		double gini = 1 - getGiniCoefficient(bank);
+		ChatColor color;
+		String assessment = "";
+		switch ((int) (gini * 5)) {
+			case 0:
+				color = ChatColor.DARK_RED;
+				assessment = "(Very Poor)";
+				break;
+			case 1:
+				color = ChatColor.RED;
+				assessment = "(Poor)";
+				break;
+			case 2:
+				color = ChatColor.YELLOW;
+				assessment = "(Good)";
+				break;
+			case 3:
+				color = ChatColor.GREEN;
+				assessment = "(Very Good)";
+				break;
+			case 4: case 5:
+				color = ChatColor.DARK_GREEN;
+				assessment = "(Excellent)";
+				break;
+			default:
+				color = ChatColor.GRAY;
+		}
+		return "" + color + Math.round(gini * 100) + "% " + assessment;
+	}
+
+	public int getTotalValueRanking(Bank bank) {
+		if (bank == null)
+			return -1;
+		ArrayList<Bank> banks = getBanks().stream()
+				.sorted(Comparator.comparing(Bank::getTotalValue).reversed())
+				.collect(Collectors.toCollection(ArrayList::new));
+		return banks.indexOf(bank) + 1;
 	}
 }

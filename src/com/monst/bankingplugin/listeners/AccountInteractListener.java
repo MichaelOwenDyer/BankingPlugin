@@ -735,7 +735,7 @@ public class AccountInteractListener implements Listener {
 			plugin.debug("Needs confirmation");
 
 			p.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
-					account.isOwner(p) ? "your" : account.getOwner().getName() + "'s", newOwner.getName()));
+					account.isOwner(p) ? "your account" : account.getOwner().getName() + "'s account", newOwner.getName()));
 			p.sendMessage(Messages.CLICK_TO_CONFIRM);
 			Set<Integer> ids = unconfirmed.containsKey(p.getUniqueId()) ? unconfirmed.get(p.getUniqueId())
 					: new HashSet<>();

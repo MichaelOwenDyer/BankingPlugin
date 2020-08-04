@@ -142,7 +142,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 				new Callback<AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>>>(plugin) {
 			@Override
 			public void onResult(AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>> result) {
-				sender.sendMessage(String.format(Messages.RELOADED_BANKS,
+				sender.sendMessage(String.format(Messages.RELOADED_PLUGIN,
 						result.getKey().size(), result.getValue().size()));
 				plugin.debug(String.format(sender.getName() + " has reloaded %d banks and %d accounts.",
 						result.getKey().size(), result.getValue().size()));

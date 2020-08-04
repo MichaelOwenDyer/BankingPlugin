@@ -25,7 +25,7 @@ public class Messages {
 	public static final String ACCOUNT_REMOVED = ChatColor.GOLD + "The account has been removed.";
 	public static final String BANK_REMOVED = ChatColor.GOLD + "The bank has been removed.";
 	public static final String BANK_RESIZED = ChatColor.GOLD + "The bank has been resized.";
-	public static final String BANK_FIELD_SET = ChatColor.GOLD + "Field " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " has been set to " + ChatColor.GREEN + "%s" + ChatColor.GOLD + " at bank " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
+	public static final String BANK_FIELD_SET = ChatColor.GOLD + "%s changed " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " from " + ChatColor.GREEN + "%s" + ChatColor.GOLD + " to " + ChatColor.GREEN + "%s" + ChatColor.GOLD + " at bank " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_REIMBURSEMENT_RECEIVED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_REIMBURSEMENT_PAID = ChatColor.GOLD + "You reimbursed %s " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
@@ -39,13 +39,18 @@ public class Messages {
 	public static final String INTEREST_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s " + ChatColor.RED + "in interest on %d account%s!";
 	public static final String LOW_BALANCE_FEE_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in low balance fees on %d account%s.";
 	public static final String LOW_BALANCE_FEE_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s" + ChatColor.RED + " in low balance fees on %d account%s.";
-	public static final String MULTIPLIER_INCREASED = ChatColor.GOLD + "Your account multiplier has increased to " + ChatColor.GREEN + "$%d."; // XXX
 	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to " + ChatColor.GREEN + "$%d.";
 	public static final String ACCOUNT_LIMIT = ChatColor.GOLD + "You own %d/%s allowed accounts.";
 	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%s allowed banks.";
-	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to delete %d account%s.";
-	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to delete %d bank%s and %d account%s.";
-	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s account to %s. Are you sure?";
+	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to remove %d account%s.";
+	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to remove %d bank%s and %d account%s.";
+	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s to %s. Are you sure?";
+
+	public static final String PLAYER_REMOVED_BANK = ChatColor.RED + "%s has removed bank %s.";
+	public static final String PLAYER_RENAMED_BANK = ChatColor.GOLD + "%s has renamed bank %s to %s.";
+
+	public static final String PLAYER_REMOVED_ACCOUNT = ChatColor.GOLD + "%s has removed account %s at %s.";
+	public static final String PLAYER_RENAMED_ACCOUNT = ChatColor.GOLD + "%s has renamed account %s to %s at %s.";
 
 	
 	// SUCCESS NOTIFICATIONS
@@ -55,12 +60,13 @@ public class Messages {
 	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "Account interest delay has been set.";
 	public static final String ADDED_COOWNER = ChatColor.GOLD + "%s has been added as a co-owner.";
 	public static final String REMOVED_COOWNER = ChatColor.GOLD + "%s has been removed as a co-owner.";
-	public static final String RELOADED_BANKS = ChatColor.GOLD + "Successfully reloaded BankingPlugin.";
+	public static final String RELOADED_PLUGIN = ChatColor.GOLD + "Successfully reloaded BankingPlugin.";
 	public static final String ACCOUNT_DEPOSIT = ChatColor.GOLD + "You have deposited " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " into %s account.";
 	public static final String ACCOUNT_WITHDRAWAL = ChatColor.GOLD + "You have withdrawn " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " from %s account.";
 	public static final String ACCOUNT_NEW_BALANCE = ChatColor.GOLD + "Your new balance is " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String BANK_SELECTED = ChatColor.GOLD + "Bank region selected as %s.";
-	public static final String OWNERSHIP_TRANSFERRED = ChatColor.GOLD + "Ownership successfully transferred to %s.";
+	public static final String OWNERSHIP_TRANSFERRED = ChatColor.GOLD + "%s successfully transferred ownership of %s to %s.";
+	public static final String OWNERSHIP_TRANSFER_RECEIVED = ChatColor.GOLD + "You have been transferred ownership of %s %s.";
 	public static final String NAME_CHANGED = ChatColor.GOLD + "Bank name was successfully changed.";
 	
 	// DENY NOTIFICATIONS
@@ -76,6 +82,7 @@ public class Messages {
 	public static final String NO_BANKS_FOUND = ChatColor.RED + "There are no banks to list.";
 	public static final String NO_SELECTION_FOUND = ChatColor.RED + "Select a WorldEdit region first.";
 	public static final String COORDINATES_PARSE_ERROR = ChatColor.RED + "Invalid coordinates.";
+	public static final String WORLD_DISABLED = ChatColor.RED + "BankingPlugin has been disabled in this world.";
 	public static final String SELECTION_OVERLAPS_EXISTING = ChatColor.RED + "Your selection overlaps with another bank.";
 	public static final String SELECTION_CUTS_ACCOUNTS = ChatColor.RED + "Your selection does not contain all accounts at this bank.";
 	public static final String WORLDEDIT_NOT_ENABLED = ChatColor.RED + "WorldEdit is not currently enabled. Please enter coordinates manually.";
@@ -88,7 +95,6 @@ public class Messages {
 	public static final String FIELD_NOT_OVERRIDABLE = ChatColor.RED + "That field cannot be overridden!";
 	public static final String NOT_A_NUMBER = ChatColor.RED + "\"%s\" is not a number!";
 	public static final String NOT_AN_INTEGER = ChatColor.RED + "\"%s\" is not an integer!";
-	public static final String NOT_A_BOOLEAN = ChatColor.RED + "\"%s\" is not a boolean value!";
 	public static final String NOT_A_FIELD = ChatColor.RED + "\"%s\" is not a valid field!";
 	public static final String NOT_A_LIST = ChatColor.RED + "\"%s\" is not a parsable list!";
 	public static final String ERROR_OCCURRED = ChatColor.RED + "An error occurred! ";

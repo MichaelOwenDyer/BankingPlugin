@@ -13,7 +13,8 @@ public interface Confirmable {
 	Map<UUID, BukkitTask> confirmationTimers = new HashMap<>();
 	
 	default boolean needsConfirmation(Player p, String[] args) {
-		if (unconfirmedCommands.containsKey(p.getUniqueId()) && Arrays.equals(unconfirmedCommands.get(p.getUniqueId()), args)) {
+		if (unconfirmedCommands.containsKey(p.getUniqueId())
+				&& Arrays.equals(unconfirmedCommands.get(p.getUniqueId()), args)) {
 			UUID uuid = p.getUniqueId();
 			unconfirmedCommands.remove(uuid);
 			Optional.ofNullable(confirmationTimers.get(uuid)).ifPresent(BukkitTask::cancel);

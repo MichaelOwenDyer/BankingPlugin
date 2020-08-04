@@ -68,7 +68,8 @@ public class CuboidSelection implements Selection {
 
 	@Override
 	public int getVolume() {
-		return (max.getBlockX() - min.getBlockX()) * (max.getBlockZ() - min.getBlockZ())
+		   return (max.getBlockX() - min.getBlockX())
+				* (max.getBlockZ() - min.getBlockZ())
 				* (max.getBlockY() - min.getBlockY());
 	}
 

@@ -138,7 +138,7 @@ public class InterestEventListener implements Listener {
 							continue;
 
 						double multiplier = Config.bankRevenueMultiplier;
-						double gini = Utils.getGiniCoefficient(bank);
+						double gini = BankUtils.getGiniCoefficient(bank);
 						int numberOfAccounts = bank.getCustomerAccounts().size();
 
 						BigDecimal revenue = totalValue.multiply(BigDecimal.valueOf(multiplier))

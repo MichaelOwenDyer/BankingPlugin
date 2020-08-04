@@ -18,9 +18,9 @@ main-command-names:
 # Equivalent values will not be counted twice.
 # Type: List<LocalTime>
 interest-payout-times:
-  # - '09:00'
-  # - '12:00'
-  # - '15:00'
+# - '09:00'
+# - '12:00'
+# - '15:00'
   
 # Set the base interest rate for all bank accounts on the server.
 # Value should be a floating point number greater than 0.
@@ -260,8 +260,19 @@ blacklist:
 bank-revenue-multiplier: 0.10
 
 # Set whether the custom WorldGuard flag should be allowed by default.
-worldguard-default-flag-value:
-  create-bank: false
+worldguard-default-flag-value: false
+
+# Set the worlds in which banking should be disabled.
+# Please ensure the names are spelled exactly how they exist in the server folder.
+disabled-worlds:
+# - "world"
+# - "world_nether"
+# - "world_the_end"
+
+# Set whether or not this plugin should send players missed notification messages
+# per Essentials mail while they are offline.
+enable-mail: true
+
   
 # Set the regex pattern that bank names and account nicknames should be matched against. Players will not be allowed to set names that fail to match with this pattern. Invalid patterns will not be considered.
 # Type: String

@@ -3,6 +3,7 @@ package com.monst.bankingplugin.gui;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.*;
@@ -112,12 +113,15 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getStatisticsLore() {
 		return Arrays.asList(
 				"Number of accounts: " + ChatColor.AQUA + guiSubject.getAccounts().size(),
-				"Total value: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getTotalValue()),
+				"Number of unique customers: " + ChatColor.AQUA + guiSubject.getCustomerAccounts().keySet().size(),
+				"Total value: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getTotalValue())
+						+ ChatColor.GRAY + " (rank " + plugin.getBankUtils().getTotalValueRanking(guiSubject)
+						+ " of " + plugin.getBankUtils().getBanks().size() + ")",
 				"Average account value: " + ChatColor.GREEN + "$" +
 						Utils.format(!guiSubject.getAccounts().isEmpty()
 								? guiSubject.getTotalValue().doubleValue() / guiSubject.getAccounts().size()
 								: guiSubject.getAccounts().size()),
-				"Equality score: " + Utils.getEqualityLore(guiSubject)
+				"Equality score: " + BankUtils.getEqualityLore(guiSubject)
 		);
 	}
 
@@ -126,7 +130,7 @@ public class BankGui extends Gui<Bank> {
 		boolean reimburse = config.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION);
 		return Arrays.asList(
 				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + Utils.format(config.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE)),
-				ChatColor.GRAY + "Fee Reimbursement: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
+				ChatColor.GRAY + "Reimbursement on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}
 
@@ -142,7 +146,7 @@ public class BankGui extends Gui<Bank> {
 						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.format(lowBalanceFee),
 				"",
 				ChatColor.GRAY + "Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
-						+ " continue to be" + ChatColor.GRAY + "paid out when the account balance is low."
+						+ " continue to be " + ChatColor.GRAY + "paid out when the account balance is low."
 		);
 	}
 
@@ -155,15 +159,16 @@ public class BankGui extends Gui<Bank> {
 				ChatColor.GRAY + "Accounts may generate interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
 						+ String.format(" time%s", offlinePayouts == 1 ? "" : "s") + " while account holders are offline.",
 				"",
-				ChatColor.GRAY + "Account multipliers will reset " + (beforeReset == 0
-						? "immediately"
-						: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY + " consecutive "
-							+ String.format("time%s", beforeReset == 1 ? "" : "s") + " while account holders are offline."),
-				"",
 				ChatColor.GRAY + "Multipliers will " + (offlineDecrement == 0
 						? "freeze"
 						: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " for every payout")
-						+ " while account holders are offline."
+						+ " during this time.",
+				"",
+				ChatColor.GRAY + "Account multipliers will reset " + (beforeReset == 0
+						? "immediately"
+						: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY + " consecutive "
+							+ String.format("time%s", beforeReset == 1 ? "" : "s")) + " while account holders are offline."
+
 		);
 	}
 
@@ -178,7 +183,7 @@ public class BankGui extends Gui<Bank> {
 				ChatColor.GRAY + "The account owner " + (countOffline
 						? ChatColor.GREEN + "does not have to be online"
 						: ChatColor.RED + "must be online")
-						+ " for these cycles to be counted toward the delay."
+						+ ChatColor.GRAY + " for these cycles to be counted toward the delay."
 		);
 	}
 
@@ -194,7 +199,7 @@ public class BankGui extends Gui<Bank> {
 
 	private List<String> getAccountLimitLore() {
 		int accountLimit = guiSubject.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
-		return Collections.singletonList(
+		return Utils.wordWrapAll(
 				ChatColor.GRAY + (accountLimit == 0
 						? "Account creation is currently " + ChatColor.RED + "disabled" + ChatColor.GRAY
 						: "Players may create " + (accountLimit > 0

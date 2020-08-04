@@ -115,11 +115,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		boolean isAdminBank = false;
 
 		if (args.length == 1 || args.length == 2) {
-			
 			if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
-
 				selection = WorldEditReader.getSelection(plugin, p);
-
 				if (selection == null) {
 					plugin.debug(p.getName() + " tried to create a bank with no WorldEdit selection");
 					p.sendMessage(Messages.NO_SELECTION_FOUND);
@@ -130,7 +127,6 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				p.sendMessage(Messages.WORLDEDIT_NOT_ENABLED);
 				return true;
 			}
-
 		} else {
 			try {
 				selection = bankUtils.parseCoordinates(args, p.getLocation());
@@ -144,9 +140,14 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (selection == null)
 			return false;
 
-		if ((args.length == 2 && args[1].equalsIgnoreCase("admin"))
-				|| (args.length == 5 && args[4].equalsIgnoreCase("admin"))
-				|| (args.length == 8 && args[7].equalsIgnoreCase("admin")))
+		if (Config.disabledWorlds.contains(selection.getWorld().getName())) {
+			plugin.debug("BankingPlugin is disabled in world " + selection.getWorld().getName());
+			p.sendMessage(Messages.WORLD_DISABLED);
+			return true;
+		}
+
+		if ((args.length == 2 || args.length == 5 || args.length == 8)
+				&& args[args.length - 1].equalsIgnoreCase("admin"))
 			isAdminBank = true;
 
 		if (isAdminBank && !p.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
@@ -271,8 +272,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			Player p = (Player) sender;
 			if (Config.confirmOnRemove)
 				if (needsConfirmation(p, args)) {
-					p.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, 1, "", bank.getAccounts().size(), bank.getAccounts().size() == 1 ? "" : "s")
-							+ Messages.EXECUTE_AGAIN_TO_CONFIRM);
+					p.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, 1, "", bank.getAccounts().size(),
+							bank.getAccounts().size() == 1 ? "" : "s"));
+					p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
 					return;
 				}
 		}
@@ -310,6 +312,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		bankUtils.removeBank(bank, true);
 		plugin.debug("Bank #" + bank.getID() + " removed from the database");
 		sender.sendMessage(Messages.BANK_REMOVED);
+		Utils.notifyPlayers(
+				String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()), sender,
+				bank.getTrustedPlayers(), bank.getCustomers());
 	}
 
 	private void promptBankInfo(CommandSender sender, String[] args) {
@@ -408,10 +413,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		bankUtils.removeBank(banks, true);
-		plugin.debug("Bank #s " + banks.stream().map(bank -> "" + bank.getID()).collect(Collectors.joining(", ", "", ""))
+		plugin.debug("Bank(s) " + banks.stream().map(bank -> "#" + bank.getID())
+				.collect(Collectors.joining(", ", "", ""))
 				+ " removed from the database.");
-		sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s",
-				accounts.size(), accounts.size() == 1 ? "" : "s"));
+		sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s", accounts.size(), accounts.size() == 1 ? "" : "s"));
+		for (Bank bank : banks)
+			Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getColorizedName()), sender, bank.getTrustedPlayers());
 
 		return true;
 	}
@@ -475,6 +482,11 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (bank.isAdminBank() && !p.hasPermission(Permissions.BANK_RESIZE_ADMIN)) {
 			plugin.debug(p.getName() + " does not have permission to resize an admin bank");
 			p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE_ADMIN);
+			return true;
+		}
+		if (Config.disabledWorlds.contains(selection.getWorld().getName())) {
+			plugin.debug("BankingPlugin is disabled in world " + selection.getWorld().getName());
+			p.sendMessage(Messages.WORLD_DISABLED);
 			return true;
 		}
 		int volume = selection.getVolume();
@@ -670,15 +682,16 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			sender.sendMessage(String.format(Messages.NOT_A_FIELD, fieldName));
 			return true;
 		}
-		
 
+		String previousValue = "" + bank.getAccountConfig().get(field);
 		Bank finalBank = bank;
 		Callback<String> callback = new Callback<String>(plugin) {
 			@Override
 			public void onResult(String result) {
-				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, field.getName(), result, finalBank.getName()));
-				plugin.debug(sender.getName() + " has set " + field.getName() + " at " + finalBank.getName() + " to " + result);
-
+				plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + finalBank.getName() + " from " + previousValue + " to " + result);
+				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, "You", field.getName(), previousValue, result, finalBank.getColorizedName()));
+				Utils.notifyPlayers(String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(), previousValue, result, finalBank.getColorizedName()),
+						sender, bank.getTrustedPlayers(), bank.getCustomers());
 			}
 			@Override
 			public void onError(Throwable throwable) {
@@ -816,6 +829,17 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
+		if (sender instanceof Player)
+			if (Config.confirmOnTransfer && needsConfirmation((Player) sender, args)) {
+				sender.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
+						(bank.isOwner((Player) sender)
+							? "your bank"
+							: bank.getOwnerDisplayName() + "'s bank"),
+						newOwner.getName()));
+				sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+				return true;
+			}
+
 		TransferOwnershipEvent event = new TransferOwnershipEvent(sender, bank, newOwner);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
@@ -823,7 +847,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner != null ? newOwner.getName() : "ADMIN"));
+		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", bank.getColorizedName(), newOwner != null ? newOwner.getName() : "ADMIN"));
+		Utils.notifyPlayers(
+				String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), bank.getColorizedName(), newOwner != null ? newOwner.getName() : "ADMIN"),
+				newOwner != null ? newOwner.getPlayer() : null, Collections.singleton(newOwner));
+		if (newOwner != null && newOwner.isOnline())
+			newOwner.getPlayer().sendMessage(String.format(Messages.OWNERSHIP_TRANSFER_RECEIVED, "bank", bank.getColorizedName()));
 		boolean hasDefaultName = bank.isDefaultName();
 		bank.transferOwnership(newOwner);
 		if (hasDefaultName)

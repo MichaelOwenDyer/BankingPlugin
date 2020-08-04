@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.utils;
 
+import com.earth2me.essentials.Essentials;
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
@@ -17,6 +18,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -32,8 +34,8 @@ import java.util.stream.Collectors;
 
 public class Utils {
 
-	public static Location blockifyLocation(Location location) {
-		return new Location(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+	public static Location blockifyLocation(Location loc) {
+		return new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 	}
 	
 	public static List<String> getOnlinePlayerNames(BankingPlugin plugin) {
@@ -133,6 +135,26 @@ public class Utils {
 		return false;
 	}
 
+	@SafeVarargs
+	public static void notifyPlayers(String message, CommandSender notInclude, Collection<OfflinePlayer>... players) {
+		if (notInclude instanceof OfflinePlayer)
+			for (Collection<OfflinePlayer> playerList : players)
+				playerList.remove(notInclude);
+		for (Collection<OfflinePlayer> playerList : players)
+			notifyPlayers(message, playerList);
+	}
+
+	private static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
+		players.parallelStream().forEach(p -> {
+			if (p.isOnline())
+				p.getPlayer().sendMessage(message);
+			else if (Config.enableMail) {
+				Essentials essentials = BankingPlugin.getInstance().getEssentials();
+				essentials.getUserMap().getUser(p.getUniqueId()).addMail(message);
+			}
+		});
+	}
+
 	private static List<List<Integer>> getStackedList(List<Integer> multipliers) {
 		List<List<Integer>> stackedMultipliers = new ArrayList<>();
 		stackedMultipliers.add(new ArrayList<>());
@@ -227,17 +249,16 @@ public class Utils {
 	}
 
 	public static TextComponent getMultiplierView(Bank bank) {
-		return getMultiplierView(bank, -1);
+		return getMultiplierView(bank.getAccountConfig().get(AccountConfig.Field.MULTIPLIERS), -1);
 	}
 
 	public static TextComponent getMultiplierView(Account account) {
-		return getMultiplierView(account.getBank(), account.getStatus().getMultiplierStage());
+		return getMultiplierView(account.getBank().getAccountConfig().get(AccountConfig.Field.MULTIPLIERS),
+				account.getStatus().getMultiplierStage());
 	}
 
 	@SuppressWarnings("deprecation")
-	private static TextComponent getMultiplierView(Bank bank, int highlightStage) {
-
-		List<Integer> multipliers = bank.getAccountConfig().get(AccountConfig.Field.MULTIPLIERS);
+	private static TextComponent getMultiplierView(List<Integer> multipliers, int highlightStage) {
 
 		TextComponent multiplierView = new TextComponent();
 		multiplierView.setColor(net.md_5.bungee.api.ChatColor.GRAY);
@@ -282,7 +303,6 @@ public class Utils {
 				lower--;
 				upper--;
 			}
-
 			if (lower > 0)
 				multiplierView.addExtra(ellipses);
 		}
@@ -350,70 +370,10 @@ public class Utils {
 					.color(net.md_5.bungee.api.ChatColor.GREEN);
 			interestRate.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, cb.create()));
 		}
-		interestRate.addExtra(
-				ChatColor.GRAY + " (" + baseInterestRate + " x " + accountStatus.getRealMultiplier() + ")");
+		interestRate.addExtra(ChatColor.GRAY + " (" + baseInterestRate + " x " + accountStatus.getRealMultiplier() + ")");
 		interestRateView.addExtra(interestRate);
 
 		return interestRateView;
-	}
-
-	/**
-	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
-	 * inequality among all n accounts at the bank.
-	 * 
-	 * @return G = ( 2 * sum(i,n)(i * value of ith account) / n * sum(i,n)(value of
-	 *         ith account) ) - ( n + 1 / n )
-	 */
-	public static double getGiniCoefficient(Bank bank) {
-		if (bank.getAccounts().isEmpty())
-			return 0;
-		List<BigDecimal> orderedValues = bank.getCustomerBalances().values().stream().sorted(BigDecimal::compareTo)
-				.collect(Collectors.toList());
-		BigDecimal valueSum = BigDecimal.ZERO;
-		BigDecimal weightedValueSum = BigDecimal.ZERO;
-		for (int i = 0; i < orderedValues.size(); i++) {
-			valueSum = valueSum.add(orderedValues.get(i));
-			weightedValueSum = weightedValueSum.add(orderedValues.get(i).multiply(BigDecimal.valueOf(i + 1)));
-		}
-		valueSum = valueSum.multiply(BigDecimal.valueOf(orderedValues.size()));
-		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
-		if (valueSum.signum() == 0)
-			return 0;
-		BigDecimal leftEq = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
-		BigDecimal rightEq = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
-		BigDecimal gini = leftEq.subtract(rightEq).setScale(2, RoundingMode.HALF_EVEN);
-		return gini.doubleValue();
-	}
-
-	public static String getEqualityLore(Bank bank) {
-		double gini = 1 - getGiniCoefficient(bank);
-		ChatColor color;
-		String assessment = "";
-		switch ((int) (gini * 5)) {
-			case 0:
-				color = ChatColor.DARK_RED;
-				assessment = "(Very Poor)";
-				break;
-			case 1:
-				color = ChatColor.RED;
-				assessment = "(Poor)";
-				break;
-			case 2:
-				color = ChatColor.YELLOW;
-				assessment = "(Good)";
-				break;
-			case 3:
-				color = ChatColor.GREEN;
-				assessment = "(Very Good)";
-				break;
-			case 4: case 5:
-				color = ChatColor.DARK_GREEN;
-				assessment = "(Excellent)";
-				break;
-			default:
-				color = ChatColor.GRAY;
-		}
-		return "" + color + Math.round(gini * 100) + "% " + assessment;
 	}
 
 	/**

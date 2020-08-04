@@ -2,6 +2,7 @@ package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -139,7 +140,7 @@ public class Config {
 	 * The default bank volume limit for players whose limit is not set via a
 	 * permission.
 	 */
-	public static int defaultBankVolumeLimit;
+	public static int maximumBankVolume;
 	
 	/**
 	 * Whether a bank owner should be allowed to create an account at their own
@@ -203,11 +204,6 @@ public class Config {
 	public static int cleanupLogDays;
 
     /**
-     * Whether WorldGuard integration should be enabled.
-     **/
-    public static boolean enableWorldGuardIntegration;
-
-    /**
      * Whether GriefPrevention integration should be enabled.
      **/
     public static boolean enableGriefPreventionIntegration;
@@ -216,6 +212,16 @@ public class Config {
 	 * Whether WorldEdit integration should be enabled.
 	 **/
 	public static boolean enableWorldEditIntegration;
+
+	/**
+	 * Whether WorldGuard integration should be enabled.
+	 **/
+	public static boolean enableWorldGuardIntegration;
+
+	/**
+	 * The default value for the custom WorldGuard flag 'create-bank'
+	 **/
+	public static boolean wgAllowCreateBankDefault;
 
     /**
 	 * <p>
@@ -241,10 +247,12 @@ public class Config {
 	 */
 	public static double bankRevenueMultiplier;
 
-    /**
-     * The default value for the custom WorldGuard flag 'create-bank'
-     **/
-	public static boolean wgAllowCreateBankDefault;
+	/**
+	 * Worlds where banking should be disabled
+	 */
+	public static List<String> disabledWorlds;
+
+	public static boolean enableMail;
 
 	/**
 	 * The regex pattern that bank names and account nicknames should be matched
@@ -413,31 +421,31 @@ public class Config {
 			plugin.scheduleInterestPoints();
 
 		interestRate = new SimpleEntry<>(config.getBoolean("interest-rate.allow-override"),
-				config.getDouble("interest-rate.default"));
+				Math.abs(config.getDouble("interest-rate.default")));
 
 		multipliers = new SimpleEntry<>(config.getBoolean("interest-multipliers.allow-override"),
 				config.getIntegerList("interest-multipliers.default").isEmpty()
-				? Collections.singletonList(1)
-				: config.getIntegerList("interest-multipliers.default"));
+					? Collections.singletonList(1)
+					: config.getIntegerList("interest-multipliers.default"));
 
 		initialInterestDelay = new SimpleEntry<>(config.getBoolean("initial-interest-delay.allow-override"),
-				config.getInt("initial-interest-delay.default"));
+				Math.abs(config.getInt("initial-interest-delay.default")));
 
 		countInterestDelayOffline = new SimpleEntry<>(config.getBoolean("count-interest-delay-offline.allow-override"),
 				config.getBoolean("count-interest-delay-offline.default"));
 
 		allowedOfflinePayouts = new SimpleEntry<>(config.getBoolean("allowed-offline-payouts.allow-override"),
-				config.getInt("allowed-offline-payouts.default"));
+				Math.abs(config.getInt("allowed-offline-payouts.default")));
 
 		allowedOfflinePayoutsBeforeReset = new SimpleEntry<>(
 				config.getBoolean("allowed-offline-before-multiplier-reset.allow-override"),
-				config.getInt("allowed-offline-before-multiplier-reset.default"));
+				Math.abs(config.getInt("allowed-offline-before-multiplier-reset.default")));
 
 		offlineMultiplierDecrement = new SimpleEntry<>(config.getBoolean("offline-multiplier-behavior.allow-override"),
 				Math.abs(config.getInt("offline-multiplier-behavior.default")));
 
 		withdrawalMultiplierDecrement = new SimpleEntry<>(config.getBoolean("withdrawal-multiplier-behavior.allow-override"),
-				Math.abs(config.getInt("withdrawal-multiplier-behavior.default"))); // TODO: Make this value always positive
+				Math.abs(config.getInt("withdrawal-multiplier-behavior.default")));
 
 		try {
 			accountInfoItem = new ItemStack(Material.getMaterial(config.getString("account-info-item")));
@@ -447,20 +455,20 @@ public class Config {
 			accountInfoItem = new ItemStack(Material.STICK);
 		}
 
-		bankCreationPrice = new SimpleEntry<>(config.getDouble("creation-prices.bank.admin"),
-				config.getDouble("creation-prices.bank.player"));
+		bankCreationPrice = new SimpleEntry<>(Math.abs(config.getDouble("creation-prices.bank.admin")),
+				Math.abs(config.getDouble("creation-prices.bank.player")));
 
 		accountCreationPrice = new SimpleEntry<>(config.getBoolean("creation-prices.account.allow-override"),
-				config.getDouble("creation-prices.account.default"));
+				Math.abs(config.getDouble("creation-prices.account.default")));
 
 		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.allow-override"),
 				config.getBoolean("reimburse-account-creation.default"));
 
 		minimumBalance = new SimpleEntry<>(config.getBoolean("minimum-account-balance.allow-override"),
-				config.getDouble("minimum-account-balance.default"));
+				Math.abs(config.getDouble("minimum-account-balance.default")));
 
 		lowBalanceFee = new SimpleEntry<>(config.getBoolean("low-balance-fee.allow-override"),
-				config.getDouble("low-balance-fee.default"));
+				Math.abs(config.getDouble("low-balance-fee.default")));
 
 		payOnLowBalance = new SimpleEntry<>(config.getBoolean("pay-interest-on-low-balance.allow-override"),
 				config.getBoolean("pay-interest-on-low-balance.default"));
@@ -473,8 +481,8 @@ public class Config {
 
 		defaultBankLimit = config.getInt("default-limits.bank");
 		defaultAccountLimit = config.getInt("default-limits.account");
-		minimumBankVolume = config.getInt("bank-size-limits.minimum");
-		defaultBankVolumeLimit = config.getInt("bank-size-limits.maximum");
+		minimumBankVolume = Math.max(config.getInt("bank-size-limits.minimum"), 0);
+		maximumBankVolume = Math.max(config.getInt("bank-size-limits.maximum"), 0);
 		allowSelfBanking = config.getBoolean("allow-self-banking");
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");
@@ -490,8 +498,10 @@ public class Config {
 		enableWorldEditIntegration = config.getBoolean("enable-worldedit-integration");
         removeAccountOnError = config.getBoolean("remove-account-on-error");
         blacklist = config.getStringList("blacklist");
-		bankRevenueMultiplier = config.getDouble("bank-revenue-multiplier");
-		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value.create-bank");
+		bankRevenueMultiplier = Math.abs(config.getDouble("bank-revenue-multiplier"));
+		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value");
+		disabledWorlds = config.getStringList("disabled-worlds");
+		enableMail = config.getBoolean("enable-mail");
 		nameRegex = config.getString("name-regex");
 		databaseTablePrefix = config.getString("table-prefix");
         

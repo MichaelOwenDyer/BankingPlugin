@@ -5,6 +5,7 @@ import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.*;
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
@@ -334,11 +335,11 @@ public class Account extends Ownable implements Nameable {
 	public TextComponent getInfoButton(CommandSender sender) {
 		TextComponent button = new TextComponent("[Info]");
 		button.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-				new Text(ChatColor.GRAY + "Bank: " + getBank().getColorizedName()),
-						new Text(ChatColor.GRAY + "Owner: " + getOwnerDisplayName()),
-						new Text(ChatColor.GRAY + "Click for more info.")
-		));
+		ComponentBuilder cb = new ComponentBuilder()
+				.append(ChatColor.GRAY + "Bank: " + getBank().getColorizedName())
+				.append(ChatColor.GRAY + "Owner: " + getOwnerDisplayName())
+				.append(ChatColor.GRAY + "Click for more info.");
+		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, cb.create()));
 		button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/account info " + getID()));
 		return button;
 	}

@@ -5,6 +5,7 @@ import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
@@ -141,6 +142,15 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
+	 * @return a {@link Set<OfflinePlayer>} containing all account owners
+	 * and account co-owners at this bank.
+	 */
+	public Set<OfflinePlayer> getCustomers() {
+		return getAccounts().stream().map(Account::getTrustedPlayers)
+				.flatMap(Collection::stream).collect(Collectors.toSet());
+	}
+
+	/**
 	 * @return a {@link Map<OfflinePlayer, BigDecimal>} containing
 	 * all account owners at this bank and their total account balances
 	 */
@@ -242,7 +252,8 @@ public class Bank extends Ownable implements Nameable {
 	public TextComponent getInfoButton(CommandSender sender) {
 		TextComponent button = new TextComponent("[Info]");
 		button.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(org.bukkit.ChatColor.GRAY + "Click for bank info.")));
+		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+				new ComponentBuilder().append(org.bukkit.ChatColor.GRAY + "Click for bank info.").create()));
 		button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bank info " + getID()));
 		return button;
 	}
@@ -278,7 +289,7 @@ public class Bank extends Ownable implements Nameable {
 			info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
 			info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().doubleValue() / accounts.size()));
 			info.addExtra("\n    Equality score: ");
-			info.addExtra(Utils.getEqualityLore(this));
+			info.addExtra(BankUtils.getEqualityLore(this));
 		}
 		info.addExtra("\n    Location: " + ChatColor.AQUA + getSelection().getCoordinates());
 
@@ -292,7 +303,7 @@ public class Bank extends Ownable implements Nameable {
 				+ "\nOwner: " + (isPlayerBank() ? getOwner().getName() : "ADMIN")
 				+ "\nNumber of accounts: " + getAccounts().size()
 				+ "\nTotal value: " + Utils.format(getTotalValue())
-				+ "\nEquality score: " + Utils.getEqualityLore(this)
+				+ "\nEquality score: " + BankUtils.getEqualityLore(this)
 				+ "\nSelection type: " + getSelection().getType()
 				+ "\nLocation: " + getSelection().getCoordinates();
 	}
