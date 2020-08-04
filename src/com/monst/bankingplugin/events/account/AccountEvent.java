@@ -6,7 +6,7 @@ import org.bukkit.event.HandlerList;
 
 import com.monst.bankingplugin.Account;
 
-public class AccountEvent extends Event {
+public abstract class AccountEvent extends Event {
 	
 	private static final HandlerList handlers = new HandlerList();
 	private final Player player;

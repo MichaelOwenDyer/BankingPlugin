@@ -7,7 +7,7 @@ import org.bukkit.event.HandlerList;
 
 import java.util.Collection;
 
-public class MultiBankEvent extends Event {
+public abstract class MultiBankEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
     private final CommandSender sender;

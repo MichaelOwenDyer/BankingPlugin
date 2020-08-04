@@ -173,7 +173,7 @@ public class AccountConfig {
 		Field.stream(Double.class).forEach(field -> SETTERS.put(field, (value) -> {
 			try {
 				field.getLocalField().set(this, Math.abs(Double.parseDouble(value.replace(",", ""))));
-				return Utils.format((double) field.getLocalField().get(this));
+				return Utils.format(field.getLocalField().get(this));
 			} catch (IllegalAccessException ignored) {}
 			return "";
 		}));
@@ -186,7 +186,7 @@ public class AccountConfig {
 			try {
 				field.getLocalField().set(this, Math.abs(Integer.parseInt(value)));
 				return "" + field.getLocalField().get(this);
-			} catch (IllegalAccessException e) {}
+			} catch (IllegalAccessException ignored) {}
 			return "";
 		}));
 
@@ -195,8 +195,8 @@ public class AccountConfig {
 				field.getLocalField().set(this, Arrays.stream(Utils.removePunctuation(value)
 						.split(" ")).filter(t -> !t.isEmpty())
 						.map(Integer::parseInt).map(Math::abs).collect(Collectors.toList()));
-				return Utils.format((List<? extends Number>) field.getLocalField().get(this));
-			} catch (IllegalAccessException e) {}
+				return Utils.format(field.getLocalField().get(this));
+			} catch (IllegalAccessException ignored) {}
 			return "";
 		}));
 	}

@@ -2,13 +2,12 @@ package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.Account;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 import java.util.Collection;
 
-public class MultiAccountEvent extends Event {
+public abstract class MultiAccountEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
     private final CommandSender sender;
