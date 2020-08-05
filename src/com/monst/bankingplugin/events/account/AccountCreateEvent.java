@@ -7,22 +7,22 @@ import org.bukkit.event.Cancellable;
 
 import com.monst.bankingplugin.Account;
 
-public class AccountCreateEvent extends AccountEvent implements Cancellable {
+public class AccountCreateEvent extends SingleAccountEvent implements Cancellable {
 	
 	private boolean cancelled;
-	private OfflinePlayer newOwner;
+	private final OfflinePlayer accountOwner;
 
-	public AccountCreateEvent(Player player, OfflinePlayer newOwner, Account account) {
-		super(player, account);
-		this.newOwner = newOwner;
+	public AccountCreateEvent(Player executor, OfflinePlayer accountOwner, Account account) {
+		super(executor, account);
+		this.accountOwner = accountOwner;
 	}
 
 	public boolean isForSelf() {
-		return Utils.samePlayer(getPlayer(), newOwner);
+		return Utils.samePlayer(getPlayer(), accountOwner);
 	}
 
-	public OfflinePlayer getNewOwner() {
-		return newOwner;
+	public OfflinePlayer getAccountOwner() {
+		return accountOwner;
 	}
 	
 	@Override

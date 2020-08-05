@@ -1,8 +1,9 @@
 package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.events.control.PluginConfigureEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -310,6 +311,8 @@ public class Config {
             plugin.getConfig().set(property, value);
         }
 
+		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
+
         plugin.saveConfig();
 
 		reload();
@@ -353,6 +356,8 @@ public class Config {
             list.add(value);
         }
 
+		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
+
         plugin.saveConfig();
 
 		reload();
@@ -388,6 +393,8 @@ public class Config {
         } else {
             list.remove(value);
         }
+
+		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
 
         plugin.saveConfig();
 

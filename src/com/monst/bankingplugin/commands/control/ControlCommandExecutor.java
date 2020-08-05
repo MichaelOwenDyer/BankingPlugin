@@ -3,8 +3,8 @@ package com.monst.bankingplugin.commands.control;
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.events.InterestEvent;
-import com.monst.bankingplugin.events.ReloadEvent;
+import com.monst.bankingplugin.events.control.InterestEvent;
+import com.monst.bankingplugin.events.control.ReloadEvent;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -131,7 +131,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 			return;
 		}
 
-		ReloadEvent event = new ReloadEvent(sender);
+		ReloadEvent event = new ReloadEvent(plugin, sender);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Reload event cancelled");
@@ -212,9 +212,13 @@ public class ControlCommandExecutor implements CommandExecutor {
 			return;
 		}
 
-		sender.sendMessage(Messages.INTEREST_PAYOUT_TRIGGERED);
-
-		InterestEvent event = new InterestEvent(plugin);
+		InterestEvent event = new InterestEvent(plugin, sender);
 		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			plugin.debug("Interest event cancelled");
+			return;
+		}
+
+		sender.sendMessage(Messages.INTEREST_PAYOUT_TRIGGERED);
 	}
 }

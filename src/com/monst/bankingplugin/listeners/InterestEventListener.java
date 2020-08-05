@@ -4,7 +4,7 @@ import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.InterestEvent;
+import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
@@ -29,7 +29,7 @@ public class InterestEventListener implements Listener {
 		this.bankUtils = plugin.getBankUtils();
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onInterestEvent(InterestEvent e) {
 		
 		new BukkitRunnable() {

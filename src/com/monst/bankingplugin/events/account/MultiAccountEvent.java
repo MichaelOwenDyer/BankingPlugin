@@ -2,37 +2,20 @@ package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.Account;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
 import java.util.Collection;
 
-public abstract class MultiAccountEvent extends Event {
+public abstract class MultiAccountEvent extends AccountEvent {
 
-    private static final HandlerList handlers = new HandlerList();
-    private final CommandSender sender;
     private final Collection<Account> accounts;
 
     public MultiAccountEvent(CommandSender sender, Collection<Account> accounts) {
-        this.sender = sender;
+        super(sender);
         this.accounts = accounts;
-    }
-
-    public CommandSender getSender() {
-        return sender;
     }
 
     public Collection<Account> getAccounts() {
         return accounts;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
     }
 
 }

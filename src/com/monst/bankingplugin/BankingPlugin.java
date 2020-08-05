@@ -5,7 +5,7 @@ import com.monst.bankingplugin.commands.account.AccountCommand;
 import com.monst.bankingplugin.commands.bank.BankCommand;
 import com.monst.bankingplugin.commands.control.ControlCommand;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.InterestEvent;
+import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.events.account.AccountInitializedEvent;
 import com.monst.bankingplugin.events.bank.BankInitializedEvent;
 import com.monst.bankingplugin.external.GriefPreventionListener;

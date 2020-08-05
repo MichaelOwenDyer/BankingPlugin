@@ -6,7 +6,7 @@ import org.bukkit.event.Cancellable;
 
 import com.monst.bankingplugin.Account;
 
-public class AccountExtendEvent extends AccountEvent implements Cancellable {
+public class AccountExtendEvent extends SingleAccountEvent implements Cancellable {
 
 	private boolean cancelled;
     private final Location newChestLocation;
@@ -16,9 +16,6 @@ public class AccountExtendEvent extends AccountEvent implements Cancellable {
         this.newChestLocation = newChest;
     }
 
-    /**
-     * @return location of the placed chest
-     */
     public Location getNewChestLocation() {
         return newChestLocation;
     }

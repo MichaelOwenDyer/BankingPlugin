@@ -6,7 +6,7 @@ import org.bukkit.event.Cancellable;
 
 import com.monst.bankingplugin.Bank;
 
-public class BankTransferEvent extends BankEvent implements Cancellable {
+public class BankTransferEvent extends SingleBankEvent implements Cancellable {
 
 	private final OfflinePlayer newOwner;
 	private boolean cancelled;

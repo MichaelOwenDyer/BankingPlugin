@@ -6,7 +6,7 @@
 
 	<groupId>com.monst</groupId>
 	<artifactId>BankingPlugin</artifactId>
-	<version>1.10.13-SNAPSHOT</version>
+	<version>1.10.14-SNAPSHOT</version>
 
 	<name>BankingPlugin</name>
 	<description>Create bank accounts in bank vault chests and earn interest on your investments!</description>
@@ -17,6 +17,11 @@
 		<url>https://github.com/FreshLlamanade/BankingPlugin</url>
 		<tag>HEAD</tag>
 	</scm>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/FreshLlamanade/BankingPlugin</url>
+	</issueManagement>
 
 	<properties>
 		<!-- Encoding Properties -->

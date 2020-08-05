@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.listeners.AccountBalanceListener.TransactionType;
 
-public class AccountTransactionEvent extends AccountEvent {
+public class AccountTransactionEvent extends SingleAccountEvent {
 	
 	private final TransactionType type;
 	private final BigDecimal amount;

@@ -1,12 +1,9 @@
 package com.monst.bankingplugin.events.account;
 
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
-public class AccountPreInfoEvent extends AccountEvent implements Cancellable {
+public class AccountPreInfoEvent extends SingleAccountEvent implements Cancellable {
 
 	private boolean cancelled;
 

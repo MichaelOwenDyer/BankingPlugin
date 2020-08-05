@@ -5,7 +5,7 @@ import org.bukkit.event.Cancellable;
 
 import com.monst.bankingplugin.Account;
 
-public class AccountRemoveEvent extends AccountEvent implements Cancellable {
+public class AccountRemoveEvent extends SingleAccountEvent implements Cancellable {
 
 	private boolean cancelled;
 

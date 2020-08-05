@@ -29,6 +29,7 @@ import org.bukkit.util.ChatPaginator;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
@@ -45,7 +46,7 @@ public class Utils {
 
 	public static boolean isAllowedName(String name) {
 		try {
-			return Config.nameRegex.contentEquals("") || name.matches(Config.nameRegex);
+			return Config.nameRegex.contentEquals("") || Pattern.matches(Config.nameRegex, name);
 		} catch (PatternSyntaxException e) {
 			return true;
 		}

@@ -5,10 +5,10 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
-public class AccountMigrateEvent extends AccountEvent implements Cancellable {
+public class AccountMigrateEvent extends SingleAccountEvent implements Cancellable {
 
     private boolean cancelled;
-    private Location newAccountLocation;
+    private final Location newAccountLocation;
 
     public AccountMigrateEvent(Player player, Account account, Location newAccountLocation) {
         super(player, account);

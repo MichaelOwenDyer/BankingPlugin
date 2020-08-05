@@ -3,7 +3,7 @@ package com.monst.bankingplugin.events.account;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
-public class AccountPreCreateEvent extends AccountEvent implements Cancellable {
+public class AccountPreCreateEvent extends SingleAccountEvent implements Cancellable {
 	
 	private boolean cancelled;
 	private final String[] args;

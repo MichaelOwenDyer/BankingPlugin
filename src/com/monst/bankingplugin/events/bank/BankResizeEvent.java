@@ -6,7 +6,7 @@ import org.bukkit.event.Cancellable;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.selections.Selection;
 
-public class BankResizeEvent extends BankEvent implements Cancellable {
+public class BankResizeEvent extends SingleBankEvent implements Cancellable {
 	
 	private boolean cancelled;
 	private final Selection newSelection;
@@ -16,10 +16,6 @@ public class BankResizeEvent extends BankEvent implements Cancellable {
 		this.newSelection = newSelection;
 	}
 	
-	public Player getPlayer() {
-		return (Player) getSender();
-	}
-
 	public Selection getOldSelection() {
 		return getBank().getSelection();
 	}
