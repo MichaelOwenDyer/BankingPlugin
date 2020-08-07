@@ -585,9 +585,9 @@ public abstract class Database {
 
 						Bank bank;
 						if (isAdminBank)
-							bank = new Bank(bankId, plugin, name, coowners, selection, accountConfig);
+							bank = Bank.recreate(bankId, name, coowners, selection, accountConfig);
 						else
-							bank = new Bank(bankId, plugin, name, owner, coowners, selection, accountConfig);
+							bank = Bank.recreate(bankId, name, owner, coowners, selection, accountConfig);
 
 						if (name == null)
 							bank.setToDefaultName();

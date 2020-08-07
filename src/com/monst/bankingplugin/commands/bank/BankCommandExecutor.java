@@ -181,9 +181,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		Bank bank;
 		if (isAdminBank)
-			bank = new Bank(plugin, selection);
+			bank = Bank.mint(selection);
 		else
-			bank = new Bank(plugin, p, null, selection);
+			bank = Bank.mint(p, selection);
 
 		BankCreateEvent event = new BankCreateEvent(p, bank);
 		Bukkit.getPluginManager().callEvent(event);

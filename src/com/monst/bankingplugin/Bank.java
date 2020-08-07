@@ -27,7 +27,7 @@ public class Bank extends Ownable implements Nameable {
 		PLAYER, ADMIN
 	}
 
-	private final BankingPlugin plugin;
+	private static final BankingPlugin plugin = BankingPlugin.getInstance();
 
 	private String name;
 	private Selection selection;
@@ -38,36 +38,67 @@ public class Bank extends Ownable implements Nameable {
 	/**
 	 * Create a new admin bank.
 	 */
-	public Bank(BankingPlugin plugin, Selection selection) {
-		this(-1, plugin, null, null, null, selection, new AccountConfig(), BankType.ADMIN);
-	}
-
-	/**
-	 * Re-create an admin bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
-	 */
-	public Bank(int id, BankingPlugin plugin, String name, Set<OfflinePlayer> coowners, Selection selection,
-				AccountConfig accountConfig) {
-		this(id, plugin, name, null, coowners, selection, accountConfig, BankType.ADMIN);
+	public static Bank mint(Selection selection) {
+		return new Bank(
+				-1,
+				null,
+				null,
+				new HashSet<>(),
+				selection,
+				new AccountConfig(),
+				BankType.ADMIN
+		);
 	}
 
 	/**
 	 * Create a new player bank.
 	 */
-	public Bank(BankingPlugin plugin, OfflinePlayer owner, Set<OfflinePlayer> coowners, Selection selection) {
-		this(-1, plugin, null, owner, coowners, selection, new AccountConfig(), BankType.PLAYER);
+	public static Bank mint(OfflinePlayer owner, Selection selection) {
+		return new Bank(
+				-1,
+				null,
+				owner,
+				new HashSet<>(),
+				selection,
+				new AccountConfig(),
+				BankType.PLAYER
+		);
+	}
+
+	/**
+	 * Re-create an admin bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 */
+	public static Bank recreate(int id, String name, Set<OfflinePlayer> coowners,
+								Selection selection, AccountConfig accountConfig) {
+		return new Bank(
+				id,
+				name,
+				null,
+				coowners,
+				selection,
+				accountConfig,
+				BankType.ADMIN
+		);
 	}
 
 	/**
 	 * Re-create a player bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
 	 */
-	public Bank(int id, BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-			Selection selection, AccountConfig accountConfig) {
-		this(id, plugin, name, owner, coowners, selection, accountConfig, BankType.PLAYER);
+	public static Bank recreate(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+								Selection selection, AccountConfig accountConfig) {
+		return new Bank(
+				id,
+				name,
+				owner,
+				coowners,
+				selection,
+				accountConfig,
+				BankType.PLAYER
+		);
 	}
 
 	/**
 	 * @param id the bank ID {@link Ownable}
-	 * @param plugin the current instance of {@link BankingPlugin}
 	 * @param name the name of the bank {@link Nameable}
 	 * @param owner the owner of the bank {@link Ownable}
 	 * @param coowners the co-owners of the bank {@link Ownable}
@@ -75,10 +106,9 @@ public class Bank extends Ownable implements Nameable {
 	 * @param accountConfig the {@link AccountConfig} of the bank
 	 * @param type the {@link BankType} of the bank
 	 */
-	public Bank(int id, BankingPlugin plugin, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 			Selection selection, AccountConfig accountConfig, BankType type) {
 		this.id = id;
-		this.plugin = plugin;
 		this.owner = owner;
 		this.coowners = coowners;
 		this.name = name;
