@@ -580,10 +580,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
 				|| sender.hasPermission(Permissions.BANK_SET_OTHER))) {
 			plugin.debug(sender.getName() + " does not have permission to change the name of another player's bank");
-			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_ADMIN);
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_OTHER);
 			return true;
 		}
-
 		if (bank.getName().contentEquals(newName)) {
 			plugin.debug("Same name");
 			sender.sendMessage(Messages.NAME_ALREADY);
@@ -660,14 +659,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
-
 		if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
 				|| sender.hasPermission(Permissions.BANK_SET_OTHER))) {
 			plugin.debug(sender.getName() + " does not have permission to configure another player's bank");
 			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_OTHER);
 			return true;
 		}
-
 		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
 			plugin.debug(sender.getName() + " does not have permission to configure an admin bank");
 			sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_ADMIN);

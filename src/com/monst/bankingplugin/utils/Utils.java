@@ -146,7 +146,7 @@ public class Utils {
 	}
 
 	private static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
-		players.parallelStream().forEach(p -> {
+		players.stream().forEach(p -> {
 			if (p.isOnline())
 				p.getPlayer().sendMessage(message);
 			else if (Config.enableMail) {

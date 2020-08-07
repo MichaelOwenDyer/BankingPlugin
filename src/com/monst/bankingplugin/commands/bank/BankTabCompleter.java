@@ -82,7 +82,7 @@ public class BankTabCompleter implements TabCompleter {
         ArrayList<String> returnCompletions = new ArrayList<>();
         List<Bank> banks = plugin.getBankUtils().getBanksCopy().stream()
                 .filter(bank -> (sender instanceof Player && bank.isOwner((Player) sender))
-                        || (!bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
+                        || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
                         || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)))
                 .collect(Collectors.toList());
         if (args.length == 2) {
@@ -118,7 +118,7 @@ public class BankTabCompleter implements TabCompleter {
         BankUtils bankUtils = plugin.getBankUtils();
         List<Bank> banks = bankUtils.getBanksCopy().stream()
                 .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
-                        || (!bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
+                        || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                         || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
                 .collect(Collectors.toList());
         List<AccountConfig.Field> fields = AccountConfig.Field.stream().filter(AccountConfig::isOverrideAllowed).collect(Collectors.toList());
@@ -183,7 +183,7 @@ public class BankTabCompleter implements TabCompleter {
         ArrayList<String> returnCompletions = new ArrayList<>();
         List<String> banks = plugin.getBankUtils().getBanksCopy().stream()
                 .filter(bank -> bank.isOwner(p)
-                        || (!bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
+                        || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
                         || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
                 .map(Bank::getName).collect(Collectors.toList());
         List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
@@ -256,7 +256,7 @@ public class BankTabCompleter implements TabCompleter {
         BankUtils bankUtils = plugin.getBankUtils();
         List<Bank> banks = bankUtils.getBanksCopy().stream()
                 .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
-                        || (!bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
+                        || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                         || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
                 .collect(Collectors.toList());
         if (args.length == 2) {

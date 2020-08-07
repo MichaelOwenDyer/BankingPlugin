@@ -154,7 +154,7 @@ public class AccountConfig {
 	            return isOverrideAllowed(field)
                             ? (T) field.getDataType().cast(field.getLocalField().get(this))
                             : (T) field.getDataType().cast(((AbstractMap.SimpleEntry) field.getConfigField().get(null)).getValue());
-        } catch (IllegalAccessException | NullPointerException e) {
+        } catch (IllegalAccessException e) {
             BankingPlugin.getInstance().debug(e);
             return null;
         }
@@ -193,7 +193,7 @@ public class AccountConfig {
 		Field.stream(List.class).forEach(field -> SETTERS.put(field, (value) -> {
 			try {
 				field.getLocalField().set(this, Arrays.stream(Utils.removePunctuation(value)
-						.split(" ")).filter(t -> !t.isEmpty())
+						.split(" ")).filter(s -> !s.isEmpty())
 						.map(Integer::parseInt).map(Math::abs).collect(Collectors.toList()));
 				return Utils.format(field.getLocalField().get(this));
 			} catch (IllegalAccessException ignored) {}

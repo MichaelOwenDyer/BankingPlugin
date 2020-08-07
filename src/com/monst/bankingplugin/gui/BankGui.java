@@ -37,10 +37,10 @@ public class BankGui extends Gui<Bank> {
 	void evaluateClearance(Player player) {
 		verbose = guiSubject.isTrusted(player)
 				|| (guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_ADMIN)
-				|| (!guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_OTHER)));
+				|| (guiSubject.isPlayerBank() && player.hasPermission(Permissions.BANK_INFO_OTHER)));
 		canEdit = guiSubject.isTrusted(player)
 				|| (guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_SET_ADMIN)
-				|| (!guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_SET_OTHER)));
+				|| (guiSubject.isPlayerBank() && player.hasPermission(Permissions.BANK_SET_OTHER)));
 		canListAccounts = guiSubject.isTrusted(player)
 				|| player.hasPermission(Permissions.ACCOUNT_LIST_OTHER);
 	}
