@@ -73,11 +73,12 @@ public class InterestEventListener implements Listener {
 
 						if (!trustedPlayers.isEmpty() && (double) config.get(AccountConfig.Field.MINIMUM_BALANCE) > 0
 								&& account.getBalance().compareTo(BigDecimal.valueOf(config.get(AccountConfig.Field.MINIMUM_BALANCE))) < 0) {
-
+							feesPayable.putIfAbsent(accountOwner, new Counter());
 							feesPayable.get(accountOwner).add(config.get(AccountConfig.Field.LOW_BALANCE_FEE));
-							if (account.getBank().isPlayerBank())
+							if (account.getBank().isPlayerBank()) {
+								feesReceivable.putIfAbsent(account.getBank().getOwner(), new Counter());
 								feesReceivable.get(account.getBank().getOwner()).add(config.get(AccountConfig.Field.LOW_BALANCE_FEE));
-
+							}
 							if (Config.enableInterestLog)
 								plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
 										BigDecimal.valueOf((double) config.get(AccountConfig.Field.LOW_BALANCE_FEE) * -1), null);
@@ -103,11 +104,15 @@ public class InterestEventListener implements Listener {
 						}
 
 						BigDecimal cut = interest.divide(BigDecimal.valueOf(trustedPlayers.size()), RoundingMode.HALF_EVEN);
-						for (OfflinePlayer recipient : trustedPlayers)
+						for (OfflinePlayer recipient : trustedPlayers) {
+							interestReceivable.putIfAbsent(recipient, new Counter());
 							interestReceivable.get(recipient).add(cut);
+						}
 
-						if (account.getBank().isPlayerBank())
+						if (account.getBank().isPlayerBank()) {
+							interestPayable.putIfAbsent(account.getBank().getOwner(), new Counter());
 							interestPayable.get(account.getBank().getOwner()).add(interest);
+						}
 
 						accountUtils.addAccount(account, true);
 
@@ -281,8 +286,8 @@ public class InterestEventListener implements Listener {
 	}
 
 	private static class Counter extends Pair<BigDecimal, Integer> {
-		private Counter(BigDecimal b, Integer i) {
-			super(b, i);
+		private Counter() {
+			super(BigDecimal.ZERO, 0);
 		}
 		private void add(BigDecimal value) {
 			super.setFirst(getSum().add(value));

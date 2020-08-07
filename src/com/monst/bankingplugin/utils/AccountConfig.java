@@ -22,7 +22,7 @@ public class AccountConfig {
 
 	private static boolean initialized = false;
 	private static final Map<Field, BiFunction<AccountConfig, String, String>> SETTERS = new EnumMap<>(Field.class);
-	private static void initializeSetters() {
+	public static void initialize() {
 		if (initialized)
 			return;
 

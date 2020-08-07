@@ -130,6 +130,7 @@ public class BankingPlugin extends JavaPlugin {
 		
         accountUtils = new AccountUtils(this);
 		bankUtils = new BankUtils(this);
+		AccountConfig.initialize();
 
 		loadExternalPlugins();
 
