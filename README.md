@@ -6,12 +6,12 @@ This plugin is an extension on typical economy plugins (currently only compatibl
 
 # Using BankingPlugin
 BankingPlugin is designed to work on Spigot versions 1.15.2 and 1.16.1. However, there are relatively few signs that the plugin should not be compatible with earlier versions of Minecraft. Usage on unsupported versions should nevertheless be treated with caution.
-BankingPlugin requires **Java 8 or above** to work.
+Your Spigot server must be running on **Java 8 or above** for BankingPlugin to function. BankingPlugin also currently depends on **Vault and EssentialsX**.
 
 # Issues
 
-If you find any bugs or issues, please report them in the issues section with a meaningful description of what goes wrong.
+If you find any bugs or issues, please report them at https://github.com/FreshLlamanade/BankingPlugin/issues with a meaningful description of what goes wrong.
 
 # Download
 
-Download an early-access version of this plugin from the Releases section on this page.
+Download an early-access version of this plugin from this repository.
