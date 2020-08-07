@@ -8,7 +8,7 @@ import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import org.apache.commons.lang.WordUtils;
 
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,7 +20,54 @@ import java.util.stream.Stream;
 @SuppressWarnings("all")
 public class AccountConfig {
 
-	private final Map<Field, Function<String, String>> SETTERS = new EnumMap<>(Field.class);
+	private static boolean initialized = false;
+	private static final Map<Field, BiFunction<AccountConfig, String, String>> SETTERS = new EnumMap<>(Field.class);
+	private static void initializeSetters() {
+		if (initialized)
+			return;
+
+		Field.stream(Boolean.class).forEach(field -> SETTERS.put(field, (instance, value) -> {
+			try {
+				field.getLocalField().set(instance, Boolean.parseBoolean(value));
+				return "" + field.getLocalField().get(instance);
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		}));
+
+		Field.stream(Double.class).forEach(field -> SETTERS.put(field, (instance, value) -> {
+			try {
+				field.getLocalField().set(instance, Math.abs(Double.parseDouble(value.replace(",", ""))));
+				return Utils.format(field.getLocalField().get(instance));
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		}));
+
+		SETTERS.put(Field.PLAYER_BANK_ACCOUNT_LIMIT, (instance, value) -> {
+			try {
+				Field.PLAYER_BANK_ACCOUNT_LIMIT.getLocalField().set(instance, Integer.parseInt(value)); // Special setter without Math.abs for this field
+				return Utils.format(Field.PLAYER_BANK_ACCOUNT_LIMIT.getLocalField().get(instance));
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		});
+		Field.stream(Integer.class).forEach(field -> SETTERS.putIfAbsent(field, (instance, value) -> {
+			try {
+				field.getLocalField().set(instance, Math.abs(Integer.parseInt(value)));
+				return "" + field.getLocalField().get(instance);
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		}));
+
+		Field.stream(List.class).forEach(field -> SETTERS.put(field, (instance, value) -> {
+			try {
+				field.getLocalField().set(instance, Arrays.stream(Utils.removePunctuation(value)
+						.split(" ")).filter(s -> !s.isEmpty())
+						.map(Integer::parseInt).map(Math::abs).collect(Collectors.toList()));
+				return Utils.format(field.getLocalField().get(instance));
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		}));
+		initialized = true;
+	}
 
 	private double interestRate;
 	private List<Integer> multipliers;
@@ -96,7 +143,6 @@ public class AccountConfig {
 		this.payOnLowBalance = payOnLowBalance;
 		this.playerBankAccountLimit = playerBankAccountLimit;
 
-		initialize();
 	}
 
 	/**
@@ -125,7 +171,7 @@ public class AccountConfig {
 		if (!isOverrideAllowed(field))
 			return false;
 		try {
-			callback.callSyncResult(SETTERS.get(field).apply(value));
+			callback.callSyncResult(SETTERS.get(field).apply(this, value));
 		} catch (NumberFormatException e) {
 			callback.callSyncError(new ArgumentParseException(field.getDataType(), value));
 			return false;
@@ -159,47 +205,6 @@ public class AccountConfig {
             return null;
         }
     }
-
-	private void initialize() {
-
-		Field.stream(Boolean.class).forEach(field -> SETTERS.put(field, (value) -> {
-			try {
-				field.getLocalField().set(this, Boolean.parseBoolean(value));
-				return "" + field.getLocalField().get(this);
-			} catch (IllegalAccessException ignored) {}
-			return "";
-		}));
-
-		Field.stream(Double.class).forEach(field -> SETTERS.put(field, (value) -> {
-			try {
-				field.getLocalField().set(this, Math.abs(Double.parseDouble(value.replace(",", ""))));
-				return Utils.format(field.getLocalField().get(this));
-			} catch (IllegalAccessException ignored) {}
-			return "";
-		}));
-
-		SETTERS.put(Field.PLAYER_BANK_ACCOUNT_LIMIT, (value) -> {
-			playerBankAccountLimit = Integer.parseInt(value); // Special setter without Math.abs for this field
-			return "" + playerBankAccountLimit;
-		});
-		Field.stream(Integer.class).forEach(field -> SETTERS.putIfAbsent(field, (value) -> {
-			try {
-				field.getLocalField().set(this, Math.abs(Integer.parseInt(value)));
-				return "" + field.getLocalField().get(this);
-			} catch (IllegalAccessException ignored) {}
-			return "";
-		}));
-
-		Field.stream(List.class).forEach(field -> SETTERS.put(field, (value) -> {
-			try {
-				field.getLocalField().set(this, Arrays.stream(Utils.removePunctuation(value)
-						.split(" ")).filter(s -> !s.isEmpty())
-						.map(Integer::parseInt).map(Math::abs).collect(Collectors.toList()));
-				return Utils.format(field.getLocalField().get(this));
-			} catch (IllegalAccessException ignored) {}
-			return "";
-		}));
-	}
 
 	/**
 	 * Represents all the bank configuration values for a given bank.
