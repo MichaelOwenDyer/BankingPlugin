@@ -7,8 +7,8 @@ import java.util.List;
 public class ArgumentParseException extends Exception {
     private static final long serialVersionUID = 379872395581293355L;
 
-    private String value;
-    private Class<?> dataType;
+    private final String value;
+    private final Class<?> dataType;
 
     public ArgumentParseException(Class<?> dataType, String value) {
         super(value);

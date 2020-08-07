@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class AccountTabCompleter implements TabCompleter {
 
-    private BankingPlugin plugin;
+    private final BankingPlugin plugin;
 
     public AccountTabCompleter(BankingPlugin plugin) {
         this.plugin = plugin;
