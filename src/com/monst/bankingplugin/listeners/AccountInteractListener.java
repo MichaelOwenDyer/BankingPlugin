@@ -201,9 +201,11 @@ public class AccountInteractListener implements Listener {
 	 *                 and become the owner of the account
 	 * @param b Block where the account will be located
 	 */
-	private void create(final Player executor, final OfflinePlayer newOwner, final Block b) {
+	private void create(final Player executor, final OfflinePlayer owner, final Block b) {
 
-		if (accountUtils.isAccount(b.getLocation())) {
+		Location location = b.getLocation();
+
+		if (accountUtils.isAccount(location)) {
 			executor.sendMessage(Messages.CHEST_ALREADY_ACCOUNT);
 			plugin.debug("Chest is already an account.");
 			return;
@@ -213,23 +215,21 @@ public class AccountInteractListener implements Listener {
 			plugin.debug("Chest is blocked.");
 			return;
 		}
-		if (!bankUtils.isBank(b.getLocation())) {
+		if (!bankUtils.isBank(location)) {
 			executor.sendMessage(Messages.CHEST_NOT_IN_BANK);
 			plugin.debug("Chest is not in a bank.");
 			plugin.debug(executor.getName() + " is creating new account...");
 			return;
 		}
 
-		boolean forSelf = Utils.samePlayer(executor, newOwner);
-		Location location = b.getLocation();
-		Bank bank = bankUtils.getBank(location);
+		boolean forSelf = Utils.samePlayer(executor, owner);
 
+		Bank bank = bankUtils.getBank(location);
 		if (!Config.allowSelfBanking && forSelf && bank.isOwner(executor)) {
 			executor.sendMessage(Messages.NO_SELF_BANKING);
 			plugin.debug(executor.getName() + " is not permitted to create an account at their own bank");
 			return;
 		}
-
 		if (!forSelf) {
 			int playerAccountLimit = bank.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
 			if (playerAccountLimit > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(executor)).count() >= playerAccountLimit) {
@@ -239,9 +239,9 @@ public class AccountInteractListener implements Listener {
 			}
 		}
 
-		Account account = new Account(plugin, newOwner, bank, location);
+		Account account = Account.mint(owner, location);
 		
-		AccountCreateEvent event = new AccountCreateEvent(executor, newOwner, account);
+		AccountCreateEvent event = new AccountCreateEvent(executor, owner, account);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled() && !executor.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 			plugin.debug("No permission to create account on a protected chest.");
@@ -588,12 +588,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		Bank oldBank = toMigrate.getBank();
-		Bank newBank = bankUtils.getBank(location); // May or may not be the same as oldBank
-
-		Account newAccount = new Account(toMigrate.getID(), plugin, toMigrate.getOwner(),
-				toMigrate.getCoowners(), newBank, location, toMigrate.getStatus(),
-				toMigrate.getRawName(), toMigrate.getBalance(), toMigrate.getPrevBalance());
+		Account newAccount = Account.migrate(toMigrate, location);
 
 		AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, location);
 		Bukkit.getPluginManager().callEvent(event);
@@ -602,6 +597,9 @@ public class AccountInteractListener implements Listener {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
 			return;
 		}
+
+		Bank oldBank = toMigrate.getBank();
+		Bank newBank = newAccount.getBank(); // May or may not be the same as oldBank
 
 		double creationPrice = newBank.getAccountConfig().get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
 		creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1);

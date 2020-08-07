@@ -121,10 +121,8 @@ public class AccountProtectListener implements Listener {
 			final Chest l = (Chest) dc.getLeftSide();
 			final Chest r = (Chest) dc.getRightSide();
 
-			Location loc = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
-			final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
-					account.getBank(), loc, account.getStatus(), account.getRawName(), account.getBalance(),
-					account.getPrevBalance());
+			Location newLocation = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
+			final Account newAccount = Account.migrate(account, newLocation);
 
 			accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
 				@Override
@@ -258,9 +256,7 @@ public class AccountProtectListener implements Listener {
 			}
 		}
 
-		final Account newAccount = new Account(account.getID(), plugin, account.getOwner(), account.getCoowners(),
-				account.getBank(), account.getLocation(), account.getStatus(), account.getRawName(),
-				account.getBalance(), account.getPrevBalance());
+		final Account newAccount = Account.clone(account);
 
 		accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
 			@Override

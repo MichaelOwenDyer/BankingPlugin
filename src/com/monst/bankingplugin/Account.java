@@ -8,7 +8,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -29,30 +28,73 @@ import java.util.stream.Collectors;
 
 public class Account extends Ownable implements Nameable {
 
-	private final BankingPlugin plugin;
+	private static final BankingPlugin plugin = BankingPlugin.getInstance();
 	private boolean created;
 
-	private String nickname;
-	private final Location location;
 	private final Bank bank;
+	private final Location location;
 	private Inventory inventory;
-	
 	private final AccountStatus status;
+	private String nickname;
 	private BigDecimal balance;
 	private BigDecimal prevBalance;
 
 	/**
 	 * Create a new account.
+	 * @return the new account
 	 */
-	public Account(BankingPlugin plugin, OfflinePlayer owner, Bank bank, Location loc) {
-		this(-1, plugin, owner, null, bank, loc, new AccountStatus(bank.getAccountConfig()), null, BigDecimal.ZERO, BigDecimal.ZERO);
+	public static Account mint(OfflinePlayer owner, Location loc) {
+		Bank bank = plugin.getBankUtils().getBank(loc);
+		return new Account(
+				-1,
+				owner,
+				new HashSet<>(),
+				bank,
+				loc,
+				new AccountStatus(bank.getAccountConfig()),
+				null,
+				BigDecimal.ZERO,
+				BigDecimal.ZERO
+		);
+	}
+
+	/**
+	 * Create a clone of an already-existing account.
+	 * @param account the account to clone
+	 * @return an identical account object
+	 */
+	public static Account clone(Account account) {
+		return new Account(
+				account.getID(),
+				account.getOwner(),
+				account.getCoowners(),
+				account.getBank(),
+				account.getLocation(),
+				account.getStatus(),
+				account.getRawName(),
+				account.getBalance(),
+				account.getPrevBalance()
+		);
+	}
+
+	public static Account migrate(Account account, Location newLocation) {
+		return new Account(
+				account.getID(),
+				account.getOwner(),
+				account.getCoowners(),
+				plugin.getBankUtils().getBank(newLocation),
+				newLocation,
+				account.getStatus(),
+				account.getRawName(),
+				account.getBalance(),
+				account.getPrevBalance()
+		);
 	}
 
 	/**
 	 * Re-create an account that was stored in the {@link com.monst.bankingplugin.sql.Database}.
 	 *
 	 * @param id the account ID {@link Ownable}
-	 * @param plugin the current instance of {@link BankingPlugin}
 	 * @param owner the owner of the account {@link Ownable}
 	 * @param coowners the co-owners of the account {@link Ownable}
 	 * @param bank the {@link Bank} the account is registered at
@@ -62,25 +104,42 @@ public class Account extends Ownable implements Nameable {
 	 * @param balance the current account balance {@link #getBalance()}
 	 * @param prevBalance the previous account balance {@link #getPrevBalance()}
 	 */
-	public Account(int id, BankingPlugin plugin, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank,
-			Location loc, AccountStatus status, String nickname, BigDecimal balance, BigDecimal prevBalance) {
+	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, Location loc,
+								 AccountStatus status, String nickname, BigDecimal balance, BigDecimal prevBalance) {
+		return new Account(
+				id,
+				owner,
+				coowners,
+				bank,
+				loc,
+				status,
+				nickname,
+				balance.setScale(2, RoundingMode.HALF_EVEN),
+				prevBalance.setScale(2, RoundingMode.HALF_EVEN)
+		);
+	}
+
+	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, Location loc,
+					AccountStatus status, String nickname, BigDecimal balance, BigDecimal prevBalance) {
+
 		this.id = id;
-		this.plugin = plugin;
 		this.owner = owner;
-		this.coowners = coowners != null ? coowners : new HashSet<>();
+		this.coowners = coowners;
 		this.bank = bank;
 		this.location = loc;
 		this.status = status;
 		this.nickname = nickname;
-		this.balance = balance.setScale(2, RoundingMode.HALF_EVEN);
-		this.prevBalance = prevBalance.setScale(2, RoundingMode.HALF_EVEN);
+		this.balance = balance;
+		this.prevBalance = prevBalance;
+
 	}
 
 	/**
-	 * Attempt to load the account. This method will ensure that the chest exists at
+	 * Attempt to create the account. This method will ensure that the chest exists at
 	 * the specified {@link Location} and is able to be opened.
 	 * @param showConsoleMessages whether any error messages should be sent to the console
 	 * @return whether the account was successfully created
+	 * @see Utils#isTransparent(Block)
 	 */
 	public boolean create(boolean showConsoleMessages) {
 

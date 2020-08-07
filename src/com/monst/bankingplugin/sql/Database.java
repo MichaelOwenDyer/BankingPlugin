@@ -694,7 +694,7 @@ public abstract class Database {
 				plugin.debug("Initializing account... (#" + accountId + " at bank \"" + bank.getName() + "\" (#"
 						+ bank.getID() + "))");
 
-				Account account = new Account(accountId, plugin, owner, coowners, bank, location, status, nickname,
+				Account account = Account.reopen(accountId, owner, coowners, bank, location, status, nickname,
 						balance, prevBalance);
 				accounts.add(account);
 			}
