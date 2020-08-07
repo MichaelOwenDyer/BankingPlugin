@@ -341,7 +341,7 @@ public class BankUtils {
 	 *                            of accounts that were reloaded (as {@code int})
 	 */
 	public void reload(boolean reloadConfig, final boolean showConsoleMessages,
-					   final Callback<AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>>> callback) {
+					   final Callback<Pair<Collection<Bank>, Collection<Account>>> callback) {
 		plugin.debug("Loading banks and accounts from database...");
 
 		AccountUtils accountUtils = plugin.getAccountUtils();
@@ -399,7 +399,7 @@ public class BankUtils {
 									accounts.size(), loadedAccounts.size()));
 						
 						if (callback != null)
-							callback.callSyncResult(new AbstractMap.SimpleEntry<>(loadedBanks, loadedAccounts));
+							callback.callSyncResult(new Pair<>(loadedBanks, loadedAccounts));
 					}
 					
 					@Override

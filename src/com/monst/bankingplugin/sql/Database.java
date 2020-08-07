@@ -578,8 +578,8 @@ public abstract class Database {
 								Boolean.parseBoolean(accConfig[9]),
 								Double.parseDouble(accConfig[10]),
 								Double.parseDouble(accConfig[11]),
-								accConfig.length == 14 ? Boolean.parseBoolean(accConfig[12]) : Config.payOnLowBalance.getValue(), // Update banks to 1.9
-								accConfig.length == 14 ? Integer.parseInt(accConfig[13]) : Integer.parseInt(accConfig[12]));
+								Boolean.parseBoolean(accConfig[12]),
+								Integer.parseInt(accConfig[13]));
 
 						plugin.debug("Initializing bank" + (name != null ? " \"" + name + "\"" : "") + "... (#" + bankId + ")");
 

@@ -33,21 +33,6 @@ public class InterestEventListener implements Listener {
 		this.bankUtils = plugin.getBankUtils();
 	}
 
-	/**
-	 * Adds some money to the running sum for each player, and increments the associated counter.
-	 * @param counter Which {@link HashMap} to add the {@link BigDecimal} to.
-	 * @param player The {@link OfflinePlayer} the money either belongs to or must be paid by.
-	 * @param toAdd The {@link BigDecimal} describing the amount of money.
-	 */
-	private static void add(Map<OfflinePlayer, AbstractMap.SimpleEntry<BigDecimal, Integer>> counter,
-							OfflinePlayer player, BigDecimal toAdd) {
-
-		AbstractMap.SimpleEntry<BigDecimal, Integer> current =
-				counter.getOrDefault(player, new AbstractMap.SimpleEntry<>(BigDecimal.ZERO, 0));
-
-		counter.put(player, new AbstractMap.SimpleEntry<>(current.getKey().add(toAdd), current.getValue() + 1));
-	}
-
 	@EventHandler(ignoreCancelled = true)
 	public void onInterestEvent(InterestEvent e) {
 		
@@ -65,11 +50,11 @@ public class InterestEventListener implements Listener {
 				if (playerAccountMap.isEmpty())
 					return;
 
-				Map<OfflinePlayer, AbstractMap.SimpleEntry<BigDecimal, Integer>> interestReceivable = new HashMap<>(); // The amount of interest each account owner earns on how many accounts
-				Map<OfflinePlayer, AbstractMap.SimpleEntry<BigDecimal, Integer>> feesPayable = new HashMap<>(); // The amount of fees each account owner must pay for how many accounts
+				Map<OfflinePlayer, Counter> interestReceivable = new HashMap<>(); // The amount of interest each account owner earns on how many accounts
+				Map<OfflinePlayer, Counter> feesPayable = new HashMap<>(); // The amount of fees each account owner must pay for how many accounts
 
-				Map<OfflinePlayer, AbstractMap.SimpleEntry<BigDecimal, Integer>> interestPayable = new HashMap<>(); // The amount of interest each bank owner must pay for how many banks
-				Map<OfflinePlayer, AbstractMap.SimpleEntry<BigDecimal, Integer>> feesReceivable = new HashMap<>(); // The amount of fees each bank owner receives as income on how many banks
+				Map<OfflinePlayer, Counter> interestPayable = new HashMap<>(); // The amount of interest each bank owner must pay for how many banks
+				Map<OfflinePlayer, Counter> feesReceivable = new HashMap<>(); // The amount of fees each bank owner receives as income on how many banks
 
 				for (OfflinePlayer accountOwner : playerAccountMap.keySet()) {
 					
@@ -89,9 +74,9 @@ public class InterestEventListener implements Listener {
 						if (!trustedPlayers.isEmpty() && (double) config.get(AccountConfig.Field.MINIMUM_BALANCE) > 0
 								&& account.getBalance().compareTo(BigDecimal.valueOf(config.get(AccountConfig.Field.MINIMUM_BALANCE))) < 0) {
 
-							add(feesPayable, accountOwner, config.get(AccountConfig.Field.LOW_BALANCE_FEE));
+							feesPayable.get(accountOwner).add(config.get(AccountConfig.Field.LOW_BALANCE_FEE));
 							if (account.getBank().isPlayerBank())
-								add(feesReceivable, account.getBank().getOwner(), config.get(AccountConfig.Field.LOW_BALANCE_FEE));
+								feesReceivable.get(account.getBank().getOwner()).add(config.get(AccountConfig.Field.LOW_BALANCE_FEE));
 
 							if (Config.enableInterestLog)
 								plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
@@ -119,10 +104,10 @@ public class InterestEventListener implements Listener {
 
 						BigDecimal cut = interest.divide(BigDecimal.valueOf(trustedPlayers.size()), RoundingMode.HALF_EVEN);
 						for (OfflinePlayer recipient : trustedPlayers)
-							add(interestReceivable, recipient, cut);
+							interestReceivable.get(recipient).add(cut);
 
 						if (account.getBank().isPlayerBank())
-							add(interestPayable, account.getBank().getOwner(), interest);
+							interestPayable.get(account.getBank().getOwner()).add(interest);
 
 						accountUtils.addAccount(account, true);
 
@@ -176,18 +161,18 @@ public class InterestEventListener implements Listener {
 				// Bank owners receive low balance fees
 				for (OfflinePlayer bankOwner : feesReceivable.keySet()) {
 
-					if (feesReceivable.get(bankOwner).getKey().signum() == 0)
+					if (feesReceivable.get(bankOwner).getSum().signum() == 0)
 						continue;
 					if (!bankOwner.hasPlayedBefore())
 						continue;
 
 					boolean isOnline = bankOwner.isOnline();
 					String worldName = isOnline ? bankOwner.getPlayer().getWorld().getName() : fallbackWorldName;
-					Utils.depositPlayer(bankOwner, worldName, feesReceivable.get(bankOwner).getKey().doubleValue(), new Callback<Void>(plugin) {
+					Utils.depositPlayer(bankOwner, worldName, feesReceivable.get(bankOwner).getSum().doubleValue(), new Callback<Void>(plugin) {
 						@Override
 						public void onResult(Void result) {
 							if (isOnline) {
-								int count = feesReceivable.get(bankOwner).getValue();
+								int count = feesReceivable.get(bankOwner).getCount();
 								bankOwner.getPlayer().sendMessage(String.format(Messages.LOW_BALANCE_FEE_EARNED,
 										Utils.format(feesReceivable.get(bankOwner)),
 										count, count == 1 ? "" : "s"));
@@ -205,7 +190,7 @@ public class InterestEventListener implements Listener {
 				// Bank owners pay interest
 				for (OfflinePlayer bankOwner : interestPayable.keySet()) {
 
-					if (interestPayable.get(bankOwner).getKey().signum() == 0)
+					if (interestPayable.get(bankOwner).getSum().signum() == 0)
 						continue;
 					if (!bankOwner.hasPlayedBefore())
 						continue;
@@ -213,11 +198,11 @@ public class InterestEventListener implements Listener {
 					boolean isOnline = bankOwner.isOnline();
 					String worldName = isOnline ? bankOwner.getPlayer().getWorld().getName() : fallbackWorldName;
 
-					Utils.withdrawPlayer(bankOwner, worldName, interestPayable.get(bankOwner).getKey().doubleValue(), new Callback<Void>(plugin) {
+					Utils.withdrawPlayer(bankOwner, worldName, interestPayable.get(bankOwner).getSum().doubleValue(), new Callback<Void>(plugin) {
 						@Override
 						public void onResult(Void result) {
 							if (isOnline) {
-								int count = interestPayable.get(bankOwner).getValue();
+								int count = interestPayable.get(bankOwner).getCount();
 								bankOwner.getPlayer().sendMessage(String.format(Messages.INTEREST_PAID,
 										Utils.format(interestPayable.get(bankOwner)),
 										count, count == 1 ? "" : "s"));
@@ -235,7 +220,7 @@ public class InterestEventListener implements Listener {
 				// Account owners receive interest payments
 				for (OfflinePlayer customer : interestReceivable.keySet()) {
 
-					if (interestReceivable.get(customer).getKey().signum() == 0)
+					if (interestReceivable.get(customer).getSum().signum() == 0)
 						continue;
 
 					boolean online = customer.isOnline();
@@ -243,11 +228,11 @@ public class InterestEventListener implements Listener {
 							? playerAccountMap.get(customer).get(0).getLocation().getWorld().getName()
 							: (online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
 
-					Utils.depositPlayer(customer, worldName, interestReceivable.get(customer).getKey().doubleValue(), new Callback<Void>(plugin) {
+					Utils.depositPlayer(customer, worldName, interestReceivable.get(customer).getSum().doubleValue(), new Callback<Void>(plugin) {
 						@Override
 						public void onResult(Void result) {
 							if (online) {
-								int count = interestReceivable.get(customer).getValue();
+								int count = interestReceivable.get(customer).getCount();
 								customer.getPlayer().sendMessage(String.format(Messages.INTEREST_EARNED,
 										Utils.format(interestReceivable.get(customer)),
 										count, count == 1 ? "" : "s"));
@@ -265,7 +250,7 @@ public class InterestEventListener implements Listener {
 				// Customers pay low balance fees
 				for (OfflinePlayer customer : feesPayable.keySet()) {
 
-					if (feesPayable.get(customer).getKey().signum() == 0)
+					if (feesPayable.get(customer).getSum().signum() == 0)
 						continue;
 
 					boolean online = customer.isOnline();
@@ -273,11 +258,11 @@ public class InterestEventListener implements Listener {
 							? playerAccountMap.get(customer).get(0).getLocation().getWorld().getName()
 							: (online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
 
-					Utils.withdrawPlayer(customer, worldName, feesPayable.get(customer).getKey().doubleValue(), new Callback<Void>(plugin) {
+					Utils.withdrawPlayer(customer, worldName, feesPayable.get(customer).getSum().doubleValue(), new Callback<Void>(plugin) {
 						@Override
 						public void onResult(Void result) {
 							if (online) {
-								int count = feesPayable.get(customer).getValue();
+								int count = feesPayable.get(customer).getCount();
 								customer.getPlayer().sendMessage(String.format(Messages.LOW_BALANCE_FEE_PAID,
 										Utils.format(feesPayable.get(customer)),
 										count, count == 1 ? "" : "s"));
@@ -293,5 +278,21 @@ public class InterestEventListener implements Listener {
 				}
 			}
 		}.runTaskAsynchronously(plugin);
+	}
+
+	private static class Counter extends Pair<BigDecimal, Integer> {
+		private Counter(BigDecimal b, Integer i) {
+			super(b, i);
+		}
+		private void add(BigDecimal value) {
+			super.setFirst(getSum().add(value));
+			super.setSecond(getCount() + 1);
+		}
+		private BigDecimal getSum() {
+			return super.getFirst();
+		}
+		private int getCount() {
+			return super.getSecond();
+		}
 	}
 }

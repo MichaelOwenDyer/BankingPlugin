@@ -139,13 +139,13 @@ public class ControlCommandExecutor implements CommandExecutor {
 		}
 
 		plugin.getBankUtils().reload(true, true,
-				new Callback<AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>>>(plugin) {
+				new Callback<Pair<Collection<Bank>, Collection<Account>>>(plugin) {
 			@Override
-			public void onResult(AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>> result) {
+			public void onResult(Pair<Collection<Bank>, Collection<Account>> result) {
 				sender.sendMessage(String.format(Messages.RELOADED_PLUGIN,
-						result.getKey().size(), result.getValue().size()));
+						result.getFirst().size(), result.getSecond().size()));
 				plugin.debug(String.format(sender.getName() + " has reloaded %d banks and %d accounts.",
-						result.getKey().size(), result.getValue().size()));
+						result.getFirst().size(), result.getSecond().size()));
 			}
 
 			@Override

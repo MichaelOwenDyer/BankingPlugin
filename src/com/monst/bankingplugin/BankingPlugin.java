@@ -336,11 +336,11 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	private void initializeBanksAndAccounts() {
 		bankUtils.reload(false, true,
-                new Callback<AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>>>(this) {
+                new Callback<Pair<Collection<Bank>, Collection<Account>>>(this) {
 			@Override
-			public void onResult(AbstractMap.SimpleEntry<Collection<Bank>, Collection<Account>> result) {
-			    Collection<Bank> banks = result.getKey();
-                Collection<Account> accounts = result.getValue();
+			public void onResult(Pair<Collection<Bank>, Collection<Account>> result) {
+			    Collection<Bank> banks = result.getFirst();
+                Collection<Account> accounts = result.getSecond();
 
 				Bukkit.getServer().getPluginManager().callEvent(new BankInitializedEvent(banks));
                 Bukkit.getServer().getPluginManager().callEvent(new AccountInitializedEvent(accounts));

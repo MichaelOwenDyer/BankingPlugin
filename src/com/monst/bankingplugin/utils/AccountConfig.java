@@ -42,20 +42,20 @@ public class AccountConfig {
 	 */
 	public AccountConfig() {
 		this(
-				Config.interestRate.getValue(),
-				Config.multipliers.getValue(),
-				Config.initialInterestDelay.getValue(),
-				Config.countInterestDelayOffline.getValue(),
-				Config.allowedOfflinePayouts.getValue(),
-				Config.allowedOfflinePayoutsBeforeReset.getValue(),
-				Config.offlineMultiplierDecrement.getValue(),
-				Config.withdrawalMultiplierDecrement.getValue(),
-				Config.accountCreationPrice.getValue(),
-				Config.reimburseAccountCreation.getValue(),
-				Config.minimumBalance.getValue(),
-				Config.lowBalanceFee.getValue(),
-				Config.payOnLowBalance.getValue(),
-				Config.playerBankAccountLimit.getValue()
+				Config.interestRate.getDefault(),
+				Config.multipliers.getDefault(),
+				Config.initialInterestDelay.getDefault(),
+				Config.countInterestDelayOffline.getDefault(),
+				Config.allowedOfflinePayouts.getDefault(),
+				Config.allowedOfflinePayoutsBeforeReset.getDefault(),
+				Config.offlineMultiplierDecrement.getDefault(),
+				Config.withdrawalMultiplierDecrement.getDefault(),
+				Config.accountCreationPrice.getDefault(),
+				Config.reimburseAccountCreation.getDefault(),
+				Config.minimumBalance.getDefault(),
+				Config.lowBalanceFee.getDefault(),
+				Config.payOnLowBalance.getDefault(),
+				Config.playerBankAccountLimit.getDefault()
 			);
 	}
 
@@ -107,7 +107,7 @@ public class AccountConfig {
 	@SuppressWarnings("rawtypes")
 	public static boolean isOverrideAllowed(Field field) {
 		try {
-			return (boolean) ((AbstractMap.SimpleEntry) field.getConfigField().get(null)).getKey();
+			return ((Config.ConfigPair) field.getConfigField().get(null)).isOverridable();
 		} catch (IllegalAccessException e) {
 			return false;
 		}
@@ -153,7 +153,7 @@ public class AccountConfig {
 	        else
 	            return isOverrideAllowed(field)
                             ? (T) field.getDataType().cast(field.getLocalField().get(this))
-                            : (T) field.getDataType().cast(((AbstractMap.SimpleEntry) field.getConfigField().get(null)).getValue());
+                            : (T) field.getDataType().cast(((Config.ConfigPair) field.getConfigField().get(null)).getDefault());
         } catch (IllegalAccessException e) {
             BankingPlugin.getInstance().debug(e);
             return null;

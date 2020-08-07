@@ -2,6 +2,7 @@ package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
+import com.monst.bankingplugin.utils.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -9,11 +10,9 @@ import org.bukkit.inventory.ItemStack;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public class Config {
@@ -41,86 +40,88 @@ public class Config {
     /**
      * The default baseline account interest rate.
      **/
-	public static Entry<Boolean, Double> interestRate;
+	public static ConfigPair<Double> interestRate;
     
     /**
      * The list of default interest multipliers in sequential order.
      **/
-	public static Entry<Boolean, List<Integer>> multipliers;
+	public static ConfigPair<List<Integer>> multipliers;
 
     /**
 	 * The default number of interest payout events a player has to own their account for
 	 * before they start collecting interest
 	 **/
-	public static Entry<Boolean, Integer> initialInterestDelay;
+	public static ConfigPair<Integer> initialInterestDelay;
 
 	/**
 	 * Whether to decrement the interest delay period while a player is offline. 
 	 * Set this to false to only decrement the delay period when a player is online for
 	 * an interest payout event, and not while offline.
 	 **/
-	public static Entry<Boolean, Boolean> countInterestDelayOffline;
+	public static ConfigPair<Boolean> countInterestDelayOffline;
 
 	/**
 	 * The number of payouts a player is allowed to collect offline.
 	 **/
-	public static Entry<Boolean, Integer> allowedOfflinePayouts;
+	public static ConfigPair<Integer> allowedOfflinePayouts;
 
     /**
 	 * The number of payouts a player is allowed to be offline for (but not
 	 * necessarily collect) before their multiplier is reset.
 	 **/
-	public static Entry<Boolean, Integer> allowedOfflinePayoutsBeforeReset;
+	public static ConfigPair<Integer> allowedOfflinePayoutsBeforeReset;
 
     /**
 	 * The behavior of an offline player's multiplier.
 	 **/
-	public static Entry<Boolean, Integer> offlineMultiplierDecrement;
+	public static ConfigPair<Integer> offlineMultiplierDecrement;
     
     /**
 	 * The behavior of a player's multiplier at a withdrawal event.
 	 **/
-	public static Entry<Boolean, Integer> withdrawalMultiplierDecrement;
+	public static ConfigPair<Integer> withdrawalMultiplierDecrement;
 
     /**
      * The price a player has to pay in order to create a bank.
      **/
-	public static Entry<Double, Double> bankCreationPrice;
+	public static double bankCreationPriceAdmin;
+	public static double bankCreationPricePlayer;
     
     /**
      * The price a player has to pay in order to create an account.
      **/
-	public static Entry<Boolean, Double> accountCreationPrice;
+	public static ConfigPair<Double> accountCreationPrice;
 
 	/**
 	 * Whether the account creation price should be refunded at removal.
 	 */
-	public static Entry<Boolean, Boolean> reimburseAccountCreation;
+	public static ConfigPair<Boolean> reimburseAccountCreation;
 
 	/**
 	 * Whether the bank creation price should be refunded at removal.
 	 */
-	public static Entry<Boolean, Boolean> reimburseBankCreation;
+	public static boolean reimburseBankCreationAdmin;
+	public static boolean reimburseBankCreationPlayer;
 
 	/**
 	 * The default minimum balance.
 	 */
-	public static Entry<Boolean, Double> minimumBalance;
+	public static ConfigPair<Double> minimumBalance;
 
 	/**
 	 * The fee that must be paid for a balance lower than the minimum.
 	 */
-	public static Entry<Boolean, Double> lowBalanceFee;
+	public static ConfigPair<Double> lowBalanceFee;
 
 	/**
 	 * Whether or not accounts still earn interest on a balance lower than the minimum.
 	 */
-	public static Entry<Boolean, Boolean> payOnLowBalance;
+	public static ConfigPair<Boolean> payOnLowBalance;
 
 	/**
 	 * The default account limit per player per bank.
 	 */
-	public static Entry<Boolean, Integer> playerBankAccountLimit;
+	public static ConfigPair<Integer> playerBankAccountLimit;
 
     /**
      * The default bank ownership limit for players whose limit is not set via a permission.
@@ -325,7 +326,7 @@ public class Config {
      * @param property Location of the list
      * @param value    Value to add
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("all")
 	public void add(String property, String value) {
 		List list = (plugin.getConfig().getList(property) == null) ? new ArrayList<>() : plugin.getConfig().getList(property);
 
@@ -363,6 +364,7 @@ public class Config {
 		reload();
     }
 
+	@SuppressWarnings("all")
     public void remove(String property, String value) {
         @SuppressWarnings("rawtypes")
 		List list = (plugin.getConfig().getList(property) == null) ? new ArrayList<>() : plugin.getConfig().getList(property);
@@ -427,31 +429,31 @@ public class Config {
 		if (plugin.isEnabled())
 			plugin.scheduleInterestPoints();
 
-		interestRate = new SimpleEntry<>(config.getBoolean("interest-rate.allow-override"),
+		interestRate = new ConfigPair<>(config.getBoolean("interest-rate.allow-override"),
 				Math.abs(config.getDouble("interest-rate.default")));
 
-		multipliers = new SimpleEntry<>(config.getBoolean("interest-multipliers.allow-override"),
+		multipliers = new ConfigPair<>(config.getBoolean("interest-multipliers.allow-override"),
 				config.getIntegerList("interest-multipliers.default").isEmpty()
 					? Collections.singletonList(1)
 					: config.getIntegerList("interest-multipliers.default"));
 
-		initialInterestDelay = new SimpleEntry<>(config.getBoolean("initial-interest-delay.allow-override"),
+		initialInterestDelay = new ConfigPair<>(config.getBoolean("initial-interest-delay.allow-override"),
 				Math.abs(config.getInt("initial-interest-delay.default")));
 
-		countInterestDelayOffline = new SimpleEntry<>(config.getBoolean("count-interest-delay-offline.allow-override"),
+		countInterestDelayOffline = new ConfigPair<>(config.getBoolean("count-interest-delay-offline.allow-override"),
 				config.getBoolean("count-interest-delay-offline.default"));
 
-		allowedOfflinePayouts = new SimpleEntry<>(config.getBoolean("allowed-offline-payouts.allow-override"),
+		allowedOfflinePayouts = new ConfigPair<>(config.getBoolean("allowed-offline-payouts.allow-override"),
 				Math.abs(config.getInt("allowed-offline-payouts.default")));
 
-		allowedOfflinePayoutsBeforeReset = new SimpleEntry<>(
+		allowedOfflinePayoutsBeforeReset = new ConfigPair<>(
 				config.getBoolean("allowed-offline-before-multiplier-reset.allow-override"),
 				Math.abs(config.getInt("allowed-offline-before-multiplier-reset.default")));
 
-		offlineMultiplierDecrement = new SimpleEntry<>(config.getBoolean("offline-multiplier-behavior.allow-override"),
+		offlineMultiplierDecrement = new ConfigPair<>(config.getBoolean("offline-multiplier-behavior.allow-override"),
 				Math.abs(config.getInt("offline-multiplier-behavior.default")));
 
-		withdrawalMultiplierDecrement = new SimpleEntry<>(config.getBoolean("withdrawal-multiplier-behavior.allow-override"),
+		withdrawalMultiplierDecrement = new ConfigPair<>(config.getBoolean("withdrawal-multiplier-behavior.allow-override"),
 				Math.abs(config.getInt("withdrawal-multiplier-behavior.default")));
 
 		try {
@@ -462,28 +464,28 @@ public class Config {
 			accountInfoItem = new ItemStack(Material.STICK);
 		}
 
-		bankCreationPrice = new SimpleEntry<>(Math.abs(config.getDouble("creation-prices.bank.admin")),
-				Math.abs(config.getDouble("creation-prices.bank.player")));
+		bankCreationPriceAdmin = Math.abs(config.getDouble("creation-prices.bank.admin"));
+		bankCreationPricePlayer = Math.abs(config.getDouble("creation-prices.bank.player"));
 
-		accountCreationPrice = new SimpleEntry<>(config.getBoolean("creation-prices.account.allow-override"),
+		accountCreationPrice = new ConfigPair<>(config.getBoolean("creation-prices.account.allow-override"),
 				Math.abs(config.getDouble("creation-prices.account.default")));
 
-		reimburseAccountCreation = new SimpleEntry<>(config.getBoolean("reimburse-account-creation.allow-override"),
+		reimburseAccountCreation = new ConfigPair<>(config.getBoolean("reimburse-account-creation.allow-override"),
 				config.getBoolean("reimburse-account-creation.default"));
 
-		minimumBalance = new SimpleEntry<>(config.getBoolean("minimum-account-balance.allow-override"),
+		minimumBalance = new ConfigPair<>(config.getBoolean("minimum-account-balance.allow-override"),
 				Math.abs(config.getDouble("minimum-account-balance.default")));
 
-		lowBalanceFee = new SimpleEntry<>(config.getBoolean("low-balance-fee.allow-override"),
+		lowBalanceFee = new ConfigPair<>(config.getBoolean("low-balance-fee.allow-override"),
 				Math.abs(config.getDouble("low-balance-fee.default")));
 
-		payOnLowBalance = new SimpleEntry<>(config.getBoolean("pay-interest-on-low-balance.allow-override"),
+		payOnLowBalance = new ConfigPair<>(config.getBoolean("pay-interest-on-low-balance.allow-override"),
 				config.getBoolean("pay-interest-on-low-balance.default"));
 
-		reimburseBankCreation = new SimpleEntry<>(config.getBoolean("reimburse-creation.bank.admin"),
-				config.getBoolean("reimburse-creation.bank.player"));
+		reimburseBankCreationAdmin = config.getBoolean("reimburse-creation.bank.admin");
+		reimburseBankCreationPlayer = config.getBoolean("reimburse-creation.bank.player");
 
-		playerBankAccountLimit = new SimpleEntry<>(config.getBoolean("player-bank-account-limit.allow-override"),
+		playerBankAccountLimit = new ConfigPair<>(config.getBoolean("player-bank-account-limit.allow-override"),
 				config.getInt("player-bank-account-limit.default"));
 
 		defaultBankLimit = config.getInt("default-limits.bank");
@@ -514,4 +516,15 @@ public class Config {
         
     }
 
+    public static class ConfigPair<K> extends Pair<Boolean, K> {
+		private ConfigPair(Boolean b, K k) {
+			super(b, k);
+		}
+		public boolean isOverridable() {
+			return super.getFirst();
+		}
+		public K getDefault() {
+			return super.getSecond();
+		}
+	}
 }
