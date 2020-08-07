@@ -107,6 +107,7 @@ public class Bank extends Ownable implements Nameable {
 	 */
 	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 			Selection selection, AccountConfig accountConfig, BankType type) {
+
 		this.id = id;
 		this.owner = owner;
 		this.coowners = coowners;
@@ -115,6 +116,7 @@ public class Bank extends Ownable implements Nameable {
 		this.accounts = new HashSet<>();
 		this.accountConfig = accountConfig;
 		this.type = type;
+
 	}
 
 	/**

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 abstract class Gui<T extends Ownable> {
 
-	final BankingPlugin plugin;
+	BankingPlugin plugin;
 	final T guiSubject;
 	Menu menu;
 	Gui<T> prevGui;
