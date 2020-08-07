@@ -11,7 +11,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 
 import javax.annotation.Nullable;
@@ -22,7 +21,7 @@ import java.util.stream.Collectors;
 
 abstract class Gui<T extends Ownable> {
 
-	BankingPlugin plugin;
+	final BankingPlugin plugin;
 	final T guiSubject;
 	Menu menu;
 	Gui<T> prevGui;

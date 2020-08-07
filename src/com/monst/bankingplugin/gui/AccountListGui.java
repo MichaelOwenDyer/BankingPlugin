@@ -70,6 +70,7 @@ public class AccountListGui extends Gui<Bank> {
     private void setClickHandler() {
         for (Menu page : pages) {
             for (Slot slot : new Slot[]{page.getSlot(prevButtonSlot), page.getSlot(nextButtonSlot)}) {
+                //noinspection SimplifyOptionalCallChains
                 Slot.ClickHandler prevHandler = slot.getClickHandler().orElse(null);
                 if (prevHandler != null)
                     slot.setClickHandler((player, info) -> {

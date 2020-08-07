@@ -391,6 +391,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public TextComponent getInfoButton(CommandSender sender) {
 		TextComponent button = new TextComponent("[Info]");
 		button.setColor(net.md_5.bungee.api.ChatColor.GRAY);

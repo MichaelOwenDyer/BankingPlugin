@@ -15,7 +15,6 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -276,8 +275,7 @@ public class BankUtils {
 							}
 							limit = Math.max(limit, newLimit);
 							useDefault = false;
-						} catch (NumberFormatException e) {
-						}
+						} catch (NumberFormatException ignored) {}
 					}
 				}
 			}
@@ -310,8 +308,7 @@ public class BankUtils {
 							}
 							limit = Math.max(limit, newLimit);
 							useDefault = false;
-						} catch (NumberFormatException e) {
-						}
+						} catch (NumberFormatException ignored) {}
 					}
 				}
 			}
@@ -423,7 +420,7 @@ public class BankUtils {
 		try {
 			int id = Integer.parseInt(identifier);
 			bank = getBanksCopy().stream().filter(b -> b.getID() == id).findFirst().orElse(null);
-		} catch (NumberFormatException e) {}
+		} catch (NumberFormatException ignored) {}
 		if (bank == null)
 			bank = getBanksCopy().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
 		return bank;

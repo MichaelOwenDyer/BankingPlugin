@@ -3,8 +3,6 @@ package com.monst.bankingplugin.events.control;
 import com.monst.bankingplugin.BankingPlugin;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
 /**
  * Called when a player reloads the shops

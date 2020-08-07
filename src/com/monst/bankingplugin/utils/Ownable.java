@@ -6,7 +6,6 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,7 +18,7 @@ public abstract class Ownable {
 
 	protected int id;
 	protected OfflinePlayer owner;
-	protected Set<OfflinePlayer> coowners = new HashSet<>();
+	protected Set<OfflinePlayer> coowners;
 
 	/**
 	 * @param p the player in question
@@ -36,7 +35,7 @@ public abstract class Ownable {
 	 * @return whether or not the player is a co-owner of this ownable
 	 */
 	public boolean isCoowner(OfflinePlayer p) {
-		return (p != null && coowners != null) && coowners.contains(p);
+		return p != null && coowners.contains(p);
 	}
 
 	/**
@@ -59,8 +58,6 @@ public abstract class Ownable {
 	 * @return a {@link Set<OfflinePlayer>} containing the current co-owners.
 	 */
 	public Set<OfflinePlayer> getCoowners() {
-		if (coowners == null)
-			return new HashSet<>();
 		return Collections.unmodifiableSet(coowners);
 	}
 
@@ -72,8 +69,7 @@ public abstract class Ownable {
 		Set<OfflinePlayer> trustedPlayers = new HashSet<>();
 		if (owner != null)
 			trustedPlayers.add(owner);
-		if (coowners != null)
-			trustedPlayers.addAll(coowners);
+		trustedPlayers.addAll(coowners);
 		return trustedPlayers;
 	}
 
@@ -89,9 +85,8 @@ public abstract class Ownable {
 	 * @param p the player to be added
 	 */
 	public void trustPlayer(OfflinePlayer p) {
-		if (p == null || coowners == null)
-			return;
-		coowners.add(p);
+		if (p != null)
+			coowners.add(p);
 	}
 
 	/**
@@ -99,9 +94,8 @@ public abstract class Ownable {
 	 * @param p the player to be removed
 	 */
 	public void untrustPlayer(OfflinePlayer p) {
-		if (p == null || coowners == null)
-			return;
-		coowners.remove(p);
+		if (p != null)
+			coowners.remove(p);
 	}
 
 	/**

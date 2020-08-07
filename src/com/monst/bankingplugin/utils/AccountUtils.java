@@ -203,8 +203,7 @@ public class AccountUtils {
                             }
                             limit = Math.max(limit, newLimit);
                             useDefault = false;
-						} catch (NumberFormatException e) {
-						}
+						} catch (NumberFormatException ignored) {}
                     }
                 }
             }

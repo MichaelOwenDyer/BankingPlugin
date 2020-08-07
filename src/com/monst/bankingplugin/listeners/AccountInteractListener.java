@@ -458,11 +458,9 @@ public class AccountInteractListener implements Listener {
 					return;
 				}
 
-				int stage = 0;
+				int stage;
 				if (value.startsWith("+"))
 					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(value.substring(1)));
-				else if (value.startsWith("-"))
-					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(value.substring(1)) * -1);
 				else
 					stage = account.getStatus().setMultiplierStage(Integer.parseInt(value));
 
@@ -482,8 +480,6 @@ public class AccountInteractListener implements Listener {
 				int delay;
 				if (value.startsWith("+"))
 					delay = account.getStatus().setInterestDelayRelative(Integer.parseInt(value.substring(1)));
-				else if (value.startsWith("-"))
-					delay = account.getStatus().setInterestDelayRelative(Integer.parseInt(value.substring(1)) * -1);
 				else
 					delay = account.getStatus().setInterestDelay(Integer.parseInt(value));
 				plugin.getAccountUtils().addAccount(account, true);

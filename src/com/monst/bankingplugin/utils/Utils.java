@@ -27,7 +27,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.ChatPaginator;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -146,7 +145,7 @@ public class Utils {
 	}
 
 	private static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
-		players.stream().forEach(p -> {
+		players.forEach(p -> {
 			if (p.isOnline())
 				p.getPlayer().sendMessage(message);
 			else if (Config.enableMail) {

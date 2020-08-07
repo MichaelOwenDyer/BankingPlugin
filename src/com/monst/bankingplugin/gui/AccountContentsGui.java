@@ -75,7 +75,7 @@ public class AccountContentsGui extends Gui<Account> {
         return GuiType.ACCOUNT_CONTENTS;
     }
 
-    class ShulkerContentsGui extends AccountContentsGui {
+    static class ShulkerContentsGui extends AccountContentsGui {
 
         private final ShulkerBox shulkerBox;
 

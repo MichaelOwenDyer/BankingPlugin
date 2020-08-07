@@ -2,7 +2,6 @@ package com.monst.bankingplugin.events.control;
 
 import com.monst.bankingplugin.BankingPlugin;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 
 public class PluginConfigureEvent extends ControlEvent {
 

@@ -8,7 +8,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -164,7 +163,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
-	 * @return a {@link Map<OfflinePlayer, List<Account>>} containing
+	 * @return a {@link Map<OfflinePlayer>} containing
 	 * all accounts at this bank grouped by owner
 	 */
 	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
@@ -181,7 +180,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
-	 * @return a {@link Map<OfflinePlayer, BigDecimal>} containing
+	 * @return a {@link Map<OfflinePlayer>} containing
 	 * all account owners at this bank and their total account balances
 	 */
 	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
@@ -279,6 +278,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public TextComponent getInfoButton(CommandSender sender) {
 		TextComponent button = new TextComponent("[Info]");
 		button.setColor(net.md_5.bungee.api.ChatColor.GRAY);

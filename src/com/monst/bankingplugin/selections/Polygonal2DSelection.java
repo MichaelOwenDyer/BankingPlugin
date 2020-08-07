@@ -38,6 +38,7 @@ public class Polygonal2DSelection implements Selection {
 	}
 
 	@Override
+	@SuppressWarnings("all")
 	public Location getMinimumPoint() {
 		int minX = points.stream().mapToInt(BlockVector2D::getBlockX).min().getAsInt();
 		int minZ = points.stream().mapToInt(BlockVector2D::getBlockZ).min().getAsInt();
@@ -45,6 +46,7 @@ public class Polygonal2DSelection implements Selection {
 	}
 
 	@Override
+	@SuppressWarnings("all")
 	public Location getMaximumPoint() {
 		int maxX = points.stream().mapToInt(BlockVector2D::getBlockX).max().getAsInt();
 		int maxZ = points.stream().mapToInt(BlockVector2D::getBlockZ).max().getAsInt();

@@ -3,7 +3,7 @@
 name: ${project.name}
 main: com.monst.bankingplugin.BankingPlugin
 version: ${project.version}
-api-version: 1.15
+api-version: '1.16'
 database: true
 author: monst
 depend: [Vault, Essentials]

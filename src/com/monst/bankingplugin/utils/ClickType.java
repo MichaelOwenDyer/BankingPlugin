@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-// THIS CODE WAS TAKEN FROM de.epiceric.shopchest.utils.ClickType
+// Credit for this code goes to EpicEricEE
 
 public class ClickType {
 	private static final Map<UUID, ClickType> playerClickTypes = new HashMap<>();
@@ -42,7 +42,7 @@ public class ClickType {
     }
 
     /**
-     * Removes the click type from a player and cancels the 15 second timer
+     * Removes the click type from a player and cancels the 15 second timer.
      * 
      * @param player Player to remove the click type from
      */
