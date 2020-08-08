@@ -59,9 +59,11 @@ public class AccountConfig {
 
 		Field.stream(List.class).forEach(field -> SETTERS.put(field, (instance, value) -> {
 			try {
-				field.getLocalField().set(instance, Arrays.stream(Utils.removePunctuation(value)
-						.split(" ")).filter(s -> !s.isEmpty())
-						.map(Integer::parseInt).map(Math::abs).collect(Collectors.toList()));
+				field.getLocalField().set(instance, Arrays.stream(Utils.removePunctuation(value).split(" "))
+						.filter(s -> !s.isEmpty())
+						.map(Integer::parseInt)
+						.map(Math::abs)
+						.collect(Collectors.toList()));
 				return Utils.format(field.getLocalField().get(instance));
 			} catch (IllegalAccessException ignored) {}
 			return "";

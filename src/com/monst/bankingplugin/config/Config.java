@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -285,37 +286,34 @@ public class Config {
      * @param value    Value to set
      */
     public void set(String property, String value) {
+    	boolean set = false;
         try {
-            int intValue = Integer.parseInt(value);
-            plugin.getConfig().set(property, intValue);
-
-            plugin.saveConfig();
-			reload();
-
-            return;
+            plugin.getConfig().set(property, Integer.parseInt(value));
+			set = true;
         } catch (NumberFormatException e) { /* Value not an integer */ }
 
-        try {
-            double doubleValue = Double.parseDouble(value);
-            plugin.getConfig().set(property, doubleValue);
+        if (!set)
+			try {
+				plugin.getConfig().set(property, Double.parseDouble(value));
+				set = true;
+			} catch (NumberFormatException e) { /* Value not a double */ }
 
-            plugin.saveConfig();
-			reload();
+        if (!set)
+			if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+				plugin.getConfig().set(property, Boolean.parseBoolean(value));
+				set = true;
+			}
 
-            return;
-        } catch (NumberFormatException e) { /* Value not a double */ }
-
-        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-            boolean boolValue = Boolean.parseBoolean(value);
-            plugin.getConfig().set(property, boolValue);
-        } else {
-            plugin.getConfig().set(property, value);
-        }
+        if (!set)
+        	if (property.equalsIgnoreCase("interest-payout-times"))
+        		plugin.getConfig().set(property, Arrays.stream(value.replace("-","").split(" "))
+						.filter(s -> !s.isEmpty())
+						.collect(Collectors.toList()));
+			else
+				plugin.getConfig().set(property, value);
 
 		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
-
         plugin.saveConfig();
-
 		reload();
     }
 
@@ -329,38 +327,35 @@ public class Config {
     @SuppressWarnings("all")
 	public void add(String property, String value) {
 		List list = (plugin.getConfig().getList(property) == null) ? new ArrayList<>() : plugin.getConfig().getList(property);
+		boolean added = false;
+		try {
+			list.add(Integer.parseInt(value));
+			added = true;
+		} catch (NumberFormatException e) { /* Value not an integer */ }
 
-        try {
-            int intValue = Integer.parseInt(value);
-            list.add(intValue);
+		if (!added)
+			try {
+				list.add(Double.parseDouble(value));
+				added = true;
+			} catch (NumberFormatException e) { /* Value not a double */ }
 
-            plugin.saveConfig();
-			reload();
+		if (!added)
+			if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+				list.add(Boolean.parseBoolean(value));
+				added = true;
+			}
 
-            return;
-        } catch (NumberFormatException e) { /* Value not an integer */ }
-
-        try {
-            double doubleValue = Double.parseDouble(value);
-            list.add(doubleValue);
-
-            plugin.saveConfig();
-			reload();
-
-            return;
-        } catch (NumberFormatException e) { /* Value not a double */ }
-
-        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-            boolean boolValue = Boolean.parseBoolean(value);
-            list.add(boolValue);
-        } else {
-            list.add(value);
-        }
+		if (!added)
+			if (property.equalsIgnoreCase("interest-payout-times"))
+				list.add(Arrays.stream(value.replace("-","").split(" "))
+						.filter(s -> !s.isEmpty())
+						.map(s -> "\'" + s + "\'")
+						.collect(Collectors.toList()));
+			else
+				list.add(value);
 
 		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
-
         plugin.saveConfig();
-
 		reload();
     }
 
@@ -368,38 +363,35 @@ public class Config {
     public void remove(String property, String value) {
         @SuppressWarnings("rawtypes")
 		List list = (plugin.getConfig().getList(property) == null) ? new ArrayList<>() : plugin.getConfig().getList(property);
+		boolean removed = false;
+		try {
+			list.remove(Integer.parseInt(value));
+			removed = true;
+		} catch (NumberFormatException e) { /* Value not an integer */ }
 
-        try {
-            int intValue = Integer.parseInt(value);
-            list.remove(intValue);
+		if (!removed)
+			try {
+				list.remove(Double.parseDouble(value));
+				removed = true;
+			} catch (NumberFormatException e) { /* Value not a double */ }
 
-            plugin.saveConfig();
-			reload();
+		if (!removed)
+			if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+				list.remove(Boolean.parseBoolean(value));
+				removed = true;
+			}
 
-            return;
-        } catch (NumberFormatException e) { /* Value not an integer */ }
-
-        try {
-            double doubleValue = Double.parseDouble(value);
-            list.remove(doubleValue);
-
-            plugin.saveConfig();
-			reload();
-
-            return;
-        } catch (NumberFormatException e) { /* Value not a double */ }
-
-        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-            boolean boolValue = Boolean.parseBoolean(value);
-            list.remove(boolValue);
-        } else {
-            list.remove(value);
-        }
+		if (!removed)
+			if (property.equalsIgnoreCase("interest-payout-times"))
+				list.remove(Arrays.stream(value.replace("-","").split(" "))
+						.filter(s -> !s.isEmpty())
+						.map(s -> "\'" + s + "\'")
+						.collect(Collectors.toList()));
+			else
+				list.remove(value);
 
 		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
-
         plugin.saveConfig();
-
 		reload();
     }
 
