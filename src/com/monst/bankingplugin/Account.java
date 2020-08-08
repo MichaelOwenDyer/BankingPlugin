@@ -369,7 +369,7 @@ public class Account extends Ownable implements Nameable {
 	 * @return Whether this account is a double chest or a single chest.
 	 */
 	public boolean isDoubleChest() {
-		return getInventory(true).getHolder() instanceof DoubleChest;
+		return getInventory(false).getHolder() instanceof DoubleChest;
 	}
 
 	/**

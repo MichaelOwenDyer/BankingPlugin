@@ -173,7 +173,6 @@ public class AccountConfig {
 			callback.callSyncResult(SETTERS.get(field).apply(this, value));
 		} catch (NumberFormatException e) {
 			callback.callSyncError(new ArgumentParseException(field.getDataType(), value));
-			return false;
 		}
 		return true;
 	}

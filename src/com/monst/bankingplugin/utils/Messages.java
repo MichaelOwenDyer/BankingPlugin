@@ -11,9 +11,9 @@ public class Messages {
 	public static final String ACCOUNT_CREATED = ChatColor.GOLD + "Account created!";
 	public static final String ACCOUNT_MIGRATED = ChatColor.GOLD + "Account migrated!";
 	public static final String ACCOUNT_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account.";
-	public static final String ACCOUNT_EXTEND_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend your account.";
+	public static final String ACCOUNT_EXTEND_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend an account.";
 	public static final String ACCOUNT_CREATE_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account at your bank.";
-	public static final String ACCOUNT_EXTEND_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend their account at your bank.";
+	public static final String ACCOUNT_EXTEND_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend an account at your bank.";
 	public static final String BANK_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create a bank.";
 	public static final String NAME_NOT_UNIQUE = ChatColor.RED + "A bank with that name already exists.";
 	public static final String NAME_ALREADY = ChatColor.RED + "The bank name was not changed.";
@@ -26,7 +26,7 @@ public class Messages {
 	public static final String BANK_REMOVED = ChatColor.GOLD + "The bank has been removed.";
 	public static final String BANK_RESIZED = ChatColor.GOLD + "The bank has been resized.";
 	public static final String BANK_FIELD_SET = ChatColor.GOLD + "%s changed " + ChatColor.AQUA + "%s" + ChatColor.GOLD + " from " + ChatColor.GREEN + "%s" + ChatColor.GOLD + " to " + ChatColor.GREEN + "%s" + ChatColor.GOLD + " at bank " + ChatColor.AQUA + "%s" + ChatColor.GOLD + ".";
-	public static final String ACCOUNT_REIMBURSEMENT_RECEIVED = ChatColor.GOLD + "You were reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
+	public static final String ACCOUNT_REIMBURSEMENT_RECEIVED = ChatColor.GOLD + "You have been reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_REIMBURSEMENT_PAID = ChatColor.GOLD + "You reimbursed %s " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
 	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "%d account%s %s successfully removed.";

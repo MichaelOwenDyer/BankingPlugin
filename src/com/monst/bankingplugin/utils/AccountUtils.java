@@ -229,7 +229,7 @@ public class AccountUtils {
 		plugin.debug("Appraising account contents... (#" + account.getID() + ")");
 
 		BigDecimal sum = BigDecimal.ZERO;
-		for (ItemStack item : account.getInventory(true).getContents()) {
+		for (ItemStack item : account.getInventory(false).getContents()) {
 			if (item == null)
 				continue;
 			if (Config.blacklist.contains(item.getType().toString()))

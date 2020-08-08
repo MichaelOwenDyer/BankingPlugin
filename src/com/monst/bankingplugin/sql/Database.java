@@ -16,10 +16,7 @@ import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.BlockVector2D;
 import com.monst.bankingplugin.utils.Callback;
 import com.zaxxer.hikari.HikariDataSource;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -583,7 +580,7 @@ public abstract class Database {
 								Boolean.parseBoolean(accConfig[12]),
 								Integer.parseInt(accConfig[13]));
 
-						plugin.debug("Initializing bank" + (name != null ? " \"" + name + "\"" : "") + "... (#" + bankId + ")");
+						plugin.debug("Initializing bank" + (name != null ? " \"" + ChatColor.stripColor(name) + "\"" : "") + "... (#" + bankId + ")");
 
 						Bank bank = isAdminBank
 									? Bank.recreate(bankId, name, coowners, selection, accountConfig)

@@ -2,7 +2,6 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
@@ -27,9 +26,6 @@ public class AccountContentsGui extends Gui<Account> {
 
     @Override
     void evaluateClearance(Player player) {
-        try {
-            guiSubject.updateInventory(); // Must call this before reading from the inventory later
-        } catch (ChestNotFoundException e) { plugin.debug(e); }
         canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
     }
 

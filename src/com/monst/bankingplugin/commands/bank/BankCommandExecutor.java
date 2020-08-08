@@ -694,7 +694,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		String previousValue = "" + bank.getAccountConfig().get(field);
+		String previousValue = Utils.format(bank.getAccountConfig().get(field));
 		Bank finalBank = bank;
 		Callback<String> callback = new Callback<String>(plugin) {
 			@Override
@@ -706,8 +706,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 			@Override
 			public void onError(Throwable throwable) {
-				plugin.debug(((ArgumentParseException) throwable).getErrorMessage());
-				sender.sendMessage(((ArgumentParseException) throwable).getErrorMessage());
+				String errorMessage = ((ArgumentParseException) throwable).getErrorMessage();
+				plugin.debug(errorMessage);
+				sender.sendMessage(errorMessage);
 			}
 		};
 		if (!config.set(field, value, callback))
