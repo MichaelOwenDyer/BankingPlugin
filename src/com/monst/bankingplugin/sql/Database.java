@@ -411,7 +411,7 @@ public abstract class Database {
 						}
 
 						bank.setID(bankId);
-						bank.setToDefaultName();
+						bank.updateName();
 					}
 
 					if (callback != null) {

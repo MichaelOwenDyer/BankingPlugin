@@ -28,6 +28,10 @@ import java.util.stream.Collectors;
 
 public class Account extends Ownable implements Nameable {
 
+	public enum AccountSize {
+		SINGLE, DOUBLE
+	}
+
 	private static final BankingPlugin plugin = BankingPlugin.getInstance();
 	private boolean created;
 
@@ -38,6 +42,7 @@ public class Account extends Ownable implements Nameable {
 	private String nickname;
 	private BigDecimal balance;
 	private BigDecimal prevBalance;
+	private AccountSize size;
 
 	/**
 	 * Create a new account.
@@ -238,14 +243,6 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Ensure that the current account name is valid and reflected in the chest inventory screen.
-	 * If it is null, make it the default name.
-	 */
-	public void updateName() {
-		setName(getRawName() != null ? getRawName() : getDefaultName());
-	}
-
-	/**
 	 * Reset the name in the account chest to the default, e.g. "Chest" or "Large Chest"
 	 */
 	public void clearChestName() {
@@ -347,6 +344,7 @@ public class Account extends Ownable implements Nameable {
 					b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
 		Chest chest = (Chest) b.getState();
 		inventory = chest.getInventory();
+		size = inventory instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE;
 	}
 
 	/**
@@ -367,9 +365,10 @@ public class Account extends Ownable implements Nameable {
 
 	/**
 	 * @return Whether this account is a double chest or a single chest.
+	 * @see AccountSize
 	 */
 	public boolean isDoubleChest() {
-		return getInventory(false).getHolder() instanceof DoubleChest;
+		return size == AccountSize.DOUBLE;
 	}
 
 	/**

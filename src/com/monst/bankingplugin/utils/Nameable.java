@@ -47,4 +47,12 @@ public interface Nameable {
      */
     void setToDefaultName();
 
+    /**
+     * Ensure that the current name is valid and currently being reflected everywhere it should be.
+     * If it is null, make it the default name.
+     */
+    default void updateName() {
+        setName(getRawName() != null ? getRawName() : getDefaultName());
+    }
+
 }
