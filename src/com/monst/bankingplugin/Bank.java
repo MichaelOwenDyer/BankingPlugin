@@ -37,10 +37,10 @@ public class Bank extends Ownable implements Nameable {
 	/**
 	 * Create a new admin bank.
 	 */
-	public static Bank mint(Selection selection) {
+	public static Bank mint(String name, Selection selection) {
 		return new Bank(
 				-1,
-				null,
+				name,
 				null,
 				new HashSet<>(),
 				selection,
@@ -52,10 +52,10 @@ public class Bank extends Ownable implements Nameable {
 	/**
 	 * Create a new player bank.
 	 */
-	public static Bank mint(OfflinePlayer owner, Selection selection) {
+	public static Bank mint(String name, OfflinePlayer owner, Selection selection) {
 		return new Bank(
 				-1,
-				null,
+				name,
 				owner,
 				new HashSet<>(),
 				selection,

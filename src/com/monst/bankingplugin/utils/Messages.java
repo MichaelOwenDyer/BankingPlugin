@@ -188,7 +188,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_ACCOUNT_UNTRUST = ACCOUNT_USAGE_PREFIX + "untrust [playername]";
 	public static final String COMMAND_USAGE_ACCOUNT_MIGRATE = ACCOUNT_USAGE_PREFIX + "migrate";
 	public static final String COMMAND_USAGE_ACCOUNT_TRANSFER = ACCOUNT_USAGE_PREFIX + "transfer [playername]";
-	public static final String COMMAND_USAGE_BANK_CREATE = BANK_USAGE_PREFIX + "create <xyz> <xyz> <admin>";
+	public static final String COMMAND_USAGE_BANK_CREATE = BANK_USAGE_PREFIX + "create <bankname> <xyz> <xyz> <admin>";
 	public static final String COMMAND_USAGE_BANK_REMOVE = BANK_USAGE_PREFIX + "remove <bankname>";
 	public static final String COMMAND_USAGE_BANK_INFO = BANK_USAGE_PREFIX + "info";
 	public static final String COMMAND_USAGE_BANK_LIST = BANK_USAGE_PREFIX + "list";

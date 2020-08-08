@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utils {
 
@@ -94,12 +95,16 @@ public class Utils {
 				|| block.getType().isTransparent());
     }
 
-    public static List<String> wordWrapAll(String... args) {
-		return wordWrapAll(30, args);
+	public static List<String> wordWrapAll(List<String> lore) {
+		return wordWrapAll(30, lore.stream());
 	}
 
-    public static List<String> wordWrapAll(int lineLength, String... args) {
-		return Arrays.stream(args).map(s -> ChatPaginator.wordWrap(s, lineLength))
+    public static List<String> wordWrapAll(String... args) {
+		return wordWrapAll(30, Arrays.stream(args));
+	}
+
+    public static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
+		return lines.map(s -> ChatPaginator.wordWrap(s, lineLength))
 				.flatMap(Arrays::stream).collect(Collectors.toList());
 	}
 
@@ -478,5 +483,4 @@ public class Utils {
 				ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY + "        by monst",
 				"" };
 	}
-
 }

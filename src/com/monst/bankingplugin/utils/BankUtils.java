@@ -117,7 +117,7 @@ public class BankUtils {
 	
 	public Selection parseCoordinates(String[] args, Location loc, int offset) throws NumberFormatException {
 
-		if (args.length == 4 || args.length == 5) {
+		if (args.length >= 4 && args.length <= 6) {
 
 			String argX = args[1 + offset];
 			String argY = args[2 + offset];
@@ -135,9 +135,9 @@ public class BankUtils {
 
 			Location loc1 = new Location(loc.getWorld(), x1, y1, z1);
 			Location loc2 = new Location(loc.getWorld(), x2, y2, z2);
-			return new CuboidSelection(loc.getWorld(), loc1, loc2);
+			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
 
-		} else if (args.length == 7 || args.length == 8) {
+		} else if (args.length >= 7 || args.length <= 9) {
 
 			String argX1 = args[1 + offset];
 			String argY1 = args[2 + offset];
@@ -157,7 +157,7 @@ public class BankUtils {
 
 			Location loc1 = new Location(loc.getWorld(), x1, y1, z1);
 			Location loc2 = new Location(loc.getWorld(), x2, y2, z2);
-			return new CuboidSelection(loc.getWorld(), loc1, loc2);
+			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
 
 		} else
 			return null;

@@ -13,6 +13,7 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -155,36 +156,42 @@ public class BankGui extends Gui<Bank> {
 		int offlinePayouts = config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS);
 		int offlineDecrement = config.get(AccountConfig.Field.OFFLINE_MULTIPLIER_DECREMENT);
 		int beforeReset = config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
-		return Utils.wordWrapAll(
-				ChatColor.GRAY + "Accounts may generate interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
-						+ String.format(" time%s", offlinePayouts == 1 ? "" : "s") + " while account holders are offline.",
-				"",
-				ChatColor.GRAY + "Multipliers will " + (offlineDecrement == 0
-						? "freeze"
-						: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " for every payout")
-						+ " during this time.",
-				"",
-				ChatColor.GRAY + "Account multipliers will reset " + (beforeReset == 0
-						? "immediately"
-						: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY + " consecutive "
-							+ String.format("time%s", beforeReset == 1 ? "" : "s")) + " while account holders are offline."
-
-		);
+		List<String> lore = new ArrayList<>();
+		lore.add(ChatColor.GRAY + "Accounts may generate interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
+						+ String.format(" time%s", offlinePayouts == 1 ? "" : "s") + " while account holders are offline.");
+		if (beforeReset != 0) {
+			lore.add("");
+			lore.add(ChatColor.GRAY + "Multipliers will " + (offlineDecrement == 0
+					? ChatColor.AQUA + "freeze" + ChatColor.GRAY
+					: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " for every payout")
+				+ " during this time.");
+		}
+		if (beforeReset > -1) {
+			lore.add("");
+			lore.add(ChatColor.GRAY + "Account multipliers will reset " + (beforeReset == 0
+					? ChatColor.RED + "immediately" + ChatColor.GRAY
+					: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY + " consecutive "
+					+ String.format("time%s", beforeReset == 1 ? "" : "s")) + " while account holders are offline.");
+		}
+		return Utils.wordWrapAll(lore);
 	}
 
 	private List<String> getInterestDelayLore() {
 		AccountConfig config = guiSubject.getAccountConfig();
 		int interestDelay = config.get(AccountConfig.Field.INITIAL_INTEREST_DELAY);
 		boolean countOffline = config.get(AccountConfig.Field.COUNT_INTEREST_DELAY_OFFLINE);
-		return Utils.wordWrapAll(
-				ChatColor.GRAY + "New accounts will begin to generate interest after "
-						+ ChatColor.AQUA + interestDelay + ChatColor.GRAY + " preliminary interest cycles.",
-				"",
-				ChatColor.GRAY + "The account owner " + (countOffline
-						? ChatColor.GREEN + "does not have to be online"
-						: ChatColor.RED + "must be online")
-						+ ChatColor.GRAY + " for these cycles to be counted toward the delay."
-		);
+		List<String> lore = new ArrayList<>();
+		lore.add(ChatColor.GRAY + "New accounts will begin to generate interest " + (interestDelay == 0
+				? ChatColor.GREEN + "immediately" + ChatColor.GRAY + " after creation."
+				: "after " + ChatColor.AQUA + interestDelay + ChatColor.GRAY + " preliminary interest cycles."));
+		if (interestDelay != 0) {
+			lore.add("");
+			lore.add(ChatColor.GRAY + "The account owner " + (countOffline
+					? ChatColor.GREEN + "does not have to be online"
+					: ChatColor.RED + "must be online")
+					+ ChatColor.GRAY + " for these cycles to be counted toward the delay.");
+		}
+		return Utils.wordWrapAll(lore);
 	}
 
 	private List<String> getWithdrawalPolicyLore() {

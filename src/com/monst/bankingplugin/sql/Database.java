@@ -536,7 +536,7 @@ public abstract class Database {
 								nativePoints.add(new BlockVector2D(x, z));
 							}
 							
-							selection = new Polygonal2DSelection(world, nativePoints, minY, maxY);
+							selection = Polygonal2DSelection.of(world, nativePoints, minY, maxY);
 						} else {
 							
 							String[] coords = pointArray[0].split(",");
@@ -552,7 +552,7 @@ public abstract class Database {
 							Location min = new Location(world, minX, minY, minZ);
 							Location max = new Location(world, maxX, maxY, maxZ);
 							
-							selection = new CuboidSelection(world, min, max);
+							selection = CuboidSelection.of(world, min, max);
 						}
 						
 						String[] accConfig = rs.getString("account_config").split(" \\| ");

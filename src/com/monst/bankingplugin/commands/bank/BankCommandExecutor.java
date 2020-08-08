@@ -111,10 +111,16 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		Selection selection;
-		boolean isAdminBank = false;
+		String name = null;
+		if (args.length > 1 && !args[1].equalsIgnoreCase("admin"))
+			try {
+				Integer.parseInt(args[1].replace("~", ""));
+			} catch (NumberFormatException e) {
+				name = args[1];
+			}
 
-		if (args.length == 1 || args.length == 2) {
+		Selection selection;
+		if (args.length <= 3) {
 			if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
 				selection = WorldEditReader.getSelection(plugin, p);
 				if (selection == null) {
@@ -129,7 +135,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 		} else {
 			try {
-				selection = bankUtils.parseCoordinates(args, p.getLocation());
+				selection = bankUtils.parseCoordinates(args, p.getLocation(), name != null ? 1 : 0);
 			} catch (NumberFormatException e) {
 				plugin.debug("Could not parse coordinates in command args");
 				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
@@ -146,9 +152,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		if ((args.length == 2 || args.length == 5 || args.length == 8)
-				&& args[args.length - 1].equalsIgnoreCase("admin"))
-			isAdminBank = true;
+		boolean isAdminBank = args[args.length - 1].equalsIgnoreCase("admin");
 
 		if (isAdminBank && !p.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
 			plugin.debug(p.getName() + " does not have permission to create an admin bank");
@@ -178,12 +182,24 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Utils.format(Config.minimumBankVolume), Utils.format(Config.minimumBankVolume - volume)));
 			return true;
 		}
+		if (name != null) {
+			if (!bankUtils.isUniqueName(name)) {
+				plugin.debug("Name is not unique");
+				p.sendMessage(Messages.NAME_NOT_UNIQUE);
+				return true;
+			}
+			if (!Utils.isAllowedName(name)) {
+				plugin.debug("Name is not allowed");
+				p.sendMessage(Messages.NAME_NOT_ALLOWED);
+				return true;
+			}
+		}
 
 		Bank bank;
 		if (isAdminBank)
-			bank = Bank.mint(selection);
+			bank = Bank.mint(name, selection);
 		else
-			bank = Bank.mint(p, selection);
+			bank = Bank.mint(name, p, selection);
 
 		BankCreateEvent event = new BankCreateEvent(p, bank);
 		Bukkit.getPluginManager().callEvent(event);

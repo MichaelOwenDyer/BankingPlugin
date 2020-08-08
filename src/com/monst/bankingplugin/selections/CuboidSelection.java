@@ -12,10 +12,9 @@ public class CuboidSelection implements Selection {
 	private final World world;
 	private final Location min;
 	private final Location max;
-	private final Rectangle rectangle;
+	private final Rectangle rect;
 
-	public CuboidSelection(World world, Location loc1, Location loc2) {
-		this.world = world;
+	public static CuboidSelection of(World world, Location loc1, Location loc2) {
 		int minX, minY, minZ, maxX, maxY, maxZ;
 		if (loc1.getBlockX() < loc2.getBlockX()) {
 			minX = loc1.getBlockX();
@@ -38,9 +37,17 @@ public class CuboidSelection implements Selection {
 			minZ = loc2.getBlockZ();
 			maxZ = loc1.getBlockZ();
 		}
-		min = new Location(world, minX, minY, minZ);
-		max = new Location(world, maxX, maxY, maxZ);
-		rectangle = new Rectangle(minX, minZ, (maxX - minX), (maxZ - minZ));
+		Location min = new Location(world, minX, minY, minZ);
+		Location max = new Location(world, maxX, maxY, maxZ);
+		Rectangle rectangle = new Rectangle(minX, minZ, (maxX - minX), (maxZ - minZ));
+		return new CuboidSelection(world, min, max, rectangle);
+	}
+
+	private CuboidSelection(World world, Location min, Location max, Rectangle rectangle) {
+		this.world = world;
+		this.min = min;
+		this.max = max;
+		this.rect = rectangle;
 	}
 
 	@Override
@@ -75,7 +82,7 @@ public class CuboidSelection implements Selection {
 
 	@Override
 	public Shape getShape() {
-		return rectangle;
+		return rect;
 	}
 
 	@Override

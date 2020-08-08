@@ -16,21 +16,31 @@ public class Polygonal2DSelection implements Selection {
 	private final List<BlockVector2D> points;
 	private final int minY;
 	private final int maxY;
-	private final Polygon poly;
+	private final Polygon polygon;
 
-	public Polygonal2DSelection(World world, List<BlockVector2D> points, int minY, int maxY) {
-		this.world = world;
-		this.points = points;
-		this.minY = Math.min(Math.max(0, minY), world.getMaxHeight());
-		this.maxY = Math.min(Math.max(0, maxY), world.getMaxHeight());
-
+	public static Polygonal2DSelection of(World world, List<BlockVector2D> points, int minY, int maxY) {
 		int[] xpoints = new int[points.size()];
 		int[] ypoints = new int[points.size()];
 		for (int i = 0; i < points.size(); i++) {
 			xpoints[i] = points.get(i).getBlockX();
 			ypoints[i] = points.get(i).getBlockZ();
 		}
-		poly = new Polygon(xpoints, ypoints, points.size());
+		Polygon polygon = new Polygon(xpoints, ypoints, points.size());
+		return new Polygonal2DSelection(
+				world,
+				points,
+				Math.min(Math.max(0, minY), world.getMaxHeight()),
+				Math.min(Math.max(0, maxY), world.getMaxHeight()),
+				polygon
+		);
+	}
+
+	private Polygonal2DSelection(World world, List<BlockVector2D> points, int minY, int maxY, Polygon polygon) {
+		this.world = world;
+		this.points = points;
+		this.minY = minY;
+		this.maxY = maxY;
+		this.polygon = polygon;
 	}
 
 	public List<BlockVector2D> getNativePoints() {
@@ -87,13 +97,13 @@ public class Polygonal2DSelection implements Selection {
 
 	@Override
 	public Shape getShape() {
-		return poly;
+		return polygon;
 	}
 
 	@Override
 	public boolean contains(Location pt) {
 		return pt.getBlockY() >= minY && pt.getBlockY() <= maxY
-				&& poly.contains(new Point(pt.getBlockX(), pt.getBlockZ()));
+				&& polygon.contains(new Point(pt.getBlockX(), pt.getBlockZ()));
 	}
 
 	@Override
