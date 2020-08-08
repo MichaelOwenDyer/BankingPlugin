@@ -131,7 +131,7 @@ public class BankGui extends Gui<Bank> {
 		boolean reimburse = config.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION);
 		return Arrays.asList(
 				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + Utils.format(config.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE)),
-				ChatColor.GRAY + "Reimbursement on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
+				ChatColor.GRAY + "Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}
 
@@ -141,7 +141,7 @@ public class BankGui extends Gui<Bank> {
 		double lowBalanceFee = config.get(AccountConfig.Field.LOW_BALANCE_FEE);
 		boolean strikethrough = minBalance == 0;
 		boolean payOnLowBalance = config.get(AccountConfig.Field.PAY_ON_LOW_BALANCE);
-		return Utils.wordWrapAll(
+		return Utils.wordWrapAll(35,
 				ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBalance),
 				ChatColor.GRAY + "Low balance fee: " + ChatColor.RED
 						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.format(lowBalanceFee),
@@ -183,7 +183,8 @@ public class BankGui extends Gui<Bank> {
 		List<String> lore = new ArrayList<>();
 		lore.add(ChatColor.GRAY + "New accounts will begin to generate interest " + (interestDelay == 0
 				? ChatColor.GREEN + "immediately" + ChatColor.GRAY + " after creation."
-				: "after " + ChatColor.AQUA + interestDelay + ChatColor.GRAY + " preliminary interest cycles."));
+				: "after " + ChatColor.AQUA + interestDelay + ChatColor.GRAY +
+					String.format(" preliminary interest cycle%s.", interestDelay == 1 ? "" : "s")));
 		if (interestDelay != 0) {
 			lore.add("");
 			lore.add(ChatColor.GRAY + "The account owner " + (countOffline

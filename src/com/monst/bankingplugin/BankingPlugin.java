@@ -106,7 +106,7 @@ public class BankingPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		debug("Enabling BankingPlugin version " + getDescription().getVersion());
+		// debug("Enabling BankingPlugin version " + getDescription().getVersion());
 		for (String s : Utils.getVersionMessage())
 			getLogger().info(ChatColor.stripColor(s));
 

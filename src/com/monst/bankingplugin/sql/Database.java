@@ -349,7 +349,7 @@ public abstract class Database {
 						ps.setInt(1, bank.getID());
 					}
 
-					ps.setString(i + 1, bank.getName() != null ? bank.getName() : "Bank");
+					ps.setString(i + 1, bank.getRawName() != null ? bank.getRawName() : "Bank");
 					
 					if (bank.getType() == BankType.ADMIN) {
 						ps.setString(i + 2, "$ADMIN$");

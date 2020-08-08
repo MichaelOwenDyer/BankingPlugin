@@ -102,6 +102,9 @@ public class Utils {
     public static List<String> wordWrapAll(String... args) {
 		return wordWrapAll(30, Arrays.stream(args));
 	}
+    public static List<String> wordWrapAll(int lineLength, String... args) {
+		return wordWrapAll(lineLength, Arrays.stream(args));
+	}
 
     public static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
 		return lines.map(s -> ChatPaginator.wordWrap(s, lineLength))

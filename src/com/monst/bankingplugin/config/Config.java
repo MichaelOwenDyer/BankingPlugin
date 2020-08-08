@@ -447,14 +447,14 @@ public class Config {
 				Math.abs(config.getInt("allowed-offline-payouts.default")));
 
 		allowedOfflinePayoutsBeforeReset = new ConfigPair<>(
-				config.getBoolean("allowed-offline-before-multiplier-reset.allow-override"),
-				Math.abs(config.getInt("allowed-offline-before-multiplier-reset.default")));
+				config.getBoolean("allowed-offline-payouts-before-multiplier-reset.allow-override"),
+				Math.abs(config.getInt("allowed-offline-payouts-before-multiplier-reset.default")));
 
-		offlineMultiplierDecrement = new ConfigPair<>(config.getBoolean("offline-multiplier-behavior.allow-override"),
-				Math.abs(config.getInt("offline-multiplier-behavior.default")));
+		offlineMultiplierDecrement = new ConfigPair<>(config.getBoolean("offline-multiplier-decrement.allow-override"),
+				Math.abs(config.getInt("offline-multiplier-decrement.default")));
 
-		withdrawalMultiplierDecrement = new ConfigPair<>(config.getBoolean("withdrawal-multiplier-behavior.allow-override"),
-				Math.abs(config.getInt("withdrawal-multiplier-behavior.default")));
+		withdrawalMultiplierDecrement = new ConfigPair<>(config.getBoolean("withdrawal-multiplier-decrement.allow-override"),
+				Math.abs(config.getInt("withdrawal-multiplier-decrement.default")));
 
 		try {
 			accountInfoItem = new ItemStack(Material.getMaterial(config.getString("account-info-item")));
@@ -464,14 +464,17 @@ public class Config {
 			accountInfoItem = new ItemStack(Material.STICK);
 		}
 
-		bankCreationPriceAdmin = Math.abs(config.getDouble("creation-prices.bank.admin"));
 		bankCreationPricePlayer = Math.abs(config.getDouble("creation-prices.bank.player"));
+		bankCreationPriceAdmin = Math.abs(config.getDouble("creation-prices.bank.admin"));
 
 		accountCreationPrice = new ConfigPair<>(config.getBoolean("creation-prices.account.allow-override"),
 				Math.abs(config.getDouble("creation-prices.account.default")));
 
-		reimburseAccountCreation = new ConfigPair<>(config.getBoolean("reimburse-account-creation.allow-override"),
-				config.getBoolean("reimburse-account-creation.default"));
+		reimburseBankCreationPlayer = config.getBoolean("reimburse-creation.bank.player");
+		reimburseBankCreationAdmin = config.getBoolean("reimburse-creation.bank.admin");
+
+		reimburseAccountCreation = new ConfigPair<>(config.getBoolean("reimburse-creation.account.allow-override"),
+				config.getBoolean("reimburse-creation.account.default"));
 
 		minimumBalance = new ConfigPair<>(config.getBoolean("minimum-account-balance.allow-override"),
 				Math.abs(config.getDouble("minimum-account-balance.default")));
@@ -481,9 +484,6 @@ public class Config {
 
 		payOnLowBalance = new ConfigPair<>(config.getBoolean("pay-interest-on-low-balance.allow-override"),
 				config.getBoolean("pay-interest-on-low-balance.default"));
-
-		reimburseBankCreationAdmin = config.getBoolean("reimburse-creation.bank.admin");
-		reimburseBankCreationPlayer = config.getBoolean("reimburse-creation.bank.player");
 
 		playerBankAccountLimit = new ConfigPair<>(config.getBoolean("player-bank-account-limit.allow-override"),
 				config.getInt("player-bank-account-limit.default"));
@@ -498,9 +498,9 @@ public class Config {
 		confirmOnTransfer = config.getBoolean("confirm-on-transfer");
 		trustOnTransfer = config.getBoolean("trust-on-transfer");
         enableUpdateChecker = config.getBoolean("enable-update-checker");
-		enableTransactionLog = config.getBoolean("enable-logs.transaction-log");
-		enableInterestLog = config.getBoolean("enable-logs.interest-log");
-		enableDebugLog = config.getBoolean("enable-logs.debug-log");
+		enableTransactionLog = config.getBoolean("enable-transaction-log");
+		enableInterestLog = config.getBoolean("enable-interest-log");
+		enableDebugLog = config.getBoolean("enable-debug-log");
 		cleanupLogDays = config.getInt("cleanup-log-days");
         enableWorldGuardIntegration = config.getBoolean("enable-worldguard-integration");
         enableGriefPreventionIntegration = config.getBoolean("enable-griefprevention-integration");

@@ -220,10 +220,9 @@ enable-update-checker: true
 # Set whether deposits/withdrawals, interest payouts, and debug logs should be saved in the database.
 # Debug log file may become quite large!
 # Type: boolean
-enable-logs:
-  transaction-log: true
-  interest-log: true
-  debug-log: true
+enable-transaction-log: true
+enable-interest-log: true
+enable-debug-log: true
 
 # Set the maximum age for economy log entries in days.
 # All log entries older than this will be deleted on server start.

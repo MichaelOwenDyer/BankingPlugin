@@ -154,9 +154,8 @@ public class AccountConfig {
 	public static boolean isOverrideAllowed(Field field) {
 		try {
 			return ((Config.ConfigPair) field.getConfigField().get(null)).isOverridable();
-		} catch (IllegalAccessException e) {
-			return false;
-		}
+		} catch (IllegalAccessException ignored) {}
+		return false;
 	}
 
 	/**
