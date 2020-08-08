@@ -5,9 +5,9 @@ import com.monst.bankingplugin.commands.account.AccountCommand;
 import com.monst.bankingplugin.commands.bank.BankCommand;
 import com.monst.bankingplugin.commands.control.ControlCommand;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.events.account.AccountInitializedEvent;
 import com.monst.bankingplugin.events.bank.BankInitializedEvent;
+import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.external.WorldGuardListener;
@@ -21,6 +21,7 @@ import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,7 +35,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BankingPlugin extends JavaPlugin {
 
@@ -103,7 +107,8 @@ public class BankingPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		debug("Enabling BankingPlugin version " + getDescription().getVersion());
-		Bukkit.getConsoleSender().sendMessage(Utils.getVersionMessage());
+		for (String s : Utils.getVersionMessage())
+			getLogger().info(ChatColor.stripColor(s));
 
 		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
 			debug("Could not find plugin \"Vault\"");

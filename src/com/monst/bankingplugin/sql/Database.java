@@ -511,11 +511,13 @@ public abstract class Database {
 
 						String name = rs.getString("name");
 						boolean isAdminBank = rs.getString("owner").equals("$ADMIN$");
-						Set<OfflinePlayer> coowners = rs.getString("co_owners") == null ? null
+						Set<OfflinePlayer> coowners = rs.getString("co_owners") == null
+								? new HashSet<>()
 								: Arrays.stream(rs.getString("co_owners").split(" \\| "))
-								.filter(uuid -> uuid != null && !uuid.isEmpty())
-								.map(uuid -> Bukkit.getOfflinePlayer(UUID.fromString(uuid)))
-								.collect(Collectors.toSet());
+										.filter(string -> !string.isEmpty())
+										.map(UUID::fromString)
+										.map(Bukkit::getOfflinePlayer)
+										.collect(Collectors.toSet());
 						OfflinePlayer owner = null;
 						if (!isAdminBank) {
 							owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
@@ -583,11 +585,9 @@ public abstract class Database {
 
 						plugin.debug("Initializing bank" + (name != null ? " \"" + name + "\"" : "") + "... (#" + bankId + ")");
 
-						Bank bank;
-						if (isAdminBank)
-							bank = Bank.recreate(bankId, name, coowners, selection, accountConfig);
-						else
-							bank = Bank.recreate(bankId, name, owner, coowners, selection, accountConfig);
+						Bank bank = isAdminBank
+									? Bank.recreate(bankId, name, coowners, selection, accountConfig)
+									: Bank.recreate(bankId, name, owner, coowners, selection, accountConfig);
 
 						if (name == null)
 							bank.setToDefaultName();
@@ -685,9 +685,12 @@ public abstract class Database {
 				int z = rs.getInt("z");
 				Location location = new Location(world, x, y, z);
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
-				Set<OfflinePlayer> coowners = rs.getString("co_owners") == null ? null
-						: Arrays.stream(rs.getString("co_owners").split(" \\| ")).filter(uuid -> !uuid.isEmpty())
-								.map(uuid -> Bukkit.getOfflinePlayer(UUID.fromString(uuid)))
+				Set<OfflinePlayer> coowners = rs.getString("co_owners") == null
+						? new HashSet<>()
+						: Arrays.stream(rs.getString("co_owners").split(" \\| "))
+								.filter(string -> !string.isEmpty())
+								.map(UUID::fromString)
+								.map(Bukkit::getOfflinePlayer)
 								.collect(Collectors.toSet());
 				String nickname = rs.getString("nickname");
 
