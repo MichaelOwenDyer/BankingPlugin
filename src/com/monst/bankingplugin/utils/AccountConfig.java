@@ -6,13 +6,11 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import org.apache.commons.lang.WordUtils;
-import scala.annotation.meta.field;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -86,6 +84,14 @@ public class AccountConfig {
 						.collect(Collectors.toList()));
 			} catch (IllegalAccessException ignored) {}
 		});
+		FORMATTERS.put(Field.MULTIPLIERS, instance -> {
+			try {
+				return ((List<Integer>) Field.MULTIPLIERS.getLocalField().get(instance)).stream()
+						.map(String::valueOf)
+						.collect(Collectors.joining(", ", "[", "]"));
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		});
 		SETTERS.put(Field.INTEREST_PAYOUT_TIMES, (instance, value) -> {
 			try {
 				Field.INTEREST_PAYOUT_TIMES.getLocalField().set(instance,
@@ -94,14 +100,6 @@ public class AccountConfig {
 						.map(LocalTime::parse)
 						.collect(Collectors.toList()));
 			} catch (IllegalAccessException ignored) {}
-		});
-		FORMATTERS.put(Field.MULTIPLIERS, instance -> {
-			try {
-				return ((List<Integer>) Field.MULTIPLIERS.getLocalField().get(instance)).stream()
-						.map(String::valueOf)
-						.collect(Collectors.joining(", ", "[", "]"));
-			} catch (IllegalAccessException ignored) {}
-			return "";
 		});
 		FORMATTERS.put(Field.INTEREST_PAYOUT_TIMES, instance -> {
 			try {
@@ -209,9 +207,9 @@ public class AccountConfig {
 	 * Set a value to the specified {@link Field}. If the field cannot accept the
 	 * provided value, a {@link ArgumentParseException} is returned in the {@link Callback}
 	 * @param field the field to set
-	 * @param value the value to set the field to
-	 * @param callback the {@link Callback} that returns how the value was parsed and interpreted
-	 * @return whether the field was successfully set or not
+	 * @param value the value the field should be set to
+	 * @param callback the {@link Callback} that returns the new formatted field or an error message
+	 * @return whether the field is overridable or not
 	 */
 	public boolean set(Field field, String value, Callback<String> callback) {
 		if (!isOverrideAllowed(field))

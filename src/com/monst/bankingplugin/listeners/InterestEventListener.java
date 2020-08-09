@@ -25,27 +25,31 @@ public class InterestEventListener implements Listener {
 	
 	private final BankingPlugin plugin;
 	private final AccountUtils accountUtils;
-	private final BankUtils bankUtils;
 
 	public InterestEventListener(BankingPlugin plugin) {
 		this.plugin = plugin;
 		this.accountUtils = plugin.getAccountUtils();
-		this.bankUtils = plugin.getBankUtils();
 	}
 
 	@EventHandler(ignoreCancelled = true)
 	public void onInterestEvent(InterestEvent e) {
+
+		if (e.getBanks().isEmpty())
+			return;
 		
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				plugin.debug("Interest payout event occurring now!");
+				plugin.debug("Interest payout event occurring now at bank(s) " + e.getBanks().stream()
+						.map(b -> "#" + b.getID()).collect(Collectors.joining(", ")));
 
-				Map<OfflinePlayer, List<Account>> playerAccountMap = accountUtils.getAccountsCopy().stream()
-						.collect(Collectors.groupingBy(Account::getOwner));
-				Map<OfflinePlayer, List<Bank>> playerBankMap = bankUtils.getBanksCopy().stream()
+				Map<OfflinePlayer, List<Bank>> playerBankMap = e.getBanks().stream()
 						.filter(Bank::isPlayerBank)
 						.collect(Collectors.groupingBy(Bank::getOwner));
+				Map<OfflinePlayer, List<Account>> playerAccountMap = e.getBanks().stream()
+						.map(Bank::getAccounts)
+						.flatMap(Collection::stream)
+						.collect(Collectors.groupingBy(Account::getOwner));
 
 				if (playerAccountMap.isEmpty())
 					return;

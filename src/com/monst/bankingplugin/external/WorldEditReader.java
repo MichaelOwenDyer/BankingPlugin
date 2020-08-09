@@ -77,8 +77,9 @@ public class WorldEditReader {
 			int maxY = sel.getMaximumPoint().getBlockY();
 			regionSelector = new Polygonal2DRegionSelector(BukkitAdapter.adapt(sel.getWorld()), points, minY, maxY);
 		}
-
+		
 		plugin.debug(p.getName() + " has selected the bank at " + sel.getCoordinates());
+		regionSelector.setWorld(BukkitAdapter.adapt(sel.getWorld()));
 		worldEdit.getWorldEdit().getSessionManager().get(BukkitAdapter.adapt(p))
 				.setRegionSelector(BukkitAdapter.adapt(sel.getWorld()), regionSelector);
 	}

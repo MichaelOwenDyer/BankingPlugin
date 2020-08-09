@@ -663,13 +663,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		String previousValue = bank.getAccountConfig().getFormatted(field);
-		Bank finalBank = bank;
 		Callback<String> callback = new Callback<String>(plugin) {
 			@Override
 			public void onResult(String result) {
-				plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + finalBank.getName() + " from " + previousValue + " to " + result);
-				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, "You", field.getName(), previousValue, result, finalBank.getColorizedName()));
-				Utils.notifyPlayers(String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(), previousValue, result, finalBank.getColorizedName()),
+				plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + bank.getName() + " from " + previousValue + " to " + result);
+				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, "You", field.getName(), previousValue, result, bank.getColorizedName()));
+				Utils.notifyPlayers(String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(), previousValue, result, bank.getColorizedName()),
 						sender, bank.getTrustedPlayers(), bank.getCustomers());
 			}
 			@Override
@@ -681,6 +680,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		};
 		if (!bank.getAccountConfig().set(field, value, callback))
 			sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
+
+		if (field == Field.INTEREST_PAYOUT_TIMES)
+			InterestEventScheduler.scheduleBankInterestEvents(bank);
 
 		bankUtils.addBank(bank, true);
 		return true;
