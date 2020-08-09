@@ -11,7 +11,9 @@ import scala.annotation.meta.field;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,39 +25,56 @@ import java.util.stream.Stream;
 @SuppressWarnings("all")
 public class AccountConfig {
 
-	private static final Map<Field, BiFunction<AccountConfig, String, String>> SETTERS = new EnumMap<>(Field.class);
+	private static final Map<Field, BiConsumer<AccountConfig, String>> SETTERS = new EnumMap<>(Field.class);
+	private static final Map<Field, Function<AccountConfig, String>> FORMATTERS = new EnumMap<>(Field.class);
 	static {
-		Field.stream(Boolean.class).forEach(field -> SETTERS.put(field, (instance, value) -> {
-			try {
-				field.getLocalField().set(instance, Boolean.parseBoolean(value));
-				return "" + field.getLocalField().get(instance);
-			} catch (IllegalAccessException ignored) {}
-			return "";
-		}));
+		Field.stream(Boolean.class).forEach(field -> {
+			SETTERS.put(field, (instance, value) -> {
+				try {
+					field.getLocalField().set(instance, Boolean.parseBoolean(value));
+				} catch (IllegalAccessException ignored) {}
+			});
+			FORMATTERS.put(field, instance -> {
+				try {
+					return "" + field.getLocalField().get(instance);
+				} catch (IllegalAccessException ignored) {}
+				return "";
+			});
+		});
 
-		Field.stream(Double.class).forEach(field -> SETTERS.put(field, (instance, value) -> {
-			try {
-				field.getLocalField().set(instance, Math.abs(Double.parseDouble(value.replace(",", ""))));
-				return Utils.format(field.getLocalField().get(instance));
-			} catch (IllegalAccessException ignored) {}
-			return "";
-		}));
+		Field.stream(Double.class).forEach(field -> {
+			SETTERS.put(field, (instance, value) -> {
+				try {
+					field.getLocalField().set(instance, Math.abs(Double.parseDouble(value.replace(",", ""))));
+				} catch (IllegalAccessException ignored) {}
+			});
+			FORMATTERS.put(field, instance -> {
+				try {
+					return String.format("%,.2f", field.getLocalField().get(instance));
+				} catch (IllegalAccessException ignored) {}
+				return "";
+			});
+		});
 
 		SETTERS.put(Field.PLAYER_BANK_ACCOUNT_LIMIT, (instance, value) -> {
 			try {
 				Field.PLAYER_BANK_ACCOUNT_LIMIT.getLocalField().set(instance, Integer.parseInt(value)); // Special setter without Math.abs for this field
-				return Utils.format(Field.PLAYER_BANK_ACCOUNT_LIMIT.getLocalField().get(instance));
 			} catch (IllegalAccessException ignored) {}
-			return "";
 		});
 
-		Field.stream(Integer.class).forEach(field -> SETTERS.putIfAbsent(field, (instance, value) -> {
-			try {
-				field.getLocalField().set(instance, Math.abs(Integer.parseInt(value)));
-				return "" + field.getLocalField().get(instance);
-			} catch (IllegalAccessException ignored) {}
-			return "";
-		}));
+		Field.stream(Integer.class).forEach(field -> {
+			SETTERS.putIfAbsent(field, (instance, value) -> {
+				try {
+					field.getLocalField().set(instance, Math.abs(Integer.parseInt(value)));
+				} catch (IllegalAccessException ignored) {}
+			});
+			FORMATTERS.put(field, instance -> {
+				try {
+					return "" + field.getLocalField().get(instance);
+				} catch (IllegalAccessException ignored) {}
+				return "";
+			});
+		});
 
 		SETTERS.put(Field.MULTIPLIERS, (instance, value) -> {
 			try {
@@ -65,9 +84,7 @@ public class AccountConfig {
 						.map(Integer::parseInt)
 						.map(Math::abs)
 						.collect(Collectors.toList()));
-				return Utils.format(Field.MULTIPLIERS.getLocalField().get(instance));
 			} catch (IllegalAccessException ignored) {}
-			return "";
 		});
 		SETTERS.put(Field.INTEREST_PAYOUT_TIMES, (instance, value) -> {
 			try {
@@ -76,7 +93,21 @@ public class AccountConfig {
 						.filter(s -> !s.isEmpty())
 						.map(LocalTime::parse)
 						.collect(Collectors.toList()));
-				return Utils.format(Field.INTEREST_PAYOUT_TIMES.getLocalField().get(instance));
+			} catch (IllegalAccessException ignored) {}
+		});
+		FORMATTERS.put(Field.MULTIPLIERS, instance -> {
+			try {
+				return ((List<Integer>) Field.MULTIPLIERS.getLocalField().get(instance)).stream()
+						.map(String::valueOf)
+						.collect(Collectors.joining(", ", "[", "]"));
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		});
+		FORMATTERS.put(Field.INTEREST_PAYOUT_TIMES, instance -> {
+			try {
+				return ((List<LocalTime>) Field.INTEREST_PAYOUT_TIMES.getLocalField().get(instance)).stream()
+						.map(LocalTime::toString)
+						.collect(Collectors.joining(", ", "[", "]"));
 			} catch (IllegalAccessException ignored) {}
 			return "";
 		});
@@ -186,7 +217,8 @@ public class AccountConfig {
 		if (!isOverrideAllowed(field))
 			return false;
 		try {
-			callback.callSyncResult(SETTERS.get(field).apply(this, value));
+			SETTERS.get(field).accept(this, value);
+			callback.callSyncResult(FORMATTERS.get(field).apply(this));
 		} catch (NumberFormatException | DateTimeParseException e) {
 			callback.callSyncError(new ArgumentParseException(field.getDataType(), value));
 		}
@@ -195,6 +227,10 @@ public class AccountConfig {
 
 	public <T> T get(Field field) {
 		return get(field, false);
+	}
+
+	public String getFormatted(Field field) {
+		return FORMATTERS.get(field).apply(this);
 	}
 
 	/**

@@ -143,29 +143,13 @@ public class BankTabCompleter implements TabCompleter {
         List<AccountConfig.Field> fields = AccountConfig.Field.stream().filter(AccountConfig::isOverrideAllowed).collect(Collectors.toList());
 
         if (args.length == 2) {
-            if (sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation())) {
-                banks.remove(bankUtils.getBank(((Player) sender).getLocation()));
-                if (!args[1].isEmpty()) {
-                    for (AccountConfig.Field field : fields)
-                        if (field.getName().startsWith(args[1].toLowerCase()))
-                            returnCompletions.add(field.getName());
-                    for (Bank bank : banks)
-                        if (bank.getName().startsWith(args[1].toLowerCase()))
-                            returnCompletions.add(bank.getName());
-                } else {
-                    returnCompletions.addAll(fields.stream().map(AccountConfig.Field::getName).collect(Collectors.toList()));
-                    returnCompletions.addAll(banks.stream().map(Bank::getName).collect(Collectors.toList()));
-                }
+            if (!args[1].isEmpty()) {
+                for (Bank bank : banks)
+                    if (bank.getName().toLowerCase().startsWith(args[1].toLowerCase()))
+                        returnCompletions.add(bank.getName());
                 return returnCompletions;
-            } else {
-                if (!args[1].isEmpty()) {
-                    for (Bank bank : banks)
-                        if (bank.getName().toLowerCase().startsWith(args[1].toLowerCase()))
-                            returnCompletions.add(bank.getName());
-                    return returnCompletions;
-                } else
-                    return banks.stream().map(Bank::getName).collect(Collectors.toList());
-            }
+            } else
+                return banks.stream().map(Bank::getName).collect(Collectors.toList());
         } else if (args.length == 3) {
             Bank bank = bankUtils.lookupBank(args[1]);
             if (bank != null) {
@@ -177,23 +161,11 @@ public class BankTabCompleter implements TabCompleter {
                 } else
                     return fields.stream().map(AccountConfig.Field::getName).collect(Collectors.toList());
             }
-            if (!(sender instanceof Player))
-                return new ArrayList<>();
-            bank = bankUtils.getBank(((Player) sender).getLocation());
-            AccountConfig.Field field = AccountConfig.Field.getByName(args[1]);
-            if (bank != null && field != null) {
-                if (field.getDataType().equals(List.class)) // TODO: Generify
-                    return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
-                return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
-            }
         } else if (args.length == 4) {
             Bank bank = bankUtils.lookupBank(args[1]);
             AccountConfig.Field field = AccountConfig.Field.getByName(args[2]);
-            if (bank != null && field != null) {
-                if (field.getDataType().equals(List.class)) // TODO: Generify
-                    return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
-                return Collections.singletonList(Utils.format(bank.getAccountConfig().get(field)));
-            }
+            if (bank != null && field != null)
+                return Collections.singletonList(bank.getAccountConfig().getFormatted(field));
         }
         return Collections.emptyList();
     }

@@ -62,26 +62,16 @@ public class Utils {
 		return ChatColor.stripColor(colorize(s));
 	}
 
-	public static String format(Object o) {
-		if (o instanceof Double)
-			return format((Double) o);
-		if (o instanceof BigDecimal)
-			return format((BigDecimal) o);
-		if (o instanceof List)
-			return format((List<? extends Number>) o);
-		return "" + o;
+	public static String format(int i) {
+		return "" + i;
 	}
 
-	private static String format(Double d) {
+	public static String format(Double d) {
 		return format(BigDecimal.valueOf(d));
 	}
 
-	private static String format(BigDecimal bd) {
+	public static String format(BigDecimal bd) {
 		return String.format("%,.2f", bd);
-	}
-
-	private static String format(List<? extends Number> list) {
-		return list.stream().map(String::valueOf).collect(Collectors.joining(", ", "[", "]"));
 	}
 
 	public static String removePunctuation(String list) {

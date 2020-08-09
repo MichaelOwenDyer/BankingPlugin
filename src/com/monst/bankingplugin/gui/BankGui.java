@@ -132,7 +132,7 @@ public class BankGui extends Gui<Bank> {
 		AccountConfig config = guiSubject.getAccountConfig();
 		boolean reimburse = config.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION);
 		return Arrays.asList(
-				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + Utils.format(config.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE)),
+				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + config.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE),
 				ChatColor.GRAY + "Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}

@@ -174,12 +174,12 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		int volumeLimit = bankUtils.getVolumeLimit(p);
 		if (!isAdminBank && volumeLimit != -1 && volume > volumeLimit) {
 			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
-			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE, Utils.format(volumeLimit), Utils.format(volume - volumeLimit)));
+			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE, volumeLimit, volume - volumeLimit));
 			return true;
 		}
 		if (!isAdminBank && volume < Config.minimumBankVolume) {
 			plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume + ")");
-			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Utils.format(Config.minimumBankVolume), Utils.format(Config.minimumBankVolume - volume)));
+			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Config.minimumBankVolume, Config.minimumBankVolume - volume));
 			return true;
 		}
 		if (name != null) {
@@ -622,53 +622,23 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 	private boolean promptBankSet(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to configure a bank");
 
-		if (args.length < 3)
+		if (args.length < 4)
 			return false;
 
-		if (args.length == 3 && !(sender instanceof Player)) {
+		if (args.length == 4 && !(sender instanceof Player)) {
 			plugin.debug("Player command only");
 			sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
 			return true;
 		}
 
-		Bank bank;
-		boolean standingInBank = true;
-		String fieldName;
-		String value;
-
-		if (args.length == 3) {
-			bank = bankUtils.getBank(((Player) sender).getLocation());
-			fieldName = args[1];
-			value = args[2];
-		} else {
-			if (args[1].equalsIgnoreCase("multipliers")) {
-				bank = bankUtils.getBank(((Player) sender).getLocation());
-				fieldName = args[1];
-				StringBuilder sb = new StringBuilder(args[2]);
-				for (int i = 3; i < args.length; i++)
-					sb.append(" ").append(args[i]);
-				value = sb.toString();
-			} else if (args[2].equalsIgnoreCase("multipliers")) {
-				bank = bankUtils.lookupBank(args[1]);
-				fieldName = args[2];
-				StringBuilder sb = new StringBuilder(args[3]);
-				for (int i = 4; i < args.length; i++)
-					sb.append(" ").append(args[i]);
-				value = sb.toString();
-			} else {
-				bank = bankUtils.lookupBank(args[1]);
-				standingInBank = false;
-				fieldName = args[2];
-				value = args[3];
-			}
-		}
+		Bank bank = bankUtils.lookupBank(args[1]);
+		String fieldName = args[2];
+		StringBuilder sb = new StringBuilder(args[3]);
+		for (int i = 4; i < args.length; i++)
+			sb.append(" ").append(args[i]);
+		String value = sb.toString();
 
 		if (bank == null) {
-			if (standingInBank) {
-				plugin.debug(sender.getName() + " was not standing in a bank");
-				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
-				return true;
-			}
 			plugin.debug("No bank could be found under the identifier " + args[1]);
 			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
@@ -685,8 +655,6 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		AccountConfig config = bank.getAccountConfig();
-		
 		Field field = Field.getByName(fieldName);
 		if (field == null) {
 			plugin.debug("No account config field could be found with name " + fieldName);
@@ -694,7 +662,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		String previousValue = Utils.format(bank.getAccountConfig().get(field));
+		String previousValue = bank.getAccountConfig().getFormatted(field);
 		Bank finalBank = bank;
 		Callback<String> callback = new Callback<String>(plugin) {
 			@Override
@@ -711,7 +679,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				sender.sendMessage(errorMessage);
 			}
 		};
-		if (!config.set(field, value, callback))
+		if (!bank.getAccountConfig().set(field, value, callback))
 			sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
 
 		bankUtils.addBank(bank, true);

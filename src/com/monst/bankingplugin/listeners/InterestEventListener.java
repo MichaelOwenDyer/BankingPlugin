@@ -179,7 +179,7 @@ public class InterestEventListener implements Listener {
 							if (isOnline) {
 								int count = feesReceivable.get(bankOwner).getCount();
 								bankOwner.getPlayer().sendMessage(String.format(Messages.LOW_BALANCE_FEE_EARNED,
-										Utils.format(feesReceivable.get(bankOwner)),
+										Utils.format(feesReceivable.get(bankOwner).getSum()),
 										count, count == 1 ? "" : "s"));
 							}
 						}
@@ -209,7 +209,7 @@ public class InterestEventListener implements Listener {
 							if (isOnline) {
 								int count = interestPayable.get(bankOwner).getCount();
 								bankOwner.getPlayer().sendMessage(String.format(Messages.INTEREST_PAID,
-										Utils.format(interestPayable.get(bankOwner)),
+										Utils.format(interestPayable.get(bankOwner).getSum()),
 										count, count == 1 ? "" : "s"));
 							}
 						}
@@ -239,7 +239,7 @@ public class InterestEventListener implements Listener {
 							if (online) {
 								int count = interestReceivable.get(customer).getCount();
 								customer.getPlayer().sendMessage(String.format(Messages.INTEREST_EARNED,
-										Utils.format(interestReceivable.get(customer)),
+										Utils.format(interestReceivable.get(customer).getSum()),
 										count, count == 1 ? "" : "s"));
 							}
 						}
@@ -269,7 +269,7 @@ public class InterestEventListener implements Listener {
 							if (online) {
 								int count = feesPayable.get(customer).getCount();
 								customer.getPlayer().sendMessage(String.format(Messages.LOW_BALANCE_FEE_PAID,
-										Utils.format(feesPayable.get(customer)),
+										Utils.format(feesPayable.get(customer).getSum()),
 										count, count == 1 ? "" : "s"));
 							}
 						}
