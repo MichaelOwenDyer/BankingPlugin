@@ -2,6 +2,7 @@ package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
+import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -36,7 +37,7 @@ public class Config {
     /**
      * The real-life times for account interest payouts.
      **/
-	public static List<LocalTime> interestPayoutTimes;
+	public static ConfigPair<List<LocalTime>> interestPayoutTimes;
     
     /**
      * The default baseline account interest rate.
@@ -406,7 +407,8 @@ public class Config {
         mainCommandNameBank = config.getString("main-command-names.bank");
         mainCommandNameAccount = config.getString("main-command-names.account");
 		mainCommandNameControl = config.getString("main-command-names.control");
-		interestPayoutTimes = config.getStringList("interest-payout-times").stream()
+		interestPayoutTimes = new ConfigPair<>(config.getBoolean("interest-payout-times.allow-override"),
+				config.getStringList("interest-payout-times.default").stream()
 		.map(t -> t.replace(".", ":"))
 		.map(t -> t.contains(":") ? t : t + ":00")
 		.map(t -> t.substring(0, t.indexOf(':')).length() > 1 ? t : "0" + t)
@@ -417,9 +419,8 @@ public class Config {
 				plugin.debug("Could not parse time from config: " + t);
 				return null;
 			}
-		}).collect(Collectors.toList());
-		if (plugin.isEnabled())
-			plugin.scheduleInterestPoints();
+		}).collect(Collectors.toList()));
+		InterestEventScheduler.scheduleAll();
 
 		interestRate = new ConfigPair<>(config.getBoolean("interest-rate.allow-override"),
 				Math.abs(config.getDouble("interest-rate.default")));

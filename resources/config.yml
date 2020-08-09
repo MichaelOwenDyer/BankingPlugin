@@ -12,15 +12,17 @@ main-command-names:
   account: account
   control: bp
 
-# Set the daily times at which players should receive interest payments from their accounts.
+# Set the daily times at which customers should receive interest payments from their accounts.
 # The time zone will be that of the server, not of the individual players.
 # These are real times (0 <= time < 24) written in the standard 24-hour format (for example, '00:00' for midnight, '13:45', '17:15:30', etc.).
 # Equivalent values will not be counted twice.
 # Type: List<LocalTime>
 interest-payout-times:
-# - '09:00'
-# - '12:00'
-# - '15:00'
+  default:
+  # - '09:00'
+  # - '12:00'
+  # - '15:00'
+  allow-override: false
   
 # Set the base interest rate for all bank accounts on the server.
 # Value should be a floating point number greater than 0.

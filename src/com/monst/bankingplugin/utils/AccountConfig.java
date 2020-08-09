@@ -6,7 +6,10 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import org.apache.commons.lang.WordUtils;
+import scala.annotation.meta.field;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -20,12 +23,8 @@ import java.util.stream.Stream;
 @SuppressWarnings("all")
 public class AccountConfig {
 
-	private static boolean initialized = false;
 	private static final Map<Field, BiFunction<AccountConfig, String, String>> SETTERS = new EnumMap<>(Field.class);
-	public static void initialize() {
-		if (initialized)
-			return;
-
+	static {
 		Field.stream(Boolean.class).forEach(field -> SETTERS.put(field, (instance, value) -> {
 			try {
 				field.getLocalField().set(instance, Boolean.parseBoolean(value));
@@ -49,6 +48,7 @@ public class AccountConfig {
 			} catch (IllegalAccessException ignored) {}
 			return "";
 		});
+
 		Field.stream(Integer.class).forEach(field -> SETTERS.putIfAbsent(field, (instance, value) -> {
 			try {
 				field.getLocalField().set(instance, Math.abs(Integer.parseInt(value)));
@@ -57,22 +57,34 @@ public class AccountConfig {
 			return "";
 		}));
 
-		Field.stream(List.class).forEach(field -> SETTERS.put(field, (instance, value) -> {
+		SETTERS.put(Field.MULTIPLIERS, (instance, value) -> {
 			try {
-				field.getLocalField().set(instance, Arrays.stream(Utils.removePunctuation(value).split(" "))
+				Field.MULTIPLIERS.getLocalField().set(instance,
+						Arrays.stream(Utils.removePunctuation(value).split(" "))
 						.filter(s -> !s.isEmpty())
 						.map(Integer::parseInt)
 						.map(Math::abs)
 						.collect(Collectors.toList()));
-				return Utils.format(field.getLocalField().get(instance));
+				return Utils.format(Field.MULTIPLIERS.getLocalField().get(instance));
 			} catch (IllegalAccessException ignored) {}
 			return "";
-		}));
-		initialized = true;
+		});
+		SETTERS.put(Field.INTEREST_PAYOUT_TIMES, (instance, value) -> {
+			try {
+				Field.INTEREST_PAYOUT_TIMES.getLocalField().set(instance,
+						Arrays.stream(value.split(" "))
+						.filter(s -> !s.isEmpty())
+						.map(LocalTime::parse)
+						.collect(Collectors.toList()));
+				return Utils.format(Field.INTEREST_PAYOUT_TIMES.getLocalField().get(instance));
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		});
 	}
 
 	private double interestRate;
 	private List<Integer> multipliers;
+	private List<LocalTime> interestPayoutTimes;
 	private int initialInterestDelay;
 	private boolean countInterestDelayOffline;
 	private int allowedOfflinePayouts;
@@ -93,6 +105,7 @@ public class AccountConfig {
 		this(
 				Config.interestRate.getDefault(),
 				Config.multipliers.getDefault(),
+				Config.interestPayoutTimes.getDefault(),
 				Config.initialInterestDelay.getDefault(),
 				Config.countInterestDelayOffline.getDefault(),
 				Config.allowedOfflinePayouts.getDefault(),
@@ -125,13 +138,14 @@ public class AccountConfig {
 	 * @param payOnLowBalance whether interest will continue to be generated while an account balance is low
 	 * @param playerBankAccountLimit the number of accounts each player is allowed to create at this bank
 	 */
-	public AccountConfig(double interestRate, List<Integer> multipliers, int initialInterestDelay,
+	public AccountConfig(double interestRate, List<Integer> multipliers, List<LocalTime> interestPayoutTimes, int initialInterestDelay,
 						 boolean countInterestDelayOffline, int allowedOfflinePayouts, int allowedOfflinePayoutsBeforeReset,
 						 int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, double accountCreationPrice,
 						 boolean reimburseAccountCreation, double minimumBalance, double lowBalanceFee, boolean payOnLowBalance, int playerBankAccountLimit) {
 
 		this.interestRate = interestRate;
 		this.multipliers = multipliers;
+		this.interestPayoutTimes = interestPayoutTimes;
 		this.initialInterestDelay = initialInterestDelay;
 		this.countInterestDelayOffline = countInterestDelayOffline;
 		this.allowedOfflinePayouts = allowedOfflinePayouts;
@@ -173,7 +187,7 @@ public class AccountConfig {
 			return false;
 		try {
 			callback.callSyncResult(SETTERS.get(field).apply(this, value));
-		} catch (NumberFormatException e) {
+		} catch (NumberFormatException | DateTimeParseException e) {
 			callback.callSyncError(new ArgumentParseException(field.getDataType(), value));
 		}
 		return true;
@@ -213,6 +227,7 @@ public class AccountConfig {
 
 		INTEREST_RATE (Double.class),
 		MULTIPLIERS (List.class),
+		INTEREST_PAYOUT_TIMES (List.class),
 		INITIAL_INTEREST_DELAY (Integer.class),
 		COUNT_INTEREST_DELAY_OFFLINE (Boolean.class),
 		ALLOWED_OFFLINE_PAYOUTS (Integer.class),

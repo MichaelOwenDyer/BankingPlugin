@@ -13,6 +13,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,23 +53,41 @@ public class BankTabCompleter implements TabCompleter {
     private List<String> completeBankCreate(Player p, String[] args) {
         ArrayList<String> returnCompletions = new ArrayList<>();
 
-        if ((args.length == 2 || args.length == 5 || args.length == 8)
-                && p.hasPermission(Permissions.BANK_CREATE_ADMIN))
-            returnCompletions.add("admin");
-
-        if ((args.length > 2 && args[1].equalsIgnoreCase("admin"))
-                || (args.length > 5 && args[4].equalsIgnoreCase("admin")))
+        if (Arrays.stream(args).anyMatch(s -> s.equalsIgnoreCase("admin")))
             return Collections.emptyList();
 
-        if (args.length > 7)
+        if (args.length == 2 && args[1].isEmpty())
+            returnCompletions.add("<bankname>");
+
+        boolean hasName = false;
+        if (args.length > 1)
+            try {
+                Integer.parseInt(args[1].replace("~",""));
+            } catch (NumberFormatException e) {
+                hasName = true;
+            }
+
+        if (p.hasPermission(Permissions.BANK_CREATE_ADMIN))
+            switch (args.length) {
+                case 2: case 5: case 8:
+                    if (!hasName)
+                        returnCompletions.add("admin");
+                    break;
+                case 3: case 6: case 9:
+                    if (hasName)
+                        returnCompletions.add("admin");
+                    break;
+            }
+
+        if (args.length >= 9)
             return returnCompletions;
 
         Location loc = p.getTargetBlock(null, 150).getLocation();
         String coord = "";
-        switch (args.length % 3) {
-            case 2: coord = "" + loc.getBlockX(); break;
-            case 0: coord = "" + loc.getBlockY(); break;
-            case 1: coord = "" + loc.getBlockZ();
+        switch (args.length + (hasName ? 0 : 1) % 3) {
+            case 0: coord = "" + loc.getBlockX(); break;
+            case 1: coord = "" + loc.getBlockY(); break;
+            case 2: coord = "" + loc.getBlockZ();
         }
         if (!args[args.length - 1].isEmpty()) {
             if (coord.startsWith(args[args.length - 1]))

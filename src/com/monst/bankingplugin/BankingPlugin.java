@@ -7,7 +7,6 @@ import com.monst.bankingplugin.commands.control.ControlCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountInitializedEvent;
 import com.monst.bankingplugin.events.bank.BankInitializedEvent;
-import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.external.WorldGuardListener;
@@ -19,6 +18,7 @@ import com.monst.bankingplugin.utils.UpdateChecker.UpdateCheckerResult;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
+import org.apache.commons.lang.WordUtils;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -135,7 +135,6 @@ public class BankingPlugin extends JavaPlugin {
 		
         accountUtils = new AccountUtils(this);
 		bankUtils = new BankUtils(this);
-		AccountConfig.initialize();
 
 		loadExternalPlugins();
 
@@ -144,13 +143,13 @@ public class BankingPlugin extends JavaPlugin {
 		controlCommand = new ControlCommand(this);
 
 		// checkForUpdates();
-		// enableMetrics();
+		enableMetrics();
 		initDatabase();
         registerListeners();
         registerExternalListeners();
 		initializeBanksAndAccounts();
-		scheduleInterestPoints();
-        
+		InterestEventScheduler.scheduleAll();
+
 	}
 
 	@Override
@@ -236,7 +235,7 @@ public class BankingPlugin extends JavaPlugin {
     private void enableMetrics() {
 		debug("Initializing Metrics...");
 
-		Metrics metrics = new Metrics(this, -1);
+		Metrics metrics = new Metrics(this, 8474);
 		metrics.addCustomChart(new Metrics.AdvancedPie("bank-types", () -> {
 			Map<String, Integer> typeFrequency = new HashMap<>();
 			int playerBanks = 0;
@@ -253,6 +252,12 @@ public class BankingPlugin extends JavaPlugin {
 
 			return typeFrequency;
 		}));
+		metrics.addCustomChart(new Metrics.SimplePie("account-info-item",
+				() -> WordUtils.capitalizeFully(Config.accountInfoItem.getType()
+						.name().replace("_", " "))
+		));
+		metrics.addCustomChart(new Metrics.SimplePie("self-banking",
+				() -> Config.allowSelfBanking ? "Enabled" : "Disabled"));
 	}
 
 	/**
@@ -369,60 +374,6 @@ public class BankingPlugin extends JavaPlugin {
 				getServer().getPluginManager().disablePlugin(BankingPlugin.this);
 			}
 		});
-	}
-
-	/**
-	 * Create Bukkit tasks to trigger interest events at the times specified in the {@link Config}
-	 * @see #scheduleRepeatAtTime(LocalTime)
-	 * @see InterestEvent
-	 * @see InterestEventListener
-	 */
-	public void scheduleInterestPoints() {
-		for (LocalTime time : payoutTimeIds.keySet())
-			if (!Config.interestPayoutTimes.contains(time)) {
-				Bukkit.getScheduler().cancelTask(payoutTimeIds.get(time));
-				debug("Removed interest payout at " + time);
-			}
-		for (LocalTime time : Config.interestPayoutTimes) {
-			if (time != null && !payoutTimeIds.containsKey(time)) {
-				int id = scheduleRepeatAtTime(time);
-				if (id == -1)
-					debug("Interest payout scheduling failed! (" + time + ")");
-				else {
-					payoutTimeIds.put(time, id);
-					debug("Scheduled interest payment at " + time);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Perform the necessary arithmetic to schedule a {@link LocalTime} from the {@link Config}
-	 * as a {@link org.bukkit.scheduler.BukkitTask} repeating every 24 hours.
-	 * @param time the time to be scheduled
-	 * @return the ID of the scheduled task, or -1 if the task was not scheduled
-	 */
-	private int scheduleRepeatAtTime(LocalTime time) {
-		// 24 hours/day * 60 minutes/hour * 60 seconds/minute *  20 ticks/second = 1728000 ticks/day
-		final long ticksInADay = 1728000L;
-		
-		Calendar cal = Calendar.getInstance();
-		long currentTime = cal.getTimeInMillis();
-		
-		if (LocalTime.now().isAfter(time))
-			cal.add(Calendar.DATE, 1);
-		cal.set(Calendar.HOUR_OF_DAY, time.getHour());
-		cal.set(Calendar.MINUTE, time.getMinute());
-		cal.set(Calendar.SECOND, time.getSecond());
-		cal.set(Calendar.MILLISECOND, 0);
-		
-		long offset = cal.getTimeInMillis() - currentTime;
-		long ticks = offset / 50L;
-		
-		debug("Scheduling daily interest payout at " + time.toString());
-		
-		return Bukkit.getScheduler().scheduleSyncRepeatingTask(this,
-				() -> Bukkit.getServer().getPluginManager().callEvent(new InterestEvent(this)), ticks, ticksInADay);
 	}
 
 	/**

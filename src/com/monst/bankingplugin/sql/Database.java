@@ -24,6 +24,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -557,28 +559,40 @@ public abstract class Database {
 						String[] accConfig = rs.getString("account_config").split(" \\| ");
 						List<Integer> multipliers;
 						try {
-							multipliers = Arrays
-								.stream(accConfig[1].substring(1, accConfig[1].length() - 1).split(","))
-								.map(Integer::parseInt).collect(Collectors.toList());
+							multipliers =
+									Arrays.stream(accConfig[1].substring(1, accConfig[1].length() - 1).split(","))
+									.map(Integer::parseInt)
+									.collect(Collectors.toList());
 						} catch (NumberFormatException e) {
 							multipliers = Collections.singletonList(1);
 						}
+						List<LocalTime> interestPayoutTimes;
+						try {
+							interestPayoutTimes =
+									Arrays.stream(accConfig[2].substring(1, accConfig[1].length() - 1).split(","))
+									.map(LocalTime::parse)
+									.collect(Collectors.toList());
+						} catch (Exception e) {
+							interestPayoutTimes = Config.interestPayoutTimes.getDefault();
+						}
+						int offset = accConfig.length == 15 ? 1 : 0;
 
 						AccountConfig accountConfig = new AccountConfig(
 								Double.parseDouble(accConfig[0]),
-								multipliers, 
-								Integer.parseInt(accConfig[2]),
-								Boolean.parseBoolean(accConfig[3]),
-								Integer.parseInt(accConfig[4]),
-								Integer.parseInt(accConfig[5]), 
-								Integer.parseInt(accConfig[6]),
-								Integer.parseInt(accConfig[7]),
-								Double.parseDouble(accConfig[8]),
-								Boolean.parseBoolean(accConfig[9]),
-								Double.parseDouble(accConfig[10]),
-								Double.parseDouble(accConfig[11]),
-								Boolean.parseBoolean(accConfig[12]),
-								Integer.parseInt(accConfig[13]));
+								multipliers,
+								interestPayoutTimes,
+								Integer.parseInt(accConfig[2 + offset]),
+								Boolean.parseBoolean(accConfig[3 + offset]),
+								Integer.parseInt(accConfig[4 + offset]),
+								Integer.parseInt(accConfig[5 + offset]),
+								Integer.parseInt(accConfig[6 + offset]),
+								Integer.parseInt(accConfig[7 + offset]),
+								Double.parseDouble(accConfig[8 + offset]),
+								Boolean.parseBoolean(accConfig[9 + offset]),
+								Double.parseDouble(accConfig[10 + offset]),
+								Double.parseDouble(accConfig[11 + offset]),
+								Boolean.parseBoolean(accConfig[12 + offset]),
+								Integer.parseInt(accConfig[13 + offset]));
 
 						plugin.debug("Initializing bank" + (name != null ? " \"" + ChatColor.stripColor(name) + "\"" : "") + "... (#" + bankId + ")");
 

@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.utils;
 
-public class Pair<T, K> {
+public class Pair<T,K> {
 
     private T first;
     private K second;
