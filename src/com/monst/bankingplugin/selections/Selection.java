@@ -28,6 +28,13 @@ public interface Selection {
     Location getMaximumPoint();
 
 	/**
+	 * Get the center point of a selection.
+	 *
+	 * @return the center point
+	 */
+	Location getCenterPoint();
+
+	/**
 	 * Get the world.
 	 * 
 	 * @return World

@@ -61,6 +61,12 @@ public class CuboidSelection implements Selection {
 	}
 
 	@Override
+	public Location getCenterPoint() {
+		int centerY = (max.getBlockY() + min.getBlockY()) / 2;
+		return new Location(getWorld(), (int) rect.getCenterX(), centerY, (int) rect.getCenterY());
+	}
+
+	@Override
 	public World getWorld() {
 		return world;
 	}

@@ -140,7 +140,9 @@ public class BankTabCompleter implements TabCompleter {
                         || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                         || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
                 .collect(Collectors.toList());
-        List<AccountConfig.Field> fields = AccountConfig.Field.stream().filter(AccountConfig::isOverrideAllowed).collect(Collectors.toList());
+        List<AccountConfig.Field> fields = AccountConfig.Field.stream()
+                .filter(AccountConfig::isOverrideAllowed)
+                .collect(Collectors.toList());
 
         if (args.length == 2) {
             if (!args[1].isEmpty()) {

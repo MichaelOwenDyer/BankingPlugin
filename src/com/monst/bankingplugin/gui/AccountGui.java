@@ -23,9 +23,8 @@ import java.util.stream.Collectors;
 
 public class AccountGui extends Gui<Account> {
 
-	static final Material ACCOUNT_BALANCE_BLOCK = Material.GOLD_INGOT;
-
 	boolean isTrusted;
+	boolean canTP;
 
 	public AccountGui(Account account) {
 		super(BankingPlugin.getInstance(), account);
@@ -40,6 +39,9 @@ public class AccountGui extends Gui<Account> {
 	void evaluateClearance(Player player) {
 		isTrusted = guiSubject.isTrusted(player) || guiSubject.getBank().isTrusted(player)
 				|| player.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
+		canTP = player.isOp()
+				|| player.hasPermission("minecraft.command.tp")
+				|| player.hasPermission("essentials.tp.position");
 	}
 
 	@Override
@@ -75,6 +77,9 @@ public class AccountGui extends Gui<Account> {
 	@Override
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
+			case 0:
+				if (canTP)
+					return (player, info) -> player.teleport(guiSubject.getLocation());
 			case 1:
 				return (player, info) -> new BankGui(guiSubject.getBank()).setPrevGui(this).open(player);
 			case 8:

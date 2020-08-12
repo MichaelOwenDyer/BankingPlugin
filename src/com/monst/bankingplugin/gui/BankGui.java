@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class BankGui extends Gui<Bank> {
 
 	boolean verbose;
-	boolean canEdit;
+	boolean canTP;
 	boolean canListAccounts;
 
 	public BankGui(Bank bank) {
@@ -41,9 +41,9 @@ public class BankGui extends Gui<Bank> {
 		verbose = guiSubject.isTrusted(player)
 				|| (guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_ADMIN)
 				|| (guiSubject.isPlayerBank() && player.hasPermission(Permissions.BANK_INFO_OTHER)));
-		canEdit = guiSubject.isTrusted(player)
-				|| (guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_SET_ADMIN)
-				|| (guiSubject.isPlayerBank() && player.hasPermission(Permissions.BANK_SET_OTHER)));
+		canTP = player.isOp()
+				|| player.hasPermission("minecraft.command.tp")
+				|| player.hasPermission("essentials.tp.position");
 		canListAccounts = guiSubject.isTrusted(player)
 				|| player.hasPermission(Permissions.ACCOUNT_LIST_OTHER);
 	}
@@ -85,6 +85,9 @@ public class BankGui extends Gui<Bank> {
 	@SuppressWarnings("all")
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
+			case 0:
+				if (canTP)
+					return (player, info) -> player.teleport(guiSubject.getSelection().getCenterPoint());
 			case 8:
 				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
 					return (player, info) -> new AccountListGui(guiSubject).setPrevGui(this).open(player);

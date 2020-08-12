@@ -64,6 +64,17 @@ public class Polygonal2DSelection implements Selection {
 	}
 
 	@Override
+	public Location getCenterPoint() {
+		Location max = getMaximumPoint();
+		Location min = getMinimumPoint();
+		int centerX, centerY, centerZ;
+		centerX = (max.getBlockX() + min.getBlockX()) / 2;
+		centerY = maxY + minY / 2;
+		centerZ = (max.getBlockZ() + min.getBlockZ()) / 2;
+		return new Location(getWorld(), centerX, centerY, centerZ);
+	}
+
+	@Override
 	public World getWorld() {
 		return world;
 	}

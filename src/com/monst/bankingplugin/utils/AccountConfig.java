@@ -223,12 +223,12 @@ public class AccountConfig {
 		return true;
 	}
 
-	public <T> T get(Field field) {
-		return get(field, false);
-	}
-
 	public String getFormatted(Field field) {
 		return FORMATTERS.get(field).apply(this);
+	}
+
+	public <T> T get(Field field) {
+		return get(field, false);
 	}
 
 	/**
@@ -315,7 +315,8 @@ public class AccountConfig {
         }
 
 		/**
-		 * @return the default value of this field, stored in {@link Config}
+		 * @return the {@link com.monst.bankingplugin.config.Config.ConfigPair} containing
+		 * the default value and overrideable attribute for this field, stored in the {@link Config}
 		 */
 		private java.lang.reflect.Field getConfigField() {
 		    return configField;
@@ -334,7 +335,8 @@ public class AccountConfig {
 		 * @see #getDataType()
 		 */
 		public static Stream<Field> stream(Class<?>... types) {
-			return stream().filter(f -> Arrays.asList(types).contains(f.getDataType()));
+			List<Class<?>> list = Arrays.asList(types);
+			return stream().filter(f -> list.contains(f.getDataType()));
 		}
 
 		/**
