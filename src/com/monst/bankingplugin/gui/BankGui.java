@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
@@ -15,6 +14,7 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,13 +76,14 @@ public class BankGui extends Gui<Bank> {
 				return createSlotItem(Material.BELL, "Withdrawal Policy", getWithdrawalPolicyLore());
 			case 15:
 				return createSlotItem(Material.TOTEM_OF_UNDYING, "Account Limit", getAccountLimitLore());
+			case 16:
+				return createSlotItem(Material.CLOCK, "Interest Payout Times", getPayoutTimeLore());
 			default:
 				return new ItemStack(Material.AIR);
 		}
 	}
 
 	@Override
-	@SuppressWarnings("all")
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
 			case 0:
@@ -93,7 +94,8 @@ public class BankGui extends Gui<Bank> {
 						player.teleport(guiSubject.getSelection()
 								.getWorld()
 								.getHighestBlockAt(guiSubject.getSelection().getCenterPoint())
-								.getLocation());
+								.getLocation().add(0, 1, 0));
+					menu.close(player);
 				} : null;
 			case 8:
 				return canListAccounts && !guiSubject.getAccounts().isEmpty()
@@ -117,13 +119,15 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getGeneralInfoLore() {
 		List<String> lore = new ArrayList<>();
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
-		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty() ? org.bukkit.ChatColor.RED + "[none]"
+		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty()
+				? org.bukkit.ChatColor.RED + "[none]"
 				: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
-				.collect(Collectors.joining(", ", "[ ", " ]"))));
+					.collect(Collectors.joining(", ", "[ ", " ]")))
+		);
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to center.");
-		return Utils.wordWrapAll(lore);
+		return Utils.wordWrapAll(60, lore.stream());
 	}
 
 	private List<String> getStatisticsLore() {
@@ -232,6 +236,17 @@ public class BankGui extends Gui<Bank> {
 								? "up to " + ChatColor.AQUA + accountLimit
 								: ChatColor.GREEN + "unlimited") + ChatColor.GRAY
 						+ String.format(" account%s at this bank.", accountLimit == 1 ? "" : "s"))
+		);
+	}
+
+	private List<String> getPayoutTimeLore() {
+		List<LocalTime> times = guiSubject.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
+		return Utils.wordWrapAll(
+				times.size() > 0
+						? "Accounts will generate interest every day at: " + times.stream()
+							.map(LocalTime::toString)
+							.collect(Collectors.joining(", ", "[", "]."))
+						: "Accounts will not generate interest."
 		);
 	}
 }

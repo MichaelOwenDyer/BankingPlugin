@@ -2,7 +2,6 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.AccountConfig;
 import com.monst.bankingplugin.utils.AccountStatus;
 import com.monst.bankingplugin.utils.Permissions;
