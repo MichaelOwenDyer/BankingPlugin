@@ -344,7 +344,7 @@ public class Account extends Ownable implements Nameable {
 					b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
 		Chest chest = (Chest) b.getState();
 		inventory = chest.getInventory();
-		size = inventory instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE;
+		size = inventory.getHolder() instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE;
 	}
 
 	/**

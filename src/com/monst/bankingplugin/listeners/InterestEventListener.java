@@ -102,8 +102,8 @@ public class InterestEventListener implements Listener {
 						account.getStatus().incrementMultiplier(account.isTrustedPlayerOnline());
 						account.updatePrevBalance();
 
-						if (trustedPlayers.size() == 0) {
 							accountUtils.addAccount(account, true);
+						if (trustedPlayers.isEmpty()) {
 							continue;
 						}
 

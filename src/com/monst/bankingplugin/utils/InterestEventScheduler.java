@@ -14,12 +14,12 @@ public class InterestEventScheduler {
 
     private static final BankingPlugin plugin = BankingPlugin.getInstance();
 
-    private static final Map<LocalTime, List<Bank>> TIME_BANK_MAP = new HashMap<>();
-    private static final Map<Bank, List<LocalTime>> BANK_TIME_MAP = new HashMap<>();
+    private static final Map<LocalTime, Set<Bank>> TIME_BANK_MAP = new HashMap<>();
+    private static final Map<Bank, Set<LocalTime>> BANK_TIME_MAP = new HashMap<>();
     private static final Map<LocalTime, Integer> PAYOUT_TIME_IDS = new HashMap<>();
 
-    public static List<Bank> getScheduledBanks(LocalTime time) {
-        return Optional.ofNullable(TIME_BANK_MAP.get(time)).orElse(Collections.emptyList());
+    public static Set<Bank> getScheduledBanks(LocalTime time) {
+        return Optional.ofNullable(TIME_BANK_MAP.get(time)).orElse(Collections.emptySet());
     }
 
     public static void scheduleAll() {
@@ -40,10 +40,10 @@ public class InterestEventScheduler {
 
         List<LocalTime> times = bank.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
         times.removeIf(Objects::isNull);
-        BANK_TIME_MAP.putIfAbsent(bank, new ArrayList<>());
+        BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>());
 
         for (LocalTime time : times) {
-            if (TIME_BANK_MAP.putIfAbsent(time, new ArrayList<>()) == null)
+            if (TIME_BANK_MAP.putIfAbsent(time, new HashSet<>()) == null)
                 PAYOUT_TIME_IDS.put(time, scheduleRepeatAtTime(time));
             TIME_BANK_MAP.get(time).add(bank);
             BANK_TIME_MAP.get(bank).add(time);
