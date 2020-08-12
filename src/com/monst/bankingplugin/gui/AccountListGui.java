@@ -2,7 +2,6 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.BankingPlugin;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -21,14 +20,14 @@ import java.util.List;
 
 public class AccountListGui extends Gui<Bank> {
 
+    private static final int PREV_SLOT = 18;
+    private static final int NEXT_SLOT = 26;
+
     private List<Menu> pages;
     private int currentPage = 0;
 
-    private final int prevButtonSlot = 18;
-    private final int nextButtonSlot = 26;
-
     public AccountListGui(Bank bank) {
-        super(BankingPlugin.getInstance(), bank);
+        super(bank);
     }
 
     @Override
@@ -36,7 +35,7 @@ public class AccountListGui extends Gui<Bank> {
         if (update) {
             createMenu();
             setClickHandler();
-            setCloseHandler(CLOSE_HANDLER);
+            setCloseHandler(OPEN_PREVIOUS);
             shortenGuiChain();
         }
         if (pages.isEmpty())
@@ -55,9 +54,9 @@ public class AccountListGui extends Gui<Bank> {
         PaginatedMenuBuilder builder = PaginatedMenuBuilder.builder(pageTemplate)
                 .slots(itemSlots)
                 .previousButton(createSlotItem(Material.ARROW, "Previous Page", Collections.emptyList()))
-                .previousButtonSlot(prevButtonSlot)
+                .previousButtonSlot(PREV_SLOT)
                 .nextButton(createSlotItem(Material.ARROW, "Next Page", Collections.emptyList()))
-                .nextButtonSlot(nextButtonSlot);
+                .nextButtonSlot(NEXT_SLOT);
         for (Account account : guiSubject.getAccounts()) {
             ItemStack item = createSlotItem(Material.CHEST, account.getColorizedName(), Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
             ItemStackTemplate template = new StaticItemTemplate(item);
@@ -69,7 +68,7 @@ public class AccountListGui extends Gui<Bank> {
 
     private void setClickHandler() {
         for (Menu page : pages) {
-            for (Slot slot : new Slot[]{page.getSlot(prevButtonSlot), page.getSlot(nextButtonSlot)}) {
+            for (Slot slot : new Slot[]{page.getSlot(PREV_SLOT), page.getSlot(NEXT_SLOT)}) {
                 //noinspection SimplifyOptionalCallChains
                 Slot.ClickHandler prevHandler = slot.getClickHandler().orElse(null);
                 if (prevHandler != null)
@@ -97,8 +96,7 @@ public class AccountListGui extends Gui<Bank> {
 
     @Override
     void setCloseHandler(Menu.CloseHandler handler) {
-        for (Menu page : pages)
-            page.setCloseHandler(handler);
+        pages.forEach(page -> page.setCloseHandler(handler));
     }
 
     @Override

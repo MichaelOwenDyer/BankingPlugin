@@ -27,7 +27,7 @@ public class AccountGui extends Gui<Account> {
 	boolean canTP;
 
 	public AccountGui(Account account) {
-		super(BankingPlugin.getInstance(), account);
+		super(account);
 	}
 
 	@Override
@@ -78,15 +78,15 @@ public class AccountGui extends Gui<Account> {
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
 			case 0:
-				if (canTP)
-					return (player, info) -> player.teleport(guiSubject.getLocation());
+				return canTP
+						? (player, info) -> player.teleport(guiSubject.getLocation())
+						: null;
 			case 1:
 				return (player, info) -> new BankGui(guiSubject.getBank()).setPrevGui(this).open(player);
 			case 8:
-				return (player, info) -> {
-					if (isTrusted)
-						new AccountContentsGui(guiSubject).setPrevGui(this).open(player);
-				};
+				return isTrusted
+						? (player, info) -> new AccountContentsGui(guiSubject).setPrevGui(this).open(player)
+						: null;
 			default:
 				return null;
 		}

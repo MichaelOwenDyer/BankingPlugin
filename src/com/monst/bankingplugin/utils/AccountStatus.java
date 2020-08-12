@@ -1,7 +1,12 @@
 package com.monst.bankingplugin.utils;
 
+
 import java.util.List;
 
+/**
+ * Defines the current payout status of an {@link com.monst.bankingplugin.Account} and provides
+ * arithmetic for determining whether to pay out interest, among other things.
+ */
 public class AccountStatus {
 	
 	private final AccountConfig accountConfig;
@@ -10,15 +15,20 @@ public class AccountStatus {
 	private int delayUntilNextPayout;
 	private int remainingOfflinePayouts;
 	private int remainingOfflineUntilReset;
-		
+
 	/**
-	 * <p>Default AccountStatus constructor for a brand new account.</p>
+	 * Mint an AccountStatus for a brand new account.
 	 */
-	public AccountStatus(AccountConfig config) {
-		this(config, 0, config.get(AccountConfig.Field.INITIAL_INTEREST_DELAY),
+	public static AccountStatus mint(AccountConfig config) {
+		return new AccountStatus(
+				config,
+				0,
+				config.get(AccountConfig.Field.INITIAL_INTEREST_DELAY),
 				config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS),
-				config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET));
+				config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET)
+		);
 	}
+
 	/**
 	 * Creates an account status with the given values.
 	 * @param config The AccountConfig from the account's bank

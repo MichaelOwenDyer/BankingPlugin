@@ -16,7 +16,7 @@ public class AccountContentsGui extends Gui<Account> {
     boolean canEdit;
 
     public AccountContentsGui(Account account) {
-        super(BankingPlugin.getInstance(), account);
+        super(account);
     }
 
     @Override

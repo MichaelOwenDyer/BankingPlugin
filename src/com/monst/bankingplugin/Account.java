@@ -56,7 +56,7 @@ public class Account extends Ownable implements Nameable {
 				new HashSet<>(),
 				bank,
 				loc,
-				new AccountStatus(bank.getAccountConfig()),
+				AccountStatus.mint(bank.getAccountConfig()),
 				null,
 				BigDecimal.ZERO,
 				BigDecimal.ZERO
@@ -376,7 +376,7 @@ public class Account extends Ownable implements Nameable {
 	 * @see #isDoubleChest()
 	 */
 	public short getSize() {
-		return isDoubleChest() ? (short) 2 : 1;
+		return (short) (isDoubleChest() ? 2 : 1);
 	}
 
 	@Override

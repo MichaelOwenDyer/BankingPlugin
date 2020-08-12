@@ -28,7 +28,7 @@ public class BankGui extends Gui<Bank> {
 	boolean canListAccounts;
 
 	public BankGui(Bank bank) {
-		super(BankingPlugin.getInstance(), bank);
+		super(bank);
 	}
 
 	@Override
@@ -86,11 +86,19 @@ public class BankGui extends Gui<Bank> {
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
 			case 0:
-				if (canTP)
-					return (player, info) -> player.teleport(guiSubject.getSelection().getCenterPoint());
+				return canTP ? (player, info) -> {
+					if (info.getClickType().isLeftClick())
+						player.teleport(guiSubject.getSelection().getCenterPoint());
+					else
+						player.teleport(guiSubject.getSelection()
+								.getWorld()
+								.getHighestBlockAt(guiSubject.getSelection().getCenterPoint())
+								.getLocation());
+				} : null;
 			case 8:
-				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
-					return (player, info) -> new AccountListGui(guiSubject).setPrevGui(this).open(player);
+				return canListAccounts && !guiSubject.getAccounts().isEmpty()
+						? (player, info) -> new AccountListGui(guiSubject).setPrevGui(this).open(player)
+						: null;
 			default:
 				return null;
 		}
@@ -107,13 +115,15 @@ public class BankGui extends Gui<Bank> {
 	}
 
 	private List<String> getGeneralInfoLore() {
-		return Arrays.asList(
-				"Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName(),
-				"Co-owners: " + (guiSubject.getCoowners().isEmpty() ? org.bukkit.ChatColor.RED + "[none]"
-						: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
-						.collect(Collectors.joining(", ", "[ ", " ]"))),
-				"Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates()
-		);
+		List<String> lore = new ArrayList<>();
+		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
+		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty() ? org.bukkit.ChatColor.RED + "[none]"
+				: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
+				.collect(Collectors.joining(", ", "[ ", " ]"))));
+		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
+		if (canTP)
+			lore.add("Click to teleport to center.");
+		return Utils.wordWrapAll(lore);
 	}
 
 	private List<String> getStatisticsLore() {

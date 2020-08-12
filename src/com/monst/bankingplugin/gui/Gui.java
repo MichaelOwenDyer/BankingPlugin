@@ -21,14 +21,14 @@ import java.util.stream.Collectors;
 
 abstract class Gui<T extends Ownable> {
 
-	BankingPlugin plugin;
+	static final BankingPlugin plugin = BankingPlugin.getInstance();
 	final T guiSubject;
 	Menu menu;
 	Gui<T> prevGui;
 	boolean openInBackground = false;
 
-	final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
-	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) -> new BukkitRunnable() {
+	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
+	final Menu.CloseHandler OPEN_PREVIOUS = (player, menu) -> new BukkitRunnable() {
 		@Override
 		public void run() {
 			if (isLinked() && !isOpenInBackground()) {
@@ -38,8 +38,7 @@ abstract class Gui<T extends Ownable> {
 		}
 	}.runTaskLater(plugin, 0);
 
-	Gui(BankingPlugin plugin, T guiSubject) {
-		this.plugin = plugin;
+	Gui(T guiSubject) {
 		this.guiSubject = guiSubject;
 	}
 
@@ -50,7 +49,7 @@ abstract class Gui<T extends Ownable> {
 	void open(Player player, boolean update) {
 		if (update) {
 			createMenu();
-			setCloseHandler(CLOSE_HANDLER);
+			setCloseHandler(OPEN_PREVIOUS);
 			shortenGuiChain();
 		}
 		evaluateClearance(player);
@@ -85,6 +84,13 @@ abstract class Gui<T extends Ownable> {
 		return createSlotItem(new ItemStack(material), displayName, lore);
 	}
 
+	/**
+	 * Create a specialized player head {@link ItemStack} to be placed in the Gui.
+	 * @param owner the {@link OfflinePlayer} whose head should be used
+	 * @param displayName the name of the Gui item
+	 * @param lore the description of the Gui item
+	 * @return a custom player head {@link ItemStack}
+	 */
 	static ItemStack createSlotItem(OfflinePlayer owner, String displayName, List<String> lore) {
 		ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
 		SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
@@ -94,6 +100,13 @@ abstract class Gui<T extends Ownable> {
 		return createSlotItem(skull, displayName, lore);
 	}
 
+	/**
+	 * Create an {@link ItemStack} to be placed in the Gui.
+	 * @param item the {@link ItemStack} that should be used for the item
+	 * @param displayName the name of the Gui item
+	 * @param lore the description of the Gui item
+	 * @return a custom {@link ItemStack}
+	 */
 	private static ItemStack createSlotItem(ItemStack item, String displayName, List<String> lore) {
 		ItemMeta itemMeta = item.getItemMeta();
 		if (itemMeta == null)
@@ -105,9 +118,9 @@ abstract class Gui<T extends Ownable> {
 	}
 
 	/**
-	 * Descends down the list of previous open menus, and severs the link when it
-	 * finds a certain number of the same type as the current gui. This prevents the gui chain
-	 * from becoming uncontrollably long.
+	 * Descends down the list of previous open Guis, and severs the link when it
+	 * finds a Gui of a type it has seen before. This prevents the Gui chain
+	 * from becoming too long and unwieldy.
 	 */
 	void shortenGuiChain() {
 		shortenGuiChain(this, EnumSet.noneOf(GuiType.class));

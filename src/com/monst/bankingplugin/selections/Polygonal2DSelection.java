@@ -25,13 +25,12 @@ public class Polygonal2DSelection implements Selection {
 			xpoints[i] = points.get(i).getBlockX();
 			ypoints[i] = points.get(i).getBlockZ();
 		}
-		Polygon polygon = new Polygon(xpoints, ypoints, points.size());
 		return new Polygonal2DSelection(
 				world,
 				points,
 				Math.min(Math.max(0, minY), world.getMaxHeight()),
 				Math.min(Math.max(0, maxY), world.getMaxHeight()),
-				polygon
+				new Polygon(xpoints, ypoints, points.size())
 		);
 	}
 
