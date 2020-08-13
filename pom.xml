@@ -149,7 +149,7 @@
 		<finalName>BankingPlugin</finalName>
 		<resources>
 			<resource>
-				<directory>resources</directory>
+				<directory>src/main/resources</directory>
 				<targetPath>.</targetPath>
 				<filtering>true</filtering>
 			</resource>
