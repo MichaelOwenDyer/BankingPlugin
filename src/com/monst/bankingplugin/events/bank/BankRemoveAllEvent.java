@@ -1,11 +1,10 @@
 package com.monst.bankingplugin.events.bank;
 
-import java.util.Collection;
-
+import com.monst.bankingplugin.Bank;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
-import com.monst.bankingplugin.Bank;
+import java.util.Collection;
 
 public class BankRemoveAllEvent extends MultiBankEvent implements Cancellable {
 

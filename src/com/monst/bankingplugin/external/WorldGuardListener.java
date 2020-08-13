@@ -1,7 +1,12 @@
 package com.monst.bankingplugin.external;
 
-import java.util.Optional;
-
+import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.bank.BankCreateEvent;
+import com.monst.bankingplugin.events.bank.BankResizeEvent;
+import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.ClickType.EnumClickType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -19,13 +24,7 @@ import org.codemc.worldguardwrapper.event.WrappedUseBlockEvent;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.bank.BankCreateEvent;
-import com.monst.bankingplugin.events.bank.BankResizeEvent;
-import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.ClickType.EnumClickType;
+import java.util.Optional;
 
 @SuppressWarnings("unused")
 public class WorldGuardListener implements Listener {

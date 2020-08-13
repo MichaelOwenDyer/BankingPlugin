@@ -1,12 +1,11 @@
 package com.monst.bankingplugin.commands.control;
 
-import com.monst.bankingplugin.commands.BankingPluginCommand;
-import org.bukkit.command.CommandSender;
-
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.commands.BankingPluginCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
+import org.bukkit.command.CommandSender;
 
 public class ControlCommand extends BankingPluginCommand {
 

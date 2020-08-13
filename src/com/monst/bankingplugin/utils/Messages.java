@@ -1,8 +1,7 @@
 package com.monst.bankingplugin.utils;
 
-import org.bukkit.ChatColor;
-
 import com.monst.bankingplugin.config.Config;
+import org.bukkit.ChatColor;
 
 public class Messages {
 	

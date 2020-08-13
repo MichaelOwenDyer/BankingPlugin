@@ -7,7 +7,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
 import java.util.Collection;
-import java.util.Collections;
 
 public class InterestEvent extends ControlEvent implements Cancellable {
 

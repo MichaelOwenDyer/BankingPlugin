@@ -1,11 +1,10 @@
 package com.monst.bankingplugin.events.account;
 
+import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-
-import com.monst.bankingplugin.Account;
 
 public class AccountCreateEvent extends SingleAccountEvent implements Cancellable {
 	

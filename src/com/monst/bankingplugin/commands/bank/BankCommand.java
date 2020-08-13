@@ -1,13 +1,12 @@
 package com.monst.bankingplugin.commands.bank;
 
-import com.monst.bankingplugin.commands.BankingPluginCommand;
-import org.bukkit.command.CommandSender;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.commands.BankingPluginCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
+import org.bukkit.command.CommandSender;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 public class BankCommand extends BankingPluginCommand {
 

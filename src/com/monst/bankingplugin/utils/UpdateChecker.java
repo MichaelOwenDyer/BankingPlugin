@@ -1,13 +1,13 @@
 package com.monst.bankingplugin.utils;
 
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.monst.bankingplugin.BankingPlugin;
+
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 
 public class UpdateChecker {
 

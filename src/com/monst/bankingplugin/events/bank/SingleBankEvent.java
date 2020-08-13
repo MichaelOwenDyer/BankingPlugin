@@ -1,8 +1,7 @@
 package com.monst.bankingplugin.events.bank;
 
-import org.bukkit.command.CommandSender;
-
 import com.monst.bankingplugin.Bank;
+import org.bukkit.command.CommandSender;
 
 public abstract class SingleBankEvent extends BankEvent {
 

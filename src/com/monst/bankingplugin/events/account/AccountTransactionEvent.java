@@ -1,11 +1,10 @@
 package com.monst.bankingplugin.events.account;
 
-import java.math.BigDecimal;
-
-import org.bukkit.entity.Player;
-
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.listeners.AccountBalanceListener.TransactionType;
+import org.bukkit.entity.Player;
+
+import java.math.BigDecimal;
 
 public class AccountTransactionEvent extends SingleAccountEvent {
 	

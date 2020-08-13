@@ -1,8 +1,7 @@
 package com.monst.bankingplugin.utils;
 
-import org.bukkit.scheduler.BukkitRunnable;
-
 import com.monst.bankingplugin.BankingPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public abstract class Callback<T> {
 	private final BankingPlugin plugin;

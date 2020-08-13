@@ -1,6 +1,13 @@
 package com.monst.bankingplugin.external;
 
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.events.account.AccountCreateEvent;
+import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
+import com.monst.bankingplugin.utils.Utils;
+import me.ryanhamshire.GriefPrevention.Claim;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -9,15 +16,6 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.events.account.AccountExtendEvent;
-import com.monst.bankingplugin.utils.Utils;
-
-import me.ryanhamshire.GriefPrevention.Claim;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
 
 @SuppressWarnings("unused")
 public class GriefPreventionListener implements Listener {
