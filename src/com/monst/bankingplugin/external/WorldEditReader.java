@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("all")
 public class WorldEditReader {
 
 	public static Selection getSelection(BankingPlugin plugin, Player p) {
@@ -52,7 +53,7 @@ public class WorldEditReader {
 				int maxY = polygon.getMaximumY();
 				World world = BukkitAdapter.adapt(polygon.getWorld());
 				List<BlockVector2D> points = new ArrayList<>();
-				polygon.getPoints()
+				polygon.getPoints().stream()
 						.forEach(point -> points.add(new BlockVector2D(point.getBlockX(), point.getBlockZ())));
 				return Polygonal2DSelection.of(world, points, minY, maxY);
 			}

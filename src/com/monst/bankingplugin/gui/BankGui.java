@@ -126,7 +126,7 @@ public class BankGui extends Gui<Bank> {
 		);
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)
-			lore.add("Click to teleport to center.");
+			lore.add("Click to teleport to bank.");
 		return Utils.wordWrapAll(60, lore.stream());
 	}
 
@@ -242,11 +242,11 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getPayoutTimeLore() {
 		List<LocalTime> times = guiSubject.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
 		return Utils.wordWrapAll(
-				times.size() > 0
-						? "Accounts will generate interest every day at: " + times.stream()
+				times.isEmpty()
+						? "Accounts will not generate interest."
+						: "Accounts will generate interest every day at: " + times.stream()
 							.map(LocalTime::toString)
 							.collect(Collectors.joining(", ", "[", "]."))
-						: "Accounts will not generate interest."
 		);
 	}
 }

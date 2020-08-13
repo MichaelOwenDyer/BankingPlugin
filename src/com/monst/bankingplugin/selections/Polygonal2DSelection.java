@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -89,10 +90,13 @@ public class Polygonal2DSelection implements Selection {
 	@Override
 	public int getVolume() {
 		int area = 0;
-		for (int i = 0; i < points.size() - 1; i++)
-			area += (points.get(i + 1).getBlockX() * points.get(i).getBlockZ())
-					- (points.get(i + 1).getBlockZ() * points.get(i).getBlockX());
-		return area;
+		List<BlockVector2D> vertices = new ArrayList<>(points);
+		vertices.add(points.get(0));
+		for (int i = 1; i < vertices.size(); i++)
+		//for (int i = vertices.size() - 1; i >= 0; i--)
+			area += (vertices.get(i).getBlockX() * vertices.get(i - 1).getBlockZ())
+					- (vertices.get(i).getBlockZ() * vertices.get(i - 1).getBlockX());
+		return (maxY - minY + 1) * Math.abs(area) / 2;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.utils.Permissions;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -81,7 +82,11 @@ public class AccountContentsGui extends Gui<Account> {
 
         @Override
         void createMenu() {
-            menu = ChestMenu.builder(3).title(shulkerBox.getCustomName()).redraw(true).build();
+            menu = ChestMenu.builder(3).title(
+                    shulkerBox.getCustomName() != null
+                            ? shulkerBox.getCustomName()
+                            : WordUtils.capitalizeFully(shulkerBox.getColor().toString()) + " Shulker Box"
+            ).redraw(true).build();
         }
 
         @Override

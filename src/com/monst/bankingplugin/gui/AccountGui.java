@@ -15,6 +15,7 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -102,14 +103,16 @@ public class AccountGui extends Gui<Account> {
 	}
 
 	private List<String> getGeneralInfoLore() {
-		return Arrays.asList(
-				"ID: " + guiSubject.getID(),
-				"Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName(),
-				"Co-owners: " + (guiSubject.getCoowners().isEmpty() ? ChatColor.RED + "[none]"
-						: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
-								.collect(Collectors.joining(", ", "[ ", " ]"))),
-				"Location: " + ChatColor.AQUA + "(" + guiSubject.getCoordinates() + ")"
-		);
+		List<String> lore = new ArrayList<>();
+		lore.add("ID: " + guiSubject.getID());
+		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
+		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty() ? ChatColor.RED + "[none]"
+				: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
+				.collect(Collectors.joining(", ", "[ ", " ]"))));
+		lore.add("Location: " + ChatColor.AQUA + "(" + guiSubject.getCoordinates() + ")");
+		if (canTP)
+			lore.add("Click to teleport to account.");
+		return Utils.wordWrapAll(60, lore.stream());
 	}
 
 	private List<String> getBankInfoLore() {

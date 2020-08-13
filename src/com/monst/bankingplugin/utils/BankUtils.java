@@ -88,7 +88,14 @@ public class BankUtils {
 	}
 
 	public boolean isUniqueName(String name) {
-		return getBanksCopy().stream().noneMatch(bank -> bank.getName().equalsIgnoreCase(name));
+		return isUniqueNameWithoutThis(name, null);
+	}
+
+	public boolean isUniqueNameWithoutThis(String name, String without) {
+		List<String> bankNames = getBanks().stream().map(Bank::getName).collect(Collectors.toList());
+		if (without != null)
+			bankNames.remove(without);
+		return bankNames.stream().noneMatch(n -> n.equalsIgnoreCase(name));
 	}
 
 	public boolean isExclusiveSelection(Selection sel) {

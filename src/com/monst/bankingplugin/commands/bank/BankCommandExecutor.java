@@ -602,7 +602,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			sender.sendMessage(Messages.NAME_ALREADY);
 			return true;
 		}
-		if (!bankUtils.isUniqueName(newName)) {
+		if (!bankUtils.isUniqueNameWithoutThis(newName, bank.getName())) {
 			plugin.debug("Name is not unique");
 			sender.sendMessage(Messages.NAME_NOT_UNIQUE);
 			return true;
