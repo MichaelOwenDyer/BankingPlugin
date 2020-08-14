@@ -6,7 +6,7 @@
 
 	<groupId>com.monst</groupId>
 	<artifactId>BankingPlugin</artifactId>
-	<version>1.11.5-SNAPSHOT</version>
+	<version>1.11.6-SNAPSHOT</version>
 
 	<name>BankingPlugin</name>
 	<description>Create bank accounts in bank vault chests and earn interest on your investments!</description>
@@ -155,6 +155,12 @@
 				<filtering>true</filtering>
 			</resource>
 		</resources>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+			</testResource>
+		</testResources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

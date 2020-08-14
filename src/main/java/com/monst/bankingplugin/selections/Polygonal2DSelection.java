@@ -5,8 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.awt.*;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,16 +82,18 @@ public class Polygonal2DSelection implements Selection {
 		int minY = getMinimumPoint().getBlockY();
 		int maxY = getMaximumPoint().getBlockY();
 		return getNativePoints().stream().map(vec -> "(" + vec.getBlockX() + ", " + vec.getBlockZ() + ")")
-				.collect(Collectors.joining(", ")) + " at Y = " + minY + " to " + maxY;
+				.collect(Collectors.joining(", ")) + " at " + minY + " ≤ y ≤ " + maxY;
 	}
 
 	@Override
-	public int getVolume() {
-		int area = 0;
-		for (int i = 1; i < points.size(); i++)
-			area += (points.get(i).getBlockX() * points.get(i - 1).getBlockZ())
-					- (points.get(i).getBlockZ() * points.get(i - 1).getBlockX());
-		return (maxY - minY + 1) * Math.abs(area) / 2;
+	public long getVolume() {
+		long area = 0;
+		Rectangle bounds = polygon.getBounds();
+		for (int x = (int) bounds.getMinX(); x <= Math.ceil(bounds.getMaxX()); x++)
+			for (int z = (int) bounds.getMinY(); z <= Math.ceil(bounds.getMaxY()); z++)
+				if (contains(new Location(world, x, minY, z)))
+					area++;
+		return (maxY - minY + 1) * area;
 	}
 
 	@Override
@@ -112,8 +113,50 @@ public class Polygonal2DSelection implements Selection {
 
 	@Override
 	public boolean contains(Location pt) {
-		return pt.getBlockY() >= minY && pt.getBlockY() <= maxY
-				&& polygon.contains(new Point(pt.getBlockX(), pt.getBlockZ()));
+	 	if (pt.getWorld() != null && pt.getWorld().equals(world))
+			return false;
+		if (points.size() < 3)
+			return false;
+		if (pt.getBlockY() < minY || pt.getBlockY() > maxY)
+			return false;
+
+		int pointX = pt.getBlockX(); //width
+		int pointZ = pt.getBlockZ(); //depth
+
+		int nextX, nextZ, x1, z1, x2, z2;
+		int prevX = points.get(points.size() - 1).getBlockX();
+		int prevZ = points.get(points.size() - 1).getBlockZ();
+
+		long crossProduct;
+		boolean inside = false;
+		for (BlockVector2D point : points) {
+			nextX = point.getBlockX();
+			nextZ = point.getBlockZ();
+			if (nextX == pointX && nextZ == pointZ) // Location is on a vertex
+				return true;
+			if (nextX > prevX) {
+				x1 = prevX;
+				x2 = nextX;
+				z1 = prevZ;
+				z2 = nextZ;
+			} else {
+				x1 = nextX;
+				x2 = prevX;
+				z1 = nextZ;
+				z2 = prevZ;
+			}
+			if (x1 <= pointX && pointX <= x2) {
+				crossProduct = ((pointZ - z1) * (x2 - x1)) - ((z2 - z1) * (pointX - x1));
+				if (crossProduct == 0) {
+					if ((z1 <= pointZ) == (pointZ <= z2))
+						return true; //Location is on edge between vertices
+				} else if (crossProduct < 0 && (x1 != pointX))
+					inside = !inside;
+			}
+			prevX = nextX;
+			prevZ = nextZ;
+		}
+		return inside;
 	}
 
 	@Override

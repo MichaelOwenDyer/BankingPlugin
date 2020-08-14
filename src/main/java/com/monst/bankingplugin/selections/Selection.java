@@ -53,7 +53,7 @@ public interface Selection {
 	 * 
 	 * @return number of blocks
 	 */
-    int getVolume();
+    long getVolume();
 	
 	/**
 	 * Get whether or not this selection overlaps with another one.

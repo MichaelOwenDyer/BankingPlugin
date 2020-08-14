@@ -170,7 +170,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(Messages.SELECTION_OVERLAPS_EXISTING);
 			return true;
 		}
-		int volume = selection.getVolume();
+		long volume = selection.getVolume();
 		int volumeLimit = bankUtils.getVolumeLimit(p);
 		if (!isAdminBank && volumeLimit != -1 && volume > volumeLimit) {
 			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
@@ -503,7 +503,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(Messages.WORLD_DISABLED);
 			return true;
 		}
-		int volume = selection.getVolume();
+		long volume = selection.getVolume();
 		int volumeLimit = bankUtils.getVolumeLimit(p);
 		if (bank.isPlayerBank() && volumeLimit != -1 && volume > volumeLimit) {
 			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
