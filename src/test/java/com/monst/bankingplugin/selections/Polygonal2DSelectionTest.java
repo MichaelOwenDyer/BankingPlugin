@@ -2,14 +2,14 @@ package com.monst.bankingplugin.selections;
 
 import com.monst.bankingplugin.utils.BlockVector2D;
 import org.bukkit.World;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Polygonal2DSelectionTest {
 
