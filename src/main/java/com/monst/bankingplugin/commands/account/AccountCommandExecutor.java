@@ -137,6 +137,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			return;
 		}
 
+		@SuppressWarnings("deprecation")
 		OfflinePlayer owner = forSelf ? p.getPlayer() : Bukkit.getOfflinePlayer(args[1]);
 		if (!forSelf && !owner.hasPlayedBefore()) {
 			p.sendMessage(Messages.PLAYER_NOT_FOUND);
