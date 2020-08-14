@@ -1,6 +1,5 @@
 /target/
 /.idea/
-test/
 *.iml
 .classpath
 .project
