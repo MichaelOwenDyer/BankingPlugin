@@ -282,15 +282,11 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return;
 		}
 
-		if (sender instanceof Player) {
-			Player p = (Player) sender;
-			if (Config.confirmOnRemove)
-				if (needsConfirmation(p, args)) {
-					p.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, 1, "", bank.getAccounts().size(),
-							bank.getAccounts().size() == 1 ? "" : "s"));
-					p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
-					return;
-				}
+		if (sender instanceof Player && Config.confirmOnRemove && needsConfirmation((Player) sender, args)) {
+			sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, 1, "", bank.getAccounts().size(),
+					bank.getAccounts().size() == 1 ? "" : "s"));
+			sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+			return;
 		}
 
 		BankRemoveEvent event = new BankRemoveEvent(sender, bank);
@@ -415,15 +411,11 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		if (sender instanceof Player) {
-			Player p = (Player) sender;
-			if (Config.confirmOnRemoveAll)
-				if (needsConfirmation(p, args)) {
-					p.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, banks.size(),
-							banks.size() == 1 ? "" : "s", accounts.size(), accounts.size() == 1 ? "" : "s"));
-					p.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
-					return true;
-				}
+		if (sender instanceof Player && Config.confirmOnRemoveAll && needsConfirmation((Player) sender, args)) {
+			sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, banks.size(),
+					banks.size() == 1 ? "" : "s", accounts.size(), accounts.size() == 1 ? "" : "s"));
+			sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+			return true;
 		}
 
 		bankUtils.removeBank(banks, true);
@@ -811,28 +803,30 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		if (sender instanceof Player)
-			if (Config.confirmOnTransfer && needsConfirmation((Player) sender, args)) {
-				sender.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
-						(bank.isOwner((Player) sender)
-							? "your bank"
-							: bank.getOwnerDisplayName() + "'s bank"),
-						newOwner.getName()));
-				sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
-				return true;
-			}
+		if (sender instanceof Player && Config.confirmOnTransfer && needsConfirmation((Player) sender, args)) {
+			sender.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
+					(bank.isOwner((Player) sender)
+						? "your bank"
+						: bank.getOwnerDisplayName() + "'s bank"),
+					newOwner.getName()));
+			sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+			return true;
+		}
 
 		BankTransferEvent event = new BankTransferEvent(sender, bank, newOwner);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
-			plugin.debug("Bank transfer ownership event cancelled");
+			plugin.debug("Bank transfer event cancelled");
 			return true;
 		}
 
-		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", bank.getColorizedName(), newOwner != null ? newOwner.getName() : "ADMIN"));
+		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", bank.getColorizedName(),
+				newOwner != null ? newOwner.getName() : "ADMIN"));
 		Utils.notifyPlayers(
-				String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), bank.getColorizedName(), newOwner != null ? newOwner.getName() : "ADMIN"),
-				newOwner != null ? newOwner.getPlayer() : null, Collections.singleton(newOwner));
+				String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), bank.getColorizedName(),
+						newOwner != null ? newOwner.getName() : "ADMIN"),
+						newOwner != null ? newOwner.getPlayer() : null,
+						Collections.singleton(newOwner));
 		if (newOwner != null && newOwner.isOnline())
 			newOwner.getPlayer().sendMessage(String.format(Messages.OWNERSHIP_TRANSFER_RECEIVED, "bank", bank.getColorizedName()));
 		boolean hasDefaultName = bank.isDefaultName();

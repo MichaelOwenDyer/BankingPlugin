@@ -10,19 +10,19 @@ public class Pair<T,K> {
         this.second = k;
     }
 
-    public T getFirst() {
+    protected T getFirst() {
         return first;
     }
 
-    public void setFirst(T first) {
+    protected void setFirst(T first) {
         this.first = first;
     }
 
-    public K getSecond() {
+    protected K getSecond() {
         return second;
     }
 
-    public void setSecond(K second) {
+    protected void setSecond(K second) {
         this.second = second;
     }
 

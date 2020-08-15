@@ -138,13 +138,13 @@ public class ControlCommandExecutor implements CommandExecutor {
 		}
 
 		plugin.getBankUtils().reload(true, true,
-				new Callback<Pair<Collection<Bank>, Collection<Account>>>(plugin) {
+				new Callback<BankUtils.ReloadResult>(plugin) {
 			@Override
-			public void onResult(Pair<Collection<Bank>, Collection<Account>> result) {
-				sender.sendMessage(String.format(Messages.RELOADED_PLUGIN,
-						result.getFirst().size(), result.getSecond().size()));
-				plugin.debug(String.format(sender.getName() + " has reloaded %d banks and %d accounts.",
-						result.getFirst().size(), result.getSecond().size()));
+			public void onResult(BankUtils.ReloadResult result) {
+				Collection<Bank> banks = result.getBanks();
+				Collection<Account> accounts = result.getAccounts();
+				sender.sendMessage(String.format(Messages.RELOADED_PLUGIN, banks.size(), accounts.size()));
+				plugin.debug(String.format(sender.getName() + " has reloaded %d banks and %d accounts.", banks.size(), accounts.size()));
 			}
 
 			@Override
@@ -164,6 +164,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 	 * 
 	 * @param sender The command executor
 	 */
+	@SuppressWarnings("unused")
 	private void checkUpdates(CommandSender sender) {
 		plugin.debug(sender.getName() + " is checking for updates");
 

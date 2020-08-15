@@ -33,7 +33,7 @@ public class AccountTabCompleter implements TabCompleter {
             case "removeall":
                 return completeAccountRemoveAll(sender, args);
             case "set":
-                return completeAccountSet((Player) sender, args);
+                return completeAccountSet(args);
             case "trust": case "untrust":
                 return completeAccountTrust((Player) sender, args);
             case "transfer":
@@ -85,7 +85,7 @@ public class AccountTabCompleter implements TabCompleter {
         return Collections.emptyList();
     }
 
-    private List<String> completeAccountSet(Player p, String[] args) {
+    private List<String> completeAccountSet(String[] args) {
         ArrayList<String> returnCompletions = new ArrayList<>();
         List<String> fields = Arrays.asList("nickname", "multiplier", "interest-delay");
 

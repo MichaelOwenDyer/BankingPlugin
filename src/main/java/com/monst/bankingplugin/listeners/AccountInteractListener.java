@@ -134,7 +134,7 @@ public class AccountInteractListener implements Listener {
 						p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED);
 						plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
 					} else
-						migratePartTwo(p, b, ((MigrateClickType) clickType).getAccount());
+						migratePartTwo(p, b, ((MigrateClickType) clickType).getAccountToMigrate());
 					ClickType.removePlayerClickType(p);
 				}
 				e.setCancelled(true);
@@ -757,7 +757,7 @@ public class AccountInteractListener implements Listener {
 		AccountTransferEvent event = new AccountTransferEvent(p, account, newOwner);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
-			plugin.debug("Account transfer ownership event cancelled");
+			plugin.debug("Account transfer event cancelled");
 			return;
 		}
 

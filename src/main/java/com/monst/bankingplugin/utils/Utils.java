@@ -112,8 +112,8 @@ public class Utils {
 		if (response.transactionSuccess()) {
 			callback.callSyncResult(null);
 			return true;
-		} else
-			callback.callSyncError(new TransactionFailedException(response.errorMessage));
+		}
+		callback.callSyncError(new TransactionFailedException(response.errorMessage));
 		return false;
 	}
 
@@ -128,8 +128,8 @@ public class Utils {
 		if (response.transactionSuccess()) {
 			callback.callSyncResult(null);
 			return true;
-		} else
-			callback.callSyncError(new TransactionFailedException(response.errorMessage));
+		}
+		callback.callSyncError(new TransactionFailedException(response.errorMessage));
 		return false;
 	}
 

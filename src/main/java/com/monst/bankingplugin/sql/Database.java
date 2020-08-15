@@ -60,6 +60,7 @@ public abstract class Database {
 
 	abstract String getQueryCreateTableFields();
 
+	@SuppressWarnings("SameReturnValue")
 	abstract String getQueryGetTable();
 
 	private int getDatabaseVersion() throws SQLException {
@@ -74,6 +75,7 @@ public abstract class Database {
 		return 0;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void setDatabaseVersion(int version) throws SQLException {
 		String queryUpdateVersion = "REPLACE INTO " + tableFields + " VALUES ('version', ?)";
 		try (Connection con = dataSource.getConnection()) {

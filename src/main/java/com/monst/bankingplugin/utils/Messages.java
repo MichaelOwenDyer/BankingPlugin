@@ -28,7 +28,7 @@ public class Messages {
 	public static final String ACCOUNT_REIMBURSEMENT_RECEIVED = ChatColor.GOLD + "You have been reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_REIMBURSEMENT_PAID = ChatColor.GOLD + "You reimbursed %s " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
-	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "%d account%s %s successfully removed.";
+	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "%d account%s successfully removed.";
 	public static final String BANKS_REMOVED = ChatColor.GREEN + "%d bank%s and %d account%s were removed.";
 	
 	// NOTIFICATIONS

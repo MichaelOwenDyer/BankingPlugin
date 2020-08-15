@@ -160,9 +160,6 @@ public class ClickType {
 
 		private final Account toMigrate;
 
-		/**
-		 * @param toMigrate The account chest to be migrated
-		 */
 		public MigrateClickType(Account toMigrate) {
 			super(EnumClickType.MIGRATE);
 			this.toMigrate = toMigrate;
@@ -172,7 +169,7 @@ public class ClickType {
 			return toMigrate == null;
 		}
 
-		public Account getAccount() {
+		public Account getAccountToMigrate() {
 			return toMigrate;
 		}
 	}
@@ -181,9 +178,6 @@ public class ClickType {
 
 		private final OfflinePlayer newOwner;
 
-		/**
-		 * @param newOwner the player the account should be transferred to
-		 */
 		public TransferClickType(OfflinePlayer newOwner) {
 			super(EnumClickType.TRANSFER);
 			this.newOwner = newOwner;

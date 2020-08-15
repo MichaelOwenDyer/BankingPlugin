@@ -80,12 +80,12 @@ public class AccountUtils {
     }
 
 	public Collection<Account> getPlayerAccountsCopy(OfflinePlayer owner) {
-		return getAccounts().stream().filter(account -> account.isOwner(owner))
+		return getAccountsCopy().stream().filter(account -> account.isOwner(owner))
 				.collect(Collectors.toList());
     }
 
 	public Collection<Account> getBankAccountsCopy(Bank bank) {
-		return getAccounts().stream().filter(account -> account.getBank().equals(bank)).collect(Collectors.toList());
+		return getAccountsCopy().stream().filter(account -> account.getBank().equals(bank)).collect(Collectors.toList());
 	}
 
     /**

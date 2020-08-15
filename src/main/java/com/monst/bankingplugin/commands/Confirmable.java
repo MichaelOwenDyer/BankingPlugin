@@ -14,7 +14,7 @@ public interface Confirmable {
 	
 	default boolean needsConfirmation(Player p, String[] args) {
 		if (unconfirmedCommands.containsKey(p.getUniqueId())
-				&& Arrays.equals(unconfirmedCommands.get(p.getUniqueId()), args)) {
+				&& Arrays.equals(args, unconfirmedCommands.get(p.getUniqueId()))) {
 			UUID uuid = p.getUniqueId();
 			unconfirmedCommands.remove(uuid);
 			Optional.ofNullable(confirmationTimers.get(uuid)).ifPresent(BukkitTask::cancel);
@@ -33,5 +33,4 @@ public interface Confirmable {
 			return true;
 		}
 	}
-
 }

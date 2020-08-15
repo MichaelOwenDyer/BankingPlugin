@@ -250,8 +250,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 					return;
 				}
-				plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
-						+ owner.getUniqueId());
 				if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER) && (!(sender instanceof Player)
 						|| !Utils.samePlayer((Player) sender, owner))) {
 					plugin.debug(sender.getName() + " does not have permission to view a list of other accounts");
@@ -304,19 +302,18 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				}
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				if (owner.hasPlayedBefore()) {
-					plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
-							+ owner.getUniqueId());
-					if ((sender instanceof Player && Utils.samePlayer((Player) sender, owner))
-							|| sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) { // account removeall player
-						Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
-						confirmRemoveAll(sender, accounts, args);
-					} else {
-						plugin.debug(sender.getName() + " does not have permission to remove all accounts");
-						sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
-					}
-				} else
+				if (!owner.hasPlayedBefore()) {
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+					return true;
+				}
+				if ((sender instanceof Player && Utils.samePlayer((Player) sender, owner))
+						|| sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) { // account removeall player
+					Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
+					confirmRemoveAll(sender, accounts, args);
+				} else {
+					plugin.debug(sender.getName() + " does not have permission to remove all accounts of another player");
+					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
+				}
 			}
 		} else if (args.length == 3) {
 			if (sender instanceof Player) {
@@ -357,9 +354,9 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			return;
 		}
 
-		if (sender instanceof Player && Config.confirmOnRemoveAll && needsConfirmation(((Player) sender), args)) {
-			sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_ACCOUNTS, accounts.size(),
-					accounts.size() == 1 ? "" : "s") + Messages.EXECUTE_AGAIN_TO_CONFIRM);
+		if (sender instanceof Player && Config.confirmOnRemoveAll && needsConfirmation((Player) sender, args)) {
+			sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_ACCOUNTS, accounts.size(), accounts.size() == 1 ? "" : "s"));
+			sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
 			return;
 		}
 
@@ -369,11 +366,13 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			plugin.debug("Removeall event cancelled");
 			return;
 		}
-
+		plugin.debug(sender.getName() + " removed account(s) "
+				+ accounts.stream().map(a -> "#" + a.getID())
+				.collect(Collectors.joining(", ", "[", "]")));
+		sender.sendMessage(String.format(Messages.ACCOUNTS_REMOVED,
+				accounts.size(),
+				accounts.size() == 1 ? " was" : "s were"));
 		accountUtils.removeAccount(accounts, true);
-		sender.sendMessage(String.format(Messages.ACCOUNTS_REMOVED, accounts.size(), accounts.size() == 1 ? "" : "s",
-				accounts.size() == 1 ? "was" : "were"));
-
 	}
 	
 	private boolean promptAccountSet(final Player p, String[] args) {
@@ -474,9 +473,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		if (Utils.samePlayer(playerToTrust, p))
 			return false;
 
-		plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
-				+ playerToTrust.getUniqueId());
-
 		p.sendMessage(String.format(Messages.CLICK_CHEST_TRUST, playerToTrust.getName()));
 		ClickType.setPlayerClickType(p, new ClickType.TrustClickType(playerToTrust));
 		plugin.debug(p.getName() + " is trusting " + playerToTrust.getName() + " to an account");
@@ -501,9 +497,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		}
 		if (Utils.samePlayer(playerToUntrust, p))
 			return false;
-
-		plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
-				+ playerToUntrust.getUniqueId());
 
 		p.sendMessage(Messages.CLICK_CHEST_UNTRUST);
 		ClickType.setPlayerClickType(p, new ClickType.UntrustClickType(playerToUntrust));
@@ -543,8 +536,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 			return false;
 		}
-		plugin.debug("Used deprecated method to lookup offline player \"" + args[1] + "\" and found uuid: "
-				+ newOwner.getUniqueId());
 		
 		p.sendMessage(String.format(Messages.CLICK_CHEST_TRANSFER, newOwner.getName()));
 		ClickType.setPlayerClickType(p, new ClickType.TransferClickType(newOwner));

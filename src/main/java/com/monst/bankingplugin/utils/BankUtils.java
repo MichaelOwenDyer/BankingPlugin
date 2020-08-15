@@ -118,10 +118,6 @@ public class BankUtils {
 		bank.setSelection(newSel);
 	}
 
-	public Selection parseCoordinates(String[] args, Location loc) throws NumberFormatException {
-		return parseCoordinates(args, loc, 0);
-	}
-	
 	public Selection parseCoordinates(String[] args, Location loc, int offset) throws NumberFormatException {
 
 		if (args.length >= 4 && args.length <= 6) {
@@ -335,6 +331,18 @@ public class BankUtils {
 		return Math.round((long) getPlayerBanksCopy(player).size());
 	}
 
+	public static class ReloadResult extends Pair<Collection<Bank>, Collection<Account>> {
+		public ReloadResult(Collection<Bank> banks, Collection<Account> accounts) {
+			super(banks, accounts);
+		}
+		public Collection<Bank> getBanks() {
+			return super.getFirst();
+		}
+		public Collection<Account> getAccounts() {
+			return super.getSecond();
+		}
+	}
+
     /**
 	 * Reload the plugin
 	 * 
@@ -345,7 +353,7 @@ public class BankUtils {
 	 *                            of accounts that were reloaded (as {@code int})
 	 */
 	public void reload(boolean reloadConfig, final boolean showConsoleMessages,
-					   final Callback<Pair<Collection<Bank>, Collection<Account>>> callback) {
+					   final Callback<ReloadResult> callback) {
 		plugin.debug("Loading banks and accounts from database...");
 
 		AccountUtils accountUtils = plugin.getAccountUtils();
@@ -360,8 +368,6 @@ public class BankUtils {
             	Collection<Bank> banks = getBanksCopy();
             	Collection<Account> accounts = accountUtils.getAccountsCopy();
             	
-				int[] afterReload = new int[2];
-
 				Set<Bank> loadedBanks = new HashSet<>();
 				Set<Account> loadedAccounts = new HashSet<>();
             	
@@ -403,7 +409,7 @@ public class BankUtils {
 									accounts.size(), loadedAccounts.size()));
 						
 						if (callback != null)
-							callback.callSyncResult(new Pair<>(loadedBanks, loadedAccounts));
+							callback.callSyncResult(new ReloadResult(loadedBanks, loadedAccounts));
 					}
 					
 					@Override

@@ -34,7 +34,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,8 +64,6 @@ public class BankingPlugin extends JavaPlugin {
 	private GriefPrevention griefPrevention;
 	private WorldEditPlugin worldEdit;
 	
-	private static final Map<LocalTime, Integer> payoutTimeIds = new HashMap<>();
-
 	/**
 	 * @return an instance of BankingPlugin
 	 */
@@ -81,14 +78,11 @@ public class BankingPlugin extends JavaPlugin {
         config = new Config(this);
 
         if (Config.enableDebugLog) {
-            File debugLogFile = new File(getDataFolder(), "debug.txt");
-
             try {
+				File debugLogFile = new File(getDataFolder(), "debug.txt");
 				if (!debugLogFile.exists())
-                    debugLogFile.createNewFile();
-
+					debugLogFile.createNewFile();
                 new PrintWriter(debugLogFile).close();
-
                 fw = new FileWriter(debugLogFile, true);
             } catch (IOException e) {
                 getLogger().info("Failed to instantiate FileWriter");
@@ -271,6 +265,7 @@ public class BankingPlugin extends JavaPlugin {
 
 	// URLs NOT YET SET UP
     // DO NOT USE
+	@SuppressWarnings("unused")
 	private void checkForUpdates() {
         if (!Config.enableUpdateChecker) {
             return;
@@ -347,11 +342,11 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	private void initializeBanksAndAccounts() {
 		bankUtils.reload(false, true,
-                new Callback<Pair<Collection<Bank>, Collection<Account>>>(this) {
+                new Callback<BankUtils.ReloadResult>(this) {
 			@Override
-			public void onResult(Pair<Collection<Bank>, Collection<Account>> result) {
-			    Collection<Bank> banks = result.getFirst();
-                Collection<Account> accounts = result.getSecond();
+			public void onResult(BankUtils.ReloadResult result) {
+			    Collection<Bank> banks = result.getBanks();
+                Collection<Account> accounts = result.getAccounts();
 
 				Bukkit.getServer().getPluginManager().callEvent(new BankInitializedEvent(banks));
                 Bukkit.getServer().getPluginManager().callEvent(new AccountInitializedEvent(accounts));
@@ -441,13 +436,6 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public Economy getEconomy() {
 		return econ;
-	}
-
-	/**
-	 * @return whether the plugin is integrated with {@link Essentials}
-	 */
-	public boolean hasEssentials() {
-		return essentials != null && essentials.isEnabled();
 	}
 
 	/**
