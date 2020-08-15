@@ -6,7 +6,7 @@
 
 	<groupId>com.monst</groupId>
 	<artifactId>BankingPlugin</artifactId>
-	<version>1.11.6-SNAPSHOT</version>
+	<version>1.11.7-SNAPSHOT</version>
 
 	<name>BankingPlugin</name>
 	<description>Create bank accounts in bank vault chests and earn interest on your investments!</description>
@@ -60,7 +60,7 @@
 		<dependency>
            	<groupId>org.spigotmc</groupId>
            	<artifactId>spigot-api</artifactId>
-           	<version>1.16.1-R0.1-SNAPSHOT</version>
+           	<version>1.16.2-R0.1-SNAPSHOT</version>
            	<scope>provided</scope>
        	</dependency>
 		<dependency>
@@ -108,7 +108,7 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.1.0</version>
+			<version>5.6.2</version>
 			<scope>test</scope>
 		</dependency>
 		

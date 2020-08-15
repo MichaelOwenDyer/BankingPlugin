@@ -409,17 +409,14 @@ public class Config {
 		mainCommandNameControl = config.getString("main-command-names.control");
 		interestPayoutTimes = new ConfigPair<>(config.getBoolean("interest-payout-times.allow-override"),
 				config.getStringList("interest-payout-times.default").stream()
-		.map(t -> t.replace(".", ":"))
-		.map(t -> t.contains(":") ? t : t + ":00")
-		.map(t -> t.substring(0, t.indexOf(':')).length() > 1 ? t : "0" + t)
-		.map(t -> {
-			try {
-				return LocalTime.parse(t);
-			} catch (DateTimeParseException e) {
-				plugin.debug("Could not parse time from config: " + t);
-				return null;
-			}
-		}).collect(Collectors.toList()));
+						.map(t -> {
+							try {
+								return LocalTime.parse(t);
+							} catch (DateTimeParseException e) {
+								plugin.debug("Could not parse time from config: " + t);
+								return null;
+							}
+						}).collect(Collectors.toList()));
 		InterestEventScheduler.scheduleAll();
 
 		interestRate = new ConfigPair<>(config.getBoolean("interest-rate.allow-override"),

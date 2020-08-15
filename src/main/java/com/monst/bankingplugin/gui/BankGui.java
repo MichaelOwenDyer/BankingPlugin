@@ -241,12 +241,13 @@ public class BankGui extends Gui<Bank> {
 
 	private List<String> getPayoutTimeLore() {
 		List<LocalTime> times = guiSubject.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
-		return Utils.wordWrapAll(
-				times.isEmpty()
-						? "Accounts will not generate interest."
-						: "Accounts will generate interest every day at: " + times.stream()
-							.map(LocalTime::toString)
-							.collect(Collectors.joining(", ", "[", "]."))
-		);
+		List<String> lore = new ArrayList<>();
+		if (!times.isEmpty()) {
+			lore.add(ChatColor.GRAY + "Accounts will generate interest every day at: ");
+			for (LocalTime time : times)
+				lore.add(ChatColor.GOLD + " - " + time.toString());
+		} else
+			lore.add(ChatColor.GRAY + "Accounts will not generate interest.");
+		return Utils.wordWrapAll(lore);
 	}
 }

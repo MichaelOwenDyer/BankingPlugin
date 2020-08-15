@@ -57,10 +57,10 @@ public class BankTabCompleter implements TabCompleter {
             return Collections.emptyList();
 
         if (args.length == 2 && args[1].isEmpty())
-            returnCompletions.add("<bankname>");
+            returnCompletions.add("<name>");
 
         boolean hasName = false;
-        if (args.length > 1)
+        if (args.length > 1 && !args[1].isEmpty())
             try {
                 Integer.parseInt(args[1].replace("~",""));
             } catch (NumberFormatException e) {
@@ -84,7 +84,7 @@ public class BankTabCompleter implements TabCompleter {
 
         Location loc = p.getTargetBlock(null, 150).getLocation();
         String coord = "";
-        switch (args.length + (hasName ? 0 : 1) % 3) {
+        switch ((args.length + (hasName ? 0 : 1)) % 3) {
             case 0: coord = "" + loc.getBlockX(); break;
             case 1: coord = "" + loc.getBlockY(); break;
             case 2: coord = "" + loc.getBlockZ();

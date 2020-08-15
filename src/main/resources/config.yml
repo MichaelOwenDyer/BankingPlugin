@@ -19,9 +19,10 @@ main-command-names:
 # Type: List<LocalTime>
 interest-payout-times:
   default:
-  # - '09:00'
-  # - '12:00'
-  # - '15:00'
+  - '09:00'
+  - '12:00'
+  - '15:00'
+  - '18:00'
   allow-override: false
   
 # Set the base interest rate for all bank accounts on the server.
