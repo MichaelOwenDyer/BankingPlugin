@@ -292,19 +292,16 @@ public class Bank extends Ownable implements Nameable {
 
 	@Override
 	public TextComponent getInformation(CommandSender sender) {
-		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
-
 		TextComponent info = new TextComponent();
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 		
 		info.addExtra("\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + id + ")");
-		if (!isOwner)
-			info.addExtra("\n    Owner: " + getOwnerDisplayName());
-		if (!getCoowners().isEmpty())
-			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
+		info.addExtra("\n    Owner: " + getOwnerDisplayName());
+		info.addExtra("\n    Co-owners: " + (!getCoowners().isEmpty() ? getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")) : "[none]"));
 		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + accountConfig.getFormatted(AccountConfig.Field.INTEREST_RATE));
 		info.addExtra("\n    Multipliers: ");
-		info.addExtra(Utils.getMultiplierView(this));
+		info.addExtra(Utils.getStackedList(getAccountConfig().get(AccountConfig.Field.MULTIPLIERS)).stream()
+				.map(list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).collect(Collectors.joining(", ", "[", "]")));
 		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + accountConfig.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE));
 		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS));
 		info.addExtra(" (" + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");

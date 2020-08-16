@@ -497,13 +497,4 @@ public class BankUtils {
 		}
 		return "" + color + Math.round(gini * 100) + "% " + assessment;
 	}
-
-	public int getTotalValueRanking(Bank bank) {
-		if (bank == null)
-			return -1;
-		ArrayList<Bank> banks = getBanks().stream()
-				.sorted(Comparator.comparing(Bank::getTotalValue).reversed())
-				.collect(Collectors.toCollection(ArrayList::new));
-		return banks.indexOf(bank) + 1;
-	}
 }

@@ -80,9 +80,11 @@ public class Utils {
 	
 	@SuppressWarnings("deprecation")
 	public static boolean isTransparent(Block block) {
-		return (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST
-				|| block.getBlockData() instanceof Slab || block.getBlockData() instanceof Stairs
-				|| block.getType().isTransparent());
+		return block.getType() == Material.CHEST
+			|| block.getType() == Material.TRAPPED_CHEST
+			|| block.getBlockData() instanceof Slab
+			|| block.getBlockData() instanceof Stairs
+			|| block.getType().isTransparent();
     }
 
 	public static List<String> wordWrapAll(List<String> lore) {
@@ -143,17 +145,16 @@ public class Utils {
 	}
 
 	private static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
+		Essentials essentials = BankingPlugin.getInstance().getEssentials();
 		players.forEach(p -> {
 			if (p.isOnline())
 				p.getPlayer().sendMessage(message);
-			else if (Config.enableMail) {
-				Essentials essentials = BankingPlugin.getInstance().getEssentials();
+			else if (Config.enableMail)
 				essentials.getUserMap().getUser(p.getUniqueId()).addMail(message);
-			}
 		});
 	}
 
-	private static List<List<Integer>> getStackedList(List<Integer> multipliers) {
+	public static List<List<Integer>> getStackedList(List<Integer> multipliers) {
 		List<List<Integer>> stackedMultipliers = new ArrayList<>();
 		stackedMultipliers.add(new ArrayList<>());
 		stackedMultipliers.get(0).add(multipliers.get(0));
@@ -243,106 +244,6 @@ public class Utils {
 		}
 		if (upper < stackedMultipliers.size())
 			multiplierView.add("...");
-		return multiplierView;
-	}
-
-	public static TextComponent getMultiplierView(Bank bank) {
-		return getMultiplierView(bank.getAccountConfig().get(AccountConfig.Field.MULTIPLIERS), -1);
-	}
-
-	public static TextComponent getMultiplierView(Account account) {
-		return getMultiplierView(account.getBank().getAccountConfig().get(AccountConfig.Field.MULTIPLIERS),
-				account.getStatus().getMultiplierStage());
-	}
-
-	@SuppressWarnings("deprecation")
-	private static TextComponent getMultiplierView(List<Integer> multipliers, int highlightStage) {
-
-		TextComponent multiplierView = new TextComponent();
-		multiplierView.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-
-		if (multipliers.isEmpty()) {
-			multiplierView.setText(ChatColor.GREEN + "1x");
-			return multiplierView;
-		}
-
-		List<List<Integer>> stackedMultipliers = Utils.getStackedList(multipliers);
-
-		int stage = -1;
-		if (highlightStage != -1)
-			for (List<Integer> list : stackedMultipliers) {
-				stage++;
-				if (highlightStage - list.size() < 0)
-					break;
-				else
-					highlightStage -= list.size();
-			}
-
-		TextComponent openingBracket = new TextComponent(ChatColor.GOLD + "[");
-		openingBracket.setBold(true);
-		TextComponent closingBracket = new TextComponent(ChatColor.GOLD + " ]");
-		closingBracket.setBold(true);
-		TextComponent ellipses = new TextComponent(" ...");
-
-		multiplierView.addExtra(openingBracket);
-
-		int lower = 0;
-		int upper = stackedMultipliers.size();
-
-		final int listSize = 5;
-		if (stage != -1 && stackedMultipliers.size() > listSize) {
-			lower = stage - (listSize / 2);
-			upper = stage + (listSize / 2) + 1;
-			while (lower < 0) {
-				lower++;
-				upper++;
-			}
-			while (upper > stackedMultipliers.size()) {
-				lower--;
-				upper--;
-			}
-			if (lower > 0)
-				multiplierView.addExtra(ellipses);
-		}
-
-		for (int i = lower; i < upper; i++) {
-			TextComponent number = new TextComponent(" " + stackedMultipliers.get(i).get(0) + "x");
-
-			if (i == stage) {
-				number.setColor(net.md_5.bungee.api.ChatColor.GREEN);
-				number.setBold(true);
-			}
-			int levelSize = stackedMultipliers.get(i).size();
-			if (levelSize > 1) {
-				number.setBold(true);
-				ComponentBuilder cb = new ComponentBuilder();
-				if (stage == -1 || i < stage) {
-					cb.append("" + ChatColor.GREEN + levelSize).append(ChatColor.DARK_GRAY + "/")
-							.append("" + ChatColor.GREEN + levelSize);
-				} else if (i > stage) {
-					cb.append("0").color(net.md_5.bungee.api.ChatColor.RED).append("/")
-							.color(net.md_5.bungee.api.ChatColor.DARK_GRAY).append("" + levelSize)
-							.color(net.md_5.bungee.api.ChatColor.GREEN);
-				} else {
-					net.md_5.bungee.api.ChatColor color;
-					if (highlightStage == levelSize - 1)
-						color = net.md_5.bungee.api.ChatColor.GREEN;
-					else if (highlightStage > (levelSize - 1) / 2)
-						color = net.md_5.bungee.api.ChatColor.GOLD;
-					else
-						color = net.md_5.bungee.api.ChatColor.RED;
-
-					cb.append("" + highlightStage).color(color).append("/")
-							.color(net.md_5.bungee.api.ChatColor.DARK_GRAY).append("" + levelSize)
-							.color(net.md_5.bungee.api.ChatColor.GREEN);
-				}
-				number.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, cb.create()));
-			}
-			multiplierView.addExtra(number);
-		}
-		if (upper < stackedMultipliers.size())
-			multiplierView.addExtra(ellipses);
-		multiplierView.addExtra(closingBracket);
 		return multiplierView;
 	}
 

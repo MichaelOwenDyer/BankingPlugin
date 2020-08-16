@@ -130,9 +130,7 @@ public class BankGui extends SinglePageGui<Bank> {
 		return Arrays.asList(
 				"Number of accounts: " + ChatColor.AQUA + guiSubject.getAccounts().size(),
 				"Number of unique customers: " + ChatColor.AQUA + guiSubject.getCustomerAccounts().keySet().size(),
-				"Total value: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getTotalValue())
-						+ ChatColor.GRAY + " (Rank " + plugin.getBankUtils().getTotalValueRanking(guiSubject)
-						+ " of " + plugin.getBankUtils().getBanks().size() + ")",
+				"Total value: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getTotalValue()),
 				"Average account value: " + ChatColor.GREEN + "$" +
 						Utils.format(!guiSubject.getAccounts().isEmpty()
 								? guiSubject.getTotalValue().doubleValue() / guiSubject.getAccounts().size()

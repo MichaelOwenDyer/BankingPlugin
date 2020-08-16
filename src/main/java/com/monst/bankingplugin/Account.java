@@ -421,8 +421,7 @@ public class Account extends Ownable implements Nameable {
 			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
 		if (verbose) {
 			info.addExtra("\n    Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
-			info.addExtra("\n    Multiplier: ");
-			info.addExtra(Utils.getMultiplierView(this));
+			info.addExtra("\n    Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier() + ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
 			TextComponent interestRate = new TextComponent("\n    Interest rate: ");
 			interestRate.addExtra(Utils.getInterestRateView(this));
 			if (getStatus().getDelayUntilNextPayout() != 0)
