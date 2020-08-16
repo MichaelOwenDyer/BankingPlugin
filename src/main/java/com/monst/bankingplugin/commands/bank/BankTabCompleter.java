@@ -46,6 +46,8 @@ public class BankTabCompleter implements TabCompleter {
                 return completeBankSet(sender, args);
             case "transfer":
                 return completeBankTransfer((Player) sender, args);
+            case "select":
+                return completeBankSelect((Player) sender, args);
         }
         return Collections.emptyList();
     }
@@ -266,6 +268,28 @@ public class BankTabCompleter implements TabCompleter {
             } else {
                 if (sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation()))
                     return Collections.singletonList(bankUtils.getBank(((Player) sender).getLocation()).getName());
+                return banks;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private List<String> completeBankSelect(Player p, String[] args) {
+        if (!p.hasPermission(Permissions.BANK_SELECT))
+            return Collections.emptyList();
+        ArrayList<String> returnCompletions = new ArrayList<>();
+        List<String> banks = plugin.getBankUtils().getBanksCopy().stream()
+                .map(Bank::getName)
+                .collect(Collectors.toList());
+        if (args.length == 2) {
+            if (!args[1].isEmpty()) {
+                for (String bankName : banks)
+                    if (bankName.toLowerCase().startsWith(args[1].toLowerCase()))
+                        returnCompletions.add(bankName);
+                return returnCompletions;
+            } else {
+                if (plugin.getBankUtils().isBank(p.getLocation()))
+                    return Collections.singletonList(plugin.getBankUtils().getBank(p.getLocation()).getName());
                 return banks;
             }
         }

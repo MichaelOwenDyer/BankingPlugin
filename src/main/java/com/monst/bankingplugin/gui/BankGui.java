@@ -124,10 +124,10 @@ public class BankGui extends Gui<Bank> {
 				: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
 					.collect(Collectors.joining(", ", "[ ", " ]")))
 		);
-		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
+		lore.add(ChatColor.GRAY + "Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to bank.");
-		return Utils.wordWrapAll(60, lore.stream());
+		return Utils.wordWrapAll(lore);
 	}
 
 	private List<String> getStatisticsLore() {

@@ -458,7 +458,6 @@ public class Utils {
      */
     public static String getServerVersion() {
         String packageName = Bukkit.getServer().getClass().getPackage().getName();
-
         return packageName.substring(packageName.lastIndexOf('.') + 1);
     }
 

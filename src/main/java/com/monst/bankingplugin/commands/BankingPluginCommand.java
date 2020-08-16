@@ -82,15 +82,12 @@ public class BankingPluginCommand {
 	 */
 	protected void sendBasicHelpMessage(CommandSender sender) {
 		plugin.debug("Sending basic help message to " + sender.getName());
-
-		sender.sendMessage(" ");
 		for (BankingPluginSubCommand subCommand : subCommands) {
 			String msg = subCommand.getHelpMessage(sender);
 			if (msg == null || msg.isEmpty())
 				continue;
 			sender.sendMessage(msg);
 		}
-		sender.sendMessage(" ");
 	}
 
 	private class GenericBaseCommandExecutor implements CommandExecutor {

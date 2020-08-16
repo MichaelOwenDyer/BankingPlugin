@@ -119,12 +119,15 @@ public class BankingPlugin extends JavaPlugin {
         }
 
 		switch (Utils.getServerVersion()) {
-		case "v1_15_R1": case "v1_16_R1":
-			break;
-		default:
-			debug("Server version not officially supported: " + Utils.getServerVersion() + "!");
-			getLogger().warning("Server version not officially supported: " + Utils.getServerVersion() + "!");
-			getLogger().warning("Plugin may still work, but more errors are expected!");
+			case "v1_15_R1":
+			case "v1_15_R2":
+			case "v1_16_R1":
+			case "v1_16_R2":
+				break;
+			default:
+				debug("Server version not officially supported: " + Utils.getServerVersion() + "!");
+				getLogger().warning("Server version not officially supported: " + Utils.getServerVersion() + "!");
+				getLogger().warning("Plugin may still work, but more errors are expected!");
 		}
 		
         accountUtils = new AccountUtils(this);
@@ -199,10 +202,8 @@ public class BankingPlugin extends JavaPlugin {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
 		if (rsp == null)
             return false;
-		// debug(rsp.getProvider().toString());
-
 		econ = rsp.getProvider();
-		return econ != null;
+		return true;
     }
 
 	/**

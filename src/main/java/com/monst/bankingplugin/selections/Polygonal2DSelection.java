@@ -113,7 +113,7 @@ public class Polygonal2DSelection implements Selection {
 
 	@Override
 	public boolean contains(Location pt) {
-	 	if (pt.getWorld() != null && pt.getWorld().equals(world))
+	 	if (pt.getWorld() != null && !pt.getWorld().equals(world))
 			return false;
 		if (points.size() < 3)
 			return false;
