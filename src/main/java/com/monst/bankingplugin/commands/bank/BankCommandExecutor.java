@@ -171,7 +171,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 		long volume = selection.getVolume();
-		int volumeLimit = bankUtils.getVolumeLimit(p);
+		long volumeLimit = bankUtils.getVolumeLimit(p);
 		if (!isAdminBank && volumeLimit != -1 && volume > volumeLimit) {
 			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
 			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE, volumeLimit, volume - volumeLimit));
@@ -258,7 +258,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("No bank could be found under the identifier " + args[1]);
+				plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return;
 			}
@@ -347,7 +347,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("No bank could be found under the identifier \"" + args[1] + "\"");
+				plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, "\"" + args[1] + "\""));
 				return;
 			}
@@ -476,7 +476,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		bank = bankUtils.lookupBank(args[1]);
 		if (bank == null) {
-			plugin.debug("No bank could be found under the identifier " + args[1]);
+			plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
 			p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
@@ -496,7 +496,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 		long volume = selection.getVolume();
-		int volumeLimit = bankUtils.getVolumeLimit(p);
+		long volumeLimit = bankUtils.getVolumeLimit(p);
 		if (bank.isPlayerBank() && volumeLimit != -1 && volume > volumeLimit) {
 			plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
 			p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE_RESIZE, volumeLimit, volume - volumeLimit));
@@ -631,7 +631,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		String value = sb.toString();
 
 		if (bank == null) {
-			plugin.debug("No bank could be found under the identifier " + args[1]);
+			plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
 			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
@@ -706,7 +706,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("No bank could be found under the identifier " + args[1]);
+				plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
 				p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return;
 			}
@@ -756,7 +756,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("No bank could be found under the identifier " + args[1]);
+				plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}

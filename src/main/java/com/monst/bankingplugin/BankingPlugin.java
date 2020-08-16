@@ -94,7 +94,7 @@ public class BankingPlugin extends JavaPlugin {
 
         worldGuard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard != null) {
-			WorldGuardBankingFlag.register(this); // Throws class error with worldedit:World.class
+			WorldGuardBankingFlag.register(this);
         }
     }
 
@@ -176,7 +176,7 @@ public class BankingPlugin extends JavaPlugin {
 
 		for (Bank bank : bankUtils.getBanksCopy()) {
 			bankUtils.removeBank(bank, false);
-			debug("Removed bank (\"" + bank.getName() + "\" (#" + bank.getID() + "))");
+			debug("Removed bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
 		}
 
 		if (database != null) {

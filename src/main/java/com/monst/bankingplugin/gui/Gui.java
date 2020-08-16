@@ -2,7 +2,7 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Ownable;
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -11,7 +11,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.Slot.ClickHandler;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -23,8 +22,7 @@ abstract class Gui<T extends Ownable> {
 
 	static final BankingPlugin plugin = BankingPlugin.getInstance();
 	final T guiSubject;
-	Menu menu;
-	Gui<T> prevGui;
+	Gui<? extends Ownable> prevGui;
 	boolean openInBackground = false;
 
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
@@ -46,42 +44,19 @@ abstract class Gui<T extends Ownable> {
 		open(player, true);
 	}
 
-	void open(Player player, boolean update) {
-		if (update) {
-			createMenu();
-			setCloseHandler(OPEN_PREVIOUS);
-			shortenGuiChain();
-		}
-		evaluateClearance(player);
-		for (int i = 0; i < menu.getDimensions().getArea(); i++) {
-			menu.getSlot(i).setItem(createSlotItem(i));
-			menu.getSlot(i).setClickHandler(createClickHandler(i));
-		}
-		menu.open(player);
-	}
+	abstract void open(Player player, boolean update);
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	public Gui<T> setPrevGui(@Nullable Gui prevGui) {
-		if (prevGui != null)
-			prevGui.openInBackground = true;
-		this.prevGui = prevGui;
-		return this;
-	}
-
-	abstract void createMenu();
-
-	abstract void evaluateClearance(Player player);
-
-	abstract ItemStack createSlotItem(int i);
-
-	abstract ClickHandler createClickHandler(int i);
+	abstract void initializeMenu();
 
 	abstract void setCloseHandler(Menu.CloseHandler handler);
 
 	abstract GuiType getType();
 
-	static ItemStack createSlotItem(Material material, String displayName, List<String> lore) {
-		return createSlotItem(new ItemStack(material), displayName, lore);
+	public Gui<T> setPrevGui(@Nullable Gui<? extends Ownable> prevGui) {
+		if (prevGui != null)
+			prevGui.openInBackground = true;
+		this.prevGui = prevGui;
+		return this;
 	}
 
 	/**
@@ -98,6 +73,10 @@ abstract class Gui<T extends Ownable> {
 			skullMeta.setOwningPlayer(owner);
 		skull.setItemMeta(skullMeta);
 		return createSlotItem(skull, displayName, lore);
+	}
+
+	static ItemStack createSlotItem(Material material, String displayName, List<String> lore) {
+		return createSlotItem(new ItemStack(material), displayName, lore);
 	}
 
 	/**
@@ -117,25 +96,24 @@ abstract class Gui<T extends Ownable> {
 		return item;
 	}
 
+	void shortenGuiChain() {
+		shortenGuiChain(this, EnumSet.noneOf(GuiType.class));
+	}
+
 	/**
 	 * Descends down the list of previous open Guis, and severs the link when it
 	 * finds a Gui of a type it has seen before. This prevents the Gui chain
 	 * from becoming too long and unwieldy.
 	 */
-	void shortenGuiChain() {
-		shortenGuiChain(this, EnumSet.noneOf(GuiType.class));
-	}
-
-	private void shortenGuiChain(Gui<T> gui, EnumSet<GuiType> types) {
-		Gui<T> previous = gui.prevGui;
+	private void shortenGuiChain(Gui<? extends Ownable> gui, EnumSet<GuiType> types) {
+		Gui<?> previous = gui.prevGui;
 		if (previous == null)
 			return;
 		if (!types.contains(previous.getType())) {
 			types.add(previous.getType());
 			shortenGuiChain(previous, types);
-		} else {
+		} else
 			gui.prevGui = null;
-		}
 	}
 
 	boolean isOpenInBackground() {
@@ -147,6 +125,6 @@ abstract class Gui<T extends Ownable> {
 	}
 
 	enum GuiType {
-		ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, BANK
+		ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, BANK
 	}
 }

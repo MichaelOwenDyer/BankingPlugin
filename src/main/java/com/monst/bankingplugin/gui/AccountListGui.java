@@ -3,7 +3,6 @@ package com.monst.bankingplugin.gui;
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.mask.BinaryMask;
@@ -16,35 +15,15 @@ import org.ipvp.canvas.template.StaticItemTemplate;
 import org.ipvp.canvas.type.ChestMenu;
 
 import java.util.Collections;
-import java.util.List;
 
-public class AccountListGui extends Gui<Bank> {
-
-    private static final int PREV_SLOT = 18;
-    private static final int NEXT_SLOT = 26;
-
-    private List<Menu> pages;
-    private int currentPage = 0;
+public class AccountListGui extends MultiPageGui<Bank> {
 
     public AccountListGui(Bank bank) {
-        super(bank);
+        super(bank, 18, 26);
     }
 
     @Override
-    void open(Player player, boolean update) {
-        if (update) {
-            createMenu();
-            setClickHandler();
-            setCloseHandler(OPEN_PREVIOUS);
-            shortenGuiChain();
-        }
-        if (pages.isEmpty())
-            return;
-        pages.get(currentPage).open(player);
-    }
-
-    @Override
-    void createMenu() {
+    void initializeMenu() {
         @SuppressWarnings("rawtypes")
         Menu.Builder pageTemplate = ChestMenu.builder(3).title("Account List").redraw(true);
         Mask itemSlots = BinaryMask.builder(pageTemplate.getDimensions())
@@ -64,34 +43,6 @@ public class AccountListGui extends Gui<Bank> {
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
         }
         pages = builder.build();
-    }
-
-    private void setClickHandler() {
-        for (Menu page : pages) {
-            for (Slot slot : new Slot[]{page.getSlot(PREV_SLOT), page.getSlot(NEXT_SLOT)}) {
-                //noinspection SimplifyOptionalCallChains
-                Slot.ClickHandler prevHandler = slot.getClickHandler().orElse(null);
-                if (prevHandler != null)
-                    slot.setClickHandler((player, info) -> {
-                        prevHandler.click(player, info);
-                        currentPage--;
-                    });
-            }
-        }
-    }
-
-    @Override
-    void evaluateClearance(Player player) {
-    }
-
-    @Override
-    ItemStack createSlotItem(int i) {
-        return null;
-    }
-
-    @Override
-    Slot.ClickHandler createClickHandler(int i) {
-        return null;
     }
 
     @Override

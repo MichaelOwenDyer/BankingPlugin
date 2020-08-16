@@ -5,7 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
 /**
- * Called when a player reloads the shops
+ * Called when a player reloads the plugin
  */
 public class ReloadEvent extends ControlEvent implements Cancellable {
 

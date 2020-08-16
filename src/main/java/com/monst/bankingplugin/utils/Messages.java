@@ -78,7 +78,7 @@ public class Messages {
 	public static final String CHEST_NOT_IN_BANK = ChatColor.RED + "That chest is not located within a bank.";
 	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or specify the name of a bank.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account at this bank.";
-	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found under the identifier \"%s\".";
+	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found with the name or ID \"%s\".";
 	public static final String NO_ACCOUNTS_FOUND = ChatColor.RED + "There are no accounts to list.";
 	public static final String NO_PLAYER_ACCOUNTS = ChatColor.RED + "That player does not own any accounts.";
 	public static final String NO_BANK_ACCOUNTS = ChatColor.RED + "There are no accounts at that bank.";

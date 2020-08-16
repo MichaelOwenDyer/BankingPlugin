@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.utils;
 
 public class Permissions {
-	public static final String ACCOUNT_SET = "bankingplugin.account.set.*";
 
 	public static final String ACCOUNT_CREATE = "bankingplugin.account.create";
 	public static final String ACCOUNT_CREATE_OTHER = "bankingplugin.account.create.other";
@@ -30,8 +29,6 @@ public class Permissions {
 	public static final String BANK_REMOVEALL = "bankingplugin.bank.removeall";
 	public static final String BANK_NO_LIMIT = "bankingplugin.bank.limit.*";
 	public static final String BANK_NO_SIZE_LIMIT = "bankingplugin.bank.size.*";
-	public static final String BANK_INFO_OTHER = "bankingplugin.bank.info.other";
-	public static final String BANK_INFO_ADMIN = "bankingplugin.bank.info.admin";
 	public static final String BANK_RESIZE_OTHER = "bankingplugin.bank.resize.other";
 	public static final String BANK_RESIZE_ADMIN = "bankingplugin.bank.resize.admin";
 	public static final String BANK_TRANSFER = "bankingplugin.bank.transfer";

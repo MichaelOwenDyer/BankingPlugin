@@ -21,9 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankGui extends Gui<Bank> {
+public class BankGui extends SinglePageGui<Bank> {
 
-	boolean verbose;
 	boolean canTP;
 	boolean canListAccounts;
 
@@ -32,15 +31,12 @@ public class BankGui extends Gui<Bank> {
 	}
 
 	@Override
-	void createMenu() {
+	void initializeMenu() {
 		menu = ChestMenu.builder(2).title(guiSubject.getColorizedName()).build();
 	}
 
 	@Override
 	void evaluateClearance(Player player) {
-		verbose = guiSubject.isTrusted(player)
-				|| (guiSubject.isAdminBank() && player.hasPermission(Permissions.BANK_INFO_ADMIN)
-				|| (guiSubject.isPlayerBank() && player.hasPermission(Permissions.BANK_INFO_OTHER)));
 		canTP = player.isOp()
 				|| player.hasPermission("minecraft.command.tp")
 				|| player.hasPermission("essentials.tp.position");
@@ -71,7 +67,7 @@ public class BankGui extends Gui<Bank> {
 			case 12:
 				return createSlotItem(Material.LIGHT_BLUE_BED, "Offline Payouts", getOfflinePayoutsLore());
 			case 13:
-				return createSlotItem(Material.CLOCK, "Interest Delay", getInterestDelayLore());
+				return createSlotItem(Material.COMPASS, "Interest Delay", getInterestDelayLore());
 			case 14:
 				return createSlotItem(Material.BELL, "Withdrawal Policy", getWithdrawalPolicyLore());
 			case 15:
@@ -124,7 +120,7 @@ public class BankGui extends Gui<Bank> {
 				: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
 					.collect(Collectors.joining(", ", "[ ", " ]")))
 		);
-		lore.add(ChatColor.GRAY + "Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
+		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to bank.");
 		return Utils.wordWrapAll(lore);
@@ -149,8 +145,8 @@ public class BankGui extends Gui<Bank> {
 		AccountConfig config = guiSubject.getAccountConfig();
 		boolean reimburse = config.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION);
 		return Arrays.asList(
-				ChatColor.GRAY + "Fee: " + ChatColor.GREEN + "$" + config.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE),
-				ChatColor.GRAY + "Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
+				"Fee: " + ChatColor.GREEN + "$" + config.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE),
+				"Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}
 
@@ -161,11 +157,11 @@ public class BankGui extends Gui<Bank> {
 		boolean strikethrough = minBalance == 0;
 		boolean payOnLowBalance = config.get(AccountConfig.Field.PAY_ON_LOW_BALANCE);
 		return Utils.wordWrapAll(38,
-				ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBalance),
-				ChatColor.GRAY + "Low balance fee: " + ChatColor.RED
+				"Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBalance),
+				"Low balance fee: " + ChatColor.RED
 						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.format(lowBalanceFee),
 				"",
-				ChatColor.GRAY + "Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
+				"Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
 						+ " continue " + ChatColor.GRAY + "to be paid out when the account balance is low."
 		);
 	}
@@ -176,21 +172,21 @@ public class BankGui extends Gui<Bank> {
 		int offlineDecrement = config.get(AccountConfig.Field.OFFLINE_MULTIPLIER_DECREMENT);
 		int beforeReset = config.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
 		List<String> lore = new ArrayList<>();
-		lore.add(ChatColor.GRAY + "Accounts will " + (offlinePayouts == 0
+		lore.add("Accounts will " + (offlinePayouts == 0
 				? ChatColor.RED + "not generate interest" + ChatColor.GRAY
 				: "generate interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
 						+ String.format(" time%s", offlinePayouts == 1 ? "" : "s"))
 				+ " while account holders are offline.");
 		if (beforeReset != 0) {
 			lore.add("");
-			lore.add(ChatColor.GRAY + "Account multipliers will " + (offlineDecrement == 0
+			lore.add("Account multipliers will " + (offlineDecrement == 0
 					? ChatColor.AQUA + "freeze" + ChatColor.GRAY
 					: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " for every payout")
 				+ " during this time.");
 		}
 		if (beforeReset > -1) {
 			lore.add("");
-			lore.add(ChatColor.GRAY + "Multipliers will reset " + (beforeReset == 0
+			lore.add("Multipliers will reset " + (beforeReset == 0
 					? ChatColor.RED + "before paying out interest" + ChatColor.GRAY
 					: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY
 					+ String.format(" time%s", beforeReset == 1 ? "" : "s")) + " while account holders are offline.");
@@ -203,13 +199,13 @@ public class BankGui extends Gui<Bank> {
 		int interestDelay = config.get(AccountConfig.Field.INITIAL_INTEREST_DELAY);
 		boolean countOffline = config.get(AccountConfig.Field.COUNT_INTEREST_DELAY_OFFLINE);
 		List<String> lore = new ArrayList<>();
-		lore.add(ChatColor.GRAY + "New accounts will begin to generate interest " + (interestDelay == 0
+		lore.add("New accounts will begin to generate interest " + (interestDelay == 0
 				? ChatColor.GREEN + "immediately" + ChatColor.GRAY + " after creation."
 				: "after " + ChatColor.AQUA + interestDelay + ChatColor.GRAY +
 					String.format(" preliminary interest cycle%s.", interestDelay == 1 ? "" : "s")));
 		if (interestDelay != 0) {
 			lore.add("");
-			lore.add(ChatColor.GRAY + "The account owner " + (countOffline
+			lore.add("The account owner " + (countOffline
 					? ChatColor.GREEN + "does not have to be online"
 					: ChatColor.RED + "must be online")
 						+ ChatColor.GRAY + " for these cycles to be counted toward the delay.");
@@ -220,7 +216,7 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getWithdrawalPolicyLore() {
 		int withdrawalDecrement = guiSubject.getAccountConfig().get(AccountConfig.Field.WITHDRAWAL_MULTIPLIER_DECREMENT);
 		return Utils.wordWrapAll(
-				ChatColor.GRAY + "Account multipliers will " + (withdrawalDecrement == 0
+				"Account multipliers will " + (withdrawalDecrement == 0
 						? ChatColor.GREEN + "not be affected on" + ChatColor.GRAY
 						: "decrease by " + ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY
 							+ String.format(" stage%s upon each", withdrawalDecrement == 1 ? "" : "s")) + " withdrawal."
@@ -230,7 +226,7 @@ public class BankGui extends Gui<Bank> {
 	private List<String> getAccountLimitLore() {
 		int accountLimit = guiSubject.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
 		return Utils.wordWrapAll(
-				ChatColor.GRAY + (accountLimit == 0
+				(accountLimit == 0
 						? "Account creation is currently " + ChatColor.RED + "disabled" + ChatColor.GRAY
 						: "Players may create " + (accountLimit > 0
 								? "up to " + ChatColor.AQUA + accountLimit
@@ -243,11 +239,11 @@ public class BankGui extends Gui<Bank> {
 		List<LocalTime> times = guiSubject.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
 		List<String> lore = new ArrayList<>();
 		if (!times.isEmpty()) {
-			lore.add(ChatColor.GRAY + "Accounts will generate interest every day at: ");
+			lore.add("Accounts will generate interest every day at: ");
 			for (LocalTime time : times)
 				lore.add(ChatColor.GOLD + " - " + time.toString());
 		} else
-			lore.add(ChatColor.GRAY + "Accounts will not generate interest.");
+			lore.add("Accounts will not generate interest.");
 		return Utils.wordWrapAll(lore);
 	}
 }

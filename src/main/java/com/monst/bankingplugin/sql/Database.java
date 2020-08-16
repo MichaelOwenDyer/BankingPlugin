@@ -392,10 +392,8 @@ public abstract class Database {
 
 						ps.setString(i + 8, sb.toString());
 					} else {
-						plugin.getLogger()
-								.severe("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
 						plugin.debug("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
-						return; // This should never happen
+						throw new IllegalStateException("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
 					}
 
 					AccountConfig config = bank.getAccountConfig();

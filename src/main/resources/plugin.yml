@@ -62,8 +62,6 @@ permissions:
             bankingplugin.bank.removeall: true
             bankingplugin.bank.limit.*: true
             bankingplugin.bank.size.*: true
-            bankingplugin.bank.info.other: true
-            bankingplugin.bank.info.admin: true
             bankingplugin.bank.resize.other: true
             bankingplugin.bank.resize.admin: true
             bankingplugin.bank.transfer: true
@@ -99,7 +97,7 @@ permissions:
         default: op
         
     bankingplugin.account.info-other:
-        description: View detailed information about another player's account.
+        description: View detailed information about another player's account as if you were owner or co-owner.
         default: op
         
     bankingplugin.account.list-other:
@@ -117,13 +115,13 @@ permissions:
             bankingplugin.account.view-other: true
     
     bankingplugin.account.migrate.other:
-        description: Migrate another player's account chest to another chest.
+        description: Migrate the account chest of another player to a different chest.
         default: op
         children:
             bankingplugin.account.create: true
         
     bankingplugin.account.migrate.bank:
-        description: Migrate an account to another chest in a different bank.
+        description: Migrate an account to a chest in a different bank.
         default: op
         children:
             bankingplugin.account.create: true
@@ -143,6 +141,9 @@ permissions:
     bankingplugin.account.extend-other:
         description: Extend another player's account chest.
         default: op
+    # NOTE: To extend another player's account chest on protected land, players need both of the following permissions:
+    #       - bankingplugin.account.extend-other
+    #       - bankingplugin.account.create.protected
         
     bankingplugin.account.limit.*:
         description: Create an unlimited number of accounts.
@@ -163,7 +164,7 @@ permissions:
     
     # BANK #
     bankingplugin.bank.create:
-        description: Create, manage, and remove banks of your own.
+        description: Create, manage, and remove player banks under your own name.
         default: true
         
     bankingplugin.bank.create.admin:
@@ -171,21 +172,22 @@ permissions:
         default: op
         
     bankingplugin.bank.remove.other:
-        description: Remove another player's bank and all associated accounts.
+        description: Remove another player's bank and all accounts at that bank.
         default: op
         children:
             bankingplugin.account.remove-other: true
             
     bankingplugin.bank.remove.admin:
-        description: Remove an admin bank and all associated accounts.
+        description: Remove an admin bank and all accounts at that bank.
+        default: op
+        children:
+            bankingplugin.account.remove-other: true
+            
+    bankingplugin.bank.removeall:
+        description: Remove all banks and all accounts on the server.
         default: op
         children:
             bankingplugin.bank.remove.other: true
-            
-    bankingplugin.bank.removeall:
-        description: Remove all banks and all accounts.
-        default: op
-        children:
             bankingplugin.bank.remove.admin: true
             
     bankingplugin.bank.limit.*:
@@ -194,14 +196,6 @@ permissions:
         
     bankingplugin.bank.size.*:
         description: Create a bank of unlimited volume.
-        default: op
-        
-    bankingplugin.bank.info.other:
-        description: View detailed information about another player's bank.
-        default: op
-        
-    bankingplugin.bank.info.admin:
-        description: View detailed information about an admin bank.
         default: op
         
     bankingplugin.bank.resize.other:
@@ -214,11 +208,11 @@ permissions:
         description: Resize an admin bank.
         default: op
         children:
-            bankingplugin.bank.resize.other: true
+            bankingplugin.bank.create.admin: true
             
     bankingplugin.bank.transfer:
         description: Transfer ownership of your bank to another player.
-        default: true
+        default: op
         children:
             bankingplugin.bank.create: true
     
@@ -233,6 +227,9 @@ permissions:
         default: op
         children:
             bankingplugin.bank.transfer.other: true
+    # NOTE: To turn a player bank into an admin bank, players need both of the following permissions:
+    #       - bankingplugin.bank.transfer(.other)
+    #       - bankingplugin.bank.create.admin
     
     bankingplugin.bank.set.other:
         description: Configure another player's bank.
@@ -241,9 +238,7 @@ permissions:
     bankingplugin.bank.set.admin:
         description: Configure an admin bank.
         default: op
-        children:
-            bankingplugin.bank.set.other: true
-    
+
     # CONTROL #
     bankingplugin.external-bypass:
         description: Bypass other plugins' attempts to selectively prevent functionality of this plugin.

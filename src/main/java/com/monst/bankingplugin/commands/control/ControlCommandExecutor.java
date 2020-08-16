@@ -176,7 +176,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 
 		// sender.sendMessage(Messages.UPDATE_CHECKING);
 
-		UpdateChecker uc = new UpdateChecker(BankingPlugin.getInstance());
+		UpdateChecker uc = new UpdateChecker(plugin);
 		UpdateChecker.UpdateCheckerResult result = uc.check();
 
 		if (result == UpdateChecker.UpdateCheckerResult.TRUE) {

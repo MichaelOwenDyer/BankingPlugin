@@ -113,9 +113,9 @@ public class BankUtils {
 	}
 
 	public void resizeBank(Bank bank, Selection newSel) {
-		bankSelectionMap.remove(bank.getSelection());
-		bankSelectionMap.put(newSel, bank);
+		removeBank(bank, false);
 		bank.setSelection(newSel);
+		addBank(bank, false);
 	}
 
 	public Selection parseCoordinates(String[] args, Location loc, int offset) throws NumberFormatException {
@@ -187,16 +187,17 @@ public class BankUtils {
 	 *                      had or was given (as {@code int})
 	 */
 	public void addBank(Bank bank, boolean addToDatabase, Callback<Integer> callback) {
-		plugin.debug("Adding bank... (#" + bank.getID() + ")");
+		plugin.debug("Adding/updating bank... (#" + bank.getID() + ")");
 
 		bankSelectionMap.put(bank.getSelection(), bank);
 
-        if (addToDatabase) {
+		if (bankSelectionMap.values().stream().filter(b -> b.equals(bank)).count() > 1)
+			plugin.debug("ERROR! Bank #" + bank.getID() + " entered more than once on bankSelMap");
+
+        if (addToDatabase)
 			plugin.getDatabase().addBank(bank, callback);
-        } else {
-			if (callback != null)
+        else if (callback != null)
 				callback.callSyncResult(bank.getID());
-        }
 
     }
 
@@ -223,11 +224,10 @@ public class BankUtils {
 
 		bankSelectionMap.remove(bank.getSelection());
 
-        if (removeFromDatabase) {
+        if (removeFromDatabase)
 			plugin.getDatabase().removeBank(bank, callback);
-        } else {
-            if (callback != null) callback.callSyncResult(null);
-        }
+        else if (callback != null)
+            	callback.callSyncResult(null);
     }
 
     /**
@@ -285,11 +285,11 @@ public class BankUtils {
 		}
 		if (limit < -1)
 			limit = -1;
-		return (useDefault ? Config.defaultBankLimit : limit);
+		return useDefault ? Config.defaultBankLimit : limit;
 	}
 	
-	public int getVolumeLimit(Player player) {
-		int limit = 0;
+	public long getVolumeLimit(Player player) {
+		long limit = 0;
 		boolean useDefault = true;
 
 		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
@@ -304,7 +304,7 @@ public class BankUtils {
 
 					if (spl.length > 1) {
 						try {
-							int newLimit = Integer.parseInt(spl[1]);
+							long newLimit = Long.parseLong(spl[1]);
 							if (newLimit < 0) {
 								limit = -1;
 								break;
@@ -318,7 +318,7 @@ public class BankUtils {
 		}
 		if (limit < -1)
 			limit = -1;
-		return (useDefault ? Config.maximumBankVolume : limit);
+		return useDefault ? Config.maximumBankVolume : limit;
 	}
 
 	/**

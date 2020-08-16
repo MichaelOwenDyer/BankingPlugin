@@ -144,7 +144,7 @@ public class Config {
 	 * The default bank volume limit for players whose limit is not set via a
 	 * permission.
 	 */
-	public static int maximumBankVolume;
+	public static long maximumBankVolume;
 	
 	/**
 	 * Whether a bank owner should be allowed to create an account at their own
@@ -481,7 +481,7 @@ public class Config {
 		defaultBankLimit = config.getInt("default-limits.bank");
 		defaultAccountLimit = config.getInt("default-limits.account");
 		minimumBankVolume = Math.max(config.getInt("bank-size-limits.minimum"), 0);
-		maximumBankVolume = Math.max(config.getInt("bank-size-limits.maximum"), 0);
+		maximumBankVolume = Math.max(config.getLong("bank-size-limits.maximum"), 0);
 		allowSelfBanking = config.getBoolean("allow-self-banking");
 		confirmOnRemove = config.getBoolean("confirm-on-remove");
 		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall");

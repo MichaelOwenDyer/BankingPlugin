@@ -182,7 +182,7 @@ default-limits:
 # Set the volume limit for anyone who doesn't have a specific permission here.
 # The minimum volume cannot by bypassed by a permission.
 # Admin banks are exempt from these restrictions.
-# Type: int
+# Type: int, long
 bank-size-limits:
   minimum: 125
   maximum: 100000

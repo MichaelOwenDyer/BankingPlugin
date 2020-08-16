@@ -11,10 +11,11 @@ import java.util.Optional;
 public class WorldGuardBankingFlag {
 
     public static void register(final BankingPlugin plugin) {
-        WorldGuardWrapper wrapper = WorldGuardWrapper.getInstance();
 
-		Optional<IWrappedFlag<WrappedState>> createBankFlag = wrapper.registerFlag("create-bank", WrappedState.class,
-				Config.wgAllowCreateBankDefault ? WrappedState.ALLOW : WrappedState.DENY);
+		Optional<IWrappedFlag<WrappedState>> createBankFlag = WorldGuardWrapper.getInstance()
+                .registerFlag("create-bank", WrappedState.class, Config.wgAllowCreateBankDefault
+                        ? WrappedState.ALLOW
+                        : WrappedState.DENY);
                 
 		plugin.debug("Flag create-bank: " + createBankFlag.isPresent());
     }

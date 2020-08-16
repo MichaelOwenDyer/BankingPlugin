@@ -293,10 +293,7 @@ public class Bank extends Ownable implements Nameable {
 	@Override
 	public TextComponent getInformation(CommandSender sender) {
 		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
-		boolean verbose = (sender instanceof Player && isTrusted((Player) sender))
-				|| (getType() == BankType.PLAYER && sender.hasPermission(Permissions.BANK_INFO_OTHER)
-				|| (getType() == BankType.ADMIN && sender.hasPermission(Permissions.BANK_INFO_ADMIN)));
-		
+
 		TextComponent info = new TextComponent();
 		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
 		
@@ -312,17 +309,13 @@ public class Bank extends Ownable implements Nameable {
 		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS));
 		info.addExtra(" (" + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");
 		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.INITIAL_INTEREST_DELAY));
-		double minBal = accountConfig.get(AccountConfig.Field.MINIMUM_BALANCE);
-		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBal));
-		if (minBal != 0)
-			info.addExtra(" (" + ChatColor.RED + "$" + accountConfig.getFormatted(AccountConfig.Field.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
-		if (verbose) {
-			info.addExtra("\n    Accounts: " + ChatColor.AQUA + accounts.size());
-			info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
-			info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().doubleValue() / accounts.size()));
-			info.addExtra("\n    Equality score: ");
-			info.addExtra(BankUtils.getEqualityLore(this));
-		}
+		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + "$" + Utils.format((double) accountConfig.get(AccountConfig.Field.MINIMUM_BALANCE)));
+		info.addExtra(" (" + ChatColor.RED + "$" + accountConfig.getFormatted(AccountConfig.Field.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
+		info.addExtra("\n    Accounts: " + ChatColor.AQUA + accounts.size());
+		info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
+		info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().doubleValue() / accounts.size()));
+		info.addExtra("\n    Equality score: ");
+		info.addExtra(BankUtils.getEqualityLore(this));
 		info.addExtra("\n    Location: " + ChatColor.AQUA + getSelection().getCoordinates());
 
 		return info;

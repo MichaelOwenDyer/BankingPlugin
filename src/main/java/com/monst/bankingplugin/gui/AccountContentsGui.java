@@ -11,7 +11,7 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.type.ChestMenu;
 
-public class AccountContentsGui extends Gui<Account> {
+public class AccountContentsGui extends SinglePageGui<Account> {
 
     boolean canEdit;
 
@@ -20,7 +20,7 @@ public class AccountContentsGui extends Gui<Account> {
     }
 
     @Override
-    void createMenu() {
+    void initializeMenu() {
         menu = ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getColorizedName()).redraw(true).build();
     }
 
@@ -81,10 +81,10 @@ public class AccountContentsGui extends Gui<Account> {
         }
 
         @Override
-        void createMenu() {
+        void initializeMenu() {
             menu = ChestMenu.builder(3).title(
                     shulkerBox.getCustomName() != null
-                            ? shulkerBox.getCustomName()
+                            ? shulkerBox.getCustomName() // TODO: Figure out why always null
                             : WordUtils.capitalizeFully(shulkerBox.getColor().toString()) + " Shulker Box"
             ).redraw(true).build();
         }
@@ -99,5 +99,9 @@ public class AccountContentsGui extends Gui<Account> {
             return null;
         }
 
+        @Override
+        GuiType getType() {
+            return GuiType.ACCOUNT_SHULKER_CONTENTS;
+        }
     }
 }
