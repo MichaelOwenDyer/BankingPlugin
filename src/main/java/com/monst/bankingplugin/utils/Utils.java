@@ -74,8 +74,20 @@ public class Utils {
 		return String.format("%,.2f", bd);
 	}
 
-	public static String removePunctuation(String list) {
-		return list.replaceAll("\\p{Punct}", "");
+	public static String removePunctuation(String s, char... exclude) {
+		StringBuilder regex = new StringBuilder("[\\p{Punct}");
+		if (exclude.length > 0) {
+			regex.append("&&[^");
+			for (char c : exclude)
+				regex.append(c);
+			regex.append("]");
+		}
+		regex.append("]");
+		return removePunctuation(s, regex.toString());
+	}
+
+	public static String removePunctuation(String s, String regex) {
+		return s.replaceAll(regex, "");
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -99,8 +111,11 @@ public class Utils {
 	}
 
     public static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
-		return lines.map(s -> ChatPaginator.wordWrap(s, lineLength))
-				.flatMap(Arrays::stream).collect(Collectors.toList());
+		return lines
+				.map(s -> ChatPaginator.wordWrap(s, lineLength))
+				.flatMap(Arrays::stream)
+				.map(s -> s.replace("" + ChatColor.WHITE, ""))
+				.collect(Collectors.toList());
 	}
 
 	public static boolean depositPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {
@@ -224,8 +239,10 @@ public class Utils {
 			number.append(" - ").append(stackedMultipliers.get(i).get(0)).append("x" + ChatColor.DARK_GRAY);
 
 			int levelSize = stackedMultipliers.get(i).size();
-			if (stage != -1 && levelSize > 1) {
-				if (i < stage) {
+			if (levelSize > 1) {
+				if (stage == -1) {
+					number.append(" (" + ChatColor.GRAY + "x" + ChatColor.AQUA + levelSize + ChatColor.DARK_GRAY + ")");
+				} else if (i < stage) {
 					number.append(" (" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
 				} else if (i > stage) {
 					number.append(" (" + ChatColor.RED + "0" + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");

@@ -24,6 +24,11 @@ public class Polygonal2DSelection implements Selection {
 			xpoints[i] = points.get(i).getBlockX();
 			ypoints[i] = points.get(i).getBlockZ();
 		}
+		if (minY > maxY) {
+			int temp = minY;
+			minY = maxY;
+			maxY = temp;
+		}
 		return new Polygonal2DSelection(
 				world,
 				points,
@@ -67,7 +72,7 @@ public class Polygonal2DSelection implements Selection {
 		Location min = getMinimumPoint();
 		int centerX, centerY, centerZ;
 		centerX = (max.getBlockX() + min.getBlockX()) / 2;
-		centerY = maxY + minY / 2;
+		centerY = (maxY + minY) / 2;
 		centerZ = (max.getBlockZ() + min.getBlockZ()) / 2;
 		return new Location(getWorld(), centerX, centerY, centerZ);
 	}

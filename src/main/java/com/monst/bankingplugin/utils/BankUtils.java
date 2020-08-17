@@ -65,7 +65,7 @@ public class BankUtils {
 	 * Get all banks Do not use for removing while iterating!
 	 *
 	 * @see #getBanksCopy()
-	 * @return Read-only collection of all banks, may contain duplicates
+	 * @return Read-only collection of all banks
 	 */
 	public Collection<Bank> getBanks() {
 		return locatedBanks;

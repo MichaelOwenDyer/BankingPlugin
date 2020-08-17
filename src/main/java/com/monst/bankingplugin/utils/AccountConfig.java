@@ -43,26 +43,31 @@ public class AccountConfig {
 			});
 		});
 
+		FORMATTERS.put(Field.INTEREST_RATE, instance -> { // Special formatter without $ symbol for this field
+			try {
+				return String.format("%,.2f", Field.INTEREST_RATE.getLocalField().get(instance));
+			} catch (IllegalAccessException ignored) {}
+			return "";
+		});
 		Field.stream(Double.class).forEach(field -> {
 			SETTERS.put(field, (instance, value) -> {
 				try {
-					field.getLocalField().set(instance, Math.abs(Double.parseDouble(value.replace(",", ""))));
+					field.getLocalField().set(instance, Math.abs(Double.parseDouble(Utils.removePunctuation(value, '.'))));
 				} catch (IllegalAccessException ignored) {}
 			});
-			FORMATTERS.put(field, instance -> {
+			FORMATTERS.putIfAbsent(field, instance -> {
 				try {
-					return String.format("%,.2f", field.getLocalField().get(instance));
+					return "$" + String.format("%,.2f", field.getLocalField().get(instance));
 				} catch (IllegalAccessException ignored) {}
 				return "";
 			});
 		});
 
-		SETTERS.put(Field.PLAYER_BANK_ACCOUNT_LIMIT, (instance, value) -> {
+		SETTERS.put(Field.PLAYER_BANK_ACCOUNT_LIMIT, (instance, value) -> { // Special setter without Math.abs for this field
 			try {
-				Field.PLAYER_BANK_ACCOUNT_LIMIT.getLocalField().set(instance, Integer.parseInt(value)); // Special setter without Math.abs for this field
+				Field.PLAYER_BANK_ACCOUNT_LIMIT.getLocalField().set(instance, Integer.parseInt(value));
 			} catch (IllegalAccessException ignored) {}
 		});
-
 		Field.stream(Integer.class).forEach(field -> {
 			SETTERS.putIfAbsent(field, (instance, value) -> {
 				try {
@@ -98,7 +103,7 @@ public class AccountConfig {
 		SETTERS.put(Field.INTEREST_PAYOUT_TIMES, (instance, value) -> {
 			try {
 				Field.INTEREST_PAYOUT_TIMES.getLocalField().set(instance,
-						Arrays.stream(value.split(" "))
+						Arrays.stream(Utils.removePunctuation(value, ':').split(" "))
 						.filter(s -> !s.isEmpty())
 						.map(LocalTime::parse)
 						.collect(Collectors.toList()));
@@ -218,10 +223,15 @@ public class AccountConfig {
 		if (!isOverrideAllowed(field))
 			return false;
 		try {
-			SETTERS.get(field).accept(this, value);
-			callback.callSyncResult(FORMATTERS.get(field).apply(this));
+			if (value.isEmpty()) // Set to default
+				field.getLocalField().set(this, ((Config.ConfigPair) field.getConfigField().get(null)).getDefault());
+			else
+				SETTERS.get(field).accept(this, value);
+			callback.callSyncResult(getFormatted(field));
 		} catch (NumberFormatException | DateTimeParseException e) {
 			callback.callSyncError(new ArgumentParseException(field.getDataType(), value));
+		} catch (IllegalAccessException e) {
+			BankingPlugin.getInstance().debug(e);
 		}
 		return true;
 	}

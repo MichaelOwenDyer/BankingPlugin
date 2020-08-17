@@ -25,5 +25,4 @@ public class ArgumentParseException extends Exception {
             return String.format(Messages.NOT_A_LIST, value);
         return "";
     }
-
 }

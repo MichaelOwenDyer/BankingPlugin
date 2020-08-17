@@ -14,6 +14,7 @@ abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
         super(guiSubject);
     }
 
+    @Override
     void open(Player player, boolean update) {
         if (update) {
             initializeMenu();
@@ -26,6 +27,11 @@ abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
             menu.getSlot(i).setClickHandler(createClickHandler(i));
         }
         menu.open(player);
+    }
+
+    void close(Player player) {
+        prevGui = null;
+        menu.close(player);
     }
 
     abstract void evaluateClearance(Player player);

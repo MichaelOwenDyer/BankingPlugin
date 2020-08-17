@@ -367,8 +367,8 @@ public abstract class Database {
 					if (bank.getSelection().getType() == SelectionType.POLYGONAL) {
 						Polygonal2DSelection sel = (Polygonal2DSelection) bank.getSelection();
 
-						ps.setInt(i + 6, sel.getMaximumPoint().getBlockY());
-						ps.setInt(i + 7, sel.getMinimumPoint().getBlockY());
+						ps.setInt(i + 6, sel.getMinimumPoint().getBlockY());
+						ps.setInt(i + 7, sel.getMaximumPoint().getBlockY());
 
 						String vertices = sel.getNativePoints().stream()
 								.map(vector -> "" + vector.getBlockX() + "," + vector.getBlockZ())

@@ -258,7 +258,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
+				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return;
 			}
@@ -347,8 +347,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
-				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, "\"" + args[1] + "\""));
+				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return;
 			}
 		}
@@ -476,7 +476,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		bank = bankUtils.lookupBank(args[1]);
 		if (bank == null) {
-			plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
+			plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
@@ -568,7 +568,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("Could not find bank with name " + args[1]);
+				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}
@@ -614,24 +614,20 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 	private boolean promptBankSet(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to configure a bank");
 
-		if (args.length < 4)
+		if (args.length < 3)
 			return false;
-
-		if (args.length == 4 && !(sender instanceof Player)) {
-			plugin.debug("Player command only");
-			sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-			return true;
-		}
 
 		Bank bank = bankUtils.lookupBank(args[1]);
 		String fieldName = args[2];
-		StringBuilder sb = new StringBuilder(args[3]);
+		StringBuilder sb = new StringBuilder(16);
+		if (args.length > 3)
+			sb.append(args[3]);
 		for (int i = 4; i < args.length; i++)
 			sb.append(" ").append(args[i]);
 		String value = sb.toString();
 
 		if (bank == null) {
-			plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
+			plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
@@ -706,7 +702,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
+				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return;
 			}
@@ -756,7 +752,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug("No bank could be found with the name or ID \"" + args[1] + "\"");
+				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}

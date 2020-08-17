@@ -76,7 +76,7 @@ public class InterestEventListener implements Listener {
 						AccountConfig config = account.getBank().getAccountConfig();
 
 						if (!trustedPlayers.isEmpty() && (double) config.get(AccountConfig.Field.MINIMUM_BALANCE) > 0
-								&& account.getBalance().compareTo(BigDecimal.valueOf(config.get(AccountConfig.Field.MINIMUM_BALANCE))) < 0) { // TODO: Fix classcastexception
+								&& account.getBalance().compareTo(BigDecimal.valueOf(config.get(AccountConfig.Field.MINIMUM_BALANCE))) < 0) {
 							feesPayable.putIfAbsent(accountOwner, new Counter());
 							feesPayable.get(accountOwner).add(config.get(AccountConfig.Field.LOW_BALANCE_FEE));
 							if (account.getBank().isPlayerBank()) {

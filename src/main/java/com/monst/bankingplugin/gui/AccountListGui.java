@@ -37,7 +37,7 @@ public class AccountListGui extends MultiPageGui<Bank> {
                 .nextButton(createSlotItem(Material.ARROW, "Next Page", Collections.emptyList()))
                 .nextButtonSlot(NEXT_SLOT);
         for (Account account : guiSubject.getAccounts()) {
-            ItemStack item = createSlotItem(Material.CHEST, account.getColorizedName(), Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
+            ItemStack item = createSlotItem(account.getOwner(), account.getColorizedName(), Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
             ItemStackTemplate template = new StaticItemTemplate(item);
             Slot.ClickHandler clickHandler = (player, info) -> new AccountGui(account).setPrevGui(this).open(player);
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());

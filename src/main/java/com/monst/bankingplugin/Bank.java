@@ -10,7 +10,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -302,12 +301,12 @@ public class Bank extends Ownable implements Nameable {
 		info.addExtra("\n    Multipliers: ");
 		info.addExtra(Utils.getStackedList(getAccountConfig().get(AccountConfig.Field.MULTIPLIERS)).stream()
 				.map(list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).collect(Collectors.joining(", ", "[", "]")));
-		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + "$" + accountConfig.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE));
-		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS));
-		info.addExtra(" (" + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");
-		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.get(AccountConfig.Field.INITIAL_INTEREST_DELAY));
-		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + "$" + Utils.format((double) accountConfig.get(AccountConfig.Field.MINIMUM_BALANCE)));
-		info.addExtra(" (" + ChatColor.RED + "$" + accountConfig.getFormatted(AccountConfig.Field.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
+		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + accountConfig.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE));
+		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.getFormatted(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS));
+		info.addExtra(" (" + ChatColor.AQUA + accountConfig.getFormatted(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");
+		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.getFormatted(AccountConfig.Field.INITIAL_INTEREST_DELAY));
+		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + accountConfig.getFormatted(AccountConfig.Field.MINIMUM_BALANCE));
+		info.addExtra(" (" + ChatColor.RED + accountConfig.getFormatted(AccountConfig.Field.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
 		info.addExtra("\n    Accounts: " + ChatColor.AQUA + accounts.size());
 		info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
 		info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().doubleValue() / accounts.size()));

@@ -78,15 +78,14 @@ public class AccountGui extends SinglePageGui<Account> {
 	ClickHandler createClickHandler(int i) {
 		switch (i) {
 			case 0:
-				return canTP
-						? (player, info) -> player.teleport(guiSubject.getLocation())
-						: null;
+				return canTP ? (player, info) -> {
+					player.teleport(guiSubject.getLocation());
+					this.close(player);
+				} : null;
 			case 1:
 				return (player, info) -> new BankGui(guiSubject.getBank()).setPrevGui(this).open(player);
 			case 8:
-				return isTrusted
-						? (player, info) -> new AccountContentsGui(guiSubject).setPrevGui(this).open(player)
-						: null;
+				return isTrusted ? (player, info) -> new AccountContentsGui(guiSubject).setPrevGui(this).open(player) : null;
 			default:
 				return null;
 		}
@@ -117,20 +116,20 @@ public class AccountGui extends SinglePageGui<Account> {
 
 	private List<String> getBankInfoLore() {
 		Bank bank = guiSubject.getBank();
-		return Arrays.asList(
+		return Utils.wordWrapAll(55,
 				"Name: \"" + ChatColor.RED + bank.getColorizedName() + ChatColor.GRAY + "\"",
 				"Owner: " + ChatColor.GOLD + bank.getOwnerDisplayName(),
 				"Co-owners: " + (bank.getCoowners().isEmpty() ? org.bukkit.ChatColor.RED + "[none]"
 						: ChatColor.AQUA + bank.getCoowners().stream().map(OfflinePlayer::getName)
 						.collect(Collectors.joining(", ", "[ ", " ]"))),
-				"Location: " + ChatColor.AQUA + bank.getSelection().getCoordinates(),
 				"Click to view more info."
 		);
 	}
 
 	private List<String> getBalanceLore() {
 		AccountConfig config = guiSubject.getBank().getAccountConfig();
-		boolean isLowBalance = guiSubject.getBalance().doubleValue() < (double) config.get(AccountConfig.Field.MINIMUM_BALANCE);
+		double minBalance = config.get(AccountConfig.Field.MINIMUM_BALANCE);
+		boolean isLowBalance = guiSubject.getBalance().doubleValue() < minBalance;
 		double interestRate = config.get(AccountConfig.Field.INTEREST_RATE);
 		int multiplier = guiSubject.getStatus().getRealMultiplier();
 		double fullPayout = !(isLowBalance && !(boolean) config.get(AccountConfig.Field.PAY_ON_LOW_BALANCE))
@@ -139,7 +138,9 @@ public class AccountGui extends SinglePageGui<Account> {
 				? config.get(AccountConfig.Field.LOW_BALANCE_FEE) : 0.0d;
 		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
-				"Balance: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getBalance()) + (isLowBalance ? ChatColor.RED + " (low)" : ""),
+				"Balance: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getBalance()) + (isLowBalance
+						? ChatColor.RED + " ($" + Utils.format(minBalance - guiSubject.getBalance().doubleValue()) + " below minimum)"
+						: ""),
 				"Interest rate: " + ChatColor.GREEN + (interestRate * multiplier * 100) + "% " + ChatColor.GRAY + "(" + interestRate + " x " + multiplier + ")",
 				"Next payout: " + (nextPayout > 0 ? ChatColor.GREEN : ChatColor.RED) + "$" + Utils.format(nextPayout)
 						+ (isLowBalance ? ChatColor.GRAY + " (" + ChatColor.GREEN + "$" + Utils.format(fullPayout)
@@ -157,15 +158,15 @@ public class AccountGui extends SinglePageGui<Account> {
 				(delay == 0
 						? "Account will generate interest in the next payout cycle."
 						: "Account will begin generating interest in " + ChatColor.AQUA + delay + ChatColor.GRAY + String.format(" payout cycle%s.", delay == 1 ? "" : "s")),
-
+				"",
 				"Account can generate interest for " + ChatColor.AQUA + remainingOffline + ChatColor.GRAY + String.format(" offline payout cycle%s.", remainingOffline == 1 ? "" : "s"),
-
+				"",
 				"Account multiplier will " + (untilReset < 0
 						? "not reset while offline."
 						: (untilReset == 0 ? "reset immediately on an offline payout."
 								: "reset after " + ChatColor.AQUA + untilReset + ChatColor.GRAY
 								+ String.format(" offline payout cycle%s.", untilReset == 1 ? "" : "s"))),
-
+				"",
 				"Account multiplier will " + (offlineDecrement < 0
 						? "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " stages for every offline payout."
 						: (offlineDecrement == 0 ? " freeze while offline." : " reset"))

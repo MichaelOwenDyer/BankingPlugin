@@ -66,13 +66,13 @@ public class BankGui extends SinglePageGui<Bank> {
 				return createSlotItem(Material.IRON_BARS, "Balance Restrictions", getBalanceRestrictionLore());
 			case 12:
 				return createSlotItem(Material.LIGHT_BLUE_BED, "Offline Payouts", getOfflinePayoutsLore());
-			case 13:
-				return createSlotItem(Material.COMPASS, "Interest Delay", getInterestDelayLore());
 			case 14:
-				return createSlotItem(Material.BELL, "Withdrawal Policy", getWithdrawalPolicyLore());
+				return createSlotItem(Material.COMPASS, "Interest Delay", getInterestDelayLore());
 			case 15:
-				return createSlotItem(Material.TOTEM_OF_UNDYING, "Account Limit", getAccountLimitLore());
+				return createSlotItem(Material.BELL, "Withdrawal Policy", getWithdrawalPolicyLore());
 			case 16:
+				return createSlotItem(Material.TOTEM_OF_UNDYING, "Account Limit", getAccountLimitLore());
+			case 17:
 				return createSlotItem(Material.CLOCK, "Interest Payout Times", getPayoutTimeLore());
 			default:
 				return new ItemStack(Material.AIR);
@@ -91,7 +91,7 @@ public class BankGui extends SinglePageGui<Bank> {
 								.getWorld()
 								.getHighestBlockAt(guiSubject.getSelection().getCenterPoint())
 								.getLocation().add(0, 1, 0));
-					menu.close(player);
+					this.close(player);
 				} : null;
 			case 8:
 				return canListAccounts && !guiSubject.getAccounts().isEmpty()
@@ -114,6 +114,7 @@ public class BankGui extends SinglePageGui<Bank> {
 
 	private List<String> getGeneralInfoLore() {
 		List<String> lore = new ArrayList<>();
+		lore.add("ID: " + guiSubject.getID());
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
 		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty()
 				? org.bukkit.ChatColor.RED + "[none]"
@@ -123,7 +124,7 @@ public class BankGui extends SinglePageGui<Bank> {
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to bank.");
-		return Utils.wordWrapAll(lore);
+		return Utils.wordWrapAll(55, lore.stream());
 	}
 
 	private List<String> getStatisticsLore() {
@@ -143,7 +144,7 @@ public class BankGui extends SinglePageGui<Bank> {
 		AccountConfig config = guiSubject.getAccountConfig();
 		boolean reimburse = config.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION);
 		return Arrays.asList(
-				"Fee: " + ChatColor.GREEN + "$" + config.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE),
+				"Fee: " + ChatColor.GREEN + config.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE),
 				"Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}
