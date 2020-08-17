@@ -558,8 +558,8 @@ public abstract class Database {
 						String[] accConfig = rs.getString("account_config").split(" \\| ");
 						List<Integer> multipliers;
 						try {
-							multipliers =
-									Arrays.stream(accConfig[1].substring(1, accConfig[1].length() - 1).split(","))
+							multipliers = Arrays.stream(accConfig[1].substring(1, accConfig[1].length() - 1).split(","))
+									.map(String::trim)
 									.map(Integer::parseInt)
 									.collect(Collectors.toList());
 						} catch (NumberFormatException e) {

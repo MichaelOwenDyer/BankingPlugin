@@ -43,7 +43,7 @@ public class Bank extends Ownable implements Nameable {
 				null,
 				new HashSet<>(),
 				selection,
-				new AccountConfig(),
+				AccountConfig.mint(),
 				BankType.ADMIN
 		);
 	}
@@ -58,7 +58,7 @@ public class Bank extends Ownable implements Nameable {
 				owner,
 				new HashSet<>(),
 				selection,
-				new AccountConfig(),
+				AccountConfig.mint(),
 				BankType.PLAYER
 		);
 	}

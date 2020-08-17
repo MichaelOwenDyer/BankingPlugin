@@ -138,8 +138,8 @@ public class AccountConfig {
 	/**
 	 * Create a new AccountConfig with the default values from the {@link Config}.
 	 */
-	public AccountConfig() {
-		this(
+	public static AccountConfig mint() {
+		return new AccountConfig(
 				Config.interestRate.getDefault(),
 				Config.multipliers.getDefault(),
 				Config.interestPayoutTimes.getDefault(),
@@ -155,7 +155,7 @@ public class AccountConfig {
 				Config.lowBalanceFee.getDefault(),
 				Config.payOnLowBalance.getDefault(),
 				Config.playerBankAccountLimit.getDefault()
-			);
+		);
 	}
 
 	/**
