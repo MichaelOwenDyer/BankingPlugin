@@ -24,7 +24,7 @@ public interface Nameable {
     }
 
     /**
-     * Set the raw name of this nameable.
+     * Sets the raw name of this nameable.
      * @param name The new raw name of this nameable
      */
     void setName(String name);
@@ -42,13 +42,13 @@ public interface Nameable {
     String getDefaultName();
 
     /**
-     * Set the name of this nameable to its default.
+     * Sets the name of this nameable to its default.
      * @see #getDefaultName()
      */
     void setToDefaultName();
 
     /**
-     * Ensure that the current name is valid and currently being reflected everywhere it should be.
+     * Ensures that the current name is valid and currently being reflected everywhere it should be.
      * If it is null, make it the default name.
      */
     default void updateName() {

@@ -40,10 +40,10 @@ public class ControlCommandExecutor implements CommandExecutor {
 			}
 
 		if (subCommand == null) {
-			plugin.getLogger().severe("Null command!");
-			plugin.debug("Null command! Sender: " + sender.getName() + ", command: " + command.getName() + " "
-					+ String.join(" ", args));
-			return false;
+			IllegalStateException e = new IllegalStateException("Unknown command! Sender: " + sender.getName()
+					+ ", command: " + command.getName() + ", args: [" + String.join(" ", args) + "]");
+			plugin.debug(e);
+			throw e;
 		}
 
 		switch (subCommand.getName().toLowerCase()) {
@@ -79,10 +79,10 @@ public class ControlCommandExecutor implements CommandExecutor {
 	}
 
 	private boolean changeConfig(CommandSender sender, String[] args) {
-		plugin.debug(sender.getName() + " is adjusting the config");
+		plugin.debug(sender.getName() + " wants to configure the plugin");
 
 		if (!sender.hasPermission(Permissions.CONFIG)) {
-			plugin.debug(sender.getName() + " does not have permission to adjust the config");
+			plugin.debug(sender.getName() + " does not have permission to configure the config");
 			sender.sendMessage(Messages.NO_PERMISSION_CONFIG);
 			return true;
 		}
@@ -150,8 +150,8 @@ public class ControlCommandExecutor implements CommandExecutor {
 			@Override
 			public void onError(Throwable throwable) {
 				// Database connection probably failed => disable plugin to prevent more errors
-				sender.sendMessage(Messages.ERROR_OCCURRED + "No database access: Disabling BankingPlugin");
-				plugin.getLogger().severe("No database access: Disabling BankingPlugin");
+				sender.sendMessage(Messages.ERROR_OCCURRED + "No database access! Disabling BankingPlugin.");
+				plugin.getLogger().severe("No database access! Disabling BankingPlugin.");
 				if (throwable != null)
 					plugin.getLogger().severe(throwable.getMessage());
 				plugin.getServer().getPluginManager().disablePlugin(plugin);

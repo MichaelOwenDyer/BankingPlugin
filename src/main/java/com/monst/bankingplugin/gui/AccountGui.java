@@ -15,6 +15,7 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,7 +80,7 @@ public class AccountGui extends SinglePageGui<Account> {
 		switch (i) {
 			case 0:
 				return canTP ? (player, info) -> {
-					player.teleport(guiSubject.getLocation());
+					player.teleport(guiSubject.getLocation().setDirection(player.getLocation().getDirection()));
 					this.close(player);
 				} : null;
 			case 1:
@@ -141,7 +142,8 @@ public class AccountGui extends SinglePageGui<Account> {
 				"Balance: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getBalance()) + (isLowBalance
 						? ChatColor.RED + " ($" + Utils.format(minBalance - guiSubject.getBalance().doubleValue()) + " below minimum)"
 						: ""),
-				"Interest rate: " + ChatColor.GREEN + (interestRate * multiplier * 100) + "% " + ChatColor.GRAY + "(" + interestRate + " x " + multiplier + ")",
+				"Interest rate: " + ChatColor.GREEN + BigDecimal.valueOf(interestRate * multiplier * 100).setScale(1, BigDecimal.ROUND_HALF_EVEN)
+						+ "% " + ChatColor.GRAY + "(" + interestRate + " x " + multiplier + ")",
 				"Next payout: " + (nextPayout > 0 ? ChatColor.GREEN : ChatColor.RED) + "$" + Utils.format(nextPayout)
 						+ (isLowBalance ? ChatColor.GRAY + " (" + ChatColor.GREEN + "$" + Utils.format(fullPayout)
 						+ ChatColor.GRAY + " - " + ChatColor.RED + "$" + Utils.format(lowBalanceFee) + ChatColor.GRAY + ")" : "")
@@ -156,8 +158,8 @@ public class AccountGui extends SinglePageGui<Account> {
 		int offlineDecrement = guiSubject.getBank().getAccountConfig().get(AccountConfig.Field.OFFLINE_MULTIPLIER_DECREMENT);
 		return Utils.wordWrapAll(
 				(delay == 0
-						? "Account will generate interest in the next payout cycle."
-						: "Account will begin generating interest in " + ChatColor.AQUA + delay + ChatColor.GRAY + String.format(" payout cycle%s.", delay == 1 ? "" : "s")),
+						? "This account will generate interest in the next payout cycle."
+						: "This account will begin generating interest in " + ChatColor.AQUA + delay + ChatColor.GRAY + String.format(" payout cycle%s.", delay == 1 ? "" : "s")),
 				"",
 				"Account can generate interest for " + ChatColor.AQUA + remainingOffline + ChatColor.GRAY + String.format(" offline payout cycle%s.", remainingOffline == 1 ? "" : "s"),
 				"",

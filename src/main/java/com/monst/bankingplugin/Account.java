@@ -45,7 +45,7 @@ public class Account extends Ownable implements Nameable {
 	private AccountSize size;
 
 	/**
-	 * Create a new account.
+	 * Creates a new account.
 	 * @return the new account
 	 */
 	public static Account mint(OfflinePlayer owner, Location loc) {
@@ -64,7 +64,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Create a clone of an already-existing account.
+	 * Creates a clone of an already-existing account.
 	 * @param account the account to clone
 	 * @return an identical account object
 	 */
@@ -97,7 +97,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Re-create an account that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 * Re-creates an account that was stored in the {@link com.monst.bankingplugin.sql.Database}.
 	 *
 	 * @param id the account ID {@link Ownable}
 	 * @param owner the owner of the account {@link Ownable}
@@ -140,10 +140,10 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Attempt to create the account. This method will ensure that the chest exists at
+	 * Attempts to create this account. This method will ensure that the chest exists at
 	 * the specified {@link Location} and is able to be opened.
 	 * @param showConsoleMessages whether any error messages should be sent to the console
-	 * @return whether the account was successfully created
+	 * @return whether this account was successfully created
 	 * @see Utils#isTransparent(Block)
 	 */
 	public boolean create(boolean showConsoleMessages) {
@@ -227,7 +227,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * The default name of a given account includes the name of the owner and the account ID in parentheses.
+	 * Gets the default name of this account.
 	 * @return the default name of this account.
 	 */
 	@Override
@@ -243,14 +243,14 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Reset the name in the account chest to the default, e.g. "Chest" or "Large Chest"
+	 * Resets the name in the account chest to the default, e.g. "Chest" or "Large Chest"
 	 */
 	public void clearChestName() {
 		setName("");
 	}
 
 	/**
-	 * Get the status of this account.
+	 * Gets the status of this account.
 	 * This includes information about the current multiplier and interest delay, among other things.
 	 * @return the {@link AccountStatus} object associated with this account
 	 */
@@ -259,7 +259,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Get the bank this account is registered at.
+	 * Gets the bank this account is registered at.
 	 * @return the {@link Bank} of this account.
 	 */
 	public Bank getBank() {
@@ -267,7 +267,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Get this account's current balance in {@link BigDecimal} format.
+	 * Gets this account's current balance in {@link BigDecimal} format.
 	 * The balance will always be positive.
 	 * @return the current account balance
 	 * @see AccountUtils#appraiseAccountContents(Account)
@@ -287,7 +287,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Get the balance of this account as it was at the previous interest payout.
+	 * Gets the balance of this account as it was at the previous interest payout.
 	 * @return the previous account balance.
 	 */
 	public BigDecimal getPrevBalance() {
@@ -305,7 +305,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Get the location of this account.
+	 * Gets the location of this account.
 	 * @return the {@link Location} of the account chest.
 	 */
 	public Location getLocation() {
@@ -313,7 +313,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Get a nicer-looking description of the account's location.
+	 * Gets a nicer-looking description of the account's location.
 	 * @return a {@link String} describing the location of the account chest.
 	 */
 	public String getCoordinates() {
@@ -321,7 +321,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Ensure that the account chest is able to be opened.
+	 * Ensures that the account chest is able to be opened.
 	 * @throws NotEnoughSpaceException if the chest cannot be opened.
 	 * @see Utils#isTransparent(Block)
 	 */
@@ -334,7 +334,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Ensure that the account chest is able to be located and the inventory saved.
+	 * Ensures that the account chest is able to be located and the inventory saved.
 	 * @throws ChestNotFoundException If the chest cannot be located.
 	 */
 	public void updateInventory() throws ChestNotFoundException {
@@ -348,7 +348,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Get the {@link Inventory} of this account chest.
+	 * Gets the {@link Inventory} of this account chest.
 	 * @param update Whether to track down and save the inventory in the world again.
 	 * @return the account inventory.
 	 * @see #updateInventory()
@@ -406,8 +406,7 @@ public class Account extends Ownable implements Nameable {
 	@Override
 	public TextComponent getInformation(CommandSender sender) {
 		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
-		boolean verbose = (sender instanceof Player
-				&& (isTrusted((Player) sender) || getBank().isTrusted((Player) sender)))
+		boolean verbose = (sender instanceof Player && (isTrusted((Player) sender) || getBank().isTrusted((Player) sender)))
 				|| sender.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
 
 		TextComponent info = new TextComponent();
@@ -435,18 +434,18 @@ public class Account extends Ownable implements Nameable {
 
 	@Override
 	public String toString() {
-		  return "ID: " + getID() 
-						+ "\nOwner: " + getOwner().getName() 
-						+ "\nBank: " + getBank().getName() 
-						+ "\nBalance: $" + Utils.format(getBalance())
-						+ "\nPrevious balance: $" + Utils.format(getPrevBalance())
-						+ "\nMultiplier: " + getStatus().getRealMultiplier() 
-							+ " (stage " + getStatus().getMultiplierStage() + ")"
-						+ "\nDelay until next payout: " + getStatus().getDelayUntilNextPayout() 
-						+ "\nNext payout amount: " + Utils.format(getBalance().doubleValue()
-								* (double) getBank().getAccountConfig().get(AccountConfig.Field.INTEREST_RATE)
-								* getStatus().getRealMultiplier())
-						+ "\nLocation: " + getCoordinates();
+		   return "ID: " + getID() + ", "
+				+ "Owner: " + getOwner().getName() + ", "
+				+ "Bank: " + getBank().getName() + ", "
+				+ "Balance: $" + Utils.format(getBalance()) + ", "
+				+ "Previous balance: $" + Utils.format(getPrevBalance()) + ", "
+				+ "Multiplier: " + getStatus().getRealMultiplier() + ", "
+					+ " (stage " + getStatus().getMultiplierStage() + "), "
+				+ "Delay until next payout: " + getStatus().getDelayUntilNextPayout() + ", "
+				+ "Next payout amount: " + Utils.format(getBalance().doubleValue()
+						* (double) getBank().getAccountConfig().get(AccountConfig.Field.INTEREST_RATE)
+						* getStatus().getRealMultiplier()) + ", "
+				+ "Location: " + getCoordinates();
 	}
 
 	@Override

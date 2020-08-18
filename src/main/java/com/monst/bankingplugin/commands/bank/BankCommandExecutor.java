@@ -49,10 +49,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 
 		if (subCommand == null) {
-			plugin.getLogger().severe("Null command!");
-			plugin.debug("Null command! Sender: " + sender.getName() + ", command: " + command.getName() + " "
-					+ String.join(" ", args));
-			return false;
+			IllegalStateException e = new IllegalStateException("Unknown command! Sender: " + sender.getName()
+					+ ", command: " + command.getName() + ", args: [" + String.join(" ", args) + "]");
+			plugin.debug(e);
+			throw e;
 		}
 
 		switch (subCommand.getName().toLowerCase()) {

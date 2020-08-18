@@ -233,7 +233,7 @@ public class Utils {
 				multiplierView.add("...");
 		}
 
-		for (int i = 0; i < stackedMultipliers.size(); i++) {
+		for (int i = lower; i < upper; i++) {
 			StringBuilder number = new StringBuilder("" + ChatColor.GOLD + (i == stage ? ChatColor.BOLD : ""));
 
 			number.append(" - ").append(stackedMultipliers.get(i).get(0)).append("x" + ChatColor.DARK_GRAY);

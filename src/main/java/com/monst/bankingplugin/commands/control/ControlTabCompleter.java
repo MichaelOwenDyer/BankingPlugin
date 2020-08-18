@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.commands.control;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -34,12 +33,8 @@ public class ControlTabCompleter implements TabCompleter {
     }
 
     private List<String> completeControlConfig(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to configure the plugin");
-        if (!sender.hasPermission(Permissions.CONFIG)) {
-            plugin.debug(sender.getName() + " does not have permission to configure the plugin");
-            sender.sendMessage(Messages.NO_PERMISSION_CONFIG);
+        if (!sender.hasPermission(Permissions.CONFIG))
             return Collections.emptyList();
-        }
 
         ArrayList<String> returnCompletions = new ArrayList<>();
 

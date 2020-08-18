@@ -85,7 +85,7 @@ public class BankingPlugin extends JavaPlugin {
                 new PrintWriter(debugLogFile).close();
                 fw = new FileWriter(debugLogFile, true);
             } catch (IOException e) {
-                getLogger().info("Failed to instantiate FileWriter");
+                getLogger().info("Failed to instantiate FileWriter.");
                 e.printStackTrace();
             }
         }
@@ -105,15 +105,15 @@ public class BankingPlugin extends JavaPlugin {
 			getLogger().info(ChatColor.stripColor(s));
 
 		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
-			debug("Could not find plugin \"Vault\"");
-			getLogger().severe("Could not find plugin \"Vault\"");
+			debug("Could not find plugin \"Vault\".");
+			getLogger().severe("Could not find plugin \"Vault\".");
 			getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
 
 		if (!setupEconomy()) {
-			debug("Could not find plugin \"Essentials\"");
-			getLogger().severe("Could not find plugin \"Essentials\"");
+			debug("Could not find plugin \"Essentials\".");
+			getLogger().severe("Could not find plugin \"Essentials\".");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -160,7 +160,7 @@ public class BankingPlugin extends JavaPlugin {
 				try {
 					fw.close();
 				} catch (IOException e) {
-					getLogger().severe("Failed to close FileWriter");
+					getLogger().severe("Failed to close FileWriter.");
 					e.printStackTrace();
 				}
 			}
@@ -188,7 +188,7 @@ public class BankingPlugin extends JavaPlugin {
 			try {
 				fw.close();
 			} catch (IOException e) {
-				getLogger().severe("Failed to close FileWriter");
+				getLogger().severe("Failed to close FileWriter.");
 				e.printStackTrace();
 			}
 		}
@@ -363,7 +363,7 @@ public class BankingPlugin extends JavaPlugin {
 			@Override
 			public void onError(Throwable throwable) {
 				// Database connection probably failed => disable plugin to prevent more errors
-				getLogger().severe("No database access. Disabling BankingPlugin");
+				getLogger().severe("No database access! Disabling BankingPlugin.");
 				if (throwable != null)
 					getLogger().severe(throwable.getMessage());
 

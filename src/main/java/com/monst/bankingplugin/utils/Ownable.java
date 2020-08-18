@@ -54,7 +54,7 @@ public abstract class Ownable {
 	}
 
 	/**
-	 * Get the players trusted on this ownable, excluding the owner.
+	 * Gets the players trusted on this ownable, excluding the owner.
 	 * @return a {@link Set<OfflinePlayer>} containing the current co-owners.
 	 */
 	public Set<OfflinePlayer> getCoowners() {
@@ -62,7 +62,7 @@ public abstract class Ownable {
 	}
 
 	/**
-	 * Get all players trusted on this ownable, including the owner.
+	 * Gets all players trusted on this ownable, including the owner.
 	 * @return a {@link Set<OfflinePlayer>} containing all players trusted on this ownable.
 	 */
 	public Set<OfflinePlayer> getTrustedPlayers() {
@@ -81,7 +81,7 @@ public abstract class Ownable {
 	}
 
 	/**
-	 * Add a player to the co-owners of this ownable.
+	 * Adds a player to the co-owners of this ownable.
 	 * @param p the player to be added
 	 */
 	public void trustPlayer(OfflinePlayer p) {
@@ -90,7 +90,7 @@ public abstract class Ownable {
 	}
 
 	/**
-	 * Remove a player from co-ownership of this ownable.
+	 * Removes a player from co-ownership of this ownable.
 	 * @param p the player to be removed
 	 */
 	public void untrustPlayer(OfflinePlayer p) {
@@ -99,7 +99,7 @@ public abstract class Ownable {
 	}
 
 	/**
-	 * Get the (possibly colorized) name of the owner of this ownable.
+	 * Gets the (possibly colorized) name of the owner of this ownable.
 	 * @return a {@link String} with the owner's name, if it can be found.
 	 */
 	public String getOwnerDisplayName() {
@@ -131,7 +131,8 @@ public abstract class Ownable {
 	public abstract TextComponent getInformation(CommandSender sender);
 
 	/**
-	 * An ownable might will not have an ID if it has not been added to the {@link com.monst.bankingplugin.sql.Database}
+	 * Gets the ID of this ownable, if it exists.
+	 * An ownable will not have an ID until it has been added to the {@link com.monst.bankingplugin.sql.Database}
 	 * @return Whether the ownable has an ID or not
 	 */
 	public boolean hasID() {

@@ -34,7 +34,7 @@ public class Bank extends Ownable implements Nameable {
 	private BankType type;
 
 	/**
-	 * Create a new admin bank.
+	 * Creates a new admin bank.
 	 */
 	public static Bank mint(String name, Selection selection) {
 		return new Bank(
@@ -49,7 +49,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Create a new player bank.
+	 * Creates a new player bank.
 	 */
 	public static Bank mint(String name, OfflinePlayer owner, Selection selection) {
 		return new Bank(
@@ -64,7 +64,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Re-create an admin bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 * Re-creates an admin bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
 	 */
 	public static Bank recreate(int id, String name, Set<OfflinePlayer> coowners,
 								Selection selection, AccountConfig accountConfig) {
@@ -80,7 +80,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Re-create a player bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 * Re-creates a player bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
 	 */
 	public static Bank recreate(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 								Selection selection, AccountConfig accountConfig) {
@@ -119,7 +119,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Add an account to this bank.
+	 * Adds an account to this bank.
 	 * @param account the account to be added
 	 */
 	public void addAccount(Account account) {
@@ -129,7 +129,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Remove an account from this bank.
+	 * Removes an account from this bank.
 	 * @param account the account to be removed
 	 */
 	public void removeAccount(Account account) {
@@ -138,7 +138,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
-	 * Calculate the sum of all {@link Account} balances at this bank.
+	 * Calculates the sum of all {@link Account} balances at this bank.
 	 * @return the total value of the accounts at this bank
 	 * @see Account#getBalance()
 	 */
@@ -155,7 +155,7 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
-	 * This is the same as {@link #getAccounts()} but is safe
+	 * Does the same as {@link #getAccounts()} but is safe
 	 * to use for removing all accounts from the bank.
 	 * @return a {@link Collection<Account>} containing a copy of all accounts at this bank
 	 */
@@ -186,8 +186,10 @@ public class Bank extends Ownable implements Nameable {
 	 */
 	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
 		Map<OfflinePlayer, BigDecimal> customerBalances = new HashMap<>();
-		getCustomerAccounts().forEach((key, value) -> customerBalances.put(key,
-				value.stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add)));
+		getCustomerAccounts().forEach((key, value) -> customerBalances.put(
+				key, value.stream()
+						.map(Account::getBalance)
+						.reduce(BigDecimal.ZERO, BigDecimal::add)));
 		return customerBalances;
 	}
 
@@ -319,14 +321,14 @@ public class Bank extends Ownable implements Nameable {
 
 	@Override
 	public String toString() {
-		return "ID: " + getID()
-				+ "\nName: " + getName() + " (Raw: " + getRawName() + ")"
-				+ "\nOwner: " + (isPlayerBank() ? getOwner().getName() : "ADMIN")
-				+ "\nNumber of accounts: " + getAccounts().size()
-				+ "\nTotal value: " + Utils.format(getTotalValue())
-				+ "\nEquality score: " + BankUtils.getEqualityLore(this)
-				+ "\nSelection type: " + getSelection().getType()
-				+ "\nLocation: " + getSelection().getCoordinates();
+		return "ID: " + getID() + ", "
+				+ "Name: " + getName() + " (Raw: " + getRawName() + "), "
+				+ "Owner: " + (isPlayerBank() ? getOwner().getName() : "ADMIN") + ", "
+				+ "Number of accounts: " + getAccounts().size() + ", "
+				+ "Total value: " + Utils.format(getTotalValue()) + ", "
+				+ "Equality score: " + BankUtils.getEqualityLore(this) + ", "
+				+ "Selection type: " + getSelection().getType() + ", "
+				+ "Location: " + getSelection().getCoordinates();
 	}
 
 	@Override

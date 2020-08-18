@@ -25,6 +25,7 @@ import java.math.RoundingMode;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,7 @@ public abstract class Database {
 	final BankingPlugin plugin;
 	HikariDataSource dataSource;
 
-	protected Database(BankingPlugin plugin) {
+	Database(BankingPlugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -60,7 +61,6 @@ public abstract class Database {
 
 	abstract String getQueryCreateTableFields();
 
-	@SuppressWarnings("SameReturnValue")
 	abstract String getQueryGetTable();
 
 	private int getDatabaseVersion() throws SQLException {
@@ -75,7 +75,6 @@ public abstract class Database {
 		return 0;
 	}
 
-	@SuppressWarnings("SameParameterValue")
 	private void setDatabaseVersion(int version) throws SQLException {
 		String queryUpdateVersion = "REPLACE INTO " + tableFields + " VALUES ('version', ?)";
 		try (Connection con = dataSource.getConnection()) {
@@ -134,7 +133,7 @@ public abstract class Database {
 				try (Connection con = dataSource.getConnection()) {
 					// Update database structure if necessary
 					if (update()) {
-						plugin.getLogger().info("Updating database finished");
+						plugin.getLogger().info("Updating database finished.");
 					}
 
 					plugin.debug("Starting table creation");
@@ -203,12 +202,88 @@ public abstract class Database {
 						callback.callSyncError(e);
 					}
 
-					plugin.getLogger().severe("Failed to initialize or connect to database");
-					plugin.debug("Failed to initialize or connect to database");
+					plugin.getLogger().severe("Failed to initialize or connect to database.");
+					plugin.debug("Failed to initialize or connect to database.");
 					plugin.debug(e);
 				}
 			}
 		}.runTaskAsynchronously(plugin);
+	}
+
+	private boolean update() throws SQLException {
+
+		try (Connection con = dataSource.getConnection()) {
+			boolean needsReordering = false;
+
+			String checkOrderQuery = "SELECT account_config FROM " + tableBanks;
+			try (Statement s = con.createStatement()) {
+				ResultSet rs = s.executeQuery(checkOrderQuery);
+				if (rs.next()) {
+					String[] accConfig = rs.getString("account_config").split(" \\| ");
+					try {
+						Double.parseDouble(accConfig[0]);
+						needsReordering = true;
+					} catch (NumberFormatException ignored) {} // Already updated
+				}
+			}
+
+			if (needsReordering) {
+
+				List<String> backupTableQueries = new ArrayList<>();
+				List<String> recreateTableQueries = new ArrayList<>();
+
+				backupTableQueries.add("ALTER TABLE " + tableBanks + " RENAME TO backup_banks"); // for backup
+				recreateTableQueries.add(getQueryCreateTableBanks());
+
+				for (String query : backupTableQueries)
+					try (Statement s = con.createStatement()) {
+						s.executeUpdate(query);
+					}
+
+				for (String query : recreateTableQueries)
+					try (Statement s = con.createStatement()) {
+						s.executeUpdate(query);
+					}
+
+				plugin.getLogger().info("Updating database... (reordering)");
+
+				// Convert banks table
+				try (Statement s = con.createStatement()) {
+					ResultSet rs = s.executeQuery("SELECT id,account_config FROM backup_banks");
+					while (rs.next()) {
+						String[] accConfig = rs.getString("account_config").split(" \\| ");
+						int offset = accConfig.length == 15 ? 1 : 0;
+						List<String> newAccConfig = new ArrayList<>();
+						newAccConfig.add(accConfig[3 + offset]);
+						newAccConfig.add(accConfig[9 + offset]);
+						newAccConfig.add(accConfig[12 + offset]);
+						newAccConfig.add(accConfig[0]);
+						newAccConfig.add(accConfig[8 + offset]);
+						newAccConfig.add(accConfig[10 + offset]);
+						newAccConfig.add(accConfig[11 + offset]);
+						newAccConfig.add(accConfig[2 + offset]);
+						newAccConfig.add(accConfig[4 + offset]);
+						newAccConfig.add(accConfig[5 + offset]);
+						newAccConfig.add(accConfig[6 + offset]);
+						newAccConfig.add(accConfig[7 + offset]);
+						newAccConfig.add(accConfig[13 + offset]);
+						newAccConfig.add(accConfig[1]);
+						newAccConfig.add(offset == 1 ? accConfig[2] : Config.interestPayoutTimes.getDefault().toString());
+
+						String insertQuery = "INSERT INTO " + tableBanks
+								+ " SELECT id,name,owner,co_owners,selection_type,world,minY,maxY,points,? FROM backup_banks"
+								+ " WHERE id = ?";
+						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
+							ps.setString(1, String.join(" | ", newAccConfig));
+							ps.setInt(2, rs.getInt("id"));
+							ps.executeUpdate();
+						}
+					}
+				}
+			}
+
+			return needsReordering;
+		}
 	}
 
 	/**
@@ -253,7 +328,9 @@ public abstract class Database {
 					ps.setInt(i + 10, account.getStatus().getRemainingOfflinePayouts());
 					ps.setInt(i + 11, account.getStatus().getRemainingOfflineUntilReset());
 
-					ps.setString(i + 12, account.getLocation().getWorld().getName());
+					ps.setString(i + 12, account.getLocation().getWorld() != null
+							? account.getLocation().getWorld().getName()
+							: "world");
 					ps.setInt(i + 13, account.getLocation().getBlockX());
 					ps.setInt(i + 14, account.getLocation().getBlockY());
 					ps.setInt(i + 15, account.getLocation().getBlockZ());
@@ -275,14 +352,14 @@ public abstract class Database {
 						callback.callSyncResult(account.getID());
 					}
 
-					plugin.debug("Added account to database (#" + account.getID() + ")");
+					plugin.debug("Added account to database (#" + account.getID() + ").");
 				} catch (SQLException e) {
 					if (callback != null) {
 						callback.callSyncError(e);
 					}
 
-					plugin.getLogger().severe("Failed to add account to database (#" + account.getID() + ")");
-					plugin.debug("Failed to add account to database (#" + account.getID() + ")");
+					plugin.getLogger().severe("Failed to add account to database (#" + account.getID() + ").");
+					plugin.debug("Failed to add account to database (#" + account.getID() + ").");
 					plugin.debug(e);
 				}
 			}
@@ -315,8 +392,8 @@ public abstract class Database {
 						callback.callSyncError(e);
 					}
 
-					plugin.getLogger().severe("Failed to remove account from database (#" + account.getID() + ")");
-					plugin.debug("Failed to remove account from database (#" + account.getID() + ")");
+					plugin.getLogger().severe("Failed to remove account from database (#" + account.getID() + ").");
+					plugin.debug("Failed to remove account from database (#" + account.getID() + ").");
 					plugin.debug(e);
 				}
 			}
@@ -425,7 +502,7 @@ public abstract class Database {
 						callback.callSyncError(e);
 					}
 
-					plugin.getLogger().severe("Failed to add bank to database");
+					plugin.getLogger().severe("Failed to add bank to database.");
 					plugin.debug("Failed to add bank to database (#" + bank.getID() + ")");
 					plugin.debug(e);
 				}
@@ -459,8 +536,8 @@ public abstract class Database {
 						callback.callSyncError(e);
 					}
 
-					plugin.getLogger().severe("Failed to remove bank from database (#" + bank.getID() + ")");
-					plugin.debug("Failed to remove bank from database (#" + bank.getID() + ")");
+					plugin.getLogger().severe("Failed to remove bank from database (#" + bank.getID() + ").");
+					plugin.debug("Failed to remove bank from database (#" + bank.getID() + ").");
 					plugin.debug(e);
 				}
 			}
@@ -558,40 +635,40 @@ public abstract class Database {
 						String[] accConfig = rs.getString("account_config").split(" \\| ");
 						List<Integer> multipliers;
 						try {
-							multipliers = Arrays.stream(accConfig[1].substring(1, accConfig[1].length() - 1).split(","))
+							multipliers = Arrays.stream(accConfig[13].substring(1, accConfig[13].length() - 1).split(","))
 									.map(String::trim)
 									.map(Integer::parseInt)
 									.collect(Collectors.toList());
 						} catch (NumberFormatException e) {
-							multipliers = Collections.singletonList(1);
+							multipliers = Config.multipliers.getDefault();
 						}
 						List<LocalTime> interestPayoutTimes;
 						try {
 							interestPayoutTimes =
-									Arrays.stream(accConfig[2].substring(1, accConfig[1].length() - 1).split(","))
+									Arrays.stream(accConfig[14].substring(1, accConfig[14].length() - 1).split(","))
 									.map(LocalTime::parse)
 									.collect(Collectors.toList());
-						} catch (Exception e) {
+						} catch (DateTimeParseException e) {
 							interestPayoutTimes = Config.interestPayoutTimes.getDefault();
 						}
-						int offset = accConfig.length == 15 ? 1 : 0;
 
 						AccountConfig accountConfig = new AccountConfig(
-								Double.parseDouble(accConfig[0]),
+								Boolean.parseBoolean(accConfig[0]),
+								Boolean.parseBoolean(accConfig[1]),
+								Boolean.parseBoolean(accConfig[2]),
+								Double.parseDouble(accConfig[3]),
+								Double.parseDouble(accConfig[4]),
+								Double.parseDouble(accConfig[5]),
+								Double.parseDouble(accConfig[6]),
+								Integer.parseInt(accConfig[7]),
+								Integer.parseInt(accConfig[8]),
+								Integer.parseInt(accConfig[9]),
+								Integer.parseInt(accConfig[10]),
+								Integer.parseInt(accConfig[11]),
+								Integer.parseInt(accConfig[12]),
 								multipliers,
-								interestPayoutTimes,
-								Integer.parseInt(accConfig[2 + offset]),
-								Boolean.parseBoolean(accConfig[3 + offset]),
-								Integer.parseInt(accConfig[4 + offset]),
-								Integer.parseInt(accConfig[5 + offset]),
-								Integer.parseInt(accConfig[6 + offset]),
-								Integer.parseInt(accConfig[7 + offset]),
-								Double.parseDouble(accConfig[8 + offset]),
-								Boolean.parseBoolean(accConfig[9 + offset]),
-								Double.parseDouble(accConfig[10 + offset]),
-								Double.parseDouble(accConfig[11 + offset]),
-								Boolean.parseBoolean(accConfig[12 + offset]),
-								Integer.parseInt(accConfig[13 + offset]));
+								interestPayoutTimes
+						);
 
 						plugin.debug("Initializing bank" + (name != null ? " \"" + ChatColor.stripColor(name) + "\"" : "") + "... (#" + bankId + ")");
 
@@ -623,8 +700,8 @@ public abstract class Database {
 						callback.callSyncError(e);
 					}
 
-					plugin.getLogger().severe("Failed to get banks from database");
-					plugin.debug("Failed to get banks from database");
+					plugin.getLogger().severe("Failed to get banks from database.");
+					plugin.debug("Failed to get banks from database.");
 					plugin.debug(e);
 				}
 
@@ -681,8 +758,8 @@ public abstract class Database {
 							remainingOfflinePayouts, remainingOfflineUntilReset);
 
 				} catch (SQLException e) {
-					plugin.getLogger().severe("Failed to create account status (#" + accountId + ")");
-					plugin.debug("Failed to create account status");
+					plugin.getLogger().severe("Failed to create account status (#" + accountId + ").");
+					plugin.debug("Failed to create account status.");
 					plugin.debug(e);
 					continue;
 				}
@@ -720,8 +797,8 @@ public abstract class Database {
 				callback.callSyncError(e);
 			}
 
-			plugin.getLogger().severe("Failed to get accounts from database");
-			plugin.debug("Failed to get accounts from database");
+			plugin.getLogger().severe("Failed to get accounts from database.");
+			plugin.debug("Failed to get accounts from database.");
 			plugin.debug(e);
 		}
 	}
@@ -766,7 +843,9 @@ public abstract class Database {
 						ps.setString(9, type.toString());
 						ps.setString(10, amount.toString());
 						ps.setString(11, account.getBalance().toString());
-						ps.setString(12, account.getLocation().getWorld().getName());
+						ps.setString(12, account.getLocation().getWorld() != null
+								? account.getLocation().getWorld().getName()
+								: "world");
 						ps.setInt(13, account.getLocation().getBlockX());
 						ps.setInt(14, account.getLocation().getBlockY());
 						ps.setInt(15, account.getLocation().getBlockZ());
@@ -782,8 +861,8 @@ public abstract class Database {
 							callback.callSyncError(e);
 						}
 
-						plugin.getLogger().severe("Failed to log banking transaction to database");
-						plugin.debug("Failed to log banking transaction to database");
+						plugin.getLogger().severe("Failed to log banking transaction to database.");
+						plugin.debug("Failed to log banking transaction to database.");
 						plugin.debug(e);
 					}
 				}
@@ -841,8 +920,8 @@ public abstract class Database {
 							callback.callSyncError(e);
 						}
 
-						plugin.getLogger().severe("Failed to log interest to database");
-						plugin.debug("Failed to log interest to database");
+						plugin.getLogger().severe("Failed to log interest to database.");
+						plugin.debug("Failed to log interest to database.");
 						plugin.debug(e);
 					}
 				}
@@ -876,11 +955,11 @@ public abstract class Database {
 					s2.executeUpdate(queryCleanUpInterestLog);
 					s3.executeUpdate(queryCleanUpLogouts);
 
-					plugin.getLogger().info("Cleaned up banking logs");
-					plugin.debug("Cleaned up banking logs");
+					plugin.getLogger().info("Cleaned up banking logs.");
+					plugin.debug("Cleaned up banking logs.");
 				} catch (SQLException e) {
-					plugin.getLogger().severe("Failed to clean up banking logs");
-					plugin.debug("Failed to clean up banking logs");
+					plugin.getLogger().severe("Failed to clean up banking logs.");
+					plugin.debug("Failed to clean up banking logs.");
 					plugin.debug(e);
 				}
 			}
@@ -922,8 +1001,8 @@ public abstract class Database {
                         callback.callSyncError(ex);
                     }
 
-                    plugin.getLogger().severe("Failed to log last logout to database");
-                    plugin.debug("Failed to log logout to database");
+                    plugin.getLogger().severe("Failed to log last logout to database.");
+                    plugin.debug("Failed to log logout to database.");
                     plugin.debug(ex);
                 }
             }
@@ -967,8 +1046,8 @@ public abstract class Database {
                         callback.callSyncError(ex);
                     }
 
-                    plugin.getLogger().severe("Failed to get revenue from database");
-                    plugin.debug("Failed to get revenue from player \"" + player.getUniqueId().toString() + "\"");
+                    plugin.getLogger().severe("Failed to get revenue from database.");
+                    plugin.debug("Failed to get revenue from player \"" + player.getUniqueId().toString() + "\".");
                     plugin.debug(ex);
                 }
             }
@@ -1014,8 +1093,8 @@ public abstract class Database {
 						callback.callSyncError(ex);
 					}
 					
-					plugin.getLogger().severe("Failed to get revenue from database");
-					plugin.debug("Failed to get revenue from player \"" + player.getUniqueId().toString() + "\"");
+					plugin.getLogger().severe("Failed to get revenue from database.");
+					plugin.debug("Failed to get revenue from player \"" + player.getUniqueId().toString() + "\".");
 					plugin.debug(ex);
 				}
 			}
@@ -1054,119 +1133,12 @@ public abstract class Database {
 						callback.callSyncError(e);
 					}
 
-					plugin.getLogger().severe("Failed to get last logout from database");
-					plugin.debug("Failed to get last logout from player \"" + player.getName() + "\"");
+					plugin.getLogger().severe("Failed to get last logout from database.");
+					plugin.debug("Failed to get last logout from player \"" + player.getName() + "\".");
 					plugin.debug(e);
 				}
 			}
 		}.runTaskAsynchronously(plugin);
-	}
-
-	private boolean update() throws SQLException {
-		String queryGetTable = getQueryGetTable();
-
-		try (Connection con = dataSource.getConnection()) {
-			boolean needsUpdate1 = false; // update table content
-			boolean needsUpdate2 = false; // create field table and set database version
-
-			try (PreparedStatement ps = con.prepareStatement(queryGetTable)) {
-				ps.setString(1, "accounts");
-				ResultSet rs = ps.executeQuery();
-				if (rs.next()) {
-					needsUpdate1 = true;
-				}
-			}
-
-			try (PreparedStatement ps = con.prepareStatement(queryGetTable)) {
-				ps.setString(1, tableFields);
-				ResultSet rs = ps.executeQuery();
-				if (!rs.next()) {
-					needsUpdate2 = true;
-				}
-			}
-
-			if (needsUpdate1) {
-
-				List<String> renameQueries = new ArrayList<>();
-				List<String> createQueries = new ArrayList<>();
-
-				renameQueries.add("ALTER TABLE " + tableBanks + " RENAME TO backup_banks"); // for backup
-				renameQueries.add("ALTER TABLE " + tableAccounts + " RENAME TO backup_accounts"); // for backup
-				// renameQueries.add("ALTER TABLE " + tableTransactionLog + " RENAME TO backup_transaction_log"); // for backup
-				// renameQueries.add("ALTER TABLE " + tableInterestLog + " RENAME TO backup_interest_log"); // for backup
-
-				createQueries.add(getQueryCreateTableBanks());
-				createQueries.add(getQueryCreateTableAccounts());
-				// createQueries.add(getQueryCreateTableTransactionLog());
-				// createQueries.add(getQueryCreateTableInterestLog());
-
-				plugin.getLogger().info("Updating database... (#1)");
-
-				for (String query : renameQueries)
-					try (Statement s = con.createStatement()) {
-						s.executeUpdate(query);
-					}
-
-				for (String query : createQueries)
-					try (Statement s = con.createStatement()) {
-						s.executeUpdate(query);
-					}
-
-				// Convert banks table
-				try (Statement s = con.createStatement()) {
-					ResultSet rs = s.executeQuery("SELECT id FROM backup_banks");
-					while (rs.next()) {
-						String insertQuery = "INSERT INTO " + tableBanks
-								+ " SELECT id,name,world,selection_type,minY,maxY,points FROM backup_banks"
-								+ " WHERE id = ?";
-						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
-							ps.setInt(1, rs.getInt("id"));
-							ps.executeUpdate();
-						}
-					}
-				}
-
-				// Convert accounts table
-				try (Statement s = con.createStatement()) {
-					ResultSet rs = s.executeQuery("SELECT id FROM backup_accounts");
-					while (rs.next()) {
-						String insertQuery = "INSERT INTO " + tableAccounts
-								+ " SELECT id,bank_id,owner,size,balance,prev_balance,multiplier_stage,"
-								+ "until_payout,remaining_offline_payout,remaining_offline_until_reset,"
-								+ "world,x,y,z FROM backup_accounts WHERE id = ?";
-						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
-							ps.setInt(1, rs.getInt("id"));
-							ps.executeUpdate();
-						}
-					}
-				}
-
-			}
-
-			if (needsUpdate2) {
-				plugin.getLogger().info("Updating database version...");
-
-				// Create fields table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableFields());
-				}
-
-				setDatabaseVersion(2);
-			}
-
-			int databaseVersion = getDatabaseVersion();
-
-			// if (databaseVersion < 2) {
-				// plugin.getLogger().info("Updating database... (V2)");
-
-				// Update database structure...
-
-				// setDatabaseVersion(2);
-			// }
-
-			int newDatabaseVersion = getDatabaseVersion();
-			return needsUpdate1 || needsUpdate2 || newDatabaseVersion > databaseVersion;
-		}
 	}
 
 	/**

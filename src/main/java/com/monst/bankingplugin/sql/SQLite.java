@@ -23,8 +23,8 @@ public class SQLite extends Database {
             // Initialize driver class so HikariCP can find it
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            plugin.getLogger().severe("Failed to initialize SQLite driver");
-            plugin.debug("Failed to initialize SQLite driver");
+            plugin.getLogger().severe("Failed to initialize SQLite driver.");
+            plugin.debug("Failed to initialize SQLite driver.");
             plugin.debug(e);
             return null;
         }
@@ -36,8 +36,8 @@ public class SQLite extends Database {
             try {
                 dbFile.createNewFile();
             } catch (IOException ex) {
-                plugin.getLogger().severe("Failed to create database file");
-                plugin.debug("Failed to create database file");
+                plugin.getLogger().severe("Failed to create database file.");
+                plugin.debug("Failed to create database file.");
                 plugin.debug(ex);
                 return null;
             }
@@ -59,14 +59,12 @@ public class SQLite extends Database {
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
-                try (Connection con = dataSource.getConnection();
-                        Statement s = con.createStatement()) {
+                try (Connection con = dataSource.getConnection(); Statement s = con.createStatement()) {
                     s.executeUpdate("VACUUM");
-
-                    plugin.debug("Vacuumed SQLite database");
-                } catch (final SQLException e) {
-                    plugin.getLogger().severe("Failed to vacuum database");
-                    plugin.debug("Failed to vacuum database");
+                    plugin.debug("Vacuumed SQLite database.");
+                } catch (SQLException e) {
+                    plugin.getLogger().severe("Failed to vacuum database.");
+                    plugin.debug("Failed to vacuum database.");
                     plugin.debug(e);
                 }
             }

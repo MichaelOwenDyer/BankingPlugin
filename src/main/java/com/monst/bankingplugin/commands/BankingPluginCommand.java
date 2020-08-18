@@ -45,8 +45,8 @@ public class BankingPluginCommand {
 			return cmd;
 		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
 				| InstantiationException e) {
-			plugin.getLogger().severe("Failed to create command \"" + name + "\"");
-			plugin.debug("Failed to create plugin command \"" + name + "\"");
+			plugin.getLogger().severe("Failed to create command \"" + name + "\"!");
+			plugin.debug("Failed to create plugin command \"" + name + "\"!");
 			plugin.debug(e);
 		}
 
@@ -69,8 +69,8 @@ public class BankingPluginCommand {
 				commandMap.register(plugin.getName(), pluginCommand);
 			}
 		} catch (NoSuchFieldException | IllegalAccessException e) {
-			plugin.getLogger().severe("Failed to register command");
-			plugin.debug("Failed to register plugin command");
+			plugin.getLogger().severe("Failed to register plugin command!");
+			plugin.debug("Failed to register plugin command!");
 			plugin.debug(e);
 		}
 	}
