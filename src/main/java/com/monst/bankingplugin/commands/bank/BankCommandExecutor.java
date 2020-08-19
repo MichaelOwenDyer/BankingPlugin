@@ -507,7 +507,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL_RESIZE, Config.minimumBankVolume, Config.minimumBankVolume - volume));
 			return true;
 		}
-		if (!bankUtils.isExclusiveSelectionWithoutThis(selection, bank)) {
+		if (!bankUtils.isExclusiveSelectionIgnoring(selection, bank)) {
 			plugin.debug("New selection is overlaps with an existing bank selection");
 			p.sendMessage(Messages.SELECTION_OVERLAPS_EXISTING);
 			return true;
@@ -525,25 +525,22 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		bankUtils.resizeBank(bank, selection);
-		bankUtils.addBank(bank, true, new Callback<Integer>(plugin) {
+		bankUtils.resizeBank(bank, selection, new Callback<Integer>(plugin) {
 			@Override
 			public void onResult(Integer result) {
 				plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
 				p.sendMessage(Messages.BANK_RESIZED);
 			}
-
 			@Override
 			public void onError(Throwable e) {
 				plugin.debug(e);
 				p.sendMessage(Messages.ERROR_OCCURRED);
 			}
 		});
-
 		return true;
 	}
 
-	private boolean promptBankRename(CommandSender sender, String[] args) { // TODO: Bug here where name is not changed
+	private boolean promptBankRename(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " is renaming a bank");
 
 		if (args.length < 2)
@@ -594,7 +591,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			sender.sendMessage(Messages.NAME_ALREADY);
 			return true;
 		}
-		if (!bankUtils.isUniqueNameWithoutThis(newName, bank.getName())) {
+		if (!bankUtils.isUniqueNameIgnoring(newName, bank.getName())) {
 			plugin.debug("Name is not unique");
 			sender.sendMessage(Messages.NAME_NOT_UNIQUE);
 			return true;
@@ -768,8 +765,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (sender instanceof Player && newOwner != null && bank.isOwner(newOwner)) {
 			boolean isExecutor = Utils.samePlayer((Player) sender, newOwner);
 			plugin.debug(newOwner.getName() + " is already owner of bank");
-			sender.sendMessage(
-					String.format(Messages.ALREADY_OWNER_BANK, isExecutor ? "You" : newOwner.getName(), isExecutor ? "are" : "is"));
+			sender.sendMessage(String.format(Messages.ALREADY_OWNER_BANK, isExecutor ? "You" : newOwner.getName(),
+					isExecutor ? "are" : "is"));
 			return true;
 		}
 		if (bank.isAdminBank() && newOwner == null) {

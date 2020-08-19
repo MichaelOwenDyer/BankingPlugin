@@ -61,9 +61,7 @@ public class InterestEventListener implements Listener {
 				Map<OfflinePlayer, Counter> feesReceivable = new HashMap<>(); // The amount of fees each bank owner receives as income on how many banks
 
 				for (OfflinePlayer accountOwner : playerAccountMap.keySet()) {
-					
 					for (Account account : playerAccountMap.get(accountOwner)) {
-
 						if (!account.getStatus().allowNextPayout(account.isTrustedPlayerOnline())) {
 							accountUtils.addAccount(account, true);
 							continue;
@@ -130,9 +128,7 @@ public class InterestEventListener implements Listener {
 				
 				// Bank owners earn revenue on their banks
 				for (OfflinePlayer bankOwner : playerBankMap.keySet()) {
-
 					for (Bank bank : playerBankMap.get(bankOwner)) {
-
 						if (bank.getTotalValue().signum() == 0)
 							continue;
 
@@ -169,7 +165,6 @@ public class InterestEventListener implements Listener {
 
 				// Bank owners receive low balance fees
 				for (OfflinePlayer bankOwner : feesReceivable.keySet()) {
-
 					if (feesReceivable.get(bankOwner).getSum().signum() == 0)
 						continue;
 					if (!bankOwner.hasPlayedBefore())
@@ -198,7 +193,6 @@ public class InterestEventListener implements Listener {
 
 				// Bank owners pay interest
 				for (OfflinePlayer bankOwner : interestPayable.keySet()) {
-
 					if (interestPayable.get(bankOwner).getSum().signum() == 0)
 						continue;
 					if (!bankOwner.hasPlayedBefore())
@@ -228,7 +222,6 @@ public class InterestEventListener implements Listener {
 
 				// Account owners receive interest payments
 				for (OfflinePlayer customer : interestReceivable.keySet()) {
-
 					if (interestReceivable.get(customer).getSum().signum() == 0)
 						continue;
 
@@ -258,7 +251,6 @@ public class InterestEventListener implements Listener {
 
 				// Customers pay low balance fees
 				for (OfflinePlayer customer : feesPayable.keySet()) {
-
 					if (feesPayable.get(customer).getSum().signum() == 0)
 						continue;
 

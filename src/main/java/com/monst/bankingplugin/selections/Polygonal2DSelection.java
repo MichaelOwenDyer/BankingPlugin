@@ -66,6 +66,14 @@ public class Polygonal2DSelection implements Selection {
 		return new Location(world, maxX, maxY, maxZ);
 	}
 
+	public int getMinY() {
+		return minY;
+	}
+
+	public int getMaxY() {
+		return maxY;
+	}
+
 	@Override
 	public Location getCenterPoint() {
 		Location max = getMaximumPoint();
@@ -167,6 +175,18 @@ public class Polygonal2DSelection implements Selection {
 	@Override
 	public SelectionType getType() {
 		return SelectionType.POLYGONAL;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		Polygonal2DSelection other = ((Polygonal2DSelection) o);
+		return getMinY() == other.getMinY() && getMaxY() == other.getMaxY()
+				&& getNativePoints().equals(other.getNativePoints())
+				&& getWorld().equals(other.getWorld());
 	}
 
 }

@@ -123,7 +123,6 @@ public class Bank extends Ownable implements Nameable {
 	 * @param account the account to be added
 	 */
 	public void addAccount(Account account) {
-		removeAccount(account);
 		if (account != null)
 			accounts.add(account);
 	}
@@ -143,8 +142,7 @@ public class Bank extends Ownable implements Nameable {
 	 * @see Account#getBalance()
 	 */
 	public BigDecimal getTotalValue() {
-		return accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO,
-					(value, sum) -> sum.add(value));
+		return accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	/**
@@ -185,12 +183,8 @@ public class Bank extends Ownable implements Nameable {
 	 * all account owners at this bank and their total account balances
 	 */
 	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
-		Map<OfflinePlayer, BigDecimal> customerBalances = new HashMap<>();
-		getCustomerAccounts().forEach((key, value) -> customerBalances.put(
-				key, value.stream()
-						.map(Account::getBalance)
-						.reduce(BigDecimal.ZERO, BigDecimal::add)));
-		return customerBalances;
+		return getCustomerAccounts().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+				e -> e.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add)));
 	}
 
 	@Override

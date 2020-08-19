@@ -106,16 +106,16 @@ public class ClickType {
 
 	public static class SetClickType extends ClickType {
 
-    	private final SetClickTypeField field;
+    	private final SetField field;
 		private final String value;
 
-		public SetClickType(SetClickTypeField field, String value) {
+		public SetClickType(SetField field, String value) {
 			super(EnumClickType.SET);
 			this.field = field;
 			this.value = value;
 		}
 
-		public SetClickTypeField getField() {
+		public SetField getField() {
 			return field;
 		}
 
@@ -123,7 +123,7 @@ public class ClickType {
 			return value;
 		}
 
-		public enum SetClickTypeField {
+		public enum SetField {
 			NICKNAME, MULTIPLIER, DELAY
 		}
 	}

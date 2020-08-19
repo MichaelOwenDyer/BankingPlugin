@@ -46,7 +46,7 @@ public class Utils {
 
 	public static boolean isAllowedName(String name) {
 		try {
-			return Config.nameRegex.contentEquals("") || Pattern.matches(Config.nameRegex, name);
+			return Config.nameRegex.trim().isEmpty() || Pattern.matches(Config.nameRegex, name);
 		} catch (PatternSyntaxException e) {
 			return true;
 		}

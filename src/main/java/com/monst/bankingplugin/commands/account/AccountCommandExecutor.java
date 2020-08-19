@@ -223,7 +223,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 	@SuppressWarnings("deprecation")
 	private void promptAccountList(final CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to list accounts");
-		ArrayList<Account> accounts = null;
+		Collection<Account> accounts = null;
 		String noAccountsMessage = "";
 		if (args.length == 1) {
 			if (!(sender instanceof Player)) {
@@ -232,7 +232,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				return;
 			}
 			plugin.debug(sender.getName() + " has listed their own accounts");
-			accounts = new ArrayList<>(accountUtils.getPlayerAccountsCopy((Player) sender));
+			accounts = accountUtils.getAccountsCopy(a -> a.isOwner((Player) sender));
 			noAccountsMessage = Messages.NO_ACCOUNTS_FOUND;
 		} else if (args.length == 2) {
 			if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
@@ -242,7 +242,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 					return;
 				}
 				plugin.debug(sender.getName() + " has listed all accounts");
-				accounts = new ArrayList<>(accountUtils.getAccountsCopy());
+				accounts = accountUtils.getAccountsCopy();
 				noAccountsMessage = Messages.NO_ACCOUNTS_FOUND;
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
@@ -257,11 +257,10 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 					return;
 				}
 				plugin.debug(sender.getName() + " has listed " + owner.getName() + "'s accounts");
-				accounts = new ArrayList<>(accountUtils.getPlayerAccountsCopy(owner));
+				accounts = accountUtils.getAccountsCopy(a -> a.isOwner(owner));
 				noAccountsMessage = Messages.NO_PLAYER_ACCOUNTS;
 			}
 		}
-
 		if (accounts != null && !accounts.isEmpty()) {
 			int i = 0;
 			for (Account account : accounts)
@@ -284,18 +283,16 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 
 		if (args.length == 1) {
 			if (sender instanceof Player) { // account removeall
-				Collection<Account> accounts = accountUtils.getPlayerAccountsCopy((Player) sender);
-				confirmRemoveAll(sender, accounts, args);
+				confirmRemoveAll(sender, accountUtils.getAccountsCopy(), args);
 			} else {
 				plugin.debug("Only players can remove all of their own accounts");
 				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
 			}
 		} else if (args.length == 2) {
 			if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) { // account removeall all
-				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) || accountUtils.getAccountsCopy().stream()
-						.allMatch(account -> account.isOwner(((Player) sender)))) {
-					Collection<Account> accounts = accountUtils.getAccountsCopy();
-					confirmRemoveAll(sender, accounts, args);
+				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
+						|| accountUtils.getAccountsCopy().stream().allMatch(account -> account.isOwner(((Player) sender)))) {
+					confirmRemoveAll(sender, accountUtils.getAccountsCopy(), args);
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to remove all accounts");
 					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
@@ -306,9 +303,9 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 					return true;
 				}
-				if ((sender instanceof Player && Utils.samePlayer((Player) sender, owner))
-						|| sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) { // account removeall player
-					Collection<Account> accounts = accountUtils.getPlayerAccountsCopy(owner);
+				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
+						|| (sender instanceof Player && Utils.samePlayer((Player) sender, owner))) { // account removeall player
+					Collection<Account> accounts = accountUtils.getAccountsCopy(a -> a.isOwner(owner));
 					confirmRemoveAll(sender, accounts, args);
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to remove all accounts of another player");
@@ -319,13 +316,13 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			if (sender instanceof Player) {
 				if (args[1].equalsIgnoreCase("-b") || args[1].equalsIgnoreCase("bank")) { // account removeall bank
 					Bank bank = plugin.getBankUtils().lookupBank(args[2]);
-					if (bank != null) {
-						Collection<Account> accounts = accountUtils.getBankAccountsCopy(bank).stream()
-								.filter(account -> account.isOwner((Player) sender))
-								.collect(Collectors.toList());
-						confirmRemoveAll(sender, accounts, args);
-					} else
+					if (bank == null)
 						sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[2]));
+					else {
+						Collection<Account> accounts = accountUtils.getAccountsCopy(a ->
+								a.getBank().equals(bank) && a.isOwner((Player) sender));
+						confirmRemoveAll(sender, accounts, args);
+					}
 				}
 			} else {
 				plugin.debug("Only players can remove all of their own accounts at a certain bank");
@@ -334,20 +331,26 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		} else if (args.length == 4) {
 			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all"))
 					&& (args[2].equalsIgnoreCase("-b") || args[2].equalsIgnoreCase("bank"))) {
-
 				Bank bank = plugin.getBankUtils().lookupBank(args[3]);
-				if (bank != null) {
-					Collection<Account> accounts = accountUtils.getBankAccountsCopy(bank);
-					confirmRemoveAll(sender, accounts, args);
-				} else
+				if (bank == null) {
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[2]));
+					return true;
+				}
+				Collection<Account> accounts = accountUtils.getAccountsCopy(a -> a.getBank().equals(bank));
+				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
+						|| accounts.stream().allMatch(a -> a.isOwner((Player) sender))) {
+					confirmRemoveAll(sender, accounts, args);
+				} else {
+					plugin.debug(sender.getName() + " does not have permission to remove all accounts");
+					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
+				}
 			}
 		} else
 			return false;
 		return true;
 	}
 
-	private void confirmRemoveAll(final CommandSender sender, Collection<Account> accounts, String[] args) { // XXX
+	private void confirmRemoveAll(final CommandSender sender, Collection<Account> accounts, String[] args) {
 
 		if (accounts.isEmpty()) {
 			sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
@@ -388,18 +391,20 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 					return true;
 				}
 
-				StringBuilder sb = new StringBuilder(args.length < 3 ? "" : args[2]);
+				StringBuilder sb = new StringBuilder();
+				if (args.length >= 3)
+					sb.append(args[2]);
 				for (int i = 3; i < args.length; i++)
 					sb.append(" ").append(args[i]);
 				String nickname = sb.toString();
 
-				if (!Utils.isAllowedName(nickname)) {
+				if (!nickname.trim().isEmpty() && !Utils.isAllowedName(nickname)) {
 					plugin.debug("Name is not allowed");
 					p.sendMessage(Messages.NAME_NOT_ALLOWED);
 					return true;
 				}
 				ClickType.setPlayerClickType(p,
-						new ClickType.SetClickType(ClickType.SetClickType.SetClickTypeField.NICKNAME, nickname));
+						new ClickType.SetClickType(ClickType.SetClickType.SetField.NICKNAME, nickname));
 				p.sendMessage(Messages.CLICK_CHEST_SET);
 				break;
 
@@ -412,17 +417,14 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				}
 
 				try {
-					if (args[2].startsWith("+") || args[2].startsWith("-"))
-						Integer.parseInt(args[2].substring(1));
-					else
-						Integer.parseInt(args[2]);
+					Integer.parseInt(args[2]);
 				} catch (NumberFormatException e) {
 					p.sendMessage(String.format(Messages.NOT_A_NUMBER, args[2]));
 					return true;
 				}
 
 				ClickType.setPlayerClickType(p,
-						new ClickType.SetClickType(ClickType.SetClickType.SetClickTypeField.MULTIPLIER, args[2]));
+						new ClickType.SetClickType(ClickType.SetClickType.SetField.MULTIPLIER, args[2]));
 				p.sendMessage(Messages.CLICK_CHEST_SET);
 				break;
 
@@ -435,16 +437,13 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				}
 
 				try {
-					if (args[2].startsWith("+") || args[2].startsWith("-"))
-						Integer.parseInt(args[2].substring(1));
-					else
-						Integer.parseInt(args[2]);
+					Integer.parseInt(args[2]);
 				} catch (NumberFormatException e) {
 					p.sendMessage(String.format(Messages.NOT_A_NUMBER, args[2]));
 				}
 
 				ClickType.setPlayerClickType(p,
-						new ClickType.SetClickType(ClickType.SetClickType.SetClickTypeField.DELAY, args[2]));
+						new ClickType.SetClickType(ClickType.SetClickType.SetField.DELAY, args[2]));
 				p.sendMessage(Messages.CLICK_CHEST_SET);
 				break;
 

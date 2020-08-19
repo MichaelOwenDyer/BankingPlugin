@@ -80,7 +80,7 @@ public class Messages {
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account at this bank.";
 	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found with the name or ID \"%s\".";
 	public static final String NO_ACCOUNTS_FOUND = ChatColor.RED + "There are no accounts to list.";
-	public static final String NO_PLAYER_ACCOUNTS = ChatColor.RED + "That player does not own any accounts.";
+	public static final String NO_PLAYER_ACCOUNTS = ChatColor.RED + "That player does not have any accounts.";
 	public static final String NO_BANK_ACCOUNTS = ChatColor.RED + "There are no accounts at that bank.";
 	public static final String NO_BANKS_FOUND = ChatColor.RED + "There are no banks to list.";
 	public static final String NO_SELECTION_FOUND = ChatColor.RED + "Select a WorldEdit region first.";
@@ -149,7 +149,7 @@ public class Messages {
 	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME_OTHER = NO_PERMISSION + "set someone else's account nickname.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_MULTIPLIER = NO_PERMISSION + "set an account multiplier.";
 	public static final String NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY = NO_PERMISSION + "set an account interest delay.";
-	public static final String NO_PERMISSION_ACCOUNT_CREATE_OTHER = NO_PERMISSION + "create an account in someone else's name."; // XXX
+	public static final String NO_PERMISSION_ACCOUNT_CREATE_OTHER = NO_PERMISSION + "create an account in someone else's name.";
 	public static final String NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED = NO_PERMISSION + "extend a protected account chest.";
 	
 	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";

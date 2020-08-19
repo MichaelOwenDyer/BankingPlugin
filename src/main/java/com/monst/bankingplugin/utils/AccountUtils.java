@@ -2,7 +2,6 @@ package com.monst.bankingplugin.utils;
 
 import com.earth2me.essentials.Essentials;
 import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import org.bukkit.Location;
@@ -20,12 +19,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class AccountUtils {
 
 	private final BankingPlugin plugin;
-
 	private final Map<Location, Account> accountLocationMap = new ConcurrentHashMap<>();
 
     public AccountUtils(BankingPlugin plugin) {
@@ -38,14 +37,14 @@ public class AccountUtils {
      * @param location Location of the account
      * @return Account at the given location or <b>null</b> if no account is found there
      */
-	public Account getAccount(Location location) { // XXX
+	public Account getAccount(Location location) {
 		if (location == null)
 			return null;
 		return accountLocationMap.get(Utils.blockifyLocation(location));
     }
 
     public Account getAccount(int id) {
-		return getAccounts().stream().filter(account -> account.getID() == id).findFirst().orElse(null);
+		return getAccountsCopy(account -> account.getID() == id).stream().findFirst().orElse(null);
 	}
 
     /**
@@ -58,19 +57,19 @@ public class AccountUtils {
     }
 
     /**
-     * Get all accounts
+     * Gets all accounts on the server.
      * Do not use for removing while iterating!
      *
      * @see #getAccountsCopy()
-     * @return Read-only collection of all accounts, may contain duplicates
+     * @return Read-only collection of all accounts
      */
     public Collection<Account> getAccounts() {
 		return new HashSet<>(accountLocationMap.values());
     }
 
     /**
-     * Get all accounts
-     * Same as {@link #getAccounts()} but this is safe to remove while iterating
+     * Gets all accounts on the server.
+     * Does the same thing as {@link #getAccounts()} but this is safe to remove while iterating.
      *
      * @see #getAccounts()
      * @return Copy of collection of all accounts, may contain duplicates
@@ -79,19 +78,24 @@ public class AccountUtils {
 		return Collections.unmodifiableCollection(getAccounts());
     }
 
-	public Collection<Account> getPlayerAccountsCopy(OfflinePlayer owner) {
-		return getAccountsCopy().stream().filter(account -> account.isOwner(owner))
-				.collect(Collectors.toList());
+    public Collection<Account> getAccountsCopy(Predicate<? super Account> filter) {
+		return Collections.unmodifiableCollection(getAccounts().stream().filter(filter).collect(Collectors.toSet()));
     }
 
-	public Collection<Account> getBankAccountsCopy(Bank bank) {
-		return getAccountsCopy().stream().filter(account -> account.getBank().equals(bank)).collect(Collectors.toList());
+	/**
+	 * Get the number of accounts owned by a certain player
+	 *
+	 * @param player Player whose accounts should be counted
+	 * @return The number of accounts owned by the player
+	 */
+	public int getNumberOfAccounts(OfflinePlayer player) {
+		return getAccountsCopy(account -> account.isOwner(player)).size();
 	}
 
-    /**
-     * Add a account
-     * @param account Account to add
-     * @param addToDatabase Whether the account should also be added to the database
+	/**
+	 * Adds and saves an account in the current session. Can also be used to update an already existing account.
+	 * @param account Account to add
+	 * @param addToDatabase Whether the account should also be added to or updated in the database
      * @param callback Callback that - if succeeded - returns the ID the account had or was given (as {@code int})
      */
     public void addAccount(Account account, boolean addToDatabase, Callback<Integer> callback) {
@@ -123,9 +127,9 @@ public class AccountUtils {
     }
 
     /**
-     * Add a account
+     * Adds and saves an account in the current session. Can also be used to update an already existing account.
      * @param account Account to add
-     * @param addToDatabase Whether the account should also be added to the database
+     * @param addToDatabase Whether the account should also be added to or updated in the database
      */
     public void addAccount(Account account, boolean addToDatabase) {
         addAccount(account, addToDatabase, null);
@@ -213,20 +217,9 @@ public class AccountUtils {
         return (useDefault ? Config.defaultAccountLimit : limit);
     }
 
-    /**
-	 * Get the number of accounts owned by a certain player
-	 * 
-	 * @param player Player whose accounts should be counted
-	 * @return The number of accounts owned by the player
-	 */
-	public int getNumberOfAccounts(OfflinePlayer player) {
-		return (int) Math.round(getPlayerAccountsCopy(player).stream()
-				.mapToDouble(account -> account.getSize() == 1 ? 1.0 : 0.5).sum());
-    }
-
 	public BigDecimal appraiseAccountContents(Account account) {
-
 		plugin.debug("Appraising account contents... (#" + account.getID() + ")");
+		Essentials essentials = plugin.getEssentials();
 
 		BigDecimal sum = BigDecimal.ZERO;
 		for (ItemStack item : account.getInventory(false).getContents()) {
@@ -234,45 +227,34 @@ public class AccountUtils {
 				continue;
 			if (Config.blacklist.contains(item.getType().toString()))
 				continue;
-			BigDecimal itemValue = getWorth(item);
-
+			BigDecimal itemValue = getWorth(essentials, item);
 			if (item.getItemMeta() instanceof BlockStateMeta) {
 				BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
                 if (im.getBlockState() instanceof ShulkerBox) {
                 	ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
-                	for (ItemStack innerItems : shulkerBox.getInventory().getContents()) {
-                		if (innerItems == null)
+                	for (ItemStack innerItem : shulkerBox.getInventory().getContents()) {
+                		if (innerItem == null)
                 			continue;
-                		if (Config.blacklist.contains(innerItems.getType().toString()))
+                		if (Config.blacklist.contains(innerItem.getType().toString()))
 							continue;
-						BigDecimal innerItemValue = getWorth(innerItems);
-						if (innerItemValue.signum() == 1)
-            				innerItemValue = innerItemValue.multiply(BigDecimal.valueOf(innerItems.getAmount()));
-            			else {
-							plugin.debug("An item without value (" + item.getType().toString()
-									+ ") was placed into account (#" + account.getID() + ")");
-            				continue;
-            			}
+						BigDecimal innerItemValue = getWorth(essentials, innerItem);
+						if (innerItemValue.signum() != 0)
+            				innerItemValue = innerItemValue.multiply(BigDecimal.valueOf(innerItem.getAmount()));
 						itemValue = itemValue.add(innerItemValue);
                 	}
                 }
 			}
-
-			if (itemValue.signum() == 1)
+			if (itemValue.signum() != 0)
 				itemValue = itemValue.multiply(BigDecimal.valueOf(item.getAmount()));
-			else {
-				plugin.debug("An item without value (" + item.getType().toString() + ") was placed into account (#" + account.getID() + ")");
-				continue;
-			}
 			sum = sum.add(itemValue);
 		}
-		plugin.debug("Appraised account balance: " + sum + " (#" + account.getID() + ")");
+		plugin.debug("Appraised account balance: $" + Utils.format(sum) + " (#" + account.getID() + ")");
 		return sum.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
-	private BigDecimal getWorth(ItemStack items) {
-		Essentials essentials = plugin.getEssentials();
-		return Optional.ofNullable(essentials.getWorth().getPrice(essentials, items)).orElse(BigDecimal.ZERO);
+	private BigDecimal getWorth(Essentials ess, ItemStack item) {
+		BigDecimal worth = ess.getWorth().getPrice(ess, item);
+		return worth != null ? worth : BigDecimal.ZERO;
 	}
 
 }

@@ -103,7 +103,7 @@ public class AccountInteractListener implements Listener {
 
 			case SET:
 
-				SetClickType.SetClickTypeField field = ((SetClickType) clickType).getField();
+				SetClickType.SetField field = ((SetClickType) clickType).getField();
 				String value = ((SetClickType) clickType).getValue();
 				set(p, account, field, value);
 				ClickType.removePlayerClickType(p);
@@ -426,7 +426,7 @@ public class AccountInteractListener implements Listener {
 		new AccountGui(account).open(player);
 	}
 
-	private void set(Player executor, Account account, SetClickType.SetClickTypeField field, String value) {
+	private void set(Player executor, Account account, SetClickType.SetField field, String value) {
 
 		switch (field) {
 			case NICKNAME:
@@ -459,8 +459,8 @@ public class AccountInteractListener implements Listener {
 				}
 
 				int stage;
-				if (value.startsWith("+"))
-					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(value.substring(1)));
+				if (value.startsWith("+") || value.startsWith("-"))
+					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(value));
 				else
 					stage = account.getStatus().setMultiplierStage(Integer.parseInt(value));
 
@@ -478,8 +478,8 @@ public class AccountInteractListener implements Listener {
 				}
 
 				int delay;
-				if (value.startsWith("+"))
-					delay = account.getStatus().setInterestDelayRelative(Integer.parseInt(value.substring(1)));
+				if (value.startsWith("+") || value.startsWith("-"))
+					delay = account.getStatus().setInterestDelayRelative(Integer.parseInt(value));
 				else
 					delay = account.getStatus().setInterestDelay(Integer.parseInt(value));
 				plugin.getAccountUtils().addAccount(account, true);
@@ -498,9 +498,6 @@ public class AccountInteractListener implements Listener {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRUST_OTHER);
 			return;
 		}
-		plugin.debug(String.format(p.getName() + " has trusted %s to %s account (#%d)",
-				playerToTrust.getName(), account.isOwner(p) ? "their" : account.getOwner().getName() + "'s",
-				account.getID()));
 
 		if (account.isTrusted(playerToTrust)) {
 			plugin.debug(playerToTrust.getName() + " was already trusted on that account (#" + account.getID() + ")");
@@ -508,6 +505,9 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
+		plugin.debug(String.format(p.getName() + " has trusted %s to %s account (#%d)",
+				playerToTrust.getName(), account.isOwner(p) ? "their" : account.getOwner().getName() + "'s",
+				account.getID()));
 		p.sendMessage(String.format(Messages.ADDED_COOWNER, playerToTrust.getName()));
 		account.trustPlayer(playerToTrust);
 	}
@@ -521,9 +521,6 @@ public class AccountInteractListener implements Listener {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER);
 			return;
 		}
-		plugin.debug(String.format(p.getName() + " has untrusted %s from %s account (#%d)",
-				playerToUntrust.getName(), account.isOwner(p) ? "their" : account.getOwner().getName() + "'s",
-				account.getID()));
 
 		if (!account.isTrusted(playerToUntrust)) {
 			plugin.debug(playerToUntrust.getName() + " was not trusted on that account and could not be removed (#"
@@ -532,6 +529,9 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
+		plugin.debug(String.format(p.getName() + " has untrusted %s from %s account (#%d)",
+				playerToUntrust.getName(), account.isOwner(p) ? "their" : account.getOwner().getName() + "'s",
+				account.getID()));
 		p.sendMessage(String.format(Messages.REMOVED_COOWNER, playerToUntrust.getName()));
 		account.untrustPlayer(playerToUntrust);
 	}
@@ -577,8 +577,7 @@ public class AccountInteractListener implements Listener {
 			plugin.debug("Chest is not in a bank.");
 			return;
 		}
-		if (!toMigrate.getBank().equals(bankUtils.getBank(location))
-				&& !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
+		if (!toMigrate.getBank().equals(bankUtils.getBank(location)) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_BANK);
 			plugin.debug(p.getName() + " does not have permission to migrate their account to another bank.");
 			return;

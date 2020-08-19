@@ -16,12 +16,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class BankUtils {
 
 	private final Map<Selection, Bank> bankSelectionMap = new ConcurrentHashMap<>();
-	private final Collection<Bank> locatedBanks = Collections.unmodifiableCollection(bankSelectionMap.values());
     private final BankingPlugin plugin;
 
     public BankUtils(BankingPlugin plugin) {
@@ -68,7 +68,7 @@ public class BankUtils {
 	 * @return Read-only collection of all banks
 	 */
 	public Collection<Bank> getBanks() {
-		return locatedBanks;
+		return new HashSet<>(bankSelectionMap.values());
     }
 
     /**
@@ -79,19 +79,18 @@ public class BankUtils {
 	 * @return Copy of collection of all banks, may contain duplicates
 	 */
 	public Collection<Bank> getBanksCopy() {
-		return new ArrayList<>(getBanks());
+		return Collections.unmodifiableCollection(getBanks());
     }
 
-	public Collection<Bank> getPlayerBanksCopy(OfflinePlayer owner) {
-		return getBanksCopy().stream().filter(bank -> bank.isOwner(owner))
-				.collect(Collectors.toSet());
+    public Collection<Bank> getBanksCopy(Predicate<? super Bank> filter) {
+		return getBanks().stream().filter(filter).collect(Collectors.toSet());
 	}
 
 	public boolean isUniqueName(String name) {
-		return isUniqueNameWithoutThis(name, null);
+		return isUniqueNameIgnoring(name, null);
 	}
 
-	public boolean isUniqueNameWithoutThis(String name, String without) {
+	public boolean isUniqueNameIgnoring(String name, String without) {
 		List<String> bankNames = getBanks().stream().map(Bank::getName).collect(Collectors.toList());
 		if (without != null)
 			bankNames.remove(without);
@@ -99,27 +98,22 @@ public class BankUtils {
 	}
 
 	public boolean isExclusiveSelection(Selection sel) {
-		return isExclusiveSelectionWithoutThis(sel, null);
+		return isExclusiveSelectionIgnoring(sel, null);
 	}
 
-	public boolean isExclusiveSelectionWithoutThis(Selection sel, Bank bank) {
-
-		Set<Selection> selections = new HashSet<>(bankSelectionMap.keySet());
-		Optional.ofNullable(bank).ifPresent(b -> selections.remove(bank.getSelection()));
-		for (Selection existingSel : selections)
-			if (existingSel.overlaps(sel))
-				return false;
-		return true;
+	public boolean isExclusiveSelectionIgnoring(Selection sel, Bank bank) {
+		return new HashSet<>(bankSelectionMap.keySet()).stream()
+				.filter(s -> bank != null && !bank.getSelection().equals(s))
+				.noneMatch(sel::overlaps);
 	}
 
-	public void resizeBank(Bank bank, Selection newSel) {
+	public void resizeBank(Bank bank, Selection newSel, Callback<Integer> callback) {
 		removeBank(bank, false);
 		bank.setSelection(newSel);
-		addBank(bank, false);
+		addBank(bank, true, callback);
 	}
 
 	public Selection parseCoordinates(String[] args, Location loc, int offset) throws NumberFormatException {
-
 		if (args.length >= 4 && args.length <= 6) {
 
 			String argX = args[1 + offset];
@@ -167,15 +161,14 @@ public class BankUtils {
 	}
 
 	/**
-	 * Determines whether a new bank selection still contains all accounts of that
-	 * bank
+	 * Determines whether a new bank selection still encompasses all the accounts of that bank
 	 * 
 	 * @param bank Bank that is being resized
 	 * @param sel  New selection for the bank
 	 * @return Whether the new selection contains all accounts
 	 */
 	public boolean containsAllAccounts(Bank bank, Selection sel) {
-		return bank.getAccounts().stream().allMatch(account -> sel.contains(account.getLocation()));
+		return bank.getAccounts().stream().map(Account::getLocation).allMatch(sel::contains);
 	}
 
     /**
@@ -328,7 +321,7 @@ public class BankUtils {
 	 * @return The number of accounts owned by the player
 	 */
 	public int getNumberOfBanks(OfflinePlayer player) {
-		return Math.round((long) getPlayerBanksCopy(player).size());
+		return getBanksCopy(b -> b.isOwner(player)).size();
 	}
 
 	public static class ReloadResult extends Pair<Collection<Bank>, Collection<Account>> {

@@ -121,4 +121,16 @@ public class CuboidSelection implements Selection {
 		return SelectionType.CUBOID;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		CuboidSelection otherSel = ((CuboidSelection) o);
+		return getWorld().equals(otherSel.getWorld())
+				&& getMaximumPoint().equals(otherSel.getMaximumPoint())
+				&& getMinimumPoint().equals(otherSel.getMinimumPoint());
+	}
+
 }
