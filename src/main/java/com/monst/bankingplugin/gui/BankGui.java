@@ -15,10 +15,7 @@ import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BankGui extends SinglePageGui<Bank> {
@@ -237,11 +234,11 @@ public class BankGui extends SinglePageGui<Bank> {
 	}
 
 	private List<String> getPayoutTimeLore() {
-		List<LocalTime> times = guiSubject.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
+		Set<LocalTime> times = guiSubject.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
 		List<String> lore = new ArrayList<>();
 		if (!times.isEmpty()) {
 			lore.add("Accounts will generate interest every day at: ");
-			for (LocalTime time : times)
+			for (LocalTime time : times.stream().sorted(LocalTime::compareTo).collect(Collectors.toList()))
 				lore.add(ChatColor.GOLD + " - " + time.toString());
 		} else
 			lore.add("Accounts will not generate interest.");

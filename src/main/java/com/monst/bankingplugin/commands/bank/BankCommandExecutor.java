@@ -323,8 +323,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		plugin.debug("Bank #" + bank.getID() + " removed from the database");
 		sender.sendMessage(Messages.BANK_REMOVED);
 		Utils.notifyPlayers(
-				String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()), sender,
-				bank.getTrustedPlayers(), bank.getCustomers());
+				String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()), Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()), sender
+		);
 	}
 
 	private void promptBankInfo(CommandSender sender, String[] args) {
@@ -424,7 +424,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				+ " removed from the database.");
 		sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s", accounts.size(), accounts.size() == 1 ? "" : "s"));
 		for (Bank bank : banks)
-			Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getColorizedName()), sender, bank.getTrustedPlayers());
+			Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getColorizedName()), bank.getTrustedPlayers(), sender);
 
 		return true;
 	}
@@ -616,7 +616,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		Bank bank = bankUtils.lookupBank(args[1]);
 		String fieldName = args[2];
-		StringBuilder sb = new StringBuilder(16);
+		StringBuilder sb = new StringBuilder();
 		if (args.length > 3)
 			sb.append(args[3]);
 		for (int i = 4; i < args.length; i++)
@@ -653,8 +653,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			public void onResult(String result) {
 				plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + bank.getName() + " from " + previousValue + " to " + result);
 				sender.sendMessage(String.format(Messages.BANK_FIELD_SET, "You", field.getName(), previousValue, result, bank.getColorizedName()));
-				Utils.notifyPlayers(String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(), previousValue, result, bank.getColorizedName()),
-						sender, bank.getTrustedPlayers(), bank.getCustomers());
+				Utils.notifyPlayers(
+						String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(), previousValue, result, bank.getColorizedName()),
+						Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()), sender
+				);
 			}
 			@Override
 			public void onError(Throwable throwable) {
@@ -818,8 +820,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		Utils.notifyPlayers(
 				String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), bank.getColorizedName(),
 						newOwner != null ? newOwner.getName() : "ADMIN"),
-						newOwner != null ? newOwner.getPlayer() : null,
-						Collections.singleton(newOwner));
+				Collections.singleton(newOwner), newOwner != null ? newOwner.getPlayer() : null
+		);
 		if (newOwner != null && newOwner.isOnline())
 			newOwner.getPlayer().sendMessage(String.format(Messages.OWNERSHIP_TRANSFER_RECEIVED, "bank", bank.getColorizedName()));
 		boolean hasDefaultName = bank.isDefaultName();

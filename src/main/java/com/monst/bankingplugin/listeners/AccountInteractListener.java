@@ -232,7 +232,7 @@ public class AccountInteractListener implements Listener {
 		}
 		if (!forSelf) {
 			int playerAccountLimit = bank.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
-			if (playerAccountLimit > 0 && bank.getAccounts().stream().filter(account -> account.isOwner(executor)).count() >= playerAccountLimit) {
+			if (playerAccountLimit > 0 && bank.getAccountsCopy(account -> account.isOwner(executor)).size() >= playerAccountLimit) {
 				executor.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
 				plugin.debug(executor.getName() + " is not permitted to create another account at bank " + bank.getName());
 				return;

@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Bank extends Ownable implements Nameable {
@@ -148,7 +149,7 @@ public class Bank extends Ownable implements Nameable {
 	/**
 	 * @return a {@link Collection<Account>} containing all accounts at this bank
 	 */
-	public Collection<Account> getAccounts() {
+	public Set<Account> getAccounts() {
 		return accounts;
 	}
 
@@ -157,8 +158,12 @@ public class Bank extends Ownable implements Nameable {
 	 * to use for removing all accounts from the bank.
 	 * @return a {@link Collection<Account>} containing a copy of all accounts at this bank
 	 */
-	public Collection<Account> getAccountsCopy() {
-		return Collections.unmodifiableCollection(getAccounts());
+	public Set<Account> getAccountsCopy() {
+		return Collections.unmodifiableSet(getAccounts());
+	}
+
+	public Set<Account> getAccountsCopy(Predicate<? super Account> filter) {
+		return Collections.unmodifiableSet(Utils.filter(getAccounts(), filter));
 	}
 
 	/**

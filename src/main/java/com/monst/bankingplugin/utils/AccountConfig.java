@@ -12,10 +12,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -105,8 +102,8 @@ public class AccountConfig {
 			});
 		});
 
-		/* List */
-		SETTERS.put(Field.MULTIPLIERS, (instance, value) -> { // Special setter that parses an Integer list
+		/* List */ /* Set */
+		SETTERS.put(Field.MULTIPLIERS, (instance, value) -> { // Special setter that parses a List<Integer>
 			try {
 				Field.MULTIPLIERS.getLocalVariable().set(instance,
 						Arrays.stream(Utils.removePunctuation(value).split(" "))
@@ -116,21 +113,19 @@ public class AccountConfig {
 						.collect(Collectors.toList()));
 			} catch (IllegalAccessException ignored) {}
 		});
-		SETTERS.put(Field.INTEREST_PAYOUT_TIMES, (instance, value) -> { // Special setter that parses a LocalTime list
+		SETTERS.put(Field.INTEREST_PAYOUT_TIMES, (instance, value) -> { // Special setter that parses a Set<LocalTime>
 			try {
 				Field.INTEREST_PAYOUT_TIMES.getLocalVariable().set(instance,
 						Arrays.stream(Utils.removePunctuation(value, ':').split(" "))
 						.filter(s -> !s.isEmpty())
 						.map(LocalTime::parse)
-						.collect(Collectors.toList()));
+						.collect(Collectors.toSet()));
 			} catch (IllegalAccessException ignored) {}
 		});
-		Field.stream(List.class).forEach(field -> { // Formatters for fields of type List
+		Field.stream(List.class, Set.class).forEach(field -> { // Formatters for fields of type List, Set
 			FORMATTERS.put(field, instance -> {
 				try {
-					return ((List<?>) field.getLocalVariable().get(instance)).stream()
-							.map(String::valueOf)
-							.collect(Collectors.joining(", ", "[", "]"));
+					return String.valueOf(field.getLocalVariable().get(instance));
 				} catch (IllegalAccessException ignored) {}
 				return "";
 			});
@@ -151,7 +146,7 @@ public class AccountConfig {
 	private int withdrawalMultiplierDecrement;
 	private int playerBankAccountLimit;
 	private List<Integer> multipliers;
-	private List<LocalTime> interestPayoutTimes;
+	private Set<LocalTime> interestPayoutTimes;
 
 	/**
 	 * Creates a new AccountConfig with the default values from the {@link Config}.
@@ -198,7 +193,7 @@ public class AccountConfig {
 						 double interestRate, double accountCreationPrice, double minimumBalance, double lowBalanceFee,
 						 int initialInterestDelay, int allowedOfflinePayouts, int allowedOfflinePayoutsBeforeReset,
 						 int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, int playerBankAccountLimit,
-						 List<Integer> multipliers, List<LocalTime> interestPayoutTimes) {
+						 List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 
 		this.countInterestDelayOffline = countInterestDelayOffline;
 		this.reimburseAccountCreation = reimburseAccountCreation;
@@ -303,7 +298,7 @@ public class AccountConfig {
 		WITHDRAWAL_MULTIPLIER_DECREMENT (Integer.class),
 		PLAYER_BANK_ACCOUNT_LIMIT (Integer.class),
 		MULTIPLIERS (List.class),
-		INTEREST_PAYOUT_TIMES (List.class);
+		INTEREST_PAYOUT_TIMES (Set.class);
 
 		private final String name;
 		private final Class<?> dataType;

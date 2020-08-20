@@ -13,8 +13,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ControlCommandExecutor implements CommandExecutor {
@@ -61,7 +60,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 				// checkUpdates(sender);
 				return false;
 			case "payinterest":
-				promptPayout(sender);
+				promptPayout(sender, args);
 				break;
 			default:
 				return false;
@@ -177,9 +176,9 @@ public class ControlCommandExecutor implements CommandExecutor {
 		// sender.sendMessage(Messages.UPDATE_CHECKING);
 
 		UpdateChecker uc = new UpdateChecker(plugin);
-		UpdateChecker.UpdateCheckerResult result = uc.check();
+		UpdateChecker.Result result = uc.check();
 
-		if (result == UpdateChecker.UpdateCheckerResult.TRUE) {
+		if (result == UpdateChecker.Result.TRUE) {
 			// plugin.setLatestVersion(uc.getVersion());
 			// plugin.setDownloadLink(uc.getLink());
 			// plugin.setUpdateNeeded(true);
@@ -190,7 +189,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 				// sender.sendMessage(Messages.UPDATE_AVAILABLE);
 			}
 
-		} else if (result == UpdateChecker.UpdateCheckerResult.FALSE) {
+		} else if (result == UpdateChecker.Result.FALSE) {
 			// plugin.setLatestVersion("");
 			// plugin.setDownloadLink("");
 			// plugin.setUpdateNeeded(false);
@@ -203,7 +202,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 		}
 	}
 
-	private void promptPayout(CommandSender sender) {
+	private void promptPayout(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " is triggering an interest payout");
 
 		if (!sender.hasPermission(Permissions.PAY_INTEREST)) {
@@ -212,7 +211,12 @@ public class ControlCommandExecutor implements CommandExecutor {
 			return;
 		}
 
-		InterestEvent event = new InterestEvent(plugin, sender);
+		Set<Bank> banks = Arrays.stream(args)
+				.map(plugin.getBankUtils()::lookupBank)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+
+		InterestEvent event = new InterestEvent(plugin, sender, banks);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Interest event cancelled");

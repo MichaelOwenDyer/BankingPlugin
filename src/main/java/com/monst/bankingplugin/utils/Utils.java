@@ -6,11 +6,6 @@ import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.TransactionFailedException;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.HoverEvent.Action;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -28,8 +23,11 @@ import org.bukkit.util.ChatPaginator;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,7 +38,9 @@ public class Utils {
 	}
 	
 	public static List<String> getOnlinePlayerNames(BankingPlugin plugin) {
-		return plugin.getServer().getOnlinePlayers().stream().map(HumanEntity::getName).sorted()
+		return plugin.getServer().getOnlinePlayers().stream()
+				.map(HumanEntity::getName)
+				.sorted()
 				.collect(Collectors.toList());
 	}
 
@@ -83,13 +83,9 @@ public class Utils {
 			regex.append("]");
 		}
 		regex.append("]");
-		return removePunctuation(s, regex.toString());
+		return s.replaceAll(regex.toString(), "");
 	}
 
-	public static String removePunctuation(String s, String regex) {
-		return s.replaceAll(regex, "");
-	}
-	
 	@SuppressWarnings("deprecation")
 	public static boolean isTransparent(Block block) {
 		return block.getType() == Material.CHEST
@@ -111,8 +107,7 @@ public class Utils {
 	}
 
     public static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
-		return lines
-				.map(s -> ChatPaginator.wordWrap(s, lineLength))
+		return lines.map(s -> ChatPaginator.wordWrap(s, lineLength))
 				.flatMap(Arrays::stream)
 				.map(s -> s.replace("" + ChatColor.WHITE, ""))
 				.collect(Collectors.toList());
@@ -124,8 +119,7 @@ public class Utils {
 		if (amount <= 0)
 			return true;
 
-		Economy economy = BankingPlugin.getInstance().getEconomy();
-		EconomyResponse response = economy.depositPlayer(recipient, worldName, amount);
+		EconomyResponse response = BankingPlugin.getInstance().getEconomy().depositPlayer(recipient, worldName, amount);
 		if (response.transactionSuccess()) {
 			callback.callSyncResult(null);
 			return true;
@@ -140,8 +134,7 @@ public class Utils {
 		if (amount <= 0)
 			return true;
 
-		Economy economy = BankingPlugin.getInstance().getEconomy();
-		EconomyResponse response = economy.withdrawPlayer(payer, worldName, amount);
+		EconomyResponse response = BankingPlugin.getInstance().getEconomy().withdrawPlayer(payer, worldName, amount);
 		if (response.transactionSuccess()) {
 			callback.callSyncResult(null);
 			return true;
@@ -150,13 +143,10 @@ public class Utils {
 		return false;
 	}
 
-	@SafeVarargs
-	public static void notifyPlayers(String message, CommandSender notInclude, Collection<OfflinePlayer>... players) {
+	public static void notifyPlayers(String message, Collection<OfflinePlayer> players, CommandSender notInclude) {
 		if (notInclude instanceof OfflinePlayer)
-			for (Collection<OfflinePlayer> playerList : players)
-				playerList.remove(notInclude);
-		for (Collection<OfflinePlayer> playerList : players)
-			notifyPlayers(message, playerList);
+			players.remove(notInclude);
+		notifyPlayers(message, players);
 	}
 
 	private static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
@@ -264,37 +254,10 @@ public class Utils {
 		return multiplierView;
 	}
 
-	@SuppressWarnings("deprecation")
-	public static TextComponent getInterestRateView(Account account) {
-		if (account == null)
-			return null;
-
-		AccountStatus accountStatus = account.getStatus();
-		AccountConfig accountConfig = account.getBank().getAccountConfig();
-
-		TextComponent interestRateView = new TextComponent();
-		interestRateView.setColor(net.md_5.bungee.api.ChatColor.GREEN);
-
-		double baseInterestRate = accountConfig.get(AccountConfig.Field.INTEREST_RATE);
-		double percentage = baseInterestRate * accountStatus.getRealMultiplier();
-		TextComponent interestRate = new TextComponent(percentage * 100 + "%");
-		if (accountStatus.getDelayUntilNextPayout() == 0
-				&& account.getBalance().doubleValue() >= (double) accountConfig.get(AccountConfig.Field.MINIMUM_BALANCE)) {
-			ComponentBuilder cb = new ComponentBuilder();
-			cb.append("Next payout: ").color(net.md_5.bungee.api.ChatColor.GRAY)
-					.append("$" + Utils.format(account.getBalance().multiply(BigDecimal.valueOf(percentage))))
-					.color(net.md_5.bungee.api.ChatColor.GREEN);
-			interestRate.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, cb.create()));
-		}
-		interestRate.addExtra(ChatColor.GRAY + " (" + baseInterestRate + " x " + accountStatus.getRealMultiplier() + ")");
-		interestRateView.addExtra(interestRate);
-
-		return interestRateView;
-	}
-
 	/**
-     * @param p Player whose item in his main hand should be returned
-     * @return {@link ItemStack} in his main hand, or {@code null} if he doesn't hold one
+     * @param p Player whose held item should be returned
+     * @return the {@link ItemStack} in the player's main hand, or {@code null} if the player isn't holding anything
+	 * in their main hand
      */
 	@SuppressWarnings("deprecation")
 	public static ItemStack getItemInMainHand(Player p) {
@@ -312,8 +275,9 @@ public class Utils {
     }
 
     /**
-     * @param p Player whose item in his off hand should be returned
-     * @return {@link ItemStack} in his off hand, or {@code null} if he doesn't hold one or the server version is below 1.9
+     * @param p Player whose secondary held item should be returned
+     * @return the {@link ItemStack} in the player's off hand, or {@code null} if they player isn't holding anything
+	 * in their off hand or the server version is below 1.9
      */
     public static ItemStack getItemInOffHand(Player p) {
         if (getMajorVersion() < 9)
@@ -325,8 +289,8 @@ public class Utils {
     }
 
     /**
-     * @param p Player to check if he has an axe in one of his hands
-     * @return Whether a player has an axe in one of his hands
+     * @param p Player to check
+     * @return Whether the player is holding an axe in one of their hands
      */
     public static boolean hasAxeInHand(Player p) {
         List<String> axes;
@@ -343,16 +307,11 @@ public class Utils {
         return item != null && axes.contains(item.getType().toString());
     }
 
- 
-    /**
-     * Get a set of locations of the account chest
-     * @param account The account
-     * @return A set of 1 or 2 locations
-     */
-    public static Set<Location> getChestLocations(Account account) {
-        return getChestLocations(account.getInventory(true));
-    }
-
+	/**
+	 * Get a set of locations of the inventory
+	 * @param inv The inventory to get the locations of
+	 * @return A set of 1 or 2 locations
+	 */
     public static Set<Location> getChestLocations(Inventory inv) {
 		Set<Location> chestLocations = new HashSet<>();
 		InventoryHolder ih = inv.getHolder();
@@ -371,8 +330,55 @@ public class Utils {
     	return p1.getUniqueId().equals(p2.getUniqueId());
 	}
 
+	@SafeVarargs
+	public static <T> Set<T> mergeCollections(Collection<? extends T>... collections) {
+		return Arrays.stream(collections).flatMap(Collection::stream).collect(Collectors.toSet());
+	}
+
+	public static <T> Set<T> filter(Set<? extends T> collection, Predicate<? super T> filter) {
+		return filter(collection, filter, Collectors.toSet());
+	}
+	public static <T> List<T> filter(List<? extends T> collection, Predicate<? super T> filter) {
+		return filter(collection, filter, Collectors.toList());
+	}
+
+	/**
+	 * Filters the elements of the provided collection and returns them in a {@link Collection} of the specified type
+	 * @param collection the collection of elements to be filtered
+	 * @param filter the filter to apply to each element
+	 * @param collector the collector to collect the mapped elements with
+	 * @param <T> the type of the elements in the collection
+	 * @param <R> the type of collection the mapped elements should be returned in
+	 * @return a {@link Collection} of the filtered elements
+	 */
+	public static <T, R> R filter(Collection<? extends T> collection, Predicate<? super T> filter, Collector<? super T, ?, R> collector) {
+		return collection.stream().filter(filter).collect(collector);
+	}
+
+	public static <T, K> Set<K> map(Set<? extends T> collection, Function<? super T, ? extends K> mapper) {
+    	return map(collection, mapper, Collectors.toSet());
+	}
+
+	public static <T, K> List<K> map(List<? extends T> collection, Function<? super T, ? extends K> mapper) {
+    	return map(collection, mapper, Collectors.toList());
+	}
+
+	/**
+	 * Maps the elements of the provided collection and returns them in a new {@link Collection} of the specified type.
+	 * @param collection the collection of elements to be mapped
+	 * @param mapper the mapper to apply to each element
+	 * @param collector the collector to collect the mapped elements with
+	 * @param <T> the type of the elements in the collection
+	 * @param <K> the type of the elements after the mapping
+	 * @param <R> the type of collection the mapped elements should be returned in
+	 * @return a {@link Collection} of mapped elements
+	 */
+	public static <T, K, R> R map(Collection<? extends T> collection, Function<? super T, ? extends K> mapper, Collector<? super K, ?, R> collector) {
+    	return collection.stream().map(mapper).collect(collector);
+	}
+
     /**
-     * @return The current server version with revision number (e.g. v1_9_R2, v1_10_R1)
+     * @return The current server version with revision number (e.g. v1_15_R1, v1_16_R2)
      */
     public static String getServerVersion() {
         String packageName = Bukkit.getServer().getClass().getPackage().getName();
@@ -380,7 +386,7 @@ public class Utils {
     }
 
     /**
-     * @return The major version of the server (e.g. <i>9</i> for 1.9.2, <i>10</i> for 1.10)
+     * @return The major version of the server (e.g. <i>15</i> for 1.15.2, <i>16</i> for 1.16.2)
      */
     public static int getMajorVersion() {
         return Integer.parseInt(getServerVersion().split("_")[1]);

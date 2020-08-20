@@ -32,7 +32,7 @@ public class GriefPreventionListener implements Listener {
         if (!Config.enableGriefPreventionIntegration)
             return;
 
-        for (Location loc : Utils.getChestLocations(e.getAccount()))
+        for (Location loc : Utils.getChestLocations(e.getAccount().getInventory(false)))
 			if (handleForLocation(e.getPlayer(), loc, e)) {
 				e.setCancelled(true);
 				plugin.debug("Account create event cancelled by GriefPrevention");

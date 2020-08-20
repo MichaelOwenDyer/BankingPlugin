@@ -30,10 +30,9 @@ public class WorldEditReader {
 
 	public static Selection getSelection(BankingPlugin plugin, Player p) {
 
-		WorldEditPlugin worldEdit = plugin.getWorldEdit();
 		Region region;
 		try {
-			LocalSession session = worldEdit.getWorldEdit().getSessionManager().findByName(p.getName());
+			LocalSession session = plugin.getWorldEdit().getWorldEdit().getSessionManager().findByName(p.getName());
 			if (session == null)
 				return null;
 			region = session.getSelection(BukkitAdapter.adapt(p.getWorld()));

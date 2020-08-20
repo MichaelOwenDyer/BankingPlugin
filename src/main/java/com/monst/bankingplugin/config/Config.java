@@ -11,10 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Config {
@@ -37,7 +34,7 @@ public class Config {
     /**
      * The real-life times for account interest payouts.
      **/
-	public static ConfigPair<List<LocalTime>> interestPayoutTimes;
+	public static ConfigPair<Set<LocalTime>> interestPayoutTimes;
     
     /**
      * The default baseline account interest rate.
@@ -350,7 +347,6 @@ public class Config {
 			if (property.equalsIgnoreCase("interest-payout-times"))
 				list.add(Arrays.stream(value.replace("-","").split(" "))
 						.filter(s -> !s.isEmpty())
-						.map(s -> "\'" + s + "\'")
 						.collect(Collectors.toList()));
 			else
 				list.add(value);
@@ -386,7 +382,6 @@ public class Config {
 			if (property.equalsIgnoreCase("interest-payout-times"))
 				list.remove(Arrays.stream(value.replace("-","").split(" "))
 						.filter(s -> !s.isEmpty())
-						.map(s -> "\'" + s + "\'")
 						.collect(Collectors.toList()));
 			else
 				list.remove(value);
@@ -416,7 +411,7 @@ public class Config {
 							} catch (DateTimeParseException e) {return false;}
 						})
 						.map(LocalTime::parse)
-						.collect(Collectors.toList()));
+						.collect(Collectors.toSet()));
 		InterestEventScheduler.scheduleAll();
 
 		interestRate = new ConfigPair<>(config.getBoolean("interest-rate.allow-override"),

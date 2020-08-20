@@ -34,11 +34,10 @@ public class InterestEventScheduler {
      * @see InterestEventListener
      */
     public static void scheduleBankInterestEvents(Bank bank) {
-
         if (!plugin.isEnabled())
             return;
 
-        List<LocalTime> times = bank.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
+        Set<LocalTime> times = bank.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
         times.removeIf(Objects::isNull);
         BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>());
 
@@ -74,7 +73,7 @@ public class InterestEventScheduler {
         Calendar cal = Calendar.getInstance();
         long currentTime = cal.getTimeInMillis();
 
-        if (java.time.LocalTime.now().isAfter(time))
+        if (LocalTime.now().isAfter(time))
             cal.add(Calendar.DATE, 1);
         cal.set(Calendar.HOUR_OF_DAY, time.getHour());
         cal.set(Calendar.MINUTE, time.getMinute());
@@ -87,10 +86,7 @@ public class InterestEventScheduler {
         int id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin,
                 () -> Bukkit.getServer().getPluginManager().callEvent(
                         new InterestEvent(plugin, getScheduledBanks(time))), ticks, ticksInADay);
-        if (id != -1)
-            plugin.debug("Scheduled daily interest payout at " + time.toString());
-        else
-            plugin.debug("Failed to schedule daily interest payout at " + time.toString());
+        plugin.debug((id != -1 ? "Scheduled " : "Failed to schedule ") + "daily interest payout at " + time);
         return id;
     }
 }

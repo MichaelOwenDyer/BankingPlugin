@@ -14,7 +14,7 @@ import com.monst.bankingplugin.listeners.*;
 import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.sql.SQLite;
 import com.monst.bankingplugin.utils.*;
-import com.monst.bankingplugin.utils.UpdateChecker.UpdateCheckerResult;
+import com.monst.bankingplugin.utils.UpdateChecker.Result;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
@@ -48,17 +48,18 @@ public class BankingPlugin extends JavaPlugin {
 	private AccountCommand accountCommand;
 	private BankCommand bankCommand;
 	private ControlCommand controlCommand;
+
+	private AccountUtils accountUtils;
+	private BankUtils bankUtils;
 	
 	private boolean isUpdateNeeded = false;
 	private String latestVersion = "";
 	private String downloadLink = "";
-	private FileWriter fw;
+	private FileWriter debugWriter;
 	
-	private Economy econ;
+	private Economy economy;
 	private Essentials essentials;
 	private Database database;
-	private AccountUtils accountUtils;
-	private BankUtils bankUtils;
 	
 	private Plugin worldGuard;
 	private GriefPrevention griefPrevention;
@@ -83,7 +84,7 @@ public class BankingPlugin extends JavaPlugin {
 				if (!debugLogFile.exists())
 					debugLogFile.createNewFile();
                 new PrintWriter(debugLogFile).close();
-                fw = new FileWriter(debugLogFile, true);
+                debugWriter = new FileWriter(debugLogFile, true);
             } catch (IOException e) {
                 getLogger().info("Failed to instantiate FileWriter.");
                 e.printStackTrace();
@@ -156,9 +157,9 @@ public class BankingPlugin extends JavaPlugin {
 		if (accountUtils == null) {
 			// Plugin has not been fully enabled (probably due to errors),
 			// so only close file writer.
-			if (fw != null && Config.enableDebugLog) {
+			if (debugWriter != null && Config.enableDebugLog) {
 				try {
-					fw.close();
+					debugWriter.close();
 				} catch (IOException e) {
 					getLogger().severe("Failed to close FileWriter.");
 					e.printStackTrace();
@@ -184,9 +185,9 @@ public class BankingPlugin extends JavaPlugin {
 			database.disconnect();
 		}
 
-		if (fw != null && Config.enableDebugLog) {
+		if (debugWriter != null && Config.enableDebugLog) {
 			try {
-				fw.close();
+				debugWriter.close();
 			} catch (IOException e) {
 				getLogger().severe("Failed to close FileWriter.");
 				e.printStackTrace();
@@ -202,7 +203,7 @@ public class BankingPlugin extends JavaPlugin {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
 		if (rsp == null)
             return false;
-		econ = rsp.getProvider();
+		economy = rsp.getProvider();
 		return true;
     }
 
@@ -276,7 +277,7 @@ public class BankingPlugin extends JavaPlugin {
             @Override
             public void run() {
                 UpdateChecker uc = new UpdateChecker(BankingPlugin.this);
-                UpdateCheckerResult result = uc.check();
+                Result result = uc.check();
 
                 switch (result) {
                     case TRUE:
@@ -377,12 +378,12 @@ public class BankingPlugin extends JavaPlugin {
 	 * @param message the message to be printed
 	 */
 	public void debug(String message) {
-		if (Config.enableDebugLog && fw != null) {
+		if (Config.enableDebugLog && debugWriter != null) {
 			try {
 				Calendar c = Calendar.getInstance();
 				String timestamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(c.getTime());
-				fw.write(String.format("[%s] %s\r\n", timestamp, message));
-				fw.flush();
+				debugWriter.write(String.format("[%s] %s\r\n", timestamp, message));
+				debugWriter.flush();
 			} catch (IOException e) {
 				getLogger().severe("Failed to print debug message.");
 				e.printStackTrace();
@@ -397,8 +398,8 @@ public class BankingPlugin extends JavaPlugin {
 	 * @param throwable the {@link Throwable} of which the stacktrace will be printed
 	 */
 	public void debug(Throwable throwable) {
-		if (Config.enableDebugLog && fw != null) {
-			PrintWriter pw = new PrintWriter(fw);
+		if (Config.enableDebugLog && debugWriter != null) {
+			PrintWriter pw = new PrintWriter(debugWriter);
 			throwable.printStackTrace(pw);
 			pw.flush();
 		}
@@ -436,7 +437,7 @@ public class BankingPlugin extends JavaPlugin {
 	 * @return the {@link Economy} registered by Vault
 	 */
 	public Economy getEconomy() {
-		return econ;
+		return economy;
 	}
 
 	/**

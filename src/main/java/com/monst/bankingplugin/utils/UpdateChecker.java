@@ -20,13 +20,13 @@ public class UpdateChecker {
     }
 
     /**
-     * Check if an update is needed
+     * Checks if an update is needed
      *
-     * @return {@link UpdateCheckerResult#TRUE} if an update is available,
-     *         {@link UpdateCheckerResult#FALSE} if no update is needed or
-     *         {@link UpdateCheckerResult#ERROR} if an error occurred
+     * @return {@link Result#TRUE} if an update is available,
+     *         {@link Result#FALSE} if no update is needed or
+     *         {@link Result#ERROR} if an error occurred
      */
-    public UpdateCheckerResult check() {
+    public Result check() {
         try {
             plugin.debug("Checking for updates...");
 
@@ -45,21 +45,21 @@ public class UpdateChecker {
             } else {
                 plugin.debug("Failed to check for updates");
                 plugin.debug("Result: " + element.toString());
-                return UpdateCheckerResult.ERROR;
+                return Result.ERROR;
             }
 
             if (plugin.getDescription().getVersion().equals(version)) {
                 plugin.debug("No update found");
-                return UpdateCheckerResult.FALSE;
+                return Result.FALSE;
             } else {
                 plugin.debug("Update found: " + version);
-                return UpdateCheckerResult.TRUE;
+                return Result.TRUE;
             }
 
         } catch (Exception e) {
             plugin.debug("Failed to check for updates");
             plugin.debug(e);
-            return UpdateCheckerResult.ERROR;
+            return Result.ERROR;
         }
     }
 
@@ -77,7 +77,7 @@ public class UpdateChecker {
         return link;
     }
 
-    public enum UpdateCheckerResult {
+    public enum Result {
         TRUE,
         FALSE,
         ERROR

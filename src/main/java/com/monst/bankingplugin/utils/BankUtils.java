@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 
 public class BankUtils {
 
+	private final BankingPlugin plugin;
 	private final Map<Selection, Bank> bankSelectionMap = new ConcurrentHashMap<>();
-    private final BankingPlugin plugin;
 
     public BankUtils(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -67,7 +67,7 @@ public class BankUtils {
 	 * @see #getBanksCopy()
 	 * @return Read-only collection of all banks
 	 */
-	public Collection<Bank> getBanks() {
+	public Set<Bank> getBanks() {
 		return new HashSet<>(bankSelectionMap.values());
     }
 
@@ -78,12 +78,12 @@ public class BankUtils {
 	 * @see #getBanks()
 	 * @return Copy of collection of all banks, may contain duplicates
 	 */
-	public Collection<Bank> getBanksCopy() {
-		return Collections.unmodifiableCollection(getBanks());
+	public Set<Bank> getBanksCopy() {
+		return Collections.unmodifiableSet(getBanks());
     }
 
-    public Collection<Bank> getBanksCopy(Predicate<? super Bank> filter) {
-		return getBanks().stream().filter(filter).collect(Collectors.toSet());
+    public Set<Bank> getBanksCopy(Predicate<? super Bank> filter) {
+		return Collections.unmodifiableSet(Utils.filter(getBanks(), filter));
 	}
 
 	public boolean isUniqueName(String name) {
@@ -91,10 +91,9 @@ public class BankUtils {
 	}
 
 	public boolean isUniqueNameIgnoring(String name, String without) {
-		List<String> bankNames = getBanks().stream().map(Bank::getName).collect(Collectors.toList());
 		if (without != null)
-			bankNames.remove(without);
-		return bankNames.stream().noneMatch(n -> n.equalsIgnoreCase(name));
+			return getBanksCopy(b -> !b.getName().contentEquals(without) && b.getName().contentEquals(name)).isEmpty();
+		return getBanksCopy(b -> b.getName().contentEquals(name)).isEmpty();
 	}
 
 	public boolean isExclusiveSelection(Selection sel) {
@@ -102,9 +101,10 @@ public class BankUtils {
 	}
 
 	public boolean isExclusiveSelectionIgnoring(Selection sel, Bank bank) {
-		return new HashSet<>(bankSelectionMap.keySet()).stream()
-				.filter(s -> bank != null && !bank.getSelection().equals(s))
-				.noneMatch(sel::overlaps);
+		if (bank != null)
+			return Utils.filter(bankSelectionMap.keySet(),
+					s -> !bank.getSelection().equals(s) && bank.getSelection().overlaps(sel)).isEmpty();
+		return Utils.filter(bankSelectionMap.keySet(), s -> bank.getSelection().overlaps(sel)).isEmpty();
 	}
 
 	public void resizeBank(Bank bank, Selection newSel, Callback<Integer> callback) {
@@ -113,7 +113,15 @@ public class BankUtils {
 		addBank(bank, true, callback);
 	}
 
-	public Selection parseCoordinates(String[] args, Location loc, int offset) throws NumberFormatException {
+	/**
+	 * Parses coordinates for a new bank selection from command arguments
+	 * @param args the arguments to parse
+	 * @param loc the location of the player sending the command
+	 * @param offset how many extra arguments there are before the coordinates start
+	 * @return a {@link CuboidSelection} described by the command arguments
+	 * @throws NumberFormatException if the coordinates could not be parsed
+	 */
+	public CuboidSelection parseCoordinates(String[] args, Location loc, int offset) throws NumberFormatException {
 		if (args.length >= 4 && args.length <= 6) {
 
 			String argX = args[1 + offset];
@@ -172,7 +180,7 @@ public class BankUtils {
 	}
 
     /**
-	 * Add a bank
+	 * Adds a bank
 	 * 
 	 * @param bank          Bank to add
 	 * @param addToDatabase Whether the bank should also be added to the database
@@ -183,9 +191,6 @@ public class BankUtils {
 		plugin.debug("Adding/updating bank... (#" + bank.getID() + ")");
 
 		bankSelectionMap.put(bank.getSelection(), bank);
-
-		if (bankSelectionMap.values().stream().filter(b -> b.equals(bank)).count() > 1)
-			plugin.debug("ERROR! Bank #" + bank.getID() + " entered more than once on bankSelMap");
 
         if (addToDatabase)
 			plugin.getDatabase().addBank(bank, callback);
@@ -422,14 +427,11 @@ public class BankUtils {
     }
 
 	public Bank lookupBank(String identifier) {
-		Bank bank = null;
 		try {
 			int id = Integer.parseInt(identifier);
-			bank = getBanksCopy().stream().filter(b -> b.getID() == id).findFirst().orElse(null);
+			return getBanksCopy().stream().filter(b -> b.getID() == id).findFirst().orElse(null);
 		} catch (NumberFormatException ignored) {}
-		if (bank == null)
-			bank = getBanksCopy().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
-		return bank;
+		return getBanksCopy().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
 	}
 
 	/**

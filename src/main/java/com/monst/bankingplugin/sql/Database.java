@@ -456,7 +456,7 @@ public abstract class Database {
 					} else if (bank.getSelection().getType() == SelectionType.CUBOID) {
 						CuboidSelection sel = (CuboidSelection) bank.getSelection();
 
-						StringBuilder sb = new StringBuilder(32);
+						StringBuilder sb = new StringBuilder(64);
 						Location max = sel.getMaximumPoint();
 						Location min = sel.getMinimumPoint();
 
@@ -642,12 +642,12 @@ public abstract class Database {
 						} catch (NumberFormatException e) {
 							multipliers = Config.multipliers.getDefault();
 						}
-						List<LocalTime> interestPayoutTimes;
+						Set<LocalTime> interestPayoutTimes;
 						try {
 							interestPayoutTimes =
 									Arrays.stream(accConfig[14].substring(1, accConfig[14].length() - 1).split(","))
 									.map(LocalTime::parse)
-									.collect(Collectors.toList());
+									.collect(Collectors.toSet());
 						} catch (DateTimeParseException e) {
 							interestPayoutTimes = Config.interestPayoutTimes.getDefault();
 						}
@@ -670,7 +670,8 @@ public abstract class Database {
 								interestPayoutTimes
 						);
 
-						plugin.debug("Initializing bank" + (name != null ? " \"" + ChatColor.stripColor(name) + "\"" : "") + "... (#" + bankId + ")");
+						plugin.debug("Initializing bank"
+								+ (name != null ? " \"" + ChatColor.stripColor(name) + "\"" : "") + "... (#" + bankId + ")");
 
 						Bank bank = isAdminBank
 									? Bank.recreate(bankId, name, coowners, selection, accountConfig)
@@ -704,7 +705,6 @@ public abstract class Database {
 					plugin.debug("Failed to get banks from database.");
 					plugin.debug(e);
 				}
-
 			}
 		}.runTaskAsynchronously(plugin);
 	}

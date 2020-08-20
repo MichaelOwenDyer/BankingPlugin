@@ -422,7 +422,10 @@ public class Account extends Ownable implements Nameable {
 			info.addExtra("\n    Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
 			info.addExtra("\n    Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier() + ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
 			TextComponent interestRate = new TextComponent("\n    Interest rate: ");
-			interestRate.addExtra(Utils.getInterestRateView(this));
+			double interestR = getBank().getAccountConfig().get(AccountConfig.Field.INTEREST_RATE);
+			interestRate.addExtra(ChatColor.GREEN + "" + BigDecimal.valueOf(interestR * getStatus().getRealMultiplier() * 100)
+					.setScale(1, BigDecimal.ROUND_HALF_EVEN)
+					+ "% " + ChatColor.GRAY + "(" + interestR + " x " + getStatus().getRealMultiplier() + ")");
 			if (getStatus().getDelayUntilNextPayout() != 0)
 				interestRate.addExtra(ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)");
 			info.addExtra(interestRate);

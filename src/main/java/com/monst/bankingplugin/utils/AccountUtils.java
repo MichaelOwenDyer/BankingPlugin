@@ -63,7 +63,7 @@ public class AccountUtils {
      * @see #getAccountsCopy()
      * @return Read-only collection of all accounts
      */
-    public Collection<Account> getAccounts() {
+    public Set<Account> getAccounts() {
 		return new HashSet<>(accountLocationMap.values());
     }
 
@@ -74,12 +74,12 @@ public class AccountUtils {
      * @see #getAccounts()
      * @return Copy of collection of all accounts, may contain duplicates
      */
-    public Collection<Account> getAccountsCopy() {
-		return Collections.unmodifiableCollection(getAccounts());
+    public Set<Account> getAccountsCopy() {
+		return Collections.unmodifiableSet(getAccounts());
     }
 
-    public Collection<Account> getAccountsCopy(Predicate<? super Account> filter) {
-		return Collections.unmodifiableCollection(getAccounts().stream().filter(filter).collect(Collectors.toSet()));
+    public Set<Account> getAccountsCopy(Predicate<? super Account> filter) {
+		return Collections.unmodifiableSet(Utils.filter(getAccounts(), filter));
     }
 
 	/**

@@ -33,9 +33,9 @@ public class AccountListGui extends MultiPageGui<Bank> {
         PaginatedMenuBuilder builder = PaginatedMenuBuilder.builder(pageTemplate)
                 .slots(itemSlots)
                 .previousButton(createSlotItem(Material.ARROW, "Previous Page", Collections.emptyList()))
-                .previousButtonSlot(PREV_SLOT)
+                .previousButtonSlot(PREV_PAGE_SLOT)
                 .nextButton(createSlotItem(Material.ARROW, "Next Page", Collections.emptyList()))
-                .nextButtonSlot(NEXT_SLOT);
+                .nextButtonSlot(NEXT_PAGE_SLOT);
         for (Account account : guiSubject.getAccounts()) {
             ItemStack item = createSlotItem(account.getOwner(), account.getColorizedName(), Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
             ItemStackTemplate template = new StaticItemTemplate(item);
