@@ -2,6 +2,7 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
+import com.monst.bankingplugin.BankingPlugin;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.OfflinePlayer;
@@ -14,6 +15,8 @@ import java.util.Set;
  * This class represents either a {@link Bank} or an {@link Account}.
  */
 public abstract class Ownable implements Nameable {
+
+	protected static final BankingPlugin plugin = BankingPlugin.getInstance();
 
 	protected int id;
 	protected String name;

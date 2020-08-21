@@ -111,7 +111,7 @@ public class AccountGui extends SinglePageGui<Account> {
 		lore.add("Location: " + ChatColor.AQUA + "(" + guiSubject.getCoordinates() + ")");
 		if (canTP)
 			lore.add("Click to teleport to account.");
-		return Utils.wordWrapAll(60, lore.stream());
+		return Utils.wordWrapAll(60, lore);
 	}
 
 	private List<String> getBankInfoLore() {

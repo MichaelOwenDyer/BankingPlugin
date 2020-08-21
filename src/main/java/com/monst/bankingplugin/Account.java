@@ -108,7 +108,6 @@ public class Account extends Ownable {
 		SINGLE, DOUBLE
 	}
 
-	private static final BankingPlugin plugin = BankingPlugin.getInstance();
 	private boolean created;
 
 	private final Bank bank;
@@ -144,10 +143,10 @@ public class Account extends Ownable {
 	public boolean create(boolean showConsoleMessages) {
 
 		if (created) {
-			plugin.debug("Account was already created! (#" + id + ")");
+			plugin.debug("Account was already created! (#" + getID() + ")");
 			return false;
 		}
-		plugin.debug("Creating account (#" + id + ")");
+		plugin.debug("Creating account (#" + getID() + ")");
 
 		try {
 			updateInventory();

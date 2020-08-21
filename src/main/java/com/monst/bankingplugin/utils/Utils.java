@@ -98,6 +98,10 @@ public class Utils {
 		return wordWrapAll(30, lore.stream());
 	}
 
+	public static List<String> wordWrapAll(int lineLength, List<String> lore) {
+		return wordWrapAll(lineLength, lore.stream());
+	}
+
     public static List<String> wordWrapAll(String... args) {
 		return wordWrapAll(30, Arrays.stream(args));
 	}
@@ -105,26 +109,25 @@ public class Utils {
 		return wordWrapAll(lineLength, Arrays.stream(args));
 	}
 
-    public static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
+    private static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
 		return lines.map(s -> ChatPaginator.wordWrap(s, lineLength))
 				.flatMap(Arrays::stream)
 				.map(s -> s.replace("" + ChatColor.WHITE, ""))
 				.collect(Collectors.toList());
 	}
 
-	public static boolean depositPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {
+	public static void depositPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {
 		if (recipient == null)
-			return false;
+			return;
 		if (amount <= 0)
-			return true;
+			return;
 
 		EconomyResponse response = BankingPlugin.getInstance().getEconomy().depositPlayer(recipient, worldName, amount);
 		if (response.transactionSuccess()) {
 			callback.callSyncResult(null);
-			return true;
+			return;
 		}
 		callback.callSyncError(new TransactionFailedException(response.errorMessage));
-		return false;
 	}
 
 	public static boolean withdrawPlayer(OfflinePlayer payer, String worldName, double amount, Callback<Void> callback) {
@@ -143,8 +146,8 @@ public class Utils {
 	}
 
 	public static void notifyPlayers(String message, Collection<OfflinePlayer> players, CommandSender notInclude) {
-		if (notInclude instanceof OfflinePlayer)
-			players.remove(notInclude);
+		if (notInclude instanceof Player)
+			players.remove(((Player) notInclude).getPlayer());
 		notifyPlayers(message, players);
 	}
 
@@ -158,20 +161,30 @@ public class Utils {
 		});
 	}
 
-	public static List<List<Integer>> getStackedList(List<Integer> multipliers) {
-		List<List<Integer>> stackedMultipliers = new ArrayList<>();
-		stackedMultipliers.add(new ArrayList<>());
-		stackedMultipliers.get(0).add(multipliers.get(0));
+	/**
+	 * Creates a list of lists of elements where each sub-list contains only equal elements which appeared
+	 * consecutively in the original list. The order of the original list is preserved such that a flatMap
+	 * operation would create the original list again.
+	 *
+	 * <p>For example, a list [0, 2, 2, 2, 4, 2, 1, 1] would be turned into a list [[0], [2, 2, 2], [4], [2], [1, 1]].
+	 * @param list the list to be converted
+	 * @param <T> the type of the elements of the list
+	 * @return a stacked list
+	 */
+	public static <T> List<List<T>> stackList(List<T> list) {
+		List<List<T>> stackedList = new ArrayList<>();
+		stackedList.add(new ArrayList<>());
+		stackedList.get(0).add(list.get(0));
 		int level = 0;
-		for (int i = 1; i < multipliers.size(); i++) {
-			if (multipliers.get(i).equals(stackedMultipliers.get(level).get(0)))
-				stackedMultipliers.get(level).add(multipliers.get(i));
+		for (int i = 1; i < list.size(); i++) {
+			if (list.get(i).equals(stackedList.get(level).get(0)))
+				stackedList.get(level).add(list.get(i));
 			else {
-				stackedMultipliers.add(new ArrayList<>());
-				stackedMultipliers.get(++level).add(multipliers.get(i));
+				stackedList.add(new ArrayList<>());
+				stackedList.get(++level).add(list.get(i));
 			}
 		}
-		return stackedMultipliers;
+		return stackedList;
 	}
 
 	public static List<String> getMultiplierLore(Bank bank) {
@@ -188,7 +201,7 @@ public class Utils {
 		if (multipliers.isEmpty())
 			return Collections.singletonList(ChatColor.GREEN + "1x");
 
-		List<List<Integer>> stackedMultipliers = Utils.getStackedList(multipliers);
+		List<List<Integer>> stackedMultipliers = stackList(multipliers);
 
 		int stage = -1;
 		if (highlightStage != -1)
@@ -200,7 +213,7 @@ public class Utils {
 					highlightStage -= level.size();
 			}
 
-		List<String> multiplierView = new ArrayList<>();
+		List<String> lore = new ArrayList<>();
 
 		final int listSize = 5;
 		int lower = 0;
@@ -219,7 +232,7 @@ public class Utils {
 			}
 
 			if (lower > 0)
-				multiplierView.add("...");
+				lore.add("...");
 		}
 
 		for (int i = lower; i < upper; i++) {
@@ -246,11 +259,11 @@ public class Utils {
 					number.append(" (" + color + highlightStage + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
 				}
 			}
-			multiplierView.add(number.toString());
+			lore.add(number.toString());
 		}
 		if (upper < stackedMultipliers.size())
-			multiplierView.add("...");
-		return multiplierView;
+			lore.add("...");
+		return lore;
 	}
 
 	/**
@@ -266,7 +279,6 @@ public class Utils {
             else
                 return p.getItemInHand();
         }
-
         if (p.getInventory().getItemInMainHand().getType() == Material.AIR)
             return null;
         else
@@ -281,10 +293,9 @@ public class Utils {
     public static ItemStack getItemInOffHand(Player p) {
         if (getMajorVersion() < 9)
             return null;
-        else if (p.getInventory().getItemInOffHand().getType() == Material.AIR)
+        if (p.getInventory().getItemInOffHand().getType() == Material.AIR)
             return null;
-        else
-            return p.getInventory().getItemInOffHand();
+        return p.getInventory().getItemInOffHand();
     }
 
     /**
@@ -344,9 +355,9 @@ public class Utils {
 	 * Filters the elements of the provided collection and returns them in a {@link Collection} of the specified type
 	 * @param collection the collection of elements to be filtered
 	 * @param filter the filter to apply to each element
-	 * @param collector the collector to collect the mapped elements with
+	 * @param collector the collector to collect the filtered elements with
 	 * @param <T> the type of the elements in the collection
-	 * @param <R> the type of collection the mapped elements should be returned in
+	 * @param <R> the type of collection the filtered elements should be returned in
 	 * @return a {@link Collection} of the filtered elements
 	 */
 	public static <T, R> R filter(Collection<? extends T> collection, Predicate<? super T> filter, Collector<? super T, ?, R> collector) {

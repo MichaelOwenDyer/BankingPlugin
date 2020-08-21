@@ -443,7 +443,10 @@ public class BankUtils {
 	public static double getGiniCoefficient(Bank bank) {
 		if (bank.getAccounts().isEmpty())
 			return 0;
-		List<BigDecimal> orderedValues = bank.getAccountBalancesByOwner().values().stream().sorted(BigDecimal::compareTo)
+		List<BigDecimal> orderedValues = bank.getBalancesByOwner()
+				.values()
+				.stream()
+				.sorted(BigDecimal::compareTo)
 				.collect(Collectors.toList());
 		BigDecimal valueSum = BigDecimal.ZERO;
 		BigDecimal weightedValueSum = BigDecimal.ZERO;

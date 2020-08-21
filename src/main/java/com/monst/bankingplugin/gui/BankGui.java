@@ -14,6 +14,8 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -124,7 +126,7 @@ public class BankGui extends SinglePageGui<Bank> {
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to bank.");
-		return Utils.wordWrapAll(55, lore.stream());
+		return Utils.wordWrapAll(55, lore);
 	}
 
 	private List<String> getStatisticsLore() {
@@ -133,9 +135,9 @@ public class BankGui extends SinglePageGui<Bank> {
 				"Number of unique customers: " + ChatColor.AQUA + guiSubject.getAccountsByOwner().keySet().size(),
 				"Total value: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getTotalValue()),
 				"Average account value: " + ChatColor.GREEN + "$" +
-						Utils.format(!guiSubject.getAccounts().isEmpty()
-								? guiSubject.getTotalValue().doubleValue() / guiSubject.getAccounts().size()
-								: guiSubject.getAccounts().size()),
+						Utils.format(guiSubject.getAccounts().isEmpty()
+								? BigDecimal.ZERO
+								: guiSubject.getTotalValue().divide(BigDecimal.valueOf(guiSubject.getAccounts().size()), RoundingMode.HALF_EVEN)),
 				"Equality score: " + BankUtils.getEqualityLore(guiSubject)
 		);
 	}

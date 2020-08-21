@@ -85,8 +85,6 @@ public class Bank extends Ownable {
 		PLAYER, ADMIN
 	}
 
-	private static final BankingPlugin plugin = BankingPlugin.getInstance();
-
 	private Selection selection;
 	private final AccountConfig accountConfig;
 	private final Set<Account> accounts;
@@ -179,9 +177,15 @@ public class Bank extends Ownable {
 	 * @return a {@link Map<OfflinePlayer>} containing
 	 * all account owners at this bank and their total account balances
 	 */
-	public Map<OfflinePlayer, BigDecimal> getAccountBalancesByOwner() {
-		return getAccountsByOwner().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-				e -> e.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add)));
+	public Map<OfflinePlayer, BigDecimal> getBalancesByOwner() {
+		return getAccountsByOwner().entrySet().stream().collect(
+				Collectors.toMap(
+						Map.Entry::getKey,
+						entry -> entry.getValue().stream()
+								.map(Account::getBalance)
+								.reduce(BigDecimal.ZERO, BigDecimal::add)
+				)
+		);
 	}
 
 	/**
@@ -281,7 +285,7 @@ public class Bank extends Ownable {
 				? Utils.map(getCoowners(), OfflinePlayer::getName).toString() : "[none]"));
 		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + accountConfig.getFormatted(AccountConfig.Field.INTEREST_RATE));
 		info.addExtra("\n    Multipliers: ");
-		info.addExtra(Utils.map(Utils.getStackedList(getAccountConfig().get(AccountConfig.Field.MULTIPLIERS)),
+		info.addExtra(Utils.map(Utils.stackList(getAccountConfig().get(AccountConfig.Field.MULTIPLIERS)),
 				list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString());
 		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + accountConfig.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE));
 		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.getFormatted(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS));
@@ -291,7 +295,7 @@ public class Bank extends Ownable {
 		info.addExtra(" (" + ChatColor.RED + accountConfig.getFormatted(AccountConfig.Field.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
 		info.addExtra("\n    Accounts: " + ChatColor.AQUA + getAccounts().size());
 		info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
-		info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().doubleValue() / getAccounts().size()));
+		info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().divide(BigDecimal.valueOf(getAccounts().size()), BigDecimal.ROUND_HALF_EVEN)));
 		info.addExtra("\n    Equality score: ");
 		info.addExtra(BankUtils.getEqualityLore(this));
 		info.addExtra("\n    Location: " + ChatColor.AQUA + getSelection().getCoordinates());
