@@ -32,7 +32,7 @@ public class GriefPreventionListener implements Listener {
         if (!Config.enableGriefPreventionIntegration)
             return;
 
-        for (Location loc : Utils.getChestLocations(e.getAccount().getInventory(false)))
+        for (Location loc : Utils.getChestLocations(e.getAccount().getInventory(true).getHolder()))
 			if (handleForLocation(e.getPlayer(), loc, e)) {
 				e.setCancelled(true);
 				plugin.debug("Account create event cancelled by GriefPrevention");
@@ -58,7 +58,7 @@ public class GriefPreventionListener implements Listener {
 
 	    Block b = e.getNewAccountLocation().getBlock();
 	    Chest chest = (Chest) b.getBlockData();
-	    for (Location loc : Utils.getChestLocations(chest.getInventory()))
+	    for (Location loc : Utils.getChestLocations(chest.getInventory().getHolder()))
             if (handleForLocation(e.getPlayer(), loc, e)) {
                 e.setCancelled(true);
                 plugin.debug("Account migrate event cancelled by GriefPrevention");

@@ -37,7 +37,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
 		List<BankSubCommand> subCommands =
-				Utils.map(plugin.getAccountCommand().getSubCommands(), BankSubCommand.class::cast);
+				Utils.map(plugin.getBankCommand().getSubCommands(), BankSubCommand.class::cast);
 		
 		BankSubCommand subCommand = null;
 

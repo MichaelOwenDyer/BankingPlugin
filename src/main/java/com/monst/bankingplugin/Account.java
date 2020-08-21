@@ -27,21 +27,6 @@ import java.util.Set;
 
 public class Account extends Ownable {
 
-	public enum AccountSize {
-		SINGLE, DOUBLE
-	}
-
-	private static final BankingPlugin plugin = BankingPlugin.getInstance();
-	private boolean created;
-
-	private final Bank bank;
-	private final Location location;
-	private Inventory inventory;
-	private final AccountStatus status;
-	private BigDecimal balance;
-	private BigDecimal prevBalance;
-	private AccountSize size;
-
 	/**
 	 * Creates a new account.
 	 * @return the new account
@@ -121,6 +106,21 @@ public class Account extends Ownable {
 				prevBalance.setScale(2, RoundingMode.HALF_EVEN)
 		);
 	}
+
+	public enum AccountSize {
+		SINGLE, DOUBLE
+	}
+
+	private static final BankingPlugin plugin = BankingPlugin.getInstance();
+	private boolean created;
+
+	private final Bank bank;
+	private final Location location;
+	private final AccountStatus status;
+	private Inventory inventory;
+	private BigDecimal balance;
+	private BigDecimal prevBalance;
+	private AccountSize size;
 
 	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, Location loc,
 					AccountStatus status, String name, BigDecimal balance, BigDecimal prevBalance) {
@@ -276,28 +276,31 @@ public class Account extends Ownable {
 	 */
 	public void updateInventory() throws ChestNotFoundException {
 		Block b = getLocation().getBlock();
-		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
+		if (getInventory(true) == null)
 			throw new ChestNotFoundException(String.format("No chest found in world '%s' at location: %d; %d; %d",
 					b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
-		Chest chest = (Chest) b.getState();
-		inventory = chest.getInventory();
-		updateSize();
 	}
 
 	/**
 	 * Gets the {@link Inventory} of this account chest.
-	 * @param update Whether to track down and save the inventory in the world again.
 	 * @return the account inventory.
 	 * @see #updateInventory()
 	 */
 	public Inventory getInventory(boolean update) {
-		if (update) try {
-			updateInventory();
-		} catch (ChestNotFoundException e) {
-			plugin.debug(e);
-			return null;
+		if (!update)
+			return inventory;
+		Block b = getLocation().getBlock();
+		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
+			Chest chest = (Chest) b.getState();
+			inventory = chest.getInventory();
+			setSize(inventory.getHolder() instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE);
+			return inventory;
 		}
-		return inventory;
+		return null;
+	}
+
+	public void setSize(AccountSize size) {
+		this.size = size;
 	}
 
 	/**
@@ -305,10 +308,6 @@ public class Account extends Ownable {
 	 */
 	public short getSize() {
 		return (short) (size == AccountSize.DOUBLE ? 2 : 1);
-	}
-
-	public void updateSize() {
-		size = inventory.getHolder() instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE;
 	}
 
 	/**
@@ -321,7 +320,7 @@ public class Account extends Ownable {
 			name = getDefaultName();
 		this.name = name;
 		if (size == AccountSize.DOUBLE) {
-			DoubleChest dc = (DoubleChest) inventory.getHolder();
+			DoubleChest dc = (DoubleChest) getInventory(false).getHolder();
 			if (dc == null)
 				return;
 			Chest left = (Chest) dc.getLeftSide();
@@ -335,7 +334,7 @@ public class Account extends Ownable {
 				right.update();
 			}
 		} else {
-			Chest chest = (Chest) inventory.getHolder();
+			Chest chest = (Chest) getInventory(false).getHolder();
 			if (chest != null) {
 				chest.setCustomName(getColorizedName());
 				chest.update();

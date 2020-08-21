@@ -16,7 +16,6 @@ import org.bukkit.block.data.type.Stairs;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.ChatPaginator;
@@ -309,18 +308,17 @@ public class Utils {
 
 	/**
 	 * Get a set of locations of the inventory
-	 * @param inv The inventory to get the locations of
+	 * @param ih The inventory holder to get the locations of
 	 * @return A set of 1 or 2 locations
 	 */
-    public static Set<Location> getChestLocations(Inventory inv) {
+    public static Set<Location> getChestLocations(InventoryHolder ih) {
 		Set<Location> chestLocations = new HashSet<>();
-		InventoryHolder ih = inv.getHolder();
 		if (ih instanceof DoubleChest) {
 			DoubleChest dc = (DoubleChest) ih;
 			chestLocations.add(((Chest) dc.getLeftSide()).getLocation());
 			chestLocations.add(((Chest) dc.getRightSide()).getLocation());
 		} else
-			chestLocations.add(inv.getLocation());
+			chestLocations.add(ih.getInventory().getLocation());
 		return chestLocations;
 	}
 
@@ -352,6 +350,8 @@ public class Utils {
 	 * @return a {@link Collection} of the filtered elements
 	 */
 	public static <T, R> R filter(Collection<? extends T> collection, Predicate<? super T> filter, Collector<? super T, ?, R> collector) {
+		if (collection == null)
+			collection = Collections.emptySet();
 		return collection.stream().filter(filter).collect(collector);
 	}
 
@@ -374,6 +374,8 @@ public class Utils {
 	 * @return a {@link Collection} of mapped elements
 	 */
 	public static <T, K, R> R map(Collection<? extends T> collection, Function<? super T, ? extends K> mapper, Collector<? super K, ?, R> collector) {
+		if (collection == null)
+			collection = Collections.emptySet();
     	return collection.stream().map(mapper).collect(collector);
 	}
 

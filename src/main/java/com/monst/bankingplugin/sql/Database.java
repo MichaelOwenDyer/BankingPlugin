@@ -213,8 +213,16 @@ public abstract class Database {
 	private boolean update() throws SQLException {
 
 		try (Connection con = dataSource.getConnection()) {
-			boolean needsReordering = false;
 
+			try (PreparedStatement ps = con.prepareStatement(getQueryGetTable())) {
+				ps.setString(1, tableBanks);
+				ResultSet rs = ps.executeQuery();
+				if (!rs.next()) {
+					return false;
+				}
+			}
+
+			boolean needsReordering = false;
 			String checkOrderQuery = "SELECT account_config FROM " + tableBanks;
 			try (Statement s = con.createStatement()) {
 				ResultSet rs = s.executeQuery(checkOrderQuery);
