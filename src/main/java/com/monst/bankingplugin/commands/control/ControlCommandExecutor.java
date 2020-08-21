@@ -27,8 +27,8 @@ public class ControlCommandExecutor implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
 
-		List<ControlSubCommand> subCommands = plugin.getControlCommand().getSubCommands().stream()
-				.map(cmd -> (ControlSubCommand) cmd).collect(Collectors.toList());
+		List<ControlSubCommand> subCommands =
+				Utils.map(plugin.getAccountCommand().getSubCommands(), ControlSubCommand.class::cast);
 
 		ControlSubCommand subCommand = null;
 

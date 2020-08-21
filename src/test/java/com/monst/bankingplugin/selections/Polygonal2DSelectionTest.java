@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Polygonal2DSelectionTest {
 
-    private static Constructor<?> constructor;
+    private static Constructor<Polygonal2DSelection> constructor;
     static {
         try {
             constructor = Polygonal2DSelection.class.getDeclaredConstructor(World.class, List.class, int.class, int.class, Polygon.class);
@@ -35,7 +35,7 @@ public class Polygonal2DSelectionTest {
         }
         Polygon poly = new Polygon(xpoints, ypoints, points.size());
         try {
-            return (Polygonal2DSelection) constructor.newInstance(null, points, 1,1, poly);
+            return constructor.newInstance(null, points, 1,1, poly);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

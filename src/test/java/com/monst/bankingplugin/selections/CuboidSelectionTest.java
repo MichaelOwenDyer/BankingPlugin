@@ -1,12 +1,9 @@
 package com.monst.bankingplugin.selections;
 
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CuboidSelectionTest {
 

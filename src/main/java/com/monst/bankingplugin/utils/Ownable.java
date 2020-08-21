@@ -8,15 +8,15 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
  * This class represents either a {@link Bank} or an {@link Account}.
  */
-public abstract class Ownable {
+public abstract class Ownable implements Nameable {
 
 	protected int id;
+	protected String name;
 	protected OfflinePlayer owner;
 	protected Set<OfflinePlayer> coowners;
 
@@ -66,11 +66,9 @@ public abstract class Ownable {
 	 * @return a {@link Set<OfflinePlayer>} containing all players trusted on this ownable.
 	 */
 	public Set<OfflinePlayer> getTrustedPlayers() {
-		Set<OfflinePlayer> trustedPlayers = new HashSet<>();
-		if (owner != null)
-			trustedPlayers.add(owner);
-		trustedPlayers.addAll(coowners);
-		return trustedPlayers;
+		if (owner == null)
+			return getCoowners();
+		return Collections.unmodifiableSet(Utils.mergeCollections(Collections.singleton(owner), getCoowners()));
 	}
 
 	/**
@@ -146,6 +144,18 @@ public abstract class Ownable {
 	public void setID(int id) {
 		if (this.id == -1)
 			this.id = id;
+	}
+
+	@Override
+	public String getRawName() {
+		return name;
+	}
+
+	@Override
+	public void setToDefaultName() {
+		if (!hasID())
+			return;
+		setName(getDefaultName());
 	}
 
 }

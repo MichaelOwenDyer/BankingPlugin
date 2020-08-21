@@ -350,8 +350,7 @@ public class BankUtils {
 	 * @param callback            Callback that - if succeeded - returns the amount
 	 *                            of accounts that were reloaded (as {@code int})
 	 */
-	public void reload(boolean reloadConfig, final boolean showConsoleMessages,
-					   final Callback<ReloadResult> callback) {
+	public void reload(boolean reloadConfig, boolean showConsoleMessages, Callback<ReloadResult> callback) {
 		plugin.debug("Loading banks and accounts from database...");
 
 		AccountUtils accountUtils = plugin.getAccountUtils();
@@ -444,7 +443,7 @@ public class BankUtils {
 	public static double getGiniCoefficient(Bank bank) {
 		if (bank.getAccounts().isEmpty())
 			return 0;
-		List<BigDecimal> orderedValues = bank.getCustomerBalances().values().stream().sorted(BigDecimal::compareTo)
+		List<BigDecimal> orderedValues = bank.getAccountBalancesByOwner().values().stream().sorted(BigDecimal::compareTo)
 				.collect(Collectors.toList());
 		BigDecimal valueSum = BigDecimal.ZERO;
 		BigDecimal weightedValueSum = BigDecimal.ZERO;

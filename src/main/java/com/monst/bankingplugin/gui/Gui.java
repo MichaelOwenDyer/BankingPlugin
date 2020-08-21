@@ -2,6 +2,7 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Ownable;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -16,7 +17,6 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 abstract class Gui<T extends Ownable> {
 
@@ -91,7 +91,7 @@ abstract class Gui<T extends Ownable> {
 		if (itemMeta == null)
 			return null;
 		itemMeta.setDisplayName("" + ChatColor.GRAY + ChatColor.ITALIC + displayName);
-		itemMeta.setLore(lore.stream().map(s -> ChatColor.GRAY + s).collect(Collectors.toList()));
+		itemMeta.setLore(Utils.map(lore, s -> ChatColor.GRAY + s));
 		item.setItemMeta(itemMeta);
 		return item;
 	}

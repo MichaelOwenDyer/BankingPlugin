@@ -6,12 +6,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 public class InterestEvent extends ControlEvent implements Cancellable {
 
 	private boolean cancelled;
-	private final Collection<Bank> banks;
+	private final Set<Bank> banks;
 
 
 	public InterestEvent(BankingPlugin plugin) {
@@ -22,16 +23,16 @@ public class InterestEvent extends ControlEvent implements Cancellable {
 		this(plugin, sender, plugin.getBankUtils().getBanksCopy());
 	}
 
-	public InterestEvent(BankingPlugin plugin, Collection<Bank> banks) {
+	public InterestEvent(BankingPlugin plugin, Set<Bank> banks) {
 		this(plugin, Bukkit.getConsoleSender(), banks);
 	}
 
-	public InterestEvent(BankingPlugin plugin, CommandSender sender, Collection<Bank> banks) {
+	public InterestEvent(BankingPlugin plugin, CommandSender sender, Set<Bank> banks) {
 		super(plugin, sender);
-		this.banks = banks;
+		this.banks = Collections.unmodifiableSet(banks);
 	}
 
-	public Collection<Bank> getBanks() {
+	public Set<Bank> getBanks() {
 		return banks;
 	}
 

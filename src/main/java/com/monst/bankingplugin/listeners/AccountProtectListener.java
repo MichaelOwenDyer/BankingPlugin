@@ -122,7 +122,7 @@ public class AccountProtectListener implements Listener {
 			final Chest r = (Chest) dc.getRightSide();
 
 			Location newLocation = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
-			final Account newAccount = Account.migrate(account, newLocation);
+			Account newAccount = Account.migrate(account, newLocation);
 
 			accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
 				@Override

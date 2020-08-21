@@ -75,6 +75,7 @@ public class ControlTabCompleter implements TabCompleter {
         return plugin.getBankUtils().getBanksCopy().stream()
                 .map(Bank::getName)
                 .filter(name -> !Arrays.asList(args).contains(name))
+                .sorted()
                 .collect(Collectors.toList());
     }
 }

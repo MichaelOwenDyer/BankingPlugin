@@ -24,7 +24,7 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 
@@ -38,8 +38,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		List<AccountSubCommand> subCommands = plugin.getAccountCommand().getSubCommands().stream()
-				.map(cmd -> (AccountSubCommand) cmd).collect(Collectors.toList());
+		List<AccountSubCommand> subCommands =
+				Utils.map(plugin.getAccountCommand().getSubCommands(), AccountSubCommand.class::cast);
 
 		AccountSubCommand subCommand = null;
 
@@ -304,7 +304,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				}
 				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
 						|| (sender instanceof Player && Utils.samePlayer((Player) sender, owner))) { // account removeall player
-					Collection<Account> accounts = accountUtils.getAccountsCopy(a -> a.isOwner(owner));
+					Set<Account> accounts = accountUtils.getAccountsCopy(a -> a.isOwner(owner));
 					confirmRemoveAll(sender, accounts, args);
 				} else {
 					plugin.debug(sender.getName() + " does not have permission to remove all accounts of another player");
@@ -318,7 +318,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 					if (bank == null)
 						sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[2]));
 					else {
-						Collection<Account> accounts = accountUtils.getAccountsCopy(a ->
+						Set<Account> accounts = accountUtils.getAccountsCopy(a ->
 								a.getBank().equals(bank) && a.isOwner((Player) sender));
 						confirmRemoveAll(sender, accounts, args);
 					}
@@ -335,7 +335,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[2]));
 					return true;
 				}
-				Collection<Account> accounts = accountUtils.getAccountsCopy(a -> a.getBank().equals(bank));
+				Set<Account> accounts = accountUtils.getAccountsCopy(a -> a.getBank().equals(bank));
 				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
 						|| accounts.stream().allMatch(a -> a.isOwner((Player) sender))) {
 					confirmRemoveAll(sender, accounts, args);
@@ -349,7 +349,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		return true;
 	}
 
-	private void confirmRemoveAll(final CommandSender sender, Collection<Account> accounts, String[] args) {
+	private void confirmRemoveAll(final CommandSender sender, Set<Account> accounts, String[] args) {
 
 		if (accounts.isEmpty()) {
 			sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
@@ -368,9 +368,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			plugin.debug("Removeall event cancelled");
 			return;
 		}
-		plugin.debug(sender.getName() + " removed account(s) "
-				+ accounts.stream().map(a -> "#" + a.getID())
-				.collect(Collectors.joining(", ", "[", "]")));
+		plugin.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
 		sender.sendMessage(String.format(Messages.ACCOUNTS_REMOVED,
 				accounts.size(),
 				accounts.size() == 1 ? " was" : "s were"));

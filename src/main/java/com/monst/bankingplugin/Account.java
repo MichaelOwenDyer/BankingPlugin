@@ -24,9 +24,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class Account extends Ownable implements Nameable {
+public class Account extends Ownable {
 
 	public enum AccountSize {
 		SINGLE, DOUBLE
@@ -39,7 +38,6 @@ public class Account extends Ownable implements Nameable {
 	private final Location location;
 	private Inventory inventory;
 	private final AccountStatus status;
-	private String nickname;
 	private BigDecimal balance;
 	private BigDecimal prevBalance;
 	private AccountSize size;
@@ -125,7 +123,7 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, Location loc,
-					AccountStatus status, String nickname, BigDecimal balance, BigDecimal prevBalance) {
+					AccountStatus status, String name, BigDecimal balance, BigDecimal prevBalance) {
 
 		this.id = id;
 		this.owner = owner;
@@ -133,7 +131,7 @@ public class Account extends Ownable implements Nameable {
 		this.bank = bank;
 		this.location = loc;
 		this.status = status;
-		this.nickname = nickname;
+		this.name = name;
 		this.balance = balance;
 		this.prevBalance = prevBalance;
 
@@ -158,7 +156,6 @@ public class Account extends Ownable implements Nameable {
 			updateInventory();
 			checkSpaceAbove();
 		} catch (ChestNotFoundException | NotEnoughSpaceException e) {
-
 			plugin.getAccountUtils().removeAccount(this, Config.removeAccountOnError);
 
 			if (showConsoleMessages)
@@ -180,82 +177,13 @@ public class Account extends Ownable implements Nameable {
 			);
 		else if (diff < 0)
 			plugin.debug(
-					"Value of account #" + id + " was found lower than expected. Expected: $"
+					"Value of account #" + getID() + " was found lower than expected. Expected: $"
 					+ Utils.format(getBalance()) + " but was: $" + Utils.format(checkedBalance)
 			);
 		setBalance(checkedBalance);
 
 		created = true;
 		return true;
-	}
-
-	@Override
-	public String getRawName() {
-		return nickname;
-	}
-
-	/**
-	 * Sets the name of this account and updates the chest inventory screen to reflect the new name.
-	 * @param nickname the new name of this account.
-	 */
-	@Override
-	public void setName(String nickname) {
-		if (nickname == null)
-			nickname = getDefaultName();
-		this.nickname = nickname;
-		if (isDoubleChest()) {
-			DoubleChest dc = (DoubleChest) inventory.getHolder();
-			if (dc == null)
-				return;
-			Chest left = (Chest) dc.getLeftSide();
-			Chest right = (Chest) dc.getRightSide();
-			if (left != null) {
-				left.setCustomName(getColorizedName());
-				left.update();
-			}
-			if (right != null) {
-				right.setCustomName(getColorizedName());
-				right.update();
-			}
-		} else {
-			Chest chest = (Chest) inventory.getHolder();
-			if (chest != null) {
-				chest.setCustomName(getColorizedName());
-				chest.update();
-			}
-		}
-	}
-
-	/**
-	 * Gets the default name of this account.
-	 * @return the default name of this account.
-	 */
-	@Override
-	public String getDefaultName() {
-		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + getID() + ")";
-	}
-
-	@Override
-	public void setToDefaultName() {
-		if (!hasID())
-			return;
-		setName(getDefaultName());
-	}
-
-	/**
-	 * Resets the name in the account chest to the default, e.g. "Chest" or "Large Chest"
-	 */
-	public void clearChestName() {
-		setName("");
-	}
-
-	/**
-	 * Gets the status of this account.
-	 * This includes information about the current multiplier and interest delay, among other things.
-	 * @return the {@link AccountStatus} object associated with this account
-	 */
-	public AccountStatus getStatus() {
-		return status;
 	}
 
 	/**
@@ -295,13 +223,22 @@ public class Account extends Ownable implements Nameable {
 	}
 	
 	/**
-	 * Saves the current balance of this account into the previous balance. Used
-	 * only at interest payout events. Should only be used AFTER refreshing the
-	 * account balance to ensure it is fully up-to-date.
+	 * Saves the current balance of this account into the previous balance.
+	 * Used only at interest payout events.
 	 * @see AccountUtils#appraiseAccountContents(Account)
+	 * @see com.monst.bankingplugin.listeners.InterestEventListener
 	 */
 	public void updatePrevBalance() {
 		prevBalance = balance;
+	}
+
+	/**
+	 * Gets the status of this account.
+	 * This includes information about the current multiplier and interest delay, among other things.
+	 * @return the {@link AccountStatus} object associated with this account
+	 */
+	public AccountStatus getStatus() {
+		return status;
 	}
 
 	/**
@@ -344,7 +281,7 @@ public class Account extends Ownable implements Nameable {
 					b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
 		Chest chest = (Chest) b.getState();
 		inventory = chest.getInventory();
-		size = inventory.getHolder() instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE;
+		updateSize();
 	}
 
 	/**
@@ -364,19 +301,62 @@ public class Account extends Ownable implements Nameable {
 	}
 
 	/**
-	 * @return Whether this account is a double chest or a single chest.
-	 * @see AccountSize
+	 * @return 1 if single chest, 2 if double.
 	 */
-	public boolean isDoubleChest() {
-		return size == AccountSize.DOUBLE;
+	public short getSize() {
+		return (short) (size == AccountSize.DOUBLE ? 2 : 1);
+	}
+
+	public void updateSize() {
+		size = inventory.getHolder() instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE;
 	}
 
 	/**
-	 * @return 1 if single chest, 2 if double.
-	 * @see #isDoubleChest()
+	 * Sets the name of this account and updates the chest inventory screen to reflect the new name.
+	 * @param name the new name of this account.
 	 */
-	public short getSize() {
-		return (short) (isDoubleChest() ? 2 : 1);
+	@Override
+	public void setName(String name) {
+		if (name == null)
+			name = getDefaultName();
+		this.name = name;
+		if (size == AccountSize.DOUBLE) {
+			DoubleChest dc = (DoubleChest) inventory.getHolder();
+			if (dc == null)
+				return;
+			Chest left = (Chest) dc.getLeftSide();
+			Chest right = (Chest) dc.getRightSide();
+			if (left != null) {
+				left.setCustomName(getColorizedName());
+				left.update();
+			}
+			if (right != null) {
+				right.setCustomName(getColorizedName());
+				right.update();
+			}
+		} else {
+			Chest chest = (Chest) inventory.getHolder();
+			if (chest != null) {
+				chest.setCustomName(getColorizedName());
+				chest.update();
+			}
+		}
+	}
+
+	/**
+	 * Gets the default name of this account.
+	 * @return the default name of this account.
+	 */
+	@Override
+	public String getDefaultName() {
+		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + getID() + ")";
+	}
+
+	/**
+	 * Resets the name in the account chest to the default, e.g. "Chest" or "Large Chest"
+	 */
+	public void clearChestName() {
+		setName("");
 	}
 
 	@Override
@@ -417,7 +397,7 @@ public class Account extends Ownable implements Nameable {
 		if (!isOwner)
 			info.addExtra("\n    Owner: " + ChatColor.GOLD + getOwnerDisplayName());
 		if (!getCoowners().isEmpty())
-			info.addExtra("\n    Co-owners: " + getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")));
+			info.addExtra("\n    Co-owners: " + Utils.map(getCoowners(), OfflinePlayer::getName).toString());
 		if (verbose) {
 			info.addExtra("\n    Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
 			info.addExtra("\n    Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier() + ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");

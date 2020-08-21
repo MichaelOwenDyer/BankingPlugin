@@ -40,8 +40,8 @@ public class InterestEventListener implements Listener {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				plugin.debug("Interest payout event occurring now at bank(s) " + e.getBanks().stream()
-						.map(b -> "#" + b.getID()).collect(Collectors.joining(", ")));
+				plugin.debug("Interest payout event occurring now at bank(s) " +
+						Utils.map(e.getBanks(), b -> "#" + b.getID()).toString());
 
 				Map<OfflinePlayer, List<Bank>> playerBankMap = e.getBanks().stream()
 						.filter(Bank::isPlayerBank)
@@ -135,7 +135,7 @@ public class InterestEventListener implements Listener {
 						BigDecimal totalValue = bank.getTotalValue();
 						double multiplier = Config.bankRevenueMultiplier;
 						double gini = BankUtils.getGiniCoefficient(bank);
-						int numberOfAccounts = bank.getCustomerAccounts().size();
+						int numberOfAccounts = bank.getAccountsByOwner().size();
 
 						BigDecimal revenue = totalValue.multiply(BigDecimal.valueOf(multiplier))
 								.multiply(BigDecimal.valueOf(1.0d - gini))

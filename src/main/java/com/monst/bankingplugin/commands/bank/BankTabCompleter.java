@@ -98,7 +98,7 @@ public class BankTabCompleter implements TabCompleter {
                         || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
                         || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)))
                 .map(Bank::getName)
-                .sorted(String::compareTo)
+                .sorted()
                 .collect(Collectors.toList());
         if (args.length == 2)
             return Utils.filter(bankNames, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
@@ -110,7 +110,7 @@ public class BankTabCompleter implements TabCompleter {
             return plugin.getBankUtils().getBanksCopy().stream()
                     .map(Bank::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
-                    .sorted(String::compareTo)
+                    .sorted()
                     .collect(Collectors.toList());
         return Collections.emptyList();
     }
@@ -122,12 +122,12 @@ public class BankTabCompleter implements TabCompleter {
                         || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                         || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
                 .map(Bank::getName)
-                .sorted(String::compareTo)
+                .sorted()
                 .collect(Collectors.toList());
         List<String> fieldNames = AccountConfig.Field.stream()
                 .filter(AccountConfig::isOverrideAllowed)
                 .map(AccountConfig.Field::getName)
-                .sorted(String::compareTo)
+                .sorted()
                 .collect(Collectors.toList());
 
         if (args.length == 2)
@@ -149,7 +149,7 @@ public class BankTabCompleter implements TabCompleter {
                         || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
                         || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
                 .map(Bank::getName)
-                .sorted(String::compareTo)
+                .sorted()
                 .collect(Collectors.toList());
         List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
         if (!p.hasPermission(Permissions.BANK_TRANSFER_OTHER) && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN))
@@ -168,7 +168,7 @@ public class BankTabCompleter implements TabCompleter {
     private List<String> completeBankResize(Player p, String[] args) {
         List<String> bankNames = plugin.getBankUtils().getBanksCopy().stream()
                 .map(Bank::getName)
-                .sorted(String::compareTo)
+                .sorted()
                 .collect(Collectors.toList());
 
         if (args.length == 2)
@@ -194,7 +194,7 @@ public class BankTabCompleter implements TabCompleter {
                         || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                         || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
                 .map(Bank::getName)
-                .sorted(String::compareTo)
+                .sorted()
                 .collect(Collectors.toList());
         if (args.length == 2) {
             if (args[1].isEmpty() && sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation()))
@@ -207,13 +207,14 @@ public class BankTabCompleter implements TabCompleter {
     private List<String> completeBankSelect(Player p, String[] args) {
         if (!p.hasPermission(Permissions.BANK_SELECT))
             return Collections.emptyList();
-        List<String> banks = plugin.getBankUtils().getBanksCopy().stream()
-                .map(Bank::getName)
-                .collect(Collectors.toList());
         if (args.length == 2) {
             if (args[1].isEmpty() && plugin.getBankUtils().isBank(p.getLocation()))
                 return Collections.singletonList(plugin.getBankUtils().getBank(p.getLocation()).getName());
-            return Utils.filter(banks, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
+            return plugin.getBankUtils().getBanksCopy().stream()
+                    .map(Bank::getName)
+                    .sorted()
+                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

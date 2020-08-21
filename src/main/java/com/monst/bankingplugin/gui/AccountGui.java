@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class AccountGui extends SinglePageGui<Account> {
 
@@ -106,9 +105,9 @@ public class AccountGui extends SinglePageGui<Account> {
 		List<String> lore = new ArrayList<>();
 		lore.add("ID: " + guiSubject.getID());
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
-		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty() ? ChatColor.RED + "[none]"
-				: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
-				.collect(Collectors.joining(", ", "[ ", " ]"))));
+		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty()
+				? ChatColor.RED + "[none]"
+				: ChatColor.AQUA + Utils.map(guiSubject.getCoowners(), OfflinePlayer::getName).toString()));
 		lore.add("Location: " + ChatColor.AQUA + "(" + guiSubject.getCoordinates() + ")");
 		if (canTP)
 			lore.add("Click to teleport to account.");
@@ -120,9 +119,9 @@ public class AccountGui extends SinglePageGui<Account> {
 		return Utils.wordWrapAll(55,
 				"Name: \"" + ChatColor.RED + bank.getColorizedName() + ChatColor.GRAY + "\"",
 				"Owner: " + ChatColor.GOLD + bank.getOwnerDisplayName(),
-				"Co-owners: " + (bank.getCoowners().isEmpty() ? org.bukkit.ChatColor.RED + "[none]"
-						: ChatColor.AQUA + bank.getCoowners().stream().map(OfflinePlayer::getName)
-						.collect(Collectors.joining(", ", "[ ", " ]"))),
+				"Co-owners: " + (bank.getCoowners().isEmpty()
+						? org.bukkit.ChatColor.RED + "[none]"
+						: ChatColor.AQUA + Utils.map(bank.getCoowners(), OfflinePlayer::getName).toString()),
 				"Click to view more info."
 		);
 	}

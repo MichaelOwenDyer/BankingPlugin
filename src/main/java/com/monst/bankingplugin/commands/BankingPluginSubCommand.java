@@ -57,8 +57,10 @@ public abstract class BankingPluginSubCommand {
     }
 
     /**
+     * Sends a message to the command sender describing how to use this subcommand
      * @param sender Sender to receive the help message
      * @return The help message for the command.
      */
     public abstract String getHelpMessage(CommandSender sender);
+
 }

@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.commands.bank;
 
-import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.Confirmable;
@@ -37,8 +36,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
-		List<BankSubCommand> subCommands = plugin.getBankCommand().getSubCommands().stream()
-				.map(cmd -> (BankSubCommand) cmd).collect(Collectors.toList());
+		List<BankSubCommand> subCommands =
+				Utils.map(plugin.getAccountCommand().getSubCommands(), BankSubCommand.class::cast);
 		
 		BankSubCommand subCommand = null;
 
@@ -322,8 +321,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		bankUtils.removeBank(bank, true);
 		plugin.debug("Bank #" + bank.getID() + " removed from the database");
 		sender.sendMessage(Messages.BANK_REMOVED);
-		Utils.notifyPlayers(
-				String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()), Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()), sender
+		Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()),
+				Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()), sender
 		);
 	}
 
@@ -376,7 +375,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		int i = 0;
-		for (Bank bank : bankUtils.getBanksCopy())
+		for (Bank bank : banks)
 			sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + ++i + ". "),
 					new TextComponent(bank.getColorizedName() + " "),
 					bank.getInfoButton(sender));
@@ -384,9 +383,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 	private void promptBankLimits(final Player p) {
 		int banksUsed = bankUtils.getNumberOfBanks(p);
-		Object bankLimit = bankUtils.getBankLimit(p) < 0 ? "∞" : bankUtils.getBankLimit(p);
-		plugin.debug(p.getName() + " is viewing their bank limits: " + banksUsed + " / " + bankLimit);
-		p.sendMessage(String.format(Messages.BANK_LIMIT, banksUsed, bankLimit));
+		int bankLimit = bankUtils.getBankLimit(p);
+		String limit = bankLimit < 0 ? "∞" : "" + bankLimit;
+		plugin.debug(p.getName() + " is viewing their bank limits: " + banksUsed + " / " + limit);
+		p.sendMessage(String.format(Messages.BANK_LIMIT, banksUsed, limit));
 	}
 
 	private boolean promptBankRemoveAll(CommandSender sender, String[] args) {
@@ -400,9 +400,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		Collection<Bank> banks = bankUtils.getBanksCopy();
-		Collection<Account> accounts = banks.stream().flatMap(bank -> bank.getAccounts().stream())
-				.collect(Collectors.toSet());
+		Set<Bank> banks = bankUtils.getBanksCopy();
 
 		BankRemoveAllEvent event = new BankRemoveAllEvent(sender, banks);
 		Bukkit.getPluginManager().callEvent(event);
@@ -411,18 +409,17 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
+		int affectedAccounts = banks.stream().map(Bank::getAccounts).mapToInt(Collection::size).sum();
 		if (sender instanceof Player && Config.confirmOnRemoveAll && needsConfirmation((Player) sender, args)) {
 			sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, banks.size(),
-					banks.size() == 1 ? "" : "s", accounts.size(), accounts.size() == 1 ? "" : "s"));
+					banks.size() == 1 ? "" : "s", affectedAccounts, affectedAccounts == 1 ? "" : "s"));
 			sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
 			return true;
 		}
 
 		bankUtils.removeBank(banks, true);
-		plugin.debug("Bank(s) " + banks.stream().map(bank -> "#" + bank.getID())
-				.collect(Collectors.joining(", ", "", ""))
-				+ " removed from the database.");
-		sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s", accounts.size(), accounts.size() == 1 ? "" : "s"));
+		plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
+		sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s", affectedAccounts, affectedAccounts == 1 ? "" : "s"));
 		for (Bank bank : banks)
 			Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getColorizedName()), bank.getTrustedPlayers(), sender);
 

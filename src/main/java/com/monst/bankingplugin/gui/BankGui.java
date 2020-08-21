@@ -117,8 +117,7 @@ public class BankGui extends SinglePageGui<Bank> {
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
 		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty()
 				? org.bukkit.ChatColor.RED + "[none]"
-				: ChatColor.AQUA + guiSubject.getCoowners().stream().map(OfflinePlayer::getName)
-					.collect(Collectors.joining(", ", "[ ", " ]")))
+				: ChatColor.AQUA + Utils.map(guiSubject.getCoowners(), OfflinePlayer::getName).toString())
 		);
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)
@@ -129,7 +128,7 @@ public class BankGui extends SinglePageGui<Bank> {
 	private List<String> getStatisticsLore() {
 		return Arrays.asList(
 				"Number of accounts: " + ChatColor.AQUA + guiSubject.getAccounts().size(),
-				"Number of unique customers: " + ChatColor.AQUA + guiSubject.getCustomerAccounts().keySet().size(),
+				"Number of unique customers: " + ChatColor.AQUA + guiSubject.getAccountsByOwner().keySet().size(),
 				"Total value: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getTotalValue()),
 				"Average account value: " + ChatColor.GREEN + "$" +
 						Utils.format(!guiSubject.getAccounts().isEmpty()

@@ -316,8 +316,10 @@ public abstract class Database {
 					ps.setString(i + 2, account.getRawName());
 					ps.setString(i + 3, account.getOwner().getUniqueId().toString());
 					ps.setString(i + 4, account.getCoowners().isEmpty() ? null
-							: account.getCoowners().stream().map(p -> "" + p.getUniqueId())
-									.collect(Collectors.joining(" | ")));
+							: account.getCoowners().stream()
+									.map(p -> "" + p.getUniqueId())
+									.collect(Collectors.joining(" | "))
+					);
 					ps.setInt(i + 5, account.getSize());
 
 					ps.setString(i + 6, account.getBalance().toString());
@@ -433,10 +435,11 @@ public abstract class Database {
 						ps.setString(i + 3, null);
 					} else {
 						ps.setString(i + 2, bank.getOwner().getUniqueId().toString());
-						ps.setString(i + 3, bank.getCoowners().isEmpty()
-								? null
-								: bank.getCoowners().stream().map(p -> p.getUniqueId().toString())
-									.collect(Collectors.joining(" | ")));
+						ps.setString(i + 3, bank.getCoowners().isEmpty() ? null
+								: bank.getCoowners().stream()
+										.map(p -> "" + p.getUniqueId())
+										.collect(Collectors.joining(" | "))
+						);
 					}
 					ps.setString(i + 4, bank.getSelection().getType().toString());
 					ps.setString(i + 5, bank.getSelection().getWorld().getName());
@@ -474,9 +477,9 @@ public abstract class Database {
 					}
 
 					AccountConfig config = bank.getAccountConfig();
-					ps.setString(i + 9,
-							AccountConfig.Field.stream().map(field -> "" + config.get(field, true))
-									.collect(Collectors.joining(" | "))
+					ps.setString(i + 9, AccountConfig.Field.stream()
+							.map(field -> "" + config.get(field, true))
+							.collect(Collectors.joining(" | "))
 					);
 
 					ps.executeUpdate();

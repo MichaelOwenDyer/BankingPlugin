@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class Bank extends Ownable implements Nameable {
+public class Bank extends Ownable {
 
 	/**
 	 * Banks are either owned and operated by players or by the admins.
@@ -120,6 +120,31 @@ public class Bank extends Ownable implements Nameable {
 	}
 
 	/**
+	 * @return a {@link Collection<Account>} containing all accounts at this bank
+	 */
+	public Set<Account> getAccounts() {
+		return accounts;
+	}
+
+	/**
+	 * Does the same as {@link #getAccounts()} but is safe
+	 * to use for removing all accounts from the bank.
+	 * @return a {@link Collection<Account>} containing a copy of all accounts at this bank
+	 */
+	public Set<Account> getAccountsCopy() {
+		return Collections.unmodifiableSet(getAccounts());
+	}
+
+	/**
+	 * Get a copy of all accounts that fulfill a certain predicate
+	 * @param filter the predicate to be applied to each account at this bank
+	 * @return a {@link Set} containing the filtered accounts
+	 */
+	public Set<Account> getAccountsCopy(Predicate<? super Account> filter) {
+		return Collections.unmodifiableSet(Utils.filter(getAccounts(), filter));
+	}
+
+	/**
 	 * Adds an account to this bank.
 	 * @param account the account to be added
 	 */
@@ -143,35 +168,24 @@ public class Bank extends Ownable implements Nameable {
 	 * @see Account#getBalance()
 	 */
 	public BigDecimal getTotalValue() {
-		return accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
-	}
-
-	/**
-	 * @return a {@link Collection<Account>} containing all accounts at this bank
-	 */
-	public Set<Account> getAccounts() {
-		return accounts;
-	}
-
-	/**
-	 * Does the same as {@link #getAccounts()} but is safe
-	 * to use for removing all accounts from the bank.
-	 * @return a {@link Collection<Account>} containing a copy of all accounts at this bank
-	 */
-	public Set<Account> getAccountsCopy() {
-		return Collections.unmodifiableSet(getAccounts());
-	}
-
-	public Set<Account> getAccountsCopy(Predicate<? super Account> filter) {
-		return Collections.unmodifiableSet(Utils.filter(getAccounts(), filter));
+		return getAccounts().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	/**
 	 * @return a {@link Map<OfflinePlayer>} containing
 	 * all accounts at this bank grouped by owner
 	 */
-	public Map<OfflinePlayer, List<Account>> getCustomerAccounts() {
+	public Map<OfflinePlayer, List<Account>> getAccountsByOwner() {
 		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
+	}
+
+	/**
+	 * @return a {@link Map<OfflinePlayer>} containing
+	 * all account owners at this bank and their total account balances
+	 */
+	public Map<OfflinePlayer, BigDecimal> getAccountBalancesByOwner() {
+		return getAccountsByOwner().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+				e -> e.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add)));
 	}
 
 	/**
@@ -179,44 +193,10 @@ public class Bank extends Ownable implements Nameable {
 	 * and account co-owners at this bank.
 	 */
 	public Set<OfflinePlayer> getCustomers() {
-		return getAccounts().stream().map(Account::getTrustedPlayers)
-				.flatMap(Collection::stream).collect(Collectors.toSet());
-	}
-
-	/**
-	 * @return a {@link Map<OfflinePlayer>} containing
-	 * all account owners at this bank and their total account balances
-	 */
-	public Map<OfflinePlayer, BigDecimal> getCustomerBalances() {
-		return getCustomerAccounts().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-				e -> e.getValue().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add)));
-	}
-
-	@Override
-	public String getRawName() {
-		return name;
-	}
-
-	/**
-	 * Sets the name of this bank and updates the value in the database.
-	 * @param name the new name of this bank
-	 */
-	@Override
-	public void setName(String name) {
-		this.name = name;
-		plugin.getBankUtils().addBank(this, true); // Update bank in database
-	}
-
-	@Override
-	public String getDefaultName() {
-		return ChatColor.RED + (isAdminBank() ? "Admin" : "") + "Bank" + ChatColor.GRAY + "(#" + getID() + ")";
-	}
-
-	@Override
-	public void setToDefaultName() {
-		if (!hasID())
-			return;
-		setName(getDefaultName());
+		return getAccounts().stream()
+				.map(Account::getTrustedPlayers)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toSet());
 	}
 
 	/**
@@ -270,6 +250,21 @@ public class Bank extends Ownable implements Nameable {
 		return getType() == BankType.PLAYER;
 	}
 
+	/**
+	 * Sets the name of this bank and updates the value in the database.
+	 * @param name the new name of this bank
+	 */
+	@Override
+	public void setName(String name) {
+		this.name = name;
+		plugin.getBankUtils().addBank(this, true); // Update bank in database
+	}
+
+	@Override
+	public String getDefaultName() {
+		return ChatColor.RED + (isAdminBank() ? "Admin" : "") + "Bank" + ChatColor.GRAY + "(#" + getID() + ")";
+	}
+
 	@Override
 	public void transferOwnership(OfflinePlayer newOwner) {
 		OfflinePlayer prevOwner = getOwner();
@@ -297,20 +292,21 @@ public class Bank extends Ownable implements Nameable {
 		
 		info.addExtra("\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + id + ")");
 		info.addExtra("\n    Owner: " + getOwnerDisplayName());
-		info.addExtra("\n    Co-owners: " + (!getCoowners().isEmpty() ? getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ", "[", "]")) : "[none]"));
+		info.addExtra("\n    Co-owners: " + (!getCoowners().isEmpty()
+				? Utils.map(getCoowners(), OfflinePlayer::getName).toString() : "[none]"));
 		info.addExtra("\n    Interest rate: " + ChatColor.GREEN + accountConfig.getFormatted(AccountConfig.Field.INTEREST_RATE));
 		info.addExtra("\n    Multipliers: ");
-		info.addExtra(Utils.getStackedList(getAccountConfig().get(AccountConfig.Field.MULTIPLIERS)).stream()
-				.map(list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).collect(Collectors.joining(", ", "[", "]")));
+		info.addExtra(Utils.map(Utils.getStackedList(getAccountConfig().get(AccountConfig.Field.MULTIPLIERS)),
+				list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString());
 		info.addExtra("\n    Account creation price: " + ChatColor.GREEN + accountConfig.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE));
 		info.addExtra("\n    Offline payouts: " + ChatColor.AQUA + accountConfig.getFormatted(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS));
 		info.addExtra(" (" + ChatColor.AQUA + accountConfig.getFormatted(AccountConfig.Field.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");
 		info.addExtra("\n    Initial payout delay: " + ChatColor.AQUA + accountConfig.getFormatted(AccountConfig.Field.INITIAL_INTEREST_DELAY));
 		info.addExtra("\n    Minimum balance: " + ChatColor.GREEN + accountConfig.getFormatted(AccountConfig.Field.MINIMUM_BALANCE));
 		info.addExtra(" (" + ChatColor.RED + accountConfig.getFormatted(AccountConfig.Field.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
-		info.addExtra("\n    Accounts: " + ChatColor.AQUA + accounts.size());
+		info.addExtra("\n    Accounts: " + ChatColor.AQUA + getAccounts().size());
 		info.addExtra("\n    Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
-		info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().doubleValue() / accounts.size()));
+		info.addExtra("\n    Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().doubleValue() / getAccounts().size()));
 		info.addExtra("\n    Equality score: ");
 		info.addExtra(BankUtils.getEqualityLore(this));
 		info.addExtra("\n    Location: " + ChatColor.AQUA + getSelection().getCoordinates());
