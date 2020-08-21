@@ -8,6 +8,7 @@ import com.monst.bankingplugin.events.bank.*;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.gui.BankGui;
+import com.monst.bankingplugin.gui.BankListGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.AccountConfig.Field;
@@ -374,11 +375,14 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return;
 		}
 
-		int i = 0;
-		for (Bank bank : banks)
-			sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + ++i + ". "),
-					new TextComponent(bank.getColorizedName() + " "),
-					bank.getInfoButton(sender));
+		if (sender instanceof Player) {
+			new BankListGui(banks).open(((Player) sender));
+		} else {
+			int i = 0;
+			for (Bank bank : banks)
+				sender.spigot().sendMessage(new TextComponent(ChatColor.AQUA + "" + ++i + ". "),
+						new TextComponent(bank.getColorizedName() + " "));
+		}
 	}
 
 	private void promptBankLimits(final Player p) {

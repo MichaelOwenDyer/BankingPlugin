@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.utils.Ownable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -18,11 +17,11 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-abstract class Gui<T extends Ownable> {
+abstract class Gui<T> {
 
 	static final BankingPlugin plugin = BankingPlugin.getInstance();
-	final T guiSubject;
-	Gui<? extends Ownable> prevGui;
+
+	Gui<?> prevGui;
 	boolean openInBackground = false;
 
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
@@ -36,10 +35,6 @@ abstract class Gui<T extends Ownable> {
 		}
 	}.runTaskLater(plugin, 0);
 
-	Gui(T guiSubject) {
-		this.guiSubject = guiSubject;
-	}
-
 	public void open(Player player) {
 		open(player, true);
 	}
@@ -52,7 +47,7 @@ abstract class Gui<T extends Ownable> {
 
 	abstract GuiType getType();
 
-	public Gui<T> setPrevGui(@Nullable Gui<? extends Ownable> prevGui) {
+	public Gui<T> setPrevGui(@Nullable Gui<?> prevGui) {
 		if (prevGui != null)
 			prevGui.openInBackground = true;
 		this.prevGui = prevGui;
@@ -97,7 +92,7 @@ abstract class Gui<T extends Ownable> {
 	}
 
 	void shortenGuiChain() {
-		shortenGuiChain(this, EnumSet.noneOf(GuiType.class));
+		shortenGuiChain(prevGui, EnumSet.of(getType()));
 	}
 
 	/**
@@ -105,13 +100,12 @@ abstract class Gui<T extends Ownable> {
 	 * finds a Gui of a type it has seen before. This prevents the Gui chain
 	 * from becoming too long and unwieldy.
 	 */
-	private void shortenGuiChain(Gui<? extends Ownable> gui, EnumSet<GuiType> types) {
-		Gui<?> previous = gui.prevGui;
-		if (previous == null)
+	private void shortenGuiChain(Gui<?> gui, EnumSet<GuiType> types) {
+		if (gui == null)
 			return;
-		if (!types.contains(previous.getType())) {
-			types.add(previous.getType());
-			shortenGuiChain(previous, types);
+		if (!types.contains(gui.getType())) {
+			types.add(gui.getType());
+			shortenGuiChain(gui.prevGui, types);
 		} else
 			gui.prevGui = null;
 	}
@@ -125,6 +119,6 @@ abstract class Gui<T extends Ownable> {
 	}
 
 	enum GuiType {
-		ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, BANK
+		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS
 	}
 }

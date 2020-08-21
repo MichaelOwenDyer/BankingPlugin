@@ -653,12 +653,12 @@ public abstract class Database {
 						} catch (NumberFormatException e) {
 							multipliers = Config.multipliers.getDefault();
 						}
-						Set<LocalTime> interestPayoutTimes;
+						List<LocalTime> interestPayoutTimes;
 						try {
 							interestPayoutTimes =
 									Arrays.stream(accConfig[14].substring(1, accConfig[14].length() - 1).split(","))
 									.map(LocalTime::parse)
-									.collect(Collectors.toSet());
+									.collect(Collectors.toList());
 						} catch (DateTimeParseException e) {
 							interestPayoutTimes = Config.interestPayoutTimes.getDefault();
 						}

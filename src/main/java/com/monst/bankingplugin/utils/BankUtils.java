@@ -104,7 +104,7 @@ public class BankUtils {
 		if (bank != null)
 			return Utils.filter(bankSelectionMap.keySet(),
 					s -> !bank.getSelection().equals(s) && bank.getSelection().overlaps(sel)).isEmpty();
-		return Utils.filter(bankSelectionMap.keySet(), s -> bank.getSelection().overlaps(sel)).isEmpty();
+		return Utils.filter(bankSelectionMap.keySet(), s -> s.overlaps(sel)).isEmpty();
 	}
 
 	public void resizeBank(Bank bank, Selection newSel, Callback<Integer> callback) {

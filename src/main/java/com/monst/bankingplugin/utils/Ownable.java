@@ -115,13 +115,6 @@ public abstract class Ownable implements Nameable {
 	public abstract void transferOwnership(OfflinePlayer newOwner);
 
 	/**
-	 * Creates a clickable chat message that will open the GUI screen for this ownable.
-	 * @param sender The {@link CommandSender} who requested the button
-	 * @return a {@link TextComponent} with a clickable chat message
-	 */
-	public abstract TextComponent getInfoButton(CommandSender sender);
-
-	/**
 	 * Compiles a nicely formatted text-wall of information about this ownable.
 	 * @param sender The {@link CommandSender} who requested information
 	 * @return a {@link TextComponent} with lots of useful information

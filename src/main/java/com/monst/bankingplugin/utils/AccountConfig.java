@@ -102,7 +102,7 @@ public class AccountConfig {
 			});
 		});
 
-		/* List */ /* Set */
+		/* List */
 		SETTERS.put(Field.MULTIPLIERS, (instance, value) -> { // Special setter that parses a List<Integer>
 			try {
 				Field.MULTIPLIERS.getLocalVariable().set(instance,
@@ -113,16 +113,18 @@ public class AccountConfig {
 						.collect(Collectors.toList()));
 			} catch (IllegalAccessException ignored) {}
 		});
-		SETTERS.put(Field.INTEREST_PAYOUT_TIMES, (instance, value) -> { // Special setter that parses a Set<LocalTime>
+		SETTERS.put(Field.INTEREST_PAYOUT_TIMES, (instance, value) -> { // Special setter that parses a List<LocalTime>
 			try {
 				Field.INTEREST_PAYOUT_TIMES.getLocalVariable().set(instance,
 						Arrays.stream(Utils.removePunctuation(value, ':').split(" "))
-						.filter(s -> !s.isEmpty())
-						.map(LocalTime::parse)
-						.collect(Collectors.toSet()));
+								.filter(s -> !s.isEmpty())
+								.map(LocalTime::parse)
+								.distinct()
+								.sorted()
+								.collect(Collectors.toList()));
 			} catch (IllegalAccessException ignored) {}
 		});
-		Field.stream(List.class, Set.class).forEach(field -> { // Formatters for fields of type List, Set
+		Field.stream(List.class).forEach(field -> {
 			FORMATTERS.put(field, instance -> {
 				try {
 					return String.valueOf(field.getLocalVariable().get(instance));
@@ -146,7 +148,7 @@ public class AccountConfig {
 	private int withdrawalMultiplierDecrement;
 	private int playerBankAccountLimit;
 	private List<Integer> multipliers;
-	private Set<LocalTime> interestPayoutTimes;
+	private List<LocalTime> interestPayoutTimes;
 
 	/**
 	 * Creates a new AccountConfig with the default values from the {@link Config}.
@@ -193,7 +195,7 @@ public class AccountConfig {
 						 double interestRate, double accountCreationPrice, double minimumBalance, double lowBalanceFee,
 						 int initialInterestDelay, int allowedOfflinePayouts, int allowedOfflinePayoutsBeforeReset,
 						 int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, int playerBankAccountLimit,
-						 List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
+						 List<Integer> multipliers, List<LocalTime> interestPayoutTimes) {
 
 		this.countInterestDelayOffline = countInterestDelayOffline;
 		this.reimburseAccountCreation = reimburseAccountCreation;
@@ -298,7 +300,7 @@ public class AccountConfig {
 		WITHDRAWAL_MULTIPLIER_DECREMENT (Integer.class),
 		PLAYER_BANK_ACCOUNT_LIMIT (Integer.class),
 		MULTIPLIERS (List.class),
-		INTEREST_PAYOUT_TIMES (Set.class);
+		INTEREST_PAYOUT_TIMES (List.class);
 
 		private final String name;
 		private final Class<?> dataType;

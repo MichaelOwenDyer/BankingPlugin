@@ -37,8 +37,7 @@ public class InterestEventScheduler {
         if (!plugin.isEnabled())
             return;
 
-        Set<LocalTime> times = bank.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
-        times.removeIf(Objects::isNull);
+        List<LocalTime> times = bank.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
         BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>());
 
         for (LocalTime time : times) {

@@ -8,10 +8,11 @@ import org.ipvp.canvas.slot.Slot;
 
 abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
 
+    final T guiSubject;
     Menu menu;
 
     SinglePageGui(T guiSubject) {
-        super(guiSubject);
+        this.guiSubject = guiSubject;
     }
 
     @Override

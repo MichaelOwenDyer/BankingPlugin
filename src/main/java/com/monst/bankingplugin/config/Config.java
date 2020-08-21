@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Pair;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -34,7 +35,7 @@ public class Config {
     /**
      * The real-life times for account interest payouts.
      **/
-	public static ConfigPair<Set<LocalTime>> interestPayoutTimes;
+	public static ConfigPair<List<LocalTime>> interestPayoutTimes;
     
     /**
      * The default baseline account interest rate.
@@ -306,6 +307,7 @@ public class Config {
         	if (property.equalsIgnoreCase("interest-payout-times.default"))
         		plugin.getConfig().set(property, Arrays.stream(value.replace("-","").split(" "))
 						.filter(s -> !s.isEmpty())
+						.map(s -> Utils.removePunctuation(s, ':'))
 						.collect(Collectors.toList()));
 			else
 				plugin.getConfig().set(property, value);
@@ -344,9 +346,10 @@ public class Config {
 			}
 
 		if (!added)
-			if (property.equalsIgnoreCase("interest-payout-times"))
-				list.add(Arrays.stream(value.replace("-","").split(" "))
+			if (property.equalsIgnoreCase("interest-payout-times.default"))
+				list.addAll(Arrays.stream(value.replace("-","").split(" "))
 						.filter(s -> !s.isEmpty())
+						.map(s -> Utils.removePunctuation(s, ':'))
 						.collect(Collectors.toList()));
 			else
 				list.add(value);
@@ -379,9 +382,10 @@ public class Config {
 			}
 
 		if (!removed)
-			if (property.equalsIgnoreCase("interest-payout-times"))
-				list.remove(Arrays.stream(value.replace("-","").split(" "))
+			if (property.equalsIgnoreCase("interest-payout-times.default"))
+				list.removeAll(Arrays.stream(value.replace("-","").split(" "))
 						.filter(s -> !s.isEmpty())
+						.map(s -> Utils.removePunctuation(s, ':'))
 						.collect(Collectors.toList()));
 			else
 				list.remove(value);
@@ -411,7 +415,9 @@ public class Config {
 							} catch (DateTimeParseException e) {return false;}
 						})
 						.map(LocalTime::parse)
-						.collect(Collectors.toSet()));
+						.distinct()
+						.sorted()
+						.collect(Collectors.toList()));
 		InterestEventScheduler.scheduleAll();
 
 		interestRate = new ConfigPair<>(config.getBoolean("interest-rate.allow-override"),

@@ -4,9 +4,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.*;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -366,20 +363,6 @@ public class Account extends Ownable {
 		owner = newOwner;
 		if (Config.trustOnTransfer)
 			coowners.add(previousOwner);
-	}
-
-	@Override
-	@SuppressWarnings("deprecation")
-	public TextComponent getInfoButton(CommandSender sender) {
-		TextComponent button = new TextComponent("[Info]");
-		button.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-		ComponentBuilder cb = new ComponentBuilder()
-				.append(ChatColor.GRAY + "Bank: " + getBank().getColorizedName())
-				.append(ChatColor.GRAY + "Owner: " + getOwnerDisplayName())
-				.append(ChatColor.GRAY + "Click for more info.");
-		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, cb.create()));
-		button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/account info " + getID()));
-		return button;
 	}
 
 	@Override

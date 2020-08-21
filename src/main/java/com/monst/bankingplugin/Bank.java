@@ -4,9 +4,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.*;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -17,22 +14,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Bank extends Ownable {
-
-	/**
-	 * Banks are either owned and operated by players or by the admins.
-	 * Admin banks cannot run out of money, whereas a player bank relies on its owner to pay interest to the customers.
-	 */
-	public enum BankType {
-		PLAYER, ADMIN
-	}
-
-	private static final BankingPlugin plugin = BankingPlugin.getInstance();
-
-	private String name;
-	private Selection selection;
-	private final AccountConfig accountConfig;
-	private final Set<Account> accounts;
-	private BankType type;
 
 	/**
 	 * Creates a new admin bank.
@@ -95,6 +76,21 @@ public class Bank extends Ownable {
 				BankType.PLAYER
 		);
 	}
+
+	/**
+	 * Banks are either owned and operated by players or by the admins.
+	 * Admin banks cannot run out of money, whereas a player bank relies on its owner to pay interest to the customers.
+	 */
+	public enum BankType {
+		PLAYER, ADMIN
+	}
+
+	private static final BankingPlugin plugin = BankingPlugin.getInstance();
+
+	private Selection selection;
+	private final AccountConfig accountConfig;
+	private final Set<Account> accounts;
+	private BankType type;
 
 	/**
 	 * @param id the bank ID {@link Ownable}
@@ -272,17 +268,6 @@ public class Bank extends Ownable {
 		setType(newOwner == null ? BankType.ADMIN : BankType.PLAYER);
 		if (Config.trustOnTransfer)
 			coowners.add(prevOwner);
-	}
-
-	@Override
-	@SuppressWarnings("deprecation")
-	public TextComponent getInfoButton(CommandSender sender) {
-		TextComponent button = new TextComponent("[Info]");
-		button.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-		button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-				new ComponentBuilder().append(org.bukkit.ChatColor.GRAY + "Click for bank info.").create()));
-		button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bank info " + getID()));
-		return button;
 	}
 
 	@Override

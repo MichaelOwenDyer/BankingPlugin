@@ -10,6 +10,7 @@ import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
 import com.monst.bankingplugin.events.account.AccountPreRemoveEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 import com.monst.bankingplugin.gui.AccountGui;
+import com.monst.bankingplugin.gui.AccountListGui;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.ClickType.EnumClickType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -260,14 +261,19 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				noAccountsMessage = Messages.NO_PLAYER_ACCOUNTS;
 			}
 		}
-		if (accounts != null && !accounts.isEmpty()) {
+		if (accounts == null || accounts.isEmpty()) {
+			sender.sendMessage(noAccountsMessage);
+			return;
+		}
+
+		if (sender instanceof Player)
+			new AccountListGui(accounts).open(((Player) sender));
+		else {
 			int i = 0;
 			for (Account account : accounts)
-				sender.spigot().sendMessage(new TextComponent(ChatColor.GOLD + "" + ++i + ". "),
-						new TextComponent(account.getColorizedName() + " "),
-						account.getInfoButton(sender));
-		} else
-			sender.sendMessage(noAccountsMessage);
+				sender.spigot().sendMessage(new TextComponent(ChatColor.AQUA + "" + ++i + ". "),
+						new TextComponent(account.getColorizedName() + " "));
+		}
 	}
 
 	private void promptAccountLimits(final Player p) {
