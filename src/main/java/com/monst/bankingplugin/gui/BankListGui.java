@@ -4,8 +4,6 @@ import com.monst.bankingplugin.Bank;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.mask.BinaryMask;
-import org.ipvp.canvas.mask.Mask;
 import org.ipvp.canvas.paginate.PaginatedMenuBuilder;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.slot.SlotSettings;
@@ -23,19 +21,12 @@ public class BankListGui extends MultiPageGui<Collection<Bank>, Bank> {
     }
 
     @Override
-    void initializeMenu() {
-        @SuppressWarnings("rawtypes")
-        Menu.Builder pageTemplate = ChestMenu.builder(3).title("Bank List").redraw(true);
-        Mask itemSlots = BinaryMask.builder(pageTemplate.getDimensions())
-                .pattern("010101010")
-                .pattern("101010101")
-                .pattern("010101010").build();
-        PaginatedMenuBuilder builder = PaginatedMenuBuilder.builder(pageTemplate)
-                .slots(itemSlots)
-                .previousButton(createSlotItem(Material.ARROW, "Previous Page", Collections.emptyList()))
-                .previousButtonSlot(PREV_PAGE_SLOT)
-                .nextButton(createSlotItem(Material.ARROW, "Next Page", Collections.emptyList()))
-                .nextButtonSlot(NEXT_PAGE_SLOT);
+    Menu.Builder<?> getPageTemplate() {
+        return ChestMenu.builder(3).title("Bank List").redraw(true);
+    }
+
+    @Override
+    void addItems(PaginatedMenuBuilder builder) {
         for (Bank bank : guiSubjects) {
             ItemStack item = bank.isPlayerBank()
                     ? createSlotItem(bank.getOwner(), bank.getColorizedName(), Collections.singletonList("Owner: " + bank.getOwnerDisplayName()))
@@ -44,7 +35,6 @@ public class BankListGui extends MultiPageGui<Collection<Bank>, Bank> {
             Slot.ClickHandler clickHandler = (player, info) -> new BankGui(bank).setPrevGui(this).open(player);
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
         }
-        menuPages = builder.build();
     }
 
     @Override

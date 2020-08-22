@@ -9,6 +9,7 @@ import com.monst.bankingplugin.exceptions.TransactionFailedException;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.data.type.Slab;
@@ -71,6 +72,41 @@ public class Utils {
 
 	public static String format(BigDecimal bd) {
 		return String.format("%,.2f", bd);
+	}
+
+	/**
+	 * Finds the next lowest safe location at or directly below a certain {@link Location}.
+	 * If no safe block is found then the original location is returned.
+	 * @param location the location from which to start searching
+	 * @return a {@link Location} at or directly below the given location that is safe to stand on
+	 */
+	public static Location getSafeLocation(Location location) {
+		World world = location.getWorld();
+		if (world == null)
+			return location;
+		int blockX = location.getBlockX();
+		int blockZ = location.getBlockZ();
+		for (int y = location.getBlockY(); y > 0; y--)
+			if (isSafeBlock(world.getBlockAt(blockX, y, blockZ)))
+				return new Location(world, blockX, y, blockZ);
+		return location;
+	}
+
+	/**
+	 * Checks if a {@link Block} is safe to stand on (solid ground with 2 breathable blocks)
+	 *
+	 * @param b Block to check
+	 * @return true if block is safe
+	 */
+	@SuppressWarnings("deprecation")
+	public static boolean isSafeBlock(Block b) {
+		if (!b.getType().isTransparent() && !b.getLocation().add(0, 1, 0).getBlock().getType().isTransparent()) {
+			return false; // not transparent (standing in block)
+		}
+		if (!b.getRelative(BlockFace.UP).getType().isTransparent()) {
+			return false; // not transparent (will suffocate)
+		}
+		return b.getRelative(BlockFace.DOWN).getType().isSolid();
 	}
 
 	public static String removePunctuation(String s, char... exclude) {

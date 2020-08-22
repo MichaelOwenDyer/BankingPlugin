@@ -19,8 +19,6 @@ import java.util.List;
 
 abstract class Gui<T> {
 
-	static final BankingPlugin plugin = BankingPlugin.getInstance();
-
 	Gui<?> prevGui;
 	boolean openInBackground = false;
 
@@ -33,7 +31,7 @@ abstract class Gui<T> {
 				prevGui.open(player, false);
 			}
 		}
-	}.runTaskLater(plugin, 0);
+	}.runTask(BankingPlugin.getInstance());
 
 	public void open(Player player) {
 		open(player, true);

@@ -56,8 +56,9 @@ public class BankGui extends SinglePageGui<Bank> {
 				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
 			case 8:
 				if (canListAccounts)
-					return createSlotItem(Material.CHEST, "Account List", Collections.singletonList(guiSubject
-							.getAccounts().isEmpty() ? "There are no accounts at this bank." : "Click here to view accounts."));
+					return createSlotItem(Material.CHEST, "Account List",
+							Collections.singletonList(guiSubject.getAccounts().isEmpty()
+									? "There are no accounts at this bank." : "Click here to view accounts."));
 				return createSlotItem(Material.CHEST, "Account List", NO_PERMISSION);
 			case 9:
 				return createSlotItem(Material.ENCHANTED_BOOK, "Account Creation", getCreationLore());
@@ -86,7 +87,7 @@ public class BankGui extends SinglePageGui<Bank> {
 			case 0:
 				return canTP ? (player, info) -> {
 					if (info.getClickType().isLeftClick())
-						player.teleport(guiSubject.getSelection().getCenterPoint()
+						player.teleport(Utils.getSafeLocation(guiSubject.getSelection().getCenterPoint())
 								.setDirection(player.getLocation().getDirection()));
 					else
 						player.teleport(guiSubject.getSelection()
@@ -146,7 +147,7 @@ public class BankGui extends SinglePageGui<Bank> {
 		AccountConfig config = guiSubject.getAccountConfig();
 		boolean reimburse = config.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION);
 		return Arrays.asList(
-				"Fee: " + ChatColor.GREEN + config.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE),
+				"Fee per chest: " + ChatColor.GREEN + config.getFormatted(AccountConfig.Field.ACCOUNT_CREATION_PRICE),
 				"Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}

@@ -16,7 +16,7 @@ public class InterestEventScheduler {
 
     private static final Map<LocalTime, Set<Bank>> TIME_BANK_MAP = new HashMap<>();
     private static final Map<Bank, Set<LocalTime>> BANK_TIME_MAP = new HashMap<>();
-    private static final Map<LocalTime, Integer> PAYOUT_TIME_IDS = new HashMap<>();
+    private static final Map<LocalTime, Integer> PAYOUT_TASK_IDS = new HashMap<>();
 
     public static Set<Bank> getScheduledBanks(LocalTime time) {
         return Optional.ofNullable(TIME_BANK_MAP.get(time)).orElse(Collections.emptySet());
@@ -42,7 +42,7 @@ public class InterestEventScheduler {
 
         for (LocalTime time : times) {
             if (TIME_BANK_MAP.putIfAbsent(time, new HashSet<>()) == null)
-                PAYOUT_TIME_IDS.put(time, scheduleRepeatAtTime(time));
+                PAYOUT_TASK_IDS.put(time, scheduleRepeatAtTime(time));
             TIME_BANK_MAP.get(time).add(bank);
             BANK_TIME_MAP.get(bank).add(time);
         }
@@ -52,8 +52,8 @@ public class InterestEventScheduler {
                 BANK_TIME_MAP.get(bank).remove(time);
                 if (TIME_BANK_MAP.get(time).isEmpty()) {
                     TIME_BANK_MAP.remove(time);
-                    Bukkit.getScheduler().cancelTask(PAYOUT_TIME_IDS.get(time));
-                    PAYOUT_TIME_IDS.remove(time);
+                    Bukkit.getScheduler().cancelTask(PAYOUT_TASK_IDS.get(time));
+                    PAYOUT_TASK_IDS.remove(time);
                 }
             }
         }
