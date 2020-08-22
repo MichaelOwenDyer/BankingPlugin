@@ -137,12 +137,14 @@ public class AccountStatus {
 	public int getRealMultiplier() {
 		
 		List<Integer> multipliers = accountConfig.get(AccountConfig.Field.MULTIPLIERS);
+		if (multipliers == null || multipliers.isEmpty())
+			return 1;
 
 		if (multiplierStage < 0)
 			multiplierStage = 0;
 		else if (multiplierStage >= multipliers.size())
 			multiplierStage = multipliers.size() - 1;
-		return multipliers.isEmpty() ? 1 : multipliers.get(multiplierStage);
+		return multipliers.get(multiplierStage);
 	}
 	
 	/**

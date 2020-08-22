@@ -31,6 +31,7 @@ permissions:
             bankingplugin.account.trust: true
             bankingplugin.account.trust.other: true
             bankingplugin.account.remove-other: true
+            bankingplugin.account.removeall: true
             bankingplugin.account.info-other: true
             bankingplugin.account.list-other: true
             bankingplugin.account.view-other: true
@@ -95,7 +96,13 @@ permissions:
     bankingplugin.account.remove-other:
         description: Remove another player's account.
         default: op
-        
+
+    bankingplugin.account.removeall:
+        description: Remove all accounts on the server or all accounts of a certain set of players.
+        default: op
+        children:
+            bankingplugin.account.remove-other: true
+
     bankingplugin.account.info-other:
         description: View detailed information about another player's account as if you were owner or co-owner.
         default: op

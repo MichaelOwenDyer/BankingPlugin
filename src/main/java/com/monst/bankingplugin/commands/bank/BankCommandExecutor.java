@@ -395,8 +395,6 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 	private boolean promptBankRemoveAll(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to remove all banks");
-		if (args.length > 1)
-			return false;
 
 		if (!sender.hasPermission(Permissions.BANK_REMOVEALL)) {
 			plugin.debug(sender.getName() + " does not have permission to remove all banks");
@@ -421,7 +419,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		bankUtils.removeBank(banks, true);
+		bankUtils.removeBanks(banks, true);
 		plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
 		sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s", affectedAccounts, affectedAccounts == 1 ? "" : "s"));
 		for (Bank bank : banks)

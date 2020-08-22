@@ -74,6 +74,13 @@ public class AccountCommand extends BankingPluginCommand {
 			}
 		});
 
+		addSubCommand(new AccountSubCommand("removeall", false, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return Messages.COMMAND_USAGE_ACCOUNT_REMOVEALL;
+			}
+		});
+
 		addSubCommand(new AccountSubCommand("set", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {

@@ -174,7 +174,7 @@ public class AccountUtils {
         removeAccount(account, removeFromDatabase, null);
     }
 
-	public void removeAccount(Collection<Account> accounts, boolean removeFromDatabase) {
+	public void removeAccounts(Collection<Account> accounts, boolean removeFromDatabase) {
 		accounts.forEach(account -> removeAccount(account, removeFromDatabase));
 	}
 

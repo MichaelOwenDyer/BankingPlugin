@@ -58,17 +58,13 @@ public class AccountTabCompleter implements TabCompleter {
     }
 
     private List<String> completeAccountRemoveAll(CommandSender sender, String[] args) {
-        ArrayList<String> returnCompletions = new ArrayList<>();
-        List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
-        onlinePlayers.remove(sender.getName());
-
-        if (args.length == 2) {
-            if ("-a".startsWith(args[1].toLowerCase()) || "all".startsWith(args[1].toLowerCase()))
-                returnCompletions.add("all");
-            returnCompletions.addAll(Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[1].toLowerCase())));
-            return returnCompletions;
-        }
-        return Collections.emptyList();
+        if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL))
+            return Collections.emptyList();
+        List<String> argList = Arrays.asList(args);
+        return Utils.getOnlinePlayerNames(plugin).stream()
+                .filter(name -> !argList.contains(name))
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     private List<String> completeAccountSet(String[] args) {

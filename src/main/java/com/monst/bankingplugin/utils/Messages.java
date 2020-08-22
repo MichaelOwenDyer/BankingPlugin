@@ -38,7 +38,7 @@ public class Messages {
 	public static final String INTEREST_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s " + ChatColor.RED + "in interest on %d account%s!";
 	public static final String LOW_BALANCE_FEE_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in low balance fees on %d account%s.";
 	public static final String LOW_BALANCE_FEE_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s" + ChatColor.RED + " in low balance fees on %d account%s.";
-	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to " + ChatColor.GREEN + "$%d.";
+	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to " + ChatColor.GREEN + "%d.";
 	public static final String ACCOUNT_LIMIT = ChatColor.GOLD + "You own %d/%s allowed accounts.";
 	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%s allowed banks.";
 	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to remove %d account%s.";
@@ -135,6 +135,7 @@ public class Messages {
 	public static final String NO_PERMISSION_ACCOUNT_UNTRUST = NO_PERMISSION + "remove a co-owner from an account.";
 	public static final String NO_PERMISSION_ACCOUNT_UNTRUST_OTHER = NO_PERMISSION + "remove a co-owner from someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_REMOVE_OTHER = NO_PERMISSION + "remove someone else's account.";
+	public static final String NO_PERMISSION_ACCOUNT_REMOVEALL = NO_PERMISSION + "remove all accounts.";
 	public static final String NO_PERMISSION_ACCOUNT_LIST_OTHER = NO_PERMISSION + "view a list of others' accounts.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_VIEW = NO_PERMISSION + "view someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_OTHER_EDIT = NO_PERMISSION + "edit someone else's account contents.";
@@ -182,6 +183,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_ACCOUNT_INFO = ACCOUNT_USAGE_PREFIX + "info";
 	public static final String COMMAND_USAGE_ACCOUNT_LIST = ACCOUNT_USAGE_PREFIX + "list <all>";
 	public static final String COMMAND_USAGE_ACCOUNT_LIMITS = ACCOUNT_USAGE_PREFIX + "limits";
+	public static final String COMMAND_USAGE_ACCOUNT_REMOVEALL = ACCOUNT_USAGE_PREFIX + "removeall";
 	public static final String COMMAND_USAGE_ACCOUNT_SET = ACCOUNT_USAGE_PREFIX + "set [field] [value]";
 	public static final String COMMAND_USAGE_ACCOUNT_TRUST = ACCOUNT_USAGE_PREFIX + "trust [playername]";
 	public static final String COMMAND_USAGE_ACCOUNT_UNTRUST = ACCOUNT_USAGE_PREFIX + "untrust [playername]";

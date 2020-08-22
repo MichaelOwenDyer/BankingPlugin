@@ -8,6 +8,7 @@ public class Permissions {
 	public static final String ACCOUNT_TRUST = "bankingplugin.account.trust";
 	public static final String ACCOUNT_TRUST_OTHER = "bankingplugin.account.trust.other";
 	public static final String ACCOUNT_REMOVE_OTHER = "bankingplugin.account.remove-other";
+	public static final String ACCOUNT_REMOVEALL = "bankingplugin.account.removeall";
 	public static final String ACCOUNT_INFO_OTHER = "bankingplugin.account.info-other";
 	public static final String ACCOUNT_LIST_OTHER = "bankingplugin.account.list-other";
 	public static final String ACCOUNT_VIEW_OTHER = "bankingplugin.account.view-other";

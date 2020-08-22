@@ -239,7 +239,7 @@ public class BankUtils {
 		removeBank(bank, removeFromDatabase, null);
     }
 
-	public void removeBank(Collection<Bank> banks, boolean removeFromDatabase) {
+	public void removeBanks(Collection<Bank> banks, boolean removeFromDatabase) {
 		for (Bank bank : banks) {
 			for (Account account : bank.getAccountsCopy())
 				plugin.getAccountUtils().removeAccount(account, removeFromDatabase);

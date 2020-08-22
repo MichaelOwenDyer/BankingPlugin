@@ -72,9 +72,10 @@ public class ControlTabCompleter implements TabCompleter {
     private List<String> completePayInterest(CommandSender sender, String[] args) {
         if (!sender.hasPermission(Permissions.PAY_INTEREST))
             return Collections.emptyList();
+        List<String> argList = Arrays.asList(args);
         return plugin.getBankUtils().getBanksCopy().stream()
                 .map(Bank::getName)
-                .filter(name -> !Arrays.asList(args).contains(name))
+                .filter(name -> !argList.contains(name))
                 .sorted()
                 .collect(Collectors.toList());
     }

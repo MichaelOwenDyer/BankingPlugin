@@ -68,6 +68,8 @@ public class BankGui extends SinglePageGui<Bank> {
 				return createSlotItem(Material.IRON_BARS, "Balance Restrictions", getBalanceRestrictionLore());
 			case 12:
 				return createSlotItem(Material.LIGHT_BLUE_BED, "Offline Payouts", getOfflinePayoutsLore());
+			case 13:
+				return createSlotItem(Material.GOLD_INGOT, "Interest Rate", getInterestRateLore());
 			case 14:
 				return createSlotItem(Material.COMPASS, "Interest Delay", getInterestDelayLore());
 			case 15:
@@ -194,6 +196,13 @@ public class BankGui extends SinglePageGui<Bank> {
 					+ String.format(" time%s", beforeReset == 1 ? "" : "s")) + " while account holders are offline.");
 		}
 		return Utils.wordWrapAll(lore);
+	}
+
+	private List<String> getInterestRateLore() {
+		double interestRate = guiSubject.getAccountConfig().get(AccountConfig.Field.INTEREST_RATE);
+		return Utils.wordWrapAll(
+			"" + ChatColor.GREEN + ChatColor.BOLD + String.format("%,.1f", interestRate * 100) + "%"
+		);
 	}
 
 	private List<String> getInterestDelayLore() {

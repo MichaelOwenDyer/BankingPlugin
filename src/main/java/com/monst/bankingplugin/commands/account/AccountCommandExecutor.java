@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.Confirmable;
 import com.monst.bankingplugin.config.Config;
@@ -20,12 +19,12 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 
@@ -286,101 +285,63 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 	@SuppressWarnings("deprecation")
 	private boolean promptAccountRemoveAll(final CommandSender sender, String[] args) {
 
+		if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL)) {
+			plugin.debug(sender.getName() + " does not have permission to remove all accounts");
+			sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVEALL);
+			return true;
+		}
+
+		Set<Account> accounts = null;
+		String message = null;
+
 		if (args.length == 1) {
-			if (sender instanceof Player) { // account removeall
-				confirmRemoveAll(sender, accountUtils.getAccountsCopy(), args);
-			} else {
-				plugin.debug("Only players can remove all of their own accounts");
-				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-			}
-		} else if (args.length == 2) {
-			if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) { // account removeall all
-				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
-						|| accountUtils.getAccountsCopy().stream().allMatch(account -> account.isOwner(((Player) sender)))) {
-					confirmRemoveAll(sender, accountUtils.getAccountsCopy(), args);
-				} else {
-					plugin.debug(sender.getName() + " does not have permission to remove all accounts");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
-				}
-			} else {
-				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				if (!owner.hasPlayedBefore()) {
-					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
-					return true;
-				}
-				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
-						|| (sender instanceof Player && Utils.samePlayer((Player) sender, owner))) { // account removeall player
-					Set<Account> accounts = accountUtils.getAccountsCopy(a -> a.isOwner(owner));
-					confirmRemoveAll(sender, accounts, args);
-				} else {
-					plugin.debug(sender.getName() + " does not have permission to remove all accounts of another player");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
+			accounts = accountUtils.getAccountsCopy();
+			message = Messages.NO_ACCOUNTS_FOUND;
+		} else {
+			Map<String, Player> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
+					Collectors.toMap(
+							HumanEntity::getName,
+							e -> e
+					)
+			);
+			Set<OfflinePlayer> owners = new HashSet<>();
+			for (String arg : args) {
+				if (namePlayerMap.containsKey(arg))
+					owners.add(namePlayerMap.get(arg));
+				else {
+					OfflinePlayer player = Bukkit.getOfflinePlayer(arg);
+					if (player.hasPlayedBefore())
+						owners.add(player);
 				}
 			}
-		} else if (args.length == 3) {
-			if (sender instanceof Player) {
-				if (args[1].equalsIgnoreCase("-b") || args[1].equalsIgnoreCase("bank")) { // account removeall bank
-					Bank bank = plugin.getBankUtils().lookupBank(args[2]);
-					if (bank == null)
-						sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[2]));
-					else {
-						Set<Account> accounts = accountUtils.getAccountsCopy(a ->
-								a.getBank().equals(bank) && a.isOwner((Player) sender));
-						confirmRemoveAll(sender, accounts, args);
-					}
-				}
-			} else {
-				plugin.debug("Only players can remove all of their own accounts at a certain bank");
-				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-			}
-		} else if (args.length == 4) {
-			if ((args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all"))
-					&& (args[2].equalsIgnoreCase("-b") || args[2].equalsIgnoreCase("bank"))) {
-				Bank bank = plugin.getBankUtils().lookupBank(args[3]);
-				if (bank == null) {
-					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[2]));
-					return true;
-				}
-				Set<Account> accounts = accountUtils.getAccountsCopy(a -> a.getBank().equals(bank));
-				if (sender.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
-						|| accounts.stream().allMatch(a -> a.isOwner((Player) sender))) {
-					confirmRemoveAll(sender, accounts, args);
-				} else {
-					plugin.debug(sender.getName() + " does not have permission to remove all accounts");
-					sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
-				}
-			}
-		} else
-			return false;
-		return true;
-	}
+			accounts = accountUtils.getAccountsCopy(a -> owners.contains(a.getOwner()));
+		}
 
-	private void confirmRemoveAll(final CommandSender sender, Set<Account> accounts, String[] args) {
-
-		if (accounts.isEmpty()) {
-			sender.sendMessage(Messages.NO_ACCOUNTS_FOUND);
-			return;
+		if (accounts == null || accounts.isEmpty()) {
+			sender.sendMessage(message);
+			return true;
 		}
 
 		if (sender instanceof Player && Config.confirmOnRemoveAll && needsConfirmation((Player) sender, args)) {
 			sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_ACCOUNTS, accounts.size(), accounts.size() == 1 ? "" : "s"));
 			sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
-			return;
+			return true;
 		}
 
 		AccountRemoveAllEvent event = new AccountRemoveAllEvent(sender, accounts);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			plugin.debug("Removeall event cancelled");
-			return;
+			return true;
 		}
 		plugin.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
 		sender.sendMessage(String.format(Messages.ACCOUNTS_REMOVED,
 				accounts.size(),
 				accounts.size() == 1 ? " was" : "s were"));
-		accountUtils.removeAccount(accounts, true);
+		accountUtils.removeAccounts(accounts, true);
+		return true;
 	}
-	
+
 	private boolean promptAccountSet(final Player p, String[] args) {
 		plugin.debug(p.getName() + " wants to configure an account");
 		if (args.length < 2)
