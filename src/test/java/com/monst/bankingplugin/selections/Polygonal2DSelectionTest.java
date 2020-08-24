@@ -3,7 +3,6 @@ package com.monst.bankingplugin.selections;
 import org.bukkit.World;
 import org.junit.jupiter.api.Test;
 
-import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,26 +14,19 @@ public class Polygonal2DSelectionTest {
     private static Constructor<Polygonal2DSelection> constructor;
     static {
         try {
-            constructor = Polygonal2DSelection.class.getDeclaredConstructor(World.class, List.class, int.class, int.class, Polygon.class);
+            constructor = Polygonal2DSelection.class.getDeclaredConstructor(World.class, List.class, int.class, int.class);
             constructor.setAccessible(true);
         } catch (NoSuchMethodException ignored) {}
     }
 
-    private static Polygonal2DSelection newSel(int... args) {
+    static Polygonal2DSelection newSel(int... args) {
         assertEquals(0, args.length % 2);
-        List<Polygonal2DSelection.BlockVector2D> points = new ArrayList<>();
+        List<BlockVector2D> points = new ArrayList<>();
         for (int i = 0; i < args.length; i += 2) {
-            points.add(new Polygonal2DSelection.BlockVector2D(args[i], args[i + 1]));
+            points.add(new BlockVector2D(args[i], args[i + 1]));
         }
-        int[] xpoints = new int[points.size()];
-        int[] ypoints = new int[points.size()];
-        for (int i = 0; i < points.size(); i++) {
-            xpoints[i] = points.get(i).getBlockX();
-            ypoints[i] = points.get(i).getBlockZ();
-        }
-        Polygon poly = new Polygon(xpoints, ypoints, points.size());
         try {
-            return constructor.newInstance(null, points, 1,1, poly);
+            return constructor.newInstance(null, points, 5, 5);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

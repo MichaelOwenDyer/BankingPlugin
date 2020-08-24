@@ -1,18 +1,19 @@
 package com.monst.bankingplugin.selections;
 
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import java.awt.*;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class CuboidSelection implements Selection {
 
 	private final World world;
 	private final Location min;
 	private final Location max;
-	private final Rectangle rect;
 
 	public static CuboidSelection of(World world, Location loc1, Location loc2) {
 		int minX, minY, minZ, maxX, maxY, maxZ;
@@ -39,15 +40,13 @@ public class CuboidSelection implements Selection {
 		}
 		Location min = new Location(world, minX, minY, minZ);
 		Location max = new Location(world, maxX, maxY, maxZ);
-		Rectangle rectangle = new Rectangle(minX, minZ, (maxX - minX), (maxZ - minZ));
-		return new CuboidSelection(world, min, max, rectangle);
+		return new CuboidSelection(world, min, max);
 	}
 
-	private CuboidSelection(World world, Location min, Location max, Rectangle rectangle) {
+	private CuboidSelection(World world, Location min, Location max) {
 		this.world = world;
 		this.min = min;
 		this.max = max;
-		this.rect = rectangle;
 	}
 
 	@Override
@@ -62,8 +61,20 @@ public class CuboidSelection implements Selection {
 
 	@Override
 	public Location getCenterPoint() {
+		int centerX = (max.getBlockX() + min.getBlockX()) / 2;
 		int centerY = (max.getBlockY() + min.getBlockY()) / 2;
-		return new Location(getWorld(), (int) rect.getCenterX(), centerY, (int) rect.getCenterY());
+		int centerZ = (max.getBlockZ() + min.getBlockZ()) / 2;
+		return new Location(getWorld(), centerX, centerY, centerZ);
+	}
+
+	@Override
+	public int getMinY() {
+		return min.getBlockY();
+	}
+
+	@Override
+	public int getMaxY() {
+		return max.getBlockY();
 	}
 
 	@Override
@@ -81,14 +92,26 @@ public class CuboidSelection implements Selection {
 
 	@Override
 	public long getVolume() {
-		   return (max.getBlockX() - min.getBlockX())
-				* (max.getBlockZ() - min.getBlockZ())
-				* (max.getBlockY() - min.getBlockY());
+		return (max.getBlockX() - min.getBlockX() + 1)
+			 * (max.getBlockZ() - min.getBlockZ() + 1)
+			 * (max.getBlockY() - min.getBlockY() + 1);
 	}
 
 	@Override
-	public Shape getShape() {
-		return rect;
+	public boolean overlaps(Selection sel) {
+		if (getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY())
+			return false;
+		Set<BlockVector2D> blocks = getBlocks();
+		return Utils.filter(sel.getBlocks(), blocks::contains, Collectors.toSet()).isEmpty();
+	}
+
+	@Override
+	public Set<BlockVector2D> getBlocks() {
+		Set<BlockVector2D> blocks = new HashSet<>();
+		for (int x = min.getBlockX(); x <= max.getBlockX(); x++)
+			for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++)
+				blocks.add(new BlockVector2D(x, z));
+		return blocks;
 	}
 
 	@Override
@@ -107,13 +130,18 @@ public class CuboidSelection implements Selection {
 
 	@Override
 	public boolean contains(Location pt) {
-		int x = pt.getBlockX();
+		if (pt.getWorld() != null && !pt.getWorld().equals(getWorld()))
+			return false;
 		int y = pt.getBlockY();
-		int z = pt.getBlockZ();
-		boolean inX = (x <= max.getBlockX() && x >= min.getBlockX());
-		boolean inY = (y <= max.getBlockY() && y >= min.getBlockY());
-		boolean inZ = (z <= max.getBlockZ() && z >= min.getBlockZ());
-		return inX && inY && inZ;
+		return (y <= max.getBlockY() && y >= min.getBlockY()) &&
+				contains(new BlockVector2D(pt.getBlockX(), pt.getBlockZ()));
+	}
+
+	@Override
+	public boolean contains(BlockVector2D bv) {
+		int x = bv.getBlockX();
+		int z = bv.getBlockZ();
+		return (x <= max.getBlockX() && x >= min.getBlockX()) && (z <= max.getBlockZ() && z >= min.getBlockZ());
 	}
 
 	@Override

@@ -13,7 +13,7 @@ import com.monst.bankingplugin.gui.BankListGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.*;
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -329,7 +329,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		banks = bankUtils.getBanksCopy().stream().sorted(Comparator.comparing(Bank::getTotalValue)).collect(Collectors.toList());
 
 		if (banks.isEmpty()) {
-			sender.sendMessage(Messages.NO_BANKS_FOUND);
+			sender.sendMessage(Messages.NO_BANKS_TO_LIST);
 			return;
 		}
 

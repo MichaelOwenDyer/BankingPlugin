@@ -79,10 +79,11 @@ public class Messages {
 	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or specify the name of a bank.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account at this bank.";
 	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found with the name or ID \"%s\".";
-	public static final String NO_ACCOUNTS_FOUND = ChatColor.RED + "There are no accounts to list.";
+	public static final String NO_ACCOUNTS_TO_LIST = ChatColor.RED + "There are no accounts to list.";
+	public static final String NO_ACCOUNTS_TO_REMOVE = ChatColor.RED + "Found no accounts to remove.";
 	public static final String NO_PLAYER_ACCOUNTS = ChatColor.RED + "That player does not have any accounts.";
 	public static final String NO_BANK_ACCOUNTS = ChatColor.RED + "There are no accounts at that bank.";
-	public static final String NO_BANKS_FOUND = ChatColor.RED + "There are no banks to list.";
+	public static final String NO_BANKS_TO_LIST = ChatColor.RED + "There are no banks to list.";
 	public static final String NO_SELECTION_FOUND = ChatColor.RED + "Select a WorldEdit region first.";
 	public static final String COORDINATES_PARSE_ERROR = ChatColor.RED + "Invalid coordinates.";
 	public static final String WORLD_DISABLED = ChatColor.RED + "BankingPlugin has been disabled in this world.";

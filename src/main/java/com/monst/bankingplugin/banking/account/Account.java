@@ -10,7 +10,6 @@ import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Nameable;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -323,8 +322,11 @@ public class Account extends Ownable {
 		if (name == null)
 			name = getDefaultName();
 		this.name = name;
+		Inventory inv = getInventory(true);
+		if (inv == null)
+			return;
 		if (size == AccountSize.DOUBLE) {
-			DoubleChest dc = (DoubleChest) getInventory(false).getHolder();
+			DoubleChest dc = (DoubleChest) inv.getHolder();
 			if (dc == null)
 				return;
 			Chest left = (Chest) dc.getLeftSide();
@@ -338,7 +340,7 @@ public class Account extends Ownable {
 				right.update();
 			}
 		} else {
-			Chest chest = (Chest) getInventory(false).getHolder();
+			Chest chest = (Chest) inv.getHolder();
 			if (chest != null) {
 				chest.setCustomName(getColorizedName());
 				chest.update();
@@ -412,14 +414,14 @@ public class Account extends Ownable {
 			info.append(ChatColor.GRAY + "Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
 			info.append(ChatColor.GRAY + "Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier()
 					+ ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
-			TextComponent interestRate = new TextComponent(ChatColor.GRAY + "Interest rate: ");
+			StringBuilder interestRate = new StringBuilder(ChatColor.GRAY + "Interest rate: ");
 			double interestR = getBank().getConfig().get(BankField.INTEREST_RATE);
-			interestRate.addExtra(ChatColor.GREEN + "" + BigDecimal.valueOf(interestR * getStatus().getRealMultiplier() * 100)
+			interestRate.append(ChatColor.GREEN + "" + BigDecimal.valueOf(interestR * getStatus().getRealMultiplier() * 100)
 					.setScale(1, BigDecimal.ROUND_HALF_EVEN)
 					+ "% " + ChatColor.GRAY + "(" + interestR + " x " + getStatus().getRealMultiplier() + ")");
 			if (getStatus().getDelayUntilNextPayout() != 0)
-				interestRate.addExtra(ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)");
-			info.append(interestRate);
+				interestRate.append(ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)");
+			info.append(interestRate.toString());
 		}
 		info.append(ChatColor.GRAY + "Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")");
 

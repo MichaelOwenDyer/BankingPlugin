@@ -231,7 +231,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			}
 			plugin.debug(sender.getName() + " has listed their own accounts");
 			accounts = accountUtils.getAccountsCopy(a -> a.isOwner((Player) sender));
-			noAccountsMessage = Messages.NO_ACCOUNTS_FOUND;
+			noAccountsMessage = Messages.NO_ACCOUNTS_TO_LIST;
 		} else if (args.length == 2) {
 			if (args[1].equalsIgnoreCase("-a") || args[1].equalsIgnoreCase("all")) {
 				if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
@@ -241,7 +241,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				}
 				plugin.debug(sender.getName() + " has listed all accounts");
 				accounts = accountUtils.getAccountsCopy();
-				noAccountsMessage = Messages.NO_ACCOUNTS_FOUND;
+				noAccountsMessage = Messages.NO_ACCOUNTS_TO_LIST;
 			} else {
 				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
 				if (!owner.hasPlayedBefore()) {
@@ -290,11 +290,9 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		Set<Account> accounts = null;
-		String message = null;
 
 		if (args.length == 1) {
 			accounts = accountUtils.getAccountsCopy();
-			message = Messages.NO_ACCOUNTS_FOUND;
 		} else {
 			Map<String, Player> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
 					Collectors.toMap(
@@ -316,7 +314,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		}
 
 		if (accounts == null || accounts.isEmpty()) {
-			sender.sendMessage(message);
+			sender.sendMessage(Messages.NO_ACCOUNTS_TO_REMOVE);
 			return true;
 		}
 

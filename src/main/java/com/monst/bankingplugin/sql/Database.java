@@ -10,6 +10,7 @@ import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.listeners.AccountBalanceListener.TransactionType;
+import com.monst.bankingplugin.selections.BlockVector2D;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
@@ -613,13 +614,13 @@ public abstract class Database {
 							int minY = rs.getInt("minY");
 							int maxY = rs.getInt("maxY");
 							
-							List<Polygonal2DSelection.BlockVector2D> nativePoints = new ArrayList<>();
+							List<BlockVector2D> nativePoints = new ArrayList<>();
 							
 							for (String point : pointArray) {
 								String[] coords = point.split(",");
 								int x = Integer.parseInt(coords[0]);
 								int z = Integer.parseInt(coords[1]);
-								nativePoints.add(new Polygonal2DSelection.BlockVector2D(x, z));
+								nativePoints.add(new BlockVector2D(x, z));
 							}
 							
 							selection = Polygonal2DSelection.of(world, nativePoints, minY, maxY);

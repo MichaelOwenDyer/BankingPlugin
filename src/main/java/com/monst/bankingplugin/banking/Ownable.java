@@ -5,8 +5,7 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.utils.Nameable;
 import com.monst.bankingplugin.utils.Utils;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
@@ -122,7 +121,7 @@ public abstract class Ownable implements Nameable {
 	/**
 	 * Compiles a nicely formatted text-wall of information about this ownable.
 	 * @param sender The {@link CommandSender} who requested information
-	 * @return a {@link TextComponent} with lots of useful information
+	 * @return a {@link String} with lots of useful information
 	 */
 	public abstract String getInformation(CommandSender sender);
 

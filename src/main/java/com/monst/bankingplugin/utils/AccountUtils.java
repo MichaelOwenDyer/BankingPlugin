@@ -10,6 +10,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
@@ -98,7 +99,13 @@ public class AccountUtils {
      * @param callback Callback that - if succeeded - returns the ID the account had or was given (as {@code int})
      */
     public void addAccount(Account account, boolean addToDatabase, Callback<Integer> callback) {
-        InventoryHolder ih = account.getInventory(true).getHolder();
+    	Inventory inv = account.getInventory(true);
+    	if (inv == null) {
+    		plugin.debug("Could not add account! Inventory null (#" + account.getID() + ")");
+			return;
+		}
+
+		InventoryHolder ih = inv.getHolder();
         plugin.debug("Adding account... (#" + account.getID() + ")");
 
         if (ih instanceof DoubleChest) {
@@ -145,18 +152,21 @@ public class AccountUtils {
 		account.clearChestName();
 		account.getBank().removeAccount(account);
 
-		InventoryHolder ih = account.getInventory(true).getHolder();
+		Inventory inv = account.getInventory(true);
+		if (inv != null) {
+			InventoryHolder ih = inv.getHolder();
+			if (ih instanceof DoubleChest) {
+				DoubleChest dc = (DoubleChest) ih;
+				Chest r = (Chest) dc.getRightSide();
+				Chest l = (Chest) dc.getLeftSide();
 
-        if (ih instanceof DoubleChest) {
-            DoubleChest dc = (DoubleChest) ih;
-			Chest r = (Chest) dc.getRightSide();
-			Chest l = (Chest) dc.getLeftSide();
-
-			accountLocationMap.remove(Utils.blockifyLocation(r.getLocation()));
-			accountLocationMap.remove(Utils.blockifyLocation(l.getLocation()));
-        } else {
-			accountLocationMap.remove(Utils.blockifyLocation(account.getLocation()));
-        }
+				accountLocationMap.remove(Utils.blockifyLocation(r.getLocation()));
+				accountLocationMap.remove(Utils.blockifyLocation(l.getLocation()));
+			} else {
+				accountLocationMap.remove(Utils.blockifyLocation(account.getLocation()));
+			}
+		} else
+			plugin.debug("Could not remove account. Inventory null (#" + account.getID() + ")");
 
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);

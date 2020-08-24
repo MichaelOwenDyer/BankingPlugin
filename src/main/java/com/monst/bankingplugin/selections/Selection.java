@@ -3,9 +3,8 @@ package com.monst.bankingplugin.selections;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import java.awt.*;
-import java.awt.geom.Area;
 import java.util.Collection;
+import java.util.Set;
 
 public interface Selection {
 
@@ -14,25 +13,39 @@ public interface Selection {
 	}
 
 	/**
-	 * Get the lower point of a selection.
+	 * Gets the lower point of this selection.
 	 * 
 	 * @return The minimum point
 	 */
     Location getMinimumPoint();
 
 	/**
-	 * Get the upper point of a selection.
+	 * Gets the upper point of this selection.
 	 * 
 	 * @return The maximum point
 	 */
     Location getMaximumPoint();
 
 	/**
-	 * Get the center point of a selection.
+	 * Gets the center point of this selection.
 	 *
 	 * @return the center point
 	 */
 	Location getCenterPoint();
+
+	/**
+	 * Gets the lowest y-coordinate encompassed by this selection.
+	 *
+	 * @return the minimum y
+	 */
+	int getMinY();
+
+	/**
+	 * Gets the highest y-coordinate encompassed by this selection.
+	 *
+	 * @return the maximum y
+	 */
+	int getMaxY();
 
 	/**
 	 * Get the world.
@@ -42,36 +55,34 @@ public interface Selection {
     World getWorld();
 
 	/**
-	 * Get a coordinate string that defines the location of the selection.
+	 * Gets a coordinate string that defines the location of this selection.
 	 * 
 	 * @return A coordinate string.
 	 */
     String getCoordinates();
 
 	/**
-	 * Get the number of blocks in the selection.
+	 * Gets the number of blocks in this selection.
 	 * 
 	 * @return number of blocks
 	 */
     long getVolume();
 	
 	/**
-	 * Get whether or not this selection overlaps with another one.
+	 * Checks whether or not this selection overlaps with another one.
 	 * @param sel The other selection
 	 * @return Yes or no
 	 */
-	default boolean overlaps(Selection sel) {
-		Area area = new Area(getShape());
-		area.intersect(new Area(sel.getShape()));
-		return !area.isEmpty();
-	}
-	
-	/**
-	 * Get the shape associated with this selection.
-	 * @return the shape.
-	 */
-    Shape getShape();
+	boolean overlaps(Selection sel);
 
+	/**
+	 * Gets a {@link Set} with a {@link BlockVector2D} for every block in this selection,
+	 * disregarding the y-coordinate.
+	 *
+	 * @return a set with every {@link BlockVector2D} in this selection
+	 */
+	Set<BlockVector2D> getBlocks();
+	
 	/**
 	 * Get all vertices of the selection.
 	 * 
@@ -86,6 +97,8 @@ public interface Selection {
 	 * @return Whether or not the point is contained
 	 */
     boolean contains(Location pt);
+
+    boolean contains(BlockVector2D bv);
 
 	/**
 	 * Returns the type of selection.
