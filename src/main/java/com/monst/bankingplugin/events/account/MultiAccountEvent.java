@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.account;
 
-import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.banking.account.Account;
 import org.bukkit.command.CommandSender;
 
 import java.util.Collection;

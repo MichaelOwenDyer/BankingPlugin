@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.account;
 
-import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.banking.account.Account;
 import org.bukkit.entity.Player;
 
 public abstract class SingleAccountEvent extends AccountEvent {

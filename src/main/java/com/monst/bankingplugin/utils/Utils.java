@@ -1,9 +1,10 @@
 package com.monst.bankingplugin.utils;
 
 import com.earth2me.essentials.Essentials;
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.TransactionFailedException;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -88,7 +89,7 @@ public class Utils {
 		int blockZ = location.getBlockZ();
 		for (int y = location.getBlockY(); y > 0; y--)
 			if (isSafeBlock(world.getBlockAt(blockX, y, blockZ)))
-				return new Location(world, blockX, y, blockZ);
+				return new Location(world, blockX + 0.5d, y, blockZ + 0.5d);
 		return location;
 	}
 
@@ -232,7 +233,7 @@ public class Utils {
 	}
 
 	private static List<String> getMultiplierLore(Bank bank, int highlightStage) {
-		List<Integer> multipliers = bank.getAccountConfig().get(AccountConfig.Field.MULTIPLIERS);
+		List<Integer> multipliers = bank.getConfig().get(BankField.MULTIPLIERS);
 
 		if (multipliers.isEmpty())
 			return Collections.singletonList(ChatColor.GREEN + "1x");

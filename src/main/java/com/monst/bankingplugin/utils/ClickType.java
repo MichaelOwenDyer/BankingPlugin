@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.utils;
 
-import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;

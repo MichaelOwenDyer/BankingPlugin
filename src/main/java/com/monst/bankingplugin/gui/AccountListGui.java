@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.banking.account.Account;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.paginate.PaginatedMenuBuilder;

@@ -1,8 +1,10 @@
 package com.monst.bankingplugin.listeners;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankConfig;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.*;
 import com.monst.bankingplugin.gui.AccountGui;
@@ -231,7 +233,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 		if (!forSelf) {
-			int playerAccountLimit = bank.getAccountConfig().get(AccountConfig.Field.PLAYER_BANK_ACCOUNT_LIMIT);
+			int playerAccountLimit = bank.getConfig().get(BankField.PLAYER_BANK_ACCOUNT_LIMIT);
 			if (playerAccountLimit > 0 && bank.getAccountsCopy(account -> account.isOwner(executor)).size() >= playerAccountLimit) {
 				executor.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
 				plugin.debug(executor.getName() + " is not permitted to create another account at bank " + bank.getName());
@@ -249,7 +251,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		double creationPrice = bank.getAccountConfig().get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
+		double creationPrice = bank.getConfig().get(BankField.ACCOUNT_CREATION_PRICE);
 		creationPrice *= ((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1;
 
 		if (creationPrice > 0 && creationPrice > plugin.getEconomy().getBalance(executor)
@@ -295,12 +297,7 @@ public class AccountInteractListener implements Listener {
 
 		if (account.create(true)) {
 			plugin.debug("Account created");
-			accountUtils.addAccount(account, true, new Callback<Integer>(plugin) {
-				@Override
-				public void onResult(Integer result) {
-					account.setToDefaultName();
-				}
-			});
+			accountUtils.addAccount(account, true);
 			executor.sendMessage(Messages.ACCOUNT_CREATED);
 		}
 	}
@@ -362,10 +359,10 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 		
-		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = accountConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
+		BankConfig bankConfig = account.getBank().getConfig();
+		double creationPrice = bankConfig.get(BankField.ACCOUNT_CREATION_PRICE);
 		creationPrice *= account.getSize();
-		creationPrice *= accountConfig.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
+		creationPrice *= bankConfig.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
 
 		if (creationPrice > 0 && account.isOwner(executor) && !account.getBank().isOwner(executor)) {
 
@@ -596,13 +593,13 @@ public class AccountInteractListener implements Listener {
 		Bank oldBank = toMigrate.getBank();
 		Bank newBank = newAccount.getBank(); // May or may not be the same as oldBank
 
-		double creationPrice = newBank.getAccountConfig().get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
+		double creationPrice = newBank.getConfig().get(BankField.ACCOUNT_CREATION_PRICE);
 		creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1);
 		creationPrice *= (newBank.isOwner(p) ? 0 : 1);
 
-		AccountConfig oldConfig = oldBank.getAccountConfig();
-		double reimbursement = oldConfig.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION)
-				? oldConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE) : 0.0d;
+		BankConfig oldConfig = oldBank.getConfig();
+		double reimbursement = oldConfig.get(BankField.REIMBURSE_ACCOUNT_CREATION)
+				? oldConfig.get(BankField.ACCOUNT_CREATION_PRICE) : 0.0d;
 		reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
 		reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
 
@@ -695,14 +692,19 @@ public class AccountInteractListener implements Listener {
 
 		if (newAccount.create(true)) {
 			plugin.debug("Account migrated (#" + newAccount.getID() + ")");
-			accountUtils.removeAccount(toMigrate, false); // Database entry is preserved
-			accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) { // Database entry is overwritten with new location
+			accountUtils.removeAccount(toMigrate, false, new Callback<Void>(plugin) {
 				@Override
-				public void onResult(Integer result) {
-					newAccount.updateName();
+				public void onResult(Void result) {
+					accountUtils.addAccount(newAccount, true); // Database entry is replaced
+					p.sendMessage(Messages.ACCOUNT_MIGRATED);
+				}
+
+				@Override
+				public void onError(Throwable throwable) {
+					super.onError(throwable);
+					p.sendMessage(Messages.ERROR_OCCURRED);
 				}
 			});
-			p.sendMessage(Messages.ACCOUNT_MIGRATED);
 		}
 	}
 

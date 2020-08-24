@@ -1,7 +1,8 @@
 package com.monst.bankingplugin.utils;
 
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.listeners.InterestEventListener;
@@ -37,7 +38,7 @@ public class InterestEventScheduler {
         if (!plugin.isEnabled())
             return;
 
-        List<LocalTime> times = bank.getAccountConfig().get(AccountConfig.Field.INTEREST_PAYOUT_TIMES);
+        List<LocalTime> times = bank.getConfig().get(BankField.INTEREST_PAYOUT_TIMES);
         BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>());
 
         for (LocalTime time : times) {

@@ -1,46 +1,48 @@
-package com.monst.bankingplugin.utils;
+package com.monst.bankingplugin.banking.bank;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
-import org.apache.commons.lang.WordUtils;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.Utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Defines the {@link Account} configuration for a specific {@link Bank}.
  * Bank owners are allowed to customize these configuration values in-game if the
  * corresponding "allow-override" value in the {@link Config} is marked as <b>true</b>.
  *
- * <p>This class statically initializes a {@link BiConsumer} ("SETTER") and a {@link Function} ("FORMATTER") for each {@link Field}.
- * This is done either for all fields with a given type using {@link Field#stream(Class[])} or, in some special cases,
+ * <p>This class statically initializes a {@link BiConsumer} ("SETTER") and a {@link Function} ("FORMATTER") for each {@link BankField}.
+ * This is done either for all fields with a given type using {@link BankField#stream(Class[])} or, in some special cases,
  * individually.
  *
  * <p>The purpose of these static setters is to replace traditional, largely redundant setter methods which
  * must be individually created for each and every field. The formatters serve a similar function, preventing the
  * hassle of formatting the fetched value manually each and every time it is requested. Individual getters have also
- * been omitted from this class in favor of a single method {@link #get(Field)} with a dynamic return type. All in all,
+ * been omitted from this class in favor of a single method {@link #get(BankField)} with a dynamic return type. All in all,
  * these generic functions help avoid repetitive boilerplate code and enable easier expansion, with few downsides.
  */
 @SuppressWarnings("all")
-public class AccountConfig {
+public class BankConfig {
 
-	private static final Map<Field, BiConsumer<AccountConfig, String>> SETTERS = new EnumMap<>(Field.class);
-	private static final Map<Field, Function<AccountConfig, String>> FORMATTERS = new EnumMap<>(Field.class);
+	private static final Map<BankField, BiConsumer<BankConfig, String>> SETTERS = new EnumMap<>(BankField.class);
+	private static final Map<BankField, Function<BankConfig, String>> FORMATTERS = new EnumMap<>(BankField.class);
 	static {
 		/* Boolean */
-		Field.stream(Boolean.class).forEach(field -> { // Setters and formatters for fields of type Boolean
+		BankField.stream(Boolean.class).forEach(field -> { // Setters and formatters for fields of type Boolean
 			SETTERS.put(field, (instance, value) -> {
 				try {
 					field.getLocalVariable().set(instance, Boolean.parseBoolean(value));
@@ -55,19 +57,19 @@ public class AccountConfig {
 		});
 
 		/* Double */
-		SETTERS.put(Field.INTEREST_RATE, (instance, value) -> { // Special setter that accepts 3 decimal places
+		SETTERS.put(BankField.INTEREST_RATE, (instance, value) -> { // Special setter that accepts 3 decimal places
 			try {
-				Field.INTEREST_RATE.getLocalVariable().set(instance, BigDecimal.valueOf(Double.parseDouble(Utils.removePunctuation(value, '.')))
+				BankField.INTEREST_RATE.getLocalVariable().set(instance, BigDecimal.valueOf(Double.parseDouble(Utils.removePunctuation(value, '.')))
 						.abs().setScale(3, RoundingMode.HALF_UP).doubleValue());
 			} catch (IllegalAccessException ignored) {}
 		});
-		FORMATTERS.put(Field.INTEREST_RATE, instance -> { // Special formatter without $ symbol
+		FORMATTERS.put(BankField.INTEREST_RATE, instance -> { // Special formatter without $ symbol
 			try {
-				return new DecimalFormat("###,##0.00#").format(Field.INTEREST_RATE.getLocalVariable().get(instance));
+				return new DecimalFormat("###,##0.00#").format(BankField.INTEREST_RATE.getLocalVariable().get(instance));
 			} catch (IllegalAccessException ignored) {}
 			return "";
 		});
-		Field.stream(Double.class).forEach(field -> { // Setters and formatters for the rest of the fields of type Double
+		BankField.stream(Double.class).forEach(field -> { // Setters and formatters for the rest of the fields of type Double
 			SETTERS.putIfAbsent(field, (instance, value) -> {
 				try {
 					field.getLocalVariable().set(instance, BigDecimal.valueOf(Double.parseDouble(Utils.removePunctuation(value, '.')))
@@ -83,12 +85,12 @@ public class AccountConfig {
 		});
 
 		/* Integer */
-		SETTERS.put(Field.PLAYER_BANK_ACCOUNT_LIMIT, (instance, value) -> { // Special setter without Math.abs
+		SETTERS.put(BankField.PLAYER_BANK_ACCOUNT_LIMIT, (instance, value) -> { // Special setter without Math.abs
 			try {
-				Field.PLAYER_BANK_ACCOUNT_LIMIT.getLocalVariable().set(instance, Integer.parseInt(value));
+				BankField.PLAYER_BANK_ACCOUNT_LIMIT.getLocalVariable().set(instance, Integer.parseInt(value));
 			} catch (IllegalAccessException ignored) {}
 		});
-		Field.stream(Integer.class).forEach(field -> { // Setters and formatters for the rest of the fields of type Integer
+		BankField.stream(Integer.class).forEach(field -> { // Setters and formatters for the rest of the fields of type Integer
 			SETTERS.putIfAbsent(field, (instance, value) -> {
 				try {
 					field.getLocalVariable().set(instance, Math.abs(Integer.parseInt(value)));
@@ -103,9 +105,9 @@ public class AccountConfig {
 		});
 
 		/* List */
-		SETTERS.put(Field.MULTIPLIERS, (instance, value) -> { // Special setter that parses a List<Integer>
+		SETTERS.put(BankField.MULTIPLIERS, (instance, value) -> { // Special setter that parses a List<Integer>
 			try {
-				Field.MULTIPLIERS.getLocalVariable().set(instance,
+				BankField.MULTIPLIERS.getLocalVariable().set(instance,
 						Arrays.stream(Utils.removePunctuation(value).split(" "))
 						.filter(s -> !s.isEmpty())
 						.map(Integer::parseInt)
@@ -113,9 +115,9 @@ public class AccountConfig {
 						.collect(Collectors.toList()));
 			} catch (IllegalAccessException ignored) {}
 		});
-		SETTERS.put(Field.INTEREST_PAYOUT_TIMES, (instance, value) -> { // Special setter that parses a List<LocalTime>
+		SETTERS.put(BankField.INTEREST_PAYOUT_TIMES, (instance, value) -> { // Special setter that parses a List<LocalTime>
 			try {
-				Field.INTEREST_PAYOUT_TIMES.getLocalVariable().set(instance,
+				BankField.INTEREST_PAYOUT_TIMES.getLocalVariable().set(instance,
 						Arrays.stream(Utils.removePunctuation(value, ':').split(" "))
 								.filter(s -> !s.isEmpty())
 								.map(LocalTime::parse)
@@ -124,7 +126,7 @@ public class AccountConfig {
 								.collect(Collectors.toList()));
 			} catch (IllegalAccessException ignored) {}
 		});
-		Field.stream(List.class).forEach(field -> {
+		BankField.stream(List.class).forEach(field -> {
 			FORMATTERS.put(field, instance -> {
 				try {
 					return String.valueOf(field.getLocalVariable().get(instance));
@@ -151,10 +153,10 @@ public class AccountConfig {
 	private List<LocalTime> interestPayoutTimes;
 
 	/**
-	 * Creates a new AccountConfig with the default values from the {@link Config}.
+	 * Creates a new BankConfig with the default values from the {@link Config}.
 	 */
-	public static AccountConfig mint() {
-		return new AccountConfig(
+	public static BankConfig mint() {
+		return new BankConfig(
 				Config.countInterestDelayOffline.getDefault(),
 				Config.reimburseAccountCreation.getDefault(),
 				Config.payOnLowBalance.getDefault(),
@@ -174,7 +176,7 @@ public class AccountConfig {
 	}
 
 	/**
-	 * Re-creates an AccountConfig that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 * Re-creates an BankConfig that was stored in the {@link com.monst.bankingplugin.sql.Database}.
 	 * @param countInterestDelayOffline whether the waiting period will decrease while account holders are offline
 	 * @param reimburseAccountCreation whether account owners are reimbursed the (current) account creation price when removing an account
 	 * @param payOnLowBalance whether interest will continue to be generated while an account balance is low
@@ -191,11 +193,11 @@ public class AccountConfig {
 	 * @param multipliers a {@link List<Integer>} of multiplier values for the {@link Account}s at this {@link Bank}
 	 * @param interestPayoutTimes a {@link List<LocalTime>} representing the times at which the bank will pay interest
 	 */
-	public AccountConfig(boolean countInterestDelayOffline, boolean reimburseAccountCreation, boolean payOnLowBalance,
-						 double interestRate, double accountCreationPrice, double minimumBalance, double lowBalanceFee,
-						 int initialInterestDelay, int allowedOfflinePayouts, int allowedOfflinePayoutsBeforeReset,
-						 int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, int playerBankAccountLimit,
-						 List<Integer> multipliers, List<LocalTime> interestPayoutTimes) {
+	public BankConfig(boolean countInterestDelayOffline, boolean reimburseAccountCreation, boolean payOnLowBalance,
+					  double interestRate, double accountCreationPrice, double minimumBalance, double lowBalanceFee,
+					  int initialInterestDelay, int allowedOfflinePayouts, int allowedOfflinePayoutsBeforeReset,
+					  int offlineMultiplierDecrement, int withdrawalMultiplierDecrement, int playerBankAccountLimit,
+					  List<Integer> multipliers, List<LocalTime> interestPayoutTimes) {
 
 		this.countInterestDelayOffline = countInterestDelayOffline;
 		this.reimburseAccountCreation = reimburseAccountCreation;
@@ -216,23 +218,23 @@ public class AccountConfig {
 	}
 
 	/**
-	 * Reports whether or not a {@link Field} is set as "allow-override: true" in the {@link Config}.
+	 * Reports whether or not a {@link BankField} is set as "allow-override: true" in the {@link Config}.
 	 * @param field the configuration value
 	 * @return whether a config value can be set independently for each bank
 	 */
-	public static boolean isOverrideAllowed(Field field) {
+	public static boolean isOverrideAllowed(BankField field) {
 		return field.getConfigPair().isOverridable();
 	}
 
 	/**
-	 * Sets a value to the specified {@link Field}. If the field cannot accept the
+	 * Sets a value to the specified {@link BankField}. If the field cannot accept the
 	 * provided value, a {@link ArgumentParseException} is returned in the {@link Callback}
 	 * @param field the field to set
 	 * @param value the value the field should be set to
 	 * @param callback the {@link Callback} that returns the new formatted field or an error message
 	 * @return whether the field is overridable or not
 	 */
-	public boolean set(Field field, String value, Callback<String> callback) {
+	public boolean set(BankField field, String value, Callback<String> callback) {
 		if (!isOverrideAllowed(field))
 			return false;
 		try {
@@ -249,25 +251,25 @@ public class AccountConfig {
 		return true;
 	}
 
-	public String getFormatted(Field field) {
+	public String getFormatted(BankField field) {
 		return FORMATTERS.get(field).apply(this);
 	}
 
-	public <T> T get(Field field) {
+	public <T> T get(BankField field) {
 		return get(field, false);
 	}
 
 	/**
-	 * Returns the current value of an {@link Field}, or the default value from the {@link Config} if the field is
+	 * Returns the current value of an {@link BankField}, or the default value from the {@link Config} if the field is
 	 * not overridable and ignoreConfig is false.
 	 * @param field the field to be looked up
 	 * @param ignoreConfig whether to force returning the bank-specific value as opposed to potentially
 	 *                     the default value from the {@link Config}
 	 * @return the bank-specific value, or the default value if the field is currently not overridable
-	 * @see #isOverrideAllowed(Field)
+	 * @see #isOverrideAllowed(BankField)
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T get(Field field, boolean ignoreConfig) {
+	public <T> T get(BankField field, boolean ignoreConfig) {
 	    try {
 	        if (ignoreConfig)
                 return (T) field.getDataType().cast(field.getLocalVariable().get(this));
@@ -280,106 +282,4 @@ public class AccountConfig {
             return null;
         }
     }
-
-	/**
-	 * Represents all configuration values at a given bank.
-	 */
-	public enum Field {
-
-		COUNT_INTEREST_DELAY_OFFLINE (Boolean.class),
-		REIMBURSE_ACCOUNT_CREATION (Boolean.class),
-		PAY_ON_LOW_BALANCE (Boolean.class),
-		INTEREST_RATE (Double.class),
-		ACCOUNT_CREATION_PRICE (Double.class),
-		MINIMUM_BALANCE (Double.class),
-		LOW_BALANCE_FEE (Double.class),
-		INITIAL_INTEREST_DELAY (Integer.class),
-		ALLOWED_OFFLINE_PAYOUTS (Integer.class),
-		ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET (Integer.class),
-		OFFLINE_MULTIPLIER_DECREMENT (Integer.class),
-		WITHDRAWAL_MULTIPLIER_DECREMENT (Integer.class),
-		PLAYER_BANK_ACCOUNT_LIMIT (Integer.class),
-		MULTIPLIERS (List.class),
-		INTEREST_PAYOUT_TIMES (List.class);
-
-		private final String name;
-		private final Class<?> dataType;
-		private java.lang.reflect.Field localField;
-		private java.lang.reflect.Field configPair;
-
-		Field(Class<?> dataType) {
-			this.name = toString().toLowerCase().replace("_", "-");
-			this.dataType = dataType;
-            try {
-            	// Deduce name of field from name of enum constant
-            	// e.g. ACCOUNT_CREATION_PRICE -> ACCOUNT CREATION PRICE -> Account Creation Price -> AccountCreationPrice
-                String fieldName = WordUtils.capitalizeFully(toString().replace("_", " ")).replace(" ", "");
-                // AccountCreationPrice -> accountCreationPrice
-                fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
-                this.localField = AccountConfig.class.getDeclaredField(fieldName);
-                this.configPair = Config.class.getField(fieldName);
-            } catch (NoSuchFieldException e) {
-				BankingPlugin.getInstance().debug(e);
-			}
-		}
-
-		/**
-		 * @return the name of this field
-		 */
-		public String getName() {
-			return name;
-		}
-
-		/**
-		 * @return the type of this field, e.g. Double, Integer, Boolean, or List
-		 */
-		public Class<?> getDataType() {
-			return dataType;
-		}
-
-		/**
-		 * @return the bank-specific value of this field, stored in {@link AccountConfig}
-		 */
-		private java.lang.reflect.Field getLocalVariable() {
-		    return localField;
-        }
-
-		/**
-		 * @return the {@link com.monst.bankingplugin.config.Config.ConfigPair} containing
-		 * the default value and overrideable attribute for this field, stored in the {@link Config}
-		 */
-		private Config.ConfigPair<?> getConfigPair() {
-			try {
-				return (Config.ConfigPair<?>) configPair.get(null);
-			} catch (IllegalAccessException e) {
-				BankingPlugin.getInstance().debug(e);
-				return null;
-			}
-		}
-
-		/**
-		 * @return a {@link Stream<Field>} containing all fields
-		 */
-		public static Stream<Field> stream() {
-			return Stream.of(Field.values());
-		}
-
-		/**
-		 * @param types the types to match
-		 * @return a {@link Stream<Field>} containing all fields that match one of the specified data types
-		 * @see #getDataType()
-		 */
-		public static Stream<Field> stream(Class<?>... types) {
-			List<Class<?>> list = Arrays.asList(types);
-			return stream().filter(f -> list.contains(f.getDataType()));
-		}
-
-		/**
-		 * @param name the name of the field
-		 * @return the field with the specified name
-		 */
-		public static Field getByName(String name) {
-			return stream().filter(bankField -> bankField.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
-		}
-	}
 }

@@ -1,7 +1,8 @@
 package com.monst.bankingplugin.commands.bank;
 
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.commands.Confirmable;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.*;
@@ -11,10 +12,8 @@ import com.monst.bankingplugin.gui.BankGui;
 import com.monst.bankingplugin.gui.BankListGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
-import com.monst.bankingplugin.utils.AccountConfig.Field;
 import com.monst.bankingplugin.utils.*;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -111,16 +110,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		String name = null;
-		if (args.length > 1 && !args[1].equalsIgnoreCase("admin"))
-			try {
-				Integer.parseInt(args[1].replace("~", ""));
-			} catch (NumberFormatException e) {
-				name = args[1];
-			}
+		if (args.length < 2)
+			return false;
 
-		Selection selection;
-		if (args.length <= 3) {
+		String name = args[1];
+
+		Selection selection = null;
+		if (args.length <= 2) {
 			if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
 				selection = WorldEditReader.getSelection(plugin, p);
 				if (selection == null) {
@@ -135,7 +131,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			}
 		} else {
 			try {
-				selection = bankUtils.parseCoordinates(args, p.getLocation(), name != null ? 1 : 0);
+				selection = bankUtils.parseCoordinates(args, p.getLocation(), 1);
 			} catch (NumberFormatException e) {
 				plugin.debug("Could not parse coordinates in command args");
 				p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
@@ -159,11 +155,13 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(Messages.NO_PERMISSION_BANK_CREATE_ADMIN);
 			return true;
 		}
-		int limit = bankUtils.getBankLimit(p);
-		if (!isAdminBank && limit != -1 && bankUtils.getNumberOfBanks(p) >= limit) {
-			p.sendMessage(Messages.BANK_LIMIT_REACHED);
-			plugin.debug(p.getName() + " has reached their bank limit");
-			return true;
+		if (!isAdminBank) {
+			int limit = bankUtils.getBankLimit(p);
+			if (limit != -1 && bankUtils.getNumberOfBanks(p) >= limit) {
+				p.sendMessage(Messages.BANK_LIMIT_REACHED);
+				plugin.debug(p.getName() + " has reached their bank limit");
+				return true;
+			}
 		}
 		if (!bankUtils.isExclusiveSelection(selection)) {
 			plugin.debug("Region is not exclusive");
@@ -182,17 +180,15 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL, Config.minimumBankVolume, Config.minimumBankVolume - volume));
 			return true;
 		}
-		if (name != null) {
-			if (!bankUtils.isUniqueName(name)) {
-				plugin.debug("Name is not unique");
-				p.sendMessage(Messages.NAME_NOT_UNIQUE);
-				return true;
-			}
-			if (!Utils.isAllowedName(name)) {
-				plugin.debug("Name is not allowed");
-				p.sendMessage(Messages.NAME_NOT_ALLOWED);
-				return true;
-			}
+		if (!bankUtils.isUniqueName(name)) {
+			plugin.debug("Name is not unique");
+			p.sendMessage(Messages.NAME_NOT_UNIQUE);
+			return true;
+		}
+		if (!Utils.isAllowedName(name)) {
+			plugin.debug("Name is not allowed");
+			p.sendMessage(Messages.NAME_NOT_ALLOWED);
+			return true;
 		}
 
 		Bank bank = isAdminBank
@@ -241,28 +237,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 	private void promptBankRemove(final CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to remove a bank");
 
-		Bank bank;
-		if (args.length == 1) {
-			if (sender instanceof Player) {
-				Player p = (Player) sender;
-				bank = bankUtils.getBank(p.getLocation());
-				if (bank == null) {
-					plugin.debug(p.getName() + " wasn't standing in a bank");
-					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
-					return;
-				}
-			} else {
-				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-				return;
-			}
-		} else {
-			bank = bankUtils.lookupBank(args[1]);
-			if (bank == null) {
-				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
-				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
-				return;
-			}
-		}
+		Bank bank = getBank(sender, args);
+		if (bank == null)
+			return;
 
 		if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
 				|| sender.hasPermission(Permissions.BANK_REMOVE_OTHER))) {
@@ -330,34 +307,15 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 	private void promptBankInfo(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to show bank info");
 
-		Bank bank;
-		if (args.length == 1) {
-			if (sender instanceof Player) {
-				Player p = (Player) sender;
-				bank = bankUtils.getBank(p.getLocation());
-				if (bank == null) {
-					plugin.debug(p.getName() + " wasn't standing in a bank");
-					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
-					return;
-				}
-			} else {
-				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
-				return;
-			}
-		} else {
-			bank = bankUtils.lookupBank(args[1]);
-			if (bank == null) {
-				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
-				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
-				return;
-			}
-		}
+		Bank bank = getBank(sender, args);
+		if (bank == null)
+			return;
 
 		plugin.debug(sender.getName() + " is displaying bank info");
 		if (sender instanceof Player)
 			new BankGui(bank).open((Player) sender);
 		else
-			sender.spigot().sendMessage(bank.getInformation(sender));
+			sender.sendMessage(bank.getInformation(sender));
 	}
 
 	@SuppressWarnings("unused")
@@ -380,8 +338,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			int i = 0;
 			for (Bank bank : banks)
-				sender.spigot().sendMessage(new TextComponent(ChatColor.AQUA + "" + ++i + ". "),
-						new TextComponent(bank.getColorizedName() + " "));
+				sender.sendMessage(ChatColor.AQUA + "" + ++i + ". " + bank.getColorizedName() + " ");
 		}
 	}
 
@@ -639,14 +596,14 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		Field field = Field.getByName(fieldName);
+		BankField field = BankField.getByName(fieldName);
 		if (field == null) {
-			plugin.debug("No account config field could be found with name " + fieldName);
+			plugin.debug("No bank config field could be found with name " + fieldName);
 			sender.sendMessage(String.format(Messages.NOT_A_FIELD, fieldName));
 			return true;
 		}
 
-		String previousValue = bank.getAccountConfig().getFormatted(field);
+		String previousValue = bank.getConfig().getFormatted(field);
 		Callback<String> callback = new Callback<String>(plugin) {
 			@Override
 			public void onResult(String result) {
@@ -664,10 +621,10 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				sender.sendMessage(errorMessage);
 			}
 		};
-		if (!bank.getAccountConfig().set(field, value, callback))
+		if (!bank.getConfig().set(field, value, callback))
 			sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
 
-		if (field == Field.INTEREST_PAYOUT_TIMES)
+		if (field == BankField.INTEREST_PAYOUT_TIMES)
 			InterestEventScheduler.scheduleBankInterestEvents(bank);
 
 		bankUtils.addBank(bank, true);
@@ -823,11 +780,31 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		);
 		if (newOwner != null && newOwner.isOnline())
 			newOwner.getPlayer().sendMessage(String.format(Messages.OWNERSHIP_TRANSFER_RECEIVED, "bank", bank.getColorizedName()));
-		boolean hasDefaultName = bank.isDefaultName();
 		bank.transferOwnership(newOwner);
-		if (hasDefaultName)
-			bank.setToDefaultName();
 		bankUtils.addBank(bank, true);
 		return true;
+	}
+
+	private Bank getBank(CommandSender sender, String[] args) {
+		Bank bank = null;
+		if (args.length == 1) {
+			if (sender instanceof Player) {
+				Player p = (Player) sender;
+				bank = bankUtils.getBank(p.getLocation());
+				if (bank == null) {
+					plugin.debug(p.getName() + " wasn't standing in a bank");
+					p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+				}
+			} else {
+				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+			}
+		} else {
+			bank = bankUtils.lookupBank(args[1]);
+			if (bank == null) {
+				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			}
+		}
+		return bank;
 	}
 }

@@ -1,9 +1,10 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountStatus;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountStatus;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankConfig;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -23,8 +24,8 @@ import java.util.List;
 
 public class AccountGui extends SinglePageGui<Account> {
 
-	boolean isTrusted;
 	boolean canTP;
+	boolean isTrusted;
 
 	public AccountGui(Account account) {
 		super(account);
@@ -37,11 +38,11 @@ public class AccountGui extends SinglePageGui<Account> {
 
 	@Override
 	void evaluateClearance(Player player) {
-		isTrusted = guiSubject.isTrusted(player) || guiSubject.getBank().isTrusted(player)
-				|| player.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
 		canTP = player.isOp()
 				|| player.hasPermission("minecraft.command.tp")
 				|| player.hasPermission("essentials.tp.position");
+		isTrusted = guiSubject.isTrusted(player) || guiSubject.getBank().isTrusted(player)
+				|| player.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
 	}
 
 	@Override
@@ -103,7 +104,7 @@ public class AccountGui extends SinglePageGui<Account> {
 
 	private List<String> getGeneralInfoLore() {
 		List<String> lore = new ArrayList<>();
-		lore.add("ID: " + guiSubject.getID());
+		lore.add("Account ID: " + guiSubject.getID());
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
 		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty()
 				? ChatColor.RED + "[none]"
@@ -127,15 +128,15 @@ public class AccountGui extends SinglePageGui<Account> {
 	}
 
 	private List<String> getBalanceLore() {
-		AccountConfig config = guiSubject.getBank().getAccountConfig();
-		double minBalance = config.get(AccountConfig.Field.MINIMUM_BALANCE);
+		BankConfig config = guiSubject.getBank().getConfig();
+		double minBalance = config.get(BankField.MINIMUM_BALANCE);
 		boolean isLowBalance = guiSubject.getBalance().doubleValue() < minBalance;
-		double interestRate = config.get(AccountConfig.Field.INTEREST_RATE);
+		double interestRate = config.get(BankField.INTEREST_RATE);
 		int multiplier = guiSubject.getStatus().getRealMultiplier();
-		double fullPayout = !(isLowBalance && !(boolean) config.get(AccountConfig.Field.PAY_ON_LOW_BALANCE))
+		double fullPayout = !(isLowBalance && !(boolean) config.get(BankField.PAY_ON_LOW_BALANCE))
 				? guiSubject.getBalance().doubleValue() * interestRate * multiplier : 0.0d;
-		double lowBalanceFee = isLowBalance && (double) config.get(AccountConfig.Field.LOW_BALANCE_FEE) > 0
-				? config.get(AccountConfig.Field.LOW_BALANCE_FEE) : 0.0d;
+		double lowBalanceFee = isLowBalance && (double) config.get(BankField.LOW_BALANCE_FEE) > 0
+				? config.get(BankField.LOW_BALANCE_FEE) : 0.0d;
 		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
 				"Balance: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getBalance()) + (isLowBalance
@@ -154,7 +155,7 @@ public class AccountGui extends SinglePageGui<Account> {
 		int delay = status.getDelayUntilNextPayout();
 		int remainingOffline = status.getRemainingOfflinePayouts();
 		int untilReset = status.getRemainingOfflineUntilReset();
-		int offlineDecrement = guiSubject.getBank().getAccountConfig().get(AccountConfig.Field.OFFLINE_MULTIPLIER_DECREMENT);
+		int offlineDecrement = guiSubject.getBank().getConfig().get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
 		return Utils.wordWrapAll(
 				(delay == 0
 						? "This account will generate interest in the next payout cycle."

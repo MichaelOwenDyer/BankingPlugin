@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
-import com.monst.bankingplugin.utils.BlockVector2D;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -51,9 +50,9 @@ public class WorldEditReader {
 				int minY = polygon.getMinimumY();
 				int maxY = polygon.getMaximumY();
 				World world = BukkitAdapter.adapt(polygon.getWorld());
-				List<BlockVector2D> points = new ArrayList<>();
+				List<Polygonal2DSelection.BlockVector2D> points = new ArrayList<>();
 				polygon.getPoints().stream()
-						.forEach(point -> points.add(new BlockVector2D(point.getBlockX(), point.getBlockZ())));
+						.forEach(point -> points.add(new Polygonal2DSelection.BlockVector2D(point.getBlockX(), point.getBlockZ())));
 				return Polygonal2DSelection.of(world, points, minY, maxY);
 			}
 

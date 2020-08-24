@@ -1,8 +1,10 @@
 package com.monst.bankingplugin.listeners;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankConfig;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
@@ -24,6 +26,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
 /**
  * This listener is intended to prevent all physical damage to {@link Account} chests,
@@ -75,9 +78,9 @@ public class AccountProtectListener implements Listener {
 	 */
 	@SuppressWarnings("ConstantConditions")
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
-		AccountConfig accountConfig = account.getBank().getAccountConfig();
-		double creationPrice = accountConfig.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
-		creationPrice *= accountConfig.get(AccountConfig.Field.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
+		BankConfig bankConfig = account.getBank().getConfig();
+		double creationPrice = bankConfig.get(BankField.ACCOUNT_CREATION_PRICE);
+		creationPrice *= bankConfig.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
 
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			double finalCreationPrice = creationPrice;
@@ -124,16 +127,11 @@ public class AccountProtectListener implements Listener {
 			Location newLocation = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
 			Account newAccount = Account.migrate(account, newLocation);
 
-			accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
+			accountUtils.removeAccount(account, false, new Callback<Void>(plugin) {
 				@Override
 				public void onResult(Void result) {
 					newAccount.create(true);
-					accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
-						@Override
-						public void onResult(Integer result) {
-							newAccount.updateName();
-						}
-					});
+					accountUtils.addAccount(newAccount, true);
 				}
 			});
 		} else {
@@ -147,7 +145,7 @@ public class AccountProtectListener implements Listener {
 	/**
 	 * Listens for block place events, and handles the expansion of a small account chest into a large
 	 * account chest.
-	 * {@link Utils#getChestLocations(Inventory)} performs largely the same task as a good portion of this {@link EventHandler},
+	 * {@link Utils#getChestLocations(InventoryHolder)} performs largely the same task as a good portion of this {@link EventHandler},
 	 * but cannot be used since {@link BlockPlaceEvent}s are fired before the {@link org.bukkit.inventory.InventoryHolder}
 	 * of the new chest has been updated.
 	 * This means that when an account chest is extended and this handler is executed,
@@ -218,8 +216,8 @@ public class AccountProtectListener implements Listener {
             return;
 		}
 
-		AccountConfig config = account.getBank().getAccountConfig();
-		double creationPrice = config.get(AccountConfig.Field.ACCOUNT_CREATION_PRICE);
+		BankConfig config = account.getBank().getConfig();
+		double creationPrice = config.get(BankField.ACCOUNT_CREATION_PRICE);
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
 			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
@@ -262,12 +260,7 @@ public class AccountProtectListener implements Listener {
 			@Override
 			public void onResult(Void result) {
 				if (newAccount.create(true)) {
-					accountUtils.addAccount(newAccount, true, new Callback<Integer>(plugin) {
-						@Override
-						public void onResult(Integer result) {
-							newAccount.updateName();
-						}
-					});
+					accountUtils.addAccount(newAccount, true);
 					plugin.debug(String.format("%s extended %s's account (#%d)", p.getName(), account.getOwner().getName(),
 							account.getID()));
 				} else

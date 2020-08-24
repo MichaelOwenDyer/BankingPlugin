@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.account;
 
-import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.commands.Confirmable;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
@@ -12,7 +12,6 @@ import com.monst.bankingplugin.gui.AccountGui;
 import com.monst.bankingplugin.gui.AccountListGui;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.ClickType.EnumClickType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -196,7 +195,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				if (sender instanceof Player)
 					new AccountGui(account).open((Player) sender);
 				else
-					sender.spigot().sendMessage(account.getInformation(sender));
+					sender.sendMessage(account.getInformation(sender));
 				return;
 			} catch (NumberFormatException ignored) {}
 		}
@@ -270,8 +269,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		else {
 			int i = 0;
 			for (Account account : accounts)
-				sender.spigot().sendMessage(new TextComponent(ChatColor.AQUA + "" + ++i + ". "),
-						new TextComponent(account.getColorizedName() + " "));
+				sender.sendMessage(ChatColor.AQUA + "" + ++i + ". " + account.getColorizedName());
 		}
 	}
 

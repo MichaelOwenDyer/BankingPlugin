@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.selections;
 
-import com.monst.bankingplugin.utils.BlockVector2D;
 import org.bukkit.World;
 import org.junit.jupiter.api.Test;
 
@@ -23,9 +22,9 @@ public class Polygonal2DSelectionTest {
 
     private static Polygonal2DSelection newSel(int... args) {
         assertEquals(0, args.length % 2);
-        List<BlockVector2D> points = new ArrayList<>();
+        List<Polygonal2DSelection.BlockVector2D> points = new ArrayList<>();
         for (int i = 0; i < args.length; i += 2) {
-            points.add(new BlockVector2D(args[i], args[i + 1]));
+            points.add(new Polygonal2DSelection.BlockVector2D(args[i], args[i + 1]));
         }
         int[] xpoints = new int[points.size()];
         int[] ypoints = new int[points.size()];

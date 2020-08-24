@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.utils.Ownable;
+import com.monst.bankingplugin.banking.Ownable;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.ipvp.canvas.Menu;

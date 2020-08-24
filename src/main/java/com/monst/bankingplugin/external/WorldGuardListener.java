@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.external;
 
-import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;

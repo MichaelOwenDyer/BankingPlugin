@@ -1,11 +1,12 @@
 package com.monst.bankingplugin.selections;
 
-import com.monst.bankingplugin.utils.BlockVector2D;
+import com.monst.bankingplugin.utils.Pair;
 import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.awt.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -189,4 +190,15 @@ public class Polygonal2DSelection implements Selection {
 				&& getWorld().equals(other.getWorld());
 	}
 
+	public static class BlockVector2D extends Pair<Integer, Integer> {
+		public BlockVector2D(int x, int z) {
+			super(x, z);
+		}
+		public int getBlockX() {
+			return super.getFirst();
+		}
+		public int getBlockZ() {
+			return super.getSecond();
+		}
+	}
 }

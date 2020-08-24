@@ -1,9 +1,12 @@
 package com.monst.bankingplugin.sql;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
-import com.monst.bankingplugin.Bank.BankType;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountStatus;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.Bank.BankType;
+import com.monst.bankingplugin.banking.bank.BankConfig;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.listeners.AccountBalanceListener.TransactionType;
@@ -11,9 +14,6 @@ import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
-import com.monst.bankingplugin.utils.AccountConfig;
-import com.monst.bankingplugin.utils.AccountStatus;
-import com.monst.bankingplugin.utils.BlockVector2D;
 import com.monst.bankingplugin.utils.Callback;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.*;
@@ -484,8 +484,8 @@ public abstract class Database {
 						throw new IllegalStateException("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
 					}
 
-					AccountConfig config = bank.getAccountConfig();
-					ps.setString(i + 9, AccountConfig.Field.stream()
+					BankConfig config = bank.getConfig();
+					ps.setString(i + 9, BankField.stream()
 							.map(field -> "" + config.get(field, true))
 							.collect(Collectors.joining(" | "))
 					);
@@ -498,9 +498,7 @@ public abstract class Database {
 						if (rs.next()) {
 							bankId = rs.getInt(1);
 						}
-
 						bank.setID(bankId);
-						bank.updateName();
 					}
 
 					if (callback != null) {
@@ -615,13 +613,13 @@ public abstract class Database {
 							int minY = rs.getInt("minY");
 							int maxY = rs.getInt("maxY");
 							
-							List<BlockVector2D> nativePoints = new ArrayList<>();
+							List<Polygonal2DSelection.BlockVector2D> nativePoints = new ArrayList<>();
 							
 							for (String point : pointArray) {
 								String[] coords = point.split(",");
 								int x = Integer.parseInt(coords[0]);
 								int z = Integer.parseInt(coords[1]);
-								nativePoints.add(new BlockVector2D(x, z));
+								nativePoints.add(new Polygonal2DSelection.BlockVector2D(x, z));
 							}
 							
 							selection = Polygonal2DSelection.of(world, nativePoints, minY, maxY);
@@ -663,7 +661,7 @@ public abstract class Database {
 							interestPayoutTimes = Config.interestPayoutTimes.getDefault();
 						}
 
-						AccountConfig accountConfig = new AccountConfig(
+						BankConfig bankConfig = new BankConfig(
 								Boolean.parseBoolean(accConfig[0]),
 								Boolean.parseBoolean(accConfig[1]),
 								Boolean.parseBoolean(accConfig[2]),
@@ -685,11 +683,8 @@ public abstract class Database {
 								+ (name != null ? " \"" + ChatColor.stripColor(name) + "\"" : "") + "... (#" + bankId + ")");
 
 						Bank bank = isAdminBank
-									? Bank.recreate(bankId, name, coowners, selection, accountConfig)
-									: Bank.recreate(bankId, name, owner, coowners, selection, accountConfig);
-
-						if (name == null)
-							bank.setToDefaultName();
+									? Bank.recreate(bankId, name, coowners, selection, bankConfig)
+									: Bank.recreate(bankId, name, owner, coowners, selection, bankConfig);
 
 						getAccountsAtBank(bank, showConsoleMessages, new Callback<Collection<Account>>(plugin) {
 							@Override
@@ -765,7 +760,7 @@ public abstract class Database {
 					int remainingOfflinePayouts = rs.getInt("remaining_offline_payouts");
 					int remainingOfflineUntilReset = rs.getInt("remaining_offline_until_reset");
 
-					status = new AccountStatus(bank.getAccountConfig(), multiplierStage, remainingUntilPayout,
+					status = new AccountStatus(bank.getConfig(), multiplierStage, remainingUntilPayout,
 							remainingOfflinePayouts, remainingOfflineUntilReset);
 
 				} catch (SQLException e) {

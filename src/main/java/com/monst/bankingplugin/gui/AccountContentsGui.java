@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.Account;
+import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.utils.Permissions;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.block.ShulkerBox;

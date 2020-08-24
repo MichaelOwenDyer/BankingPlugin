@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.control;
 
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.Command;

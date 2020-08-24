@@ -1,6 +1,8 @@
 package com.monst.bankingplugin;
 
 import com.earth2me.essentials.Essentials;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.commands.account.AccountCommand;
 import com.monst.bankingplugin.commands.bank.BankCommand;
 import com.monst.bankingplugin.commands.control.ControlCommand;

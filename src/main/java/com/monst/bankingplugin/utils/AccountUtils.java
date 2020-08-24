@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.utils;
 
 import com.earth2me.essentials.Essentials;
-import com.monst.bankingplugin.Account;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -221,7 +221,7 @@ public class AccountUtils {
 		Essentials essentials = plugin.getEssentials();
 
 		BigDecimal sum = BigDecimal.ZERO;
-		for (ItemStack item : account.getInventory(false).getContents()) {
+		for (ItemStack item : account.getInventory(true).getContents()) {
 			if (item == null)
 				continue;
 			if (Config.blacklist.contains(item.getType().toString()))

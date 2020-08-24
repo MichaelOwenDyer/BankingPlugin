@@ -1,8 +1,9 @@
 package com.monst.bankingplugin.commands.bank;
 
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.utils.AccountConfig;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankConfig;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -12,15 +13,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class BankTabCompleter implements TabCompleter {
 
     private final BankingPlugin plugin;
+    private final BankUtils bankUtils;
 
     public BankTabCompleter(BankingPlugin plugin) {
         this.plugin = plugin;
+        this.bankUtils = plugin.getBankUtils();
     }
 
     @Override
@@ -52,48 +58,26 @@ public class BankTabCompleter implements TabCompleter {
     private List<String> completeBankCreate(Player p, String[] args) {
         ArrayList<String> returnCompletions = new ArrayList<>();
 
-        if (Arrays.stream(args).anyMatch(s -> s.equalsIgnoreCase("admin")))
+        if (args.length == 1 || Arrays.stream(args).anyMatch(s -> s.equalsIgnoreCase("admin")))
             return Collections.emptyList();
 
-        if (args.length == 2 && args[1].isEmpty())
-            returnCompletions.add("<name>");
+        if (args.length == 2)
+            return Collections.singletonList("<name>");
 
-        boolean hasName = false;
-        if (args.length > 1 && !args[1].isEmpty() && !"admin".startsWith(args[1]))
-            try {
-                Integer.parseInt(args[1].replace("~",""));
-            } catch (NumberFormatException e) {
-                hasName = true;
-            }
-
-        if (p.hasPermission(Permissions.BANK_CREATE_ADMIN))
-            switch (args.length % 3) {
-                case 0:
-                    if (hasName)
-                        returnCompletions.add("admin");
-                    break;
-                case 2:
-                    if (!hasName)
-                        returnCompletions.add("admin");
-            }
+        if (args.length % 3 == 0 && p.hasPermission(Permissions.BANK_CREATE_ADMIN))
+                returnCompletions.add("admin");
 
         if (args.length >= 9)
             return returnCompletions;
 
-        Location loc = p.getTargetBlock(null, 150).getLocation();
-        String coord = "";
-        switch ((args.length + (hasName ? 0 : 1)) % 3) {
-            case 0: coord = "" + loc.getBlockX(); break;
-            case 1: coord = "" + loc.getBlockY(); break;
-            case 2: coord = "" + loc.getBlockZ();
-        }
+        String coord = getCoordLookingAt(p, args);
         if (coord.startsWith(args[args.length - 1]))
             returnCompletions.add("" + coord);
         return returnCompletions;
     }
 
     private List<String> completeBankRemove(CommandSender sender, String[] args) {
-        List<String> bankNames = plugin.getBankUtils().getBanksCopy().stream()
+        List<String> bankNames = bankUtils.getBanksCopy().stream()
                 .filter(bank -> (sender instanceof Player && bank.isOwner((Player) sender))
                         || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
                         || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)))
@@ -107,7 +91,7 @@ public class BankTabCompleter implements TabCompleter {
 
     private List<String> completeBankInfo(String[] args) {
         if (args.length == 2)
-            return plugin.getBankUtils().getBanksCopy().stream()
+            return bankUtils.getBanksCopy().stream()
                     .map(Bank::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()
@@ -116,7 +100,6 @@ public class BankTabCompleter implements TabCompleter {
     }
 
     private List<String> completeBankSet(CommandSender sender, String[] args) {
-        BankUtils bankUtils = plugin.getBankUtils();
         List<String> bankNames = bankUtils.getBanksCopy().stream()
                 .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
                         || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
@@ -124,9 +107,9 @@ public class BankTabCompleter implements TabCompleter {
                 .map(Bank::getName)
                 .sorted()
                 .collect(Collectors.toList());
-        List<String> fieldNames = AccountConfig.Field.stream()
-                .filter(AccountConfig::isOverrideAllowed)
-                .map(AccountConfig.Field::getName)
+        List<String> fieldNames = BankField.stream()
+                .filter(BankConfig::isOverrideAllowed)
+                .map(BankField::getName)
                 .sorted()
                 .collect(Collectors.toList());
 
@@ -136,15 +119,15 @@ public class BankTabCompleter implements TabCompleter {
             return Utils.filter(fieldNames, name -> name.contains(args[2].toLowerCase()));
         else if (args.length == 4) {
             Bank bank = bankUtils.lookupBank(args[1]);
-            AccountConfig.Field field = AccountConfig.Field.getByName(args[2]);
+            BankField field = BankField.getByName(args[2]);
             if (bank != null && field != null)
-                return Collections.singletonList(bank.getAccountConfig().getFormatted(field));
+                return Collections.singletonList(bank.getConfig().getFormatted(field));
         }
         return Collections.emptyList();
     }
 
     private List<String> completeBankTransfer(Player p, String[] args) {
-        List<String> bankNames = plugin.getBankUtils().getBanksCopy().stream()
+        List<String> bankNames = bankUtils.getBanksCopy().stream()
                 .filter(bank -> bank.isOwner(p)
                         || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
                         || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
@@ -166,7 +149,7 @@ public class BankTabCompleter implements TabCompleter {
     }
 
     private List<String> completeBankResize(Player p, String[] args) {
-        List<String> bankNames = plugin.getBankUtils().getBanksCopy().stream()
+        List<String> bankNames = bankUtils.getBanksCopy().stream()
                 .map(Bank::getName)
                 .sorted()
                 .collect(Collectors.toList());
@@ -174,13 +157,7 @@ public class BankTabCompleter implements TabCompleter {
         if (args.length == 2)
             return Utils.filter(bankNames, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
         else if (args.length > 2) {
-            Location loc = p.getTargetBlock(null, 150).getLocation();
-            String coord = "";
-            switch (args.length % 3) {
-                case 0: coord = "" + loc.getBlockX(); break;
-                case 1: coord = "" + loc.getBlockY(); break;
-                case 2: coord = "" + loc.getBlockZ();
-            }
+            String coord = getCoordLookingAt(p, args);
             if (coord.startsWith(args[args.length - 1]))
                 return Collections.singletonList("" + coord);
         }
@@ -188,7 +165,6 @@ public class BankTabCompleter implements TabCompleter {
     }
 
     private List<String> completeBankRename(CommandSender sender, String[] args) {
-        BankUtils bankUtils = plugin.getBankUtils();
         List<String> bankNames = bankUtils.getBanksCopy().stream()
                 .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
                         || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
@@ -208,14 +184,25 @@ public class BankTabCompleter implements TabCompleter {
         if (!p.hasPermission(Permissions.BANK_SELECT))
             return Collections.emptyList();
         if (args.length == 2) {
-            if (args[1].isEmpty() && plugin.getBankUtils().isBank(p.getLocation()))
-                return Collections.singletonList(plugin.getBankUtils().getBank(p.getLocation()).getName());
-            return plugin.getBankUtils().getBanksCopy().stream()
+            if (args[1].isEmpty() && bankUtils.isBank(p.getLocation()))
+                return Collections.singletonList(bankUtils.getBank(p.getLocation()).getName());
+            return bankUtils.getBanksCopy().stream()
                     .map(Bank::getName)
                     .sorted()
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
+    }
+
+    private String getCoordLookingAt(Player p, String[] args) {
+        Location loc = p.getTargetBlock(null, 150).getLocation();
+        String coord = "";
+        switch (args.length % 3) {
+            case 0: coord = "" + loc.getBlockX(); break;
+            case 1: coord = "" + loc.getBlockY(); break;
+            case 2: coord = "" + loc.getBlockZ();
+        }
+        return coord;
     }
 }

@@ -29,33 +29,4 @@ public interface Nameable {
      */
     void setName(String name);
 
-    /**
-     * @return whether the nameable is currently using its default name
-     */
-    default boolean isDefaultName() {
-        return getRawName().contentEquals(getDefaultName());
-    }
-
-    /**
-     * @return the default name of this nameable
-     */
-    String getDefaultName();
-
-    /**
-     * Sets the name of this nameable to its default.
-     * @see #getDefaultName()
-     */
-    void setToDefaultName();
-
-    /**
-     * Ensures that the current name is valid and currently being reflected everywhere it should be.
-     * If the current name is null, set it to the default name.
-     */
-    default void updateName() {
-        if (getRawName() != null)
-            setName(getRawName());
-        else
-            setToDefaultName();
-    }
-
 }

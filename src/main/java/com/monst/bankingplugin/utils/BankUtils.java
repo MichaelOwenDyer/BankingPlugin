@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.utils;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Selection;
@@ -386,12 +386,7 @@ public class BankUtils {
 							loadedBanks.add(bank);
 							for (Account account : result.get(bank)) {
 								if (account.create(showConsoleMessages)) {
-									accountUtils.addAccount(account, false, new Callback<Integer>(plugin) {
-										@Override
-										public void onResult(Integer result) {
-											account.updateName();
-										}
-									});
+									accountUtils.addAccount(account, false);
 									loadedAccounts.add(account);
 								} else
 									plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");

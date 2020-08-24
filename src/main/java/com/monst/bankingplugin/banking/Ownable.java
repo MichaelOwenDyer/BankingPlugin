@@ -1,8 +1,10 @@
-package com.monst.bankingplugin.utils;
+package com.monst.bankingplugin.banking;
 
-import com.monst.bankingplugin.Account;
-import com.monst.bankingplugin.Bank;
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.utils.Nameable;
+import com.monst.bankingplugin.utils.Utils;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.OfflinePlayer;
@@ -122,7 +124,7 @@ public abstract class Ownable implements Nameable {
 	 * @param sender The {@link CommandSender} who requested information
 	 * @return a {@link TextComponent} with lots of useful information
 	 */
-	public abstract TextComponent getInformation(CommandSender sender);
+	public abstract String getInformation(CommandSender sender);
 
 	/**
 	 * Gets the ID of this ownable, if it exists.
@@ -145,13 +147,6 @@ public abstract class Ownable implements Nameable {
 	@Override
 	public String getRawName() {
 		return name;
-	}
-
-	@Override
-	public void setToDefaultName() {
-		if (!hasID())
-			return;
-		setName(getDefaultName());
 	}
 
 }

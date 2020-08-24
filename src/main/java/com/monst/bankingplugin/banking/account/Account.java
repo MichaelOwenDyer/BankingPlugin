@@ -1,9 +1,15 @@
-package com.monst.bankingplugin;
+package com.monst.bankingplugin.banking.account;
 
+import com.monst.bankingplugin.banking.Ownable;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.AccountUtils;
+import com.monst.bankingplugin.utils.Nameable;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -36,8 +42,8 @@ public class Account extends Ownable {
 				new HashSet<>(),
 				bank,
 				loc,
-				AccountStatus.mint(bank.getAccountConfig()),
-				null,
+				AccountStatus.mint(bank.getConfig()),
+				ChatColor.DARK_GREEN + owner.getName() + "'s Account ",
 				BigDecimal.ZERO,
 				BigDecimal.ZERO
 		);
@@ -85,12 +91,12 @@ public class Account extends Ownable {
 	 * @param bank the {@link Bank} the account is registered at
 	 * @param loc the {@link Location} of the account chest
 	 * @param status the {@link AccountStatus} of the account
-	 * @param nickname the account nickname {@link Nameable}
+	 * @param name the account name {@link Nameable}
 	 * @param balance the current account balance {@link #getBalance()}
 	 * @param prevBalance the previous account balance {@link #getPrevBalance()}
 	 */
 	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, Location loc,
-								 AccountStatus status, String nickname, BigDecimal balance, BigDecimal prevBalance) {
+								 AccountStatus status, String name, BigDecimal balance, BigDecimal prevBalance) {
 		return new Account(
 				id,
 				owner,
@@ -98,7 +104,7 @@ public class Account extends Ownable {
 				bank,
 				loc,
 				status,
-				nickname,
+				name,
 				balance.setScale(2, RoundingMode.HALF_EVEN),
 				prevBalance.setScale(2, RoundingMode.HALF_EVEN)
 		);
@@ -177,6 +183,8 @@ public class Account extends Ownable {
 					+ Utils.format(getBalance()) + " but was: $" + Utils.format(checkedBalance)
 			);
 		setBalance(checkedBalance);
+
+		updateName();
 
 		created = true;
 		return true;
@@ -342,9 +350,30 @@ public class Account extends Ownable {
 	 * Gets the default name of this account.
 	 * @return the default name of this account.
 	 */
-	@Override
 	public String getDefaultName() {
-		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account " + ChatColor.GRAY + "(#" + getID() + ")";
+		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account";
+	}
+
+	public void setToDefaultName() {
+		setName(getDefaultName());
+	}
+
+	/**
+	 * @return whether this account is currently using its default name
+	 */
+	public boolean isDefaultName() {
+		return getRawName().contentEquals(getDefaultName());
+	}
+
+	/**
+	 * Ensures that the current name is valid and currently being reflected everywhere it should be.
+	 * If the current name is null, set it to the default name.
+	 */
+	public void updateName() {
+		if (getRawName() != null)
+			setName(getRawName());
+		else
+			setToDefaultName();
 	}
 
 	/**
@@ -365,40 +394,41 @@ public class Account extends Ownable {
 	}
 
 	@Override
-	public TextComponent getInformation(CommandSender sender) {
+	public String getInformation(CommandSender sender) {
 		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
 		boolean verbose = (sender instanceof Player && (isTrusted((Player) sender) || getBank().isTrusted((Player) sender)))
 				|| sender.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
 
-		TextComponent info = new TextComponent();
-		info.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+		StringBuilder info = new StringBuilder(196);
 
-		info.addExtra("\"" + Utils.colorize(getRawName()) + ChatColor.GRAY + "\"");
-		info.addExtra("\n    Bank: " + ChatColor.RED + getBank().getColorizedName());
+		info.append("" + ChatColor.GRAY);
+		info.append("\"" + Utils.colorize(getRawName()) + ChatColor.GRAY + "\"");
+		info.append(ChatColor.GRAY + "Bank: " + ChatColor.RED + getBank().getColorizedName());
 		if (!isOwner)
-			info.addExtra("\n    Owner: " + ChatColor.GOLD + getOwnerDisplayName());
+			info.append(ChatColor.GRAY + "Owner: " + ChatColor.GOLD + getOwnerDisplayName());
 		if (!getCoowners().isEmpty())
-			info.addExtra("\n    Co-owners: " + Utils.map(getCoowners(), OfflinePlayer::getName).toString());
+			info.append(ChatColor.GRAY + "Co-owners: " + Utils.map(getCoowners(), OfflinePlayer::getName).toString());
 		if (verbose) {
-			info.addExtra("\n    Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
-			info.addExtra("\n    Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier() + ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
-			TextComponent interestRate = new TextComponent("\n    Interest rate: ");
-			double interestR = getBank().getAccountConfig().get(AccountConfig.Field.INTEREST_RATE);
+			info.append(ChatColor.GRAY + "Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
+			info.append(ChatColor.GRAY + "Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier()
+					+ ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
+			TextComponent interestRate = new TextComponent(ChatColor.GRAY + "Interest rate: ");
+			double interestR = getBank().getConfig().get(BankField.INTEREST_RATE);
 			interestRate.addExtra(ChatColor.GREEN + "" + BigDecimal.valueOf(interestR * getStatus().getRealMultiplier() * 100)
 					.setScale(1, BigDecimal.ROUND_HALF_EVEN)
 					+ "% " + ChatColor.GRAY + "(" + interestR + " x " + getStatus().getRealMultiplier() + ")");
 			if (getStatus().getDelayUntilNextPayout() != 0)
 				interestRate.addExtra(ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)");
-			info.addExtra(interestRate);
+			info.append(interestRate);
 		}
-		info.addExtra("\n    Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")");
+		info.append(ChatColor.GRAY + "Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")");
 
-		return info;
+		return info.toString();
 	}
 
 	@Override
 	public String toString() {
-		   return "ID: " + getID() + ", "
+		   return "Account ID: " + getID() + ", "
 				+ "Owner: " + getOwner().getName() + ", "
 				+ "Bank: " + getBank().getName() + ", "
 				+ "Balance: $" + Utils.format(getBalance()) + ", "
@@ -407,7 +437,7 @@ public class Account extends Ownable {
 					+ " (stage " + getStatus().getMultiplierStage() + "), "
 				+ "Delay until next payout: " + getStatus().getDelayUntilNextPayout() + ", "
 				+ "Next payout amount: " + Utils.format(getBalance().doubleValue()
-						* (double) getBank().getAccountConfig().get(AccountConfig.Field.INTEREST_RATE)
+						* (double) getBank().getConfig().get(BankField.INTEREST_RATE)
 						* getStatus().getRealMultiplier()) + ", "
 				+ "Location: " + getCoordinates();
 	}
