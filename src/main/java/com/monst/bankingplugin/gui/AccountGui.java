@@ -57,11 +57,11 @@ public class AccountGui extends SinglePageGui<Account> {
 			case 3:
 				if (isTrusted)
 					return createSlotItem(Material.GOLD_INGOT, "Account Standing", getBalanceLore());
-				return createSlotItem(Material.BRICK, "Account Standing", NO_PERMISSION);
+				return createSlotItem(Material.GOLD_INGOT, "Account Standing", NO_PERMISSION);
 			case 4:
 				if (isTrusted)
-					return createSlotItem(Material.NETHER_STAR, "Current Multiplier", Utils.getMultiplierLore(guiSubject));
-				return createSlotItem(Material.NETHER_STAR, "Bank Multipliers", Utils.getMultiplierLore(guiSubject.getBank()));
+					return createSlotItem(Material.NETHER_STAR, "Multiplier Status", Utils.getMultiplierLore(guiSubject));
+				return createSlotItem(Material.NETHER_STAR, "Multiplier Status", NO_PERMISSION);
 			case 5:
 				if (isTrusted)
 					return createSlotItem(Material.IRON_BARS, "Account Restrictions", getAccountRestrictionsLore());

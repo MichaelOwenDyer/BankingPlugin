@@ -759,7 +759,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 					(bank.isOwner((Player) sender)
 						? "your bank"
 						: bank.getOwnerDisplayName() + "'s bank"),
-					newOwner.getName()));
+					newOwner != null ? newOwner.getName() : "ADMIN"));
 			sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
 			return true;
 		}

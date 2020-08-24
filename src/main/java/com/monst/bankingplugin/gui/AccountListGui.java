@@ -13,7 +13,7 @@ import org.ipvp.canvas.type.ChestMenu;
 import java.util.Collection;
 import java.util.Collections;
 
-public class AccountListGui extends MultiPageGui<Collection<Account>, Account> {
+public class AccountListGui extends MultiPageGui<Collection<Account>> {
 
     public AccountListGui(Collection<Account> accounts) {
         super(accounts, 18, 26);

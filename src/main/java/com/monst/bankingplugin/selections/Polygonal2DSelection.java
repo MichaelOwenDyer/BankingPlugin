@@ -1,7 +1,5 @@
 package com.monst.bankingplugin.selections;
 
-import com.monst.bankingplugin.utils.Pair;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -113,7 +111,7 @@ public class Polygonal2DSelection implements Selection {
 		if (getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY())
 			return false;
 		Set<BlockVector2D> blocks = sel.getBlocks();
-		return Utils.filter(getBlocks(), blocks::contains, Collectors.toSet()).isEmpty();
+		return getBlocks().stream().noneMatch(blocks::contains);
 	}
 
 	@Override

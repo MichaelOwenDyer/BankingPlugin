@@ -1,13 +1,11 @@
 package com.monst.bankingplugin.selections;
 
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class CuboidSelection implements Selection {
 
@@ -102,7 +100,7 @@ public class CuboidSelection implements Selection {
 		if (getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY())
 			return false;
 		Set<BlockVector2D> blocks = getBlocks();
-		return Utils.filter(sel.getBlocks(), blocks::contains, Collectors.toSet()).isEmpty();
+		return sel.getBlocks().stream().noneMatch(blocks::contains);
 	}
 
 	@Override

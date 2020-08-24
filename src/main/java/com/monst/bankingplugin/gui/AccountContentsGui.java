@@ -2,7 +2,6 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.utils.Permissions;
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -82,11 +81,12 @@ public class AccountContentsGui extends SinglePageGui<Account> {
 
         @Override
         void initializeMenu() {
-            menu = ChestMenu.builder(3).title(
-                    shulkerBox.getCustomName() != null
-                            ? shulkerBox.getCustomName() // TODO: Figure out why always null
-                            : WordUtils.capitalizeFully(shulkerBox.getColor().toString()) + " Shulker Box"
-            ).redraw(true).build();
+            menu = ChestMenu.builder(3).title("Shulker Box").redraw(true).build();
+//                    shulkerBox.getCustomName() != null
+//                            ? shulkerBox.getCustomName() // TODO: Figure out why always null
+//                            : WordUtils.capitalizeFully(shulkerBox.getColor().toString())
+//                       FIXME: shulkerBox.getColor() throws NullPointerException when Shulker Box default color
+
         }
 
         @Override

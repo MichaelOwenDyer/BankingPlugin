@@ -102,9 +102,9 @@ public class BankUtils {
 
 	public boolean isExclusiveSelectionIgnoring(Selection sel, Bank bank) {
 		if (bank != null)
-			return Utils.filter(bankSelectionMap.keySet(),
-					s -> !bank.getSelection().equals(s) && bank.getSelection().overlaps(sel)).isEmpty();
-		return Utils.filter(bankSelectionMap.keySet(), s -> s.overlaps(sel)).isEmpty();
+			return bankSelectionMap.keySet().stream()
+					.noneMatch(s -> !bank.getSelection().equals(s) && bank.getSelection().overlaps(sel));
+		return bankSelectionMap.keySet().stream().noneMatch(s -> s.overlaps(sel));
 	}
 
 	public void resizeBank(Bank bank, Selection newSel, Callback<Integer> callback) {

@@ -86,8 +86,6 @@ public class AccountTabCompleter implements TabCompleter {
         List<String> returnCompletions = Utils.getOnlinePlayerNames(plugin);
         if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
             returnCompletions.remove(p.getName());
-        if (p.hasPermission(Permissions.BANK_CREATE_ADMIN))
-            returnCompletions.add("ADMIN");
 
         if (args.length == 2)
             return Utils.filter(returnCompletions, string -> string.toLowerCase().startsWith(args[1].toLowerCase()));

@@ -764,7 +764,8 @@ public class AccountInteractListener implements Listener {
 
 		boolean hasDefaultNickname = account.isDefaultName();
 
-		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, newOwner.getName()));
+		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", Utils.samePlayer(account.getOwner(), p)
+				? "your account" : p.getName() + "'s account", newOwner.getName()));
 		account.transferOwnership(newOwner);
 		if (hasDefaultNickname)
 			account.setToDefaultName();

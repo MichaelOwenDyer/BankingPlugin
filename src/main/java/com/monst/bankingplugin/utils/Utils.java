@@ -190,7 +190,7 @@ public class Utils {
 
 	private static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
 		Essentials essentials = BankingPlugin.getInstance().getEssentials();
-		players.forEach(p -> {
+		filter(players, Objects::nonNull, Collectors.toSet()).forEach(p -> {
 			if (p.isOnline())
 				p.getPlayer().sendMessage(message);
 			else if (Config.enableMail)

@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-abstract class MultiPageGui<C extends Collection<K>, K extends Ownable> extends Gui<C> {
+abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui<C> {
 
     private final int PREV_PAGE_SLOT;
     private final int NEXT_PAGE_SLOT;

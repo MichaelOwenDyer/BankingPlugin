@@ -14,7 +14,7 @@ import org.ipvp.canvas.type.ChestMenu;
 import java.util.Collection;
 import java.util.Collections;
 
-public class BankListGui extends MultiPageGui<Collection<Bank>, Bank> {
+public class BankListGui extends MultiPageGui<Collection<Bank>> {
 
     public BankListGui(Collection<Bank> banks) {
         super(banks, 18, 26);

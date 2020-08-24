@@ -91,7 +91,6 @@ public class BankGui extends SinglePageGui<Bank> {
 				return canTP ? (player, info) -> {
 					if (info.getClickType().isLeftClick())
 						player.teleport(Utils.getSafeLocation(guiSubject.getSelection().getCenterPoint())
-								.add(0.5, 0, 0.5)
 								.setDirection(player.getLocation().getDirection()));
 					else
 						player.teleport(guiSubject.getSelection()
@@ -178,24 +177,24 @@ public class BankGui extends SinglePageGui<Bank> {
 		int offlineDecrement = config.get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
 		int beforeReset = config.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
 		List<String> lore = new ArrayList<>();
-		lore.add("Accounts will " + (offlinePayouts == 0
-				? ChatColor.RED + "not generate interest" + ChatColor.GRAY
+		lore.add("While account holders are offline...");
+		lore.add("");
+		lore.add("accounts will " + (offlinePayouts == 0 ? ChatColor.RED + "not generate interest" + ChatColor.GRAY
 				: "generate interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
-						+ String.format(" time%s", offlinePayouts == 1 ? "" : "s"))
-				+ " while account holders are offline.");
+				+ String.format(" time%s", offlinePayouts == 1 ? "" : "s")) + "."
+		);
 		if (beforeReset != 0) {
 			lore.add("");
-			lore.add("Account multipliers will " + (offlineDecrement == 0
+			lore.add("account multipliers will " + (offlineDecrement == 0
 					? ChatColor.AQUA + "freeze" + ChatColor.GRAY
 					: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " for every payout")
-				+ " during this time.");
+				+ ".");
 		}
 		if (beforeReset > -1) {
 			lore.add("");
-			lore.add("Multipliers will reset " + (beforeReset == 0
-					? ChatColor.RED + "before paying out interest" + ChatColor.GRAY
+			lore.add("Multipliers will reset " + (beforeReset == 0 ? ChatColor.RED + "before paying out interest" + ChatColor.GRAY
 					: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY
-					+ String.format(" time%s", beforeReset == 1 ? "" : "s")) + " while account holders are offline.");
+					+ String.format(" time%s", beforeReset == 1 ? "" : "s")) + ".");
 		}
 		return Utils.wordWrapAll(lore);
 	}
