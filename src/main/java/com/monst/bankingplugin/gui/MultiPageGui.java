@@ -2,7 +2,6 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.Ownable;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.mask.BinaryMask;
 import org.ipvp.canvas.mask.Mask;
@@ -29,7 +28,7 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
     }
 
     @Override
-    void open(Player player, boolean update) {
+    void open(boolean update) {
         if (update) {
             initializeMenu();
             setClickHandler();
@@ -38,7 +37,7 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
         }
         if (menuPages.isEmpty())
             return;
-        menuPages.get(currentPage).open(player);
+        menuPages.get(currentPage).open(viewer);
     }
 
     @Override

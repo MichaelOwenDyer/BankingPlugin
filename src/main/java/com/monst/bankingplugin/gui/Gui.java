@@ -20,24 +20,26 @@ import java.util.List;
 abstract class Gui<T> {
 
 	Gui<?> prevGui;
-	boolean openInBackground = false;
+	Player viewer;
+	boolean inForeground = true;
 
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
 	final Menu.CloseHandler OPEN_PREVIOUS = (player, menu) -> new BukkitRunnable() {
 		@Override
 		public void run() {
-			if (isLinked() && !isOpenInBackground()) {
-				prevGui.openInBackground = false;
-				prevGui.open(player, false);
+			if (isLinked() && isInForeground()) {
+				prevGui.inForeground = true;
+				prevGui.open(false);
 			}
 		}
 	}.runTask(BankingPlugin.getInstance());
 
 	public void open(Player player) {
-		open(player, true);
+		this.viewer = player;
+		open(true);
 	}
 
-	abstract void open(Player player, boolean update);
+	abstract void open(boolean initialize);
 
 	abstract void initializeMenu();
 
@@ -47,7 +49,7 @@ abstract class Gui<T> {
 
 	public Gui<T> setPrevGui(@Nullable Gui<?> prevGui) {
 		if (prevGui != null)
-			prevGui.openInBackground = true;
+			prevGui.inForeground = true;
 		this.prevGui = prevGui;
 		return this;
 	}
@@ -108,8 +110,8 @@ abstract class Gui<T> {
 			gui.prevGui = null;
 	}
 
-	boolean isOpenInBackground() {
-		return openInBackground;
+	boolean isInForeground() {
+		return inForeground;
 	}
 
 	boolean isLinked() {

@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountStatus;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.Bank.BankType;
 import com.monst.bankingplugin.banking.bank.BankConfig;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
@@ -439,7 +438,7 @@ public abstract class Database {
 
 					ps.setString(i + 1, bank.getRawName() != null ? bank.getRawName() : "Bank");
 					
-					if (bank.getType() == BankType.ADMIN) {
+					if (bank.isAdminBank()) {
 						ps.setString(i + 2, "$ADMIN$");
 						ps.setString(i + 3, null);
 					} else {

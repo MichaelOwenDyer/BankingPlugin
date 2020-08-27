@@ -107,12 +107,6 @@ public class BankUtils {
 		return bankSelectionMap.keySet().stream().noneMatch(s -> s.overlaps(sel));
 	}
 
-	public void resizeBank(Bank bank, Selection newSel, Callback<Integer> callback) {
-		removeBank(bank, false);
-		bank.setSelection(newSel);
-		addBank(bank, true, callback);
-	}
-
 	/**
 	 * Parses coordinates for a new bank selection from command arguments
 	 * @param args the arguments to parse
@@ -175,7 +169,7 @@ public class BankUtils {
 	 * @param sel  New selection for the bank
 	 * @return Whether the new selection contains all accounts
 	 */
-	public boolean containsAllAccounts(Bank bank, Selection sel) {
+	public static boolean containsAllAccounts(Bank bank, Selection sel) {
 		return bank.getAccounts().stream().map(Account::getLocation).allMatch(sel::contains);
 	}
 
@@ -248,57 +242,32 @@ public class BankUtils {
 	}
 
 	/**
-	 * Get the bank limits of a player
-	 * 
-	 * @param player Player, whose bank limits should be returned
-	 * @return The bank limits of the given player
+	 * Gets the bank limits of a certain player, to see if the player is allowed to create another bank.
 	 */
-	public int getBankLimit(Player player) {
-		int limit = 0;
-		boolean useDefault = true;
-
-		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
-			if (permInfo.getPermission().startsWith("bankingplugin.bank.limit.")
-					&& player.hasPermission(permInfo.getPermission())) {
-				if (permInfo.getPermission().equalsIgnoreCase(Permissions.BANK_NO_LIMIT)) {
-					limit = -1;
-					useDefault = false;
-					break;
-				} else {
-					String[] spl = permInfo.getPermission().split("bankingplugin.bank.limit.");
-
-					if (spl.length > 1) {
-						try {
-							int newLimit = Integer.parseInt(spl[1]);
-							if (newLimit < 0) {
-								limit = -1;
-								break;
-							}
-							limit = Math.max(limit, newLimit);
-							useDefault = false;
-						} catch (NumberFormatException ignored) {}
-					}
-				}
-			}
-		}
-		if (limit < -1)
-			limit = -1;
-		return useDefault ? Config.defaultBankLimit : limit;
+	public static int getBankLimit(Player player) {
+		return (int) getLimit(player, Permissions.BANK_NO_LIMIT, "bankingplugin.bank.limit", Config.defaultBankLimit);
 	}
-	
-	public long getVolumeLimit(Player player) {
+
+	/**
+	 * Gets the bank volume limit of a certain player, to see if the player is allowed to create a bank of a certain size.
+	 */
+	public static long getVolumeLimit(Player player) {
+		return getLimit(player, Permissions.BANK_NO_SIZE_LIMIT, "bankingplugin.bank.size", Config.maximumBankVolume);
+	}
+
+	private static long getLimit(Player player, String permission, String permPrefix, long defaultLimit) {
 		long limit = 0;
 		boolean useDefault = true;
 
 		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
-			if (permInfo.getPermission().startsWith("bankingplugin.bank.size.")
+			if (permInfo.getPermission().startsWith(permPrefix)
 					&& player.hasPermission(permInfo.getPermission())) {
-				if (permInfo.getPermission().equalsIgnoreCase(Permissions.BANK_NO_SIZE_LIMIT)) {
+				if (permInfo.getPermission().equalsIgnoreCase(permission)) {
 					limit = -1;
 					useDefault = false;
 					break;
 				} else {
-					String[] spl = permInfo.getPermission().split("bankingplugin.bank.size.");
+					String[] spl = permInfo.getPermission().split(permPrefix);
 
 					if (spl.length > 1) {
 						try {
@@ -316,7 +285,7 @@ public class BankUtils {
 		}
 		if (limit < -1)
 			limit = -1;
-		return useDefault ? Config.maximumBankVolume : limit;
+		return useDefault ? defaultLimit : limit;
 	}
 
 	/**
@@ -327,18 +296,6 @@ public class BankUtils {
 	 */
 	public int getNumberOfBanks(OfflinePlayer player) {
 		return getBanksCopy(b -> b.isOwner(player)).size();
-	}
-
-	public static class ReloadResult extends Pair<Collection<Bank>, Collection<Account>> {
-		public ReloadResult(Collection<Bank> banks, Collection<Account> accounts) {
-			super(banks, accounts);
-		}
-		public Collection<Bank> getBanks() {
-			return super.getFirst();
-		}
-		public Collection<Account> getAccounts() {
-			return super.getSecond();
-		}
 	}
 
     /**
@@ -365,8 +322,8 @@ public class BankUtils {
             	Collection<Bank> banks = getBanksCopy();
             	Collection<Account> accounts = accountUtils.getAccountsCopy();
             	
-				Set<Bank> loadedBanks = new HashSet<>();
-				Set<Account> loadedAccounts = new HashSet<>();
+				Set<Bank> reloadedBanks = new HashSet<>();
+				Set<Account> reloadedAccounts = new HashSet<>();
             	
 				for (Bank bank : banks) {
 					for (Account account : bank.getAccountsCopy()) {
@@ -383,25 +340,25 @@ public class BankUtils {
 
 						for (Bank bank : result.keySet()) {
 							addBank(bank, false);
-							loadedBanks.add(bank);
+							reloadedBanks.add(bank);
 							for (Account account : result.get(bank)) {
 								if (account.create(showConsoleMessages)) {
 									accountUtils.addAccount(account, false);
-									loadedAccounts.add(account);
+									reloadedAccounts.add(account);
 								} else
 									plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");
 							}
 						}
 
-						if (banks.size() != loadedBanks.size())
+						if (banks.size() != reloadedBanks.size())
 							plugin.debug(String.format("Number of banks before load was %d and is now %d.",
-									banks.size(), loadedBanks.size()));
-						if (accounts.size() != loadedAccounts.size())
+									banks.size(), reloadedBanks.size()));
+						if (accounts.size() != reloadedAccounts.size())
 							plugin.debug(String.format("Number of accounts before load was %d and is now %d",
-									accounts.size(), loadedAccounts.size()));
+									accounts.size(), reloadedAccounts.size()));
 						
 						if (callback != null)
-							callback.callSyncResult(new ReloadResult(loadedBanks, loadedAccounts));
+							callback.callSyncResult(new ReloadResult(reloadedBanks, reloadedAccounts));
 					}
 					
 					@Override
@@ -420,6 +377,18 @@ public class BankUtils {
         });
     }
 
+	public static class ReloadResult extends Pair<Collection<Bank>, Collection<Account>> {
+		public ReloadResult(Collection<Bank> banks, Collection<Account> accounts) {
+			super(banks, accounts);
+		}
+		public Collection<Bank> getBanks() {
+			return super.getFirst();
+		}
+		public Collection<Account> getAccounts() {
+			return super.getSecond();
+		}
+	}
+
 	public Bank lookupBank(String identifier) {
 		try {
 			int id = Integer.parseInt(identifier);
@@ -432,8 +401,7 @@ public class BankUtils {
 	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
 	 * inequality among all n accounts at the bank.
 	 *
-	 * @return G = ( 2 * sum(i,n)(i * value of ith account) / n * sum(i,n)(value of
-	 *         ith account) ) - ( n + 1 / n )
+	 * @return G = ( 2 * (sum(i...n) i * n[i].getBalance()) / n * (sum(i...n) n[i].getBalance()) ) - ( n + 1 / n )
 	 */
 	public static double getGiniCoefficient(Bank bank) {
 		if (bank.getAccounts().isEmpty())
@@ -453,10 +421,9 @@ public class BankUtils {
 		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
 		if (valueSum.signum() == 0)
 			return 0;
-		BigDecimal leftEq = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
-		BigDecimal rightEq = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
-		BigDecimal gini = leftEq.subtract(rightEq).setScale(2, RoundingMode.HALF_EVEN);
-		return gini.doubleValue();
+		BigDecimal leftSide = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
+		BigDecimal rightSide = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
+		return leftSide.subtract(rightSide).setScale(2, RoundingMode.HALF_EVEN).doubleValue();
 	}
 
 	public static String getEqualityLore(Bank bank) {

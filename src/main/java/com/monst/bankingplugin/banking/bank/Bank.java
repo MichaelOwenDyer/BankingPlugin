@@ -9,7 +9,6 @@ import com.monst.bankingplugin.utils.Nameable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -179,6 +178,7 @@ public class Bank extends Ownable {
 	/**
 	 * @return a {@link Map<OfflinePlayer>} containing
 	 * all account owners at this bank and their total account balances
+	 * @see #getAccountsByOwner()
 	 */
 	public Map<OfflinePlayer, BigDecimal> getBalancesByOwner() {
 		return getAccountsByOwner().entrySet().stream().collect(
@@ -223,15 +223,12 @@ public class Bank extends Ownable {
 		return bankConfig;
 	}
 
-	/**
-	 * @return the {@link BankType} of this bank
-	 */
-	public BankType getType() {
-		return type;
-	}
-
 	public void updateType() {
 		this.type = getOwner() == null ? BankType.ADMIN : BankType.PLAYER;
+	}
+
+	public BankType getType() {
+		return type;
 	}
 
 	/**
@@ -239,7 +236,7 @@ public class Bank extends Ownable {
 	 * @see BankType
 	 */
 	public boolean isAdminBank() {
-		return getType() == BankType.ADMIN;
+		return type == BankType.ADMIN;
 	}
 
 	/**
@@ -247,7 +244,7 @@ public class Bank extends Ownable {
 	 * @see BankType
 	 */
 	public boolean isPlayerBank() {
-		return getType() == BankType.PLAYER;
+		return type == BankType.PLAYER;
 	}
 
 	/**
@@ -270,9 +267,9 @@ public class Bank extends Ownable {
 	}
 
 	@Override
-	public String getInformation(CommandSender sender) {
-		StringBuilder info = new StringBuilder();
-		info.append(ChatColor.GRAY);
+	public String getInformation() {
+
+		StringBuilder info = new StringBuilder(196);
 		
 		info.append("\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")");
 		info.append(ChatColor.GRAY + "Owner: " + getOwnerDisplayName());

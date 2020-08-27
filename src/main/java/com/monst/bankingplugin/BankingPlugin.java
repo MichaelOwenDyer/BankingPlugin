@@ -239,9 +239,9 @@ public class BankingPlugin extends JavaPlugin {
 			int adminBanks = 0;
 
 			for (Bank bank : bankUtils.getBanks())
-				if (bank.getType() == Bank.BankType.PLAYER)
+				if (bank.isPlayerBank())
 					playerBanks++;
-				else if (bank.getType() == Bank.BankType.ADMIN)
+				else if (bank.isAdminBank())
 					adminBanks++;
 
 			typeFrequency.put("Admin", adminBanks);

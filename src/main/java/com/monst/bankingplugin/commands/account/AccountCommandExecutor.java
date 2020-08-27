@@ -195,7 +195,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				if (sender instanceof Player)
 					new AccountGui(account).open((Player) sender);
 				else
-					sender.sendMessage(account.getInformation(sender));
+					sender.sendMessage(account.getInformation());
 				return;
 			} catch (NumberFormatException ignored) {}
 		}

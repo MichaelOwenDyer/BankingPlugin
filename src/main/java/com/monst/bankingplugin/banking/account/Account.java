@@ -8,7 +8,6 @@ import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Nameable;
-import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -18,8 +17,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 import java.math.BigDecimal;
@@ -42,7 +39,7 @@ public class Account extends Ownable {
 				bank,
 				loc,
 				AccountStatus.mint(bank.getConfig()),
-				ChatColor.DARK_GREEN + owner.getName() + "'s Account ",
+				ChatColor.DARK_GREEN + owner.getName() + "'s Account",
 				BigDecimal.ZERO,
 				BigDecimal.ZERO
 		);
@@ -60,20 +57,6 @@ public class Account extends Ownable {
 				account.getCoowners(),
 				account.getBank(),
 				account.getLocation(),
-				account.getStatus(),
-				account.getRawName(),
-				account.getBalance(),
-				account.getPrevBalance()
-		);
-	}
-
-	public static Account migrate(Account account, Location newLocation) {
-		return new Account(
-				account.getID(),
-				account.getOwner(),
-				account.getCoowners(),
-				plugin.getBankUtils().getBank(newLocation),
-				newLocation,
 				account.getStatus(),
 				account.getRawName(),
 				account.getBalance(),
@@ -116,7 +99,7 @@ public class Account extends Ownable {
 	private boolean created;
 
 	private final Bank bank;
-	private final Location location;
+	private Location location;
 	private final AccountStatus status;
 	private Inventory inventory;
 	private BigDecimal balance;
@@ -250,6 +233,14 @@ public class Account extends Ownable {
 	 */
 	public Location getLocation() {
 		return location;
+	}
+
+	/**
+	 * Sets the location of this account.
+	 * @param location the new location
+	 */
+	public void setLocation(Location location) {
+		this.location = location;
 	}
 
 	/**
@@ -396,33 +387,27 @@ public class Account extends Ownable {
 	}
 
 	@Override
-	public String getInformation(CommandSender sender) {
-		boolean isOwner = sender instanceof Player && isOwner((Player) sender);
-		boolean verbose = (sender instanceof Player && (isTrusted((Player) sender) || getBank().isTrusted((Player) sender)))
-				|| sender.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
+	public String getInformation() {
 
 		StringBuilder info = new StringBuilder(196);
 
 		info.append("" + ChatColor.GRAY);
 		info.append("\"" + Utils.colorize(getRawName()) + ChatColor.GRAY + "\"");
 		info.append(ChatColor.GRAY + "Bank: " + ChatColor.RED + getBank().getColorizedName());
-		if (!isOwner)
-			info.append(ChatColor.GRAY + "Owner: " + ChatColor.GOLD + getOwnerDisplayName());
+		info.append(ChatColor.GRAY + "Owner: " + ChatColor.GOLD + getOwnerDisplayName());
 		if (!getCoowners().isEmpty())
 			info.append(ChatColor.GRAY + "Co-owners: " + Utils.map(getCoowners(), OfflinePlayer::getName).toString());
-		if (verbose) {
-			info.append(ChatColor.GRAY + "Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
-			info.append(ChatColor.GRAY + "Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier()
-					+ ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
-			StringBuilder interestRate = new StringBuilder(ChatColor.GRAY + "Interest rate: ");
-			double interestR = getBank().getConfig().get(BankField.INTEREST_RATE);
-			interestRate.append(ChatColor.GREEN + "" + BigDecimal.valueOf(interestR * getStatus().getRealMultiplier() * 100)
-					.setScale(1, BigDecimal.ROUND_HALF_EVEN)
-					+ "% " + ChatColor.GRAY + "(" + interestR + " x " + getStatus().getRealMultiplier() + ")");
-			if (getStatus().getDelayUntilNextPayout() != 0)
-				interestRate.append(ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)");
-			info.append(interestRate.toString());
-		}
+		info.append(ChatColor.GRAY + "Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
+		info.append(ChatColor.GRAY + "Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier()
+				+ ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
+		StringBuilder interestRate = new StringBuilder(ChatColor.GRAY + "Interest rate: ");
+		double interestR = getBank().getConfig().get(BankField.INTEREST_RATE);
+		interestRate.append(ChatColor.GREEN + "" + BigDecimal.valueOf(interestR * getStatus().getRealMultiplier() * 100)
+				.setScale(1, BigDecimal.ROUND_HALF_EVEN)
+				+ "% " + ChatColor.GRAY + "(" + interestR + " x " + getStatus().getRealMultiplier() + ")");
+		if (getStatus().getDelayUntilNextPayout() != 0)
+			interestRate.append(ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)");
+		info.append(interestRate.toString());
 		info.append(ChatColor.GRAY + "Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")");
 
 		return info.toString();

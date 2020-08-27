@@ -10,11 +10,12 @@ import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.gui.BankGui;
 import com.monst.bankingplugin.gui.BankListGui;
+import com.monst.bankingplugin.gui.SinglePageGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.*;
-import org.bukkit.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -315,7 +316,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		if (sender instanceof Player)
 			new BankGui(bank).open((Player) sender);
 		else
-			sender.sendMessage(bank.getInformation(sender));
+			sender.sendMessage(bank.getInformation());
 	}
 
 	@SuppressWarnings("unused")
@@ -468,7 +469,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(Messages.SELECTION_OVERLAPS_EXISTING);
 			return true;
 		}
-		if (!bankUtils.containsAllAccounts(bank, selection)) {
+		if (!BankUtils.containsAllAccounts(bank, selection)) {
 			plugin.debug("New selection does not contain all accounts");
 			p.sendMessage(Messages.SELECTION_CUTS_ACCOUNTS);
 			return true;
@@ -481,7 +482,9 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		bankUtils.resizeBank(bank, selection, new Callback<Integer>(plugin) {
+		bankUtils.removeBank(bank, false);
+		bank.setSelection(selection);
+		bankUtils.addBank(bank, true, new Callback<Integer>(plugin) {
 			@Override
 			public void onResult(Integer result) {
 				plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
@@ -628,6 +631,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			InterestEventScheduler.scheduleBankInterestEvents(bank);
 
 		bankUtils.addBank(bank, true);
+		SinglePageGui.updateGuis(bank);
 		return true;
 	}
 

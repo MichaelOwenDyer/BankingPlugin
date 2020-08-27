@@ -580,7 +580,8 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		Account newAccount = Account.migrate(toMigrate, location);
+		Account newAccount = Account.clone(toMigrate);
+		newAccount.setLocation(location);
 
 		AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, location);
 		Bukkit.getPluginManager().callEvent(event);

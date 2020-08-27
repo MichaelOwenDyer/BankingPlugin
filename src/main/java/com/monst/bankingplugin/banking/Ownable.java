@@ -7,7 +7,6 @@ import com.monst.bankingplugin.utils.Nameable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 
 import java.util.Collections;
 import java.util.Set;
@@ -120,10 +119,9 @@ public abstract class Ownable implements Nameable {
 
 	/**
 	 * Compiles a nicely formatted text-wall of information about this ownable.
-	 * @param sender The {@link CommandSender} who requested information
 	 * @return a {@link String} with lots of useful information
 	 */
-	public abstract String getInformation(CommandSender sender);
+	public abstract String getInformation();
 
 	/**
 	 * Gets the ID of this ownable, if it exists.
