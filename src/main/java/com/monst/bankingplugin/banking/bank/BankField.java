@@ -86,6 +86,10 @@ public enum BankField {
         }
     }
 
+    public boolean isOverrideAllowed() {
+        return getConfigPair().isOverridable();
+    }
+
     /**
      * @return a {@link Stream<BankField>} containing all fields
      */

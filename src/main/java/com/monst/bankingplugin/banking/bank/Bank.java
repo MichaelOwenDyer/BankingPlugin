@@ -3,8 +3,10 @@ package com.monst.bankingplugin.banking.bank;
 import com.monst.bankingplugin.banking.Ownable;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.gui.SinglePageGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.BankUtils;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Nameable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -216,11 +218,23 @@ public class Bank extends Ownable {
 		this.selection = sel;
 	}
 
-	/**
-	 * @return the {@link BankConfig} of this bank
-	 */
-	public BankConfig getConfig() {
-		return bankConfig;
+	public boolean set(BankField field, String value, Callback<String> callback) {
+		if (!bankConfig.set(field, value, callback))
+			return false;
+		SinglePageGui.updateGuis(this);
+		return true;
+	}
+
+	public String getFormatted(BankField field) {
+		return bankConfig.getFormatted(field);
+	}
+
+	public <T> T get(BankField field) {
+		return get(field, false);
+	}
+
+	public <T> T get(BankField field, boolean ignoreConfig) {
+		return bankConfig.get(field, ignoreConfig);
 	}
 
 	public void updateType() {
@@ -275,16 +289,16 @@ public class Bank extends Ownable {
 		info.append(ChatColor.GRAY + "Owner: " + getOwnerDisplayName());
 		info.append(ChatColor.GRAY + "Co-owners: " + (!getCoowners().isEmpty()
 				? Utils.map(getCoowners(), OfflinePlayer::getName).toString() : "[none]"));
-		info.append(ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + bankConfig.getFormatted(BankField.INTEREST_RATE));
+		info.append(ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + getFormatted(BankField.INTEREST_RATE));
 		info.append(ChatColor.GRAY + "Multipliers: ");
-		info.append(Utils.map(Utils.stackList(getConfig().get(BankField.MULTIPLIERS)),
+		info.append(Utils.map(Utils.stackList(get(BankField.MULTIPLIERS)),
 				list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString());
-		info.append(ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + bankConfig.getFormatted(BankField.ACCOUNT_CREATION_PRICE));
-		info.append(ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + bankConfig.getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS));
-		info.append(ChatColor.GRAY + " (" + ChatColor.AQUA + bankConfig.getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");
-		info.append(ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + bankConfig.getFormatted(BankField.INITIAL_INTEREST_DELAY));
-		info.append(ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + bankConfig.getFormatted(BankField.MINIMUM_BALANCE));
-		info.append(ChatColor.GRAY + " (" + ChatColor.RED + bankConfig.getFormatted(BankField.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
+		info.append(ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + getFormatted(BankField.ACCOUNT_CREATION_PRICE));
+		info.append(ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS));
+		info.append(ChatColor.GRAY + " (" + ChatColor.AQUA + getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");
+		info.append(ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + getFormatted(BankField.INITIAL_INTEREST_DELAY));
+		info.append(ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + getFormatted(BankField.MINIMUM_BALANCE));
+		info.append(ChatColor.GRAY + " (" + ChatColor.RED + getFormatted(BankField.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
 		info.append(ChatColor.GRAY + "Accounts: " + ChatColor.AQUA + getAccounts().size());
 		info.append(ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
 		info.append(ChatColor.GRAY + "Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().divide(BigDecimal.valueOf(getAccounts().size()), BigDecimal.ROUND_HALF_EVEN)));

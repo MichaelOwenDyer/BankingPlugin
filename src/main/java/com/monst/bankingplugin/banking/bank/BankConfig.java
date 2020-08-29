@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * <p>The purpose of these static setters is to replace traditional, largely redundant setter methods which
  * must be individually created for each and every field. The formatters serve a similar function, preventing the
  * hassle of formatting the fetched value manually each and every time it is requested. Individual getters have also
- * been omitted from this class in favor of a single method {@link #get(BankField)} with a dynamic return type. All in all,
+ * been omitted from this class in favor of a single method {@link #get(BankField, boolean)} with a dynamic return type. All in all,
  * these generic functions help avoid repetitive boilerplate code and enable easier expansion, with few downsides.
  */
 @SuppressWarnings("all")
@@ -218,15 +218,6 @@ public class BankConfig {
 	}
 
 	/**
-	 * Reports whether or not a {@link BankField} is set as "allow-override: true" in the {@link Config}.
-	 * @param field the configuration value
-	 * @return whether a config value can be set independently for each bank
-	 */
-	public static boolean isOverrideAllowed(BankField field) {
-		return field.getConfigPair().isOverridable();
-	}
-
-	/**
 	 * Sets a value to the specified {@link BankField}. If the field cannot accept the
 	 * provided value, a {@link ArgumentParseException} is returned in the {@link Callback}
 	 * @param field the field to set
@@ -234,8 +225,8 @@ public class BankConfig {
 	 * @param callback the {@link Callback} that returns the new formatted field or an error message
 	 * @return whether the field is overridable or not
 	 */
-	public boolean set(BankField field, String value, Callback<String> callback) {
-		if (!isOverrideAllowed(field))
+	boolean set(BankField field, String value, Callback<String> callback) {
+		if (!field.isOverrideAllowed())
 			return false;
 		try {
 			if (value.trim().isEmpty()) // Set to default
@@ -251,12 +242,8 @@ public class BankConfig {
 		return true;
 	}
 
-	public String getFormatted(BankField field) {
+	String getFormatted(BankField field) {
 		return FORMATTERS.get(field).apply(this);
-	}
-
-	public <T> T get(BankField field) {
-		return get(field, false);
 	}
 
 	/**
@@ -266,15 +253,15 @@ public class BankConfig {
 	 * @param ignoreConfig whether to force returning the bank-specific value as opposed to potentially
 	 *                     the default value from the {@link Config}
 	 * @return the bank-specific value, or the default value if the field is currently not overridable
-	 * @see #isOverrideAllowed(BankField)
+	 * @see BankField#isOverrideAllowed()
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T get(BankField field, boolean ignoreConfig) {
+	<T> T get(BankField field, boolean ignoreConfig) {
 	    try {
 	        if (ignoreConfig)
                 return (T) field.getDataType().cast(field.getLocalVariable().get(this));
 	        else
-	            return isOverrideAllowed(field)
+	            return field.isOverrideAllowed()
                             ? (T) field.getDataType().cast(field.getLocalVariable().get(this))
                             : (T) field.getConfigPair().getDefault();
         } catch (IllegalAccessException e) {

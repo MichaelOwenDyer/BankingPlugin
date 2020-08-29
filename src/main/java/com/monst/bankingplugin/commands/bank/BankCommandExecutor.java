@@ -606,7 +606,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		String previousValue = bank.getConfig().getFormatted(field);
+		String previousValue = bank.getFormatted(field);
 		Callback<String> callback = new Callback<String>(plugin) {
 			@Override
 			public void onResult(String result) {
@@ -624,7 +624,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				sender.sendMessage(errorMessage);
 			}
 		};
-		if (!bank.getConfig().set(field, value, callback))
+		if (!bank.set(field, value, callback))
 			sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
 
 		if (field == BankField.INTEREST_PAYOUT_TIMES)
@@ -684,54 +684,32 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		if (args.length < 2)
+		if (args.length < 3)
 			return false;
 
-		Bank bank;
 		OfflinePlayer newOwner = null;
-		if (args.length == 2) {
-			if (!(sender instanceof Player)) {
-				plugin.debug("Must be player");
-				sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+		Bank bank = bankUtils.lookupBank(args[1]);
+		if (bank == null) {
+			plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			return true;
+		}
+		if (!args[2].equalsIgnoreCase("admin")) {
+			newOwner = Bukkit.getOfflinePlayer(args[2]);
+			if (!newOwner.hasPlayedBefore()) {
+				sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[2]));
 				return true;
-			}
-			bank = bankUtils.getBank(((Player) sender).getLocation());
-			if (bank == null) {
-				plugin.debug(sender.getName() + " wasn't standing in a bank");
-				sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
-				return true;
-			}
-			if (!args[1].equalsIgnoreCase("admin")) {
-				newOwner = Bukkit.getOfflinePlayer(args[1]);
-				if (!newOwner.hasPlayedBefore()) {
-					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
-					return true;
-				}
-			}
-		} else {
-			bank = bankUtils.lookupBank(args[1]);
-			if (bank == null) {
-				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
-				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
-				return true;
-			}
-			if (!args[2].equalsIgnoreCase("admin")) {
-				newOwner = Bukkit.getOfflinePlayer(args[2]);
-				if (!newOwner.hasPlayedBefore()) {
-					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[2]));
-					return true;
-				}
 			}
 		}
 
-		if (sender instanceof Player && newOwner != null && bank.isOwner(newOwner)) {
-			boolean isExecutor = Utils.samePlayer((Player) sender, newOwner);
+		if (newOwner != null && bank.isOwner(newOwner)) {
+			boolean isExecutor = sender instanceof Player && Utils.samePlayer((Player) sender, newOwner);
 			plugin.debug(newOwner.getName() + " is already owner of bank");
 			sender.sendMessage(String.format(Messages.ALREADY_OWNER_BANK, isExecutor ? "You" : newOwner.getName(),
 					isExecutor ? "are" : "is"));
 			return true;
 		}
-		if (bank.isAdminBank() && newOwner == null) {
+		if (newOwner == null && bank.isAdminBank()) {
 			plugin.debug("Bank is already an admin bank");
 			sender.sendMessage(Messages.ALREADY_ADMIN_BANK);
 			return true;

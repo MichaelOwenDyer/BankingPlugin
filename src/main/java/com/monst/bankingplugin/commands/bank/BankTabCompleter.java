@@ -2,7 +2,6 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankConfig;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
@@ -108,7 +107,7 @@ public class BankTabCompleter implements TabCompleter {
                 .sorted()
                 .collect(Collectors.toList());
         List<String> fieldNames = BankField.stream()
-                .filter(BankConfig::isOverrideAllowed)
+                .filter(BankField::isOverrideAllowed)
                 .map(BankField::getName)
                 .sorted()
                 .collect(Collectors.toList());
@@ -121,7 +120,7 @@ public class BankTabCompleter implements TabCompleter {
             Bank bank = bankUtils.lookupBank(args[1]);
             BankField field = BankField.getByName(args[2]);
             if (bank != null && field != null)
-                return Collections.singletonList(bank.getConfig().getFormatted(field));
+                return Collections.singletonList(bank.getFormatted(field));
         }
         return Collections.emptyList();
     }

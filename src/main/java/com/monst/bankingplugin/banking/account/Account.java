@@ -38,7 +38,7 @@ public class Account extends Ownable {
 				new HashSet<>(),
 				bank,
 				loc,
-				AccountStatus.mint(bank.getConfig()),
+				AccountStatus.mint(bank),
 				ChatColor.DARK_GREEN + owner.getName() + "'s Account",
 				BigDecimal.ZERO,
 				BigDecimal.ZERO
@@ -401,7 +401,7 @@ public class Account extends Ownable {
 		info.append(ChatColor.GRAY + "Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier()
 				+ ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
 		StringBuilder interestRate = new StringBuilder(ChatColor.GRAY + "Interest rate: ");
-		double interestR = getBank().getConfig().get(BankField.INTEREST_RATE);
+		double interestR = getBank().get(BankField.INTEREST_RATE);
 		interestRate.append(ChatColor.GREEN + "" + BigDecimal.valueOf(interestR * getStatus().getRealMultiplier() * 100)
 				.setScale(1, BigDecimal.ROUND_HALF_EVEN)
 				+ "% " + ChatColor.GRAY + "(" + interestR + " x " + getStatus().getRealMultiplier() + ")");
@@ -424,7 +424,7 @@ public class Account extends Ownable {
 					+ " (stage " + getStatus().getMultiplierStage() + "), "
 				+ "Delay until next payout: " + getStatus().getDelayUntilNextPayout() + ", "
 				+ "Next payout amount: " + Utils.format(getBalance().doubleValue()
-						* (double) getBank().getConfig().get(BankField.INTEREST_RATE)
+						* (double) getBank().get(BankField.INTEREST_RATE)
 						* getStatus().getRealMultiplier()) + ", "
 				+ "Location: " + getCoordinates();
 	}

@@ -233,7 +233,7 @@ public class Utils {
 	}
 
 	private static List<String> getMultiplierLore(Bank bank, int highlightStage) {
-		List<Integer> multipliers = bank.getConfig().get(BankField.MULTIPLIERS);
+		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
 
 		if (multipliers.isEmpty())
 			return Collections.singletonList(ChatColor.GREEN + "1x");

@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.banking.account;
 
 
-import com.monst.bankingplugin.banking.bank.BankConfig;
+import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class AccountStatus {
 	
-	private final BankConfig bankConfig;
+	private final Bank bank;
 
 	private int multiplierStage;
 	private int delayUntilNextPayout;
@@ -22,27 +22,27 @@ public class AccountStatus {
 	/**
 	 * Mint an AccountStatus for a brand new account.
 	 */
-	public static AccountStatus mint(BankConfig config) {
+	public static AccountStatus mint(Bank bank) {
 		return new AccountStatus(
-				config,
+				bank,
 				0,
-				config.get(BankField.INITIAL_INTEREST_DELAY),
-				config.get(BankField.ALLOWED_OFFLINE_PAYOUTS),
-				config.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET)
+				bank.get(BankField.INITIAL_INTEREST_DELAY),
+				bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS),
+				bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET)
 		);
 	}
 
 	/**
 	 * Creates an account status with the given values.
-	 * @param config The BankConfig from the account's bank
+	 * @param bank The account's bank
 	 * @param multiplierStage The current multiplier stage of the account
 	 * @param delayUntilNextPayout The initial delay value
 	 * @param remainingOfflinePayouts How many offline payouts are currently remaining
 	 * @param remainingOfflinePayoutsBeforeReset How many offline payouts are currently remaining until multiplier reset
 	 */
-	public AccountStatus(BankConfig config, int multiplierStage, int delayUntilNextPayout,
+	public AccountStatus(Bank bank, int multiplierStage, int delayUntilNextPayout,
 						 int remainingOfflinePayouts, int remainingOfflinePayoutsBeforeReset) {
-		this.bankConfig = config;
+		this.bank = bank;
 		this.multiplierStage = multiplierStage;
 		this.delayUntilNextPayout = delayUntilNextPayout;
 		this.remainingOfflinePayouts = remainingOfflinePayouts;
@@ -66,7 +66,7 @@ public class AccountStatus {
 	}
 	
 	public int processWithdrawal() {
-		int decrement = bankConfig.get(BankField.WITHDRAWAL_MULTIPLIER_DECREMENT);
+		int decrement = bank.get(BankField.WITHDRAWAL_MULTIPLIER_DECREMENT);
 		if (decrement < 0) {
 			resetMultiplierStage();
 			return 0;
@@ -79,7 +79,7 @@ public class AccountStatus {
 	 * @param online whether the player is online or offline
 	 */
 	public void incrementMultiplier(boolean online) {
-		List<Integer> multipliers = bankConfig.get(BankField.MULTIPLIERS);
+		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
 
 		if (online) {
 			multiplierStage = Math.max(multiplierStage++, multipliers.size() - 1);
@@ -87,13 +87,13 @@ public class AccountStatus {
 		} else {
 			if (mustResetMultiplier())
 				resetMultiplierStage();
-			int newStage = multiplierStage + (int) bankConfig.get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
+			int newStage = multiplierStage + (int) bank.get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
 			multiplierStage = Math.max(0, Math.min(newStage, multipliers.size() - 1));
 		}
 	}
 
 	private void resetRemainingOfflineUntilReset() {
-		remainingOfflineUntilReset = bankConfig.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
+		remainingOfflineUntilReset = bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
 	}
 
 	private boolean mustResetMultiplier() {
@@ -125,7 +125,7 @@ public class AccountStatus {
 	private boolean mustWait(boolean online) {
 		if (delayUntilNextPayout <= 0)
 			return false;
-		if (online || (boolean) bankConfig.get(BankField.COUNT_INTEREST_DELAY_OFFLINE))
+		if (online || (boolean) bank.get(BankField.COUNT_INTEREST_DELAY_OFFLINE))
 			delayUntilNextPayout--;
 		return true;
 	}
@@ -142,14 +142,14 @@ public class AccountStatus {
 	 * @return the corresponding multiplier, or 1x by default in case of an error.
 	 */
 	public int getRealMultiplier() {
-		List<Integer> multipliers = bankConfig.get(BankField.MULTIPLIERS);
+		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
 		if (multipliers == null || multipliers.isEmpty())
 			return 1;
 		return multipliers.get(Math.max(0, Math.min(multiplierStage, multipliers.size() - 1)));
 	}
 	
 	public int setMultiplierStage(int stage) {
-		List<Integer> multipliers = bankConfig.get(BankField.MULTIPLIERS);
+		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
 		return multiplierStage = Math.max(0, Math.min(stage, multipliers.size() - 1));
 	}
 

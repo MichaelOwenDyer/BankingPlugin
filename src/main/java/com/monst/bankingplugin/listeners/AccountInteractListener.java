@@ -3,7 +3,6 @@ package com.monst.bankingplugin.listeners;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankConfig;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.*;
@@ -233,7 +232,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 		if (!forSelf) {
-			int playerAccountLimit = bank.getConfig().get(BankField.PLAYER_BANK_ACCOUNT_LIMIT);
+			int playerAccountLimit = bank.get(BankField.PLAYER_BANK_ACCOUNT_LIMIT);
 			if (playerAccountLimit > 0 && bank.getAccountsCopy(account -> account.isOwner(executor)).size() >= playerAccountLimit) {
 				executor.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
 				plugin.debug(executor.getName() + " is not permitted to create another account at bank " + bank.getName());
@@ -251,7 +250,7 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		double creationPrice = bank.getConfig().get(BankField.ACCOUNT_CREATION_PRICE);
+		double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
 		creationPrice *= ((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1;
 
 		if (creationPrice > 0 && creationPrice > plugin.getEconomy().getBalance(executor)
@@ -359,10 +358,10 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 		
-		BankConfig bankConfig = account.getBank().getConfig();
-		double creationPrice = bankConfig.get(BankField.ACCOUNT_CREATION_PRICE);
+		Bank bank = account.getBank();
+		double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
 		creationPrice *= account.getSize();
-		creationPrice *= bankConfig.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
+		creationPrice *= bank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
 
 		if (creationPrice > 0 && account.isOwner(executor) && !account.getBank().isOwner(executor)) {
 
@@ -594,13 +593,12 @@ public class AccountInteractListener implements Listener {
 		Bank oldBank = toMigrate.getBank();
 		Bank newBank = newAccount.getBank(); // May or may not be the same as oldBank
 
-		double creationPrice = newBank.getConfig().get(BankField.ACCOUNT_CREATION_PRICE);
+		double creationPrice = newBank.get(BankField.ACCOUNT_CREATION_PRICE);
 		creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1);
 		creationPrice *= (newBank.isOwner(p) ? 0 : 1);
 
-		BankConfig oldConfig = oldBank.getConfig();
-		double reimbursement = oldConfig.get(BankField.REIMBURSE_ACCOUNT_CREATION)
-				? oldConfig.get(BankField.ACCOUNT_CREATION_PRICE) : 0.0d;
+		double reimbursement = oldBank.get(BankField.REIMBURSE_ACCOUNT_CREATION)
+				? oldBank.get(BankField.ACCOUNT_CREATION_PRICE) : 0.0d;
 		reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
 		reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
 

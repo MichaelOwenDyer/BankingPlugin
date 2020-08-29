@@ -3,7 +3,6 @@ package com.monst.bankingplugin.listeners;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankConfig;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.utils.*;
@@ -78,9 +77,9 @@ public class AccountProtectListener implements Listener {
 	 */
 	@SuppressWarnings("ConstantConditions")
 	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
-		BankConfig bankConfig = account.getBank().getConfig();
-		double creationPrice = bankConfig.get(BankField.ACCOUNT_CREATION_PRICE);
-		creationPrice *= bankConfig.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
+		Bank bank = account.getBank();
+		double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
+		creationPrice *= bank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
 
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			double finalCreationPrice = creationPrice;
@@ -98,7 +97,6 @@ public class AccountProtectListener implements Listener {
 				}
 			});
 
-			Bank bank = account.getBank();
 			// Bank owner reimburses the customer
 			if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
 				OfflinePlayer bankOwner = bank.getOwner();
@@ -217,8 +215,7 @@ public class AccountProtectListener implements Listener {
             return;
 		}
 
-		BankConfig config = account.getBank().getConfig();
-		double creationPrice = config.get(BankField.ACCOUNT_CREATION_PRICE);
+		double creationPrice = account.getBank().get(BankField.ACCOUNT_CREATION_PRICE);
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
 			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";

@@ -484,9 +484,8 @@ public abstract class Database {
 						throw new IllegalStateException("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
 					}
 
-					BankConfig config = bank.getConfig();
 					ps.setString(i + 9, BankField.stream()
-							.map(field -> "" + config.get(field, true))
+							.map(field -> "" + bank.get(field, true))
 							.collect(Collectors.joining(" | "))
 					);
 
@@ -760,7 +759,7 @@ public abstract class Database {
 					int remainingOfflinePayouts = rs.getInt("remaining_offline_payouts");
 					int remainingOfflineUntilReset = rs.getInt("remaining_offline_until_reset");
 
-					status = new AccountStatus(bank.getConfig(), multiplierStage, remainingUntilPayout,
+					status = new AccountStatus(bank, multiplierStage, remainingUntilPayout,
 							remainingOfflinePayouts, remainingOfflineUntilReset);
 
 				} catch (SQLException e) {
