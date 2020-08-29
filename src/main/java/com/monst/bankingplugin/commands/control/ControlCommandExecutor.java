@@ -143,7 +143,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 				Collection<Bank> banks = result.getBanks();
 				Collection<Account> accounts = result.getAccounts();
 				sender.sendMessage(String.format(Messages.RELOADED_PLUGIN, banks.size(), accounts.size()));
-				plugin.debug(String.format(sender.getName() + " has reloaded %d banks and %d accounts.", banks.size(), accounts.size()));
+				plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
 			}
 
 			@Override

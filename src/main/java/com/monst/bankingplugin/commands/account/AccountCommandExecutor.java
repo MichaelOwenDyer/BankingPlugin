@@ -359,7 +359,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				String nickname = sb.toString();
 
 				if (!nickname.trim().isEmpty() && !Utils.isAllowedName(nickname)) {
-					plugin.debug("Name is not allowed");
+					plugin.debug("Name \"" + nickname + "\" is not allowed");
 					p.sendMessage(Messages.NAME_NOT_ALLOWED);
 					return true;
 				}

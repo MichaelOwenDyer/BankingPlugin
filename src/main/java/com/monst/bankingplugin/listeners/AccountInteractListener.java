@@ -188,9 +188,9 @@ public class AccountInteractListener implements Listener {
 				if (!account.isTrusted(p))
 					p.sendMessage(String.format(Messages.ACCOUNT_OPENED, account.getOwner().getName()));
 
-				plugin.debug(String.format(p.getName() + " is opening %s account%s (#" + account.getID() + ")",
-						(account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"),
-						(account.isCoowner(p) ? " as a co-owner" : "")));
+				plugin.debugf("%s is opening %s account%s (#%d)",
+						p.getName(), (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"),
+						(account.isCoowner(p) ? " (is co-owner)" : ""), account.getID());
 			}
 		}
 	}
@@ -408,9 +408,9 @@ public class AccountInteractListener implements Listener {
 	 * @param account Account from which the information will be retrieved
 	 */
 	private void info(Player player, Account account) {
-		plugin.debug(String.format(player.getName() + " is retrieving %s account info%s (#" + account.getID() + ")",
-				(account.isOwner(player) ? "their" : account.getOwner().getName() + "'s"),
-				(account.isCoowner(player) ? " as a co-owner" : "")));
+		plugin.debugf("%s is retrieving %s account info%s (#%d)",
+				player.getName(), (account.isOwner(player) ? "their" : account.getOwner().getName() + "'s"),
+				(account.isCoowner(player) ? " (is co-owner)" : ""), account.getID());
 
 		AccountInfoEvent event = new AccountInfoEvent(player, account);
 		Bukkit.getPluginManager().callEvent(event);
@@ -433,12 +433,13 @@ public class AccountInteractListener implements Listener {
 				}
 
 				if (value.isEmpty()) {
-					plugin.debug(String.format(executor.getName() + " has reset %s account nickname%s (#" + account.getID() + ")",
+					plugin.debugf("%s has reset %s account nickname%s (#%d)", executor.getName(),
 							(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
-							(account.isCoowner(executor) ? " as a co-owner" : "")));
+							(account.isCoowner(executor) ? " (is co-owner)" : ""), account.getID());
 					account.setToDefaultName();
 				} else {
-					plugin.debug(String.format(executor.getName() + " has set their account nickname to \"%s\" (#%d)", value, account.getID()));
+					plugin.debugf("%s has set their account nickname to \"%s\" (#%d)",
+							executor.getName(), value, account.getID());
 					account.setName(value);
 				}
 
@@ -462,9 +463,8 @@ public class AccountInteractListener implements Listener {
 
 				plugin.getAccountUtils().addAccount(account, true);
 				executor.sendMessage(String.format(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
-				plugin.debug(String.format(
-						executor.getName() + " has set an account multiplier stage to %d (#" + account.getID() + ")",
-						stage, (account.isCoowner(executor) ? " as a co-owner" : "")));
+				plugin.debugf("%s has set an account multiplier stage to %d (#%d)", executor.getName(), stage,
+						(account.isCoowner(executor) ? " (is co-owner)" : ""), account.getID());
 				break;
 
 			case DELAY:
@@ -473,15 +473,14 @@ public class AccountInteractListener implements Listener {
 					return;
 				}
 
-				int delay;
-				if (value.startsWith("+") || value.startsWith("-"))
-					delay = account.getStatus().setInterestDelayRelative(Integer.parseInt(value));
-				else
-					delay = account.getStatus().setInterestDelay(Integer.parseInt(value));
+				account.getStatus().setInterestDelay(Integer.parseInt(value) +
+						((value.startsWith("+") || value.startsWith("-"))
+								? account.getStatus().getDelayUntilNextPayout() // Set relative to current if value prefixed with + or -
+								: 0));
 				plugin.getAccountUtils().addAccount(account, true);
-				plugin.debug(String.format(executor.getName()
-						+ " has set the interest delay of account #%d to %d.", account.getID(), delay));
-				executor.sendMessage(Messages.INTEREST_DELAY_SET);
+				plugin.debugf("%s has set the interest delay of account #%d to %d.",
+						executor.getName(), account.getID(), account.getStatus().getDelayUntilNextPayout());
+				executor.sendMessage(String.format(Messages.INTEREST_DELAY_SET, account.getStatus().getDelayUntilNextPayout()));
 		}
 	}
 
@@ -501,9 +500,8 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		plugin.debug(String.format(p.getName() + " has trusted %s to %s account (#%d)",
-				playerToTrust.getName(), account.isOwner(p) ? "their" : account.getOwner().getName() + "'s",
-				account.getID()));
+		plugin.debugf("%s has trusted %s to %s account (#%d)", p.getName(), playerToTrust.getName(),
+				(account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
 		p.sendMessage(String.format(Messages.ADDED_COOWNER, playerToTrust.getName()));
 		account.trustPlayer(playerToTrust);
 	}
@@ -525,9 +523,8 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		plugin.debug(String.format(p.getName() + " has untrusted %s from %s account (#%d)",
-				playerToUntrust.getName(), account.isOwner(p) ? "their" : account.getOwner().getName() + "'s",
-				account.getID()));
+		plugin.debugf("%s has untrusted %s from %s account (#%d)", p.getName(),	playerToUntrust.getName(),
+				(account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
 		p.sendMessage(String.format(Messages.REMOVED_COOWNER, playerToUntrust.getName()));
 		account.untrustPlayer(playerToUntrust);
 	}

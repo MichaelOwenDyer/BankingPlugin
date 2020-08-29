@@ -147,6 +147,7 @@ public class Bank extends Ownable {
 	 * @param account the account to be added
 	 */
 	public void addAccount(Account account) {
+		plugin.debugf("Adding account #%d to bank %d", account.getID(), getID());
 		if (account != null)
 			accounts.add(account);
 	}

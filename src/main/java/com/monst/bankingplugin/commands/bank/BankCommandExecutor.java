@@ -433,7 +433,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		bank = bankUtils.lookupBank(args[1]);
 		if (bank == null) {
-			plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
 			p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
@@ -524,7 +524,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return true;
 			}
@@ -583,7 +583,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		String value = sb.toString();
 
 		if (bank == null) {
-			plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
 			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
@@ -661,7 +661,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
 				p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 				return;
 			}
@@ -690,7 +690,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		OfflinePlayer newOwner = null;
 		Bank bank = bankUtils.lookupBank(args[1]);
 		if (bank == null) {
-			plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
 			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
@@ -783,7 +783,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 		} else {
 			bank = bankUtils.lookupBank(args[1]);
 			if (bank == null) {
-				plugin.debug(String.format(Messages.BANK_NOT_FOUND, args[1]));
+				plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
 				sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			}
 		}

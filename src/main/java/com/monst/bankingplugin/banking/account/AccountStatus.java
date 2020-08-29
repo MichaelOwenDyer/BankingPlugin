@@ -157,11 +157,8 @@ public class AccountStatus {
 		return setMultiplierStage(multiplierStage + stage);
 	}
 
-	public int setInterestDelay(int delay) {
-		return delayUntilNextPayout = Math.max(0, delay);
+	public void setInterestDelay(int delay) {
+		delayUntilNextPayout = Math.max(0, delay);
 	}
 
-	public int setInterestDelayRelative(int delay) {
-		return setInterestDelay(delayUntilNextPayout + delay);
-	}
 }

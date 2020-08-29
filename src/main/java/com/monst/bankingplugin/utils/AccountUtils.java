@@ -106,19 +106,19 @@ public class AccountUtils {
 		}
 
 		InventoryHolder ih = inv.getHolder();
-        plugin.debug("Adding account... (#" + account.getID() + ")");
+        plugin.debug("Adding account to session... (#" + account.getID() + ")");
 
         if (ih instanceof DoubleChest) {
 			DoubleChest dc = (DoubleChest) ih;
 			Chest l = (Chest) dc.getLeftSide();
 			Chest r = (Chest) dc.getRightSide();
 
-			plugin.debug("Added account as double chest. (#" + account.getID() + ")");
+			plugin.debug("Added account to session as double chest. (#" + account.getID() + ")");
 
 			accountLocationMap.put(Utils.blockifyLocation(r.getLocation()), account);
 			accountLocationMap.put(Utils.blockifyLocation(l.getLocation()), account);
         } else {
-            plugin.debug("Added account as single chest. (#" + account.getID() + ")");
+            plugin.debug("Added account to session as single chest. (#" + account.getID() + ")");
 
 			accountLocationMap.put(Utils.blockifyLocation(account.getLocation()), account);
         }

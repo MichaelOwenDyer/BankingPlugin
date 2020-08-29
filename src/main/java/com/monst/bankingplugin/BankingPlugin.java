@@ -375,7 +375,7 @@ public class BankingPlugin extends JavaPlugin {
 	}
 
 	/**
-	 * Print a message to the <i>/plugins/BankingPlugin/debug.txt</i> file.
+	 * Prints a message to the <i>/plugins/BankingPlugin/debug.txt</i> file.
 	 * @param message the message to be printed
 	 */
 	public void debug(String message) {
@@ -393,7 +393,14 @@ public class BankingPlugin extends JavaPlugin {
 	}
 
 	/**
-	 * Print a {@link Throwable}'s stacktrace to the
+	 * Prints a message with special formatting to the debug file.
+	 */
+	public void debugf(String message, Object... format) {
+		debug(String.format(message, format));
+	}
+
+	/**
+	 * Prints a {@link Throwable}'s stacktrace to the
 	 * <i>/plugins/BankingPlugin/debug.txt</i> file
 	 * 
 	 * @param throwable the {@link Throwable} of which the stacktrace will be printed

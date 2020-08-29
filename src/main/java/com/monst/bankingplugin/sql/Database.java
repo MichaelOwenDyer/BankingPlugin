@@ -480,8 +480,9 @@ public abstract class Database {
 
 						ps.setString(i + 8, sb.toString());
 					} else {
-						plugin.debug("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
-						throw new IllegalStateException("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
+						IllegalStateException e = new IllegalStateException("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
+						plugin.debug(e);
+						throw e;
 					}
 
 					ps.setString(i + 9, BankField.stream()

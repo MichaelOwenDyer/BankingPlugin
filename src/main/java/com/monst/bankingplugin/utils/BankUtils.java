@@ -351,11 +351,11 @@ public class BankUtils {
 						}
 
 						if (banks.size() != reloadedBanks.size())
-							plugin.debug(String.format("Number of banks before load was %d and is now %d.",
-									banks.size(), reloadedBanks.size()));
+							plugin.debugf("Number of banks before load was %d and is now %d.",
+									banks.size(), reloadedBanks.size());
 						if (accounts.size() != reloadedAccounts.size())
-							plugin.debug(String.format("Number of accounts before load was %d and is now %d",
-									accounts.size(), reloadedAccounts.size()));
+							plugin.debugf("Number of accounts before load was %d and is now %d",
+									accounts.size(), reloadedAccounts.size());
 						
 						if (callback != null)
 							callback.callSyncResult(new ReloadResult(reloadedBanks, reloadedAccounts));

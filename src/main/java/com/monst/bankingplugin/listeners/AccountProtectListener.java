@@ -55,8 +55,8 @@ public class AccountProtectListener implements Listener {
 			Player p = e.getPlayer();
 
 			if (p.isSneaking() && Utils.hasAxeInHand(p)) {
-				plugin.debug(String.format("%s tries to break %s's account (#%d)", p.getName(),
-						account.getOwner().getName(), account.getID()));
+				plugin.debugf("%s tries to break %s's account (#%d)",
+						p.getName(), account.getOwner().getName(), account.getID());
 				if (account.isOwner(p) || p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
 					removeAndCreateSmaller(account, b, p);
 					return;
@@ -135,8 +135,7 @@ public class AccountProtectListener implements Listener {
 			});
 		} else {
 			accountUtils.removeAccount(account, true);
-			plugin.debug(String.format("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(),
-					account.getID()));
+			plugin.debugf("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 			p.sendMessage(Messages.ACCOUNT_REMOVED);
 		}
 	}
@@ -192,8 +191,7 @@ public class AccountProtectListener implements Listener {
 		if (account == null)
             return;
 
-		plugin.debug(String.format("%s tries to extend %s's account (#%d)", p.getName(), account.getOwner().getName(),
-				account.getID()));
+		plugin.debugf("%s tries to extend %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 
 		AccountExtendEvent event = new AccountExtendEvent(p, account, b.getLocation());
         Bukkit.getPluginManager().callEvent(event);
@@ -259,8 +257,8 @@ public class AccountProtectListener implements Listener {
 			public void onResult(Void result) {
 				if (newAccount.create(true)) {
 					accountUtils.addAccount(newAccount, true);
-					plugin.debug(String.format("%s extended %s's account (#%d)", p.getName(), account.getOwner().getName(),
-							account.getID()));
+					plugin.debugf("%s extended %s's account (#%d)",
+							p.getName(), account.getOwner().getName(), account.getID());
 				} else
 					p.sendMessage(Messages.ERROR_OCCURRED);
 			}
