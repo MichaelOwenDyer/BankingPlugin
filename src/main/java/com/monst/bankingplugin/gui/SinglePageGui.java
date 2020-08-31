@@ -7,29 +7,20 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
 
     final T guiSubject;
     Menu menu;
 
-    private static final Map<Ownable, Set<SinglePageGui<?>>> openGuis = new HashMap<>();
-
     public static void updateGuis(Ownable ownable) {
-        if (openGuis.containsKey(ownable))
-            openGuis.get(ownable).forEach(SinglePageGui::update);
+        GuiTracker.get(ownable).forEach(SinglePageGui::update);
     }
 
     public static void updateGuis() {
-        openGuis.values().stream().flatMap(Collection::stream).forEach(SinglePageGui::update);
+        GuiTracker.get().forEach(SinglePageGui::update);
     }
-
-    final Menu.CloseHandler REMOVE_AND_OPEN_PREVIOUS = (player, menu) -> {
-        openGuis.get(getGuiSubject()).remove(this);
-        if (openGuis.get(getGuiSubject()).isEmpty())
-            openGuis.remove(getGuiSubject());
-        OPEN_PREVIOUS.close(player, menu);
-    };
 
     SinglePageGui(T guiSubject) {
         this.guiSubject = guiSubject;
@@ -37,11 +28,13 @@ public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
 
     @Override
     void open(boolean initialize) {
-        openGuis.putIfAbsent(guiSubject, new HashSet<>());
-        openGuis.get(guiSubject).add(this);
+        GuiTracker.add(guiSubject, this);
         if (initialize) {
             initializeMenu();
-            setCloseHandler(REMOVE_AND_OPEN_PREVIOUS);
+            setCloseHandler((player, menu) -> {
+                GuiTracker.remove(guiSubject, this);
+                OPEN_PREVIOUS.close(player, menu);
+            });
             shortenGuiChain();
         }
         update();
@@ -63,14 +56,35 @@ public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
         menu.close(player);
     }
 
-    T getGuiSubject() {
-        return guiSubject;
-    }
-
     abstract void evaluateClearance(Player player);
 
     abstract ItemStack createSlotItem(int i);
 
     abstract Slot.ClickHandler createClickHandler(int i);
+
+    private static class GuiTracker {
+
+        private static final Map<Ownable, Set<SinglePageGui<?>>> openGuis = new HashMap<>();
+
+        private static void add(Ownable ownable, SinglePageGui<?> gui) {
+            openGuis.putIfAbsent(ownable, new HashSet<>());
+            openGuis.get(ownable).add(gui);
+        }
+
+        private static void remove(Ownable ownable, SinglePageGui<?> gui) {
+            openGuis.get(ownable).remove(gui);
+            if (openGuis.get(ownable).isEmpty())
+                openGuis.remove(ownable);
+        }
+
+        private static Set<SinglePageGui<?>> get(Ownable ownable) {
+            return openGuis.getOrDefault(ownable, new HashSet<>());
+        }
+
+        private static Set<SinglePageGui<?>> get() {
+            return openGuis.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
+        }
+
+    }
 
 }
