@@ -43,7 +43,7 @@ public class Messages {
 	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%s allowed banks.";
 	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to remove %d account%s.";
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to remove %d bank%s and %d account%s.";
-	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s to %s. Are you sure?";
+	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s to %s.";
 
 	public static final String OFFLINE_INTEREST_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in interest while you were offline!";
 	public static final String OFFLINE_BALANCE_INCREASED = ChatColor.GOLD + "Your account increased in value by " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " while you were offline.";
@@ -125,7 +125,7 @@ public class Messages {
 	public static final String CLICK_CHEST_MIGRATE_SECOND = ChatColor.GOLD + "Click a chest to migrate the account to.";
 	public static final String CLICK_CHEST_TRANSFER = ChatColor.GOLD + "Click an account chest to transfer ownership to %s.";
 	public static final String CLICK_TO_CONFIRM = ChatColor.GOLD + "Click chest again to confirm.";
-	public static final String EXECUTE_AGAIN_TO_CONFIRM = ChatColor.GOLD + " Execute command again to confirm.";
+	public static final String EXECUTE_AGAIN_TO_CONFIRM = ChatColor.GOLD + "Execute command again to confirm.";
 	
 	
 	private static final String NO_PERMISSION = ChatColor.RED + "You do not have permission to ";

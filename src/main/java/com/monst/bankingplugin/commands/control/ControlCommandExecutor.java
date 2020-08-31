@@ -50,7 +50,7 @@ public class ControlCommandExecutor implements CommandExecutor {
 				showVersion(sender);
 				break;
 			case "config":
-				if (! changeConfig(sender, args))
+				if (!changeConfig(sender, args))
 					sender.sendMessage(subCommand.getHelpMessage(sender));
 				break;
 			case "reload":

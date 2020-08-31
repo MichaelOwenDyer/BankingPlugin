@@ -90,6 +90,7 @@ public class AccountInteractListener implements Listener {
 
 			case REMOVE:
 
+				Objects.requireNonNull(account);
 				if (confirmRemove(p, account))
 					remove(p, account);
 				e.setCancelled(true);
@@ -97,6 +98,7 @@ public class AccountInteractListener implements Listener {
 
 			case INFO:
 
+				Objects.requireNonNull(account);
 				info(p, account);
 				ClickType.removePlayerClickType(p);
 				e.setCancelled(true);
@@ -113,6 +115,7 @@ public class AccountInteractListener implements Listener {
 
 			case TRUST:
 
+				Objects.requireNonNull(account);
 				OfflinePlayer playerToTrust = ((TrustClickType) clickType).getPlayerToTrust();
 				trust(p, account, playerToTrust);
 				ClickType.removePlayerClickType(p);
@@ -121,6 +124,7 @@ public class AccountInteractListener implements Listener {
 
 			case UNTRUST:
 
+				Objects.requireNonNull(account);
 				OfflinePlayer playerToUntrust = ((UntrustClickType) clickType).getPlayerToUntrust();
 				untrust(p, account, playerToUntrust);
 				ClickType.removePlayerClickType(p);
@@ -128,6 +132,8 @@ public class AccountInteractListener implements Listener {
 				break;
 
 			case MIGRATE:
+
+				Objects.requireNonNull(account);
 				if (((MigrateClickType) clickType).isFirstClick()) {
 					migratePartOne(p, account);
 				} else {
@@ -142,6 +148,8 @@ public class AccountInteractListener implements Listener {
 				break;
 
 			case TRANSFER:
+
+				Objects.requireNonNull(account);
 				OfflinePlayer newOwner = ((TransferClickType) clickType).getNewOwner();
 				if (confirmTransfer(p, newOwner, account))
 					transfer(p, newOwner, account);
@@ -443,7 +451,6 @@ public class AccountInteractListener implements Listener {
 					account.setName(value);
 				}
 
-				plugin.getAccountUtils().addAccount(account, true);
 				executor.sendMessage(Messages.NICKNAME_SET);
 				break;
 
@@ -461,7 +468,6 @@ public class AccountInteractListener implements Listener {
 				else
 					stage = account.getStatus().setMultiplierStage(Integer.parseInt(value));
 
-				plugin.getAccountUtils().addAccount(account, true);
 				executor.sendMessage(String.format(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
 				plugin.debugf("%s has set an account multiplier stage to %d (#%d)", executor.getName(), stage,
 						(account.isCoowner(executor) ? " (is co-owner)" : ""), account.getID());
@@ -477,11 +483,14 @@ public class AccountInteractListener implements Listener {
 						((value.startsWith("+") || value.startsWith("-"))
 								? account.getStatus().getDelayUntilNextPayout() // Set relative to current if value prefixed with + or -
 								: 0));
-				plugin.getAccountUtils().addAccount(account, true);
+
 				plugin.debugf("%s has set the interest delay of account #%d to %d.",
 						executor.getName(), account.getID(), account.getStatus().getDelayUntilNextPayout());
 				executor.sendMessage(String.format(Messages.INTEREST_DELAY_SET, account.getStatus().getDelayUntilNextPayout()));
 		}
+		plugin.getAccountUtils().addAccount(account, true);
+		AccountConfigureEvent e = new AccountConfigureEvent(executor, account, field, value);
+		Bukkit.getPluginManager().callEvent(e);
 	}
 
 	private void trust(Player p, Account account, OfflinePlayer playerToTrust) {

@@ -10,7 +10,6 @@ import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.gui.BankGui;
 import com.monst.bankingplugin.gui.BankListGui;
-import com.monst.bankingplugin.gui.SinglePageGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.*;
@@ -624,14 +623,18 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 				sender.sendMessage(errorMessage);
 			}
 		};
-		if (!bank.set(field, value, callback))
+		if (!bank.set(field, value, callback)) {
 			sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
+			return true;
+		}
+
+		BankConfigureEvent e = new BankConfigureEvent(sender, bank, field, previousValue, value);
+		Bukkit.getPluginManager().callEvent(e);
 
 		if (field == BankField.INTEREST_PAYOUT_TIMES)
 			InterestEventScheduler.scheduleBankInterestEvents(bank);
 
 		bankUtils.addBank(bank, true);
-		SinglePageGui.updateGuis(bank);
 		return true;
 	}
 
@@ -674,7 +677,6 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 	}
 
-	@SuppressWarnings("deprecation")
 	private boolean promptBankTransfer(CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to transfer bank ownership");
 
@@ -684,19 +686,19 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		if (args.length < 3)
+		if (args.length < 2)
 			return false;
 
-		OfflinePlayer newOwner = null;
 		Bank bank = bankUtils.lookupBank(args[1]);
 		if (bank == null) {
 			plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
 			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
 			return true;
 		}
-		if (!args[2].equalsIgnoreCase("admin")) {
-			newOwner = Bukkit.getOfflinePlayer(args[2]);
-			if (!newOwner.hasPlayedBefore()) {
+		OfflinePlayer newOwner = null;
+		if (args.length > 2) {
+			newOwner = Utils.getPlayer(args[2]);
+			if (newOwner == null) {
 				sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[2]));
 				return true;
 			}
@@ -738,9 +740,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		if (sender instanceof Player && Config.confirmOnTransfer && needsConfirmation((Player) sender, args)) {
 			sender.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
-					(bank.isOwner((Player) sender)
-						? "your bank"
-						: bank.getOwnerDisplayName() + "'s bank"),
+					bank.getName(),
 					newOwner != null ? newOwner.getName() : "ADMIN"));
 			sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
 			return true;
@@ -753,15 +753,20 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", bank.getColorizedName(),
-				newOwner != null ? newOwner.getName() : "ADMIN"));
+		if (!(sender instanceof Player && Utils.samePlayer(newOwner, ((Player) sender))))
+			sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", bank.getColorizedName(),
+					newOwner != null ? newOwner.getName() : "ADMIN"));
+
+		if (newOwner != null && newOwner.isOnline())
+			newOwner.getPlayer().sendMessage(String.format(Messages.OWNERSHIP_TRANSFER_RECEIVED, "bank", bank.getColorizedName()));
+
 		Utils.notifyPlayers(
 				String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), bank.getColorizedName(),
 						newOwner != null ? newOwner.getName() : "ADMIN"),
-				Collections.singleton(newOwner), newOwner != null ? newOwner.getPlayer() : null
+				Collections.singleton(newOwner),
+				newOwner != null ? newOwner.getPlayer() : null
 		);
-		if (newOwner != null && newOwner.isOnline())
-			newOwner.getPlayer().sendMessage(String.format(Messages.OWNERSHIP_TRANSFER_RECEIVED, "bank", bank.getColorizedName()));
+
 		bank.transferOwnership(newOwner);
 		bankUtils.addBank(bank, true);
 		return true;

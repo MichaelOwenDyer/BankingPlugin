@@ -4,10 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.commands.Confirmable;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
-import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
-import com.monst.bankingplugin.events.account.AccountPreRemoveEvent;
-import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
+import com.monst.bankingplugin.events.account.*;
 import com.monst.bankingplugin.gui.AccountGui;
 import com.monst.bankingplugin.gui.AccountListGui;
 import com.monst.bankingplugin.utils.*;
@@ -135,9 +132,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			return;
 		}
 
-		@SuppressWarnings("deprecation")
-		OfflinePlayer owner = forSelf ? p.getPlayer() : Bukkit.getOfflinePlayer(args[1]);
-		if (!forSelf && !owner.hasPlayedBefore()) {
+		OfflinePlayer owner = forSelf ? p.getPlayer() : Utils.getPlayer(args[1]);
+		if (!forSelf && owner == null) {
 			p.sendMessage(Messages.PLAYER_NOT_FOUND);
 			plugin.debug("Could not find player with name \"" + args[1] + "\"");
 			return;
@@ -218,7 +214,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		ClickType.setPlayerClickType(((Player) sender), new ClickType(EnumClickType.INFO));
 	}
 
-	@SuppressWarnings("deprecation")
 	private void promptAccountList(final CommandSender sender, String[] args) {
 		plugin.debug(sender.getName() + " wants to list accounts");
 		Collection<Account> accounts = null;
@@ -243,8 +238,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				accounts = accountUtils.getAccountsCopy();
 				noAccountsMessage = Messages.NO_ACCOUNTS_TO_LIST;
 			} else {
-				OfflinePlayer owner = Bukkit.getOfflinePlayer(args[1]);
-				if (!owner.hasPlayedBefore()) {
+				OfflinePlayer owner = Utils.getPlayer(args[1]);
+				if (owner == null) {
 					sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 					return;
 				}
@@ -280,7 +275,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		p.sendMessage(String.format(Messages.ACCOUNT_LIMIT, used, limit));
 	}
 
-	@SuppressWarnings("deprecation")
 	private boolean promptAccountRemoveAll(final CommandSender sender, String[] args) {
 
 		if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL)) {
@@ -305,8 +299,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 				if (namePlayerMap.containsKey(arg))
 					owners.add(namePlayerMap.get(arg));
 				else {
-					OfflinePlayer player = Bukkit.getOfflinePlayer(arg);
-					if (player.hasPlayedBefore())
+					OfflinePlayer player = Utils.getPlayer(arg);
+					if (player != null)
 						owners.add(player);
 				}
 			}
@@ -413,7 +407,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		return true;
 	}
 
-	@SuppressWarnings("deprecation")
 	private boolean promptAccountTrust(Player p, String[] args) {
 		if (args.length < 2)
 			return false;
@@ -424,8 +417,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRUST);
 			return true;
 		}
-		OfflinePlayer playerToTrust = Bukkit.getOfflinePlayer(args[1]);
-		if (!playerToTrust.hasPlayedBefore()) {
+		OfflinePlayer playerToTrust = Utils.getPlayer(args[1]);
+		if (playerToTrust == null) {
 			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 			return false;
 		}
@@ -438,7 +431,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		return true;
 	}
 
-	@SuppressWarnings("deprecation")
 	private boolean promptAccountUntrust(Player p, String[] args) {
 		if (args.length < 2)
 			return false;
@@ -449,15 +441,15 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_UNTRUST);
 			return true;
 		}
-		OfflinePlayer playerToUntrust = Bukkit.getOfflinePlayer(args[1]);
-		if (!playerToUntrust.hasPlayedBefore()) {
+		OfflinePlayer playerToUntrust = Utils.getPlayer(args[1]);
+		if (playerToUntrust == null) {
 			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 			return false;
 		}
 		if (Utils.samePlayer(playerToUntrust, p))
 			return false;
 
-		p.sendMessage(Messages.CLICK_CHEST_UNTRUST);
+		p.sendMessage(String.format(Messages.CLICK_CHEST_UNTRUST, playerToUntrust.getName()));
 		ClickType.setPlayerClickType(p, new ClickType.UntrustClickType(playerToUntrust));
 		plugin.debug(p.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
 		return true;
@@ -477,7 +469,6 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		plugin.debug(p.getName() + " is migrating an account");
 	}
 
-	@SuppressWarnings("deprecation")
 	private boolean promptAccountTransfer(Player p, String[] args) {
 		plugin.debug(p.getName() + " wants to transfer ownership of an account");
 		
@@ -490,8 +481,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		if (args.length < 2)
 			return false;
 		
-		OfflinePlayer newOwner = Bukkit.getOfflinePlayer(args[1]);
-		if (!newOwner.hasPlayedBefore()) {
+		OfflinePlayer newOwner = Utils.getPlayer(args[1]);
+		if (newOwner == null) {
 			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
 			return false;
 		}

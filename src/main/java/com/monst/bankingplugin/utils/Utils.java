@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.utils;
 
-import com.earth2me.essentials.Essentials;
+import com.earth2me.essentials.User;
+import com.earth2me.essentials.UserMap;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
@@ -183,18 +184,22 @@ public class Utils {
 	}
 
 	public static void notifyPlayers(String message, Collection<OfflinePlayer> players, CommandSender notInclude) {
+		players = new HashSet<>(players);
 		if (notInclude instanceof Player)
 			players.remove(((Player) notInclude).getPlayer());
 		notifyPlayers(message, players);
 	}
 
 	private static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
-		Essentials essentials = BankingPlugin.getInstance().getEssentials();
-		filter(players, Objects::nonNull, Collectors.toSet()).forEach(p -> {
+		UserMap userMap = BankingPlugin.getInstance().getEssentials().getUserMap();
+		players.stream().filter(Objects::nonNull).distinct().forEach(p -> {
 			if (p.isOnline())
 				p.getPlayer().sendMessage(message);
-			else if (Config.enableMail)
-				essentials.getUserMap().getUser(p.getUniqueId()).addMail(message);
+			else if (Config.enableMail) {
+				User user = userMap.getUser(p.getUniqueId());
+				if (user != null)
+					user.addMail(message);
+			}
 		});
 	}
 
@@ -368,6 +373,14 @@ public class Utils {
 		} else
 			chestLocations.add(ih.getInventory().getLocation());
 		return chestLocations;
+	}
+
+	@SuppressWarnings("deprecation")
+	public static OfflinePlayer getPlayer(String name) {
+    	OfflinePlayer player = Bukkit.getPlayerExact(name);
+    	if (player == null)
+    		player = Bukkit.getOfflinePlayer(name);
+    	return player.hasPlayedBefore() ? player : null;
 	}
 
 	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {

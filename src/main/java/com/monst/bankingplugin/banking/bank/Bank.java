@@ -3,7 +3,6 @@ package com.monst.bankingplugin.banking.bank;
 import com.monst.bankingplugin.banking.Ownable;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.gui.SinglePageGui;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
@@ -147,9 +146,10 @@ public class Bank extends Ownable {
 	 * @param account the account to be added
 	 */
 	public void addAccount(Account account) {
-		plugin.debugf("Adding account #%d to bank %d", account.getID(), getID());
-		if (account != null)
-			accounts.add(account);
+		if (account == null)
+			return;
+		plugin.debugf("Adding account #%d to bank #%d", account.getID(), getID());
+		accounts.add(account);
 	}
 
 	/**
@@ -157,8 +157,10 @@ public class Bank extends Ownable {
 	 * @param account the account to be removed
 	 */
 	public void removeAccount(Account account) {
-		if (account != null)
-			accounts.remove(account);
+		if (account == null)
+			return;
+		plugin.debugf("Removing account #%d from bank #%d", account.getID(), getID());
+		accounts.remove(account);
 	}
 
 	/**
@@ -220,10 +222,7 @@ public class Bank extends Ownable {
 	}
 
 	public boolean set(BankField field, String value, Callback<String> callback) {
-		if (!bankConfig.set(field, value, callback))
-			return false;
-		SinglePageGui.updateGuis(this);
-		return true;
+		return bankConfig.set(field, value, callback);
 	}
 
 	public String getFormatted(BankField field) {

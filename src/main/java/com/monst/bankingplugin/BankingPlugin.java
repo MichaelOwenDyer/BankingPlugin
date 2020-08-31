@@ -322,6 +322,7 @@ public class BankingPlugin extends JavaPlugin {
     	getServer().getPluginManager().registerEvents(new AccountInteractListener(this), this);
 		getServer().getPluginManager().registerEvents(new AccountProtectListener(this), this);
     	getServer().getPluginManager().registerEvents(new ChestTamperingListener(this), this);
+    	getServer().getPluginManager().registerEvents(new GuiUpdateListener(this), this);
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
 		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
 

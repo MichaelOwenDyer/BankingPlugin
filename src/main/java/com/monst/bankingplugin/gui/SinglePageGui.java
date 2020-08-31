@@ -6,21 +6,22 @@ import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
 
     final T guiSubject;
     Menu menu;
 
-    static Map<Ownable, Set<SinglePageGui<?>>> openGuis = new HashMap<>();
+    private static final Map<Ownable, Set<SinglePageGui<?>>> openGuis = new HashMap<>();
 
     public static void updateGuis(Ownable ownable) {
         if (openGuis.containsKey(ownable))
             openGuis.get(ownable).forEach(SinglePageGui::update);
+    }
+
+    public static void updateGuis() {
+        openGuis.values().stream().flatMap(Collection::stream).forEach(SinglePageGui::update);
     }
 
     final Menu.CloseHandler REMOVE_AND_OPEN_PREVIOUS = (player, menu) -> {
