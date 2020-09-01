@@ -557,9 +557,9 @@ public class AccountInteractListener implements Listener {
 	}
 	
 	private void migratePartTwo(Player p, Block b, Account toMigrate) {
-		Location location = b.getLocation();
-		if (accountUtils.isAccount(location)) {
-			if (toMigrate.equals(accountUtils.getAccount(location))) {
+		Location newLocation = b.getLocation();
+		if (accountUtils.isAccount(newLocation)) {
+			if (toMigrate.equals(accountUtils.getAccount(newLocation))) {
 				plugin.debug(p.getName() + " clicked the same chest to migrate to");
 				p.sendMessage(Messages.SAME_ACCOUNT);
 				return;
@@ -574,21 +574,23 @@ public class AccountInteractListener implements Listener {
 			plugin.debug("Chest is blocked.");
 			return;
 		}
-		if (!bankUtils.isBank(location)) {
+		Bank newBank = bankUtils.getBank(newLocation); // May or may not be the same as previous bank
+		if (newBank == null) {
 			p.sendMessage(Messages.CHEST_NOT_IN_BANK);
 			plugin.debug("Chest is not in a bank.");
 			return;
 		}
-		if (!toMigrate.getBank().equals(bankUtils.getBank(location)) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
+		if (!toMigrate.getBank().equals(newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_BANK);
 			plugin.debug(p.getName() + " does not have permission to migrate their account to another bank.");
 			return;
 		}
 
 		Account newAccount = Account.clone(toMigrate);
-		newAccount.setLocation(location);
+		newAccount.setBank(newBank);
+		newAccount.setLocation(newLocation);
 
-		AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, location);
+		AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, newLocation);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 			plugin.debug("No permission to create account on a protected chest.");
@@ -597,7 +599,6 @@ public class AccountInteractListener implements Listener {
 		}
 
 		Bank oldBank = toMigrate.getBank();
-		Bank newBank = newAccount.getBank(); // May or may not be the same as oldBank
 
 		double creationPrice = newBank.get(BankField.ACCOUNT_CREATION_PRICE);
 		creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1);
@@ -658,7 +659,8 @@ public class AccountInteractListener implements Listener {
 
 		// Account owner pays creation fee for new account
 		if (creationPrice > 0 && !newBank.isOwner(p)) {
-			if (!Utils.withdrawPlayer(p, location.getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
+			if (!Utils.withdrawPlayer(p, newLocation.getWorld().getName(),
+					finalCreationPrice, new Callback<Void>(plugin) {
 						@Override
 						public void onResult(Void result) {
 							p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
@@ -676,7 +678,7 @@ public class AccountInteractListener implements Listener {
 		// Bank owner of old account pays reimbursement
 		if (reimbursement > 0 && oldBank.isPlayerBank() && !oldBank.isOwner(p)) {
 			OfflinePlayer bankOwner = oldBank.getOwner();
-			Utils.withdrawPlayer(bankOwner, location.getWorld().getName(),
+			Utils.withdrawPlayer(bankOwner, newLocation.getWorld().getName(),
 					finalReimbursement, new Callback<Void>(plugin) {
 						@Override
 						public void onResult(Void result) {

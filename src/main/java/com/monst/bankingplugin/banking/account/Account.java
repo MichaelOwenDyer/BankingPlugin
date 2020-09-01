@@ -98,7 +98,7 @@ public class Account extends Ownable {
 
 	private boolean created;
 
-	private final Bank bank;
+	private Bank bank;
 	private Location location;
 	private final AccountStatus status;
 	private Inventory inventory;
@@ -178,6 +178,17 @@ public class Account extends Ownable {
 	 */
 	public Bank getBank() {
 		return bank;
+	}
+
+	/**
+	 * Sets the bank of this account.
+	 * @param bank the new {@link Bank} of this account.
+	 */
+	public void setBank(Bank bank) {
+		getBank().removeAccount(this);
+		this.bank = bank;
+		getBank().addAccount(this);
+		this.getStatus().setBank(bank);
 	}
 
 	/**

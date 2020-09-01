@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class AccountStatus {
 	
-	private final Bank bank;
+	private Bank bank;
 
 	private int multiplierStage;
 	private int delayUntilNextPayout;
@@ -47,6 +47,10 @@ public class AccountStatus {
 		this.delayUntilNextPayout = delayUntilNextPayout;
 		this.remainingOfflinePayouts = remainingOfflinePayouts;
 		this.remainingOfflineUntilReset = remainingOfflinePayoutsBeforeReset;
+	}
+
+	void setBank(Bank bank) {
+		this.bank = bank;
 	}
 
 	/**
