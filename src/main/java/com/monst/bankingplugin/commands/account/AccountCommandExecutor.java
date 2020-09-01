@@ -186,14 +186,14 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		if (args.length > 1) {
 			try {
 				int id = Integer.parseInt(args[1]);
-				Account account = accountUtils.getAccount(id);
+				Account account = Objects.requireNonNull(accountUtils.getAccount(id));
 				plugin.debug(sender.getName() + " is displaying info for account #" + id);
 				if (sender instanceof Player)
 					new AccountGui(account).open((Player) sender);
 				else
 					sender.sendMessage(account.getInformation());
 				return;
-			} catch (NumberFormatException ignored) {}
+			} catch (NumberFormatException | NullPointerException ignored) {}
 		}
 
 		if (!(sender instanceof Player)) {
@@ -444,10 +444,8 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		OfflinePlayer playerToUntrust = Utils.getPlayer(args[1]);
 		if (playerToUntrust == null) {
 			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
-			return false;
+			return true;
 		}
-		if (Utils.samePlayer(playerToUntrust, p))
-			return false;
 
 		p.sendMessage(String.format(Messages.CLICK_CHEST_UNTRUST, playerToUntrust.getName()));
 		ClickType.setPlayerClickType(p, new ClickType.UntrustClickType(playerToUntrust));

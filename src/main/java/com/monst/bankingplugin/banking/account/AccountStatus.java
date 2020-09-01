@@ -98,6 +98,7 @@ public class AccountStatus {
 	 * at the bank.
 	 *
 	 * @return the new multiplier stage of this account
+	 * @see BankField#WITHDRAWAL_MULTIPLIER_DECREMENT
 	 */
 	public int processWithdrawal() {
 		int decrement = bank.get(BankField.WITHDRAWAL_MULTIPLIER_DECREMENT);
@@ -112,6 +113,7 @@ public class AccountStatus {
 	 * Increments this account's multiplier stage.
 	 *
 	 * @param online whether any account holder is online
+	 * @see BankField#OFFLINE_MULTIPLIER_DECREMENT
 	 */
 	public void incrementMultiplier(boolean online) {
 		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
@@ -130,6 +132,8 @@ public class AccountStatus {
 	 * Resets the allowed offline payouts until reset to the value specified by the associated bank.
 	 * This determines how many consecutive cycles an account will generate interest for offline account holders until
 	 * the account multiplier is reset.
+	 *
+	 * @see BankField#ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET
 	 */
 	private void resetRemainingOfflineUntilReset() {
 		remainingOfflineUntilReset = bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
@@ -168,10 +172,12 @@ public class AccountStatus {
 
 	/**
 	 * Determines whether the associated account must wait before generating interest, e.g. if the interest delay > 0.
-	 * Also decrements the counter if the account must wait.
+	 * Also decrements the counter if the account must wait and the player is either online or the bank has enabled
+	 * a certain setting.
 	 *
 	 * @param online whether or not any account holder is online
 	 * @return true if the account must wait, false if a payout is allowed
+	 * @see BankField#COUNT_INTEREST_DELAY_OFFLINE
 	 */
 	private boolean mustWait(boolean online) {
 		if (delayUntilNextPayout <= 0)
@@ -198,6 +204,7 @@ public class AccountStatus {
 	 * Gets the multiplier from Config:interestMultipliers corresponding to this account's current multiplier stage.
 	 *
 	 * @return the corresponding multiplier, or 1x by default in case of an error.
+	 * @see BankField#MULTIPLIERS
 	 */
 	public int getRealMultiplier() {
 		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
@@ -210,7 +217,7 @@ public class AccountStatus {
 	 * Sets the multiplier stage. This will ensure that the provided stage is no less than 0 and no greater than multipliers.size() - 1.
 	 *
 	 * @param stage the stage to set the multiplier to
-	 * @return the new multiplier
+	 * @return the new multiplier stage
 	 */
 	public int setMultiplierStage(int stage) {
 		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
@@ -221,10 +228,9 @@ public class AccountStatus {
 	 * Sets the multiplier stage relative to the current value.
 	 *
 	 * @param stage the offset from the current stage, positive or negative
-	 * @return the new multiplier
 	 */
-	public int setMultiplierStageRelative(int stage) {
-		return setMultiplierStage(multiplierStage + stage);
+	public void setMultiplierStageRelative(int stage) {
+		setMultiplierStage(multiplierStage + stage);
 	}
 
 	/**
@@ -234,6 +240,15 @@ public class AccountStatus {
 	 */
 	public void setInterestDelay(int delay) {
 		delayUntilNextPayout = Math.max(0, delay);
+	}
+
+	/**
+	 * Sets the interest delay. This determines how long an account must wait before generating interest.
+	 *
+	 * @param delay the delay to set
+	 */
+	public void setInterestDelayRelative(int delay) {
+		setInterestDelay(delayUntilNextPayout + delay);
 	}
 
 }

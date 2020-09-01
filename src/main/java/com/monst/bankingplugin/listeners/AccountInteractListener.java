@@ -423,7 +423,7 @@ public class AccountInteractListener implements Listener {
 		AccountInfoEvent event = new AccountInfoEvent(player, account);
 		Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
-			plugin.debug("Info event cancelled (#" + account.getID() + ")");
+			plugin.debugf("Info event cancelled (#%d)", account.getID());
 			return;
 		}
 
@@ -435,7 +435,7 @@ public class AccountInteractListener implements Listener {
 		switch (field) {
 			case NICKNAME:
 				if (!(account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_SET_NICKNAME_OTHER))) {
-					plugin.debug(executor.getName() + " does not have permission to change another player's account nickname");
+					plugin.debugf("%s does not have permission to change another player's account nickname", executor.getName());
 					executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME_OTHER);
 					return;
 				}
@@ -456,21 +456,20 @@ public class AccountInteractListener implements Listener {
 
 			case MULTIPLIER:
 				if (!executor.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER)) {
-					plugin.debug(executor.getName() + " does not have permission to change " + account.getOwner().getName()
-							+ "'s account multiplier");
+					plugin.debugf("%s does not have permission to change %s's account multiplier",
+							executor.getName(), account.getOwner().getName());
 					executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
 					return;
 				}
 
-				int stage;
 				if (value.startsWith("+") || value.startsWith("-"))
-					stage = account.getStatus().setMultiplierStageRelative(Integer.parseInt(value));
+					account.getStatus().setMultiplierStageRelative(Integer.parseInt(value));
 				else
-					stage = account.getStatus().setMultiplierStage(Integer.parseInt(value));
+					account.getStatus().setMultiplierStage(Integer.parseInt(value));
 
 				executor.sendMessage(String.format(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
-				plugin.debugf("%s has set an account multiplier stage to %d (#%d)", executor.getName(), stage,
-						(account.isCoowner(executor) ? " (is co-owner)" : ""), account.getID());
+				plugin.debugf("%s has set an account multiplier stage to %d (#%d)%s",
+						executor.getName(), account.getStatus().getMultiplierStage(), account.getID(), (account.isCoowner(executor) ? " (is co-owner)" : ""));
 				break;
 
 			case DELAY:
@@ -479,10 +478,10 @@ public class AccountInteractListener implements Listener {
 					return;
 				}
 
-				account.getStatus().setInterestDelay(Integer.parseInt(value) +
-						((value.startsWith("+") || value.startsWith("-"))
-								? account.getStatus().getDelayUntilNextPayout() // Set relative to current if value prefixed with + or -
-								: 0));
+				if (value.startsWith("+") || value.startsWith("-"))
+					account.getStatus().setInterestDelayRelative(Integer.parseInt(value)); // Set relative to current if value prefixed with + or -
+				else
+					account.getStatus().setInterestDelay(Integer.parseInt(value));
 
 				plugin.debugf("%s has set the interest delay of account #%d to %d.",
 						executor.getName(), account.getID(), account.getStatus().getDelayUntilNextPayout());
@@ -504,7 +503,7 @@ public class AccountInteractListener implements Listener {
 		}
 
 		if (account.isTrusted(playerToTrust)) {
-			plugin.debug(playerToTrust.getName() + " was already trusted on that account (#" + account.getID() + ")");
+			plugin.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
 			p.sendMessage(String.format(Messages.ALREADY_A_COOWNER, playerToTrust.getName()));
 			return;
 		}
@@ -526,8 +525,8 @@ public class AccountInteractListener implements Listener {
 		}
 
 		if (!account.isTrusted(playerToUntrust)) {
-			plugin.debug(playerToUntrust.getName() + " was not trusted on that account and could not be removed (#"
-					+ account.getID() + ")");
+			plugin.debugf("%s was not trusted on that account and could not be removed (#%d)",
+					playerToUntrust.getName(), account.getID());
 			p.sendMessage(String.format(Messages.NOT_A_COOWNER, playerToUntrust.getName()));
 			return;
 		}
@@ -542,15 +541,15 @@ public class AccountInteractListener implements Listener {
 
 		if (!toMigrate.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_OTHER)) {
 			if (toMigrate.isTrusted(p)) {
-				plugin.debug(p.getName() + " cannot migrate account #" + toMigrate.getID() + " as a coowner");
+				plugin.debugf("%s cannot migrate account #%d as a co-owner", p.getName(), toMigrate.getID());
 				p.sendMessage(Messages.MUST_BE_OWNER);
 				return;
 			}
-			plugin.debug(p.getName() + " does not have permission to migrate account #" + toMigrate.getID());
+			plugin.debugf("%s does not have permission to migrate account #%d", p.getName(), toMigrate.getID());
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER);
 			return;
 		}
-		plugin.debug(p.getName() + " wants to migrate account #" + toMigrate.getID());
+		plugin.debugf("%s wants to migrate account #%d", p.getName(), toMigrate.getID());
 		ClickType.setPlayerClickType(p, new MigrateClickType(toMigrate));
 		p.sendMessage(Messages.CLICK_CHEST_MIGRATE_SECOND);
 
@@ -560,11 +559,11 @@ public class AccountInteractListener implements Listener {
 		Location newLocation = b.getLocation();
 		if (accountUtils.isAccount(newLocation)) {
 			if (toMigrate.equals(accountUtils.getAccount(newLocation))) {
-				plugin.debug(p.getName() + " clicked the same chest to migrate to");
+				plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
 				p.sendMessage(Messages.SAME_ACCOUNT);
 				return;
 			}
-			plugin.debug(p.getName() + " clicked an already existing account chest to migrate to");
+			plugin.debugf("%s clicked an already existing account chest to migrate to", p.getName());
 			p.sendMessage(Messages.CHEST_ALREADY_ACCOUNT);
 			return;
 		}
@@ -582,7 +581,7 @@ public class AccountInteractListener implements Listener {
 		}
 		if (!toMigrate.getBank().equals(newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
 			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_BANK);
-			plugin.debug(p.getName() + " does not have permission to migrate their account to another bank.");
+			plugin.debugf("%s does not have permission to migrate their account to another bank.", p.getName());
 			return;
 		}
 
