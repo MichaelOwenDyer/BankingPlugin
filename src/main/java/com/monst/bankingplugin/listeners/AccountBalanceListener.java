@@ -73,10 +73,8 @@ public class AccountBalanceListener implements Listener {
 			executor.sendMessage(String.format(Messages.ACCOUNT_NEW_BALANCE, Utils.format(valueOnClose)));
 
 			if (difference.signum() == -1 && valueOnClose.compareTo(account.getPrevBalance()) < 0) {
-				int multiplier = account.getStatus().getMultiplierStage();
-				if (multiplier != account.getStatus().processWithdrawal())
-					executor.sendMessage(
-							String.format(Messages.MULTIPLIER_DECREASED, account.getStatus().getRealMultiplier()));
+				if (account.getStatus().getMultiplierStage() != account.getStatus().processWithdrawal())
+					executor.sendMessage(String.format(Messages.MULTIPLIER_DECREASED, account.getStatus().getRealMultiplier()));
 			}
 
 			accountUtils.addAccount(account, true);
