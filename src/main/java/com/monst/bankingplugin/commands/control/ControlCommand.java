@@ -2,12 +2,11 @@ package com.monst.bankingplugin.commands.control;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
+import com.monst.bankingplugin.commands.control.subcommands.*;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
-import org.bukkit.command.CommandSender;
 
-public class ControlCommand extends BankingPluginCommand {
+public class ControlCommand extends BankingPluginCommand<ControlSubCommand> {
 
 	private static boolean commandCreated = false;
 
@@ -24,43 +23,12 @@ public class ControlCommand extends BankingPluginCommand {
         this.name = Config.mainCommandNameControl;
         this.desc = Messages.CONTROL_COMMAND_DESC;
 		this.pluginCommand = super.createPluginCommand();
-        this.executor = new ControlCommandExecutor(plugin);
-        this.tabCompleter = new ControlTabCompleter(plugin);
 
-		addSubCommand(new ControlSubCommand("version", false, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_VERSION;
-			}
-		});
-
-		addSubCommand(new ControlSubCommand("reload", false, executor, tabCompleter) {
-            @Override
-            public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.RELOAD) ? Messages.COMMAND_USAGE_RELOAD : "";
-            }
-        });
-
-		addSubCommand(new ControlSubCommand("config", false, executor, tabCompleter) {
-            @Override
-            public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.CONFIG) ? Messages.COMMAND_USAGE_CONFIG : "";
-            }
-        });
-
-		addSubCommand(new ControlSubCommand("update", false, executor, tabCompleter) {
-            @Override
-            public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_UPDATE : "";
-            }
-        });
-
-		addSubCommand(new ControlSubCommand("payinterest", false, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_PAY_INTEREST : "";
-			}
-		});
+		addSubCommand(new ControlVersion());
+		addSubCommand(new ControlReload());
+		addSubCommand(new ControlConfig());
+		addSubCommand(new ControlUpdate());
+		addSubCommand(new ControlPayinterest());
 
         register();
         commandCreated = true;

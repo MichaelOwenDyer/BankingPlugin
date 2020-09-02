@@ -1,25 +1,22 @@
 package com.monst.bankingplugin.commands;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
+import com.monst.bankingplugin.BankingPlugin;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class BankingPluginSubCommand {
+
+    protected static final BankingPlugin plugin = BankingPlugin.getInstance();
 	
 	private final String name;
 	private final boolean playerCommand;
-	private final CommandExecutor executor;
-	private final TabCompleter tabCompleter;
 
-    public BankingPluginSubCommand(String name, boolean playerCommand, CommandExecutor executor, TabCompleter tabCompleter) {
+    protected BankingPluginSubCommand(String name, boolean playerCommand) {
     	this.name = name;
         this.playerCommand = playerCommand;
-        this.executor = executor;
-        this.tabCompleter = tabCompleter;
     }
 
     public String getName() {
@@ -36,24 +33,18 @@ public abstract class BankingPluginSubCommand {
     /**
      * Execute the sub command
      * @param sender Sender of the command
-     * @param command Command which was executed
-     * @param label Alias of the command which was used
      * @param args Arguments of the command ({@code args[0]} is the sub command's name)
      * @return Whether the sender should be sent the help message
      */
-    public boolean execute(CommandSender sender, Command command, String label, String[] args) {
-        return executor.onCommand(sender, command, label, args);
-    }
+    public abstract boolean execute(CommandSender sender, String[] args);
 
     /**
      * @param sender Sender of the command
-     * @param command Command which was executed
-     * @param label Alias of the command which was used
      * @param args Arguments of the command ({@code args[0]} is the sub command's name)
      * @return A list of tab completions for the sub command (may be an empty list)
      */
-    public List<String> getTabCompletions(CommandSender sender, Command command, String label, String[] args) {
-		return tabCompleter != null ? tabCompleter.onTabComplete(sender, command, label, args) : new ArrayList<>();
+    public List<String> getTabCompletions(CommandSender sender, String[] args) {
+		return Collections.emptyList();
     }
 
     /**
@@ -62,5 +53,19 @@ public abstract class BankingPluginSubCommand {
      * @return The help message for the command.
      */
     public abstract String getHelpMessage(CommandSender sender);
+
+    protected boolean hasPermission(CommandSender sender, String permission) {
+        boolean receiveCreateMessage = sender.hasPermission(permission);
+        if (!receiveCreateMessage) {
+            for (PermissionAttachmentInfo permInfo : sender.getEffectivePermissions()) {
+                String perm = permInfo.getPermission();
+                if (perm.startsWith(permission) && sender.hasPermission(perm)) {
+                    receiveCreateMessage = true;
+                    break;
+                }
+            }
+        }
+        return receiveCreateMessage;
+    }
 
 }

@@ -5,7 +5,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Constructor;
@@ -16,16 +15,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class BankingPluginCommand {
+public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCommand> {
 
 	private final BankingPlugin plugin;
+
 	protected String name;
 	protected String desc;
 	protected PluginCommand pluginCommand;
-	protected CommandExecutor executor;
-	protected TabCompleter tabCompleter;
 
-	private final List<BankingPluginSubCommand> subCommands = new ArrayList<>();
+	private final List<SubCommand> subCommands = new ArrayList<>();
 
 	protected BankingPluginCommand(final BankingPlugin plugin) {
 		this.plugin = plugin;
@@ -83,7 +81,7 @@ public abstract class BankingPluginCommand {
 	 */
 	protected void sendBasicHelpMessage(CommandSender sender) {
 		plugin.debug("Sending basic help message to " + sender.getName());
-		for (BankingPluginSubCommand subCommand : subCommands) {
+		for (SubCommand subCommand : subCommands) {
 			String msg = subCommand.getHelpMessage(sender);
 			if (msg == null || msg.isEmpty())
 				continue;
@@ -91,32 +89,18 @@ public abstract class BankingPluginCommand {
 		}
 	}
 
-	protected boolean hasPermission(CommandSender sender, String permission) {
-		boolean receiveCreateMessage = sender.hasPermission(permission);
-		if (!receiveCreateMessage) {
-			for (PermissionAttachmentInfo permInfo : sender.getEffectivePermissions()) {
-				String perm = permInfo.getPermission();
-				if (perm.startsWith(permission) && sender.hasPermission(perm)) {
-					receiveCreateMessage = true;
-					break;
-				}
-			}
-		}
-		return receiveCreateMessage;
-	}
-
 	private class BaseCommandExecutor implements CommandExecutor {
 
 		@Override
 		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length > 0) {
-				for (BankingPluginSubCommand subCommand : subCommands) {
+				for (SubCommand subCommand : subCommands) {
 					if (subCommand.getName().equalsIgnoreCase(args[0])) {
 						if (!(sender instanceof Player) && subCommand.isPlayerCommand()) {
 							sender.sendMessage(ChatColor.RED + "Only players can use this command.");
 							return true;
 						}
-						if (!subCommand.execute(sender, command, label, args))
+						if (!subCommand.execute(sender, args))
 							sendBasicHelpMessage(sender);
 						return true;
 					}
@@ -132,32 +116,27 @@ public abstract class BankingPluginCommand {
 		@Override
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 
-			if (args.length == 1) {
+			if (!(sender instanceof Player))
+				return Collections.emptyList();
+			if (args.length == 0)
+				return Collections.emptyList();
+			if (args.length == 1)
 				return subCommands.stream()
 						.map(BankingPluginSubCommand::getName)
 						.filter(name -> name.startsWith(args[0].toLowerCase()))
 						.collect(Collectors.toList());
-			} else if (args.length > 1) {
-				for (BankingPluginSubCommand subCmd : subCommands)
-					if (subCmd.getName().equalsIgnoreCase(args[0]))
-						if (sender instanceof Player)
-							return subCmd.getTabCompletions(sender, command, label, args);
-			}
+
+			for (SubCommand subCommand : subCommands)
+				if (subCommand.getName().equalsIgnoreCase(args[0]))
+					return subCommand.getTabCompletions(sender, args);
+
 			return Collections.emptyList();
 		}
 	}
 
-	public PluginCommand getCommand() {
-		return pluginCommand;
-	}
-
-	protected void addSubCommand(BankingPluginSubCommand subCommand) {
+	protected void addSubCommand(SubCommand subCommand) {
 		plugin.debug("Adding " + name + " subcommand \"" + subCommand.getName() + "\"");
 		subCommands.add(subCommand);
-	}
-
-	public List<? extends BankingPluginSubCommand> getSubCommands() {
-		return Collections.unmodifiableList(subCommands);
 	}
 
 }

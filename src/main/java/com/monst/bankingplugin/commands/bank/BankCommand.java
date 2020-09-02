@@ -2,12 +2,11 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
+import com.monst.bankingplugin.commands.bank.subcommands.*;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Permissions;
-import org.bukkit.command.CommandSender;
 
-public class BankCommand extends BankingPluginCommand {
+public class BankCommand extends BankingPluginCommand<BankSubCommand> {
 
 	private static boolean commandCreated = false;
 
@@ -24,99 +23,20 @@ public class BankCommand extends BankingPluginCommand {
         this.name = Config.mainCommandNameBank;
         this.desc = Messages.BANK_COMMAND_DESC;
 		this.pluginCommand = super.createPluginCommand();
-		this.executor = new BankCommandExecutor(plugin);
-		this.tabCompleter = new BankTabCompleter(plugin);
 
-		addSubCommand(new BankSubCommand("create", true, executor, tabCompleter) {
-            @Override
-            public String getHelpMessage(CommandSender sender) {
-				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_CREATE : "";
-            }
-        });
-
-		addSubCommand(new BankSubCommand("remove", false, executor, tabCompleter) {
-            @Override
-            public String getHelpMessage(CommandSender sender) {
-				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_REMOVE : "";
-            }
-		});
-
-		addSubCommand(new BankSubCommand("info", false, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_BANK_INFO;
-			}
-		});
-
-		addSubCommand(new BankSubCommand("list", false, executor, tabCompleter) {
-            @Override
-            public String getHelpMessage(CommandSender sender) {
-                return Messages.COMMAND_USAGE_BANK_LIST;
-            }
-        });
-
-		addSubCommand(new BankSubCommand("limits", true, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_LIMITS : "";
-			}
-		});
-
-        addSubCommand(new BankSubCommand("removeall", false, executor, tabCompleter) {
-            @Override
-            public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_REMOVEALL) ? Messages.COMMAND_USAGE_BANK_REMOVEALL : "";
-            }
-        });
-
-		addSubCommand(new BankSubCommand("resize", true, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RESIZE : "";
-			}
-		});
-
-		addSubCommand(new BankSubCommand("rename", false, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RENAME : "";
-			}
-		});
-
-		addSubCommand(new BankSubCommand("set", false, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_SET : "";
-			}
-		});
-
-		addSubCommand(new BankSubCommand("trust", false, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_TRUST) ? Messages.COMMAND_USAGE_BANK_TRUST : "";
-			}
-		});
-
-		addSubCommand(new BankSubCommand("untrust", false, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_TRUST) ? Messages.COMMAND_USAGE_BANK_UNTRUST : "";
-			}
-		});
-
-		addSubCommand(new BankSubCommand("select", true, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_SELECT) ? Messages.COMMAND_USAGE_BANK_SELECT : "";
-			}
-		});
-
-		addSubCommand(new BankSubCommand("transfer", false, executor, tabCompleter) {
-			@Override
-			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_TRANSFER) ? Messages.COMMAND_USAGE_BANK_TRANSFER : "";
-			}
-		});
+		addSubCommand(new BankCreate());
+		addSubCommand(new BankRemove());
+		addSubCommand(new BankInfo());
+		addSubCommand(new BankList());
+		addSubCommand(new BankLimits());
+		addSubCommand(new BankRemoveall());
+		addSubCommand(new BankResize());
+		addSubCommand(new BankRename());
+		addSubCommand(new BankSet());
+		addSubCommand(new BankTrust());
+		addSubCommand(new BankUntrust());
+		addSubCommand(new BankSelect());
+		addSubCommand(new BankTransfer());
 
         register();
         commandCreated = true;
