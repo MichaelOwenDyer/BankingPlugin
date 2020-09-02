@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Constructor;
@@ -88,6 +89,20 @@ public abstract class BankingPluginCommand {
 				continue;
 			sender.sendMessage(msg);
 		}
+	}
+
+	protected boolean hasPermission(CommandSender sender, String permission) {
+		boolean receiveCreateMessage = sender.hasPermission(permission);
+		if (!receiveCreateMessage) {
+			for (PermissionAttachmentInfo permInfo : sender.getEffectivePermissions()) {
+				String perm = permInfo.getPermission();
+				if (perm.startsWith(permission) && sender.hasPermission(perm)) {
+					receiveCreateMessage = true;
+					break;
+				}
+			}
+		}
+		return receiveCreateMessage;
 	}
 
 	private class BaseCommandExecutor implements CommandExecutor {

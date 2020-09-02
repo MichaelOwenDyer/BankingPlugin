@@ -88,6 +88,14 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			if (!promptBankSet(sender, args))
 				sender.sendMessage(subCommand.getHelpMessage(sender));
 			break;
+		case "trust":
+			if (!promptBankTrust(sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
+		case "untrust":
+			if (!promptBankUntrust(sender, args))
+				sender.sendMessage(subCommand.getHelpMessage(sender));
+			break;
 		case "select":
 			promptBankSelect((Player) sender, args);
 			break;
@@ -574,7 +582,7 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		Bank bank = bankUtils.lookupBank(args[1]);
 		String fieldName = args[2];
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(32);
 		if (args.length > 3)
 			sb.append(args[3]);
 		for (int i = 4; i < args.length; i++)
@@ -635,6 +643,116 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			InterestEventScheduler.scheduleBankInterestEvents(bank);
 
 		bankUtils.addBank(bank, true);
+		return true;
+	}
+
+	private boolean promptBankTrust(CommandSender sender, String[] args) {
+		if (args.length < 3)
+			return false;
+
+		plugin.debug(sender.getName() + " wants to trust a player to a bank");
+
+		if (!sender.hasPermission(Permissions.BANK_TRUST)) {
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST);
+			return true;
+		}
+		Bank bank = plugin.getBankUtils().lookupBank(args[1]);
+		if (bank == null) {
+			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			return true;
+		}
+		OfflinePlayer playerToTrust = Utils.getPlayer(args[2]);
+		if (playerToTrust == null) {
+			sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+			return true;
+		}
+
+		if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
+				|| sender.hasPermission(Permissions.BANK_TRUST_OTHER))) {
+			if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
+				plugin.debugf("%s does not have permission to trust a player to bank %s as a co-owner",
+						sender.getName(), bank.getName());
+				sender.sendMessage(Messages.MUST_BE_OWNER);
+				return true;
+			}
+			plugin.debugf("%s does not have permission to trust a player to bank %s", sender.getName(), bank.getName());
+			sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRUST_OTHER);
+			return true;
+		}
+
+		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRUST_ADMIN)) {
+			plugin.debugf("%s does not have permission to trust a player to admin bank %s", sender.getName(), bank.getName());
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST_ADMIN);
+			return true;
+		}
+
+		boolean isSelf = sender instanceof Player && Utils.samePlayer(playerToTrust, ((Player) sender));
+		if (bank.isTrusted(playerToTrust)) {
+			plugin.debugf("%s was already trusted at bank %s (#%d)", playerToTrust.getName(), bank.getName(), bank.getID());
+			sender.sendMessage(String.format(bank.isOwner(playerToTrust) ? Messages.ALREADY_OWNER : Messages.ALREADY_COOWNER,
+					isSelf ? "You are" : playerToTrust.getName() + " is", "bank"));
+			return true;
+		}
+
+		plugin.debugf("%s has trusted %s to bank %s (#%d)",
+				sender.getName(), playerToTrust.getName(), bank.getName(), bank.getID());
+		sender.sendMessage(String.format(Messages.ADDED_COOWNER, isSelf ? "You have been" : playerToTrust.getName() + " has been"));
+		bank.trustPlayer(playerToTrust);
+		return true;
+	}
+
+	private boolean promptBankUntrust(CommandSender sender, String[] args) {
+		if (args.length < 3)
+			return false;
+
+		plugin.debug(sender.getName() + " wants to untrust a player from a bank");
+
+		if (!sender.hasPermission(Permissions.BANK_TRUST)) {
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST);
+			return true;
+		}
+		Bank bank = plugin.getBankUtils().lookupBank(args[1]);
+		if (bank == null) {
+			sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+			return true;
+		}
+		OfflinePlayer playerToUntrust = Utils.getPlayer(args[2]);
+		if (playerToUntrust == null) {
+			sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+			return true;
+		}
+
+		if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
+				|| sender.hasPermission(Permissions.BANK_TRUST_OTHER))) {
+			if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
+				plugin.debugf("%s does not have permission to untrust a player from bank %s as a co-owner",
+						sender.getName(), bank.getName());
+				sender.sendMessage(Messages.MUST_BE_OWNER);
+				return true;
+			}
+			plugin.debugf("%s does not have permission to untrust a player from bank %s", sender.getName(), bank.getName());
+			sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRUST_OTHER);
+			return true;
+		}
+
+		if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRUST_ADMIN)) {
+			plugin.debugf("%s does not have permission to untrust a player from admin bank %s", sender.getName(), bank.getName());
+			sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST_ADMIN);
+			return true;
+		}
+
+		boolean isSelf = sender instanceof Player && Utils.samePlayer(playerToUntrust, ((Player) sender));
+		if (!bank.isCoowner(playerToUntrust)) {
+			plugin.debugf("%s was not co-owner at bank %s (#%d)", playerToUntrust.getName(), bank.getName(), bank.getID());
+			sender.sendMessage(String.format(Messages.NOT_A_COOWNER,
+					isSelf ? "You are" : playerToUntrust.getName() + " is", "bank"));
+			return true;
+		}
+
+		plugin.debugf("%s has untrusted %s from bank %s (#%d)",
+				sender.getName(), playerToUntrust.getName(), bank.getName(), bank.getID());
+		sender.sendMessage(String.format(Messages.REMOVED_COOWNER, isSelf ? "You were" : playerToUntrust.getName() + " was"));
+		bank.untrustPlayer(playerToUntrust);
 		return true;
 	}
 
@@ -706,9 +824,8 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 
 		if (newOwner != null && bank.isOwner(newOwner)) {
 			boolean isExecutor = sender instanceof Player && Utils.samePlayer((Player) sender, newOwner);
-			plugin.debug(newOwner.getName() + " is already owner of bank");
-			sender.sendMessage(String.format(Messages.ALREADY_OWNER_BANK, isExecutor ? "You" : newOwner.getName(),
-					isExecutor ? "are" : "is"));
+			plugin.debug(newOwner.getName() + " is already owner of that bank");
+			sender.sendMessage(String.format(Messages.ALREADY_OWNER, isExecutor ? "You are" : newOwner.getName() + " is", "bank"));
 			return true;
 		}
 		if (newOwner == null && bank.isAdminBank()) {
@@ -753,18 +870,23 @@ public class BankCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		if (!(sender instanceof Player && Utils.samePlayer(newOwner, ((Player) sender))))
-			sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", bank.getColorizedName(),
-					newOwner != null ? newOwner.getName() : "ADMIN"));
+		boolean isSelf = sender instanceof Player && Utils.samePlayer(newOwner, ((Player) sender));
+		sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", isSelf ? "yourself"
+				: (newOwner != null ? newOwner.getName() : "ADMIN"), "bank " + bank.getColorizedName()));
 
-		if (newOwner != null && newOwner.isOnline())
-			newOwner.getPlayer().sendMessage(String.format(Messages.OWNERSHIP_TRANSFER_RECEIVED, "bank", bank.getColorizedName()));
+		if (!isSelf)
+			Utils.notifyPlayers(
+				String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), "you", "bank " + bank.getColorizedName()),
+				Collections.singleton(newOwner)
+			);
 
+		Set<OfflinePlayer> toNotify = Utils.mergeCollections(bank.getCustomers(), bank.getTrustedPlayers());
+		toNotify.remove(newOwner);
+		if (sender instanceof Player)
+			toNotify.remove(sender);
 		Utils.notifyPlayers(
-				String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), bank.getColorizedName(),
-						newOwner != null ? newOwner.getName() : "ADMIN"),
-				Collections.singleton(newOwner),
-				newOwner != null ? newOwner.getPlayer() : null
+				String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), newOwner != null ? newOwner.getName() : "ADMIN", "bank " + bank.getColorizedName()),
+				toNotify
 		);
 
 		bank.transferOwnership(newOwner);

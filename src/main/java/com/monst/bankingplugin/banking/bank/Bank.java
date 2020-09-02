@@ -278,6 +278,7 @@ public class Bank extends Ownable {
 		updateType();
 		if (Config.trustOnTransfer)
 			coowners.add(prevOwner);
+		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 	}
 
 	@Override

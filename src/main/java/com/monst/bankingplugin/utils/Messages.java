@@ -61,15 +61,15 @@ public class Messages {
 	public static final String NICKNAME_SET = ChatColor.GOLD + "Account nickname has been set.";
 	public static final String MULTIPLIER_SET = ChatColor.GOLD + "Account multiplier has been set to %d.";
 	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "Account interest delay has been set to %d.";
-	public static final String ADDED_COOWNER = ChatColor.GOLD + "%s has been added as a co-owner.";
-	public static final String REMOVED_COOWNER = ChatColor.GOLD + "%s has been removed as a co-owner.";
+	public static final String ADDED_COOWNER = ChatColor.GOLD + "%s added as a co-owner.";
+	public static final String REMOVED_COOWNER = ChatColor.GOLD + "%s removed as a co-owner.";
 	public static final String RELOADED_PLUGIN = ChatColor.GOLD + "Successfully reloaded BankingPlugin.";
 	public static final String ACCOUNT_DEPOSIT = ChatColor.GOLD + "You have deposited " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " into %s account.";
 	public static final String ACCOUNT_WITHDRAWAL = ChatColor.GOLD + "You have withdrawn " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " from %s account.";
 	public static final String ACCOUNT_NEW_BALANCE = ChatColor.GOLD + "Your new balance is " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String BANK_SELECTED = ChatColor.GOLD + "Bank region selected as %s.";
-	public static final String OWNERSHIP_TRANSFERRED = ChatColor.GOLD + "%s successfully transferred ownership of %s to %s.";
-	public static final String OWNERSHIP_TRANSFER_RECEIVED = ChatColor.GOLD + "You have been transferred ownership of %s %s.";
+	public static final String OWNERSHIP_TRANSFERRED = ChatColor.GOLD + "%s transferred %s ownership of %s.";
+	public static final String OWNERSHIP_TRANSFER_RECEIVED = ChatColor.GOLD + "%s transferred ownership of %s.";
 	public static final String NAME_CHANGED = ChatColor.GOLD + "Bank name was successfully changed.";
 	
 	// DENY NOTIFICATIONS
@@ -91,16 +91,15 @@ public class Messages {
 	public static final String SELECTION_CUTS_ACCOUNTS = ChatColor.RED + "Your selection does not contain all accounts at this bank.";
 	public static final String WORLDEDIT_NOT_ENABLED = ChatColor.RED + "WorldEdit is not currently enabled. Please enter coordinates manually.";
 	public static final String ALREADY_ADMIN_BANK = ChatColor.RED + "That bank is already an admin bank.";
-	public static final String ALREADY_OWNER_BANK = ChatColor.RED + "%s %s already owner of that bank.";
-	public static final String ALREADY_OWNER_ACCOUNT = ChatColor.RED + "%s %s already owner of that account.";
-	public static final String NOT_A_COOWNER = ChatColor.RED + "%s is not a co-owner of that account.";
-	public static final String ALREADY_A_COOWNER = ChatColor.RED + "%s is already a co-owner of that account.";
+	public static final String ALREADY_OWNER = ChatColor.RED + "%s already owner of that %s.";
+	public static final String ALREADY_COOWNER = ChatColor.RED + "%s already a co-owner of that %s.";
+	public static final String NOT_A_COOWNER = ChatColor.RED + "%s not a co-owner of that %s.";
 	public static final String BANK_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create a bank.";
 	public static final String FIELD_NOT_OVERRIDABLE = ChatColor.RED + "That field cannot be overridden!";
 	public static final String NOT_A_NUMBER = ChatColor.RED + "\"%s\" is not a number!";
 	public static final String NOT_AN_INTEGER = ChatColor.RED + "\"%s\" is not an integer!";
 	public static final String NOT_A_FIELD = ChatColor.RED + "\"%s\" is not a valid field!";
-	public static final String NOT_A_LIST = ChatColor.RED + "\"%s\" is not a parsable list!";
+	public static final String NOT_A_LIST = ChatColor.RED + "\"%s\" could not be parsed!";
 	public static final String ERROR_OCCURRED = ChatColor.RED + "An error occurred! ";
 	public static final String PLAYER_NOT_FOUND = ChatColor.RED + "No player was found under the name \"%s\".";
 	public static final String BANK_LIMIT_REACHED = "You are not allowed to create any more banks!";
@@ -162,6 +161,12 @@ public class Messages {
 	public static final String NO_PERMISSION_BANK_RESIZE = NO_PERMISSION + "resize a bank.";
 	public static final String NO_PERMISSION_BANK_RESIZE_OTHER = NO_PERMISSION + "resize someone else's bank.";
 	public static final String NO_PERMISSION_BANK_RESIZE_ADMIN = NO_PERMISSION + "resize an admin bank.";
+	public static final String NO_PERMISSION_BANK_TRUST = NO_PERMISSION + "add a co-owner to a bank.";
+	public static final String NO_PERMISSION_BANK_TRUST_OTHER = NO_PERMISSION + "add a co-owner to someone else's bank.";
+	public static final String NO_PERMISSION_BANK_TRUST_ADMIN = NO_PERMISSION + "add a co-owner to an admin bank.";
+	public static final String NO_PERMISSION_BANK_UNTRUST = NO_PERMISSION + "remove a co-owner from a bank.";
+	public static final String NO_PERMISSION_BANK_UNTRUST_OTHER = NO_PERMISSION + "remove a co-owner from someone else's bank.";
+	public static final String NO_PERMISSION_BANK_UNTRUST_ADMIN = NO_PERMISSION + "remove a co-owner from an admin bank.";
 	public static final String NO_PERMISSION_BANK_TRANSFER = NO_PERMISSION + "transfer ownership of a bank.";
 	public static final String NO_PERMISSION_BANK_TRANSFER_OTHER = NO_PERMISSION + "transfer ownership of another player's bank.";
 	public static final String NO_PERMISSION_BANK_TRANSFER_ADMIN = NO_PERMISSION + "transfer ownership of an admin bank.";
@@ -179,6 +184,7 @@ public class Messages {
 	private static final String ACCOUNT_USAGE_PREFIX = ChatColor.RED + "/" + Config.mainCommandNameAccount + " ";
 	private static final String BANK_USAGE_PREFIX = ChatColor.RED + "/" + Config.mainCommandNameBank + " ";
 	private static final String CONTROL_USAGE_PREFIX = ChatColor.RED + "/" + Config.mainCommandNameControl + " ";
+
 	public static final String COMMAND_USAGE_ACCOUNT_CREATE = ACCOUNT_USAGE_PREFIX + "create";
 	public static final String COMMAND_USAGE_ACCOUNT_REMOVE = ACCOUNT_USAGE_PREFIX + "remove";
 	public static final String COMMAND_USAGE_ACCOUNT_INFO = ACCOUNT_USAGE_PREFIX + "info";
@@ -190,17 +196,21 @@ public class Messages {
 	public static final String COMMAND_USAGE_ACCOUNT_UNTRUST = ACCOUNT_USAGE_PREFIX + "untrust [playername]";
 	public static final String COMMAND_USAGE_ACCOUNT_MIGRATE = ACCOUNT_USAGE_PREFIX + "migrate";
 	public static final String COMMAND_USAGE_ACCOUNT_TRANSFER = ACCOUNT_USAGE_PREFIX + "transfer [playername]";
-	public static final String COMMAND_USAGE_BANK_CREATE = BANK_USAGE_PREFIX + "create <bankname> <xyz> <xyz> <admin>";
+
+	public static final String COMMAND_USAGE_BANK_CREATE = BANK_USAGE_PREFIX + "create [bankname] <xyz> <xyz> <admin>";
 	public static final String COMMAND_USAGE_BANK_REMOVE = BANK_USAGE_PREFIX + "remove <bankname>";
 	public static final String COMMAND_USAGE_BANK_INFO = BANK_USAGE_PREFIX + "info";
 	public static final String COMMAND_USAGE_BANK_LIST = BANK_USAGE_PREFIX + "list";
 	public static final String COMMAND_USAGE_BANK_LIMITS = BANK_USAGE_PREFIX + "limits";
 	public static final String COMMAND_USAGE_BANK_REMOVEALL = BANK_USAGE_PREFIX + "removeall";
 	public static final String COMMAND_USAGE_BANK_RESIZE = BANK_USAGE_PREFIX + "resize [bankname] <xyz> <xyz>";
-	public static final String COMMAND_USAGE_BANK_RENAME = BANK_USAGE_PREFIX + "rename <bankname> [bankname]";
-	public static final String COMMAND_USAGE_BANK_SET = BANK_USAGE_PREFIX + "set <bankname> [field] [value]";
+	public static final String COMMAND_USAGE_BANK_TRUST = BANK_USAGE_PREFIX + "trust [bankname] [playername]";
+	public static final String COMMAND_USAGE_BANK_UNTRUST = BANK_USAGE_PREFIX + "untrust [bankname] [playername]";
+	public static final String COMMAND_USAGE_BANK_RENAME = BANK_USAGE_PREFIX + "rename [bankname] [bankname]";
+	public static final String COMMAND_USAGE_BANK_SET = BANK_USAGE_PREFIX + "set [bankname] [field] [value]";
 	public static final String COMMAND_USAGE_BANK_SELECT = BANK_USAGE_PREFIX + "select";
-	public static final String COMMAND_USAGE_BANK_TRANSFER = BANK_USAGE_PREFIX + "transfer <bankname> [playername]";
+	public static final String COMMAND_USAGE_BANK_TRANSFER = BANK_USAGE_PREFIX + "transfer [bankname] [playername]";
+
 	public static final String COMMAND_USAGE_VERSION = CONTROL_USAGE_PREFIX + "version";
 	public static final String COMMAND_USAGE_RELOAD = CONTROL_USAGE_PREFIX + "reload";
 	public static final String COMMAND_USAGE_CONFIG = CONTROL_USAGE_PREFIX + "config [set | add | remove] [field] <newvalue>";

@@ -420,12 +420,10 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 		OfflinePlayer playerToTrust = Utils.getPlayer(args[1]);
 		if (playerToTrust == null) {
 			p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
-			return false;
+			return true;
 		}
-		if (Utils.samePlayer(playerToTrust, p))
-			return false;
 
-		p.sendMessage(String.format(Messages.CLICK_CHEST_TRUST, playerToTrust.getName()));
+		p.sendMessage(String.format(Messages.CLICK_CHEST_TRUST, Utils.samePlayer(playerToTrust, p) ? "yourself" : playerToTrust.getName()));
 		ClickType.setPlayerClickType(p, new ClickType.TrustClickType(playerToTrust));
 		plugin.debug(p.getName() + " is trusting " + playerToTrust.getName() + " to an account");
 		return true;
@@ -447,7 +445,7 @@ public class AccountCommandExecutor implements CommandExecutor, Confirmable {
 			return true;
 		}
 
-		p.sendMessage(String.format(Messages.CLICK_CHEST_UNTRUST, playerToUntrust.getName()));
+		p.sendMessage(String.format(Messages.CLICK_CHEST_UNTRUST, Utils.samePlayer(playerToUntrust, p) ? "yourself" : playerToUntrust.getName()));
 		ClickType.setPlayerClickType(p, new ClickType.UntrustClickType(playerToUntrust));
 		plugin.debug(p.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
 		return true;

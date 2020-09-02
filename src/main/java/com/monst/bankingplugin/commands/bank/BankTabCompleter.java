@@ -46,6 +46,8 @@ public class BankTabCompleter implements TabCompleter {
                 return completeBankRename(sender, args);
             case "set":
                 return completeBankSet(sender, args);
+            case "trust": case "untrust":
+                return completeBankTrust(((Player) sender), args);
             case "transfer":
                 return completeBankTransfer((Player) sender, args);
             case "select":
@@ -125,16 +127,35 @@ public class BankTabCompleter implements TabCompleter {
         return Collections.emptyList();
     }
 
-    private List<String> completeBankTransfer(Player p, String[] args) {
+    private List<String> completeBankTrust(Player p, String[] args) {
         if (args.length == 2) {
-            List<String> bankNames = bankUtils.getBanksCopy().stream()
-                    .filter(bank -> bank.isOwner(p)
+            return bankUtils.getBanksCopy().stream()
+                    .filter(bank -> bank.getName().toLowerCase().startsWith(args[1].toLowerCase())
+                            && bank.isOwner(p)
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
                     .map(Bank::getName)
                     .sorted()
                     .collect(Collectors.toList());
-            return Utils.filter(bankNames, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
+        } else if (args.length == 3) {
+            List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
+            if (!p.hasPermission(Permissions.BANK_TRUST_OTHER) && !p.hasPermission(Permissions.BANK_TRUST_ADMIN))
+                onlinePlayers.remove(p.getName());
+            return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[2].toLowerCase()));
+        }
+        return Collections.emptyList();
+    }
+
+    private List<String> completeBankTransfer(Player p, String[] args) {
+        if (args.length == 2) {
+            return bankUtils.getBanksCopy().stream()
+                    .filter(bank -> bank.getName().toLowerCase().startsWith(args[1].toLowerCase())
+                            && bank.isOwner(p)
+                            || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
+                            || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
+                    .map(Bank::getName)
+                    .sorted()
+                    .collect(Collectors.toList());
         } else if (args.length == 3) {
             List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
             if (!p.hasPermission(Permissions.BANK_TRANSFER_OTHER) && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN))

@@ -184,13 +184,20 @@ public class Utils {
 	}
 
 	public static void notifyPlayers(String message, Collection<OfflinePlayer> players, CommandSender notInclude) {
+		if (notInclude instanceof Player)
+			notifyPlayers(message, players, (OfflinePlayer) ((Player) notInclude).getPlayer());
+		else
+			notifyPlayers(message, players);
+	}
+
+	public static void notifyPlayers(String message, Collection<OfflinePlayer> players, OfflinePlayer notInclude) {
 		players = new HashSet<>(players);
 		if (notInclude instanceof Player)
-			players.remove(((Player) notInclude).getPlayer());
+			players.remove(notInclude);
 		notifyPlayers(message, players);
 	}
 
-	private static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
+	public static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
 		UserMap userMap = BankingPlugin.getInstance().getEssentials().getUserMap();
 		players.stream().filter(Objects::nonNull).distinct().forEach(p -> {
 			if (p.isOnline())

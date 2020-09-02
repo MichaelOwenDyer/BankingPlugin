@@ -28,8 +28,6 @@ permissions:
         children:
             bankingplugin.account.create: true
             bankingplugin.account.create.protected: true
-            bankingplugin.account.trust: true
-            bankingplugin.account.trust.other: true
             bankingplugin.account.remove-other: true
             bankingplugin.account.removeall: true
             bankingplugin.account.info-other: true
@@ -38,6 +36,8 @@ permissions:
             bankingplugin.account.edit-other: true
             bankingplugin.account.migrate.other: true
             bankingplugin.account.migrate.bank: true
+            bankingplugin.account.trust: true
+            bankingplugin.account.trust.other: true
             bankingplugin.account.transfer: true
             bankingplugin.account.transfer.other: true
             bankingplugin.account.extend-other: true
@@ -65,6 +65,9 @@ permissions:
             bankingplugin.bank.size.*: true
             bankingplugin.bank.resize.other: true
             bankingplugin.bank.resize.admin: true
+            bankingplugin.bank.trust: true
+            bankingplugin.bank.trust.other: true
+            bankingplugin.bank.trust.admin: true
             bankingplugin.bank.transfer: true
             bankingplugin.bank.transfer.other: true
             bankingplugin.bank.transfer.admin: true
@@ -82,16 +85,6 @@ permissions:
         default: op
         children:
             bankingplugin.account.create: true
-            
-    bankingplugin.account.trust:
-        description: Add or remove other players as co-owners of your account.
-        default: true
-        
-    bankingplugin.account.trust.other:
-        description: Add or remove other players as co-owners of another player's account.
-        default: op
-        children:
-            bankingplugin.account.trust: true
         
     bankingplugin.account.remove-other:
         description: Remove another player's account.
@@ -132,6 +125,16 @@ permissions:
         default: op
         children:
             bankingplugin.account.create: true
+
+    bankingplugin.account.trust:
+        description: Add or remove other players as co-owners of your account.
+        default: true
+
+    bankingplugin.account.trust.other:
+        description: Add or remove other players as co-owners of another player's account.
+        default: op
+        children:
+            bankingplugin.account.trust: true
     
     bankingplugin.account.transfer:
         description: Transfer ownership of your account to another player.
@@ -216,7 +219,25 @@ permissions:
         default: op
         children:
             bankingplugin.bank.create.admin: true
-            
+
+    bankingplugin.bank.trust:
+        description: Add or remove other players as co-owners of your bank.
+        default: true
+        children:
+            bankingplugin.bank.create: true
+
+    bankingplugin.bank.trust.other:
+        description: Add or remove other players (or yourself) as co-owners of another player's bank.
+        default: op
+        children:
+            bankingplugin.bank.trust: true
+
+    bankingplugin.bank.trust.admin:
+        description: Add or remove other players (or yourself) as co-owners of an admin bank.
+        default: op
+        children:
+            bankingplugin.bank.trust: true
+
     bankingplugin.bank.transfer:
         description: Transfer ownership of your bank to another player.
         default: op

@@ -502,15 +502,17 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
+		boolean isSelf = Utils.samePlayer(playerToTrust, p);
 		if (account.isTrusted(playerToTrust)) {
 			plugin.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
-			p.sendMessage(String.format(Messages.ALREADY_A_COOWNER, playerToTrust.getName()));
+			p.sendMessage(String.format(account.isOwner(playerToTrust) ? Messages.ALREADY_OWNER : Messages.ALREADY_COOWNER,
+					isSelf ? "You are" : playerToTrust.getName() + " is", "account"));
 			return;
 		}
 
 		plugin.debugf("%s has trusted %s to %s account (#%d)", p.getName(), playerToTrust.getName(),
 				(account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
-		p.sendMessage(String.format(Messages.ADDED_COOWNER, playerToTrust.getName()));
+		p.sendMessage(String.format(Messages.ADDED_COOWNER, isSelf ? "You were" : playerToTrust.getName() + " was"));
 		account.trustPlayer(playerToTrust);
 	}
 
@@ -524,16 +526,17 @@ public class AccountInteractListener implements Listener {
 			return;
 		}
 
-		if (!account.isTrusted(playerToUntrust)) {
-			plugin.debugf("%s was not trusted on that account and could not be removed (#%d)",
+		boolean isSelf = Utils.samePlayer(playerToUntrust, p);
+		if (!account.isCoowner(playerToUntrust)) {
+			plugin.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
 					playerToUntrust.getName(), account.getID());
-			p.sendMessage(String.format(Messages.NOT_A_COOWNER, playerToUntrust.getName()));
+			p.sendMessage(String.format(Messages.NOT_A_COOWNER, isSelf ? "You are" : playerToUntrust.getName() + " is", "account"));
 			return;
 		}
 
 		plugin.debugf("%s has untrusted %s from %s account (#%d)", p.getName(),	playerToUntrust.getName(),
 				(account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
-		p.sendMessage(String.format(Messages.REMOVED_COOWNER, playerToUntrust.getName()));
+		p.sendMessage(String.format(Messages.REMOVED_COOWNER, isSelf ? "You were" : playerToUntrust.getName() + " was"));
 		account.untrustPlayer(playerToUntrust);
 	}
 
@@ -725,8 +728,7 @@ public class AccountInteractListener implements Listener {
 		if (account.isOwner(newOwner)) {
 			boolean isSelf = Utils.samePlayer(p, newOwner);
 			plugin.debug(p.getName() + " is already owner of account");
-			p.sendMessage(String.format(Messages.ALREADY_OWNER_ACCOUNT,
-					isSelf ? "You" : newOwner.getName(), isSelf ? "are" : "is"));
+			p.sendMessage(String.format(Messages.ALREADY_OWNER, isSelf ? "You are" : newOwner.getName() + " is", "account"));
 			return false;
 		}
 

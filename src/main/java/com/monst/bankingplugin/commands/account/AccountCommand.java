@@ -6,7 +6,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 
 public class AccountCommand extends BankingPluginCommand {
 
@@ -32,24 +31,14 @@ public class AccountCommand extends BankingPluginCommand {
 		addSubCommand(new AccountSubCommand("create", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				boolean receiveCreateMessage = sender.hasPermission(Permissions.ACCOUNT_CREATE);
-				if (!receiveCreateMessage) {
-					for (PermissionAttachmentInfo permInfo : sender.getEffectivePermissions()) {
-						String perm = permInfo.getPermission();
-						if (perm.startsWith(Permissions.ACCOUNT_CREATE) && sender.hasPermission(perm)) {
-							receiveCreateMessage = true;
-							break;
-						}
-					}
-				}
-				return receiveCreateMessage ? Messages.COMMAND_USAGE_ACCOUNT_CREATE : "";
+				return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_CREATE : "";
 			}
 		});
 
 		addSubCommand(new AccountSubCommand("remove", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_ACCOUNT_REMOVE;
+				return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_REMOVE : "";
 			}
 		});
 
@@ -70,21 +59,21 @@ public class AccountCommand extends BankingPluginCommand {
 		addSubCommand(new AccountSubCommand("limits", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_ACCOUNT_LIMITS;
+				return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_LIMITS : "";
 			}
 		});
 
 		addSubCommand(new AccountSubCommand("removeall", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_ACCOUNT_REMOVEALL;
+				return sender.hasPermission(Permissions.ACCOUNT_REMOVEALL) ? Messages.COMMAND_USAGE_ACCOUNT_REMOVEALL : "";
 			}
 		});
 
 		addSubCommand(new AccountSubCommand("set", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_ACCOUNT_SET;
+				return hasPermission(sender, Permissions.ACCOUNT_SET) ? Messages.COMMAND_USAGE_ACCOUNT_SET : "";
 			}
 		});
 
@@ -105,7 +94,7 @@ public class AccountCommand extends BankingPluginCommand {
 		addSubCommand(new AccountSubCommand("migrate", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_MIGRATE : "";
+				return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_MIGRATE : "";
 			}
 		});
 		

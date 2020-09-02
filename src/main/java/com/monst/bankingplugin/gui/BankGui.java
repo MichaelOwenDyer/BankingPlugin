@@ -51,7 +51,7 @@ public class BankGui extends SinglePageGui<Bank> {
 			case 0:
 				if (guiSubject.isPlayerBank())
 					return createSlotItem(guiSubject.getOwner(), "General Information", getGeneralInfoLore());
-				return createSlotItem(Material.PLAYER_HEAD, "General Information", getGeneralInfoLore());
+				return createSlotItem(Material.REDSTONE_BLOCK, "General Information", getGeneralInfoLore());
 			case 4:
 				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
 			case 8:
@@ -158,14 +158,15 @@ public class BankGui extends SinglePageGui<Bank> {
 		double lowBalanceFee = guiSubject.get(BankField.LOW_BALANCE_FEE);
 		boolean strikethrough = minBalance == 0;
 		boolean payOnLowBalance = guiSubject.get(BankField.PAY_ON_LOW_BALANCE);
-		return Utils.wordWrapAll(38,
-				"Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBalance),
-				"Low balance fee: " + ChatColor.RED
-						+ (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.format(lowBalanceFee),
-				"",
-				"Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
-						+ " continue " + ChatColor.GRAY + "to be paid out when the account balance is low."
-		);
+		List<String> lore = new ArrayList<>();
+		lore.add("Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBalance));
+		lore.add("Low balance fee: " + ChatColor.RED + (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.format(lowBalanceFee));
+		if (!strikethrough) {
+			lore.add("");
+			lore.add("Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
+					+ " continue " + ChatColor.GRAY + "to be paid out when the account balance is low.");
+		}
+		return Utils.wordWrapAll(38, lore);
 	}
 
 	private List<String> getOfflinePayoutsLore() {

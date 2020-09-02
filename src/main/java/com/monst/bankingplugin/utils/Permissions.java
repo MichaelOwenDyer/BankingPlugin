@@ -19,6 +19,7 @@ public class Permissions {
 	public static final String ACCOUNT_TRANSFER_OTHER = "bankingplugin.account.transfer.other";
 	public static final String ACCOUNT_EXTEND_OTHER = "bankingplugin.account.extend-other";
 	public static final String ACCOUNT_NO_LIMIT = "bankingplugin.account.limit.*";
+	public static final String ACCOUNT_SET = "bankingplugin.account.set";
 	public static final String ACCOUNT_SET_NICKNAME_OTHER = "bankingplugin.account.set.nickname-other";
 	public static final String ACCOUNT_SET_MULTIPLIER = "bankingplugin.account.set.multiplier";
 	public static final String ACCOUNT_SET_INTEREST_DELAY = "bankingplugin.account.set.interest-delay";
@@ -32,6 +33,9 @@ public class Permissions {
 	public static final String BANK_NO_SIZE_LIMIT = "bankingplugin.bank.size.*";
 	public static final String BANK_RESIZE_OTHER = "bankingplugin.bank.resize.other";
 	public static final String BANK_RESIZE_ADMIN = "bankingplugin.bank.resize.admin";
+	public static final String BANK_TRUST = "bankingplugin.bank.trust";
+	public static final String BANK_TRUST_OTHER = "bankingplugin.bank.trust.other";
+	public static final String BANK_TRUST_ADMIN = "bankingplugin.bank.trust.admin";
 	public static final String BANK_TRANSFER = "bankingplugin.bank.transfer";
 	public static final String BANK_TRANSFER_OTHER = "bankingplugin.bank.transfer.other";
 	public static final String BANK_TRANSFER_ADMIN = "bankingplugin.bank.transfer.admin";

@@ -395,6 +395,7 @@ public class Account extends Ownable {
 		owner = newOwner;
 		if (Config.trustOnTransfer)
 			coowners.add(previousOwner);
+		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 	}
 
 	@Override

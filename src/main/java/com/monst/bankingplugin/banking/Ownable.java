@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -61,6 +62,7 @@ public abstract class Ownable implements Nameable {
 	 * @return a {@link Set<OfflinePlayer>} containing the current co-owners.
 	 */
 	public Set<OfflinePlayer> getCoowners() {
+		coowners.removeIf(Objects::isNull);
 		return Collections.unmodifiableSet(coowners);
 	}
 
@@ -71,7 +73,7 @@ public abstract class Ownable implements Nameable {
 	public Set<OfflinePlayer> getTrustedPlayers() {
 		if (owner == null)
 			return getCoowners();
-		return Collections.unmodifiableSet(Utils.mergeCollections(Collections.singleton(owner), getCoowners()));
+		return Collections.unmodifiableSet(Utils.mergeCollections(Collections.singleton(getOwner()), getCoowners()));
 	}
 
 	/**

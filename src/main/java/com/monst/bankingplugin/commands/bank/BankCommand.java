@@ -6,7 +6,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 
 public class BankCommand extends BankingPluginCommand {
 
@@ -31,24 +30,14 @@ public class BankCommand extends BankingPluginCommand {
 		addSubCommand(new BankSubCommand("create", true, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-                boolean receiveCreateMessage = sender.hasPermission(Permissions.BANK_CREATE);
-                if (!receiveCreateMessage) {
-                    for (PermissionAttachmentInfo permInfo : sender.getEffectivePermissions()) {
-                        String perm = permInfo.getPermission();
-                        if (perm.startsWith(Permissions.BANK_CREATE) && sender.hasPermission(perm)) {
-                            receiveCreateMessage = true;
-                            break;
-                        }
-                    }
-                }
-				return receiveCreateMessage ? Messages.COMMAND_USAGE_BANK_CREATE : "";
+				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_CREATE : "";
             }
         });
 
 		addSubCommand(new BankSubCommand("remove", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_BANK_REMOVE;
+				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_REMOVE : "";
             }
 		});
 
@@ -69,7 +58,7 @@ public class BankCommand extends BankingPluginCommand {
 		addSubCommand(new BankSubCommand("limits", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_BANK_LIMITS;
+				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_LIMITS : "";
 			}
 		});
 
@@ -83,7 +72,7 @@ public class BankCommand extends BankingPluginCommand {
 		addSubCommand(new BankSubCommand("resize", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return sender.hasPermission(Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RESIZE : "";
+				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RESIZE : "";
 			}
 		});
 
@@ -97,14 +86,28 @@ public class BankCommand extends BankingPluginCommand {
 		addSubCommand(new BankSubCommand("set", false, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_BANK_SET;
+				return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_SET : "";
+			}
+		});
+
+		addSubCommand(new BankSubCommand("trust", false, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return sender.hasPermission(Permissions.BANK_TRUST) ? Messages.COMMAND_USAGE_BANK_TRUST : "";
+			}
+		});
+
+		addSubCommand(new BankSubCommand("untrust", false, executor, tabCompleter) {
+			@Override
+			public String getHelpMessage(CommandSender sender) {
+				return sender.hasPermission(Permissions.BANK_TRUST) ? Messages.COMMAND_USAGE_BANK_UNTRUST : "";
 			}
 		});
 
 		addSubCommand(new BankSubCommand("select", true, executor, tabCompleter) {
 			@Override
 			public String getHelpMessage(CommandSender sender) {
-				return Messages.COMMAND_USAGE_BANK_SELECT;
+				return sender.hasPermission(Permissions.BANK_SELECT) ? Messages.COMMAND_USAGE_BANK_SELECT : "";
 			}
 		});
 
