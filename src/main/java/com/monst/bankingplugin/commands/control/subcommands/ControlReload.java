@@ -19,6 +19,11 @@ public class ControlReload extends ControlSubCommand {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return sender.hasPermission(Permissions.RELOAD) ? Messages.COMMAND_USAGE_RELOAD : "";
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " is reloading the plugin");
 
@@ -56,11 +61,6 @@ public class ControlReload extends ControlSubCommand {
                     }
                 });
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.RELOAD) ? Messages.COMMAND_USAGE_RELOAD : "";
     }
 
 }

@@ -18,6 +18,11 @@ public class AccountInfo extends AccountSubCommand {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return Messages.COMMAND_USAGE_ACCOUNT_INFO;
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to retrieve account info");
 
@@ -51,11 +56,6 @@ public class AccountInfo extends AccountSubCommand {
         sender.sendMessage(Messages.CLICK_CHEST_INFO);
         ClickType.setPlayerClickType(((Player) sender), new ClickType(ClickType.EnumClickType.INFO));
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return Messages.COMMAND_USAGE_ACCOUNT_INFO;
     }
 
 }

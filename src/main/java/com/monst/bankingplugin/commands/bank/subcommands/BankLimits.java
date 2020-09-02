@@ -13,6 +13,11 @@ public class BankLimits extends BankSubCommand {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_LIMITS : "";
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         int banksUsed = bankUtils.getNumberOfBanks(p);
@@ -21,11 +26,6 @@ public class BankLimits extends BankSubCommand {
         plugin.debug(p.getName() + " is viewing their bank limits: " + banksUsed + " / " + limit);
         p.sendMessage(String.format(Messages.BANK_LIMIT, banksUsed, limit));
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_LIMITS : "";
     }
 
 }

@@ -21,6 +21,11 @@ public class BankRemoveall extends BankSubCommand implements Confirmable {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return sender.hasPermission(Permissions.BANK_REMOVEALL) ? Messages.COMMAND_USAGE_BANK_REMOVEALL : "";
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to remove all banks");
 
@@ -54,11 +59,6 @@ public class BankRemoveall extends BankSubCommand implements Confirmable {
             Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getColorizedName()), bank.getTrustedPlayers(), sender);
 
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.BANK_REMOVEALL) ? Messages.COMMAND_USAGE_BANK_REMOVEALL : "";
     }
 
 }

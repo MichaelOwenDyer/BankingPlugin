@@ -15,6 +15,11 @@ public class AccountRemove extends AccountSubCommand {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_REMOVE : "";
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         plugin.debug(p.getName() + " wants to remove an account");
@@ -30,11 +35,6 @@ public class AccountRemove extends AccountSubCommand {
         p.sendMessage(Messages.CLICK_CHEST_REMOVE);
         ClickType.setPlayerClickType(p, new ClickType(ClickType.EnumClickType.REMOVE));
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_REMOVE : "";
     }
 
 }

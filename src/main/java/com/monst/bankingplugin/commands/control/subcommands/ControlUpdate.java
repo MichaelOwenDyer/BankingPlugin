@@ -13,6 +13,11 @@ public class ControlUpdate extends ControlSubCommand {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_UPDATE : "";
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " is checking for updates");
 
@@ -50,11 +55,6 @@ public class ControlUpdate extends ControlSubCommand {
             // sender.sendMessage(Messages.UPDATE_ERROR);
         }
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_UPDATE : "";
     }
 
 }

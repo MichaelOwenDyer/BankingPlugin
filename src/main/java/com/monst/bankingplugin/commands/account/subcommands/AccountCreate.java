@@ -17,6 +17,11 @@ public class AccountCreate extends AccountSubCommand {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_CREATE : "";
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         plugin.debug(p.getName() + " wants to create an account");
@@ -62,11 +67,6 @@ public class AccountCreate extends AccountSubCommand {
         p.sendMessage(Messages.CLICK_CHEST_CREATE);
         ClickType.setPlayerClickType(p, new ClickType.CreateClickType(owner));
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_CREATE : "";
     }
 
 }

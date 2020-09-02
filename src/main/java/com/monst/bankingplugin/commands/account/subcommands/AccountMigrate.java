@@ -13,6 +13,11 @@ public class AccountMigrate extends AccountSubCommand {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_MIGRATE : "";
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         plugin.debug(p.getName() + " wants to migrate an account");
@@ -27,11 +32,6 @@ public class AccountMigrate extends AccountSubCommand {
         ClickType.setPlayerClickType(p, new ClickType.MigrateClickType(null));
         plugin.debug(p.getName() + " is migrating an account");
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_MIGRATE : "";
     }
 
 }

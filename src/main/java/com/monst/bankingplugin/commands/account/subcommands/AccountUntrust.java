@@ -15,6 +15,11 @@ public class AccountUntrust extends AccountSubCommand {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return sender.hasPermission(Permissions.ACCOUNT_TRUST) ? Messages.COMMAND_USAGE_ACCOUNT_UNTRUST : "";
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length < 2)
@@ -36,11 +41,6 @@ public class AccountUntrust extends AccountSubCommand {
         ClickType.setPlayerClickType(p, new ClickType.UntrustClickType(playerToUntrust));
         plugin.debug(p.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.ACCOUNT_TRUST) ? Messages.COMMAND_USAGE_ACCOUNT_UNTRUST : "";
     }
 
 }

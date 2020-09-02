@@ -18,6 +18,11 @@ public class BankList extends BankSubCommand {
     }
 
     @Override
+    public String getHelpMessage(CommandSender sender) {
+        return Messages.COMMAND_USAGE_BANK_LIST;
+    }
+
+    @Override
     public boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " is listing banks.");
 
@@ -40,11 +45,6 @@ public class BankList extends BankSubCommand {
                 sender.sendMessage(ChatColor.AQUA + "" + ++i + ". " + bank.getColorizedName() + " ");
         }
         return true;
-    }
-
-    @Override
-    public String getHelpMessage(CommandSender sender) {
-        return Messages.COMMAND_USAGE_BANK_LIST;
     }
 
 }
