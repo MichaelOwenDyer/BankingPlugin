@@ -339,7 +339,7 @@ public class BankUtils {
 									reloadedBanks.add(bank);
 									for (Account account : map.get(bank)) {
 										if (account.create(showConsoleMessages)) {
-											accountUtils.addAccount(account, false);
+											accountUtils.addAccount(account, false, account.callUpdateName());
 											reloadedAccounts.add(account);
 										} else
 											plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");

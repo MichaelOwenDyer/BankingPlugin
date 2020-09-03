@@ -47,16 +47,10 @@ public class AccountRecover extends AccountSubCommand {
         BankUtils bankUtils = plugin.getBankUtils();
         Location newLocation = b.getLocation();
         if (accountUtils.isAccount(newLocation)) {
-            if (toMigrate.equals(accountUtils.getAccount(newLocation))) {
-                plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
-                p.sendMessage(Messages.SAME_ACCOUNT);
-                return;
-            }
-            plugin.debugf("%s clicked an already existing account chest to migrate to", p.getName());
+            plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
             p.sendMessage(Messages.CHEST_ALREADY_ACCOUNT);
             return;
         }
-
         if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
             p.sendMessage(Messages.CHEST_BLOCKED);
             plugin.debug("Chest is blocked.");
@@ -84,7 +78,7 @@ public class AccountRecover extends AccountSubCommand {
         if (newAccount.create(true)) {
             plugin.debugf("Account recovered (#%d)", newAccount.getID());
             accountUtils.removeInvalidAccount(toMigrate);
-            accountUtils.addAccount(newAccount, true); // Database entry is replaced
+            accountUtils.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
             p.sendMessage(Messages.ACCOUNT_RECOVERED);
         } else {
             plugin.debug("Could not recover account");

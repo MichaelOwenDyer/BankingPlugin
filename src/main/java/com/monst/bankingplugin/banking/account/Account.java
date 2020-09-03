@@ -7,6 +7,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.AccountUtils;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Nameable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -167,8 +168,6 @@ public class Account extends Ownable {
 					+ Utils.format(getBalance()) + " but was: $" + Utils.format(checkedBalance)
 			);
 		setBalance(checkedBalance);
-
-		updateName();
 
 		created = true;
 		return true;
@@ -332,6 +331,8 @@ public class Account extends Ownable {
 		Inventory inv = getInventory(true);
 		if (inv == null)
 			return;
+		if (name.contentEquals(getDefaultName()))
+			name = name + ChatColor.GRAY + String.format(" (#%d)", getID());
 		if (size == AccountSize.DOUBLE) {
 			DoubleChest dc = (DoubleChest) inv.getHolder();
 			if (dc == null)
@@ -383,6 +384,10 @@ public class Account extends Ownable {
 			setToDefaultName();
 		else
 			setName(getRawName());
+	}
+
+	public <T> Callback<T> callUpdateName() {
+		return Callback.of(plugin, result -> this.updateName());
 	}
 
 	/**

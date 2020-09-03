@@ -97,8 +97,8 @@ public class InterestEventListener implements Listener {
 				account.getStatus().incrementMultiplier(account.isTrustedPlayerOnline());
 				account.updatePrevBalance();
 
-					accountUtils.addAccount(account, true);
 				if (trustedPlayers.isEmpty()) {
+					accountUtils.addAccount(account, true);
 					continue;
 				}
 
@@ -114,10 +114,8 @@ public class InterestEventListener implements Listener {
 				}
 
 				accountUtils.addAccount(account, true);
-
-				if (Config.enableInterestLog) {
+				if (Config.enableInterestLog)
 					plugin.getDatabase().logInterest(account, baseInterest, multiplier, interest, null);
-				}
 			}
 			if (accountOwner.isOnline())
 				plugin.getDatabase().logLogout(accountOwner.getPlayer(), null);

@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank.subcommands;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.commands.ConfirmableCommand;
+import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
 import com.monst.bankingplugin.utils.Messages;
@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 import java.util.Collection;
 import java.util.Set;
 
-public class BankRemoveall extends BankSubCommand implements ConfirmableCommand {
+public class BankRemoveall extends BankSubCommand implements ConfirmableSubCommand {
 
     public BankRemoveall() {
         super("removeall", false);

@@ -110,7 +110,7 @@ public class AccountProtectListener implements Listener {
 
 			accountUtils.removeAccount(account, false, Callback.of(plugin, result -> {
 				newAccount.create(true);
-				accountUtils.addAccount(newAccount, true);
+				accountUtils.addAccount(newAccount, true, newAccount.callUpdateName());
 			}));
 		} else {
 			accountUtils.removeAccount(account, true);
@@ -216,7 +216,7 @@ public class AccountProtectListener implements Listener {
 
 		accountUtils.removeAccount(account, true, Callback.of(plugin, result -> {
 				if (newAccount.create(true)) {
-					accountUtils.addAccount(newAccount, true);
+					accountUtils.addAccount(newAccount, true, newAccount.callUpdateName());
 					plugin.debugf("%s extended %s's account (#%d)",
 							p.getName(), account.getOwner().getName(), account.getID());
 				} else

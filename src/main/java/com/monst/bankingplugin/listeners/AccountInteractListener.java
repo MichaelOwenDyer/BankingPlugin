@@ -134,15 +134,16 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 
 				case MIGRATE:
 
-					Objects.requireNonNull(account);
 					if (((MigrateClickType) clickType).isFirstClick()) {
-						migratePartOne(p, account);
+						migratePartOne(p, Objects.requireNonNull(account));
 					} else {
 						if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 							p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED);
 							plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
-						} else
-							migratePartTwo(p, b, ((MigrateClickType) clickType).getAccountToMigrate());
+						} else {
+							Account toMigrate = Objects.requireNonNull((MigrateClickType) clickType).getAccountToMigrate();
+							migratePartTwo(p, b, toMigrate);
+						}
 						ClickType.removePlayerClickType(p);
 					}
 					e.setCancelled(true);
@@ -298,7 +299,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 
 		if (account.create(true)) {
 			plugin.debug("Account created");
-			accountUtils.addAccount(account, true);
+			accountUtils.addAccount(account, true, account.callUpdateName());
 			executor.sendMessage(Messages.ACCOUNT_CREATED);
 		}
 	}
@@ -453,7 +454,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 						executor.getName(), account.getID(), account.getStatus().getDelayUntilNextPayout());
 				executor.sendMessage(String.format(Messages.INTEREST_DELAY_SET, account.getStatus().getDelayUntilNextPayout()));
 		}
-		plugin.getAccountUtils().addAccount(account, true);
+		plugin.getAccountUtils().addAccount(account, true, account.callUpdateName());
 		AccountConfigureEvent e = new AccountConfigureEvent(executor, account, field, value);
 		Bukkit.getPluginManager().callEvent(e);
 	}
@@ -628,7 +629,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 			accountUtils.removeAccount(toMigrate, false,
 					Callback.of(plugin,
 							result -> {
-								accountUtils.addAccount(newAccount, true); // Database entry is replaced
+								accountUtils.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
 								p.sendMessage(Messages.ACCOUNT_MIGRATED);
 							},
 							throwable -> p.sendMessage(Messages.ERROR_OCCURRED))

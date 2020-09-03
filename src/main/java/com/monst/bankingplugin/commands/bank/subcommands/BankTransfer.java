@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank.subcommands;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.commands.ConfirmableCommand;
+import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankTransferEvent;
 import com.monst.bankingplugin.utils.Messages;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class BankTransfer extends BankSubCommand implements ConfirmableCommand {
+public class BankTransfer extends BankSubCommand implements ConfirmableSubCommand {
 
     public BankTransfer() {
         super("transfer", false);
