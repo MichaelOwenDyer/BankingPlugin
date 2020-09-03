@@ -601,7 +601,7 @@ public abstract class Database {
 										.filter(string -> !string.isEmpty())
 										.map(UUID::fromString)
 										.map(Bukkit::getOfflinePlayer)
-										.collect(Collectors.toSet());
+										.collect(Collectors.toCollection(HashSet::new));
 						OfflinePlayer owner = null;
 						if (!isAdminBank) {
 							owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
@@ -777,7 +777,7 @@ public abstract class Database {
 								.filter(string -> !string.isEmpty())
 								.map(UUID::fromString)
 								.map(Bukkit::getOfflinePlayer)
-								.collect(Collectors.toSet());
+								.collect(Collectors.toCollection(HashSet::new));
 				String nickname = rs.getString("nickname");
 
 				plugin.debug("Initializing account... (#" + accountId + " at bank \"" + bank.getName() + "\" (#"

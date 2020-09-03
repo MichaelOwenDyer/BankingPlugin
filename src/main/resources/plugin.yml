@@ -36,6 +36,7 @@ permissions:
             bankingplugin.account.edit-other: true
             bankingplugin.account.migrate.other: true
             bankingplugin.account.migrate.bank: true
+            bankingplugin.account.recover: true
             bankingplugin.account.trust: true
             bankingplugin.account.trust.other: true
             bankingplugin.account.transfer: true
@@ -122,6 +123,12 @@ permissions:
         
     bankingplugin.account.migrate.bank:
         description: Migrate an account to a chest in a different bank.
+        default: op
+        children:
+            bankingplugin.account.create: true
+
+    bankingplugin.account.recover:
+        description: Recover an account that was not found on plugin load.
         default: op
         children:
             bankingplugin.account.create: true

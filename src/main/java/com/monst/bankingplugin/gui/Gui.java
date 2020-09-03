@@ -41,6 +41,8 @@ abstract class Gui<T> {
 
 	abstract void open(boolean initialize);
 
+	abstract void close(Player player);
+
 	abstract void initializeMenu();
 
 	abstract void setCloseHandler(Menu.CloseHandler handler);

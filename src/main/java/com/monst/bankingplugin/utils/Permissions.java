@@ -15,6 +15,7 @@ public class Permissions {
 	public static final String ACCOUNT_EDIT_OTHER = "bankingplugin.account.edit-other";
 	public static final String ACCOUNT_MIGRATE_OTHER = "bankingplugin.account.migrate.other";
 	public static final String ACCOUNT_MIGRATE_BANK = "bankingplugin.account.migrate.bank";
+	public static final String ACCOUNT_RECOVER = "bankingplugin.account.recover";
 	public static final String ACCOUNT_TRANSFER = "bankingplugin.account.transfer";
 	public static final String ACCOUNT_TRANSFER_OTHER = "bankingplugin.account.transfer.other";
 	public static final String ACCOUNT_EXTEND_OTHER = "bankingplugin.account.extend-other";

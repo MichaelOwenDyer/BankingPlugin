@@ -87,7 +87,7 @@ public class ClickType {
     }
 
     public enum EnumClickType {
-		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE, TRANSFER
+		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE, RECOVER, TRANSFER
     }
 
 	public static class CreateClickType extends ClickType {
@@ -171,6 +171,20 @@ public class ClickType {
 
 		public Account getAccountToMigrate() {
 			return toMigrate;
+		}
+	}
+
+	public static class RecoverClickType extends ClickType {
+
+		private final Account toRecover;
+
+		public RecoverClickType(Account toRecover) {
+			super(EnumClickType.RECOVER);
+			this.toRecover = toRecover;
+		}
+
+		public Account getAccountToRecover() {
+			return toRecover;
 		}
 	}
 

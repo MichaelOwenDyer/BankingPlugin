@@ -406,14 +406,14 @@ public class Utils {
 
 	@SafeVarargs
 	public static <T> Set<T> mergeCollections(Collection<? extends T>... collections) {
-		return Arrays.stream(collections).flatMap(Collection::stream).collect(Collectors.toSet());
+		return Arrays.stream(collections).flatMap(Collection::stream).collect(Collectors.toCollection(HashSet::new));
 	}
 
 	public static <T> Set<T> filter(Set<? extends T> collection, Predicate<? super T> filter) {
-		return filter(collection, filter, Collectors.toSet());
+		return filter(collection, filter, Collectors.toCollection(HashSet::new));
 	}
 	public static <T> List<T> filter(List<? extends T> collection, Predicate<? super T> filter) {
-		return filter(collection, filter, Collectors.toList());
+		return filter(collection, filter, Collectors.toCollection(ArrayList::new));
 	}
 
 	/**

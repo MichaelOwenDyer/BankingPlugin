@@ -51,6 +51,7 @@ public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
         }
     }
 
+    @Override
     void close(Player player) {
         prevGui = null;
         menu.close(player);

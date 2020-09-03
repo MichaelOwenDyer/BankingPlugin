@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
+import com.monst.bankingplugin.commands.account.subcommands.AccountRecover;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.*;
 import com.monst.bankingplugin.gui.AccountGui;
@@ -64,7 +65,8 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 		if (clickType != null) {
 
 			if (account == null && !(clickType.getClickType() == ClickType.EnumClickType.CREATE
-					|| clickType.getClickType() == ClickType.EnumClickType.MIGRATE))
+					|| clickType.getClickType() == ClickType.EnumClickType.MIGRATE
+					|| clickType.getClickType() == EnumClickType.RECOVER))
 				return;
 			if (account == null && clickType.getClickType() == ClickType.EnumClickType.MIGRATE
 					&& ((MigrateClickType) clickType).isFirstClick())
@@ -74,86 +76,96 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 
 			switch (clickType.getClickType()) {
 
-			case CREATE:
+				case CREATE:
 
-				if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
-					plugin.debug(p.getName() + " does not have permission to create an account on a protected chest.");
-				} else {
-					OfflinePlayer newOwner = ((CreateClickType) clickType).getNewOwner();
-					create(p, newOwner, b);
-				}
-				ClickType.removePlayerClickType(p);
-				e.setCancelled(true);
-				break;
-
-			case REMOVE:
-
-				Objects.requireNonNull(account);
-				if (confirmRemove(p, account))
-					remove(p, account);
-				e.setCancelled(true);
-				break;
-
-			case INFO:
-
-				Objects.requireNonNull(account);
-				info(p, account);
-				ClickType.removePlayerClickType(p);
-				e.setCancelled(true);
-				break;
-
-			case SET:
-
-				SetClickType.SetField field = ((SetClickType) clickType).getField();
-				String value = ((SetClickType) clickType).getValue();
-				set(p, account, field, value);
-				ClickType.removePlayerClickType(p);
-				e.setCancelled(true);
-				break;
-
-			case TRUST:
-
-				Objects.requireNonNull(account);
-				OfflinePlayer playerToTrust = ((TrustClickType) clickType).getPlayerToTrust();
-				trust(p, account, playerToTrust);
-				ClickType.removePlayerClickType(p);
-				e.setCancelled(true);
-				break;
-
-			case UNTRUST:
-
-				Objects.requireNonNull(account);
-				OfflinePlayer playerToUntrust = ((UntrustClickType) clickType).getPlayerToUntrust();
-				untrust(p, account, playerToUntrust);
-				ClickType.removePlayerClickType(p);
-				e.setCancelled(true);
-				break;
-
-			case MIGRATE:
-
-				Objects.requireNonNull(account);
-				if (((MigrateClickType) clickType).isFirstClick()) {
-					migratePartOne(p, account);
-				} else {
 					if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-						p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED);
-						plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
-					} else
-						migratePartTwo(p, b, ((MigrateClickType) clickType).getAccountToMigrate());
+						p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
+						plugin.debug(p.getName() + " does not have permission to create an account on a protected chest.");
+					} else {
+						OfflinePlayer newOwner = ((CreateClickType) clickType).getNewOwner();
+						create(p, newOwner, b);
+					}
 					ClickType.removePlayerClickType(p);
-				}
-				e.setCancelled(true);
-				break;
+					e.setCancelled(true);
+					break;
 
-			case TRANSFER:
+				case REMOVE:
 
-				Objects.requireNonNull(account);
-				OfflinePlayer newOwner = ((TransferClickType) clickType).getNewOwner();
-				if (confirmTransfer(p, newOwner, account))
-					transfer(p, newOwner, account);
-				e.setCancelled(true);
-				break;
+					Objects.requireNonNull(account);
+					if (confirmRemove(p, account))
+						remove(p, account);
+					e.setCancelled(true);
+					break;
+
+				case INFO:
+
+					Objects.requireNonNull(account);
+					info(p, account);
+					ClickType.removePlayerClickType(p);
+					e.setCancelled(true);
+					break;
+
+				case SET:
+
+					SetClickType.SetField field = ((SetClickType) clickType).getField();
+					String value = ((SetClickType) clickType).getValue();
+					set(p, account, field, value);
+					ClickType.removePlayerClickType(p);
+					e.setCancelled(true);
+					break;
+
+				case TRUST:
+
+					Objects.requireNonNull(account);
+					OfflinePlayer playerToTrust = ((TrustClickType) clickType).getPlayerToTrust();
+					trust(p, account, playerToTrust);
+					ClickType.removePlayerClickType(p);
+					e.setCancelled(true);
+					break;
+
+				case UNTRUST:
+
+					Objects.requireNonNull(account);
+					OfflinePlayer playerToUntrust = ((UntrustClickType) clickType).getPlayerToUntrust();
+					untrust(p, account, playerToUntrust);
+					ClickType.removePlayerClickType(p);
+					e.setCancelled(true);
+					break;
+
+				case MIGRATE:
+
+					Objects.requireNonNull(account);
+					if (((MigrateClickType) clickType).isFirstClick()) {
+						migratePartOne(p, account);
+					} else {
+						if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+							p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED);
+							plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
+						} else
+							migratePartTwo(p, b, ((MigrateClickType) clickType).getAccountToMigrate());
+						ClickType.removePlayerClickType(p);
+					}
+					e.setCancelled(true);
+					break;
+
+				case TRANSFER:
+
+					Objects.requireNonNull(account);
+					OfflinePlayer newOwner = ((TransferClickType) clickType).getNewOwner();
+					if (confirmTransfer(p, newOwner, account)) {
+						transfer(p, newOwner, account);
+						ClickType.removePlayerClickType(p);
+					}
+					e.setCancelled(true);
+					break;
+
+				case RECOVER:
+
+					Account toRecover = Objects.requireNonNull(((RecoverClickType) clickType).getAccountToRecover());
+					AccountRecover.recover(p, b, toRecover);
+					ClickType.removePlayerClickType(p);
+					e.setCancelled(true);
+					break;
 			}
 
 		} else {
@@ -291,24 +303,27 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 		}
 	}
 
-	private boolean confirmRemove(Player executor, Account account) {
+	private boolean confirmRemove(Player p, Account account) {
 
-		if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(executor)) {
-			if (account.isTrusted(executor))
-				executor.sendMessage(Messages.MUST_BE_OWNER);
+		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(p)) {
+			if (account.isTrusted(p))
+				p.sendMessage(Messages.MUST_BE_OWNER);
 			else
-				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
-			return !unconfirmed.containsKey(executor.getUniqueId());
+				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
+			return !unconfirmed.containsKey(p.getUniqueId());
 		}
 
-		if ((account.getBalance().signum() == 1 || Config.confirmOnRemove) && !isConfirmed(executor, account.getID())) {
-			plugin.debug("Needs confirmation");
-			if (account.getBalance().signum() == 1) {
-				executor.sendMessage(Messages.ACCOUNT_BALANCE_NOT_ZERO);
+		if ((account.getBalance().signum() == 1 || Config.confirmOnRemove)) {
+			if (!isConfirmed(p, account.getID())) {
+				plugin.debug("Needs confirmation");
+				if (account.getBalance().signum() == 1) {
+					p.sendMessage(Messages.ACCOUNT_BALANCE_NOT_ZERO);
+				}
+				p.sendMessage(Messages.CLICK_TO_CONFIRM);
+				return false;
 			}
-			executor.sendMessage(Messages.CLICK_TO_CONFIRM);
-			return false;
-		}
+		} else
+			ClickType.removePlayerClickType(p);
 		return true;
 	}
 
@@ -636,13 +651,16 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 			return false;
 		}
 
-		if (Config.confirmOnTransfer && !isConfirmed(p, account.getID())) {
-			plugin.debug("Needs confirmation");
-			p.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
-					account.isOwner(p) ? "your account" : account.getOwner().getName() + "'s account", newOwner.getName()));
-			p.sendMessage(Messages.CLICK_TO_CONFIRM);
-			return false;
-		}
+		if (Config.confirmOnTransfer) {
+			if (!isConfirmed(p, account.getID())) {
+				plugin.debug("Needs confirmation");
+				p.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
+						account.isOwner(p) ? "your account" : account.getOwner().getName() + "'s account", newOwner.getName()));
+				p.sendMessage(Messages.CLICK_TO_CONFIRM);
+				return false;
+			}
+		} else
+			ClickType.removePlayerClickType(p);
 		return true;
 	}
 

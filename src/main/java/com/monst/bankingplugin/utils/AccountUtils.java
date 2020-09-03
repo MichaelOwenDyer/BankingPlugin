@@ -26,6 +26,7 @@ public class AccountUtils {
 
 	private final BankingPlugin plugin;
 	private final Map<Location, Account> accountLocationMap = new ConcurrentHashMap<>();
+	private final Set<Account> invalidAccounts = new HashSet<>();
 
     public AccountUtils(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -170,9 +171,8 @@ public class AccountUtils {
 
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);
-        } else {
-            if (callback != null) callback.callSyncResult(null);
-        }
+        } else if (callback != null)
+        	callback.callSyncResult(null);
     }
 
     /**
@@ -186,6 +186,21 @@ public class AccountUtils {
 
 	public void removeAccounts(Collection<Account> accounts, boolean removeFromDatabase) {
 		accounts.forEach(account -> removeAccount(account, removeFromDatabase));
+	}
+
+	public void addInvalidAccount(Account account) {
+    	if (account != null)
+    		invalidAccounts.add(account);
+	}
+
+	public void removeInvalidAccount(Account account) {
+		if (account == null)
+			return;
+		invalidAccounts.remove(account);
+	}
+
+	public Set<Account> getInvalidAccounts() {
+    	return new HashSet<>(invalidAccounts);
 	}
 
     /**

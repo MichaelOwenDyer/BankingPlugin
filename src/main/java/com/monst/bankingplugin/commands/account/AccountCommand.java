@@ -36,6 +36,7 @@ public class AccountCommand extends BankingPluginCommand<AccountSubCommand> {
 		addSubCommand(new AccountUntrust());
 		addSubCommand(new AccountMigrate());
 		addSubCommand(new AccountTransfer());
+		addSubCommand(new AccountRecover());
 
 		register();
 		commandCreated = true;

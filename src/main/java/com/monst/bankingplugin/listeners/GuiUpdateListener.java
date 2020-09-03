@@ -19,7 +19,7 @@ public class GuiUpdateListener implements Listener {
     @EventHandler
     public void onPluginConfigureEvent(PluginConfigureEvent event) {
         // FIXME: Not all fields will be triggered here due to discrepancy in name between bank / plugin config
-        if (BankField.getByName(event.getField().substring(0, event.getField().lastIndexOf('.'))) != null)
+        if (event.getField().contains(".") && BankField.getByName(event.getField().substring(0, event.getField().lastIndexOf('.'))) != null)
             SinglePageGui.updateGuis();
     }
 

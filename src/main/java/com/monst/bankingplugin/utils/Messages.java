@@ -9,6 +9,7 @@ public class Messages {
 	public static final String BANK_CREATED = ChatColor.GOLD + "Bank created!";
 	public static final String ACCOUNT_CREATED = ChatColor.GOLD + "Account created!";
 	public static final String ACCOUNT_MIGRATED = ChatColor.GOLD + "Account migrated!";
+	public static final String ACCOUNT_RECOVERED = ChatColor.GOLD + "Account recovered!";
 	public static final String ACCOUNT_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account.";
 	public static final String ACCOUNT_EXTEND_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend an account.";
 	public static final String ACCOUNT_CREATE_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create an account at your bank.";
@@ -81,6 +82,7 @@ public class Messages {
 	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found with the name or ID \"%s\".";
 	public static final String NO_ACCOUNTS_TO_LIST = ChatColor.RED + "There are no accounts to list.";
 	public static final String NO_ACCOUNTS_TO_REMOVE = ChatColor.RED + "Found no accounts to remove.";
+	public static final String NO_ACCOUNTS_TO_RECOVER = ChatColor.RED + "Found no accounts to recover.";
 	public static final String NO_PLAYER_ACCOUNTS = ChatColor.RED + "That player does not have any accounts.";
 	public static final String NO_BANK_ACCOUNTS = ChatColor.RED + "There are no accounts at that bank.";
 	public static final String NO_BANKS_TO_LIST = ChatColor.RED + "There are no banks to list.";
@@ -123,6 +125,7 @@ public class Messages {
 	public static final String CLICK_CHEST_MIGRATE_FIRST = ChatColor.GOLD + "Click an account chest to migrate to another chest.";
 	public static final String CLICK_CHEST_MIGRATE_SECOND = ChatColor.GOLD + "Click a chest to migrate the account to.";
 	public static final String CLICK_CHEST_TRANSFER = ChatColor.GOLD + "Click an account chest to transfer ownership to %s.";
+	public static final String CLICK_CHEST_RECOVER = ChatColor.GOLD + "Click a chest to recover the account to.";
 	public static final String CLICK_TO_CONFIRM = ChatColor.GOLD + "Click chest again to confirm.";
 	public static final String EXECUTE_AGAIN_TO_CONFIRM = ChatColor.GOLD + "Execute command again to confirm.";
 	
@@ -195,6 +198,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_ACCOUNT_TRUST = ACCOUNT_USAGE_PREFIX + "trust [playername]";
 	public static final String COMMAND_USAGE_ACCOUNT_UNTRUST = ACCOUNT_USAGE_PREFIX + "untrust [playername]";
 	public static final String COMMAND_USAGE_ACCOUNT_MIGRATE = ACCOUNT_USAGE_PREFIX + "migrate";
+	public static final String COMMAND_USAGE_ACCOUNT_RECOVER = ACCOUNT_USAGE_PREFIX + "recover";
 	public static final String COMMAND_USAGE_ACCOUNT_TRANSFER = ACCOUNT_USAGE_PREFIX + "transfer [playername]";
 
 	public static final String COMMAND_USAGE_BANK_CREATE = BANK_USAGE_PREFIX + "create [bankname] <xyz> <xyz> <admin>";

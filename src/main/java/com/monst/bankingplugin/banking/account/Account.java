@@ -54,7 +54,7 @@ public class Account extends Ownable {
 		return new Account(
 				account.getID(),
 				account.getOwner(),
-				account.getCoowners(),
+				new HashSet<>(account.getCoowners()),
 				account.getBank(),
 				account.getLocation(),
 				account.getStatus(),
@@ -141,6 +141,8 @@ public class Account extends Ownable {
 			checkSpaceAbove();
 		} catch (ChestNotFoundException | NotEnoughSpaceException e) {
 			plugin.getAccountUtils().removeAccount(this, Config.removeAccountOnError);
+			if (!Config.removeAccountOnError)
+				plugin.getAccountUtils().addInvalidAccount(this);
 
 			if (showConsoleMessages)
 				plugin.getLogger().severe(e.getMessage());
@@ -323,7 +325,10 @@ public class Account extends Ownable {
 	public void setName(String name) {
 		if (name == null)
 			name = getDefaultName();
-		this.name = name;
+		setInventoryName(this.name = name);
+	}
+
+	private void setInventoryName(String name) {
 		Inventory inv = getInventory(true);
 		if (inv == null)
 			return;
@@ -334,17 +339,17 @@ public class Account extends Ownable {
 			Chest left = (Chest) dc.getLeftSide();
 			Chest right = (Chest) dc.getRightSide();
 			if (left != null) {
-				left.setCustomName(getColorizedName());
+				left.setCustomName(Utils.colorize(name));
 				left.update();
 			}
 			if (right != null) {
-				right.setCustomName(getColorizedName());
+				right.setCustomName(Utils.colorize(name));
 				right.update();
 			}
 		} else {
 			Chest chest = (Chest) inv.getHolder();
 			if (chest != null) {
-				chest.setCustomName(getColorizedName());
+				chest.setCustomName(Utils.colorize(name));
 				chest.update();
 			}
 		}
@@ -374,17 +379,17 @@ public class Account extends Ownable {
 	 * If the current name is null, set it to the default name.
 	 */
 	public void updateName() {
-		if (getRawName() != null)
-			setName(getRawName());
-		else
+		if (getRawName() == null || getRawName().isEmpty())
 			setToDefaultName();
+		else
+			setName(getRawName());
 	}
 
 	/**
 	 * Resets the name in the account chest to the default, e.g. "Chest" or "Large Chest"
 	 */
 	public void clearChestName() {
-		setName("");
+		setInventoryName("");
 	}
 
 	@Override
