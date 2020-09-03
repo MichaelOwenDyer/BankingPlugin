@@ -66,12 +66,7 @@ public class BankSelect extends BankSubCommand {
 
     @Override
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
-        if (!p.hasPermission(Permissions.BANK_SELECT))
-            return Collections.emptyList();
-        if (args.length == 2) {
-            if (args[1].isEmpty() && bankUtils.isBank(p.getLocation()))
-                return Collections.singletonList(bankUtils.getBank(p.getLocation()).getName());
+        if (args.length == 2 && sender.hasPermission(Permissions.BANK_SELECT)) {
             return bankUtils.getBanksCopy().stream()
                     .map(Bank::getName)
                     .sorted()

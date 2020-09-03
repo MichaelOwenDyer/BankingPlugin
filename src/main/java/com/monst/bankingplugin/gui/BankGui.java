@@ -51,7 +51,7 @@ public class BankGui extends SinglePageGui<Bank> {
 			case 0:
 				if (guiSubject.isPlayerBank())
 					return createSlotItem(guiSubject.getOwner(), "General Information", getGeneralInfoLore());
-				return createSlotItem(Material.REDSTONE_BLOCK, "General Information", getGeneralInfoLore());
+				return createSlotItem(Material.PLAYER_HEAD, "General Information", getGeneralInfoLore());
 			case 4:
 				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
 			case 8:

@@ -7,9 +7,10 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AccountSet extends AccountSubCommand {
 
@@ -99,10 +100,11 @@ public class AccountSet extends AccountSubCommand {
     }
 
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
-        List<String> fields = Arrays.asList("nickname", "multiplier", "interest-delay");
-        if (args.length == 2)
-            return Utils.filter(fields, field -> field.startsWith(args[1].toLowerCase()));
-        return Collections.emptyList();
+        if (args.length != 2)
+            return Collections.emptyList();
+        return Stream.of("nickname", "multiplier", "interest-delay")
+                .filter(field -> field.contains(args[1].toLowerCase()))
+                .collect(Collectors.toList());
     }
 
 }

@@ -8,6 +8,9 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
+import java.util.List;
+
 public class AccountUntrust extends AccountSubCommand {
 
     public AccountUntrust() {
@@ -41,6 +44,13 @@ public class AccountUntrust extends AccountSubCommand {
         ClickType.setPlayerClickType(p, new ClickType.UntrustClickType(playerToUntrust));
         plugin.debug(p.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
         return true;
+    }
+
+    public List<String> getTabCompletions(CommandSender sender, String[] args) {
+        if (args.length != 2)
+            return Collections.emptyList();
+        return Utils.filter(Utils.getOnlinePlayerNames(plugin),
+                name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
     }
 
 }

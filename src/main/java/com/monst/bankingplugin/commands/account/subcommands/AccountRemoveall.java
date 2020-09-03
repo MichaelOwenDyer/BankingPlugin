@@ -91,10 +91,7 @@ public class AccountRemoveall extends AccountSubCommand implements ConfirmableCo
         if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
-        return Utils.getOnlinePlayerNames(plugin).stream()
-                .filter(name -> !argList.contains(name))
-                .sorted()
-                .collect(Collectors.toList());
+        return Utils.filter(Utils.getOnlinePlayerNames(plugin), name -> !argList.contains(name));
     }
 
 }

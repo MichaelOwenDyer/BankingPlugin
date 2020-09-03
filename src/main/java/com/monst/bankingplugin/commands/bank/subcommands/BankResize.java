@@ -140,11 +140,11 @@ public class BankResize extends BankSubCommand {
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 2) {
-            List<String> bankNames = bankUtils.getBanksCopy().stream()
+            return bankUtils.getBanksCopy().stream()
                     .map(Bank::getName)
+                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()
                     .collect(Collectors.toList());
-            return Utils.filter(bankNames, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
         } else if (args.length > 2) {
             Location loc = p.getTargetBlock(null, 150).getLocation();
             String coord = "";

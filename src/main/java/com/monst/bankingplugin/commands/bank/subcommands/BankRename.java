@@ -98,11 +98,11 @@ public class BankRename extends BankSubCommand {
                 return Collections.singletonList(bankUtils.getBank(((Player) sender).getLocation()).getName());
 
             return bankUtils.getBanksCopy().stream()
-                    .filter(bank -> bank.getName().toLowerCase().startsWith(args[1].toLowerCase())
-                            && ((sender instanceof Player && bank.isTrusted((Player) sender))
+                    .filter(bank -> ((sender instanceof Player && bank.isTrusted((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))
                     .map(Bank::getName)
+                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()
                     .collect(Collectors.toList());
         }

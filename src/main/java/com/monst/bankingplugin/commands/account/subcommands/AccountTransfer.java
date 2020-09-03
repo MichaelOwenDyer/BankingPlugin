@@ -49,14 +49,13 @@ public class AccountTransfer extends AccountSubCommand {
     }
 
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
-        List<String> returnCompletions = Utils.getOnlinePlayerNames(plugin);
-        if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
-            returnCompletions.remove(p.getName());
+        if (args.length != 2)
+            return Collections.emptyList();
 
-        if (args.length == 2)
-            return Utils.filter(returnCompletions, string -> string.toLowerCase().startsWith(args[1].toLowerCase()));
-        return Collections.emptyList();
+        List<String> returnCompletions = Utils.getOnlinePlayerNames(plugin);
+        if (!sender.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
+            returnCompletions.remove(sender.getName());
+        return Utils.filter(returnCompletions, string -> string.toLowerCase().startsWith(args[1].toLowerCase()));
     }
 
 }

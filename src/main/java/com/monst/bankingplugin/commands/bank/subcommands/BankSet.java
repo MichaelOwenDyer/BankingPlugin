@@ -93,23 +93,22 @@ public class BankSet extends BankSubCommand {
 
     @Override
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
-        List<String> bankNames = bankUtils.getBanksCopy().stream()
-                .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
-                        || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
-                        || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
-                .map(Bank::getName)
-                .sorted()
-                .collect(Collectors.toList());
-        List<String> fieldNames = BankField.stream()
-                .filter(BankField::isOverrideAllowed)
-                .map(BankField::getName)
-                .sorted()
-                .collect(Collectors.toList());
-
         if (args.length == 2)
-            return Utils.filter(bankNames, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
+            return bankUtils.getBanksCopy().stream()
+                    .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
+                            || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
+                            || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
+                    .map(Bank::getName)
+                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .sorted()
+                    .collect(Collectors.toList());
         else if (args.length == 3 && bankUtils.lookupBank(args[1]) != null)
-            return Utils.filter(fieldNames, name -> name.contains(args[2].toLowerCase()));
+            return BankField.stream()
+                    .filter(BankField::isOverrideAllowed)
+                    .map(BankField::getName)
+                    .filter(name -> name.contains(args[2].toLowerCase()))
+                    .sorted()
+                    .collect(Collectors.toList());
         else if (args.length == 4) {
             Bank bank = bankUtils.lookupBank(args[1]);
             BankField field = BankField.getByName(args[2]);

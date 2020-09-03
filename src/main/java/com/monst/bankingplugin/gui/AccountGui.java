@@ -52,7 +52,7 @@ public class AccountGui extends SinglePageGui<Account> {
 			case 1:
 				if (guiSubject.getBank().isPlayerBank())
 					return createSlotItem(guiSubject.getBank().getOwner(), "Bank Information", getBankInfoLore());
-				return createSlotItem(Material.REDSTONE_BLOCK, "Bank Information", getBankInfoLore());
+				return createSlotItem(Material.PLAYER_HEAD, "Bank Information", getBankInfoLore());
 			case 3:
 				if (isTrusted)
 					return createSlotItem(Material.GOLD_INGOT, "Account Standing", getBalanceLore());

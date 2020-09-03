@@ -47,12 +47,12 @@ public class AccountTrust extends AccountSubCommand {
     }
 
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+        if (args.length != 2)
+            return Collections.emptyList();
         List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
-        onlinePlayers.remove(p.getName());
-        if (args.length == 2)
-            return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
-        return Collections.emptyList();
+        if (!sender.hasPermission(Permissions.ACCOUNT_TRUST_OTHER))
+            onlinePlayers.remove(sender.getName());
+        return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
     }
 
 }

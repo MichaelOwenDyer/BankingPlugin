@@ -133,11 +133,11 @@ public class BankTransfer extends BankSubCommand implements ConfirmableCommand {
         Player p = ((Player) sender);
         if (args.length == 2) {
             return bankUtils.getBanksCopy().stream()
-                    .filter(bank -> bank.getName().toLowerCase().startsWith(args[1].toLowerCase())
-                            && bank.isOwner(p)
+                    .filter(bank -> bank.isOwner(p)
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
                     .map(Bank::getName)
+                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 3) {
