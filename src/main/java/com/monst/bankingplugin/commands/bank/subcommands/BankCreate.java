@@ -49,7 +49,7 @@ public class BankCreate extends BankSubCommand {
                 selection = WorldEditReader.getSelection(plugin, p);
                 if (selection == null) {
                     plugin.debug(p.getName() + " tried to create a bank with no WorldEdit selection");
-                    p.sendMessage(Messages.NO_SELECTION_FOUND);
+                    p.sendMessage(Messages.SELECT_WORLDEDIT_REGION);
                     return true;
                 }
             } else {

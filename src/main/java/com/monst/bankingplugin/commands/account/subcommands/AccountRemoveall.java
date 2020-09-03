@@ -63,7 +63,7 @@ public class AccountRemoveall extends AccountSubCommand implements ConfirmableCo
         }
 
         if (accounts == null || accounts.isEmpty()) {
-            sender.sendMessage(Messages.NO_ACCOUNTS_TO_REMOVE);
+            sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "remove"));
             return true;
         }
 

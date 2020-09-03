@@ -27,7 +27,7 @@ public class AccountRecover extends AccountSubCommand {
         Set<Account> invalidAccounts = accountUtils.getInvalidAccounts();
 
         if (invalidAccounts.isEmpty()) {
-            sender.sendMessage(Messages.NO_ACCOUNTS_TO_RECOVER); // TODO: New messages
+            sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "recover"));
             return true;
         }
 

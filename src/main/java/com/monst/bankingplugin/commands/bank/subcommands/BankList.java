@@ -33,7 +33,7 @@ public class BankList extends BankSubCommand {
         banks = bankUtils.getBanksCopy().stream().sorted(Comparator.comparing(Bank::getTotalValue)).collect(Collectors.toList());
 
         if (banks.isEmpty()) {
-            sender.sendMessage(Messages.NO_BANKS_TO_LIST);
+            sender.sendMessage(String.format(Messages.NONE_FOUND, "banks", "list"));
             return true;
         }
 

@@ -59,7 +59,7 @@ public class AccountList extends AccountSubCommand {
         }
 
         if (accounts.isEmpty()) {
-            sender.sendMessage(Messages.NO_ACCOUNTS_TO_LIST);
+            sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "list"));
             return true;
         }
 

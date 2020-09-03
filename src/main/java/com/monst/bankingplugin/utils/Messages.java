@@ -51,10 +51,6 @@ public class Messages {
 	public static final String OFFLINE_TRANSACTION_EXPENDITURE = ChatColor.RED + "Your account decreased in value by $%s while you were offline.";
 
 	public static final String PLAYER_REMOVED_BANK = ChatColor.RED + "%s has removed bank %s.";
-	public static final String PLAYER_RENAMED_BANK = ChatColor.GOLD + "%s has renamed bank %s to %s.";
-
-	public static final String PLAYER_REMOVED_ACCOUNT = ChatColor.GOLD + "%s has removed account %s at %s.";
-	public static final String PLAYER_RENAMED_ACCOUNT = ChatColor.GOLD + "%s has renamed account %s to %s at %s.";
 
 	
 	// SUCCESS NOTIFICATIONS
@@ -70,7 +66,6 @@ public class Messages {
 	public static final String ACCOUNT_NEW_BALANCE = ChatColor.GOLD + "Your new balance is " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String BANK_SELECTED = ChatColor.GOLD + "Bank region selected as %s.";
 	public static final String OWNERSHIP_TRANSFERRED = ChatColor.GOLD + "%s transferred %s ownership of %s.";
-	public static final String OWNERSHIP_TRANSFER_RECEIVED = ChatColor.GOLD + "%s transferred ownership of %s.";
 	public static final String NAME_CHANGED = ChatColor.GOLD + "Bank name was successfully changed.";
 	
 	// DENY NOTIFICATIONS
@@ -80,13 +75,8 @@ public class Messages {
 	public static final String NOT_STANDING_IN_BANK = ChatColor.RED + "You must stand in or specify the name of a bank.";
 	public static final String ACCOUNT_CREATE_INSUFFICIENT_FUNDS = ChatColor.RED + "You do not have sufficient funds to create an account at this bank.";
 	public static final String BANK_NOT_FOUND = ChatColor.RED + "No bank was found with the name or ID \"%s\".";
-	public static final String NO_ACCOUNTS_TO_LIST = ChatColor.RED + "There are no accounts to list.";
-	public static final String NO_ACCOUNTS_TO_REMOVE = ChatColor.RED + "Found no accounts to remove.";
-	public static final String NO_ACCOUNTS_TO_RECOVER = ChatColor.RED + "Found no accounts to recover.";
-	public static final String NO_PLAYER_ACCOUNTS = ChatColor.RED + "That player does not have any accounts.";
-	public static final String NO_BANK_ACCOUNTS = ChatColor.RED + "There are no accounts at that bank.";
-	public static final String NO_BANKS_TO_LIST = ChatColor.RED + "There are no banks to list.";
-	public static final String NO_SELECTION_FOUND = ChatColor.RED + "Select a WorldEdit region first.";
+	public static final String NONE_FOUND = ChatColor.RED + "Found no %s to %s.";
+	public static final String SELECT_WORLDEDIT_REGION = ChatColor.RED + "Select a WorldEdit region first.";
 	public static final String COORDINATES_PARSE_ERROR = ChatColor.RED + "Invalid coordinates.";
 	public static final String WORLD_DISABLED = ChatColor.RED + "BankingPlugin has been disabled in this world.";
 	public static final String SELECTION_OVERLAPS_EXISTING = ChatColor.RED + "Your selection overlaps with another bank.";

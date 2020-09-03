@@ -52,7 +52,7 @@ public class BankResize extends BankSubCommand {
 
                 if (selection == null) {
                     plugin.debug(p.getName() + " tried to resize a bank with no WorldEdit selection");
-                    p.sendMessage(Messages.NO_SELECTION_FOUND);
+                    p.sendMessage(Messages.SELECT_WORLDEDIT_REGION);
                     return true;
                 }
             } else {
