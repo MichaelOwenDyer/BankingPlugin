@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank.subcommands;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.commands.Confirmable;
+import com.monst.bankingplugin.commands.ConfirmableCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankTransferEvent;
 import com.monst.bankingplugin.utils.Messages;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class BankTransfer extends BankSubCommand implements Confirmable {
+public class BankTransfer extends BankSubCommand implements ConfirmableCommand {
 
     public BankTransfer() {
         super("transfer", false);
@@ -89,7 +89,7 @@ public class BankTransfer extends BankSubCommand implements Confirmable {
             return true;
         }
 
-        if (sender instanceof Player && Config.confirmOnTransfer && needsConfirmation((Player) sender, args)) {
+        if (sender instanceof Player && Config.confirmOnTransfer && isConfirmed((Player) sender, args)) {
             sender.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
                     bank.getName(),
                     newOwner != null ? newOwner.getName() : "ADMIN"));
@@ -111,7 +111,7 @@ public class BankTransfer extends BankSubCommand implements Confirmable {
         if (!isSelf)
             Utils.notifyPlayers(
                     String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), "you", "bank " + bank.getColorizedName()),
-                    Collections.singleton(newOwner)
+                    newOwner
             );
 
         Set<OfflinePlayer> toNotify = Utils.mergeCollections(bank.getCustomers(), bank.getTrustedPlayers());

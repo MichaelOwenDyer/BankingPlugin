@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.account.subcommands;
 
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.commands.Confirmable;
+import com.monst.bankingplugin.commands.ConfirmableCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 import com.monst.bankingplugin.utils.Messages;
@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AccountRemoveall extends AccountSubCommand implements Confirmable {
+public class AccountRemoveall extends AccountSubCommand implements ConfirmableCommand {
 
     public AccountRemoveall() {
         super("removeall", false);
@@ -67,7 +67,7 @@ public class AccountRemoveall extends AccountSubCommand implements Confirmable {
             return true;
         }
 
-        if (sender instanceof Player && Config.confirmOnRemoveAll && needsConfirmation((Player) sender, args)) {
+        if (sender instanceof Player && Config.confirmOnRemoveAll && !isConfirmed((Player) sender, args)) {
             sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_ACCOUNTS, accounts.size(), accounts.size() == 1 ? "" : "s"));
             sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
             return true;

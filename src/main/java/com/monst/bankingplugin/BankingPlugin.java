@@ -346,33 +346,28 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	private void initializeBanksAndAccounts() {
 		bankUtils.reload(false, true,
-                new Callback<BankUtils.ReloadResult>(this) {
-			@Override
-			public void onResult(BankUtils.ReloadResult result) {
-			    Collection<Bank> banks = result.getBanks();
-                Collection<Account> accounts = result.getAccounts();
+                Callback.of(this, (result) -> {
+                	Collection<Bank> banks = result.getBanks();
+					Collection<Account> accounts = result.getAccounts();
 
-				Bukkit.getServer().getPluginManager().callEvent(new BankInitializedEvent(banks));
-                Bukkit.getServer().getPluginManager().callEvent(new AccountInitializedEvent(accounts));
+					Bukkit.getServer().getPluginManager().callEvent(new BankInitializedEvent(banks));
+					Bukkit.getServer().getPluginManager().callEvent(new AccountInitializedEvent(accounts));
 
-				String message = String.format("Initialized %s bank%s and %s account%s.",
-                        banks.size(), banks.size() == 1 ? "" : "s",
-                        accounts.size(), accounts.size() == 1 ? "" : "s");
+					String message = String.format("Initialized %s bank%s and %s account%s.",
+							banks.size(), banks.size() == 1 ? "" : "s",
+							accounts.size(), accounts.size() == 1 ? "" : "s");
 
-                getLogger().info(message);
-                debug(message);
-			}
+					getLogger().info(message);
+					debug(message);
+				}, (throwable) -> {
+					// Database connection probably failed => disable plugin to prevent more errors
+					getLogger().severe("No database access! Disabling BankingPlugin.");
+					if (throwable != null)
+						getLogger().severe(throwable.getMessage());
 
-			@Override
-			public void onError(Throwable throwable) {
-				// Database connection probably failed => disable plugin to prevent more errors
-				getLogger().severe("No database access! Disabling BankingPlugin.");
-				if (throwable != null)
-					getLogger().severe(throwable.getMessage());
-
-				getServer().getPluginManager().disablePlugin(BankingPlugin.this);
-			}
-		});
+					getServer().getPluginManager().disablePlugin(BankingPlugin.this);
+				})
+		);
 	}
 
 	/**

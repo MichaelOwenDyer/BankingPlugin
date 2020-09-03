@@ -3,7 +3,6 @@ package com.monst.bankingplugin.commands.control.subcommands;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.control.ReloadEvent;
-import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
@@ -41,25 +40,20 @@ public class ControlReload extends ControlSubCommand {
         }
 
         plugin.getBankUtils().reload(true, true,
-                new Callback<BankUtils.ReloadResult>(plugin) {
-                    @Override
-                    public void onResult(BankUtils.ReloadResult result) {
-                        Collection<Bank> banks = result.getBanks();
-                        Collection<Account> accounts = result.getAccounts();
-                        sender.sendMessage(String.format(Messages.RELOADED_PLUGIN, banks.size(), accounts.size()));
-                        plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        // Database connection probably failed => disable plugin to prevent more errors
-                        sender.sendMessage(Messages.ERROR_OCCURRED + "No database access! Disabling BankingPlugin.");
-                        plugin.getLogger().severe("No database access! Disabling BankingPlugin.");
-                        if (throwable != null)
-                            plugin.getLogger().severe(throwable.getMessage());
-                        plugin.getServer().getPluginManager().disablePlugin(plugin);
-                    }
-                });
+                Callback.of(plugin, result -> {
+                    Collection<Bank> banks = result.getBanks();
+                    Collection<Account> accounts = result.getAccounts();
+                    sender.sendMessage(String.format(Messages.RELOADED_PLUGIN, banks.size(), accounts.size()));
+                    plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
+                }, throwable -> {
+                    // Database connection probably failed => disable plugin to prevent more errors
+                    sender.sendMessage(Messages.ERROR_OCCURRED + "No database access! Disabling BankingPlugin.");
+                    plugin.getLogger().severe("No database access! Disabling BankingPlugin.");
+                    if (throwable != null)
+                        plugin.getLogger().severe(throwable.getMessage());
+                    plugin.getServer().getPluginManager().disablePlugin(plugin);
+                })
+        );
         return true;
     }
 

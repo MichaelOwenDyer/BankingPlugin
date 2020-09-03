@@ -65,23 +65,17 @@ public class BankSet extends BankSubCommand {
         }
 
         String previousValue = bank.getFormatted(field);
-        Callback<String> callback = new Callback<String>(plugin) {
-            @Override
-            public void onResult(String result) {
+        Callback<String> callback = Callback.of(plugin,
+            result -> {
                 plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + bank.getName() + " from " + previousValue + " to " + result);
                 sender.sendMessage(String.format(Messages.BANK_FIELD_SET, "You", field.getName(), previousValue, result, bank.getColorizedName()));
                 Utils.notifyPlayers(
                         String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(), previousValue, result, bank.getColorizedName()),
                         Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()), sender
                 );
-            }
-            @Override
-            public void onError(Throwable throwable) {
-                String errorMessage = ((ArgumentParseException) throwable).getErrorMessage();
-                plugin.debug(errorMessage);
-                sender.sendMessage(errorMessage);
-            }
-        };
+            },
+            throwable -> sender.sendMessage(((ArgumentParseException) throwable).getErrorMessage()));
+
         if (!bank.set(field, value, callback)) {
             sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
             return true;

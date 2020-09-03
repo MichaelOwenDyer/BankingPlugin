@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank.subcommands;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.commands.Confirmable;
+import com.monst.bankingplugin.commands.ConfirmableCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.utils.Callback;
@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankRemove extends BankSubCommand implements Confirmable {
+public class BankRemove extends BankSubCommand implements ConfirmableCommand {
 
     public BankRemove() {
         super("remove", false);
@@ -54,7 +54,7 @@ public class BankRemove extends BankSubCommand implements Confirmable {
             return true;
         }
 
-        if (sender instanceof Player && Config.confirmOnRemove && needsConfirmation((Player) sender, args)) {
+        if (sender instanceof Player && Config.confirmOnRemove && !isConfirmed((Player) sender, args)) {
             sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, 1, "", bank.getAccounts().size(),
                     bank.getAccounts().size() == 1 ? "" : "s"));
             sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
@@ -76,18 +76,10 @@ public class BankRemove extends BankSubCommand implements Confirmable {
             Player executor = (Player) sender;
             if (creationPrice > 0 && (bank.isAdminBank() || bank.isOwner(executor))) {
                 double finalCreationPrice = creationPrice;
-                Utils.depositPlayer(executor.getPlayer(), bank.getSelection().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
-                    @Override
-                    public void onResult(Void result) {
-                        executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
-                                Utils.format(finalCreationPrice)));
-                    }
-                    @Override
-                    public void onError(Throwable throwable) {
-                        plugin.debug(throwable);
-                        executor.sendMessage(Messages.ERROR_OCCURRED);
-                    }
-                });
+                Utils.depositPlayer(executor.getPlayer(), bank.getSelection().getWorld().getName(), finalCreationPrice, Callback.of(plugin,
+                        result -> executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice))),
+                        throwable -> executor.sendMessage(Messages.ERROR_OCCURRED))
+                );
             }
         }
 

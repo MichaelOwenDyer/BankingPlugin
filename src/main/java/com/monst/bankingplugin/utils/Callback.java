@@ -3,10 +3,36 @@ package com.monst.bankingplugin.utils;
 import com.monst.bankingplugin.BankingPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.function.Consumer;
+
 public abstract class Callback<T> {
+
+    public static <T> Callback<T> of(BankingPlugin plugin, Consumer<T> onResult) {
+        return new Callback<T>(plugin) {
+            @Override
+            public void onResult(T result) {
+                onResult.accept(result);
+            }
+        };
+    }
+
+    public static <T> Callback<T> of(BankingPlugin plugin, Consumer<T> onResult, Consumer<Throwable> onError) {
+        return new Callback<T>(plugin) {
+            @Override
+            public void onResult(T result) {
+                onResult.accept(result);
+            }
+            @Override
+            public void onError(Throwable throwable) {
+                plugin.debug(throwable);
+                onError.accept(throwable);
+            }
+        };
+    }
+
 	private final BankingPlugin plugin;
 
-    public Callback(BankingPlugin plugin) {
+    private Callback(BankingPlugin plugin) {
         this.plugin = plugin;
     }
 

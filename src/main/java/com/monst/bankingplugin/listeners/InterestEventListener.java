@@ -140,20 +140,11 @@ public class InterestEventListener implements Listener {
 						.setScale(2, RoundingMode.HALF_EVEN);
 
 				boolean online = bankOwner.isOnline();
-				Utils.depositPlayer(bankOwner, bank.getSelection().getWorld().getName(), revenue.doubleValue(), new Callback<Void>(plugin) {
-					@Override
-					public void onResult(Void result) {
-						if (online)
-							bankOwner.getPlayer().sendMessage(String.format(Messages.REVENUE_EARNED,
-									Utils.format(revenue), bank.getName()));
-					}
-					@Override
-					public void onError(Throwable throwable) {
-						super.onError(throwable);
-						if (online)
-							bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-					}
-				});
+				Utils.depositPlayer(bankOwner, bank.getSelection().getWorld().getName(), revenue.doubleValue(), Callback.of(plugin,
+						result -> Utils.notifyPlayers(String.format(Messages.REVENUE_EARNED,
+								Utils.format(revenue), bank.getName()), bankOwner),
+						throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner))
+				);
 			}
 		}
 
@@ -169,23 +160,14 @@ public class InterestEventListener implements Listener {
 
 			boolean isOnline = bankOwner.isOnline();
 			String worldName = isOnline ? bankOwner.getPlayer().getWorld().getName() : fallbackWorldName;
-			Utils.depositPlayer(bankOwner, worldName, feesReceivable.get(bankOwner).getSum().doubleValue(), new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					if (isOnline) {
+			Utils.depositPlayer(bankOwner, worldName, feesReceivable.get(bankOwner).getSum().doubleValue(), Callback.of(plugin,
+					result -> {
 						int count = feesReceivable.get(bankOwner).getCount();
-						bankOwner.getPlayer().sendMessage(String.format(Messages.LOW_BALANCE_FEE_EARNED,
+						Utils.notifyPlayers(String.format(Messages.LOW_BALANCE_FEE_EARNED,
 								Utils.format(feesReceivable.get(bankOwner).getSum()),
-								count, count == 1 ? "" : "s"));
-					}
-				}
-				@Override
-				public void onError(Throwable throwable) {
-					super.onError(throwable);
-					if (isOnline)
-						bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-				}
-			});
+								count, count == 1 ? "" : "s"), bankOwner);
+					},
+					throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 		}
 
 		// Bank owners pay interest
@@ -198,23 +180,14 @@ public class InterestEventListener implements Listener {
 			boolean isOnline = bankOwner.isOnline();
 			String worldName = isOnline ? bankOwner.getPlayer().getWorld().getName() : fallbackWorldName;
 
-			Utils.withdrawPlayer(bankOwner, worldName, interestPayable.get(bankOwner).getSum().doubleValue(), new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					if (isOnline) {
+			Utils.withdrawPlayer(bankOwner, worldName, interestPayable.get(bankOwner).getSum().doubleValue(), Callback.of(plugin,
+					result -> {
 						int count = interestPayable.get(bankOwner).getCount();
-						bankOwner.getPlayer().sendMessage(String.format(Messages.INTEREST_PAID,
+						Utils.notifyPlayers(String.format(Messages.INTEREST_PAID,
 								Utils.format(interestPayable.get(bankOwner).getSum()),
-								count, count == 1 ? "" : "s"));
-					}
-				}
-				@Override
-				public void onError(Throwable throwable) {
-					super.onError(throwable);
-					if (isOnline)
-						bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-				}
-			});
+								count, count == 1 ? "" : "s"), bankOwner);
+					},
+					throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 		}
 
 		// Account owners receive interest payments
@@ -227,23 +200,15 @@ public class InterestEventListener implements Listener {
 					? playerAccountMap.get(customer).get(0).getLocation().getWorld().getName()
 					: (online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
 
-			Utils.depositPlayer(customer, worldName, interestReceivable.get(customer).getSum().doubleValue(), new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					if (online) {
+			Utils.depositPlayer(customer, worldName, interestReceivable.get(customer).getSum().doubleValue(), Callback.of(plugin,
+					result -> {
 						int count = interestReceivable.get(customer).getCount();
-						customer.getPlayer().sendMessage(String.format(Messages.INTEREST_EARNED,
+						Utils.notifyPlayers(String.format(Messages.INTEREST_EARNED,
 								Utils.format(interestReceivable.get(customer).getSum()),
-								count, count == 1 ? "" : "s"));
-					}
-				}
-				@Override
-				public void onError(Throwable throwable) {
-					super.onError(throwable);
-					if (online)
-						customer.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-				}
-			});
+								count, count == 1 ? "" : "s"), customer);
+					},
+					throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer))
+			);
 		}
 
 		// Customers pay low balance fees
@@ -256,23 +221,15 @@ public class InterestEventListener implements Listener {
 					? playerAccountMap.get(customer).get(0).getLocation().getWorld().getName()
 					: (online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
 
-			Utils.withdrawPlayer(customer, worldName, feesPayable.get(customer).getSum().doubleValue(), new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					if (online) {
+			Utils.withdrawPlayer(customer, worldName, feesPayable.get(customer).getSum().doubleValue(), Callback.of(plugin,
+					result -> {
 						int count = feesPayable.get(customer).getCount();
-						customer.getPlayer().sendMessage(String.format(Messages.LOW_BALANCE_FEE_PAID,
+						Utils.notifyPlayers(String.format(Messages.LOW_BALANCE_FEE_PAID,
 								Utils.format(feesPayable.get(customer).getSum()),
-								count, count == 1 ? "" : "s"));
-					}
-				}
-				@Override
-				public void onError(Throwable throwable) {
-					super.onError(throwable);
-					if (online)
-						customer.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-				}
-			});
+								count, count == 1 ? "" : "s"), customer);
+					},
+					throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer)
+			));
 		}
 	}
 

@@ -127,18 +127,12 @@ public class BankResize extends BankSubCommand {
 
         bankUtils.removeBank(bank, false);
         bank.setSelection(selection);
-        bankUtils.addBank(bank, true, new Callback<Integer>(plugin) {
-            @Override
-            public void onResult(Integer result) {
-                plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
-                p.sendMessage(Messages.BANK_RESIZED);
-            }
-            @Override
-            public void onError(Throwable e) {
-                plugin.debug(e);
-                p.sendMessage(Messages.ERROR_OCCURRED);
-            }
-        });
+        bankUtils.addBank(bank, true, Callback.of(plugin,
+                result -> {
+                    plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
+                    p.sendMessage(Messages.BANK_RESIZED);
+                },
+                throwable -> p.sendMessage(Messages.ERROR_OCCURRED)));
         return true;
     }
 

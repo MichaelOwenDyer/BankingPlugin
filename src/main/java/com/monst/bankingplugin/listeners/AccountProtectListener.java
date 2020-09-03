@@ -85,35 +85,17 @@ public class AccountProtectListener implements Listener {
 			double finalCreationPrice = creationPrice;
 			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
 			// Account owner is reimbursed for the part of the chest that was broken
-			Utils.depositPlayer(p, worldName, finalCreationPrice, new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice)));
-				}
-				@Override
-				public void onError(Throwable throwable) {
-					super.onError(throwable);
-					p.sendMessage(Messages.ERROR_OCCURRED);
-				}
-			});
+			Utils.depositPlayer(p, worldName, finalCreationPrice, Callback.of(plugin,
+					result -> p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice))),
+					throwable -> p.sendMessage(Messages.ERROR_OCCURRED)));
 
 			// Bank owner reimburses the customer
 			if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
 				OfflinePlayer bankOwner = bank.getOwner();
-				Utils.withdrawPlayer(bankOwner, account.getLocation().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
-					@Override
-					public void onResult(Void result) {
-						if (bankOwner.isOnline())
-							bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-									account.getOwner().getName(), Utils.format(finalCreationPrice)));
-					}
-					@Override
-					public void onError(Throwable throwable) {
-						super.onError(throwable);
-						if (bankOwner.isOnline())
-							bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-					}
-				});
+				Utils.withdrawPlayer(bankOwner, account.getLocation().getWorld().getName(), finalCreationPrice, Callback.of(plugin,
+						result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
+								account.getOwner().getName(), Utils.format(finalCreationPrice)), bankOwner),
+						throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 			}
 		}
 
@@ -126,13 +108,10 @@ public class AccountProtectListener implements Listener {
 			Account newAccount = Account.clone(account);
 			newAccount.setLocation(newLocation);
 
-			accountUtils.removeAccount(account, false, new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					newAccount.create(true);
-					accountUtils.addAccount(newAccount, true);
-				}
-			});
+			accountUtils.removeAccount(account, false, Callback.of(plugin, result -> {
+				newAccount.create(true);
+				accountUtils.addAccount(newAccount, true);
+			}));
 		} else {
 			accountUtils.removeAccount(account, true);
 			plugin.debugf("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
@@ -217,52 +196,33 @@ public class AccountProtectListener implements Listener {
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
 			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
-			if (!Utils.withdrawPlayer(owner, worldName, creationPrice, new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID, Utils.format(creationPrice)));
-				}
-				@Override
-				public void onError(Throwable throwable) {
-					super.onError(throwable);
-					p.sendMessage(Messages.ERROR_OCCURRED);
-				}
-			})) {
+			if (!Utils.withdrawPlayer(owner, worldName, creationPrice, Callback.of(plugin,
+					result -> p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID, Utils.format(creationPrice))),
+					throwable -> p.sendMessage(Messages.ERROR_OCCURRED)))) {
 				e.setCancelled(true);
 				return;
 			}
 
 			if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 				OfflinePlayer bankOwner = account.getBank().getOwner();
-				Utils.depositPlayer(bankOwner, account.getLocation().getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
-					@Override
-					public void onResult(Void result) {
-						if (bankOwner.isOnline())
-							bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
-									account.getOwner().getName(), Utils.format(creationPrice)));
-					}
-					@Override
-					public void onError(Throwable throwable) {
-						super.onError(throwable);
-						p.sendMessage(Messages.ERROR_OCCURRED);
-					}
-				});
+				Utils.depositPlayer(bankOwner, account.getLocation().getWorld().getName(), creationPrice, Callback.of(plugin,
+						result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
+								account.getOwner().getName(), Utils.format(creationPrice)), bankOwner),
+						throwable -> p.sendMessage(Messages.ERROR_OCCURRED)));
 			}
 		}
 
 		final Account newAccount = Account.clone(account);
 
-		accountUtils.removeAccount(account, true, new Callback<Void>(plugin) {
-			@Override
-			public void onResult(Void result) {
+		accountUtils.removeAccount(account, true, Callback.of(plugin, result -> {
 				if (newAccount.create(true)) {
 					accountUtils.addAccount(newAccount, true);
 					plugin.debugf("%s extended %s's account (#%d)",
 							p.getName(), account.getOwner().getName(), account.getID());
 				} else
 					p.sendMessage(Messages.ERROR_OCCURRED);
-			}
-		});
+			})
+		);
     }
 
 	/**

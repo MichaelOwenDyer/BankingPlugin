@@ -190,11 +190,19 @@ public class Utils {
 			notifyPlayers(message, players);
 	}
 
+	public static void notifyPlayers(String message, OfflinePlayer player, OfflinePlayer notInclude) {
+		notifyPlayers(message, Collections.singleton(player), notInclude);
+	}
+
 	public static void notifyPlayers(String message, Collection<OfflinePlayer> players, OfflinePlayer notInclude) {
 		players = new HashSet<>(players);
 		if (notInclude instanceof Player)
 			players.remove(notInclude);
 		notifyPlayers(message, players);
+	}
+
+	public static void notifyPlayers(String message, OfflinePlayer player) {
+		notifyPlayers(message, Collections.singleton(player));
 	}
 
 	public static void notifyPlayers(String message, Collection<OfflinePlayer> players) {

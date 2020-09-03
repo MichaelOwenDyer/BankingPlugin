@@ -686,17 +686,10 @@ public abstract class Database {
 									? Bank.recreate(bankId, name, coowners, selection, bankConfig)
 									: Bank.recreate(bankId, name, owner, coowners, selection, bankConfig);
 
-						getAccountsAtBank(bank, showConsoleMessages, new Callback<Collection<Account>>(plugin) {
-							@Override
-							public void onResult(Collection<Account> result) {
-								banksAndAccounts.put(bank, result);
-							}
-							@Override
-							public void onError(Throwable throwable) {
-								if (callback != null)
-									callback.callSyncError(throwable);
-							}
-						});
+						getAccountsAtBank(bank, showConsoleMessages, Callback.of(plugin,
+								result -> banksAndAccounts.put(bank, result),
+								callback::callSyncError
+						));
 					}
 
 					if (callback != null) {

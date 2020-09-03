@@ -312,70 +312,56 @@ public class BankUtils {
 
 		AccountUtils accountUtils = plugin.getAccountUtils();
 
-        if (reloadConfig) {
+		if (reloadConfig) {
 			plugin.getPluginConfig().reload();
-        }
+		}
 
-		plugin.getDatabase().connect(new Callback<int[]>(plugin) {
-            @Override
-			public void onResult(int[] result) {
-            	Collection<Bank> banks = getBanksCopy();
-            	Collection<Account> accounts = accountUtils.getAccountsCopy();
-            	
-				Set<Bank> reloadedBanks = new HashSet<>();
-				Set<Account> reloadedAccounts = new HashSet<>();
-            	
-				for (Bank bank : banks) {
-					for (Account account : bank.getAccountsCopy()) {
-						accountUtils.removeAccount(account, false);
-						plugin.debug("Removed account (#" + account.getID() + ")");
-					}
-					removeBank(bank, false);
-					plugin.debug("Removed bank (#" + bank.getID() + ")");
-				}
-				
-				plugin.getDatabase().getBanksAndAccounts(showConsoleMessages, new Callback<Map<Bank, Collection<Account>>>(plugin) {
-					@Override
-					public void onResult(Map<Bank, Collection<Account>> result) {
+		plugin.getDatabase().connect(Callback.of(plugin, result -> {
+					Collection<Bank> banks = getBanksCopy();
+					Collection<Account> accounts = accountUtils.getAccountsCopy();
 
-						for (Bank bank : result.keySet()) {
-							addBank(bank, false);
-							reloadedBanks.add(bank);
-							for (Account account : result.get(bank)) {
-								if (account.create(showConsoleMessages)) {
-									accountUtils.addAccount(account, false);
-									reloadedAccounts.add(account);
-								} else
-									plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");
-							}
+					Set<Bank> reloadedBanks = new HashSet<>();
+					Set<Account> reloadedAccounts = new HashSet<>();
+
+					for (Bank bank : banks) {
+						for (Account account : bank.getAccountsCopy()) {
+							accountUtils.removeAccount(account, false);
+							plugin.debugf("Removed account (#%d)", account.getID());
 						}
-
-						if (banks.size() != reloadedBanks.size())
-							plugin.debugf("Number of banks before load was %d and is now %d.",
-									banks.size(), reloadedBanks.size());
-						if (accounts.size() != reloadedAccounts.size())
-							plugin.debugf("Number of accounts before load was %d and is now %d",
-									accounts.size(), reloadedAccounts.size());
-						
-						if (callback != null)
-							callback.callSyncResult(new ReloadResult(reloadedBanks, reloadedAccounts));
+						removeBank(bank, false);
+						plugin.debugf("Removed bank (#%d)", bank.getID());
 					}
-					
-					@Override
-					public void onError(Throwable throwable) {
-						if (callback != null)
-							callback.callSyncError(throwable);
-					}
-				});
-            }
 
-            @Override
-            public void onError(Throwable throwable) {
-				if (callback != null)
-					callback.callSyncError(throwable);
-            }
-        });
-    }
+					plugin.getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(plugin, map -> {
+
+								for (Bank bank : map.keySet()) {
+									addBank(bank, false);
+									reloadedBanks.add(bank);
+									for (Account account : map.get(bank)) {
+										if (account.create(showConsoleMessages)) {
+											accountUtils.addAccount(account, false);
+											reloadedAccounts.add(account);
+										} else
+											plugin.debug("Could not re-create account from database! (#" + account.getID() + ")");
+									}
+								}
+
+								if (banks.size() != reloadedBanks.size())
+									plugin.debugf("Number of banks before load was %d and is now %d.",
+											banks.size(), reloadedBanks.size());
+								if (accounts.size() != reloadedAccounts.size())
+									plugin.debugf("Number of accounts before load was %d and is now %d",
+											accounts.size(), reloadedAccounts.size());
+
+								if (callback != null)
+									callback.callSyncResult(new ReloadResult(reloadedBanks, reloadedAccounts));
+							},
+							callback::callSyncError
+					));
+				},
+				callback::callSyncError
+		));
+	}
 
 	public static class ReloadResult extends Pair<Collection<Bank>, Collection<Account>> {
 		public ReloadResult(Collection<Bank> banks, Collection<Account> accounts) {

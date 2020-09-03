@@ -10,8 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.math.BigDecimal;
-
 @SuppressWarnings("unused")
 public class NotifyPlayerOnJoinListener implements Listener {
 
@@ -25,38 +23,27 @@ public class NotifyPlayerOnJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent e) {
         final Player p = e.getPlayer();
 
-		plugin.getDatabase().getLastLogout(p, new Callback<Long>(plugin) {
-            @Override
-            public void onResult(Long result) {
-                if (result < 0) {
-                    // No logout saved, probably first time joining.
-                    return;
-                }
-
-				plugin.getDatabase().getOfflineTransactionRevenue(p, result, new Callback<BigDecimal>(plugin) {
-					@Override
-					public void onResult(BigDecimal result) {
-						if (result.signum() == 1) {
-							p.sendMessage(String.format(Messages.OFFLINE_BALANCE_INCREASED, Utils.format(result)));
-						} else if (result.signum() == -1) {
-							p.sendMessage(String.format(Messages.OFFLINE_TRANSACTION_EXPENDITURE, Utils.format(result)));
-						}
-					}
-				});
-
-				plugin.getDatabase().getOfflineInterestRevenue(p, result, new Callback<BigDecimal>(plugin) {
-                    @Override
-                    public void onResult(BigDecimal result) {
-                        if (result.signum() == 1) {
-							p.sendMessage(String.format(Messages.OFFLINE_INTEREST_EARNED, Utils.format(result)));
-                        }
-                    }
-                });
-
-				// Player does not actually log off here
-				plugin.getDatabase().logLogout(p, null);
+		plugin.getDatabase().getLastLogout(p, Callback.of(plugin, result -> {
+		    if (result < 0) {
+                // No logout saved, probably first time joining.
+                return;
             }
-        });
+
+            plugin.getDatabase().getOfflineTransactionRevenue(p, result, Callback.of(plugin, bigDecimal -> {
+                if (bigDecimal.signum() == 1)
+                    p.sendMessage(String.format(Messages.OFFLINE_BALANCE_INCREASED, Utils.format(bigDecimal)));
+                else if (bigDecimal.signum() == -1)
+                    p.sendMessage(String.format(Messages.OFFLINE_TRANSACTION_EXPENDITURE, Utils.format(bigDecimal)));
+            }));
+
+            plugin.getDatabase().getOfflineInterestRevenue(p, result, Callback.of(plugin, bigDecimal -> {
+                if (bigDecimal.signum() == 1)
+                    p.sendMessage(String.format(Messages.OFFLINE_INTEREST_EARNED, Utils.format(bigDecimal)));
+            }));
+
+            // Player does not actually log off here, this saves the last time the player was notified about changes
+            plugin.getDatabase().logLogout(p, null);
+		}));
     }
 
     @EventHandler

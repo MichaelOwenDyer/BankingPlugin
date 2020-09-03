@@ -27,8 +27,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
-@SuppressWarnings("unused")
-public class AccountInteractListener implements Listener {
+public class AccountInteractListener implements Listener, ConfirmableAccountAction {
 	
 	private static final Map<UUID, Set<Integer>> unconfirmed = new HashMap<>();
 
@@ -46,7 +45,7 @@ public class AccountInteractListener implements Listener {
 	 * Checks every inventory interact event for an account action attempt, and
 	 * handles the action.
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({"deprecation","unused"})
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onAccountInteract(PlayerInteractEvent e) {
 		
@@ -270,36 +269,19 @@ public class AccountInteractListener implements Listener {
 		OfflinePlayer accountOwner = executor.getPlayer();
 		double finalCreationPrice = creationPrice;
 		// Account owner pays the bank owner the creation fee
-		if (!Utils.withdrawPlayer(accountOwner, location.getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
-			@Override
-			public void onResult(Void result) {
-				executor.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
-						Utils.format(finalCreationPrice)));
-			}
-			@Override
-			public void onError(Throwable throwable) {
-				super.onError(throwable);
-				executor.sendMessage(Messages.ERROR_OCCURRED);
-			}
-		}))
+		if (!Utils.withdrawPlayer(accountOwner, location.getWorld().getName(), creationPrice,
+				Callback.of(plugin,
+						result -> executor.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.format(finalCreationPrice))),
+						throwable -> executor.sendMessage(Messages.ERROR_OCCURRED))))
 			return;
 
 		// Bank owner receives the payment from the customer
 		if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(executor)) {
 			OfflinePlayer bankOwner = account.getBank().getOwner();
-			Utils.depositPlayer(bankOwner, location.getWorld().getName(), creationPrice, new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					if (bankOwner.isOnline())
-						bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
-								accountOwner.getName(), Utils.format(finalCreationPrice)));
-				}
-				@Override
-				public void onError(Throwable throwable) {
-					super.onError(throwable);
-					executor.sendMessage(Messages.ERROR_OCCURRED);
-				}
-			});
+			Utils.depositPlayer(bankOwner, location.getWorld().getName(), creationPrice, Callback.of(plugin,
+					result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
+							accountOwner.getName(), Utils.format(finalCreationPrice)), bankOwner),
+					throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 		}
 
 		if (account.create(true)) {
@@ -308,64 +290,47 @@ public class AccountInteractListener implements Listener {
 			executor.sendMessage(Messages.ACCOUNT_CREATED);
 		}
 	}
-	
+
 	private boolean confirmRemove(Player executor, Account account) {
-		if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)
-				&& !account.getBank().isTrusted(executor)) {
+
+		if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(executor)) {
 			if (account.isTrusted(executor))
 				executor.sendMessage(Messages.MUST_BE_OWNER);
 			else
 				executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
 			return !unconfirmed.containsKey(executor.getUniqueId());
 		}
-		
-		boolean confirmed = unconfirmed.containsKey(executor.getUniqueId()) 
-				&& unconfirmed.get(executor.getUniqueId()).contains(account.getID());
-		
-		if (!confirmed && (Config.confirmOnRemove || account.getBalance().signum() == 1)) {
-			plugin.debug("Needs confirmation");
 
+		if ((account.getBalance().signum() == 1 || Config.confirmOnRemove) && !isConfirmed(executor, account.getID())) {
+			plugin.debug("Needs confirmation");
 			if (account.getBalance().signum() == 1) {
 				executor.sendMessage(Messages.ACCOUNT_BALANCE_NOT_ZERO);
 			}
-	        executor.sendMessage(Messages.CLICK_TO_CONFIRM);
-			Set<Integer> ids = unconfirmed.containsKey(executor.getUniqueId())
-					? unconfirmed.get(executor.getUniqueId())
-					: new HashSet<>();
-	        ids.add(account.getID());
-	        unconfirmed.put(executor.getUniqueId(), ids);
+			executor.sendMessage(Messages.CLICK_TO_CONFIRM);
 			return false;
-		} else {
-			Set<Integer> ids = unconfirmed.containsKey(executor.getUniqueId()) ? unconfirmed.get(executor.getUniqueId())
-					: new HashSet<>();
-			ids.remove(account.getID());
-			if (ids.isEmpty()) {
-				unconfirmed.remove(executor.getUniqueId());
-				ClickType.removePlayerClickType(executor);
-			} else
-				unconfirmed.put(executor.getUniqueId(), ids);
-			return true;
 		}
+		return true;
 	}
 
 	/**
 	 * Remove a account
-	 * 
+	 *
 	 * @param executor Player, who executed the command and will receive the message
 	 * @param account  Account to be removed
 	 */
 	private void remove(Player executor, Account account) {
-		plugin.debug(executor.getName() + String.format(" is removing %s account (#", 
-				account.isOwner(executor) ? "their" 
-				: account.getOwner().getName() + "'s") + account.getID() + ")");
+		plugin.debugf("%s is removing %s account (#%d)",
+				executor.getName(),
+				account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s",
+				account.getID());
+
 		AccountRemoveEvent event = new AccountRemoveEvent(executor, account);
 		Bukkit.getPluginManager().callEvent(event);
-
 		if (event.isCancelled()) {
 			plugin.debug("Remove event cancelled (#" + account.getID() + ")");
 			return;
 		}
-		
+
 		Bank bank = account.getBank();
 		double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
 		creationPrice *= account.getSize();
@@ -374,34 +339,20 @@ public class AccountInteractListener implements Listener {
 		if (creationPrice > 0 && account.isOwner(executor) && !account.getBank().isOwner(executor)) {
 
 			double finalCreationPrice = creationPrice;
-			Utils.depositPlayer(executor.getPlayer(), account.getLocation().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice)));
-				}
-				@Override
-				public void onError(Throwable throwable) {
-					super.onError(throwable);
-					executor.sendMessage(Messages.ERROR_OCCURRED);
-				}
-			});
+			Utils.depositPlayer(executor.getPlayer(), account.getLocation().getWorld().getName(), finalCreationPrice,
+					Callback.of(plugin,
+							result -> executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
+									Utils.format(finalCreationPrice))),
+							throwable -> executor.sendMessage(Messages.ERROR_OCCURRED)));
 
 			if (account.getBank().isPlayerBank()) {
 				OfflinePlayer bankOwner = account.getBank().getOwner();
-				Utils.withdrawPlayer(bankOwner, account.getLocation().getWorld().getName(), finalCreationPrice, new Callback<Void>(plugin) {
-					@Override
-					public void onResult(Void result) {
-						if (!account.isOwner(bankOwner) && bankOwner.isOnline())
-							bankOwner.getPlayer().sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-									account.getOwner().getName(), Utils.format(finalCreationPrice)));
-					}
-					@Override
-					public void onError(Throwable throwable) {
-						super.onError(throwable);
-						if (bankOwner.isOnline())
-							bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-					}
-				});
+				Utils.withdrawPlayer(bankOwner, account.getLocation().getWorld().getName(), finalCreationPrice,
+						Callback.of(plugin,
+								result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
+										account.getOwner().getName(), Utils.format(finalCreationPrice)),
+										Collections.singleton(bankOwner), account.getOwner()),
+								throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 			}
 		}
 
@@ -557,7 +508,7 @@ public class AccountInteractListener implements Listener {
 		p.sendMessage(Messages.CLICK_CHEST_MIGRATE_SECOND);
 
 	}
-	
+
 	private void migratePartTwo(Player p, Block b, Account toMigrate) {
 		Location newLocation = b.getLocation();
 		if (accountUtils.isAccount(newLocation)) {
@@ -622,98 +573,51 @@ public class AccountInteractListener implements Listener {
 
 		// Customer receives reimbursement for old account
 		if (finalReimbursement > 0 && !oldBank.isOwner(p)) {
-			Utils.depositPlayer(p.getPlayer(), toMigrate.getLocation().getWorld().getName(),
-					finalReimbursement, new Callback<Void>(plugin) {
-						@Override
-						public void onResult(Void result) {
-							p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
-									Utils.format(finalReimbursement)));
-						}
-						@Override
-						public void onError(Throwable throwable) {
-							super.onError(throwable);
-							p.sendMessage(Messages.ERROR_OCCURRED);
-						}
-					});
+			Utils.depositPlayer(p.getPlayer(), toMigrate.getLocation().getWorld().getName(), finalReimbursement,
+					Callback.of(plugin,
+							result -> p.sendMessage(String.format(
+									Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalReimbursement))),
+							throwable -> p.sendMessage(Messages.ERROR_OCCURRED)));
 		}
 
 		// Bank owner of new account receives account creation fee
 		if (finalCreationPrice > 0 && newBank.isPlayerBank() && !newBank.isOwner(p)) {
 			OfflinePlayer bankOwner = newBank.getOwner();
-			Utils.depositPlayer(bankOwner, toMigrate.getLocation().getWorld().getName(),
-					finalCreationPrice, new Callback<Void>(plugin) {
-						@Override
-						public void onResult(Void result) {
-							if (bankOwner.isOnline())
-								bankOwner.getPlayer().sendMessage(String.format(
-										Messages.ACCOUNT_CREATE_FEE_RECEIVED,
-										Utils.format(finalCreationPrice)
-								));
-						}
-						@Override
-						public void onError(Throwable throwable) {
-							super.onError(throwable);
-							if (bankOwner.isOnline())
-								bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-						}
-					});
+			Utils.depositPlayer(bankOwner, toMigrate.getLocation().getWorld().getName(), finalCreationPrice,
+					Callback.of(plugin,
+							result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
+									Utils.format(finalCreationPrice)), bankOwner),
+							throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 		}
 
 		// Account owner pays creation fee for new account
 		if (creationPrice > 0 && !newBank.isOwner(p)) {
-			if (!Utils.withdrawPlayer(p, newLocation.getWorld().getName(),
-					finalCreationPrice, new Callback<Void>(plugin) {
-						@Override
-						public void onResult(Void result) {
-							p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID,
-									Utils.format(finalCreationPrice)));
-						}
-						@Override
-						public void onError(Throwable throwable) {
-							plugin.debug(throwable);
-							p.sendMessage(Messages.ERROR_OCCURRED);
-						}
-					}))
+			if (!Utils.withdrawPlayer(p, newLocation.getWorld().getName(), finalCreationPrice, Callback.of(plugin,
+					result -> p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.format(finalCreationPrice))),
+					throwable -> p.sendMessage(Messages.ERROR_OCCURRED))))
 				return;
 		}
 
 		// Bank owner of old account pays reimbursement
 		if (reimbursement > 0 && oldBank.isPlayerBank() && !oldBank.isOwner(p)) {
 			OfflinePlayer bankOwner = oldBank.getOwner();
-			Utils.withdrawPlayer(bankOwner, newLocation.getWorld().getName(),
-					finalReimbursement, new Callback<Void>(plugin) {
-						@Override
-						public void onResult(Void result) {
-							if (bankOwner.isOnline())
-								bankOwner.getPlayer().sendMessage(String.format(
-										Messages.ACCOUNT_REIMBURSEMENT_PAID,
-										p.getName(), Utils.format(finalReimbursement)
-								));
-						}
-						@Override
-						public void onError(Throwable throwable) {
-							super.onError(throwable);
-							if (bankOwner.isOnline())
-								bankOwner.getPlayer().sendMessage(Messages.ERROR_OCCURRED);
-						}
-					});
+			Utils.withdrawPlayer(bankOwner, newLocation.getWorld().getName(), finalReimbursement,
+					Callback.of(plugin,
+							result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
+									p.getName(), Utils.format(finalReimbursement)), bankOwner),
+							throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 		}
 
 		if (newAccount.create(true)) {
-			plugin.debug("Account migrated (#" + newAccount.getID() + ")");
-			accountUtils.removeAccount(toMigrate, false, new Callback<Void>(plugin) {
-				@Override
-				public void onResult(Void result) {
-					accountUtils.addAccount(newAccount, true); // Database entry is replaced
-					p.sendMessage(Messages.ACCOUNT_MIGRATED);
-				}
-
-				@Override
-				public void onError(Throwable throwable) {
-					super.onError(throwable);
-					p.sendMessage(Messages.ERROR_OCCURRED);
-				}
-			});
+			plugin.debugf("Account migrated (#%d)", newAccount.getID());
+			accountUtils.removeAccount(toMigrate, false,
+					Callback.of(plugin,
+							result -> {
+								accountUtils.addAccount(newAccount, true); // Database entry is replaced
+								p.sendMessage(Messages.ACCOUNT_MIGRATED);
+							},
+							throwable -> p.sendMessage(Messages.ERROR_OCCURRED))
+			);
 		}
 	}
 
@@ -732,31 +636,14 @@ public class AccountInteractListener implements Listener {
 			return false;
 		}
 
-		boolean confirmed = unconfirmed.containsKey(p.getUniqueId())
-				&& unconfirmed.get(p.getUniqueId()).contains(account.getID());
-
-		if (!confirmed && Config.confirmOnTransfer) {
+		if (Config.confirmOnTransfer && !isConfirmed(p, account.getID())) {
 			plugin.debug("Needs confirmation");
-
 			p.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
 					account.isOwner(p) ? "your account" : account.getOwner().getName() + "'s account", newOwner.getName()));
 			p.sendMessage(Messages.CLICK_TO_CONFIRM);
-			Set<Integer> ids = unconfirmed.containsKey(p.getUniqueId()) ? unconfirmed.get(p.getUniqueId())
-					: new HashSet<>();
-			ids.add(account.getID());
-			unconfirmed.put(p.getUniqueId(), ids);
 			return false;
-		} else {
-			Set<Integer> ids = unconfirmed.containsKey(p.getUniqueId()) ? unconfirmed.get(p.getUniqueId())
-					: new HashSet<>();
-			ids.remove(account.getID());
-			if (ids.isEmpty()) {
-				unconfirmed.remove(p.getUniqueId());
-				ClickType.removePlayerClickType(p);
-			} else
-				unconfirmed.put(p.getUniqueId(), ids);
-			return true;
 		}
+		return true;
 	}
 
 	private void transfer(Player p, OfflinePlayer newOwner, Account account) {
@@ -772,8 +659,9 @@ public class AccountInteractListener implements Listener {
 
 		boolean hasDefaultNickname = account.isDefaultName();
 
-		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", Utils.samePlayer(account.getOwner(), p)
-				? "your account" : p.getName() + "'s account", newOwner.getName()));
+		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You",
+				Utils.samePlayer(account.getOwner(), p) ? "your account" : p.getName() + "'s account",
+				newOwner.getName()));
 		account.transferOwnership(newOwner);
 		if (hasDefaultNickname)
 			account.setToDefaultName();
@@ -783,4 +671,5 @@ public class AccountInteractListener implements Listener {
 	public static void clearUnconfirmed(OfflinePlayer p) {
 		unconfirmed.remove(p.getUniqueId());
 	}
+
 }
