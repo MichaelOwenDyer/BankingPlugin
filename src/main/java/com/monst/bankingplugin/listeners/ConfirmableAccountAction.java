@@ -17,24 +17,25 @@ public interface ConfirmableAccountAction extends Confirmable<Integer> {
 
     @Override
     default void putEntry(Player p, Integer id) {
-        Set<Integer> ids = unconfirmed.containsKey(p.getUniqueId())
-                ? unconfirmed.get(p.getUniqueId())
-                : new HashSet<>();
+        Set<Integer> ids = getEntries(p);
         ids.add(id);
         unconfirmed.put(p.getUniqueId(), ids);
     }
 
     @Override
     default void removeEntry(Player p, Integer id) {
-        Set<Integer> ids = unconfirmed.containsKey(p.getUniqueId())
-                ? unconfirmed.get(p.getUniqueId())
-                : new HashSet<>();
+        Set<Integer> ids = getEntries(p);
         ids.remove(id);
         if (ids.isEmpty()) {
             unconfirmed.remove(p.getUniqueId());
             ClickType.removePlayerClickType(p);
         } else
             unconfirmed.put(p.getUniqueId(), ids);
+    }
+
+    default Set<Integer> getEntries(Player p) {
+        return unconfirmed.containsKey(p.getUniqueId()) ?
+                unconfirmed.get(p.getUniqueId()) : new HashSet<>();
     }
 
 }

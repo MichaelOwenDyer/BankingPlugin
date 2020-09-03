@@ -105,9 +105,9 @@ public class AccountGui extends SinglePageGui<Account> {
 		List<String> lore = new ArrayList<>();
 		lore.add("Account ID: " + guiSubject.getID());
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
-		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty()
-				? ChatColor.RED + "[none]"
-				: ChatColor.AQUA + Utils.map(guiSubject.getCoowners(), OfflinePlayer::getName).toString()));
+		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty() ?
+				ChatColor.RED + "[none]" :
+				ChatColor.AQUA + Utils.map(guiSubject.getCoowners(), OfflinePlayer::getName).toString()));
 		lore.add("Location: " + ChatColor.AQUA + "(" + guiSubject.getCoordinates() + ")");
 		if (canTP)
 			lore.add("Click to teleport to account.");
@@ -119,9 +119,9 @@ public class AccountGui extends SinglePageGui<Account> {
 		return Utils.wordWrapAll(55,
 				"Name: \"" + ChatColor.RED + bank.getColorizedName() + ChatColor.GRAY + "\"",
 				"Owner: " + ChatColor.GOLD + bank.getOwnerDisplayName(),
-				"Co-owners: " + (bank.getCoowners().isEmpty()
-						? org.bukkit.ChatColor.RED + "[none]"
-						: ChatColor.AQUA + Utils.map(bank.getCoowners(), OfflinePlayer::getName).toString()),
+				"Co-owners: " + (bank.getCoowners().isEmpty() ?
+						ChatColor.RED + "[none]" :
+						ChatColor.AQUA + Utils.map(bank.getCoowners(), OfflinePlayer::getName).toString()),
 				"Click to view more info."
 		);
 	}
@@ -133,15 +133,15 @@ public class AccountGui extends SinglePageGui<Account> {
 		boolean payOnLowBalance = bank.get(BankField.PAY_ON_LOW_BALANCE);
 		double interestRate = bank.get(BankField.INTEREST_RATE);
 		int multiplier = guiSubject.getStatus().getRealMultiplier();
-		double fullPayout = (isLowBalance && !payOnLowBalance) ? 0.0d
-				: guiSubject.getBalance().doubleValue() * interestRate * multiplier;
-		double lowBalanceFee = isLowBalance && (double) bank.get(BankField.LOW_BALANCE_FEE) > 0
-				? bank.get(BankField.LOW_BALANCE_FEE) : 0.0d;
+		double fullPayout = (isLowBalance && !payOnLowBalance) ?
+				0.0d : guiSubject.getBalance().doubleValue() * interestRate * multiplier;
+		double lowBalanceFee = isLowBalance && (double) bank.get(BankField.LOW_BALANCE_FEE) > 0 ?
+				bank.get(BankField.LOW_BALANCE_FEE) : 0.0d;
 		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
-				"Balance: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getBalance()) + (isLowBalance
-						? ChatColor.RED + " ($" + Utils.format(minBalance - guiSubject.getBalance().doubleValue()) + " below minimum)"
-						: ""),
+				"Balance: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getBalance()) + (isLowBalance ?
+						ChatColor.RED + " ($" + Utils.format(minBalance - guiSubject.getBalance().doubleValue()) + " below minimum)" :
+						""),
 				"Interest rate: " + ChatColor.GREEN + BigDecimal.valueOf(interestRate * multiplier * 100).setScale(1, BigDecimal.ROUND_HALF_EVEN)
 						+ "% " + ChatColor.GRAY + "(" + interestRate + " x " + multiplier + ")",
 				"Next payout: " + (nextPayout > 0 ? ChatColor.GREEN : ChatColor.RED) + "$" + Utils.format(nextPayout)
@@ -157,21 +157,25 @@ public class AccountGui extends SinglePageGui<Account> {
 		int untilReset = status.getRemainingOfflineUntilReset();
 		int offlineDecrement = guiSubject.getBank().get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
 		return Utils.wordWrapAll(
-				(delay == 0
-						? "This account will generate interest in the next payout cycle."
-						: "This account will begin generating interest in " + ChatColor.AQUA + delay + ChatColor.GRAY + String.format(" payout cycle%s.", delay == 1 ? "" : "s")),
+				(delay == 0 ?
+						"This account will generate interest in the next payout cycle." :
+						"This account will begin generating interest in " + ChatColor.AQUA + delay + ChatColor.GRAY
+								+ String.format(" payout cycle%s.", delay == 1 ? "" : "s")),
 				"",
-				"Account can generate interest for " + ChatColor.AQUA + remainingOffline + ChatColor.GRAY + String.format(" offline payout cycle%s.", remainingOffline == 1 ? "" : "s"),
+				"Account can generate interest for " + ChatColor.AQUA + remainingOffline + ChatColor.GRAY
+						+ String.format(" offline payout cycle%s.", remainingOffline == 1 ? "" : "s"),
 				"",
-				"Account multiplier will " + (untilReset < 0
-						? "not reset while offline."
-						: (untilReset == 0 ? "reset immediately on an offline payout."
-								: "reset after " + ChatColor.AQUA + untilReset + ChatColor.GRAY
-								+ String.format(" offline payout cycle%s.", untilReset == 1 ? "" : "s"))),
+				"Account multiplier will " + (untilReset < 0 ?
+						"not reset while offline." :
+						(untilReset == 0 ?
+								"reset immediately on an offline payout." :
+								"reset after " + ChatColor.AQUA + untilReset + ChatColor.GRAY
+										+ String.format(" offline payout cycle%s.", untilReset == 1 ? "" : "s"))),
 				"",
-				"Account multiplier will " + (offlineDecrement < 0
-						? "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " stages for every offline payout."
-						: (offlineDecrement == 0 ? " freeze while offline." : " reset"))
+				"Account multiplier will " + (offlineDecrement < 0 ?
+						"decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " stages for every offline payout." :
+						(offlineDecrement == 0 ?
+								" freeze while offline." : " reset"))
 		);
 	}
 }

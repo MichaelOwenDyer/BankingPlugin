@@ -57,8 +57,8 @@ public class BankGui extends SinglePageGui<Bank> {
 			case 8:
 				if (canListAccounts)
 					return createSlotItem(Material.CHEST, "Account List",
-							Collections.singletonList(guiSubject.getAccounts().isEmpty()
-									? "There are no accounts at this bank." : "Click here to view accounts."));
+							Collections.singletonList(guiSubject.getAccounts().isEmpty() ?
+									"There are no accounts at this bank." : "Click here to view accounts."));
 				return createSlotItem(Material.CHEST, "Account List", NO_PERMISSION);
 			case 9:
 				return createSlotItem(Material.ENCHANTED_BOOK, "Account Creation", getCreationLore());
@@ -100,9 +100,9 @@ public class BankGui extends SinglePageGui<Bank> {
 					this.close(player);
 				} : null;
 			case 8:
-				return canListAccounts && !guiSubject.getAccounts().isEmpty()
-						? (player, info) -> new AccountListGui(guiSubject.getAccounts()).setPrevGui(this).open(player)
-						: null;
+				return canListAccounts && !guiSubject.getAccounts().isEmpty() ?
+						(player, info) -> new AccountListGui(guiSubject.getAccounts()).setPrevGui(this).open(player) :
+						null;
 			default:
 				return null;
 		}
@@ -123,7 +123,7 @@ public class BankGui extends SinglePageGui<Bank> {
 		lore.add("Bank ID: " + guiSubject.getID());
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
 		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty()
-				? org.bukkit.ChatColor.RED + "[none]"
+				? ChatColor.RED + "[none]"
 				: ChatColor.AQUA + Utils.map(guiSubject.getCoowners(), OfflinePlayer::getName).toString())
 		);
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());

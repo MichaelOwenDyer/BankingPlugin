@@ -61,8 +61,8 @@ public class AccountBalanceListener implements Listener {
 
 			account.setBalance(valueOnClose);
 
-			plugin.debug("Account #" + account.getID() + " has been updated with a new balance ("
-					+ Utils.format(valueOnClose) + ")");
+			plugin.debugf("Account #%d has been updated with a new balance ($%s)",
+					account.getID(), Utils.format(valueOnClose));
 
 			if (difference.signum() == 1)
 				executor.sendMessage(String.format(Messages.ACCOUNT_DEPOSIT, Utils.format(difference),
@@ -72,10 +72,9 @@ public class AccountBalanceListener implements Listener {
 						(account.isOwner(executor)) ? "your" : account.getOwner().getName() + "'s"));
 			executor.sendMessage(String.format(Messages.ACCOUNT_NEW_BALANCE, Utils.format(valueOnClose)));
 
-			if (difference.signum() == -1 && valueOnClose.compareTo(account.getPrevBalance()) < 0) {
+			if (difference.signum() == -1 && valueOnClose.compareTo(account.getPrevBalance()) < 0)
 				if (account.getStatus().getMultiplierStage() != account.getStatus().processWithdrawal())
 					executor.sendMessage(String.format(Messages.MULTIPLIER_DECREASED, account.getStatus().getRealMultiplier()));
-			}
 
 			accountUtils.addAccount(account, true);
 

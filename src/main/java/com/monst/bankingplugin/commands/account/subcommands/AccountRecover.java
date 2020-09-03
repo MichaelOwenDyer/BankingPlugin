@@ -38,8 +38,8 @@ public class AccountRecover extends AccountSubCommand {
 
     @Override
     public String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.ACCOUNT_RECOVER) && !accountUtils.getInvalidAccounts().isEmpty()
-                ? Messages.COMMAND_USAGE_ACCOUNT_RECOVER : "";
+        return sender.hasPermission(Permissions.ACCOUNT_RECOVER) && !accountUtils.getInvalidAccounts().isEmpty() ?
+                Messages.COMMAND_USAGE_ACCOUNT_RECOVER : "";
     }
 
     public static void recover(Player p, Block b, Account toMigrate) {

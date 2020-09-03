@@ -427,9 +427,8 @@ public class Config {
 				Math.abs(config.getDouble("interest-rate.default")));
 
 		multipliers = new ConfigPair<>(config.getBoolean("interest-multipliers.allow-override"),
-				config.getIntegerList("interest-multipliers.default").isEmpty()
-					? Collections.singletonList(1)
-					: config.getIntegerList("interest-multipliers.default"));
+				config.getIntegerList("interest-multipliers.default").isEmpty() ?
+						Collections.singletonList(1) : config.getIntegerList("interest-multipliers.default"));
 
 		initialInterestDelay = new ConfigPair<>(config.getBoolean("initial-interest-delay.allow-override"),
 				Math.abs(config.getInt("initial-interest-delay.default")));

@@ -215,9 +215,9 @@ public class InterestEventListener implements Listener {
 				continue;
 
 			boolean online = customer.isOnline();
-			String worldName = playerAccountMap.get(customer) != null
-					? playerAccountMap.get(customer).get(0).getLocation().getWorld().getName()
-					: (online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
+			String worldName = playerAccountMap.get(customer) != null ?
+					playerAccountMap.get(customer).get(0).getLocation().getWorld().getName() :
+					(online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
 
 			Utils.withdrawPlayer(customer, worldName, feesPayable.get(customer).getSum().doubleValue(), Callback.of(plugin,
 					result -> {

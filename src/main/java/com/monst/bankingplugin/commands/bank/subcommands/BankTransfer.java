@@ -105,8 +105,8 @@ public class BankTransfer extends BankSubCommand implements ConfirmableSubComman
         }
 
         boolean isSelf = sender instanceof Player && Utils.samePlayer(newOwner, ((Player) sender));
-        sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", isSelf ? "yourself"
-                : (newOwner != null ? newOwner.getName() : "ADMIN"), "bank " + bank.getColorizedName()));
+        sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", isSelf ? "yourself" :
+                (newOwner != null ? newOwner.getName() : "ADMIN"), "bank " + bank.getColorizedName()));
 
         if (!isSelf)
             Utils.notifyPlayers(

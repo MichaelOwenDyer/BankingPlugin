@@ -573,8 +573,9 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 		creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1);
 		creationPrice *= (newBank.isOwner(p) ? 0 : 1);
 
-		double reimbursement = oldBank.get(BankField.REIMBURSE_ACCOUNT_CREATION)
-				? oldBank.get(BankField.ACCOUNT_CREATION_PRICE) : 0.0d;
+		double reimbursement = oldBank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ?
+				oldBank.get(BankField.ACCOUNT_CREATION_PRICE) :
+				0.0d;
 		reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
 		reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
 

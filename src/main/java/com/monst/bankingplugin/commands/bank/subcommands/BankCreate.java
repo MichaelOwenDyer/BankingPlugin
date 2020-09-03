@@ -119,9 +119,9 @@ public class BankCreate extends BankSubCommand {
             return true;
         }
 
-        Bank bank = isAdminBank
-                ? Bank.mint(name, selection)
-                : Bank.mint(name, p, selection);
+        Bank bank = isAdminBank ?
+                Bank.mint(name, selection) :
+                Bank.mint(name, p, selection);
 
         BankCreateEvent event = new BankCreateEvent(p, bank);
         Bukkit.getPluginManager().callEvent(event);

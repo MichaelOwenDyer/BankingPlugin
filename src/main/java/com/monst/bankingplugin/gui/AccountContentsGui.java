@@ -82,9 +82,9 @@ public class AccountContentsGui extends SinglePageGui<Account> {
         @Override
         void initializeMenu() {
             menu = ChestMenu.builder(3).title("Shulker Box").redraw(true).build();
-//                    shulkerBox.getCustomName() != null
-//                            ? shulkerBox.getCustomName() // TODO: Figure out why always null
-//                            : WordUtils.capitalizeFully(shulkerBox.getColor().toString())
+//                    shulkerBox.getCustomName() != null ?
+//                            shulkerBox.getCustomName() : // TODO: Figure out why always null
+//                            WordUtils.capitalizeFully(shulkerBox.getColor().toString())
 //                       FIXME: shulkerBox.getColor() throws NullPointerException when Shulker Box default color
 
         }

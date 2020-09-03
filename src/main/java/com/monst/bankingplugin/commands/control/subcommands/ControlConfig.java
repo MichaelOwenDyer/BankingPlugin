@@ -64,9 +64,8 @@ public class ControlConfig extends ControlSubCommand {
             return Collections.emptyList();
 
         if (args.length == 2)
-            return "set".startsWith(args[1].toLowerCase())
-                    ? Collections.singletonList("set")
-                    : Collections.emptyList();
+            return "set".startsWith(args[1].toLowerCase()) ?
+                    Collections.singletonList("set") : Collections.emptyList();
 
         List<String> configValues = new ArrayList<>(plugin.getConfig().getKeys(true));
         plugin.getConfig().getKeys(true).forEach(s -> {

@@ -338,9 +338,9 @@ public abstract class Database {
 					ps.setInt(i + 10, account.getStatus().getRemainingOfflinePayouts());
 					ps.setInt(i + 11, account.getStatus().getRemainingOfflineUntilReset());
 
-					ps.setString(i + 12, account.getLocation().getWorld() != null
-							? account.getLocation().getWorld().getName()
-							: "world");
+					ps.setString(i + 12, account.getLocation().getWorld() != null ?
+							account.getLocation().getWorld().getName() :
+							"world");
 					ps.setInt(i + 13, account.getLocation().getBlockX());
 					ps.setInt(i + 14, account.getLocation().getBlockY());
 					ps.setInt(i + 15, account.getLocation().getBlockZ());
@@ -443,8 +443,8 @@ public abstract class Database {
 						ps.setString(i + 3, null);
 					} else {
 						ps.setString(i + 2, bank.getOwner().getUniqueId().toString());
-						ps.setString(i + 3, bank.getCoowners().isEmpty() ? null
-								: bank.getCoowners().stream()
+						ps.setString(i + 3, bank.getCoowners().isEmpty() ? null :
+								bank.getCoowners().stream()
 										.map(p -> "" + p.getUniqueId())
 										.collect(Collectors.joining(" | "))
 						);
@@ -595,9 +595,9 @@ public abstract class Database {
 
 						String name = rs.getString("name");
 						boolean isAdminBank = rs.getString("owner").equals("$ADMIN$");
-						Set<OfflinePlayer> coowners = rs.getString("co_owners") == null
-								? new HashSet<>()
-								: Arrays.stream(rs.getString("co_owners").split(" \\| "))
+						Set<OfflinePlayer> coowners = rs.getString("co_owners") == null ?
+								new HashSet<>() :
+								Arrays.stream(rs.getString("co_owners").split(" \\| "))
 										.filter(string -> !string.isEmpty())
 										.map(UUID::fromString)
 										.map(Bukkit::getOfflinePlayer)
@@ -682,9 +682,9 @@ public abstract class Database {
 						plugin.debug("Initializing bank"
 								+ (name != null ? " \"" + ChatColor.stripColor(name) + "\"" : "") + "... (#" + bankId + ")");
 
-						Bank bank = isAdminBank
-									? Bank.recreate(bankId, name, coowners, selection, bankConfig)
-									: Bank.recreate(bankId, name, owner, coowners, selection, bankConfig);
+						Bank bank = isAdminBank ?
+								Bank.recreate(bankId, name, coowners, selection, bankConfig) :
+								Bank.recreate(bankId, name, owner, coowners, selection, bankConfig);
 
 						getAccountsAtBank(bank, showConsoleMessages, Callback.of(plugin,
 								result -> banksAndAccounts.put(bank, result),

@@ -28,9 +28,9 @@ public class BankListGui extends MultiPageGui<Collection<Bank>> {
     @Override
     void addItems(PaginatedMenuBuilder builder) {
         for (Bank bank : guiSubjects) {
-            ItemStack item = bank.isPlayerBank()
-                    ? createSlotItem(bank.getOwner(), bank.getColorizedName(), Collections.singletonList("Owner: " + bank.getOwnerDisplayName()))
-                    : createSlotItem(Material.PLAYER_HEAD, bank.getColorizedName(), Collections.singletonList("Owner: " + bank.getOwnerDisplayName()));
+            ItemStack item = bank.isPlayerBank() ?
+                    createSlotItem(bank.getOwner(), bank.getColorizedName(), Collections.singletonList("Owner: " + bank.getOwnerDisplayName())) :
+                    createSlotItem(Material.PLAYER_HEAD, bank.getColorizedName(), Collections.singletonList("Owner: " + bank.getOwnerDisplayName()));
             ItemStackTemplate template = new StaticItemTemplate(item);
             Slot.ClickHandler clickHandler = (player, info) -> new BankGui(bank).setPrevGui(this).open(player);
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());

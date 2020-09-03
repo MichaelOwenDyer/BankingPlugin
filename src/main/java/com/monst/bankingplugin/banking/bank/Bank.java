@@ -288,8 +288,8 @@ public class Bank extends Ownable {
 		
 		info.append("\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")");
 		info.append(ChatColor.GRAY + "Owner: " + getOwnerDisplayName());
-		info.append(ChatColor.GRAY + "Co-owners: " + (!getCoowners().isEmpty()
-				? Utils.map(getCoowners(), OfflinePlayer::getName).toString() : "[none]"));
+		info.append(ChatColor.GRAY + "Co-owners: " + (!getCoowners().isEmpty() ?
+				Utils.map(getCoowners(), OfflinePlayer::getName).toString() : "[none]"));
 		info.append(ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + getFormatted(BankField.INTEREST_RATE));
 		info.append(ChatColor.GRAY + "Multipliers: ");
 		info.append(Utils.map(Utils.stackList(get(BankField.MULTIPLIERS)),

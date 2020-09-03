@@ -155,12 +155,11 @@ public class Account extends Ownable {
 		final BigDecimal checkedBalance = plugin.getAccountUtils().appraiseAccountContents(this);
 		final int diff = checkedBalance.compareTo(getBalance());
 		if (diff > 0)
-			plugin.debug(
-				getBalance().signum() == 0
-					? "Cool! Account #" + getID() + " was created with a balance of "
-						+ Utils.format(checkedBalance) + " already inside."
-					: "Value of account #" + getID() + " was found higher than expected. Expected: $"
-						+ Utils.format(getBalance()) + " but was: $" + Utils.format(checkedBalance)
+			plugin.debug(getBalance().signum() == 0 ?
+					"Cool! Account #" + getID() + " was created with a balance of "
+					+ Utils.format(checkedBalance) + " already inside." :
+					"Value of account #" + getID() + " was found higher than expected. Expected: $"
+					+ Utils.format(getBalance()) + " but was: $" + Utils.format(checkedBalance)
 			);
 		else if (diff < 0)
 			plugin.debug(
