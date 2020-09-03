@@ -18,10 +18,10 @@ public class ClickType {
 	private static final Map<UUID, ClickType> playerClickTypes = new HashMap<>();
 	private static final Map<UUID, BukkitTask> playerTimers = new HashMap<>();
 
-	private final EnumClickType enumClickType;
+	private final EClickType eClickType;
 
-    public ClickType(EnumClickType enumClickType) {
-        this.enumClickType = enumClickType;
+    public ClickType(EClickType eClickType) {
+        this.eClickType = eClickType;
     }
 
     /**
@@ -82,11 +82,11 @@ public class ClickType {
     /**
      * @return Type of the click type
      */
-    public EnumClickType getClickType() {
-        return enumClickType;
+    public EClickType getType() {
+        return eClickType;
     }
 
-    public enum EnumClickType {
+    public enum EClickType {
 		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE, RECOVER, TRANSFER
     }
 
@@ -95,7 +95,7 @@ public class ClickType {
 		private final OfflinePlayer newOwner;
 
 		public CreateClickType(OfflinePlayer newOwner) {
-			super(EnumClickType.CREATE);
+			super(EClickType.CREATE);
 			this.newOwner = newOwner;
 		}
 
@@ -110,7 +110,7 @@ public class ClickType {
 		private final String value;
 
 		public SetClickType(SetField field, String value) {
-			super(EnumClickType.SET);
+			super(EClickType.SET);
 			this.field = field;
 			this.value = value;
 		}
@@ -133,7 +133,7 @@ public class ClickType {
 		private final OfflinePlayer toTrust;
 
 		public TrustClickType(OfflinePlayer p) {
-			super(EnumClickType.TRUST);
+			super(EClickType.TRUST);
 			toTrust = p;
 		}
 
@@ -147,7 +147,7 @@ public class ClickType {
 		private final OfflinePlayer toUntrust;
 
 		public UntrustClickType(OfflinePlayer p) {
-			super(EnumClickType.UNTRUST);
+			super(EClickType.UNTRUST);
 			toUntrust = p;
 		}
 
@@ -161,7 +161,7 @@ public class ClickType {
 		private final Account toMigrate;
 
 		public MigrateClickType(Account toMigrate) {
-			super(EnumClickType.MIGRATE);
+			super(EClickType.MIGRATE);
 			this.toMigrate = toMigrate;
 		}
 
@@ -179,7 +179,7 @@ public class ClickType {
 		private final Account toRecover;
 
 		public RecoverClickType(Account toRecover) {
-			super(EnumClickType.RECOVER);
+			super(EClickType.RECOVER);
 			this.toRecover = toRecover;
 		}
 
@@ -193,7 +193,7 @@ public class ClickType {
 		private final OfflinePlayer newOwner;
 
 		public TransferClickType(OfflinePlayer newOwner) {
-			super(EnumClickType.TRANSFER);
+			super(EClickType.TRANSFER);
 			this.newOwner = newOwner;
 		}
 

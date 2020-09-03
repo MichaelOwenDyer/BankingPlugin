@@ -64,17 +64,17 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 
 		if (clickType != null) {
 
-			if (account == null && !(clickType.getClickType() == ClickType.EnumClickType.CREATE
-					|| clickType.getClickType() == ClickType.EnumClickType.MIGRATE
-					|| clickType.getClickType() == EnumClickType.RECOVER))
+			if (account == null && !(clickType.getType() == EClickType.CREATE
+					|| clickType.getType() == EClickType.MIGRATE
+					|| clickType.getType() == EClickType.RECOVER))
 				return;
-			if (account == null && clickType.getClickType() == ClickType.EnumClickType.MIGRATE
+			if (account == null && clickType.getType() == EClickType.MIGRATE
 					&& ((MigrateClickType) clickType).isFirstClick())
 				return;
 			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK))
 				return;
 
-			switch (clickType.getClickType()) {
+			switch (clickType.getType()) {
 
 				case CREATE:
 
