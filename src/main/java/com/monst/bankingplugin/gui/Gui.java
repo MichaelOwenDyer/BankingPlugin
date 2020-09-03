@@ -49,7 +49,7 @@ abstract class Gui<T> {
 
 	public Gui<T> setPrevGui(@Nullable Gui<?> prevGui) {
 		if (prevGui != null)
-			prevGui.inForeground = true;
+			prevGui.inForeground = false;
 		this.prevGui = prevGui;
 		return this;
 	}
