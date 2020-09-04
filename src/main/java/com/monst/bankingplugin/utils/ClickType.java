@@ -2,6 +2,7 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -14,16 +15,22 @@ import java.util.UUID;
 
 // Credit for this code goes to EpicEricEE
 
-public abstract class ClickType {
+public abstract class ClickType<T> {
 
-	private static final Map<UUID, ClickType> playerClickTypes = new HashMap<>();
+	private static final Map<UUID, ClickType<?>> playerClickTypes = new HashMap<>();
 	private static final Map<UUID, BukkitTask> playerTimers = new HashMap<>();
 
 	private final EClickType eClickType;
+	private final T t;
 
-    private ClickType(EClickType eClickType) {
+    private ClickType(EClickType eClickType, T t) {
         this.eClickType = eClickType;
+        this.t = t;
     }
+
+    public T get() {
+    	return t;
+	}
 
     /**
      * Clear all click types, cancel timers
@@ -38,7 +45,7 @@ public abstract class ClickType {
 	 * @param player Player whose click type should be gotten
 	 * @return The Player's click type or <b>null</b> if they don't have one
 	 */
-    public static ClickType getPlayerClickType(OfflinePlayer player) {
+    public static ClickType<?> getPlayerClickType(OfflinePlayer player) {
         return playerClickTypes.get(player.getUniqueId());
     }
 
@@ -62,7 +69,7 @@ public abstract class ClickType {
      * @param player    Player whose click type should be set
      * @param clickType Click type to set
      */
-    public static void setPlayerClickType(OfflinePlayer player, ClickType clickType) {
+    public static void setPlayerClickType(OfflinePlayer player, ClickType<?> clickType) {
 
 		UUID uuid = player.getUniqueId();
         playerClickTypes.put(uuid, clickType);
@@ -104,7 +111,7 @@ public abstract class ClickType {
     	return new RemoveClickType();
 	}
 
-	public static SetClickType set(SetClickType.SetField field, String value) {
+	public static SetClickType set(AccountField field, String value) {
     	return new SetClickType(field, value);
 	}
 
@@ -128,127 +135,65 @@ public abstract class ClickType {
     	return new TransferClickType(newOwner);
 	}
 
-	public static class CreateClickType extends ClickType {
-
-		private final OfflinePlayer newOwner;
-
+	public static class CreateClickType extends ClickType<OfflinePlayer> {
 		private CreateClickType(OfflinePlayer newOwner) {
-			super(EClickType.CREATE);
-			this.newOwner = newOwner;
-		}
-
-		public OfflinePlayer getNewOwner() {
-			return newOwner;
+			super(EClickType.CREATE, newOwner);
 		}
 	}
 
-	public static class RemoveClickType extends ClickType {
+	public static class RemoveClickType extends ClickType<Void> {
 		private RemoveClickType() {
-    		super(EClickType.REMOVE);
+    		super(EClickType.REMOVE, null);
 		}
 	}
 
-	public static class InfoClickType extends ClickType {
+	public static class InfoClickType extends ClickType<Void> {
 		private InfoClickType() {
-    		super(EClickType.INFO);
+    		super(EClickType.INFO, null);
 		}
 	}
 
-	public static class SetClickType extends ClickType {
-
-    	private final SetField field;
-		private final String value;
-
-		private SetClickType(SetField field, String value) {
-			super(EClickType.SET);
-			this.field = field;
-			this.value = value;
-		}
-
-		public SetField getField() {
-			return field;
-		}
-
-		public String getValue() {
-			return value;
-		}
-
-		public enum SetField {
-			NICKNAME, MULTIPLIER, DELAY
+	public static class SetClickType extends ClickType<SetPair> {
+		private SetClickType(AccountField field, String value) {
+			super(EClickType.SET, new SetPair(field, value));
 		}
 	}
 
-	public static class TrustClickType extends ClickType {
-
-		private final OfflinePlayer toTrust;
-
-		private TrustClickType(OfflinePlayer p) {
-			super(EClickType.TRUST);
-			toTrust = p;
-		}
-
-		public OfflinePlayer getPlayerToTrust() {
-			return toTrust;
+	public static class TrustClickType extends ClickType<OfflinePlayer> {
+		private TrustClickType(OfflinePlayer toTrust) {
+			super(EClickType.TRUST, toTrust);
 		}
 	}
 
-	public static class UntrustClickType extends ClickType {
-
-		private final OfflinePlayer toUntrust;
-
-		private UntrustClickType(OfflinePlayer p) {
-			super(EClickType.UNTRUST);
-			toUntrust = p;
-		}
-
-		public OfflinePlayer getPlayerToUntrust() {
-			return toUntrust;
+	public static class UntrustClickType extends ClickType<OfflinePlayer> {
+		private UntrustClickType(OfflinePlayer toUntrust) {
+			super(EClickType.UNTRUST, toUntrust);
 		}
 	}
 
-	public static class MigrateClickType extends ClickType {
-
-		private final Account toMigrate;
-
+	public static class MigrateClickType extends ClickType<Account> {
 		private MigrateClickType(Account toMigrate) {
-			super(EClickType.MIGRATE);
-			this.toMigrate = toMigrate;
-		}
-
-		public boolean isFirstClick() {
-			return toMigrate == null;
-		}
-
-		public Account getAccountToMigrate() {
-			return toMigrate;
+			super(EClickType.MIGRATE, toMigrate);
 		}
 	}
 
-	public static class RecoverClickType extends ClickType {
-
-		private final Account toRecover;
-
+	public static class RecoverClickType extends ClickType<Account> {
 		private RecoverClickType(Account toRecover) {
-			super(EClickType.RECOVER);
-			this.toRecover = toRecover;
-		}
-
-		public Account getAccountToRecover() {
-			return toRecover;
+			super(EClickType.RECOVER, toRecover);
 		}
 	}
 
-	public static class TransferClickType extends ClickType {
-
-		private final OfflinePlayer newOwner;
-
+	public static class TransferClickType extends ClickType<OfflinePlayer> {
 		private TransferClickType(OfflinePlayer newOwner) {
-			super(EClickType.TRANSFER);
-			this.newOwner = newOwner;
+			super(EClickType.TRANSFER, newOwner);
 		}
+	}
 
-		public OfflinePlayer getNewOwner() {
-			return newOwner;
+	public static class SetPair extends Pair<AccountField, String> {
+		private SetPair(AccountField field, String value) {
+			super(field, value);
 		}
+		public AccountField getField() { return super.getFirst(); }
+		public String getValue() { return super.getSecond(); }
 	}
 }

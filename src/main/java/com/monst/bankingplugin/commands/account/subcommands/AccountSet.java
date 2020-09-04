@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.account.subcommands;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.events.account.AccountConfigureEvent;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Messages;
@@ -53,7 +54,7 @@ public class AccountSet extends AccountSubCommand {
                     return true;
                 }
                 ClickType.setPlayerClickType(p,
-                        ClickType.set(ClickType.SetClickType.SetField.NICKNAME, nickname));
+                        ClickType.set(AccountField.NICKNAME, nickname));
                 p.sendMessage(Messages.CLICK_CHEST_SET);
                 break;
 
@@ -73,7 +74,7 @@ public class AccountSet extends AccountSubCommand {
                 }
 
                 ClickType.setPlayerClickType(p,
-                        ClickType.set(ClickType.SetClickType.SetField.MULTIPLIER, args[2]));
+                        ClickType.set(AccountField.MULTIPLIER, args[2]));
                 p.sendMessage(Messages.CLICK_CHEST_SET);
                 break;
 
@@ -92,7 +93,7 @@ public class AccountSet extends AccountSubCommand {
                 }
 
                 ClickType.setPlayerClickType(p,
-                        ClickType.set(ClickType.SetClickType.SetField.DELAY, args[2]));
+                        ClickType.set(AccountField.DELAY, args[2]));
                 p.sendMessage(Messages.CLICK_CHEST_SET);
                 break;
 
@@ -110,7 +111,7 @@ public class AccountSet extends AccountSubCommand {
                 .collect(Collectors.toList());
     }
 
-    public static void set(Player executor, Account account, ClickType.SetClickType.SetField field, String value) {
+    public static void set(Player executor, Account account, AccountField field, String value) {
 
         switch (field) {
             case NICKNAME:
