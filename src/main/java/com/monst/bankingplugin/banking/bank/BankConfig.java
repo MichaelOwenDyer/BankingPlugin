@@ -259,10 +259,10 @@ public class BankConfig {
 	<T> T get(BankField field, boolean ignoreConfig) {
 	    try {
 	        if (ignoreConfig)
-                return (T) field.getDataType().cast(field.getLocalVariable().get(this));
+                return (T) field.getLocalVariable().get(this);
 	        else
 	            return field.isOverrideAllowed() ?
-						(T) field.getDataType().cast(field.getLocalVariable().get(this)) :
+						(T) field.getLocalVariable().get(this) :
 						(T) field.getConfigPair().getDefault();
         } catch (IllegalAccessException e) {
             BankingPlugin.getInstance().debug(e);

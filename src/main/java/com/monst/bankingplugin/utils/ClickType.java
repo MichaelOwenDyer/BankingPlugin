@@ -34,7 +34,7 @@ public abstract class ClickType<T> {
 	 */
 	@SuppressWarnings("unchecked")
     public <K> K get() {
-    	return (K) eClickType.getDataType().cast(t);
+    	return (K) t;
 	}
 
     /**
@@ -119,9 +119,11 @@ public abstract class ClickType<T> {
 		EClickType(Class<?> dataType) {
 			this.dataType = dataType;
 		}
+
 		public Class<?> getDataType() {
 			return dataType;
 		}
+
     }
 
     public static CreateClickType create(OfflinePlayer newOwner) {
