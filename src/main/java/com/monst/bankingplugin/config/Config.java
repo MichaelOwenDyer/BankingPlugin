@@ -512,11 +512,7 @@ public class Config {
 		private ConfigPair(Boolean b, K k) {
 			super(b, k);
 		}
-		public boolean isOverridable() {
-			return super.getFirst();
-		}
-		public K getDefault() {
-			return super.getSecond();
-		}
+		public boolean isOverridable() { return super.getFirst(); }
+		public K getDefault() { return super.getSecond(); }
 	}
 }

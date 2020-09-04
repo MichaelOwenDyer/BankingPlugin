@@ -368,12 +368,8 @@ public class BankUtils {
 		public ReloadResult(Collection<Bank> banks, Collection<Account> accounts) {
 			super(banks, accounts);
 		}
-		public Collection<Bank> getBanks() {
-			return super.getFirst();
-		}
-		public Collection<Account> getAccounts() {
-			return super.getSecond();
-		}
+		public Collection<Bank> getBanks() { return super.getFirst(); }
+		public Collection<Account> getAccounts() { return super.getSecond(); }
 	}
 
 	public Bank lookupBank(String identifier) {

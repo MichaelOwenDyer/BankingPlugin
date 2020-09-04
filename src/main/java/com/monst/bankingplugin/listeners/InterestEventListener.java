@@ -239,11 +239,7 @@ public class InterestEventListener implements Listener {
 			super.setFirst(getSum().add(value));
 			super.setSecond(getCount() + 1);
 		}
-		private BigDecimal getSum() {
-			return super.getFirst();
-		}
-		private int getCount() {
-			return super.getSecond();
-		}
+		private BigDecimal getSum() { return super.getFirst(); }
+		private int getCount() { return super.getSecond(); }
 	}
 }
