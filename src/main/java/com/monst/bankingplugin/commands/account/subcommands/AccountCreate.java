@@ -72,7 +72,7 @@ public class AccountCreate extends AccountSubCommand {
 
         plugin.debug(p.getName() + " can now click a chest to create an account");
         p.sendMessage(Messages.CLICK_CHEST_CREATE);
-        ClickType.setPlayerClickType(p, new ClickType.CreateClickType(owner));
+        ClickType.setPlayerClickType(p, ClickType.create(owner));
         return true;
     }
 

@@ -14,13 +14,14 @@ import java.util.UUID;
 
 // Credit for this code goes to EpicEricEE
 
-public class ClickType {
+public abstract class ClickType {
+
 	private static final Map<UUID, ClickType> playerClickTypes = new HashMap<>();
 	private static final Map<UUID, BukkitTask> playerTimers = new HashMap<>();
 
 	private final EClickType eClickType;
 
-    public ClickType(EClickType eClickType) {
+    private ClickType(EClickType eClickType) {
         this.eClickType = eClickType;
     }
 
@@ -77,6 +78,7 @@ public class ClickType {
 				AccountInteractListener.clearUnconfirmed(player);
             }
 		}.runTaskLater(BankingPlugin.getInstance(), 300));
+
     }
 
     /**
@@ -90,11 +92,47 @@ public class ClickType {
 		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE, RECOVER, TRANSFER
     }
 
+    public static CreateClickType create(OfflinePlayer newOwner) {
+    	return new CreateClickType(newOwner);
+	}
+
+	public static InfoClickType remove() {
+    	return new InfoClickType();
+	}
+
+	public static RemoveClickType info() {
+    	return new RemoveClickType();
+	}
+
+	public static SetClickType set(SetClickType.SetField field, String value) {
+    	return new SetClickType(field, value);
+	}
+
+	public static TrustClickType trust(OfflinePlayer toTrust) {
+    	return new TrustClickType(toTrust);
+	}
+
+	public static UntrustClickType untrust(OfflinePlayer toUntrust) {
+    	return new UntrustClickType(toUntrust);
+	}
+
+	public static MigrateClickType migrate(Account toMigrate) {
+    	return new MigrateClickType(toMigrate);
+	}
+
+	public static RecoverClickType recover(Account toRecover) {
+    	return new RecoverClickType(toRecover);
+	}
+
+	public static TransferClickType transfer(OfflinePlayer newOwner) {
+    	return new TransferClickType(newOwner);
+	}
+
 	public static class CreateClickType extends ClickType {
 
 		private final OfflinePlayer newOwner;
 
-		public CreateClickType(OfflinePlayer newOwner) {
+		private CreateClickType(OfflinePlayer newOwner) {
 			super(EClickType.CREATE);
 			this.newOwner = newOwner;
 		}
@@ -104,12 +142,24 @@ public class ClickType {
 		}
 	}
 
+	public static class RemoveClickType extends ClickType {
+		private RemoveClickType() {
+    		super(EClickType.REMOVE);
+		}
+	}
+
+	public static class InfoClickType extends ClickType {
+		private InfoClickType() {
+    		super(EClickType.INFO);
+		}
+	}
+
 	public static class SetClickType extends ClickType {
 
     	private final SetField field;
 		private final String value;
 
-		public SetClickType(SetField field, String value) {
+		private SetClickType(SetField field, String value) {
 			super(EClickType.SET);
 			this.field = field;
 			this.value = value;
@@ -132,7 +182,7 @@ public class ClickType {
 
 		private final OfflinePlayer toTrust;
 
-		public TrustClickType(OfflinePlayer p) {
+		private TrustClickType(OfflinePlayer p) {
 			super(EClickType.TRUST);
 			toTrust = p;
 		}
@@ -146,7 +196,7 @@ public class ClickType {
 
 		private final OfflinePlayer toUntrust;
 
-		public UntrustClickType(OfflinePlayer p) {
+		private UntrustClickType(OfflinePlayer p) {
 			super(EClickType.UNTRUST);
 			toUntrust = p;
 		}
@@ -160,7 +210,7 @@ public class ClickType {
 
 		private final Account toMigrate;
 
-		public MigrateClickType(Account toMigrate) {
+		private MigrateClickType(Account toMigrate) {
 			super(EClickType.MIGRATE);
 			this.toMigrate = toMigrate;
 		}
@@ -178,7 +228,7 @@ public class ClickType {
 
 		private final Account toRecover;
 
-		public RecoverClickType(Account toRecover) {
+		private RecoverClickType(Account toRecover) {
 			super(EClickType.RECOVER);
 			this.toRecover = toRecover;
 		}
@@ -192,7 +242,7 @@ public class ClickType {
 
 		private final OfflinePlayer newOwner;
 
-		public TransferClickType(OfflinePlayer newOwner) {
+		private TransferClickType(OfflinePlayer newOwner) {
 			super(EClickType.TRANSFER);
 			this.newOwner = newOwner;
 		}

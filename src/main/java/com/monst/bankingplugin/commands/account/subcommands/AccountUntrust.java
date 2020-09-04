@@ -42,7 +42,7 @@ public class AccountUntrust extends AccountSubCommand {
         }
 
         p.sendMessage(String.format(Messages.CLICK_CHEST_UNTRUST, Utils.samePlayer(playerToUntrust, p) ? "yourself" : playerToUntrust.getName()));
-        ClickType.setPlayerClickType(p, new ClickType.UntrustClickType(playerToUntrust));
+        ClickType.setPlayerClickType(p, ClickType.untrust(playerToUntrust));
         plugin.debug(p.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
         return true;
     }

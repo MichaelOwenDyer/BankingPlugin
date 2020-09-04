@@ -53,7 +53,7 @@ public class AccountSet extends AccountSubCommand {
                     return true;
                 }
                 ClickType.setPlayerClickType(p,
-                        new ClickType.SetClickType(ClickType.SetClickType.SetField.NICKNAME, nickname));
+                        ClickType.set(ClickType.SetClickType.SetField.NICKNAME, nickname));
                 p.sendMessage(Messages.CLICK_CHEST_SET);
                 break;
 
@@ -73,7 +73,7 @@ public class AccountSet extends AccountSubCommand {
                 }
 
                 ClickType.setPlayerClickType(p,
-                        new ClickType.SetClickType(ClickType.SetClickType.SetField.MULTIPLIER, args[2]));
+                        ClickType.set(ClickType.SetClickType.SetField.MULTIPLIER, args[2]));
                 p.sendMessage(Messages.CLICK_CHEST_SET);
                 break;
 
@@ -92,7 +92,7 @@ public class AccountSet extends AccountSubCommand {
                 }
 
                 ClickType.setPlayerClickType(p,
-                        new ClickType.SetClickType(ClickType.SetClickType.SetField.DELAY, args[2]));
+                        ClickType.set(ClickType.SetClickType.SetField.DELAY, args[2]));
                 p.sendMessage(Messages.CLICK_CHEST_SET);
                 break;
 

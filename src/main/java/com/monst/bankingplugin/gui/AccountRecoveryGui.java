@@ -35,7 +35,7 @@ public class AccountRecoveryGui extends MultiPageGui<Collection<Account>> {
             ItemStackTemplate template = new StaticItemTemplate(item);
             Slot.ClickHandler clickHandler = (player, info) -> {
                 player.sendMessage(Messages.CLICK_CHEST_RECOVER);
-                ClickType.setPlayerClickType(player, new ClickType.RecoverClickType(account));
+                ClickType.setPlayerClickType(player, ClickType.recover(account));
                 close(player);
             };
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
