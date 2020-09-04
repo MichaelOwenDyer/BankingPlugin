@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 
 /**
  * Continuously updates account balances.
- * @see AccountUtils#appraiseAccountContents(Account)
+ * @see AccountUtils#appraise(Account)
  */
 public class AccountBalanceListener implements Listener {
 	
@@ -48,7 +48,7 @@ public class AccountBalanceListener implements Listener {
 
 			plugin.debug(executor.getName() + " has closed an account chest (#" + account.getID() + ")");
 
-			BigDecimal valueOnClose = accountUtils.appraiseAccountContents(account);
+			BigDecimal valueOnClose = accountUtils.appraise(account);
 
 			BigDecimal difference = valueOnClose.subtract(account.getBalance());
 			if (difference.signum() == 0)

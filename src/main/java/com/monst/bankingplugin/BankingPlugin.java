@@ -53,6 +53,8 @@ public class BankingPlugin extends JavaPlugin {
 
 	private AccountUtils accountUtils;
 	private BankUtils bankUtils;
+
+	private InterestEventScheduler scheduler;
 	
 	private boolean isUpdateNeeded = false;
 	private String latestVersion = "";
@@ -137,6 +139,8 @@ public class BankingPlugin extends JavaPlugin {
 
 		loadExternalPlugins();
 
+		scheduler = new InterestEventScheduler(this);
+
 		accountCommand = new AccountCommand(this);
 		bankCommand = new BankCommand(this);
 		controlCommand = new ControlCommand(this);
@@ -147,7 +151,7 @@ public class BankingPlugin extends JavaPlugin {
         registerListeners();
         registerExternalListeners();
 		initializeBanksAndAccounts();
-		InterestEventScheduler.scheduleAll();
+		scheduler.scheduleAll();
 
 	}
 
@@ -171,15 +175,10 @@ public class BankingPlugin extends JavaPlugin {
 
 		ClickType.clear();
 
-		for (Account account : accountUtils.getAccountsCopy()) {
-			accountUtils.removeAccount(account, false);
-			debug("Removed account (#" + account.getID() + ")");
-		}
-
-		for (Bank bank : bankUtils.getBanksCopy()) {
+		bankUtils.getBanksCopy().forEach(bank -> {
 			bankUtils.removeBank(bank, false);
-			debug("Removed bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
-		}
+			debugf("Removed bank \"%s\" (#%d)",bank.getID(), bank.getName());
+		});
 
 		if (database != null) {
 			((SQLite) database).vacuum(false);
@@ -428,6 +427,10 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public BankUtils getBankUtils() {
 		return bankUtils;
+	}
+
+	public InterestEventScheduler getScheduler() {
+		return scheduler;
 	}
 
 	/**

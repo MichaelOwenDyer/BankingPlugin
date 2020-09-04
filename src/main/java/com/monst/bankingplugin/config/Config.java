@@ -2,7 +2,6 @@ package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
-import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -421,7 +420,7 @@ public class Config {
 						.distinct()
 						.sorted()
 						.collect(Collectors.toList()));
-		InterestEventScheduler.scheduleAll();
+		plugin.getScheduler().scheduleAll();
 
 		interestRate = new ConfigPair<>(config.getBoolean("interest-rate.allow-override"),
 				Math.abs(config.getDouble("interest-rate.default")));

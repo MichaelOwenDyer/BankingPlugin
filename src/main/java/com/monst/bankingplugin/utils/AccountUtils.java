@@ -241,8 +241,8 @@ public class AccountUtils {
         return (useDefault ? Config.defaultAccountLimit : limit);
     }
 
-	public BigDecimal appraiseAccountContents(Account account) {
-		plugin.debug("Appraising account contents... (#" + account.getID() + ")");
+	public BigDecimal appraise(Account account) {
+		plugin.debugf("Appraising account... (#%d)", account.getID());
 		Essentials essentials = plugin.getEssentials();
 
 		BigDecimal sum = BigDecimal.ZERO;

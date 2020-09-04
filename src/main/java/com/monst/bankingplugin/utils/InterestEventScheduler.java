@@ -11,21 +11,41 @@ import org.bukkit.Bukkit;
 import java.time.LocalTime;
 import java.util.*;
 
+/**
+ * Keeps track of the scheduled interest payout events for each bank on the server.
+ * Schedules a new {@link org.bukkit.scheduler.BukkitTask} when necessary and cancels
+ * tasks that are no longer being used by any bank.
+ */
 public class InterestEventScheduler {
 
-    private static final BankingPlugin plugin = BankingPlugin.getInstance();
+    private final BankingPlugin plugin;
 
-    private static final Map<LocalTime, Set<Bank>> TIME_BANK_MAP = new HashMap<>();
-    private static final Map<Bank, Set<LocalTime>> BANK_TIME_MAP = new HashMap<>();
-    private static final Map<LocalTime, Integer> PAYOUT_TASK_IDS = new HashMap<>();
+    public InterestEventScheduler(BankingPlugin plugin) {
+        this.plugin = plugin;
+    }
 
-    public static Set<Bank> getScheduledBanks(LocalTime time) {
+    // Maps times to the banks that pay interest at that time
+    private final Map<LocalTime, Set<Bank>> TIME_BANK_MAP = new HashMap<>();
+
+    // Maps banks to the times at which they pay interest
+    private final Map<Bank, Set<LocalTime>> BANK_TIME_MAP = new HashMap<>();
+
+    // Maps times to the BukkitTask IDs so they can be cancelled later
+    private final Map<LocalTime, Integer> PAYOUT_TASK_IDS = new HashMap<>();
+
+    public Set<Bank> getScheduledBanks(LocalTime time) {
         return Optional.ofNullable(TIME_BANK_MAP.get(time)).orElse(Collections.emptySet());
     }
 
-    public static void scheduleAll() {
+    public void scheduleAll() {
         if (plugin.isEnabled())
-            plugin.getBankUtils().getBanks().forEach(InterestEventScheduler::scheduleBankInterestEvents);
+            plugin.getBankUtils().getBanks().forEach(this::schedulePayouts);
+    }
+
+    public void unschedulePayouts(Bank bank) {
+        BANK_TIME_MAP.get(bank).forEach(this::descheduleTime);
+        BANK_TIME_MAP.remove(bank);
+        TIME_BANK_MAP.forEach((time, set) -> set.removeIf(bank::equals));
     }
 
     /**
@@ -34,27 +54,26 @@ public class InterestEventScheduler {
      * @see InterestEvent
      * @see InterestEventListener
      */
-    public static void scheduleBankInterestEvents(Bank bank) {
+    public void schedulePayouts(Bank bank) {
         if (!plugin.isEnabled())
             return;
 
-        List<LocalTime> times = bank.get(BankField.INTEREST_PAYOUT_TIMES);
+        List<LocalTime> bankPayoutTimes = bank.get(BankField.INTEREST_PAYOUT_TIMES);
         BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>());
 
-        for (LocalTime time : times) {
+        for (LocalTime time : bankPayoutTimes) {
             if (TIME_BANK_MAP.putIfAbsent(time, new HashSet<>()) == null)
                 PAYOUT_TASK_IDS.put(time, scheduleRepeatAtTime(time));
             TIME_BANK_MAP.get(time).add(bank);
             BANK_TIME_MAP.get(bank).add(time);
         }
         for (LocalTime time : BANK_TIME_MAP.get(bank)) {
-            if (!times.contains(time)) {
+            if (!bankPayoutTimes.contains(time)) {
                 TIME_BANK_MAP.get(time).remove(bank);
                 BANK_TIME_MAP.get(bank).remove(time);
                 if (TIME_BANK_MAP.get(time).isEmpty()) {
                     TIME_BANK_MAP.remove(time);
-                    Bukkit.getScheduler().cancelTask(PAYOUT_TASK_IDS.get(time));
-                    PAYOUT_TASK_IDS.remove(time);
+                    descheduleTime(time);
                 }
             }
         }
@@ -66,7 +85,7 @@ public class InterestEventScheduler {
      * @param time the time to be scheduled
      * @return the ID of the scheduled task, or -1 if the task was not scheduled
      */
-    private static int scheduleRepeatAtTime(LocalTime time) {
+    private int scheduleRepeatAtTime(LocalTime time) {
         // 24 hours/day * 60 minutes/hour * 60 seconds/minute *  20 ticks/second = 1728000 ticks/day
         final long ticksInADay = 1728000L;
 
@@ -89,4 +108,10 @@ public class InterestEventScheduler {
         plugin.debug((id != -1 ? "Scheduled " : "Failed to schedule ") + "daily interest payout at " + time);
         return id;
     }
+
+    private void descheduleTime(LocalTime time) {
+        Bukkit.getScheduler().cancelTask(PAYOUT_TASK_IDS.get(time));
+        PAYOUT_TASK_IDS.remove(time);
+    }
+
 }

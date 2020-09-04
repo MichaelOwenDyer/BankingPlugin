@@ -214,7 +214,12 @@ public class BankUtils {
 	public void removeBank(Bank bank, boolean removeFromDatabase, Callback<Void> callback) {
 		plugin.debug("Removing bank (#" + bank.getID() + ")");
 
+		for (Account account : bank.getAccountsCopy())
+			plugin.getAccountUtils().removeAccount(account, removeFromDatabase, callback);
+
 		bankSelectionMap.remove(bank.getSelection());
+
+		plugin.getScheduler().unschedulePayouts(bank);
 
         if (removeFromDatabase)
 			plugin.getDatabase().removeBank(bank, callback);
@@ -234,11 +239,7 @@ public class BankUtils {
     }
 
 	public void removeBanks(Collection<Bank> banks, boolean removeFromDatabase) {
-		for (Bank bank : banks) {
-			for (Account account : bank.getAccountsCopy())
-				plugin.getAccountUtils().removeAccount(account, removeFromDatabase);
-			removeBank(bank, removeFromDatabase);
-		}
+		banks.forEach(bank -> removeBank(bank, removeFromDatabase));
 	}
 
 	/**

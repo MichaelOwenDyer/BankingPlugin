@@ -85,7 +85,7 @@ public class BankSet extends BankSubCommand {
         Bukkit.getPluginManager().callEvent(e);
 
         if (field == BankField.INTEREST_PAYOUT_TIMES)
-            InterestEventScheduler.scheduleBankInterestEvents(bank);
+            plugin.getScheduler().schedulePayouts(bank);
 
         bankUtils.addBank(bank, true);
         return true;

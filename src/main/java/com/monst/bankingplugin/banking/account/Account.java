@@ -132,10 +132,10 @@ public class Account extends Ownable {
 	public boolean create(boolean showConsoleMessages) {
 
 		if (created) {
-			plugin.debug("Account was already created! (#" + getID() + ")");
+			plugin.debugf("Account was already created! (#%d)", getID());
 			return false;
 		}
-		plugin.debug("Creating account (#" + getID() + ")");
+		plugin.debugf("Creating account (#%d)", getID());
 
 		try {
 			updateInventory();
@@ -152,20 +152,18 @@ public class Account extends Ownable {
 			return false;
 		}
 
-		final BigDecimal checkedBalance = plugin.getAccountUtils().appraiseAccountContents(this);
+		final BigDecimal checkedBalance = plugin.getAccountUtils().appraise(this);
 		final int diff = checkedBalance.compareTo(getBalance());
-		if (diff > 0)
-			plugin.debug(getBalance().signum() == 0 ?
-					"Cool! Account #" + getID() + " was created with a balance of "
-					+ Utils.format(checkedBalance) + " already inside." :
-					"Value of account #" + getID() + " was found higher than expected. Expected: $"
-					+ Utils.format(getBalance()) + " but was: $" + Utils.format(checkedBalance)
-			);
-		else if (diff < 0)
-			plugin.debug(
-					"Value of account #" + getID() + " was found lower than expected. Expected: $"
-					+ Utils.format(getBalance()) + " but was: $" + Utils.format(checkedBalance)
-			);
+		if (diff > 0) {
+			if (getBalance().signum() == 0)
+				plugin.debugf("Cool! Account #%d was created with a balance of $%s already inside.",
+						getID(), Utils.format(checkedBalance));
+			else
+				plugin.debugf("Value of account #%d was found higher than expected. Expected: $%s but was: $%s.",
+						getID(), Utils.format(getBalance()), Utils.format(checkedBalance));
+		} else if (diff < 0)
+			plugin.debugf("Value of account #%d was found lower than expected. Expected: $%s but was: $%s.",
+					getID(), Utils.format(getBalance()), Utils.format(checkedBalance));
 		setBalance(checkedBalance);
 
 		created = true;
@@ -195,7 +193,7 @@ public class Account extends Ownable {
 	 * Gets this account's current balance in {@link BigDecimal} format.
 	 * The balance will always be positive.
 	 * @return the current account balance
-	 * @see AccountUtils#appraiseAccountContents(Account)
+	 * @see AccountUtils#appraise(Account)
 	 */
 	public BigDecimal getBalance() {
 		return balance;
@@ -222,7 +220,7 @@ public class Account extends Ownable {
 	/**
 	 * Saves the current balance of this account into the previous balance.
 	 * Used only at interest payout events.
-	 * @see AccountUtils#appraiseAccountContents(Account)
+	 * @see AccountUtils#appraise(Account)
 	 * @see com.monst.bankingplugin.listeners.InterestEventListener
 	 */
 	public void updatePrevBalance() {
@@ -323,10 +321,10 @@ public class Account extends Ownable {
 	public void setName(String name) {
 		if (name == null)
 			name = getDefaultName();
-		setInventoryName(this.name = name);
+		setChestName(this.name = name);
 	}
 
-	private void setInventoryName(String name) {
+	private void setChestName(String name) {
 		Inventory inv = getInventory(true);
 		if (inv == null)
 			return;
@@ -363,37 +361,25 @@ public class Account extends Ownable {
 		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account";
 	}
 
-	public void setToDefaultName() {
-		setName(getDefaultName());
-	}
-
 	/**
-	 * @return whether this account is currently using its default name
+	 * Create a {@link Callback} that guarantees current name of this account is valid and currently being reflected
+	 * everywhere it should be.
+	 * If the current name is null or empty it will be set to the default name.
 	 */
-	public boolean isDefaultName() {
-		return getRawName().contentEquals(getDefaultName());
-	}
-
-	/**
-	 * Ensures that the current name is valid and currently being reflected everywhere it should be.
-	 * If the current name is null, set it to the default name.
-	 */
-	public void updateName() {
-		if (getRawName() == null || getRawName().isEmpty())
-			setToDefaultName();
-		else
-			setName(getRawName());
-	}
-
 	public <T> Callback<T> callUpdateName() {
-		return Callback.of(plugin, result -> this.updateName());
+		return Callback.of(plugin, result -> {
+			if (getRawName() == null || getRawName().isEmpty())
+				setName(getDefaultName());
+			else
+				setName(getRawName());
+		});
 	}
 
 	/**
-	 * Resets the name in the account chest to the default, e.g. "Chest" or "Large Chest"
+	 * Resets the name of the account inventory, e.g. "Chest" or "Large Chest"
 	 */
 	public void clearChestName() {
-		setInventoryName("");
+		setChestName("");
 	}
 
 	@Override

@@ -411,7 +411,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 					plugin.debugf("%s has reset %s account nickname%s (#%d)", executor.getName(),
 							(account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
 							(account.isCoowner(executor) ? " (is co-owner)" : ""), account.getID());
-					account.setToDefaultName();
+					account.setName(account.getDefaultName());
 				} else {
 					plugin.debugf("%s has set their account nickname to \"%s\" (#%d)",
 							executor.getName(), value, account.getID());
@@ -677,14 +677,14 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 			return;
 		}
 
-		boolean hasDefaultNickname = account.isDefaultName();
+		boolean hasDefaultNickname = account.getRawName().contentEquals(account.getDefaultName());
 
 		p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You",
 				Utils.samePlayer(account.getOwner(), p) ? "your account" : p.getName() + "'s account",
 				newOwner.getName()));
 		account.transferOwnership(newOwner);
 		if (hasDefaultNickname)
-			account.setToDefaultName();
+			account.setName(account.getDefaultName());
 		plugin.getAccountUtils().addAccount(account, true);
 	}
 
