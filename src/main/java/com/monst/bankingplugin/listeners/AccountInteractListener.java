@@ -26,12 +26,10 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 
 	private final BankingPlugin plugin;
 	private final AccountUtils accountUtils;
-	private final BankUtils bankUtils;
 
 	public AccountInteractListener(BankingPlugin plugin) {
 		this.plugin = plugin;
 		this.accountUtils = plugin.getAccountUtils();
-		this.bankUtils = plugin.getBankUtils();
 	}
 
 	/**
@@ -47,7 +45,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 		if (b == null || b.getType() == Material.AIR)
 			return;
 		Account account = accountUtils.getAccount(b.getLocation());
-		ClickType clickType = ClickType.getPlayerClickType(p);
+		ClickType<?> clickType = ClickType.getPlayerClickType(p);
 
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
 			return;
