@@ -110,6 +110,8 @@ public class InterestEventScheduler {
     }
 
     private void descheduleTime(LocalTime time) {
+        if (!PAYOUT_TASK_IDS.containsKey(time))
+            return;
         Bukkit.getScheduler().cancelTask(PAYOUT_TASK_IDS.get(time));
         PAYOUT_TASK_IDS.remove(time);
     }

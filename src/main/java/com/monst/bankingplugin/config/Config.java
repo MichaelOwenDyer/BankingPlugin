@@ -420,7 +420,8 @@ public class Config {
 						.distinct()
 						.sorted()
 						.collect(Collectors.toList()));
-		plugin.getScheduler().scheduleAll();
+		if (plugin.isEnabled())
+			plugin.getScheduler().scheduleAll();
 
 		interestRate = new ConfigPair<>(config.getBoolean("interest-rate.allow-override"),
 				Math.abs(config.getDouble("interest-rate.default")));
