@@ -71,8 +71,8 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 						p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
 						plugin.debug(p.getName() + " does not have permission to create an account on a protected chest.");
 					} else {
-						OfflinePlayer newOwner = (OfflinePlayer) clickType.get();
-						AccountCreate.create(p, newOwner, b);
+						OfflinePlayer owner = clickType.get();
+						AccountCreate.create(p, owner, b);
 					}
 					ClickType.removePlayerClickType(p);
 					e.setCancelled(true);
@@ -96,7 +96,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 
 				case SET:
 
-					SetPair pair = (SetPair) clickType.get();
+					SetPair pair = clickType.get();
 					AccountSet.set(p, account, pair.getField(), pair.getValue());
 					ClickType.removePlayerClickType(p);
 					e.setCancelled(true);
@@ -114,7 +114,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 				case UNTRUST:
 
 					Objects.requireNonNull(account);
-					OfflinePlayer playerToUntrust = (OfflinePlayer) clickType.get();
+					OfflinePlayer playerToUntrust = clickType.get();
 					AccountUntrust.untrust(p, account, playerToUntrust);
 					ClickType.removePlayerClickType(p);
 					e.setCancelled(true);
@@ -129,7 +129,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 							p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED);
 							plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
 						} else {
-							Account toMigrate = Objects.requireNonNull((Account) clickType.get());
+							Account toMigrate = Objects.requireNonNull(clickType.get());
 							AccountMigrate.migratePartTwo(p, b, toMigrate);
 						}
 						ClickType.removePlayerClickType(p);
@@ -140,7 +140,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 				case TRANSFER:
 
 					Objects.requireNonNull(account);
-					OfflinePlayer newOwner = (OfflinePlayer) clickType.get();
+					OfflinePlayer newOwner = clickType.get();
 					if (confirmTransfer(p, newOwner, account)) {
 						AccountTransfer.transfer(p, newOwner, account);
 						ClickType.removePlayerClickType(p);
@@ -150,7 +150,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 
 				case RECOVER:
 
-					Account toRecover = Objects.requireNonNull((Account) clickType.get());
+					Account toRecover = Objects.requireNonNull(clickType.get());
 					AccountRecover.recover(p, b, toRecover);
 					ClickType.removePlayerClickType(p);
 					e.setCancelled(true);

@@ -28,15 +28,22 @@ public abstract class ClickType<T> {
         this.t = t;
     }
 
-    public T get() {
-    	return t;
+	/**
+	 * Retrieves the object that is being carried by this ClickType.
+	 * @param <K> the dynamic return type
+	 */
+	@SuppressWarnings("unchecked")
+    public <K> K get() {
+    	return (K) eClickType.getDataType().cast(t);
 	}
 
     /**
      * Clear all click types, cancel timers
      */
     public static void clear() {
-        playerTimers.forEach((uuid, timer) -> timer.cancel());
+    	playerClickTypes.clear();
+        playerTimers.values().forEach(BukkitTask::cancel);
+        playerTimers.clear();
     }
 
     /**
@@ -96,7 +103,25 @@ public abstract class ClickType<T> {
     }
 
     public enum EClickType {
-		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE, RECOVER, TRANSFER
+
+		CREATE (OfflinePlayer.class),
+		REMOVE (Void.class),
+		INFO (Void.class),
+		SET (SetPair.class),
+		TRUST (OfflinePlayer.class),
+		UNTRUST (OfflinePlayer.class),
+		MIGRATE (Account.class),
+		RECOVER (Account.class),
+		TRANSFER (OfflinePlayer.class);
+
+		private final Class<?> dataType;
+
+		EClickType(Class<?> dataType) {
+			this.dataType = dataType;
+		}
+		public Class<?> getDataType() {
+			return dataType;
+		}
     }
 
     public static CreateClickType create(OfflinePlayer newOwner) {
@@ -112,7 +137,7 @@ public abstract class ClickType<T> {
 	}
 
 	public static SetClickType set(AccountField field, String value) {
-    	return new SetClickType(field, value);
+    	return new SetClickType(new SetPair(field, value));
 	}
 
 	public static TrustClickType trust(OfflinePlayer toTrust) {
@@ -136,8 +161,8 @@ public abstract class ClickType<T> {
 	}
 
 	public static class CreateClickType extends ClickType<OfflinePlayer> {
-		private CreateClickType(OfflinePlayer newOwner) {
-			super(EClickType.CREATE, newOwner);
+		private CreateClickType(OfflinePlayer owner) {
+			super(EClickType.CREATE, owner);
 		}
 	}
 
@@ -154,8 +179,8 @@ public abstract class ClickType<T> {
 	}
 
 	public static class SetClickType extends ClickType<SetPair> {
-		private SetClickType(AccountField field, String value) {
-			super(EClickType.SET, new SetPair(field, value));
+		private SetClickType(SetPair pair) {
+			super(EClickType.SET, pair);
 		}
 	}
 
