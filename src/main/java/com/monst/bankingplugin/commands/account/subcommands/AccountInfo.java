@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.account.subcommands;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
 import com.monst.bankingplugin.gui.AccountGui;
 import com.monst.bankingplugin.utils.ClickType;
@@ -56,6 +57,26 @@ public class AccountInfo extends AccountSubCommand {
         sender.sendMessage(Messages.CLICK_CHEST_INFO);
         ClickType.setPlayerClickType(((Player) sender), new ClickType(ClickType.EClickType.INFO));
         return true;
+    }
+
+    /**
+     * @param player  Player who executed the command and will retrieve the
+     *                information
+     * @param account Account from which the information will be retrieved
+     */
+    public static void info(Player player, Account account) {
+        plugin.debugf("%s is retrieving %s account info%s (#%d)",
+                player.getName(), (account.isOwner(player) ? "their" : account.getOwner().getName() + "'s"),
+                (account.isCoowner(player) ? " (is co-owner)" : ""), account.getID());
+
+        AccountInfoEvent event = new AccountInfoEvent(player, account);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debugf("Info event cancelled (#%d)", account.getID());
+            return;
+        }
+
+        new AccountGui(account).open(player);
     }
 
 }

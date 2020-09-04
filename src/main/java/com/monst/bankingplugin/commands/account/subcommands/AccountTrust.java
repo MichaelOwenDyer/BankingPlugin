@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.account.subcommands;
 
+import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
@@ -53,6 +54,30 @@ public class AccountTrust extends AccountSubCommand {
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST_OTHER))
             onlinePlayers.remove(sender.getName());
         return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
+    }
+
+    public static void trust(Player p, Account account, OfflinePlayer playerToTrust) {
+        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
+            if (account.isTrusted(p)) {
+                p.sendMessage(Messages.MUST_BE_OWNER);
+                return;
+            }
+            p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRUST_OTHER);
+            return;
+        }
+
+        boolean isSelf = Utils.samePlayer(playerToTrust, p);
+        if (account.isTrusted(playerToTrust)) {
+            plugin.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
+            p.sendMessage(String.format(account.isOwner(playerToTrust) ? Messages.ALREADY_OWNER : Messages.ALREADY_COOWNER,
+                    isSelf ? "You are" : playerToTrust.getName() + " is", "account"));
+            return;
+        }
+
+        plugin.debugf("%s has trusted %s to %s account (#%d)", p.getName(), playerToTrust.getName(),
+                (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
+        p.sendMessage(String.format(Messages.ADDED_COOWNER, isSelf ? "You were" : playerToTrust.getName() + " was"));
+        account.trustPlayer(playerToTrust);
     }
 
 }

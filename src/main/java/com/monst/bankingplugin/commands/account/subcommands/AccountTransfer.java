@@ -1,9 +1,12 @@
 package com.monst.bankingplugin.commands.account.subcommands;
 
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.events.account.AccountTransferEvent;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -56,6 +59,28 @@ public class AccountTransfer extends AccountSubCommand {
         if (!sender.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
             returnCompletions.remove(sender.getName());
         return Utils.filter(returnCompletions, string -> string.toLowerCase().startsWith(args[1].toLowerCase()));
+    }
+
+    public static void transfer(Player p, OfflinePlayer newOwner, Account account) {
+        plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of "
+                + newOwner.getName());
+
+        AccountTransferEvent event = new AccountTransferEvent(p, account, newOwner);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Account transfer event cancelled");
+            return;
+        }
+
+        boolean hasDefaultNickname = account.getRawName().contentEquals(account.getDefaultName());
+
+        p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You",
+                Utils.samePlayer(account.getOwner(), p) ? "your account" : p.getName() + "'s account",
+                newOwner.getName()));
+        account.transferOwnership(newOwner);
+        if (hasDefaultNickname)
+            account.setName(account.getDefaultName());
+        plugin.getAccountUtils().addAccount(account, true);
     }
 
 }

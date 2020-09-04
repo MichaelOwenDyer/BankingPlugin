@@ -59,4 +59,21 @@ public abstract class Callback<T> {
             }
         }.runTask(plugin);
     }
+
+    public Callback<T> andThen(Consumer<T> nextAction) {
+        return of(plugin, result -> {
+            onResult(result);
+            nextAction.accept(result);
+        }, this::onError);
+    }
+
+    public Callback<T> andThen(Consumer<T> nextAction, Consumer<Throwable> nextOnError) {
+        return of(plugin, result -> {
+            onResult(result);
+            nextAction.accept(result);
+        }, throwable -> {
+            onError(throwable);
+            nextOnError.accept(throwable);
+        });
+    }
 }

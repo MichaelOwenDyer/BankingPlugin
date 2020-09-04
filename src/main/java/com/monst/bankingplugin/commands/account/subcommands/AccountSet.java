@@ -1,9 +1,12 @@
 package com.monst.bankingplugin.commands.account.subcommands;
 
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.events.account.AccountConfigureEvent;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -105,6 +108,68 @@ public class AccountSet extends AccountSubCommand {
         return Stream.of("nickname", "multiplier", "interest-delay")
                 .filter(field -> field.contains(args[1].toLowerCase()))
                 .collect(Collectors.toList());
+    }
+
+    public static void set(Player executor, Account account, ClickType.SetClickType.SetField field, String value) {
+
+        switch (field) {
+            case NICKNAME:
+                if (!(account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_SET_NICKNAME_OTHER))) {
+                    plugin.debugf("%s does not have permission to change another player's account nickname", executor.getName());
+                    executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME_OTHER);
+                    return;
+                }
+
+                if (value.isEmpty()) {
+                    plugin.debugf("%s has reset %s account nickname%s (#%d)", executor.getName(),
+                            (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
+                            (account.isCoowner(executor) ? " (is co-owner)" : ""), account.getID());
+                    account.setName(account.getDefaultName());
+                } else {
+                    plugin.debugf("%s has set their account nickname to \"%s\" (#%d)",
+                            executor.getName(), value, account.getID());
+                    account.setName(value);
+                }
+
+                executor.sendMessage(Messages.NICKNAME_SET);
+                break;
+
+            case MULTIPLIER:
+                if (!executor.hasPermission(Permissions.ACCOUNT_SET_MULTIPLIER)) {
+                    plugin.debugf("%s does not have permission to change %s's account multiplier",
+                            executor.getName(), account.getOwner().getName());
+                    executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_MULTIPLIER);
+                    return;
+                }
+
+                if (value.startsWith("+") || value.startsWith("-"))
+                    account.getStatus().setMultiplierStageRelative(Integer.parseInt(value));
+                else
+                    account.getStatus().setMultiplierStage(Integer.parseInt(value));
+
+                executor.sendMessage(String.format(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
+                plugin.debugf("%s has set an account multiplier stage to %d (#%d)%s",
+                        executor.getName(), account.getStatus().getMultiplierStage(), account.getID(), (account.isCoowner(executor) ? " (is co-owner)" : ""));
+                break;
+
+            case DELAY:
+                if (!executor.hasPermission(Permissions.ACCOUNT_SET_INTEREST_DELAY)) {
+                    executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY);
+                    return;
+                }
+
+                if (value.startsWith("+") || value.startsWith("-"))
+                    account.getStatus().setInterestDelayRelative(Integer.parseInt(value)); // Set relative to current if value prefixed with + or -
+                else
+                    account.getStatus().setInterestDelay(Integer.parseInt(value));
+
+                plugin.debugf("%s has set the interest delay of account #%d to %d.",
+                        executor.getName(), account.getID(), account.getStatus().getDelayUntilNextPayout());
+                executor.sendMessage(String.format(Messages.INTEREST_DELAY_SET, account.getStatus().getDelayUntilNextPayout()));
+        }
+        plugin.getAccountUtils().addAccount(account, true, account.callUpdateName());
+        AccountConfigureEvent e = new AccountConfigureEvent(executor, account, field, value);
+        Bukkit.getPluginManager().callEvent(e);
     }
 
 }

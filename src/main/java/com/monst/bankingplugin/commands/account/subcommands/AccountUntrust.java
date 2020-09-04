@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.account.subcommands;
 
+import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
@@ -51,6 +52,30 @@ public class AccountUntrust extends AccountSubCommand {
             return Collections.emptyList();
         return Utils.filter(Utils.getOnlinePlayerNames(plugin),
                 name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
+    }
+
+    public static void untrust(Player p, Account account, OfflinePlayer playerToUntrust) {
+        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
+            if (account.isTrusted(p)) {
+                p.sendMessage(Messages.MUST_BE_OWNER);
+                return;
+            }
+            p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER);
+            return;
+        }
+
+        boolean isSelf = Utils.samePlayer(playerToUntrust, p);
+        if (!account.isCoowner(playerToUntrust)) {
+            plugin.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
+                    playerToUntrust.getName(), account.getID());
+            p.sendMessage(String.format(Messages.NOT_A_COOWNER, isSelf ? "You are" : playerToUntrust.getName() + " is", "account"));
+            return;
+        }
+
+        plugin.debugf("%s has untrusted %s from %s account (#%d)", p.getName(),	playerToUntrust.getName(),
+                (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
+        p.sendMessage(String.format(Messages.REMOVED_COOWNER, isSelf ? "You were" : playerToUntrust.getName() + " was"));
+        account.untrustPlayer(playerToUntrust);
     }
 
 }

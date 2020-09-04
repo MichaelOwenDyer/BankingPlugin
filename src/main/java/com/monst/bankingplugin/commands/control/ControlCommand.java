@@ -32,6 +32,7 @@ public class ControlCommand extends BankingPluginCommand<ControlSubCommand> {
 
         register();
         commandCreated = true;
+
     }
 
 }

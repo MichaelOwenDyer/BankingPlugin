@@ -40,6 +40,7 @@ public class BankCommand extends BankingPluginCommand<BankSubCommand> {
 
         register();
         commandCreated = true;
+
     }
 
 }
