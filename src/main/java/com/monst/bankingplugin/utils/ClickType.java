@@ -5,7 +5,6 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.listeners.AccountInteractListener;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
@@ -85,13 +84,10 @@ public abstract class ClickType<T> {
         Optional.ofNullable(playerTimers.get(uuid)).ifPresent(BukkitTask::cancel);
 
         // Remove ClickType after 15 seconds if player has not clicked a chest
-        playerTimers.put(uuid, new BukkitRunnable() {
-            @Override
-            public void run() {
-				playerClickTypes.remove(uuid);
-				AccountInteractListener.clearUnconfirmed(player);
-            }
-		}.runTaskLater(BankingPlugin.getInstance(), 300));
+        playerTimers.put(uuid, Utils.bukkitRunnable(() -> {
+			playerClickTypes.remove(uuid);
+			AccountInteractListener.clearUnconfirmed(player);
+		}).runTaskLater(BankingPlugin.getInstance(), 300));
 
     }
 
@@ -103,27 +99,7 @@ public abstract class ClickType<T> {
     }
 
     public enum EClickType {
-
-		CREATE (OfflinePlayer.class),
-		REMOVE (Void.class),
-		INFO (Void.class),
-		SET (SetPair.class),
-		TRUST (OfflinePlayer.class),
-		UNTRUST (OfflinePlayer.class),
-		MIGRATE (Account.class),
-		RECOVER (Account.class),
-		TRANSFER (OfflinePlayer.class);
-
-		private final Class<?> dataType;
-
-		EClickType(Class<?> dataType) {
-			this.dataType = dataType;
-		}
-
-		public Class<?> getDataType() {
-			return dataType;
-		}
-
+		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE, RECOVER, TRANSFER
     }
 
     public static CreateClickType create(OfflinePlayer newOwner) {
@@ -162,55 +138,55 @@ public abstract class ClickType<T> {
     	return new TransferClickType(newOwner);
 	}
 
-	public static class CreateClickType extends ClickType<OfflinePlayer> {
+	private static class CreateClickType extends ClickType<OfflinePlayer> {
 		private CreateClickType(OfflinePlayer owner) {
 			super(EClickType.CREATE, owner);
 		}
 	}
 
-	public static class RemoveClickType extends ClickType<Void> {
+	private static class RemoveClickType extends ClickType<Void> {
 		private RemoveClickType() {
     		super(EClickType.REMOVE, null);
 		}
 	}
 
-	public static class InfoClickType extends ClickType<Void> {
+	private static class InfoClickType extends ClickType<Void> {
 		private InfoClickType() {
     		super(EClickType.INFO, null);
 		}
 	}
 
-	public static class SetClickType extends ClickType<SetPair> {
+	private static class SetClickType extends ClickType<SetPair> {
 		private SetClickType(SetPair pair) {
 			super(EClickType.SET, pair);
 		}
 	}
 
-	public static class TrustClickType extends ClickType<OfflinePlayer> {
+	private static class TrustClickType extends ClickType<OfflinePlayer> {
 		private TrustClickType(OfflinePlayer toTrust) {
 			super(EClickType.TRUST, toTrust);
 		}
 	}
 
-	public static class UntrustClickType extends ClickType<OfflinePlayer> {
+	private static class UntrustClickType extends ClickType<OfflinePlayer> {
 		private UntrustClickType(OfflinePlayer toUntrust) {
 			super(EClickType.UNTRUST, toUntrust);
 		}
 	}
 
-	public static class MigrateClickType extends ClickType<Account> {
+	private static class MigrateClickType extends ClickType<Account> {
 		private MigrateClickType(Account toMigrate) {
 			super(EClickType.MIGRATE, toMigrate);
 		}
 	}
 
-	public static class RecoverClickType extends ClickType<Account> {
+	private static class RecoverClickType extends ClickType<Account> {
 		private RecoverClickType(Account toRecover) {
 			super(EClickType.RECOVER, toRecover);
 		}
 	}
 
-	public static class TransferClickType extends ClickType<OfflinePlayer> {
+	private static class TransferClickType extends ClickType<OfflinePlayer> {
 		private TransferClickType(OfflinePlayer newOwner) {
 			super(EClickType.TRANSFER, newOwner);
 		}
