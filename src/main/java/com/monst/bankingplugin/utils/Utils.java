@@ -21,6 +21,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.ChatPaginator;
 
 import java.math.BigDecimal;
@@ -152,6 +153,15 @@ public class Utils {
 				.flatMap(Arrays::stream)
 				.map(s -> s.replace("" + ChatColor.WHITE, ""))
 				.collect(Collectors.toList());
+	}
+
+	public static BukkitRunnable bukkitRunnable(Runnable run) {
+		return new BukkitRunnable() {
+			@Override
+			public void run() {
+				run.run();
+			}
+		};
 	}
 
 	public static void depositPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {

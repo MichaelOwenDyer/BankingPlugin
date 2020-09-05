@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.function.Consumer;
 
@@ -43,21 +42,11 @@ public abstract class Callback<T> {
     }
 
     public final void callSyncResult(final T result) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                onResult(result);
-            }
-        }.runTask(plugin);
+        Utils.bukkitRunnable(() -> onResult(result)).runTask(plugin);
     }
 
     public final void callSyncError(final Throwable throwable) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                onError(throwable);
-            }
-        }.runTask(plugin);
+        Utils.bukkitRunnable(() -> onError(throwable)).runTask(plugin);
     }
 
     public Callback<T> andThen(Consumer<T> nextAction) {

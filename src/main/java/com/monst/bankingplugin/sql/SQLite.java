@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.sql;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.utils.Utils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -56,25 +57,20 @@ public class SQLite extends Database {
      * @param async Whether the call should be executed asynchronously
      */
     public void vacuum(boolean async) {
-        BukkitRunnable runnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-                try (Connection con = dataSource.getConnection(); Statement s = con.createStatement()) {
-                    s.executeUpdate("VACUUM");
-                    plugin.debug("Vacuumed SQLite database.");
-                } catch (SQLException e) {
-                    plugin.getLogger().severe("Failed to vacuum database.");
-                    plugin.debug("Failed to vacuum database.");
-                    plugin.debug(e);
-                }
+        BukkitRunnable runnable = Utils.bukkitRunnable(() -> {
+            try (Connection con = dataSource.getConnection(); Statement s = con.createStatement()) {
+                s.executeUpdate("VACUUM");
+                plugin.debug("Vacuumed SQLite database.");
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to vacuum database.");
+                plugin.debug("Failed to vacuum database.");
+                plugin.debug(e);
             }
-        };
-
-        if (async) {
+        });
+        if (async)
             runnable.runTaskAsynchronously(plugin);
-        } else {
-            runnable.run();
-        }
+        else
+            runnable.runTask(plugin);
     }
 
     @Override

@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.ipvp.canvas.Menu;
 
 import javax.annotation.Nullable;
@@ -24,15 +23,12 @@ abstract class Gui<T> {
 	boolean inForeground = true;
 
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
-	final Menu.CloseHandler OPEN_PREVIOUS = (player, menu) -> new BukkitRunnable() {
-		@Override
-		public void run() {
-			if (isLinked() && isInForeground()) {
-				prevGui.inForeground = true;
-				prevGui.open(false);
-			}
+	final Menu.CloseHandler OPEN_PREVIOUS = (player, menu) -> Utils.bukkitRunnable(() -> {
+		if (isLinked() && isInForeground()) {
+			prevGui.inForeground = true;
+			prevGui.open(false);
 		}
-	}.runTask(BankingPlugin.getInstance());
+	}).runTask(BankingPlugin.getInstance());
 
 	public void open(Player player) {
 		this.viewer = player;

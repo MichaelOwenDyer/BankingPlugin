@@ -27,7 +27,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.ipvp.canvas.MenuFunctionListener;
 
@@ -273,37 +272,34 @@ public class BankingPlugin extends JavaPlugin {
             return;
         }
         
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                UpdateChecker uc = new UpdateChecker(BankingPlugin.this);
-                Result result = uc.check();
+        Utils.bukkitRunnable(() -> {
+			UpdateChecker uc = new UpdateChecker(BankingPlugin.this);
+			Result result = uc.check();
 
-                switch (result) {
-                    case TRUE:
-                        latestVersion = uc.getVersion();
-                        downloadLink = uc.getLink();
-                        isUpdateNeeded = true;
+			switch (result) {
+				case TRUE:
+					latestVersion = uc.getVersion();
+					downloadLink = uc.getLink();
+					isUpdateNeeded = true;
 
-                        getLogger().warning(String.format("Version %s is available! You are running version %s.",
-                                latestVersion, getDescription().getVersion()));
-                        break;
-                
-                    case FALSE:
-                        latestVersion = "";
-                        downloadLink = "";
-                        isUpdateNeeded = false;
-                        break;
+					getLogger().warning(String.format("Version %s is available! You are running version %s.",
+							latestVersion, getDescription().getVersion()));
+					break;
 
-                    case ERROR:
-                        latestVersion = "";
-                        downloadLink = "";
-                        isUpdateNeeded = false;
-                        getLogger().severe("An error occurred while checking for updates.");
-                        break;
-                }
-            }
-        }.runTaskAsynchronously(this);
+				case FALSE:
+					latestVersion = "";
+					downloadLink = "";
+					isUpdateNeeded = false;
+					break;
+
+				case ERROR:
+					latestVersion = "";
+					downloadLink = "";
+					isUpdateNeeded = false;
+					getLogger().severe("An error occurred while checking for updates.");
+					break;
+			}
+        }).runTaskAsynchronously(this);
     }
 
 	/**
