@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Utils;
@@ -23,26 +24,28 @@ public class NotifyPlayerOnJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent e) {
         final Player p = e.getPlayer();
 
-		plugin.getDatabase().getLastLogout(p, Callback.of(plugin, result -> {
-		    if (result < 0) {
+        Database database = plugin.getDatabase();
+
+		database.getLastLogout(p, Callback.of(plugin, logoutTime -> {
+		    if (logoutTime < 0) {
                 // No logout saved, probably first time joining.
                 return;
             }
 
-            plugin.getDatabase().getOfflineTransactionRevenue(p, result, Callback.of(plugin, bigDecimal -> {
-                if (bigDecimal.signum() == 1)
-                    p.sendMessage(String.format(Messages.OFFLINE_BALANCE_INCREASED, Utils.format(bigDecimal)));
-                else if (bigDecimal.signum() == -1)
-                    p.sendMessage(String.format(Messages.OFFLINE_TRANSACTION_EXPENDITURE, Utils.format(bigDecimal)));
+            database.getOfflineBankRevenue(p, logoutTime, Callback.of(plugin, profit -> {
+                if (profit.signum() == 1)
+                    p.sendMessage(String.format(Messages.OFFLINE_BALANCE_INCREASED, Utils.format(profit)));
+                else if (profit.signum() == -1)
+                    p.sendMessage(String.format(Messages.OFFLINE_TRANSACTION_EXPENDITURE, Utils.format(profit)));
             }));
 
-            plugin.getDatabase().getOfflineInterestRevenue(p, result, Callback.of(plugin, bigDecimal -> {
+            database.getOfflineAccountRevenue(p, logoutTime, Callback.of(plugin, bigDecimal -> {
                 if (bigDecimal.signum() == 1)
                     p.sendMessage(String.format(Messages.OFFLINE_INTEREST_EARNED, Utils.format(bigDecimal)));
             }));
 
             // Player does not actually log off here, this saves the last time the player was notified about changes
-            plugin.getDatabase().logLogout(p, null);
+            database.logLogout(p, null);
 		}));
     }
 

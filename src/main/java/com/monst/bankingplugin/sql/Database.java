@@ -38,6 +38,7 @@ public abstract class Database {
 	String tableAccounts;
 	String tableTransactionLog;
 	String tableInterestLog;
+	String tableBankProfitLog;
 	String tableLogouts;
 	String tableFields;
 
@@ -57,6 +58,8 @@ public abstract class Database {
 	abstract String getQueryCreateTableTransactionLog();
 
 	abstract String getQueryCreateTableInterestLog();
+
+	abstract String getQueryCreateTableProfitLog();
 
 	abstract String getQueryCreateTableLogout();
 
@@ -108,6 +111,7 @@ public abstract class Database {
 		this.tableAccounts = Config.databaseTablePrefix + "accounts";
 		this.tableTransactionLog = Config.databaseTablePrefix + "transaction_log";
 		this.tableInterestLog = Config.databaseTablePrefix + "interest_log";
+		this.tableBankProfitLog = Config.databaseTablePrefix + "profit_log";
 		this.tableLogouts = Config.databaseTablePrefix + "player_logouts";
 		this.tableFields = Config.databaseTablePrefix + "fields";
 
@@ -137,40 +141,22 @@ public abstract class Database {
 
 				plugin.debug("Starting table creation");
 
-				// Create banks table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableBanks());
-				}
-
-				// Create accounts table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableAccounts());
-				}
-
-				// Create transaction log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableTransactionLog());
-				}
-
-				// Create interest log table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableInterestLog());
-				}
-
-				// Create logout table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableLogout());
-				}
-
-				// Create fields table
-				try (Statement s = con.createStatement()) {
-					s.executeUpdate(getQueryCreateTableFields());
-				}
+				for (String query : new String[] {
+						getQueryCreateTableBanks(), // Create banks table
+						getQueryCreateTableAccounts(), // Create accounts table
+						getQueryCreateTableTransactionLog(), // Create transaction log table
+						getQueryCreateTableInterestLog(), // Create interest log table
+						getQueryCreateTableProfitLog(), // Create profit log table
+						getQueryCreateTableLogout(), // Create logout table
+						getQueryCreateTableFields() // Create fields table
+				})
+					try (Statement s = con.createStatement()) {
+						s.executeUpdate(query);
+					}
 
 				// Clean up economy log
-				if (Config.cleanupLogDays > 0) {
+				if (Config.cleanupLogDays > 0)
 					cleanUpLogs(false);
-				}
 
 				// Count accounts entries in database
 				try (Statement s = con.createStatement()) {
@@ -796,7 +782,7 @@ public abstract class Database {
 	 * @param type     Whether the executor deposited or withdrew
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
-	public void logTransaction(final Player executor, Account account, BigDecimal amount, TransactionType type, Callback<Void> callback) {
+	public void logAccountTransaction(final Player executor, Account account, BigDecimal amount, TransactionType type, Callback<Void> callback) {
 		final String query = "INSERT INTO " + tableTransactionLog
 				+ " (account_id,bank_id,timestamp,time,owner_name,owner_uuid,executor_name,executor_uuid,transaction_type,amount,new_balance,world,x,y,z)"
 				+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -860,7 +846,7 @@ public abstract class Database {
 	 * @param amount   The {@link BigDecimal} final transaction amount
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
-	public void logInterest(Account account, BigDecimal baseAmount, int multiplier, BigDecimal amount, Callback<Void> callback) {
+	public void logAccountInterest(Account account, BigDecimal baseAmount, int multiplier, BigDecimal amount, Callback<Void> callback) {
 		final String query = "INSERT INTO " + tableInterestLog
 				+ " (account_id,bank_id,owner_name,owner_uuid,base_amount,multiplier,amount,timestamp,time)"
 				+ " VALUES(?,?,?,?,?,?,?,?,?)";
@@ -896,6 +882,44 @@ public abstract class Database {
 
 					plugin.getLogger().severe("Failed to log interest to database.");
 					plugin.debug("Failed to log interest to database.");
+					plugin.debug(e);
+				}
+			}).runTaskAsynchronously(plugin);
+		} else if (callback != null)
+			callback.callSyncResult(null);
+	}
+
+	public void logBankCashFlow(Bank bank, BigDecimal amount, Callback<Void> callback) {
+		final String query = "INSERT INTO " + tableBankProfitLog
+				+ " (bank_id,owner_name,owner_uuid,amount,timestamp,time)"
+				+ " VALUES(?,?,?,?,?,?)";
+
+		if (Config.enableInterestLog) {
+			Utils.bukkitRunnable(() -> {
+				try (Connection con = dataSource.getConnection();
+					 PreparedStatement ps = con.prepareStatement(query)) {
+
+					long millis = System.currentTimeMillis();
+
+					ps.setInt(1, bank.getID());
+					ps.setString(2, bank.getOwner().getName());
+					ps.setString(3, bank.getOwner().getUniqueId().toString());
+					ps.setString(4, amount.toString());
+					ps.setString(5, dateFormat.format(millis));
+					ps.setLong(6, millis);
+
+					ps.executeUpdate();
+
+					if (callback != null)
+						callback.callSyncResult(null);
+
+					plugin.debug("Logged profit to database");
+				} catch (SQLException e) {
+					if (callback != null)
+						callback.callSyncError(e);
+
+					plugin.getLogger().severe("Failed to log profit to database.");
+					plugin.debug("Failed to log profit to database.");
 					plugin.debug(e);
 				}
 			}).runTaskAsynchronously(plugin);
@@ -977,20 +1001,20 @@ public abstract class Database {
      * @param callback   Callback that - if succeeded - returns the revenue the
      *                   player made while offline (as {@code double})
      */
-	public void getOfflineInterestRevenue(Player player, long logoutTime, Callback<BigDecimal> callback) {
+	public void getOfflineAccountRevenue(Player player, long logoutTime, Callback<BigDecimal> callback) {
 		getOfflineRevenue(player, logoutTime, tableInterestLog, callback);
     }
 
 	/**
-	 * Gets the revenue a player while he was offline
+	 * Gets the revenue a player earned in bank profit while they were offline
 	 *
 	 * @param player     Player whose revenue to get
 	 * @param logoutTime Time in milliseconds when he logged out the last time
 	 * @param callback   Callback that - if succeeded - returns the revenue the
 	 *                   player made while offline (as {@code double})
 	 */
-	public void getOfflineTransactionRevenue(Player player, long logoutTime, Callback<BigDecimal> callback) {
-		getOfflineRevenue(player, logoutTime, tableTransactionLog, callback);
+	public void getOfflineBankRevenue(Player player, long logoutTime, Callback<BigDecimal> callback) {
+		getOfflineRevenue(player, logoutTime, tableBankProfitLog, callback);
 	}
 
     private void getOfflineRevenue(Player player, long logoutTime, String table, Callback<BigDecimal> callback) {
@@ -1009,10 +1033,8 @@ public abstract class Database {
 						revenue = revenue.add(interest);
 					}
 				}
-				revenue = revenue.setScale(2, RoundingMode.HALF_EVEN);
-
 				if (callback != null) {
-					callback.callSyncResult(revenue);
+					callback.callSyncResult(revenue.setScale(2, RoundingMode.HALF_EVEN));
 				}
 			} catch (SQLException ex) {
 				if (callback != null) {

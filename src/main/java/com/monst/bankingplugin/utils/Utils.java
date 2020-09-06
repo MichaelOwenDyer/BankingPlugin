@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.utils;
 
+import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.User;
-import com.earth2me.essentials.UserMap;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
@@ -16,7 +16,6 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
@@ -28,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collector;
@@ -164,6 +164,18 @@ public class Utils {
 		};
 	}
 
+	public static <T> T ternary(T ifNotNull, T ifNull) {
+		return ternary(ifNotNull, () -> ifNull);
+	}
+
+	public static <T> T ternary(T ifNotNull, Supplier<T> ifNull) {
+		return ternary(ifNotNull, ifNull, Objects::nonNull);
+	}
+
+	public static <T> T ternary(T ifTrue, Supplier<T> ifFalse, Predicate<? super T> pred) {
+		return pred.test(ifTrue) ? ifTrue : ifFalse.get();
+	}
+
 	public static void depositPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {
 		if (recipient == null)
 			return;
@@ -193,39 +205,48 @@ public class Utils {
 		return false;
 	}
 
-	public static void notifyPlayers(String message, Collection<OfflinePlayer> players, CommandSender notInclude) {
-		if (notInclude instanceof Player)
-			notifyPlayers(message, players, (OfflinePlayer) ((Player) notInclude).getPlayer());
+	public static void notifyPlayers(String message, OfflinePlayer player, Essentials essentials) {
+		if (player == null)
+			return;
+		if (player.isOnline())
+			message(player, message);
 		else
-			notifyPlayers(message, players);
-	}
-
-	public static void notifyPlayers(String message, OfflinePlayer player, OfflinePlayer notInclude) {
-		notifyPlayers(message, Collections.singleton(player), notInclude);
-	}
-
-	public static void notifyPlayers(String message, Collection<OfflinePlayer> players, OfflinePlayer notInclude) {
-		players = new HashSet<>(players);
-		if (notInclude instanceof Player)
-			players.remove(notInclude);
-		notifyPlayers(message, players);
+			mail(player, message, essentials);
 	}
 
 	public static void notifyPlayers(String message, OfflinePlayer player) {
-		notifyPlayers(message, Collections.singleton(player));
+		notifyPlayers(message, player, BankingPlugin.getInstance().getEssentials());
 	}
 
 	public static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
-		UserMap userMap = BankingPlugin.getInstance().getEssentials().getUserMap();
-		players.stream().filter(Objects::nonNull).distinct().forEach(p -> {
-			if (p.isOnline())
-				p.getPlayer().sendMessage(message);
-			else if (Config.enableMail) {
-				User user = userMap.getUser(p.getUniqueId());
-				if (user != null)
-					user.addMail(message);
-			}
-		});
+		Essentials essentials = BankingPlugin.getInstance().getEssentials();
+		players.forEach(p -> notifyPlayers(message, p, essentials));
+	}
+
+	public static void message(Collection<OfflinePlayer> players, String message) {
+		if (players == null)
+			return;
+		players.forEach(p -> message(p, message));
+	}
+
+	public static void message(OfflinePlayer player, String message) {
+		if (player == null || !player.isOnline())
+			return;
+		player.getPlayer().sendMessage(message);
+	}
+
+	public static void mail(OfflinePlayer player, String message, Essentials essentials) {
+		if (!Config.enableMail || player == null)
+			return;
+		User user = essentials.getUserMap().getUser(player.getUniqueId());
+		if (user != null)
+			user.addMail(message);
+	}
+
+	public static void mail(Collection<OfflinePlayer> players, String message, Essentials essentials) {
+		if (!Config.enableMail || players == null)
+			return;
+		players.forEach(p -> mail(p, message, essentials));
 	}
 
 	/**
@@ -442,11 +463,11 @@ public class Utils {
 	}
 
 	public static <T, K> Set<K> map(Set<? extends T> collection, Function<? super T, ? extends K> mapper) {
-    	return map(collection, mapper, Collectors.toSet());
+		return map(collection, mapper, Collectors.toCollection(HashSet::new));
 	}
 
 	public static <T, K> List<K> map(List<? extends T> collection, Function<? super T, ? extends K> mapper) {
-    	return map(collection, mapper, Collectors.toList());
+		return map(collection, mapper, Collectors.toCollection(ArrayList::new));
 	}
 
 	/**
@@ -462,7 +483,7 @@ public class Utils {
 	public static <T, K, R> R map(Collection<? extends T> collection, Function<? super T, ? extends K> mapper, Collector<? super K, ?, R> collector) {
 		if (collection == null)
 			collection = Collections.emptySet();
-    	return collection.stream().map(mapper).collect(collector);
+		return collection.stream().map(mapper).collect(collector);
 	}
 
     /**

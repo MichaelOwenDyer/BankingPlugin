@@ -83,7 +83,7 @@ public class AccountBalanceListener implements Listener {
 
 			if (Config.enableTransactionLog) {
 				TransactionType type = difference.signum() == 1 ? TransactionType.DEPOSIT : TransactionType.WITHDRAWAL;
-				plugin.getDatabase().logTransaction(executor, account, difference.abs(), type, null);
+				plugin.getDatabase().logAccountTransaction(executor, account, difference.abs(), type, null);
 				plugin.debug("Logging transaction to database...");
 			}
 		}

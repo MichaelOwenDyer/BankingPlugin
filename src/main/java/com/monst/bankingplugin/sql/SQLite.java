@@ -169,6 +169,24 @@ public class SQLite extends Database {
     }
 
     @Override
+    String getQueryCreateTableProfitLog() {
+    	return "CREATE TABLE IF NOT EXISTS " + tableBankProfitLog + " ("
+    		+ "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    		+ "bank_id INTEGER NOT NULL,"
+
+    		+ "owner_name TEXT NOT NULL,"
+			+ "owner_uuid TEXT NOT NULL,"
+
+    		+ "amount TEXT NOT NULL,"
+
+			+ "timestamp TEXT NOT NULL,"
+			+ "time INTEGER NOT NULL)";
+
+		// id,bank_id,owner_name,owner_uuid,amount,timestamp,time
+		// ?,?,?,?,?,?,?
+    }
+
+    @Override
     String getQueryCreateTableLogout() {
         return "CREATE TABLE IF NOT EXISTS " + tableLogouts + " ("
 				+ "player TEXT PRIMARY KEY NOT NULL,"

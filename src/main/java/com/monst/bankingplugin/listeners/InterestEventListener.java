@@ -79,7 +79,7 @@ public class InterestEventListener implements Listener {
 						feesReceivable.get(account.getBank().getOwner()).add(BigDecimal.valueOf((double) bank.get(BankField.LOW_BALANCE_FEE)));
 					}
 					if (Config.enableInterestLog)
-						plugin.getDatabase().logInterest(account, BigDecimal.ZERO, 0,
+						plugin.getDatabase().logAccountInterest(account, BigDecimal.ZERO, 0,
 								BigDecimal.valueOf((double) bank.get(BankField.LOW_BALANCE_FEE) * -1), null);
 
 					if (!(boolean) bank.get(BankField.PAY_ON_LOW_BALANCE))
@@ -115,7 +115,7 @@ public class InterestEventListener implements Listener {
 
 				accountUtils.addAccount(account, true);
 				if (Config.enableInterestLog)
-					plugin.getDatabase().logInterest(account, baseInterest, multiplier, interest, null);
+					plugin.getDatabase().logAccountInterest(account, baseInterest, multiplier, interest, null);
 			}
 			if (accountOwner.isOnline())
 				plugin.getDatabase().logLogout(accountOwner.getPlayer(), null);
@@ -139,10 +139,12 @@ public class InterestEventListener implements Listener {
 
 				boolean online = bankOwner.isOnline();
 				Utils.depositPlayer(bankOwner, bank.getSelection().getWorld().getName(), revenue.doubleValue(), Callback.of(plugin,
-						result -> Utils.notifyPlayers(String.format(Messages.REVENUE_EARNED,
-								Utils.format(revenue), bank.getName()), bankOwner),
+						result -> Utils.notifyPlayers(String.format(Messages.REVENUE_EARNED, Utils.format(revenue), bank.getName()), bankOwner),
 						throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner))
 				);
+
+				if (Config.enableProfitLog)
+					plugin.getDatabase().logBankCashFlow(bank, revenue, null);
 			}
 		}
 

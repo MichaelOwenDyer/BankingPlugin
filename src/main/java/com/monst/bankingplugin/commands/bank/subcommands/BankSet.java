@@ -4,13 +4,18 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BankSet extends BankSubCommand {
@@ -69,9 +74,11 @@ public class BankSet extends BankSubCommand {
             result -> {
                 plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + bank.getName() + " from " + previousValue + " to " + result);
                 sender.sendMessage(String.format(Messages.BANK_FIELD_SET, "You", field.getName(), previousValue, result, bank.getColorizedName()));
-                Utils.notifyPlayers(
-                        String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(), previousValue, result, bank.getColorizedName()),
-                        Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()), sender
+                Set<OfflinePlayer> toNotify = Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers());
+                if (sender instanceof Player)
+                    toNotify.remove(sender);
+                Utils.notifyPlayers(String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(),
+                        previousValue, result, bank.getColorizedName()), toNotify
                 );
             },
             throwable -> sender.sendMessage(((ArgumentParseException) throwable).getErrorMessage()));

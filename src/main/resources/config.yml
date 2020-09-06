@@ -172,9 +172,9 @@ player-bank-account-limit:
 default-limits:
   # Set the amount of accounts that anyone who doesn't have a
   # specific permission may have.
-  # If you don't want the players to have a limit by default set the value to -1.
+  # If you don't want players to have a limit by default set the value to -1.
   bank: 1
-  account: 2
+  account: 1
 
 # Bank volume limits are handled with permissions.
 # A player with permission "bankingplugin.bank.size.X" can create banks with a volume of up to X.
@@ -220,11 +220,12 @@ trust-on-transfer: false
 # Default: true
 enable-update-checker: true
 
-# Set whether deposits/withdrawals, interest payouts, and debug logs should be saved in the database.
-# Debug log file may become quite large!
+# Set whether deposits/withdrawals, interest payouts, and bank profits/losses should be saved in the database.
+# Debug log is stored in the file system and may become quite large!
 # Type: boolean
 enable-transaction-log: true
 enable-interest-log: true
+enable-profit-log: true
 enable-debug-log: true
 
 # Set the maximum age for economy log entries in days.

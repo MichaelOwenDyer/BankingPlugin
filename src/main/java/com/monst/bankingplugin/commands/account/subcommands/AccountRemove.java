@@ -11,8 +11,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
-
 public class AccountRemove extends AccountSubCommand {
 
     public AccountRemove() {
@@ -81,7 +79,7 @@ public class AccountRemove extends AccountSubCommand {
                         Callback.of(plugin,
                                 result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
                                         account.getOwner().getName(), Utils.format(finalCreationPrice)),
-                                        Collections.singleton(bankOwner), account.getOwner()),
+                                        bankOwner),
                                 throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
             }
         }

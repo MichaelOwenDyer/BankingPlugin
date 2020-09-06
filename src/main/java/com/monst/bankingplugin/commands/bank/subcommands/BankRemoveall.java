@@ -8,6 +8,7 @@ import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -37,13 +38,6 @@ public class BankRemoveall extends BankSubCommand implements ConfirmableSubComma
 
         Set<Bank> banks = bankUtils.getBanksCopy();
 
-        BankRemoveAllEvent event = new BankRemoveAllEvent(sender, banks);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            plugin.debug("Bank remove all event cancelled");
-            return true;
-        }
-
         int affectedAccounts = banks.stream().map(Bank::getAccounts).mapToInt(Collection::size).sum();
         if (sender instanceof Player && Config.confirmOnRemoveAll && !isConfirmed((Player) sender, args)) {
             sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, banks.size(),
@@ -52,12 +46,22 @@ public class BankRemoveall extends BankSubCommand implements ConfirmableSubComma
             return true;
         }
 
+        BankRemoveAllEvent event = new BankRemoveAllEvent(sender, banks);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Bank remove all event cancelled");
+            return true;
+        }
+
         bankUtils.removeBanks(banks, true);
         plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
         sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s", affectedAccounts, affectedAccounts == 1 ? "" : "s"));
-        for (Bank bank : banks)
-            Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getColorizedName()), bank.getTrustedPlayers(), sender);
-
+        for (Bank bank : banks) {
+            Collection<OfflinePlayer> toNotify = bank.getTrustedPlayers();
+            if (sender instanceof Player)
+                toNotify.remove(sender);
+            Utils.message(toNotify, String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getColorizedName()));
+        }
         return true;
     }
 

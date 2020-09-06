@@ -9,11 +9,13 @@ import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BankRemove extends BankSubCommand implements ConfirmableSubCommand {
@@ -86,9 +88,10 @@ public class BankRemove extends BankSubCommand implements ConfirmableSubCommand 
         bankUtils.removeBank(bank, true);
         plugin.debug("Bank #" + bank.getID() + " removed from the database");
         sender.sendMessage(Messages.BANK_REMOVED);
-        Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()),
-                Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()), sender
-        );
+        Set<OfflinePlayer> toNotify = Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers());
+        if (sender instanceof Player)
+            toNotify.remove(sender);
+        Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()), toNotify);
         return true;
     }
 
