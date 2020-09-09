@@ -167,7 +167,7 @@ public class AccountStatus {
 	public boolean allowNextPayout(boolean online) {
 		if (mustWait(online))
 			return false;
-		return canGenerateAgainOffline();
+		return online || canGenerateAgainOffline();
 	}
 
 	/**

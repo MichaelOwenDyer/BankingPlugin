@@ -133,7 +133,7 @@ public class InterestEventListener implements Listener {
 				int numberOfAccounts = bank.getAccountsByOwner().size();
 
 				BigDecimal revenue = totalValue.multiply(BigDecimal.valueOf(multiplier))
-						.multiply(BigDecimal.valueOf(1.0d - gini))
+						.multiply(BigDecimal.valueOf(1.0 - gini))
 						.multiply(BigDecimal.valueOf(Math.log(numberOfAccounts + 1)))
 						.setScale(2, RoundingMode.HALF_EVEN);
 

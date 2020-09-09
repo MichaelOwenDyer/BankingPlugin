@@ -92,10 +92,11 @@ public class BankUntrust extends BankSubCommand {
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 3) {
-            List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
-            if (!p.hasPermission(Permissions.BANK_TRUST_OTHER) && !p.hasPermission(Permissions.BANK_TRUST_ADMIN))
-                onlinePlayers.remove(p.getName());
-            return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[2].toLowerCase()));
+            Bank bank = plugin.getBankUtils().lookupBank(args[1]);
+            if (bank == null)
+                return Collections.emptyList();
+            List<String> coowners = bank.getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.toList());
+            return Utils.filter(coowners, name -> name.toLowerCase().startsWith(args[2].toLowerCase()));
         }
         return Collections.emptyList();
     }

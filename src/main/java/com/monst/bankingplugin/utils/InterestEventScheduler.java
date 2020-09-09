@@ -43,7 +43,10 @@ public class InterestEventScheduler {
     }
 
     public void unschedulePayouts(Bank bank) {
-        BANK_TIME_MAP.get(bank).forEach(this::descheduleTime);
+        if (bank == null)
+            return;
+        if (BANK_TIME_MAP.containsKey(bank))
+            BANK_TIME_MAP.get(bank).forEach(this::descheduleTime);
         BANK_TIME_MAP.remove(bank);
         TIME_BANK_MAP.forEach((time, set) -> set.removeIf(bank::equals));
     }
@@ -55,7 +58,7 @@ public class InterestEventScheduler {
      * @see InterestEventListener
      */
     public void schedulePayouts(Bank bank) {
-        if (!plugin.isEnabled())
+        if (!plugin.isEnabled() || bank == null)
             return;
 
         List<LocalTime> bankPayoutTimes = bank.get(BankField.INTEREST_PAYOUT_TIMES);
