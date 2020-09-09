@@ -111,7 +111,7 @@ public class Polygonal2DSelection implements Selection {
 		if (getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY())
 			return false;
 		Set<BlockVector2D> blocks = sel.getBlocks();
-		return getBlocks().stream().noneMatch(blocks::contains);
+		return getBlocks().stream().anyMatch(blocks::contains);
 	}
 
 	@Override

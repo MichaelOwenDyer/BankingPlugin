@@ -134,15 +134,16 @@ public class AccountCreate extends AccountSubCommand {
 
         double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
         creationPrice *= ((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1;
+        creationPrice *= bank.isOwner(executor) ? 0 : 1;
 
-        if (creationPrice > 0 && creationPrice > plugin.getEconomy().getBalance(executor)
-                && forSelf && !bank.isOwner(executor)) {
+        if (creationPrice > 0 && creationPrice > plugin.getEconomy().getBalance(executor) && forSelf) {
             executor.sendMessage(Messages.ACCOUNT_CREATE_INSUFFICIENT_FUNDS);
             return;
         }
 
         OfflinePlayer accountOwner = executor.getPlayer();
         double finalCreationPrice = creationPrice;
+        if (creationPrice > 0)
         // Account owner pays the bank owner the creation fee
         if (!Utils.withdrawPlayer(accountOwner, location.getWorld().getName(), creationPrice,
                 Callback.of(plugin,
@@ -151,7 +152,7 @@ public class AccountCreate extends AccountSubCommand {
             return;
 
         // Bank owner receives the payment from the customer
-        if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(executor)) {
+        if (creationPrice > 0 && bank.isPlayerBank()) {
             OfflinePlayer bankOwner = account.getBank().getOwner();
             Utils.depositPlayer(bankOwner, location.getWorld().getName(), creationPrice, Callback.of(plugin,
                     result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,

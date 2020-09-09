@@ -204,16 +204,17 @@ public class BankUtils implements Observable {
 		plugin.debug("Removing bank (#" + bank.getID() + ")");
 
 		for (Account account : bank.getAccountsCopy())
-			plugin.getAccountUtils().removeAccount(account, removeFromDatabase, callback);
+			plugin.getAccountUtils().removeAccount(account, removeFromDatabase);
 
 		bankSelectionMap.remove(bank.getSelection());
+		plugin.getBankUtils().notifyObservers();
 
 		plugin.getScheduler().unschedulePayouts(bank);
 
         if (removeFromDatabase)
 			plugin.getDatabase().removeBank(bank, callback);
         else if (callback != null)
-            	callback.callSyncResult(null);
+			callback.callSyncResult(null);
     }
 
     /**

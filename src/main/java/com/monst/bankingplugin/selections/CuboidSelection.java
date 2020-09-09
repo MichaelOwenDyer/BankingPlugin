@@ -100,7 +100,7 @@ public class CuboidSelection implements Selection {
 		if (getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY())
 			return false;
 		Set<BlockVector2D> blocks = getBlocks();
-		return sel.getBlocks().stream().noneMatch(blocks::contains);
+		return sel.getBlocks().stream().anyMatch(blocks::contains);
 	}
 
 	@Override

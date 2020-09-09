@@ -144,6 +144,9 @@ public class BankTransfer extends BankSubCommand implements ConfirmableSubComman
             List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
             if (!p.hasPermission(Permissions.BANK_TRANSFER_OTHER) && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN))
                 onlinePlayers.remove(p.getName());
+            Bank bank = bankUtils.lookupBank(args[1]);
+            if (bank != null && bank.isPlayerBank())
+                onlinePlayers.remove(bank.getOwner().getName());
             return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[2].toLowerCase()));
         }
         return Collections.emptyList();
