@@ -98,7 +98,8 @@ public class AccountCreate extends AccountSubCommand {
             plugin.debug("Chest is blocked.");
             return;
         }
-        if (!bankUtils.isBank(location)) {
+        Bank bank = bankUtils.getBank(location);
+        if (bank == null) {
             executor.sendMessage(Messages.CHEST_NOT_IN_BANK);
             plugin.debug("Chest is not in a bank.");
             plugin.debug(executor.getName() + " is creating new account...");
@@ -107,7 +108,6 @@ public class AccountCreate extends AccountSubCommand {
 
         boolean forSelf = Utils.samePlayer(executor, owner);
 
-        Bank bank = bankUtils.getBank(location);
         if (!Config.allowSelfBanking && forSelf && bank.isOwner(executor)) {
             executor.sendMessage(Messages.NO_SELF_BANKING);
             plugin.debug(executor.getName() + " is not permitted to create an account at their own bank");

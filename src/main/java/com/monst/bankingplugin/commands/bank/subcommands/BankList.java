@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class BankList extends BankSubCommand {
@@ -26,11 +27,13 @@ public class BankList extends BankSubCommand {
     public boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " is listing banks.");
 
-        List<Bank> banks;
-
         // TODO: Allow for more specific bank searching
 
-        banks = bankUtils.getBanksCopy().stream().sorted(Comparator.comparing(Bank::getTotalValue)).collect(Collectors.toList());
+        Supplier<List<Bank>> getBanks = () -> bankUtils.getBanksCopy().stream()
+                .sorted(Comparator.comparing(Bank::getTotalValue).reversed())
+                .collect(Collectors.toList());
+
+        List<Bank> banks = getBanks.get();
 
         if (banks.isEmpty()) {
             sender.sendMessage(String.format(Messages.NONE_FOUND, "banks", "list"));
@@ -38,7 +41,7 @@ public class BankList extends BankSubCommand {
         }
 
         if (sender instanceof Player) {
-            new BankListGui(banks).open(((Player) sender));
+            new BankListGui(getBanks).open(((Player) sender));
         } else {
             int i = 0;
             for (Bank bank : banks)

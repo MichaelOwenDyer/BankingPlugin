@@ -101,8 +101,7 @@ public class BankGui extends SinglePageGui<Bank> {
 				} : null;
 			case 8:
 				return canListAccounts && !guiSubject.getAccounts().isEmpty() ?
-						(player, info) -> new AccountListGui(guiSubject.getAccounts()).setPrevGui(this).open(player) :
-						null;
+						(player, info) -> new AccountListGui(guiSubject::getAccounts).setPrevGui(this).open(player) : null;
 			default:
 				return null;
 		}

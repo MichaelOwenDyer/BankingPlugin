@@ -12,8 +12,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Set;
-
 public class AccountRecover extends AccountSubCommand {
 
     public AccountRecover() {
@@ -24,15 +22,13 @@ public class AccountRecover extends AccountSubCommand {
     public boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to recover invalid accounts");
 
-        Set<Account> invalidAccounts = accountUtils.getInvalidAccounts();
-
-        if (invalidAccounts.isEmpty()) {
+        if (accountUtils.getInvalidAccounts().isEmpty()) {
             sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "recover"));
             return true;
         }
 
         if (sender instanceof Player)
-            new AccountRecoveryGui(invalidAccounts).open(((Player) sender));
+            new AccountRecoveryGui(accountUtils::getInvalidAccounts).open(((Player) sender));
         return true;
     }
 

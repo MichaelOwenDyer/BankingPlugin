@@ -152,7 +152,7 @@ public class Account extends Ownable {
 			return false;
 		}
 
-		final BigDecimal checkedBalance = plugin.getAccountUtils().appraise(this);
+		final BigDecimal checkedBalance = AccountUtils.appraise(this);
 		final int diff = checkedBalance.compareTo(getBalance());
 		if (diff > 0) {
 			if (getBalance().signum() == 0)
@@ -184,9 +184,15 @@ public class Account extends Ownable {
 	 */
 	public void setBank(Bank bank) {
 		getBank().removeAccount(this);
+		getBank().notifyObservers();
+
 		this.bank = bank;
-		getBank().addAccount(this);
 		this.getStatus().setBank(bank);
+
+		getBank().addAccount(this);
+		notifyObservers();
+		getBank().notifyObservers();
+		plugin.getAccountUtils().notifyObservers();
 	}
 
 	/**
@@ -205,8 +211,12 @@ public class Account extends Ownable {
 	 * @param newBalance the new (positive) balance of the account.
 	 */
 	public void setBalance(BigDecimal newBalance) {
-		if (newBalance != null && newBalance.signum() >= 0)
-			balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
+		if (newBalance == null || newBalance.signum() < 0)
+			return;
+		balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
+		notifyObservers();
+		getBank().notifyObservers();
+		plugin.getAccountUtils().notifyObservers();
 	}
 
 	/**
@@ -250,6 +260,7 @@ public class Account extends Ownable {
 	 */
 	public void setLocation(Location location) {
 		this.location = location;
+		notifyObservers();
 	}
 
 	/**
@@ -296,14 +307,10 @@ public class Account extends Ownable {
 		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
 			Chest chest = (Chest) b.getState();
 			inventory = chest.getInventory();
-			setSize(inventory.getHolder() instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE);
+			this.size = inventory.getHolder() instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE;
 			return inventory;
 		}
 		return null;
-	}
-
-	public void setSize(AccountSize size) {
-		this.size = size;
 	}
 
 	/**
@@ -351,6 +358,8 @@ public class Account extends Ownable {
 				chest.update();
 			}
 		}
+		notifyObservers();
+		plugin.getAccountUtils().notifyObservers();
 	}
 
 	/**
@@ -391,6 +400,8 @@ public class Account extends Ownable {
 		if (Config.trustOnTransfer)
 			coowners.add(previousOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
+		notifyObservers();
+		plugin.getAccountUtils().notifyObservers();
 	}
 
 	@Override

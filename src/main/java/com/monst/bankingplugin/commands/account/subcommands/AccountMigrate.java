@@ -74,7 +74,6 @@ public class AccountMigrate extends AccountSubCommand {
             p.sendMessage(Messages.CHEST_ALREADY_ACCOUNT);
             return;
         }
-
         if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
             p.sendMessage(Messages.CHEST_BLOCKED);
             plugin.debug("Chest is blocked.");

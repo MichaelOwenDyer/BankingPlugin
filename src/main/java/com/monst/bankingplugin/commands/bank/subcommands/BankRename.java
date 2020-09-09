@@ -94,13 +94,14 @@ public class BankRename extends BankSubCommand {
     @Override
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            if (args[1].isEmpty() && sender instanceof Player && bankUtils.isBank(((Player) sender).getLocation()))
-                return Collections.singletonList(bankUtils.getBank(((Player) sender).getLocation()).getName());
+            Bank bank = sender instanceof Player ? bankUtils.getBank(((Player) sender).getLocation()) : null;
+            if (args[1].isEmpty() && bank != null)
+                return Collections.singletonList(bank.getName());
 
             return bankUtils.getBanksCopy().stream()
-                    .filter(bank -> ((sender instanceof Player && bank.isTrusted((Player) sender))
-                            || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
-                            || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))
+                    .filter(b -> ((sender instanceof Player && b.isTrusted((Player) sender))
+                            || (b.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
+                            || (b.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))
                     .map(Bank::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()

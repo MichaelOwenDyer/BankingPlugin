@@ -3,6 +3,7 @@ package com.monst.bankingplugin.gui;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
@@ -16,10 +17,11 @@ import org.ipvp.canvas.type.ChestMenu;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class AccountRecoveryGui extends MultiPageGui<Collection<Account>> {
 
-    public AccountRecoveryGui(Collection<Account> accounts) {
+    public AccountRecoveryGui(Supplier<? extends Collection<Account>> accounts) {
         super(accounts, 18, 26);
     }
 
@@ -30,8 +32,9 @@ public class AccountRecoveryGui extends MultiPageGui<Collection<Account>> {
 
     @Override
     void addItems(PaginatedMenuBuilder builder) {
-        for (Account account : guiSubjects) {
-            ItemStack item = createSlotItem(account.getOwner(), ChatColor.DARK_RED + "Invalid Account", getRecoveryLore(account));
+        for (Account account : guiSubjects.get()) {
+            ItemStack item = createSlotItem(account.getOwner(),
+                    ChatColor.DARK_RED + "Invalid Account", getRecoveryLore(account));
             ItemStackTemplate template = new StaticItemTemplate(item);
             Slot.ClickHandler clickHandler = (player, info) -> {
                 player.sendMessage(Messages.CLICK_CHEST_RECOVER);
@@ -53,7 +56,12 @@ public class AccountRecoveryGui extends MultiPageGui<Collection<Account>> {
     }
 
     @Override
+    Observable getSubject() {
+        return plugin.getAccountUtils();
+    }
+
+    @Override
     GuiType getType() {
-        return GuiType.ACCOUNT_LIST;
+        return GuiType.ACCOUNT_RECOVERY;
     }
 }

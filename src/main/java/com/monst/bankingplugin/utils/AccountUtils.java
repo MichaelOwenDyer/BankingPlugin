@@ -19,13 +19,12 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-public class AccountUtils {
+public class AccountUtils implements Observable {
 
 	private final BankingPlugin plugin;
-	private final Map<Location, Account> accountLocationMap = new ConcurrentHashMap<>();
+	private final Map<Location, Account> accountLocationMap = new HashMap<>();
 	private final Set<Account> invalidAccounts = new HashSet<>();
 
     public AccountUtils(BankingPlugin plugin) {
@@ -128,9 +127,11 @@ public class AccountUtils {
 			plugin.getDatabase().addAccount(account, callback);
         } else {
 			account.getBank().addAccount(account); // Account is otherwise added to the bank in Database
+			account.getBank().notifyObservers();
 			if (callback != null)
 				callback.callSyncResult(account.getID());
         }
+        notifyObservers();
     }
 
     /**
@@ -173,6 +174,7 @@ public class AccountUtils {
 			plugin.getDatabase().removeAccount(account, callback);
         } else if (callback != null)
         	callback.callSyncResult(null);
+        notifyObservers();
     }
 
     /**
@@ -184,19 +186,18 @@ public class AccountUtils {
         removeAccount(account, removeFromDatabase, null);
     }
 
-	public void removeAccounts(Collection<Account> accounts, boolean removeFromDatabase) {
-		accounts.forEach(account -> removeAccount(account, removeFromDatabase));
-	}
-
 	public void addInvalidAccount(Account account) {
-    	if (account != null)
-    		invalidAccounts.add(account);
+    	if (account == null)
+    		return;
+		invalidAccounts.add(account);
+    	notifyObservers();
 	}
 
 	public void removeInvalidAccount(Account account) {
 		if (account == null)
 			return;
 		invalidAccounts.remove(account);
+		notifyObservers();
 	}
 
 	public Set<Account> getInvalidAccounts() {
@@ -241,7 +242,8 @@ public class AccountUtils {
         return (useDefault ? Config.defaultAccountLimit : limit);
     }
 
-	public BigDecimal appraise(Account account) {
+	public static BigDecimal appraise(Account account) {
+    	BankingPlugin plugin = BankingPlugin.getInstance();
 		plugin.debugf("Appraising account... (#%d)", account.getID());
 		Essentials essentials = plugin.getEssentials();
 
@@ -276,7 +278,7 @@ public class AccountUtils {
 		return sum.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
-	private BigDecimal getWorth(Essentials ess, ItemStack item) {
+	private static BigDecimal getWorth(Essentials ess, ItemStack item) {
 		BigDecimal worth = ess.getWorth().getPrice(ess, item);
 		return worth != null ? worth : BigDecimal.ZERO;
 	}

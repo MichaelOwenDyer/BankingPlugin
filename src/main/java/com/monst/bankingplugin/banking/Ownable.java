@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.utils.Nameable;
+import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -15,7 +16,7 @@ import java.util.Set;
 /**
  * This class represents either a {@link Bank} or an {@link Account}.
  */
-public abstract class Ownable implements Nameable {
+public abstract class Ownable implements Nameable, Observable {
 
 	protected static final BankingPlugin plugin = BankingPlugin.getInstance();
 
@@ -90,6 +91,7 @@ public abstract class Ownable implements Nameable {
 	public void trustPlayer(OfflinePlayer p) {
 		if (p != null)
 			coowners.add(p);
+		notifyObservers();
 	}
 
 	/**
@@ -99,6 +101,7 @@ public abstract class Ownable implements Nameable {
 	public void untrustPlayer(OfflinePlayer p) {
 		if (p != null)
 			coowners.remove(p);
+		notifyObservers();
 	}
 
 	/**

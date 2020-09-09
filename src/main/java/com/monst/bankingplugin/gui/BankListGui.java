@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
@@ -13,10 +14,11 @@ import org.ipvp.canvas.type.ChestMenu;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Supplier;
 
 public class BankListGui extends MultiPageGui<Collection<Bank>> {
 
-    public BankListGui(Collection<Bank> banks) {
+    public BankListGui(Supplier<? extends Collection<Bank>> banks) {
         super(banks, 18, 26);
     }
 
@@ -27,7 +29,7 @@ public class BankListGui extends MultiPageGui<Collection<Bank>> {
 
     @Override
     void addItems(PaginatedMenuBuilder builder) {
-        for (Bank bank : guiSubjects) {
+        for (Bank bank : guiSubjects.get()) {
             ItemStack item = bank.isPlayerBank() ?
                     createSlotItem(bank.getOwner(), bank.getColorizedName(), Collections.singletonList("Owner: " + bank.getOwnerDisplayName())) :
                     createSlotItem(Material.PLAYER_HEAD, bank.getColorizedName(), Collections.singletonList("Owner: " + bank.getOwnerDisplayName()));
@@ -35,6 +37,11 @@ public class BankListGui extends MultiPageGui<Collection<Bank>> {
             Slot.ClickHandler clickHandler = (player, info) -> new BankGui(bank).setPrevGui(this).open(player);
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
         }
+    }
+
+    @Override
+    Observable getSubject() {
+        return plugin.getBankUtils();
     }
 
     @Override

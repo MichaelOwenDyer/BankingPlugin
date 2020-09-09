@@ -28,20 +28,40 @@ public class AccountList extends AccountSubCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to list accounts");
-        List<Account> accounts;
+
         if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
             if (!(sender instanceof Player)) {
                 plugin.debug("Only players can list their own accounts");
                 sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
                 return true;
             }
-            plugin.debug(sender.getName() + " has listed their own accounts");
+        }
+
+        List<Account> accounts = lookupAccounts(sender, args);
+
+        if (accounts.isEmpty()) {
+            sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "list"));
+            return true;
+        }
+
+        if (sender instanceof Player) {
+            new AccountListGui(() -> lookupAccounts(sender, args)).open(((Player) sender));
+        } else {
+            int i = 0;
+            for (Account account : accounts)
+                sender.sendMessage(ChatColor.AQUA + "" + ++i + ". " + account.getColorizedName());
+        }
+        return true;
+    }
+
+    private List<Account> lookupAccounts(CommandSender sender, String[] args) {
+        List<Account> accounts;
+        if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
             accounts = accountUtils.getAccountsCopy().stream()
                     .filter(a -> a.isOwner((Player) sender))
                     .sorted(Comparator.comparing(Account::getBalance).reversed())
                     .collect(Collectors.toList());
         } else if (args.length == 1) {
-            plugin.debug(sender.getName() + " has listed all accounts");
             accounts = accountUtils.getAccountsCopy().stream()
                     .sorted(Comparator.comparing(Account::getBalance).reversed())
                     .collect(Collectors.toList());
@@ -50,27 +70,13 @@ public class AccountList extends AccountSubCommand {
                     .map(Utils::getPlayer)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
-            plugin.debug(sender.getName() + " has listed the accounts of " + players);
             accounts = accountUtils.getAccountsCopy().stream()
                     .filter(a -> players.contains(a.getOwner()))
                     .sorted(Comparator.<Account, Integer>comparing(a -> players.indexOf(a.getOwner()))
                             .thenComparing(Account::getBalance, BigDecimal::compareTo).reversed())
                     .collect(Collectors.toList());
         }
-
-        if (accounts.isEmpty()) {
-            sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "list"));
-            return true;
-        }
-
-        if (sender instanceof Player)
-            new AccountListGui(accounts).open(((Player) sender));
-        else {
-            int i = 0;
-            for (Account account : accounts)
-                sender.sendMessage(ChatColor.AQUA + "" + ++i + ". " + account.getColorizedName());
-        }
-        return true;
+        return accounts;
     }
 
     @Override

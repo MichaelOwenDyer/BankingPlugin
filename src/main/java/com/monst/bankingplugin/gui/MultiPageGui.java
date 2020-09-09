@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.Ownable;
+import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.ipvp.canvas.Menu;
@@ -12,33 +13,45 @@ import org.ipvp.canvas.slot.Slot;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui<C> {
 
     private final int PREV_PAGE_SLOT;
     private final int NEXT_PAGE_SLOT;
 
-    final C guiSubjects;
+    final Supplier<? extends C> guiSubjects;
     List<Menu> menuPages;
     private int currentPage = 0;
 
-    MultiPageGui(C guiSubjects, int prevPageSlot, int nextPageSlot) {
+    MultiPageGui(Supplier<? extends C> guiSubjects, int prevPageSlot, int nextPageSlot) {
         this.guiSubjects = guiSubjects;
-        PREV_PAGE_SLOT = prevPageSlot;
-        NEXT_PAGE_SLOT = nextPageSlot;
+        this.PREV_PAGE_SLOT = prevPageSlot;
+        this.NEXT_PAGE_SLOT = nextPageSlot;
     }
 
     @Override
-    void open(boolean update) {
-        if (update) {
-            initializeMenu();
-            setClickHandler();
-            setCloseHandler(OPEN_PREVIOUS);
+    void open(boolean initialize) {
+        subscribe(getSubject());
+        if (initialize)
             shortenGuiChain();
-        }
-        if (menuPages.isEmpty())
+        update();
+        if (menuPages == null || menuPages.isEmpty())
             return;
+        currentPage = Math.min(menuPages.size() - 1, currentPage);
         menuPages.get(currentPage).open(viewer);
+    }
+
+    @Override
+    public void update() {
+        if (!isInForeground())
+            return;
+        initializeMenu();
+        setClickHandler();
+        setCloseHandler((player, info) -> {
+            OPEN_PREVIOUS.close(player, info);
+            unsubscribe(getSubject());
+        });
     }
 
     @Override
@@ -94,5 +107,7 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
     abstract Menu.Builder<?> getPageTemplate();
 
     abstract void addItems(PaginatedMenuBuilder builder);
+
+    abstract Observable getSubject();
 
 }

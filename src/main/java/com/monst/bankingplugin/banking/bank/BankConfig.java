@@ -219,7 +219,7 @@ public class BankConfig {
 
 	/**
 	 * Sets a value to the specified {@link BankField}. If the field cannot accept the
-	 * provided value, a {@link ArgumentParseException} is returned in the {@link Callback}
+	 * provided value, an {@link ArgumentParseException} is returned in the {@link Callback}
 	 * @param field the field to set
 	 * @param value the value the field should be set to
 	 * @param callback the {@link Callback} that returns the new formatted field or an error message
@@ -228,14 +228,18 @@ public class BankConfig {
 	boolean set(BankField field, String value, Callback<String> callback) {
 		if (!field.isOverrideAllowed())
 			return false;
+
 		try {
 			if (value.trim().isEmpty()) // Set to default
 				field.getLocalVariable().set(this, field.getConfigPair().getDefault());
 			else
 				SETTERS.get(field).accept(this, value);
+
 			callback.callSyncResult(getFormatted(field));
+
 		} catch (NumberFormatException | DateTimeParseException e) {
 			callback.callSyncError(new ArgumentParseException(field.getDataType(), value));
+
 		} catch (IllegalAccessException e) {
 			BankingPlugin.getInstance().debug(e);
 		}

@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
@@ -318,6 +319,8 @@ public class Config {
 				plugin.getConfig().set(property, value);
 
 		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
+		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
+			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
         plugin.saveConfig();
 		reload();
     }
@@ -360,6 +363,8 @@ public class Config {
 				list.add(value);
 
 		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
+		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
+			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
         plugin.saveConfig();
 		reload();
     }
@@ -396,6 +401,8 @@ public class Config {
 				list.remove(value);
 
 		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
+		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
+			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
         plugin.saveConfig();
 		reload();
     }

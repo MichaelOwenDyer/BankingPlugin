@@ -339,6 +339,7 @@ public abstract class Database {
 				}
 
 				account.getBank().addAccount(account);
+				account.getBank().notifyObservers();
 
 				if (callback != null) {
 					callback.callSyncResult(account.getID());

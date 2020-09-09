@@ -150,6 +150,8 @@ public class Bank extends Ownable {
 			return;
 		plugin.debugf("Adding account #%d to bank #%d", account.getID(), getID());
 		accounts.add(account);
+		notifyObservers();
+		plugin.getAccountUtils().notifyObservers();
 	}
 
 	/**
@@ -161,6 +163,8 @@ public class Bank extends Ownable {
 			return;
 		plugin.debugf("Removing account #%d from bank #%d", account.getID(), getID());
 		accounts.remove(account);
+		notifyObservers();
+		plugin.getAccountUtils().notifyObservers();
 	}
 
 	/**
@@ -219,10 +223,14 @@ public class Bank extends Ownable {
 	 */
 	public void setSelection(Selection sel) {
 		this.selection = sel;
+		notifyObservers();
 	}
 
 	public boolean set(BankField field, String value, Callback<String> callback) {
-		return bankConfig.set(field, value, callback);
+		return bankConfig.set(field, value, callback.andThen(result -> {
+			notifyObservers();
+			getAccounts().forEach(Account::notifyObservers);
+		}));
 	}
 
 	public String getFormatted(BankField field) {
@@ -269,6 +277,9 @@ public class Bank extends Ownable {
 	public void setName(String name) {
 		this.name = name;
 		plugin.getBankUtils().addBank(this, true); // Update bank in database
+		notifyObservers();
+		getAccounts().forEach(Account::notifyObservers);
+		plugin.getBankUtils().notifyObservers();
 	}
 
 	@Override
@@ -279,6 +290,7 @@ public class Bank extends Ownable {
 		if (Config.trustOnTransfer)
 			coowners.add(prevOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
+		notifyObservers();
 	}
 
 	@Override

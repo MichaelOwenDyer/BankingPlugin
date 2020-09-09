@@ -15,14 +15,13 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class BankUtils {
+public class BankUtils implements Observable {
 
 	private final BankingPlugin plugin;
-	private final Map<Selection, Bank> bankSelectionMap = new ConcurrentHashMap<>();
+	private final Map<Selection, Bank> bankSelectionMap = new HashMap<>();
 
     public BankUtils(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -52,16 +51,6 @@ public class BankUtils {
 	}
 
     /**
-	 * Checks whether there is a bank at a given location
-	 * 
-	 * @param location Location to check
-	 * @return Whether there is a bank at the given location
-	 */
-	public boolean isBank(Location location) {
-		return getBank(location) != null;
-    }
-
-    /**
 	 * Get all banks Do not use for removing while iterating!
 	 *
 	 * @see #getBanksCopy()
@@ -76,7 +65,7 @@ public class BankUtils {
 	 * iterating
 	 *
 	 * @see #getBanks()
-	 * @return Copy of collection of all banks, may contain duplicates
+	 * @return Copy of collection of all banks
 	 */
 	public Set<Bank> getBanksCopy() {
 		return Collections.unmodifiableSet(getBanks());

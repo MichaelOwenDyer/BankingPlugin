@@ -48,7 +48,7 @@ public class AccountBalanceListener implements Listener {
 
 			plugin.debug(executor.getName() + " has closed an account chest (#" + account.getID() + ")");
 
-			BigDecimal valueOnClose = accountUtils.appraise(account);
+			BigDecimal valueOnClose = AccountUtils.appraise(account);
 
 			BigDecimal difference = valueOnClose.subtract(account.getBalance());
 			if (difference.signum() == 0)
@@ -58,11 +58,6 @@ public class AccountBalanceListener implements Listener {
 					difference.signum() == 1 ? TransactionType.DEPOSIT : TransactionType.WITHDRAWAL, difference,
 					valueOnClose);
 			Bukkit.getPluginManager().callEvent(event);
-
-			account.setBalance(valueOnClose);
-
-			plugin.debugf("Account #%d has been updated with a new balance ($%s)",
-					account.getID(), Utils.format(valueOnClose));
 
 			if (difference.signum() == 1)
 				executor.sendMessage(String.format(Messages.ACCOUNT_DEPOSIT, Utils.format(difference),
@@ -76,7 +71,11 @@ public class AccountBalanceListener implements Listener {
 				if (account.getStatus().getMultiplierStage() != account.getStatus().processWithdrawal())
 					executor.sendMessage(String.format(Messages.MULTIPLIER_DECREASED, account.getStatus().getRealMultiplier()));
 
+			account.setBalance(valueOnClose);
 			accountUtils.addAccount(account, true);
+
+			plugin.debugf("Account #%d has been updated with a new balance ($%s)",
+					account.getID(), Utils.format(valueOnClose));
 
 			if (account.getOwner().isOnline())
 				plugin.getDatabase().logLogout(account.getOwner().getPlayer(), null);

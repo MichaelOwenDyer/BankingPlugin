@@ -83,7 +83,7 @@ public class AccountRemoveall extends AccountSubCommand implements ConfirmableSu
         sender.sendMessage(String.format(Messages.ACCOUNTS_REMOVED,
                 accounts.size(),
                 accounts.size() == 1 ? " was" : "s were"));
-        accountUtils.removeAccounts(accounts, true);
+        accounts.forEach(a -> accountUtils.removeAccount(a, true));
         return true;
     }
 

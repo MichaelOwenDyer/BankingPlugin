@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -16,7 +17,9 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-abstract class Gui<T> {
+public abstract class Gui<T> {
+
+	static BankingPlugin plugin = BankingPlugin.getInstance();
 
 	Gui<?> prevGui;
 	Player viewer;
@@ -28,14 +31,24 @@ abstract class Gui<T> {
 			prevGui.inForeground = true;
 			prevGui.open(false);
 		}
-	}).runTask(BankingPlugin.getInstance());
+	}).runTask(plugin);
 
 	public void open(Player player) {
 		this.viewer = player;
 		open(true);
 	}
 
+	void subscribe(Observable observable) {
+		observable.addObserver(this);
+	}
+
+	void unsubscribe(Observable observable) {
+		observable.removeObserver(this);
+	}
+
 	abstract void open(boolean initialize);
+
+	public abstract void update();
 
 	abstract void close(Player player);
 
@@ -68,17 +81,17 @@ abstract class Gui<T> {
 		return createSlotItem(skull, displayName, lore);
 	}
 
-	static ItemStack createSlotItem(Material material, String displayName, List<String> lore) {
-		return createSlotItem(new ItemStack(material), displayName, lore);
-	}
-
 	/**
 	 * Create an {@link ItemStack} to be placed in the Gui.
-	 * @param item the {@link ItemStack} that should be used for the item
+	 * @param material the {@link Material} that should be used for the item
 	 * @param displayName the name of the Gui item
 	 * @param lore the description of the Gui item
 	 * @return a custom {@link ItemStack}
 	 */
+	static ItemStack createSlotItem(Material material, String displayName, List<String> lore) {
+		return createSlotItem(new ItemStack(material), displayName, lore);
+	}
+
 	private static ItemStack createSlotItem(ItemStack item, String displayName, List<String> lore) {
 		ItemMeta itemMeta = item.getItemMeta();
 		if (itemMeta == null)
@@ -117,6 +130,6 @@ abstract class Gui<T> {
 	}
 
 	enum GuiType {
-		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS
+		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY
 	}
 }
