@@ -213,10 +213,10 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 			return !unconfirmed.containsKey(p.getUniqueId());
 		}
 
-		if ((account.getBalance().signum() == 1 || Config.confirmOnRemove)) {
+		if ((account.getBalance().signum() > 0 || Config.confirmOnRemove)) {
 			if (!isConfirmed(p, account.getID())) {
 				plugin.debug("Needs confirmation");
-				if (account.getBalance().signum() == 1) {
+				if (account.getBalance().signum() > 0) {
 					p.sendMessage(Messages.ACCOUNT_BALANCE_NOT_ZERO);
 				}
 				p.sendMessage(Messages.CLICK_TO_CONFIRM);

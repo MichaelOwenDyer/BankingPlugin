@@ -8,7 +8,6 @@ import com.monst.bankingplugin.banking.bank.BankConfig;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
-import com.monst.bankingplugin.listeners.AccountBalanceListener.TransactionType;
 import com.monst.bankingplugin.selections.BlockVector2D;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Polygonal2DSelection;
@@ -780,10 +779,9 @@ public abstract class Database {
 	 * @param executor Player who performed a transaction
 	 * @param account  The {@link Account} the player performed the transaction on
 	 * @param amount   The {@link BigDecimal} transaction amount
-	 * @param type     Whether the executor deposited or withdrew
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
-	public void logAccountTransaction(final Player executor, Account account, BigDecimal amount, TransactionType type, Callback<Void> callback) {
+	public void logAccountTransaction(final Player executor, Account account, BigDecimal amount, Callback<Void> callback) {
 		final String query = "INSERT INTO " + tableTransactionLog
 				+ " (account_id,bank_id,timestamp,time,owner_name,owner_uuid,executor_name,executor_uuid,transaction_type,amount,new_balance,world,x,y,z)"
 				+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -808,8 +806,8 @@ public abstract class Database {
 						ps.setString(7, null);
 						ps.setString(8, null);
 					}
-					ps.setString(9, type.toString());
-					ps.setString(10, amount.toString());
+					ps.setString(9, amount.signum() > 0 ? "DEPOSIT" : "WITHDRAWAL");
+					ps.setString(10, amount.abs().toString());
 					ps.setString(11, account.getBalance().toString());
 					ps.setString(12, account.getLocation().getWorld() != null
 							? account.getLocation().getWorld().getName()
@@ -1020,16 +1018,14 @@ public abstract class Database {
 
     private void getOfflineRevenue(Player player, long logoutTime, String table, Callback<BigDecimal> callback) {
 		Utils.bukkitRunnable(() -> {
-			BigDecimal revenue = BigDecimal.ZERO;
-
 			try (Connection con = dataSource.getConnection();
 				 PreparedStatement ps = con.prepareStatement("SELECT * FROM " + table + " WHERE owner_uuid = ?")) {
 				ps.setString(1, player.getUniqueId().toString());
 				ResultSet rs = ps.executeQuery();
 
+				BigDecimal revenue = BigDecimal.ZERO;
 				while (rs.next()) {
-					long interestTime = rs.getLong("time");
-					if (interestTime > logoutTime) {
+					if (rs.getLong("time") > logoutTime) {
 						BigDecimal interest = BigDecimal.valueOf(Double.parseDouble(rs.getString("amount")));
 						revenue = revenue.add(interest);
 					}

@@ -8,7 +8,6 @@ import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -34,63 +33,45 @@ public class AccountBalanceListener implements Listener {
 	@EventHandler
 	@SuppressWarnings("unused")
 	public void onAccountInventoryClose(InventoryCloseEvent e) {
-		
+
 		if (!(e.getPlayer() instanceof Player))
 			return;
 		if (!e.getInventory().getType().equals(InventoryType.CHEST))
 			return;
 
-		Location loc = e.getInventory().getLocation();
+		Account account = accountUtils.getAccount(e.getInventory().getLocation());
+		if (account == null)
+			return;
 
-		if (accountUtils.isAccount(loc)) {
-			Player executor = (Player) e.getPlayer();
-			Account account = accountUtils.getAccount(loc);
+		BigDecimal valueOnClose = AccountUtils.appraise(account);
+		BigDecimal difference = valueOnClose.subtract(account.getBalance());
 
-			plugin.debug(executor.getName() + " has closed an account chest (#" + account.getID() + ")");
+		if (difference.signum() == 0)
+			return;
 
-			BigDecimal valueOnClose = AccountUtils.appraise(account);
+		Player executor = (Player) e.getPlayer();
+		BigDecimal abs = difference.abs();
+		executor.sendMessage(String.format(difference.signum() > 0 ? Messages.ACCOUNT_DEPOSIT : Messages.ACCOUNT_WITHDRAWAL,
+				Utils.format(difference), (account.isOwner(executor)) ? "your" : account.getOwner().getName() + "'s"));
+		executor.sendMessage(String.format(Messages.ACCOUNT_NEW_BALANCE, Utils.format(valueOnClose)));
 
-			BigDecimal difference = valueOnClose.subtract(account.getBalance());
-			if (difference.signum() == 0)
-				return;
+		if (difference.signum() < 0 && valueOnClose.compareTo(account.getPrevBalance()) < 0)
+			if (account.getStatus().getMultiplierStage() != account.getStatus().processWithdrawal())
+				executor.sendMessage(String.format(Messages.MULTIPLIER_DECREASED, account.getStatus().getRealMultiplier()));
 
-			AccountTransactionEvent event = new AccountTransactionEvent(executor, account,
-					difference.signum() == 1 ? TransactionType.DEPOSIT : TransactionType.WITHDRAWAL, difference,
-					valueOnClose);
-			Bukkit.getPluginManager().callEvent(event);
+		account.setBalance(valueOnClose);
+		accountUtils.addAccount(account, true);
 
-			if (difference.signum() == 1)
-				executor.sendMessage(String.format(Messages.ACCOUNT_DEPOSIT, Utils.format(difference),
-						(account.isOwner(executor)) ? "your" : account.getOwner().getName() + "'s"));
-			else
-				executor.sendMessage(String.format(Messages.ACCOUNT_WITHDRAWAL, Utils.format(difference.abs()),
-						(account.isOwner(executor)) ? "your" : account.getOwner().getName() + "'s"));
-			executor.sendMessage(String.format(Messages.ACCOUNT_NEW_BALANCE, Utils.format(valueOnClose)));
+		plugin.debugf("Account #%d has been updated with a new balance ($%s)", account.getID(), Utils.format(valueOnClose));
+		Bukkit.getPluginManager().callEvent(new AccountTransactionEvent(executor, account, difference, valueOnClose));
 
-			if (difference.signum() == -1 && valueOnClose.compareTo(account.getPrevBalance()) < 0)
-				if (account.getStatus().getMultiplierStage() != account.getStatus().processWithdrawal())
-					executor.sendMessage(String.format(Messages.MULTIPLIER_DECREASED, account.getStatus().getRealMultiplier()));
+		if (account.getOwner().isOnline())
+			plugin.getDatabase().logLogout(account.getOwner().getPlayer(), null);
 
-			account.setBalance(valueOnClose);
-			accountUtils.addAccount(account, true);
-
-			plugin.debugf("Account #%d has been updated with a new balance ($%s)",
-					account.getID(), Utils.format(valueOnClose));
-
-			if (account.getOwner().isOnline())
-				plugin.getDatabase().logLogout(account.getOwner().getPlayer(), null);
-
-			if (Config.enableTransactionLog) {
-				TransactionType type = difference.signum() == 1 ? TransactionType.DEPOSIT : TransactionType.WITHDRAWAL;
-				plugin.getDatabase().logAccountTransaction(executor, account, difference.abs(), type, null);
-				plugin.debug("Logging transaction to database...");
-			}
+		if (Config.enableTransactionLog) {
+			plugin.getDatabase().logAccountTransaction(executor, account, difference, null);
+			plugin.debug("Logging transaction to database...");
 		}
 	}
-
-	public enum TransactionType {
-		DEPOSIT, WITHDRAWAL
-	}
-
 }
 

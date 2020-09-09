@@ -47,8 +47,8 @@ public class Messages {
 	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s to %s.";
 
 	public static final String OFFLINE_INTEREST_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in interest while you were offline!";
-	public static final String OFFLINE_BALANCE_INCREASED = ChatColor.GOLD + "Your account increased in value by " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " while you were offline.";
-	public static final String OFFLINE_TRANSACTION_EXPENDITURE = ChatColor.RED + "Your account decreased in value by $%s while you were offline.";
+	public static final String OFFLINE_BANK_PROFIT = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in bank profit while you were offline.";
+	public static final String OFFLINE_BANK_LOSS = ChatColor.RED + "You lost $%s in bank losses while you were offline.";
 
 	public static final String PLAYER_REMOVED_BANK = ChatColor.RED + "%s has removed bank %s.";
 

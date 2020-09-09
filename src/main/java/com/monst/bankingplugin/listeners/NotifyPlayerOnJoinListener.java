@@ -33,14 +33,15 @@ public class NotifyPlayerOnJoinListener implements Listener {
             }
 
             database.getOfflineBankRevenue(p, logoutTime, Callback.of(plugin, profit -> {
-                if (profit.signum() == 1)
-                    p.sendMessage(String.format(Messages.OFFLINE_BALANCE_INCREASED, Utils.format(profit)));
-                else if (profit.signum() == -1)
-                    p.sendMessage(String.format(Messages.OFFLINE_TRANSACTION_EXPENDITURE, Utils.format(profit)));
+                if (profit.signum() == 0)
+                    return;
+                p.sendMessage(String.format(
+                        profit.signum() > 0 ? Messages.OFFLINE_BANK_PROFIT : Messages.OFFLINE_BANK_LOSS,
+                        Utils.format(profit)));
             }));
 
             database.getOfflineAccountRevenue(p, logoutTime, Callback.of(plugin, bigDecimal -> {
-                if (bigDecimal.signum() == 1)
+                if (bigDecimal.signum() > 0)
                     p.sendMessage(String.format(Messages.OFFLINE_INTEREST_EARNED, Utils.format(bigDecimal)));
             }));
 
