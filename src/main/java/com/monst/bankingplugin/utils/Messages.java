@@ -54,7 +54,7 @@ public class Messages {
 
 	
 	// SUCCESS NOTIFICATIONS
-	public static final String INTEREST_PAYOUT_TRIGGERED = ChatColor.GOLD + "Interest payout event triggered.";
+	public static final String INTEREST_PAYOUT_TRIGGERED = ChatColor.GOLD + "Interest payout event triggered at %d banks.";
 	public static final String NICKNAME_SET = ChatColor.GOLD + "Account nickname has been set.";
 	public static final String MULTIPLIER_SET = ChatColor.GOLD + "Account multiplier has been set to %d.";
 	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "Account interest delay has been set to %d.";

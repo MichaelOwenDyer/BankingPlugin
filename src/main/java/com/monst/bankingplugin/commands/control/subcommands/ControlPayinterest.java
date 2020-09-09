@@ -31,10 +31,14 @@ public class ControlPayinterest extends ControlSubCommand {
             return true;
         }
 
-        Set<Bank> banks = Arrays.stream(args)
-                .map(plugin.getBankUtils()::lookupBank)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        Set<Bank> banks;
+        if (args.length == 1)
+            banks = plugin.getBankUtils().getBanks();
+        else
+            banks = Arrays.stream(args)
+                    .map(plugin.getBankUtils()::lookupBank)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
 
         InterestEvent event = new InterestEvent(plugin, sender, banks);
         Bukkit.getPluginManager().callEvent(event);
@@ -42,7 +46,8 @@ public class ControlPayinterest extends ControlSubCommand {
             plugin.debug("Interest event cancelled");
             return true;
         }
-        sender.sendMessage(Messages.INTEREST_PAYOUT_TRIGGERED);
+        plugin.debugf(Messages.INTEREST_PAYOUT_TRIGGERED, banks.size());
+        sender.sendMessage(String.format(Messages.INTEREST_PAYOUT_TRIGGERED, banks.size()));
         return true;
     }
 

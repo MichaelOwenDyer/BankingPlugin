@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public abstract class Database {
@@ -536,13 +537,13 @@ public abstract class Database {
 	 */
 	public void getBanksAndAccounts(final boolean showConsoleMessages, final Callback<Map<Bank, Collection<Account>>> callback) {
 		Utils.bukkitRunnable(() -> {
-			Map<Bank, Collection<Account>> banksAndAccounts = new HashMap<>();
 
 			try (Connection con = dataSource.getConnection();
 					PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableBanks + "")) {
 				// id,name,selection_type,world,minY,maxY,points,account_config
 				ResultSet rs = ps.executeQuery();
 
+				Map<Bank, Set<Account>> banksAndAccounts = new ConcurrentHashMap<>();
 				while (rs.next()) {
 
 					int bankId = rs.getInt("id");
@@ -687,90 +688,85 @@ public abstract class Database {
 	 *                            collection of all accounts (as
 	 *                            {@code Collection<Account>})
 	 */
-	private void getAccountsAtBank(Bank bank, final boolean showConsoleMessages, final Callback<Collection<Account>> callback) {
-		Utils.bukkitRunnable(() -> {
-			ArrayList<Account> accounts = new ArrayList<>();
+	private void getAccountsAtBank(Bank bank, final boolean showConsoleMessages, final Callback<Set<Account>> callback) {
+		try (Connection con = dataSource.getConnection();
+			 PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableAccounts + " WHERE bank_id = ?")) {
+			ps.setInt(1, bank.getID());
+			ResultSet rs = ps.executeQuery();
 
-			try (Connection con = dataSource.getConnection();
-				 PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableAccounts + " WHERE bank_id = ?")) {
-				ps.setInt(1, bank.getID());
-				ResultSet rs = ps.executeQuery();
+			Set<Account> accounts = new HashSet<>();
+			while (rs.next()) {
 
-				while (rs.next()) {
+				int accountId = rs.getInt("id");
 
-					int accountId = rs.getInt("id");
+				plugin.debug("Getting account from database... (#" + accountId + ")");
 
-					plugin.debug("Getting account from database... (#" + accountId + ")");
+				String worldName = rs.getString("world");
+				World world = Bukkit.getWorld(worldName);
 
-					String worldName = rs.getString("world");
-					World world = Bukkit.getWorld(worldName);
-
-					if (world == null) {
-						WorldNotFoundException e = new WorldNotFoundException(worldName);
-						if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
-							plugin.getLogger().warning(e.getMessage());
-							notFoundWorlds.add(worldName);
-						}
-						plugin.debug("Failed to get account (#" + accountId + ")");
-						plugin.debug(e);
-						continue;
+				if (world == null) {
+					WorldNotFoundException e = new WorldNotFoundException(worldName);
+					if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
+						plugin.getLogger().warning(e.getMessage());
+						notFoundWorlds.add(worldName);
 					}
-
-					AccountStatus status;
-					try {
-						int multiplierStage = rs.getInt("multiplier_stage");
-						int remainingUntilPayout = rs.getInt("remaining_until_payout");
-						int remainingOfflinePayouts = rs.getInt("remaining_offline_payouts");
-						int remainingOfflineUntilReset = rs.getInt("remaining_offline_until_reset");
-
-						status = new AccountStatus(bank, multiplierStage, remainingUntilPayout,
-								remainingOfflinePayouts, remainingOfflineUntilReset);
-
-					} catch (SQLException e) {
-						plugin.getLogger().severe("Failed to create account status (#" + accountId + ").");
-						plugin.debug("Failed to create account status.");
-						plugin.debug(e);
-						continue;
-					}
-
-					BigDecimal balance = BigDecimal.valueOf(Double.parseDouble(rs.getString("balance")));
-					BigDecimal prevBalance = BigDecimal.valueOf(Double.parseDouble(rs.getString("prev_balance")));
-
-					int x = rs.getInt("x");
-					int y = rs.getInt("y");
-					int z = rs.getInt("z");
-					Location location = new Location(world, x, y, z);
-					OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
-					Set<OfflinePlayer> coowners = rs.getString("co_owners") == null
-							? new HashSet<>()
-							: Arrays.stream(rs.getString("co_owners").split(" \\| "))
-							.filter(string -> !string.isEmpty())
-							.map(UUID::fromString)
-							.map(Bukkit::getOfflinePlayer)
-							.collect(Collectors.toCollection(HashSet::new));
-					String nickname = rs.getString("nickname");
-
-					plugin.debug("Initializing account... (#" + accountId + " at bank \"" + bank.getName() + "\" (#"
-							+ bank.getID() + "))");
-
-					Account account = Account.reopen(accountId, owner, coowners, bank, location, status, nickname,
-							balance, prevBalance);
-					accounts.add(account);
+					plugin.debug("Failed to get account (#" + accountId + ")");
+					plugin.debug(e);
+					continue;
 				}
 
-				if (callback != null) {
-					callback.callSyncResult(Collections.unmodifiableCollection(accounts));
-				}
-			} catch (SQLException e) {
-				if (callback != null) {
-					callback.callSyncError(e);
+				AccountStatus status;
+				try {
+					int multiplierStage = rs.getInt("multiplier_stage");
+					int remainingUntilPayout = rs.getInt("remaining_until_payout");
+					int remainingOfflinePayouts = rs.getInt("remaining_offline_payouts");
+					int remainingOfflineUntilReset = rs.getInt("remaining_offline_until_reset");
+
+					status = new AccountStatus(bank, multiplierStage, remainingUntilPayout,
+							remainingOfflinePayouts, remainingOfflineUntilReset);
+
+				} catch (SQLException e) {
+					plugin.getLogger().severe("Failed to create account status (#" + accountId + ").");
+					plugin.debug("Failed to create account status.");
+					plugin.debug(e);
+					continue;
 				}
 
-				plugin.getLogger().severe("Failed to get accounts from database.");
-				plugin.debug("Failed to get accounts from database.");
-				plugin.debug(e);
+				BigDecimal balance = BigDecimal.valueOf(Double.parseDouble(rs.getString("balance")));
+				BigDecimal prevBalance = BigDecimal.valueOf(Double.parseDouble(rs.getString("prev_balance")));
+
+				int x = rs.getInt("x");
+				int y = rs.getInt("y");
+				int z = rs.getInt("z");
+				Location location = new Location(world, x, y, z);
+				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
+				Set<OfflinePlayer> coowners = rs.getString("co_owners") == null
+						? new HashSet<>()
+						: Arrays.stream(rs.getString("co_owners").split(" \\| "))
+						.filter(string -> !string.isEmpty())
+						.map(UUID::fromString)
+						.map(Bukkit::getOfflinePlayer)
+						.collect(Collectors.toCollection(HashSet::new));
+				String nickname = rs.getString("nickname");
+
+				plugin.debugf("Initializing account #%d at bank \"%s\"", accountId, bank.getName());
+
+				Account account = Account.reopen(accountId, owner, coowners, bank, location, status, nickname, balance, prevBalance);
+				accounts.add(account);
 			}
-		}).runTaskAsynchronously(plugin);
+
+			if (callback != null) {
+				callback.callSyncResult(Collections.unmodifiableSet(accounts));
+			}
+		} catch (SQLException e) {
+			if (callback != null) {
+				callback.callSyncError(e);
+			}
+
+			plugin.getLogger().severe("Failed to get accounts from database.");
+			plugin.debug("Failed to get accounts from database.");
+			plugin.debug(e);
+		}
 	}
 
 	/**
