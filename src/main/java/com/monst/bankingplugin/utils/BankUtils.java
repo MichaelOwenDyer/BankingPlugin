@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class BankUtils implements Observable {
+public class BankUtils extends Observable {
 
 	private final BankingPlugin plugin;
 	private final Map<Selection, Bank> bankSelectionMap = new HashMap<>();

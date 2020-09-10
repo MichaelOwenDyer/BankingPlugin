@@ -1,24 +1,31 @@
 package com.monst.bankingplugin.utils;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.gui.Gui;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public interface Observable {
+public abstract class Observable {
 
     Set<Gui<?>> observers = new HashSet<>();
+    boolean scheduled = false;
+    BukkitRunnable notifyTimer = Utils.bukkitRunnable(() -> observers.forEach(Gui::update));
 
-    default void addObserver(Gui<?> observer) {
+    public void addObserver(Gui<?> observer) {
         observers.add(observer);
     }
 
-    default void removeObserver(Gui<?> observer) {
+    public void removeObserver(Gui<?> observer) {
         observers.remove(observer);
     }
 
-    default void notifyObservers() {
-        observers.forEach(Gui::update);
+    protected void notifyObservers() {
+        if (scheduled)
+            notifyTimer.cancel();
+        notifyTimer.runTaskLater(BankingPlugin.getInstance(), 10);
+        scheduled = true;
     }
 
 }

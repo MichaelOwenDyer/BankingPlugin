@@ -21,7 +21,7 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class AccountUtils implements Observable {
+public class AccountUtils extends Observable {
 
 	private final BankingPlugin plugin;
 	private final Map<Location, Account> accountLocationMap = new HashMap<>();

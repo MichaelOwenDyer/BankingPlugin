@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * This class represents either a {@link Bank} or an {@link Account}.
  */
-public abstract class Ownable implements Nameable, Observable {
+public abstract class Ownable extends Observable implements Nameable {
 
 	protected static final BankingPlugin plugin = BankingPlugin.getInstance();
 
