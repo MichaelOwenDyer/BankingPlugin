@@ -953,7 +953,7 @@ public abstract class Database {
 		if (async)
 			runnable.runTaskAsynchronously(plugin);
 		else
-			runnable.runTask(plugin);
+			runnable.run();
 	}
 
     /**

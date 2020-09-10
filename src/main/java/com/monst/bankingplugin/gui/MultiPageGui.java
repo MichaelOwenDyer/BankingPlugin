@@ -36,10 +36,6 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
         if (initialize)
             shortenGuiChain();
         update();
-        if (menuPages == null || menuPages.isEmpty())
-            return;
-        currentPage = Math.min(menuPages.size() - 1, currentPage);
-        menuPages.get(currentPage).open(viewer);
     }
 
     @Override
@@ -52,6 +48,10 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
             OPEN_PREVIOUS.close(player, info);
             unsubscribe(getSubject());
         });
+        if (menuPages == null || menuPages.isEmpty())
+            return;
+        currentPage = Math.min(menuPages.size() - 1, currentPage);
+        menuPages.get(currentPage).open(viewer);
     }
 
     @Override

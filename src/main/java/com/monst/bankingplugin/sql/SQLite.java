@@ -70,7 +70,7 @@ public class SQLite extends Database {
         if (async)
             runnable.runTaskAsynchronously(plugin);
         else
-            runnable.runTask(plugin);
+            runnable.run();
     }
 
     @Override

@@ -18,8 +18,6 @@ import java.util.Set;
  */
 public abstract class Ownable extends Observable implements Nameable {
 
-	protected static final BankingPlugin plugin = BankingPlugin.getInstance();
-
 	protected int id;
 	protected String name;
 	protected OfflinePlayer owner;

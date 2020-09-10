@@ -9,9 +9,10 @@ import java.util.Set;
 
 public abstract class Observable {
 
+    protected static final BankingPlugin plugin = BankingPlugin.getInstance();
     Set<Gui<?>> observers = new HashSet<>();
+    BukkitRunnable notifyTimer;
     boolean scheduled = false;
-    BukkitRunnable notifyTimer = Utils.bukkitRunnable(() -> observers.forEach(Gui::update));
 
     public void addObserver(Gui<?> observer) {
         observers.add(observer);
@@ -21,10 +22,16 @@ public abstract class Observable {
         observers.remove(observer);
     }
 
-    protected void notifyObservers() {
+    public synchronized void notifyObservers() {
+        if (!plugin.isEnabled())
+            return;
         if (scheduled)
             notifyTimer.cancel();
-        notifyTimer.runTaskLater(BankingPlugin.getInstance(), 10);
+        notifyTimer = Utils.bukkitRunnable(() -> {
+            observers.forEach(Gui::update);
+            scheduled = false;
+        });
+        notifyTimer.runTaskLater(plugin, 1);
         scheduled = true;
     }
 
