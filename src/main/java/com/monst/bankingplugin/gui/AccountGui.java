@@ -32,7 +32,7 @@ public class AccountGui extends SinglePageGui<Account> {
 
 	@Override
 	void initializeMenu() {
-		menu = ChestMenu.builder(1).title(guiSubject.getColorizedName()).build();
+		menu = ChestMenu.builder(1).title(guiSubject.getChestName()).build();
 	}
 
 	@Override

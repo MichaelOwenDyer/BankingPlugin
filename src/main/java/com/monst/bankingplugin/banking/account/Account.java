@@ -326,17 +326,14 @@ public class Account extends Ownable {
 	 */
 	@Override
 	public void setName(String name) {
-		if (name == null)
-			name = getDefaultName();
-		setChestName(this.name = name);
+		this.name = name;
+		setChestName(getChestName());
 	}
 
 	private void setChestName(String name) {
 		Inventory inv = getInventory(true);
 		if (inv == null)
 			return;
-		if (name.contentEquals(getDefaultName()))
-			name = name + ChatColor.GRAY + String.format(" (#%d)", getID());
 		if (size == AccountSize.DOUBLE) {
 			DoubleChest dc = (DoubleChest) inv.getHolder();
 			if (dc == null)
@@ -344,22 +341,30 @@ public class Account extends Ownable {
 			Chest left = (Chest) dc.getLeftSide();
 			Chest right = (Chest) dc.getRightSide();
 			if (left != null) {
-				left.setCustomName(Utils.colorize(name));
+				left.setCustomName(name);
 				left.update();
 			}
 			if (right != null) {
-				right.setCustomName(Utils.colorize(name));
+				right.setCustomName(name);
 				right.update();
 			}
 		} else {
 			Chest chest = (Chest) inv.getHolder();
 			if (chest != null) {
-				chest.setCustomName(Utils.colorize(name));
+				chest.setCustomName(name);
 				chest.update();
 			}
 		}
 		notifyObservers();
 		plugin.getAccountUtils().notifyObservers();
+	}
+
+	public String getChestName() {
+		return getRawName().contentEquals(getDefaultName()) ? getDefaultChestName() : getColorizedName();
+	}
+
+	public String getDefaultChestName() {
+		return Utils.colorize(getDefaultName() + ChatColor.GRAY + "(#" + getID() + ")");
 	}
 
 	/**

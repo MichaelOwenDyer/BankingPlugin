@@ -29,7 +29,7 @@ public class AccountListGui extends MultiPageGui<Collection<Account>> {
     @Override
     void addItems(PaginatedMenuBuilder builder) {
         for (Account account : guiSubjects.get()) {
-            ItemStack item = createSlotItem(account.getOwner(), account.getColorizedName(),
+            ItemStack item = createSlotItem(account.getOwner(), account.getChestName(),
                     Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
             ItemStackTemplate template = new StaticItemTemplate(item);
             Slot.ClickHandler clickHandler = (player, info) -> new AccountGui(account).setPrevGui(this).open(player);
