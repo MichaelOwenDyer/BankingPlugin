@@ -106,8 +106,8 @@ public abstract class ClickType<T> {
     	return new CreateClickType(newOwner);
 	}
 
-	public static RemoveClickType info() {
-		return new RemoveClickType();
+	public static InfoClickType info() {
+		return new InfoClickType();
 	}
 
 	public static MigrateClickType migrate(Account toMigrate) {
@@ -118,8 +118,8 @@ public abstract class ClickType<T> {
     	return new RecoverClickType(toRecover);
 	}
 
-	public static InfoClickType remove() {
-		return new InfoClickType();
+	public static RemoveClickType remove() {
+		return new RemoveClickType();
 	}
 
 	public static RenameClickType rename(String newName) {
