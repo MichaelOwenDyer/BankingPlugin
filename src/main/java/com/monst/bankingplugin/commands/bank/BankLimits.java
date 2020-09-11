@@ -1,0 +1,31 @@
+package com.monst.bankingplugin.commands.bank;
+
+import com.monst.bankingplugin.utils.BankUtils;
+import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.utils.Permissions;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+public class BankLimits extends BankCommand.SubCommand {
+
+    BankLimits() {
+        super("limits", true);
+    }
+
+    @Override
+    protected String getHelpMessage(CommandSender sender) {
+        return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_LIMITS : "";
+    }
+
+    @Override
+    protected boolean execute(CommandSender sender, String[] args) {
+        Player p = ((Player) sender);
+        int banksUsed = bankUtils.getNumberOfBanks(p);
+        int bankLimit = BankUtils.getBankLimit(p);
+        String limit = bankLimit < 0 ? "∞" : "" + bankLimit;
+        plugin.debug(p.getName() + " is viewing their bank limits: " + banksUsed + " / " + limit);
+        p.sendMessage(String.format(Messages.BANK_LIMIT, banksUsed, limit));
+        return true;
+    }
+
+}

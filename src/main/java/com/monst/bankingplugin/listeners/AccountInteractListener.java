@@ -2,7 +2,7 @@ package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.commands.account.subcommands.*;
+import com.monst.bankingplugin.commands.account.*;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.ClickType.EClickType;

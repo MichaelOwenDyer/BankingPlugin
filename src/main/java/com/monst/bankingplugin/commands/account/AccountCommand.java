@@ -2,11 +2,12 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
-import com.monst.bankingplugin.commands.account.subcommands.*;
+import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Messages;
 
-public class AccountCommand extends BankingPluginCommand<AccountSubCommand> {
+public class AccountCommand extends BankingPluginCommand<AccountCommand.SubCommand> {
 
 	private static boolean commandCreated = false;
 
@@ -41,6 +42,16 @@ public class AccountCommand extends BankingPluginCommand<AccountSubCommand> {
 
 		register();
 		commandCreated = true;
+
+	}
+
+	abstract static class SubCommand extends BankingPluginSubCommand {
+
+		final AccountUtils accountUtils = plugin.getAccountUtils();
+
+		SubCommand(String name, boolean playerCommand) {
+			super(name, playerCommand);
+		}
 
 	}
 

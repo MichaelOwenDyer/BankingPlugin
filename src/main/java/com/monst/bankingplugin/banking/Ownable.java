@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.banking;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.utils.Nameable;

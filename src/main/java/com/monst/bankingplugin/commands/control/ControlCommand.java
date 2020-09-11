@@ -2,11 +2,11 @@ package com.monst.bankingplugin.commands.control;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
-import com.monst.bankingplugin.commands.control.subcommands.*;
+import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.Messages;
 
-public class ControlCommand extends BankingPluginCommand<ControlSubCommand> {
+public class ControlCommand extends BankingPluginCommand<ControlCommand.SubCommand> {
 
 	private static boolean commandCreated = false;
 
@@ -32,6 +32,14 @@ public class ControlCommand extends BankingPluginCommand<ControlSubCommand> {
 
         register();
         commandCreated = true;
+
+    }
+
+    abstract static class SubCommand extends BankingPluginSubCommand {
+
+        SubCommand(String name, boolean playerCommand) {
+            super(name, playerCommand);
+        }
 
     }
 

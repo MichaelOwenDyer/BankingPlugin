@@ -19,14 +19,14 @@ public abstract class BankingPluginSubCommand {
         this.playerCommand = playerCommand;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
     /**
      * @return Whether the command can only be used by players, not by the console
      */
-    public boolean isPlayerCommand() {
+    boolean isPlayerCommand() {
         return playerCommand;
     }
 
@@ -36,14 +36,14 @@ public abstract class BankingPluginSubCommand {
      * @param args Arguments of the command ({@code args[0]} is the sub command's name)
      * @return Whether the sender should be sent the help message
      */
-    public abstract boolean execute(CommandSender sender, String[] args);
+    protected abstract boolean execute(CommandSender sender, String[] args);
 
     /**
      * @param sender Sender of the command
      * @param args Arguments of the command ({@code args[0]} is the sub command's name)
      * @return A list of tab completions for the sub command (may be an empty list)
      */
-    public List<String> getTabCompletions(CommandSender sender, String[] args) {
+    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
 		return Collections.emptyList();
     }
 
@@ -52,7 +52,7 @@ public abstract class BankingPluginSubCommand {
      * @param sender Sender to receive the help message
      * @return The help message for the command.
      */
-    public abstract String getHelpMessage(CommandSender sender);
+    protected abstract String getHelpMessage(CommandSender sender);
 
     protected boolean hasPermission(CommandSender sender, String permission) {
         boolean receiveCreateMessage = sender.hasPermission(permission);
