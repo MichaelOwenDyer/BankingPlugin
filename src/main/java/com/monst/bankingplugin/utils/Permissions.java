@@ -16,14 +16,13 @@ public class Permissions {
 	public static final String ACCOUNT_MIGRATE_OTHER = "bankingplugin.account.migrate.other";
 	public static final String ACCOUNT_MIGRATE_BANK = "bankingplugin.account.migrate.bank";
 	public static final String ACCOUNT_RECOVER = "bankingplugin.account.recover";
+	public static final String ACCOUNT_RENAME = "bankingplugin.account.rename";
+	public static final String ACCOUNT_RENAME_OTHER = "bankingplugin.account.rename.other";
+	public static final String ACCOUNT_SET = "bankingplugin.account.set";
 	public static final String ACCOUNT_TRANSFER = "bankingplugin.account.transfer";
 	public static final String ACCOUNT_TRANSFER_OTHER = "bankingplugin.account.transfer.other";
 	public static final String ACCOUNT_EXTEND_OTHER = "bankingplugin.account.extend-other";
 	public static final String ACCOUNT_NO_LIMIT = "bankingplugin.account.limit.*";
-	public static final String ACCOUNT_SET = "bankingplugin.account.set";
-	public static final String ACCOUNT_SET_NICKNAME_OTHER = "bankingplugin.account.set.nickname-other";
-	public static final String ACCOUNT_SET_MULTIPLIER = "bankingplugin.account.set.multiplier";
-	public static final String ACCOUNT_SET_INTEREST_DELAY = "bankingplugin.account.set.interest-delay";
 
 	public static final String BANK_CREATE = "bankingplugin.bank.create";
 	public static final String BANK_CREATE_ADMIN = "bankingplugin.bank.create.admin";

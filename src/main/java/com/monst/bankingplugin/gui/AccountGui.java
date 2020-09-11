@@ -154,7 +154,7 @@ public class AccountGui extends SinglePageGui<Account> {
 		AccountStatus status = guiSubject.getStatus();
 		int delay = status.getDelayUntilNextPayout();
 		int remainingOffline = status.getRemainingOfflinePayouts();
-		int untilReset = status.getRemainingOfflineUntilReset();
+		int untilReset = status.getRemainingOfflinePayoutsUntilReset();
 		int offlineDecrement = guiSubject.getBank().get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
 		return Utils.wordWrapAll(
 				(delay == 0 ?

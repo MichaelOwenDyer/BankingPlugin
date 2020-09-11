@@ -9,7 +9,7 @@ import com.monst.bankingplugin.utils.Utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
@@ -38,6 +38,13 @@ import java.util.stream.Collectors;
 @SuppressWarnings("all")
 public class BankConfig {
 
+	private static final NumberFormat interestRateFormatter = NumberFormat.getInstance();
+	static {
+		interestRateFormatter.setMinimumIntegerDigits(1);
+		interestRateFormatter.setMinimumFractionDigits(2);
+		interestRateFormatter.setMaximumFractionDigits(3);
+	}
+
 	private static final Map<BankField, BiConsumer<BankConfig, String>> SETTERS = new EnumMap<>(BankField.class);
 	private static final Map<BankField, Function<BankConfig, String>> FORMATTERS = new EnumMap<>(BankField.class);
 	static {
@@ -65,7 +72,7 @@ public class BankConfig {
 		});
 		FORMATTERS.put(BankField.INTEREST_RATE, instance -> { // Special formatter without $ symbol
 			try {
-				return new DecimalFormat("###,##0.00#").format(BankField.INTEREST_RATE.getLocalVariable().get(instance));
+				return interestRateFormatter.format(BankField.INTEREST_RATE.getLocalVariable().get(instance));
 			} catch (IllegalAccessException ignored) {}
 			return "";
 		});
@@ -98,7 +105,7 @@ public class BankConfig {
 			});
 			FORMATTERS.put(field, instance -> {
 				try {
-					return "" + field.getLocalVariable().get(instance);
+					return Utils.format((int) field.getLocalVariable().get(instance));
 				} catch (IllegalAccessException ignored) {}
 				return "";
 			});

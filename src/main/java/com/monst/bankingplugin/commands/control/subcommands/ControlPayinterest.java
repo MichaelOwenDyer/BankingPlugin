@@ -46,8 +46,8 @@ public class ControlPayinterest extends ControlSubCommand {
             plugin.debug("Interest event cancelled");
             return true;
         }
-        plugin.debugf(Messages.INTEREST_PAYOUT_TRIGGERED, banks.size());
-        sender.sendMessage(String.format(Messages.INTEREST_PAYOUT_TRIGGERED, banks.size()));
+        plugin.debugf(Messages.INTEREST_PAYOUT_TRIGGERED, banks.size(), banks.size() == 1 ? "" : "s");
+        sender.sendMessage(String.format(Messages.INTEREST_PAYOUT_TRIGGERED, banks.size(), banks.size() == 1 ? "" : "s"));
         return true;
     }
 

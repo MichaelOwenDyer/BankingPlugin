@@ -24,6 +24,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.ChatPaginator;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -35,6 +37,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
+
+	private static final NumberFormat integerFormatter = NumberFormat.getInstance();
+	private static final NumberFormat decimalFormatter = NumberFormat.getInstance();
+	static {
+		decimalFormatter.setMinimumIntegerDigits(1);
+		decimalFormatter.setMinimumFractionDigits(2);
+		decimalFormatter.setMaximumFractionDigits(2);
+	}
 
 	public static Location blockifyLocation(Location loc) {
 		return new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
@@ -65,8 +75,8 @@ public class Utils {
 		return ChatColor.stripColor(colorize(s));
 	}
 
-	public static String format(int i) {
-		return "" + i;
+	public static String format(long i) {
+		return integerFormatter.format(i);
 	}
 
 	public static String format(Double d) {
@@ -74,7 +84,7 @@ public class Utils {
 	}
 
 	public static String format(BigDecimal bd) {
-		return String.format("%,.2f", bd);
+		return decimalFormatter.format(bd.setScale(2, RoundingMode.HALF_EVEN));
 	}
 
 	/**

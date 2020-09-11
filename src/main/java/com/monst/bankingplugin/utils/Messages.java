@@ -54,10 +54,12 @@ public class Messages {
 
 	
 	// SUCCESS NOTIFICATIONS
-	public static final String INTEREST_PAYOUT_TRIGGERED = ChatColor.GOLD + "Interest payout event triggered at %d banks.";
-	public static final String NICKNAME_SET = ChatColor.GOLD + "Account nickname has been set.";
-	public static final String MULTIPLIER_SET = ChatColor.GOLD + "Account multiplier has been set to %d.";
-	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "Account interest delay has been set to %d.";
+	public static final String INTEREST_PAYOUT_TRIGGERED = ChatColor.GOLD + "Interest payout event triggered at %d bank%s.";
+	public static final String ACCOUNT_RENAMED = ChatColor.GOLD + "Account has been renamed.";
+	public static final String MULTIPLIER_SET = ChatColor.GOLD + "The account multiplier has been set to %d.";
+	public static final String INTEREST_DELAY_SET = ChatColor.GOLD + "The delay until next payout has been set to %d.";
+	public static final String REMAINING_OFFLINE_PAYOUTS_SET = ChatColor.GOLD + "The number of remaining offline payouts has been set to %d.";
+	public static final String REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET_SET = ChatColor.GOLD + "The number of remaining offline payouts until multiplier reset has been set to %d.";
 	public static final String ADDED_COOWNER = ChatColor.GOLD + "%s added as a co-owner.";
 	public static final String REMOVED_COOWNER = ChatColor.GOLD + "%s removed as a co-owner.";
 	public static final String RELOADED_PLUGIN = ChatColor.GOLD + "Successfully reloaded BankingPlugin.";
@@ -128,13 +130,12 @@ public class Messages {
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE_OTHER = NO_PERMISSION + "migrate someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE_BANK = NO_PERMISSION + "migrate an account to another bank.";
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED = NO_PERMISSION + "migrate an account to a protected chest.";
+	public static final String NO_PERMISSION_ACCOUNT_RENAME = NO_PERMISSION + "rename an account.";
+	public static final String NO_PERMISSION_ACCOUNT_RENAME_OTHER = NO_PERMISSION + "rename someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_TRANSFER = NO_PERMISSION + "transfer ownership of an account.";
 	public static final String NO_PERMISSION_ACCOUNT_TRANSFER_OTHER = NO_PERMISSION + "transfer ownership of another player's account.";
 	public static final String NO_PERMISSION_ACCOUNT_EXTEND_OTHER = NO_PERMISSION + "extend someone else's account.";
-	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME = NO_PERMISSION + "set an account nickname.";
-	public static final String NO_PERMISSION_ACCOUNT_SET_NICKNAME_OTHER = NO_PERMISSION + "set someone else's account nickname.";
-	public static final String NO_PERMISSION_ACCOUNT_SET_MULTIPLIER = NO_PERMISSION + "set an account multiplier.";
-	public static final String NO_PERMISSION_ACCOUNT_SET_INTEREST_DELAY = NO_PERMISSION + "set an account interest delay.";
+	public static final String NO_PERMISSION_ACCOUNT_SET = NO_PERMISSION + "configure internal account values.";
 	public static final String NO_PERMISSION_ACCOUNT_CREATE_OTHER = NO_PERMISSION + "create an account in someone else's name.";
 	public static final String NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED = NO_PERMISSION + "extend a protected account chest.";
 	
@@ -181,6 +182,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_ACCOUNT_UNTRUST = ACCOUNT_USAGE_PREFIX + "untrust [playername]";
 	public static final String COMMAND_USAGE_ACCOUNT_MIGRATE = ACCOUNT_USAGE_PREFIX + "migrate";
 	public static final String COMMAND_USAGE_ACCOUNT_RECOVER = ACCOUNT_USAGE_PREFIX + "recover";
+	public static final String COMMAND_USAGE_ACCOUNT_RENAME = ACCOUNT_USAGE_PREFIX + "rename [accountname]";
 	public static final String COMMAND_USAGE_ACCOUNT_TRANSFER = ACCOUNT_USAGE_PREFIX + "transfer [playername]";
 
 	public static final String COMMAND_USAGE_BANK_CREATE = BANK_USAGE_PREFIX + "create [bankname] <xyz> <xyz> <admin>";

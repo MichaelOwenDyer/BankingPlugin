@@ -20,7 +20,7 @@ public class BankTrust extends BankSubCommand {
 
     @Override
     public String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_SET : "";
+        return hasPermission(sender, Permissions.BANK_TRUST) ? Messages.COMMAND_USAGE_BANK_TRUST : "";
     }
 
     @Override
@@ -54,7 +54,7 @@ public class BankTrust extends BankSubCommand {
                 return true;
             }
             plugin.debugf("%s does not have permission to trust a player to bank %s", sender.getName(), bank.getName());
-            sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRUST_OTHER);
+            sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST_OTHER);
             return true;
         }
 

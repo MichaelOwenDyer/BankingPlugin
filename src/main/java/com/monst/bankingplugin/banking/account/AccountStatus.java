@@ -88,7 +88,7 @@ public class AccountStatus {
 	 *
 	 * @return the current number of remaining offline payouts until the multiplier is reset
 	 */
-	public int getRemainingOfflineUntilReset() {
+	public int getRemainingOfflinePayoutsUntilReset() {
 		return remainingOfflineUntilReset;
 	}
 
@@ -117,26 +117,14 @@ public class AccountStatus {
 	 */
 	public void incrementMultiplier(boolean online) {
 		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
-		if (online) {
-			multiplierStage = Math.max(multiplierStage++, multipliers.size() - 1);
-			resetRemainingOfflineUntilReset();
-		} else {
+		if (online)
+			multiplierStage = Math.max(++multiplierStage, multipliers.size() - 1);
+		else {
 			if (mustResetMultiplier())
 				resetMultiplierStage();
 			int newStage = multiplierStage + (int) bank.get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
 			multiplierStage = Math.max(0, Math.min(newStage, multipliers.size() - 1));
 		}
-	}
-
-	/**
-	 * Resets the allowed offline payouts until reset to the value specified by the associated bank.
-	 * This determines how many consecutive cycles an account will generate interest for offline account holders until
-	 * the account multiplier is reset.
-	 *
-	 * @see BankField#ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET
-	 */
-	private void resetRemainingOfflineUntilReset() {
-		remainingOfflineUntilReset = bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
 	}
 
 	/**
@@ -167,7 +155,12 @@ public class AccountStatus {
 	public boolean allowNextPayout(boolean online) {
 		if (mustWait(online))
 			return false;
-		return online || canGenerateAgainOffline();
+		if (online) {
+			remainingOfflinePayouts = Math.max(remainingOfflinePayouts, bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS));
+			remainingOfflineUntilReset = Math.max(remainingOfflineUntilReset, bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET));
+			return true;
+		}
+		return canGenerateAgainOffline();
 	}
 
 	/**
@@ -225,30 +218,30 @@ public class AccountStatus {
 	}
 
 	/**
-	 * Sets the multiplier stage relative to the current value.
-	 *
-	 * @param stage the offset from the current stage, positive or negative
-	 */
-	public void setMultiplierStageRelative(int stage) {
-		setMultiplierStage(multiplierStage + stage);
-	}
-
-	/**
 	 * Sets the interest delay. This determines how long an account must wait before generating interest.
 	 *
 	 * @param delay the delay to set
 	 */
-	public void setInterestDelay(int delay) {
+	public void setDelayUntilNextPayout(int delay) {
 		delayUntilNextPayout = Math.max(0, delay);
 	}
 
 	/**
-	 * Sets the interest delay. This determines how long an account must wait before generating interest.
-	 *
-	 * @param delay the delay to set
+	 * Sets the remaining offline payouts. This determines how many more times an account will be able to generate
+	 * interest offline.
+	 * @param remaining the number of payouts to allow
 	 */
-	public void setInterestDelayRelative(int delay) {
-		setInterestDelay(delayUntilNextPayout + delay);
+	public void setRemainingOfflinePayouts(int remaining) {
+		remainingOfflinePayouts = Math.max(0, remaining);
+	}
+
+	/**
+	 * Sets the remaining offline payouts until reset. This determines how many more times an account will be able to
+	 * generate interest offline before the account multiplier resets.
+	 * @param remaining the number of payouts to allow before the multiplier is reset
+	 */
+	public void setRemainingOfflinePayoutsUntilReset(int remaining) {
+		remainingOfflineUntilReset = Math.max(0, remaining);
 	}
 
 }

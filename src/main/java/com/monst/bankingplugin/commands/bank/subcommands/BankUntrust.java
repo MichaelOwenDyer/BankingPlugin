@@ -31,7 +31,7 @@ public class BankUntrust extends BankSubCommand {
         plugin.debug(sender.getName() + " wants to untrust a player from a bank");
 
         if (!sender.hasPermission(Permissions.BANK_TRUST)) {
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST);
+            sender.sendMessage(Messages.NO_PERMISSION_BANK_UNTRUST);
             return true;
         }
         Bank bank = plugin.getBankUtils().lookupBank(args[1]);
@@ -54,13 +54,13 @@ public class BankUntrust extends BankSubCommand {
                 return true;
             }
             plugin.debugf("%s does not have permission to untrust a player from bank %s", sender.getName(), bank.getName());
-            sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRUST_OTHER);
+            sender.sendMessage(Messages.NO_PERMISSION_BANK_UNTRUST_OTHER);
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRUST_ADMIN)) {
             plugin.debugf("%s does not have permission to untrust a player from admin bank %s", sender.getName(), bank.getName());
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST_ADMIN);
+            sender.sendMessage(Messages.NO_PERMISSION_BANK_UNTRUST_ADMIN);
             return true;
         }
 

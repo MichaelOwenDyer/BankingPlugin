@@ -19,14 +19,14 @@ public class AccountRename extends AccountSubCommand {
 
     @Override
     public String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_SET) ? Messages.COMMAND_USAGE_ACCOUNT_SET : "";
+        return hasPermission(sender, Permissions.ACCOUNT_RENAME) ? Messages.COMMAND_USAGE_ACCOUNT_RENAME : "";
     }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        if (!p.hasPermission(Permissions.ACCOUNT_CREATE)) {
-            p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME);
+        if (!p.hasPermission(Permissions.ACCOUNT_RENAME)) {
+            p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_RENAME);
             return true;
         }
         StringBuilder sb = new StringBuilder(32);
@@ -48,9 +48,9 @@ public class AccountRename extends AccountSubCommand {
     }
 
     public static void rename(Player executor, Account account, String value) {
-        if (!(account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_SET_NICKNAME_OTHER))) {
-            plugin.debugf("%s does not have permission to change another player's account nickname", executor.getName());
-            executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET_NICKNAME_OTHER);
+        if (!(account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_RENAME_OTHER))) {
+            plugin.debugf("%s does not have permission to rename another player's account", executor.getName());
+            executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_RENAME_OTHER);
             return;
         }
 
@@ -60,11 +60,11 @@ public class AccountRename extends AccountSubCommand {
                     (account.isCoowner(executor) ? " (is co-owner)" : ""), account.getID());
             account.setName(account.getDefaultName());
         } else {
-            plugin.debugf("%s has set their account nickname to \"%s\" (#%d)",
+            plugin.debugf("%s has renamed their account to \"%s\" (#%d)",
                     executor.getName(), value, account.getID());
             account.setName(value);
         }
-        executor.sendMessage(Messages.NICKNAME_SET);
+        executor.sendMessage(Messages.ACCOUNT_RENAMED);
         plugin.getAccountUtils().addAccount(account, true, account.callUpdateName());
         AccountConfigureEvent e = new AccountConfigureEvent(executor, account, AccountField.NICKNAME, value);
         Bukkit.getPluginManager().callEvent(e);

@@ -318,7 +318,7 @@ public abstract class Database {
 				ps.setInt(i + 8, account.getStatus().getMultiplierStage());
 				ps.setInt(i + 9, account.getStatus().getDelayUntilNextPayout());
 				ps.setInt(i + 10, account.getStatus().getRemainingOfflinePayouts());
-				ps.setInt(i + 11, account.getStatus().getRemainingOfflineUntilReset());
+				ps.setInt(i + 11, account.getStatus().getRemainingOfflinePayoutsUntilReset());
 
 				ps.setString(i + 12, account.getLocation().getWorld() != null ?
 						account.getLocation().getWorld().getName() :
