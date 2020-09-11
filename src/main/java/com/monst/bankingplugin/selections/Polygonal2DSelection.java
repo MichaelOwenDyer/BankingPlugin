@@ -136,7 +136,7 @@ public class Polygonal2DSelection implements Selection {
 			return false;
 		if (pt.getBlockY() < minY || pt.getBlockY() > maxY)
 			return false;
-		return contains(new BlockVector2D(pt.getBlockX(), pt.getBlockX()));
+		return contains(new BlockVector2D(pt.getBlockX(), pt.getBlockZ()));
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class AccountContentsGui extends SinglePageGui<Account> {
 
     @Override
     void initializeMenu() {
-        menu = ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getColorizedName()).redraw(true).build();
+        menu = ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getChestName()).redraw(true).build();
     }
 
     @Override

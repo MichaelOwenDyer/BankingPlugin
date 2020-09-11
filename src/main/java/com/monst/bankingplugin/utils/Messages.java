@@ -67,7 +67,7 @@ public class Messages {
 	public static final String ACCOUNT_WITHDRAWAL = ChatColor.GOLD + "You have withdrawn " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " from %s account.";
 	public static final String ACCOUNT_NEW_BALANCE = ChatColor.GOLD + "Your new balance is " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String BANK_SELECTED = ChatColor.GOLD + "Bank region selected as %s.";
-	public static final String OWNERSHIP_TRANSFERRED = ChatColor.GOLD + "%s transferred %s ownership of %s.";
+	public static final String OWNERSHIP_TRANSFERRED = ChatColor.GOLD + "%s transferred %s ownership of %s" + ChatColor.GOLD + ".";
 	public static final String NAME_CHANGED = ChatColor.GOLD + "Bank name was successfully changed.";
 	
 	// DENY NOTIFICATIONS

@@ -50,9 +50,8 @@ public class AccountBalanceListener implements Listener {
 			return;
 
 		Player executor = (Player) e.getPlayer();
-		BigDecimal abs = difference.abs();
 		executor.sendMessage(String.format(difference.signum() > 0 ? Messages.ACCOUNT_DEPOSIT : Messages.ACCOUNT_WITHDRAWAL,
-				Utils.format(difference), (account.isOwner(executor)) ? "your" : account.getOwner().getName() + "'s"));
+				Utils.format(difference.abs()), (account.isOwner(executor)) ? "your" : account.getOwner().getName() + "'s"));
 		executor.sendMessage(String.format(Messages.ACCOUNT_NEW_BALANCE, Utils.format(valueOnClose)));
 
 		if (difference.signum() < 0 && valueOnClose.compareTo(account.getPrevBalance()) < 0)

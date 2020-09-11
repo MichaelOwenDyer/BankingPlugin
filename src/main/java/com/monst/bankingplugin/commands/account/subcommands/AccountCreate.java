@@ -16,6 +16,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 
 public class AccountCreate extends AccountSubCommand {
 
@@ -98,12 +99,27 @@ public class AccountCreate extends AccountSubCommand {
             plugin.debug("Chest is blocked.");
             return;
         }
-        Bank bank = bankUtils.getBank(location);
-        if (bank == null) {
-            executor.sendMessage(Messages.CHEST_NOT_IN_BANK);
-            plugin.debug("Chest is not in a bank.");
-            plugin.debug(executor.getName() + " is creating new account...");
-            return;
+
+        Bank bank;
+        InventoryHolder holder = ((Chest) b.getState()).getInventory().getHolder();
+        if (holder instanceof DoubleChest) {
+            DoubleChest dc = ((DoubleChest) holder);
+            Chest left = (Chest) dc.getLeftSide();
+            Chest right = (Chest) dc.getRightSide();
+            bank = left == null ? null : bankUtils.getBank(left.getLocation());
+            Bank otherBank = right == null ? null : bankUtils.getBank(right.getLocation());
+            if (bank == null || !bank.equals(otherBank)) {
+                executor.sendMessage(Messages.CHEST_NOT_IN_BANK);
+                plugin.debug("Chest is not in a bank.");
+                return;
+            }
+        } else {
+            bank = bankUtils.getBank(location);
+            if (bank == null) {
+                executor.sendMessage(Messages.CHEST_NOT_IN_BANK);
+                plugin.debug("Chest is not in a bank.");
+                return;
+            }
         }
 
         boolean forSelf = Utils.samePlayer(executor, owner);

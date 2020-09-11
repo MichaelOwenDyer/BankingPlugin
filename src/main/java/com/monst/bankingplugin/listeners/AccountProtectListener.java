@@ -137,9 +137,8 @@ public class AccountProtectListener implements Listener {
             return;
         }
         
-        Chest c = (Chest) b.getState();
-        Block b2;
-		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) c.getBlockData();
+        Chest chest = (Chest) b.getState();
+		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) chest.getBlockData();
 
 		if (data.getType() == Type.SINGLE) {
 			return;
@@ -164,11 +163,16 @@ public class AccountProtectListener implements Listener {
 			throw new IllegalStateException("Unknown chest orientation! " + data.toString());
 		}
 
-		b2 = b.getRelative(neighborFacing);
-
-		final Account account = accountUtils.getAccount(b2.getLocation());
+		final Account account = accountUtils.getAccount(b.getRelative(neighborFacing).getLocation());
 		if (account == null)
             return;
+
+		Bank bank = plugin.getBankUtils().getBank(b.getLocation());
+		if (bank == null || !bank.equals(account.getBank())) {
+			e.setCancelled(true);
+			p.sendMessage(Messages.CHEST_NOT_IN_BANK);
+			return;
+		}
 
 		plugin.debugf("%s tries to extend %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 

@@ -128,7 +128,7 @@ public class BankGui extends SinglePageGui<Bank> {
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to bank.");
-		return Utils.wordWrapAll(55, lore);
+		return Utils.wordWrapAll(45, lore);
 	}
 
 	private List<String> getStatisticsLore() {
