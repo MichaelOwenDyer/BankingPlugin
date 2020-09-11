@@ -25,18 +25,18 @@ public class BankCommand extends BankingPluginCommand<BankSubCommand> {
 		this.pluginCommand = super.createPluginCommand();
 
 		addSubCommand(new BankCreate());
-		addSubCommand(new BankRemove());
 		addSubCommand(new BankInfo());
-		addSubCommand(new BankList());
 		addSubCommand(new BankLimits());
+		addSubCommand(new BankList());
+		addSubCommand(new BankRemove());
 		addSubCommand(new BankRemoveall());
-		addSubCommand(new BankResize());
 		addSubCommand(new BankRename());
+		addSubCommand(new BankResize());
+		addSubCommand(new BankSelect());
 		addSubCommand(new BankSet());
+		addSubCommand(new BankTransfer());
 		addSubCommand(new BankTrust());
 		addSubCommand(new BankUntrust());
-		addSubCommand(new BankSelect());
-		addSubCommand(new BankTransfer());
 
         register();
         commandCreated = true;

@@ -37,7 +37,7 @@ public class AccountRecoveryGui extends MultiPageGui<Collection<Account>> {
                     ChatColor.DARK_RED + "Invalid Account", getRecoveryLore(account));
             ItemStackTemplate template = new StaticItemTemplate(item);
             Slot.ClickHandler clickHandler = (player, info) -> {
-                player.sendMessage(Messages.CLICK_CHEST_RECOVER);
+                player.sendMessage(String.format(Messages.CLICK_CHEST, "recover the account to"));
                 ClickType.setPlayerClickType(player, ClickType.recover(account));
                 close(player);
             };

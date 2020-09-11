@@ -106,16 +106,8 @@ public class Messages {
 	public static final String SELECTION_TOO_SMALL_RESIZE = ChatColor.RED + "You are not allowed to resize a bank to that size, as it would fall short of the minimum volume of %d blocks by %d.";
 	
 	// CLICK PROMPTS
-	public static final String CLICK_CHEST_CREATE = ChatColor.GOLD + "Click a chest to create an account.";
-	public static final String CLICK_CHEST_REMOVE = ChatColor.GOLD + "Click an account chest to remove.";
-	public static final String CLICK_CHEST_INFO = ChatColor.GOLD + "Click an account chest to view info.";
-	public static final String CLICK_CHEST_SET = ChatColor.GOLD + "Click an account chest to set.";
-	public static final String CLICK_CHEST_TRUST = ChatColor.GOLD + "Click an account chest to add %s as a co-owner.";
-	public static final String CLICK_CHEST_UNTRUST = ChatColor.GOLD + "Click an account chest to remove %s as a co-owner.";
-	public static final String CLICK_CHEST_MIGRATE_FIRST = ChatColor.GOLD + "Click an account chest to migrate to another chest.";
-	public static final String CLICK_CHEST_MIGRATE_SECOND = ChatColor.GOLD + "Click a chest to migrate the account to.";
-	public static final String CLICK_CHEST_TRANSFER = ChatColor.GOLD + "Click an account chest to transfer ownership to %s.";
-	public static final String CLICK_CHEST_RECOVER = ChatColor.GOLD + "Click a chest to recover the account to.";
+	public static final String CLICK_CHEST = ChatColor.GOLD + "Click a chest to %s.";
+	public static final String CLICK_ACCOUNT_CHEST = ChatColor.GOLD + "Click an account chest to %s.";
 	public static final String CLICK_TO_CONFIRM = ChatColor.GOLD + "Click chest again to confirm.";
 	public static final String EXECUTE_AGAIN_TO_CONFIRM = ChatColor.GOLD + "Execute command again to confirm.";
 	

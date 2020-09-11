@@ -24,11 +24,11 @@ public class ControlCommand extends BankingPluginCommand<ControlSubCommand> {
         this.desc = Messages.CONTROL_COMMAND_DESC;
 		this.pluginCommand = super.createPluginCommand();
 
-		addSubCommand(new ControlVersion());
+        addSubCommand(new ControlConfig());
+        addSubCommand(new ControlPayinterest());
 		addSubCommand(new ControlReload());
-		addSubCommand(new ControlConfig());
 		addSubCommand(new ControlUpdate());
-		addSubCommand(new ControlPayinterest());
+        addSubCommand(new ControlVersion());
 
         register();
         commandCreated = true;

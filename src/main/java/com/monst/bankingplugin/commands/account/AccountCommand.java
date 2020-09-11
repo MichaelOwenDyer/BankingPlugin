@@ -26,17 +26,18 @@ public class AccountCommand extends BankingPluginCommand<AccountSubCommand> {
 		this.pluginCommand = super.createPluginCommand();
 
 		addSubCommand(new AccountCreate());
-		addSubCommand(new AccountRemove());
 		addSubCommand(new AccountInfo());
-		addSubCommand(new AccountList());
 		addSubCommand(new AccountLimits());
+		addSubCommand(new AccountList());
+		addSubCommand(new AccountMigrate());
+		addSubCommand(new AccountRecover());
+		addSubCommand(new AccountRemove());
 		addSubCommand(new AccountRemoveall());
+		addSubCommand(new AccountRename());
 		addSubCommand(new AccountSet());
+		addSubCommand(new AccountTransfer());
 		addSubCommand(new AccountTrust());
 		addSubCommand(new AccountUntrust());
-		addSubCommand(new AccountMigrate());
-		addSubCommand(new AccountTransfer());
-		addSubCommand(new AccountRecover());
 
 		register();
 		commandCreated = true;

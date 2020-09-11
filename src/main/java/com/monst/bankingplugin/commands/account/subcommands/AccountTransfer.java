@@ -45,7 +45,7 @@ public class AccountTransfer extends AccountSubCommand {
             return false;
         }
 
-        p.sendMessage(String.format(Messages.CLICK_CHEST_TRANSFER, newOwner.getName()));
+        p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST, "transfer ownership to " + newOwner.getName()));
         ClickType.setPlayerClickType(p, ClickType.transfer(newOwner));
         plugin.debug(p.getName() + " is transferring ownership of an account to " + newOwner.getName());
         return true;

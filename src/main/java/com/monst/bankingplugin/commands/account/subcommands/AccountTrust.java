@@ -41,7 +41,8 @@ public class AccountTrust extends AccountSubCommand {
             return true;
         }
 
-        p.sendMessage(String.format(Messages.CLICK_CHEST_TRUST, Utils.samePlayer(playerToTrust, p) ? "yourself" : playerToTrust.getName()));
+        p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST,
+                "add " + (Utils.samePlayer(playerToTrust, p) ? "yourself" : playerToTrust.getName()) + " as a co-owner"));
         ClickType.setPlayerClickType(p, ClickType.trust(playerToTrust));
         plugin.debug(p.getName() + " is trusting " + playerToTrust.getName() + " to an account");
         return true;

@@ -37,7 +37,7 @@ public class AccountMigrate extends AccountSubCommand {
             return true;
         }
 
-        p.sendMessage(Messages.CLICK_CHEST_MIGRATE_FIRST);
+        p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST, "migrate to another chest"));
         ClickType.setPlayerClickType(p, ClickType.migrate(null));
         plugin.debug(p.getName() + " is migrating an account");
         return true;
@@ -57,7 +57,7 @@ public class AccountMigrate extends AccountSubCommand {
         }
         plugin.debugf("%s wants to migrate account #%d", p.getName(), toMigrate.getID());
         ClickType.setPlayerClickType(p, ClickType.migrate(toMigrate));
-        p.sendMessage(Messages.CLICK_CHEST_MIGRATE_SECOND);
+        p.sendMessage(String.format(Messages.CLICK_CHEST, "migrate the account to"));
 
     }
 

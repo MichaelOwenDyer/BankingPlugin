@@ -99,31 +99,15 @@ public abstract class ClickType<T> {
     }
 
     public enum EClickType {
-		CREATE, REMOVE, INFO, SET, TRUST, UNTRUST, MIGRATE, RECOVER, TRANSFER
+		CREATE, INFO, MIGRATE, RECOVER, REMOVE, RENAME, SET, TRANSFER, TRUST, UNTRUST
     }
 
     public static CreateClickType create(OfflinePlayer newOwner) {
     	return new CreateClickType(newOwner);
 	}
 
-	public static InfoClickType remove() {
-    	return new InfoClickType();
-	}
-
 	public static RemoveClickType info() {
-    	return new RemoveClickType();
-	}
-
-	public static SetClickType set(AccountField field, String value) {
-    	return new SetClickType(new SetPair(field, value));
-	}
-
-	public static TrustClickType trust(OfflinePlayer toTrust) {
-    	return new TrustClickType(toTrust);
-	}
-
-	public static UntrustClickType untrust(OfflinePlayer toUntrust) {
-    	return new UntrustClickType(toUntrust);
+		return new RemoveClickType();
 	}
 
 	public static MigrateClickType migrate(Account toMigrate) {
@@ -134,8 +118,28 @@ public abstract class ClickType<T> {
     	return new RecoverClickType(toRecover);
 	}
 
+	public static InfoClickType remove() {
+		return new InfoClickType();
+	}
+
+	public static RenameClickType rename(String newName) {
+    	return new RenameClickType(newName);
+	}
+
+	public static SetClickType set(AccountField field, String value) {
+		return new SetClickType(new SetPair(field, value));
+	}
+
 	public static TransferClickType transfer(OfflinePlayer newOwner) {
-    	return new TransferClickType(newOwner);
+		return new TransferClickType(newOwner);
+	}
+
+	public static TrustClickType trust(OfflinePlayer toTrust) {
+		return new TrustClickType(toTrust);
+	}
+
+	public static UntrustClickType untrust(OfflinePlayer toUntrust) {
+		return new UntrustClickType(toUntrust);
 	}
 
 	private static class CreateClickType extends ClickType<OfflinePlayer> {
@@ -144,33 +148,9 @@ public abstract class ClickType<T> {
 		}
 	}
 
-	private static class RemoveClickType extends ClickType<Void> {
-		private RemoveClickType() {
-    		super(EClickType.REMOVE, null);
-		}
-	}
-
 	private static class InfoClickType extends ClickType<Void> {
 		private InfoClickType() {
     		super(EClickType.INFO, null);
-		}
-	}
-
-	private static class SetClickType extends ClickType<SetPair> {
-		private SetClickType(SetPair pair) {
-			super(EClickType.SET, pair);
-		}
-	}
-
-	private static class TrustClickType extends ClickType<OfflinePlayer> {
-		private TrustClickType(OfflinePlayer toTrust) {
-			super(EClickType.TRUST, toTrust);
-		}
-	}
-
-	private static class UntrustClickType extends ClickType<OfflinePlayer> {
-		private UntrustClickType(OfflinePlayer toUntrust) {
-			super(EClickType.UNTRUST, toUntrust);
 		}
 	}
 
@@ -186,9 +166,39 @@ public abstract class ClickType<T> {
 		}
 	}
 
+	private static class RemoveClickType extends ClickType<Void> {
+		private RemoveClickType() {
+			super(EClickType.REMOVE, null);
+		}
+	}
+
+	private static class RenameClickType extends ClickType<String> {
+		private RenameClickType(String newName) {
+			super(EClickType.RENAME, newName);
+		}
+	}
+
+	private static class SetClickType extends ClickType<SetPair> {
+		private SetClickType(SetPair pair) {
+			super(EClickType.SET, pair);
+		}
+	}
+
 	private static class TransferClickType extends ClickType<OfflinePlayer> {
 		private TransferClickType(OfflinePlayer newOwner) {
 			super(EClickType.TRANSFER, newOwner);
+		}
+	}
+
+	private static class TrustClickType extends ClickType<OfflinePlayer> {
+		private TrustClickType(OfflinePlayer toTrust) {
+			super(EClickType.TRUST, toTrust);
+		}
+	}
+
+	private static class UntrustClickType extends ClickType<OfflinePlayer> {
+		private UntrustClickType(OfflinePlayer toUntrust) {
+			super(EClickType.UNTRUST, toUntrust);
 		}
 	}
 

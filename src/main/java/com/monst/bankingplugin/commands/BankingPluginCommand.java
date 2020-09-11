@@ -100,8 +100,11 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 							sender.sendMessage(ChatColor.RED + "Only players can use this command.");
 							return true;
 						}
-						if (!subCommand.execute(sender, args))
-							sendBasicHelpMessage(sender);
+						if (!subCommand.execute(sender, args)) {
+							String helpMessage = subCommand.getHelpMessage(sender);
+							if (helpMessage != null && !helpMessage.isEmpty())
+								sender.sendMessage(helpMessage);
+						}
 						return true;
 					}
 				}

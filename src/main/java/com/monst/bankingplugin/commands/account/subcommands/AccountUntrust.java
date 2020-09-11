@@ -41,7 +41,8 @@ public class AccountUntrust extends AccountSubCommand {
             return true;
         }
 
-        p.sendMessage(String.format(Messages.CLICK_CHEST_UNTRUST, Utils.samePlayer(playerToUntrust, p) ? "yourself" : playerToUntrust.getName()));
+        p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST,
+                "remove " + (Utils.samePlayer(playerToUntrust, p) ? "yourself" : playerToUntrust.getName()) + "as a co-owner"));
         ClickType.setPlayerClickType(p, ClickType.untrust(playerToUntrust));
         plugin.debug(p.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
         return true;

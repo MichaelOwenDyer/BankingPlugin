@@ -364,7 +364,7 @@ public class Account extends Ownable {
 	}
 
 	public String getDefaultChestName() {
-		return Utils.colorize(getDefaultName() + ChatColor.GRAY + "(#" + getID() + ")");
+		return Utils.colorize(getDefaultName() + ChatColor.GRAY + " (#" + getID() + ")");
 	}
 
 	/**

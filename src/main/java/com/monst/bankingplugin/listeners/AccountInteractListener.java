@@ -78,44 +78,10 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 					e.setCancelled(true);
 					break;
 
-				case REMOVE:
-
-					Objects.requireNonNull(account);
-					if (confirmRemove(p, account))
-						AccountRemove.remove(p, account);
-					e.setCancelled(true);
-					break;
-
 				case INFO:
 
 					Objects.requireNonNull(account);
 					AccountInfo.info(p, account);
-					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
-					break;
-
-				case SET:
-
-					SetPair pair = clickType.get();
-					AccountSet.set(p, account, pair.getField(), pair.getValue());
-					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
-					break;
-
-				case TRUST:
-
-					Objects.requireNonNull(account);
-					OfflinePlayer playerToTrust = (OfflinePlayer) clickType.get();
-					AccountTrust.trust(p, account, playerToTrust);
-					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
-					break;
-
-				case UNTRUST:
-
-					Objects.requireNonNull(account);
-					OfflinePlayer playerToUntrust = clickType.get();
-					AccountUntrust.untrust(p, account, playerToUntrust);
 					ClickType.removePlayerClickType(p);
 					e.setCancelled(true);
 					break;
@@ -137,6 +103,39 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 					e.setCancelled(true);
 					break;
 
+				case RECOVER:
+
+					Account toRecover = Objects.requireNonNull(clickType.get());
+					AccountRecover.recover(p, b, toRecover);
+					ClickType.removePlayerClickType(p);
+					e.setCancelled(true);
+					break;
+
+				case REMOVE:
+
+					Objects.requireNonNull(account);
+					if (confirmRemove(p, account))
+						AccountRemove.remove(p, account);
+					e.setCancelled(true);
+					break;
+
+				case RENAME:
+
+					String newName = Objects.requireNonNull(clickType.get());
+					Objects.requireNonNull(account);
+					AccountRename.rename(p, account, newName);
+					ClickType.removePlayerClickType(p);
+					e.setCancelled(true);
+					break;
+
+				case SET:
+
+					SetPair pair = clickType.get();
+					AccountSet.set(p, account, pair.getField(), pair.getValue());
+					ClickType.removePlayerClickType(p);
+					e.setCancelled(true);
+					break;
+
 				case TRANSFER:
 
 					Objects.requireNonNull(account);
@@ -148,10 +147,20 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 					e.setCancelled(true);
 					break;
 
-				case RECOVER:
+				case TRUST:
 
-					Account toRecover = Objects.requireNonNull(clickType.get());
-					AccountRecover.recover(p, b, toRecover);
+					Objects.requireNonNull(account);
+					OfflinePlayer playerToTrust = clickType.get();
+					AccountTrust.trust(p, account, playerToTrust);
+					ClickType.removePlayerClickType(p);
+					e.setCancelled(true);
+					break;
+
+				case UNTRUST:
+
+					Objects.requireNonNull(account);
+					OfflinePlayer playerToUntrust = clickType.get();
+					AccountUntrust.untrust(p, account, playerToUntrust);
 					ClickType.removePlayerClickType(p);
 					e.setCancelled(true);
 					break;

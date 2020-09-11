@@ -35,7 +35,7 @@ public class AccountRemove extends AccountSubCommand {
         }
 
         plugin.debug(p.getName() + " can now click a chest to remove an account");
-        p.sendMessage(Messages.CLICK_CHEST_REMOVE);
+        p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST, "remove"));
         ClickType.setPlayerClickType(p, ClickType.remove());
         return true;
     }

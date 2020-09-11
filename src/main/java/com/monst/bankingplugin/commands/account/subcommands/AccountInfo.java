@@ -54,7 +54,7 @@ public class AccountInfo extends AccountSubCommand {
         }
 
         plugin.debug(sender.getName() + " can now click an account to get info");
-        sender.sendMessage(Messages.CLICK_CHEST_INFO);
+        sender.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST, "view info"));
         ClickType.setPlayerClickType(((Player) sender), ClickType.info());
         return true;
     }
