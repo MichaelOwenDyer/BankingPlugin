@@ -118,7 +118,7 @@ public class AccountStatus {
 	public void incrementMultiplier(boolean online) {
 		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
 		if (online)
-			multiplierStage = Math.max(++multiplierStage, multipliers.size() - 1);
+			multiplierStage = Math.min(++multiplierStage, multipliers.size() - 1);
 		else {
 			if (mustResetMultiplier())
 				resetMultiplierStage();

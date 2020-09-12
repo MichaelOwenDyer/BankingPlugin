@@ -15,6 +15,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Represents a major command for this plugin, e.g. /account. This class creates and registers each major command,
+ * along with all subcommands, on startup, and also provides a basic {@link CommandExecutor} and {@link TabCompleter}
+ * which delegate to the concrete implementations in the subcommand classes themselves.
+ */
 public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCommand> {
 
 	private final BankingPlugin plugin;
@@ -42,8 +47,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 			cmd.setTabCompleter(new BaseTabCompleter());
 
 			return cmd;
-		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
-				| InstantiationException e) {
+		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
 			plugin.getLogger().severe("Failed to create command \"" + name + "\"!");
 			plugin.debug("Failed to create plugin command \"" + name + "\"!");
 			plugin.debug(e);

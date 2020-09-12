@@ -7,7 +7,6 @@ import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -167,13 +166,7 @@ public class BankCreate extends BankCommand.SubCommand {
         if (args.length >= 9)
             return returnCompletions;
 
-        Location loc = p.getTargetBlock(null, 150).getLocation();
-        String coord = "";
-        switch (args.length % 3) {
-            case 0: coord = "" + loc.getBlockX(); break;
-            case 1: coord = "" + loc.getBlockY(); break;
-            case 2: coord = "" + loc.getBlockZ();
-        }
+        String coord = getCoordLookingAt(p, args.length);
         if (coord.startsWith(args[args.length - 1]))
             returnCompletions.add("" + coord);
         return returnCompletions;

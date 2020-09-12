@@ -7,6 +7,7 @@ import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Messages;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -76,6 +77,16 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 				}
 			}
 			return bank;
+		}
+
+		String getCoordLookingAt(Player p, int argLength) {
+			Location loc = p.getTargetBlock(null, 150).getLocation();
+			switch (argLength % 3) {
+				case 0: return "" + loc.getBlockX();
+				case 1: return "" + loc.getBlockY();
+				case 2: return "" + loc.getBlockZ();
+			}
+			return "";
 		}
 	}
 
