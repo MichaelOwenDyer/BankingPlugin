@@ -6,12 +6,17 @@ import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
+import com.monst.bankingplugin.events.bank.BankCreateEvent;
+import com.monst.bankingplugin.events.bank.BankResizeEvent;
+import com.monst.bankingplugin.selections.CuboidSelection;
+import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -20,6 +25,7 @@ import org.bukkit.event.Listener;
 
 @SuppressWarnings("unused")
 public class GriefPreventionListener implements Listener {
+
 	private final BankingPlugin plugin;
     private final GriefPrevention griefPrevention;
 
@@ -80,6 +86,26 @@ public class GriefPreventionListener implements Listener {
                 plugin.debug("Account recover event cancelled by GriefPrevention");
                 return;
             }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onBankCreate(BankCreateEvent e) {
+	    if (!Config.enableGriefPreventionIntegration)
+	        return;
+        CommandSender executor = e.getExecutor();
+        Selection sel = e.getBank().getSelection();
+        if (executor instanceof Player && sel instanceof CuboidSelection)
+	    VisualizationManager.visualize(((Player) executor), ((CuboidSelection) sel));
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onBankResize(BankResizeEvent e) {
+	    if (!Config.enableGriefPreventionIntegration)
+	        return;
+        CommandSender executor = e.getExecutor();
+        Selection sel = e.getBank().getSelection();
+        if (executor instanceof Player && sel instanceof CuboidSelection)
+	    VisualizationManager.visualize(((Player) executor), ((CuboidSelection) sel));
     }
 
     private boolean handleForLocation(Player player, Location loc, Cancellable e) {
