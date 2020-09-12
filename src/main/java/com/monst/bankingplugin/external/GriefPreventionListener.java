@@ -5,6 +5,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
+import com.monst.bankingplugin.events.account.AccountRecoverEvent;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -62,6 +63,21 @@ public class GriefPreventionListener implements Listener {
             if (handleForLocation(e.getPlayer(), loc, e)) {
                 e.setCancelled(true);
                 plugin.debug("Account migrate event cancelled by GriefPrevention");
+                return;
+            }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onAccountRecover(AccountRecoverEvent e) {
+	    if (!Config.enableGriefPreventionIntegration)
+	        return;
+
+	    Block b = e.getNewAccountLocation().getBlock();
+	    Chest chest = (Chest) b.getBlockData();
+	    for (Location loc : Utils.getChestLocations(chest.getInventory().getHolder()))
+            if (handleForLocation(e.getPlayer(), loc, e)) {
+                e.setCancelled(true);
+                plugin.debug("Account recover event cancelled by GriefPrevention");
                 return;
             }
     }
