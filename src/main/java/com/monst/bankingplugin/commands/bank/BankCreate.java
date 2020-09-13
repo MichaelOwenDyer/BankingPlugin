@@ -3,6 +3,7 @@ package com.monst.bankingplugin.commands.bank;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
+import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.*;
@@ -10,10 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class BankCreate extends BankCommand.SubCommand {
 
@@ -90,9 +88,11 @@ public class BankCreate extends BankCommand.SubCommand {
                 return true;
             }
         }
-        if (!bankUtils.isExclusiveSelection(selection)) {
+        Set<Selection> overlappingSelections = bankUtils.getOverlappingSelections(selection);
+        if (!overlappingSelections.isEmpty()) {
             plugin.debug("Region is not exclusive");
             p.sendMessage(Messages.SELECTION_OVERLAPS_EXISTING);
+            VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;
         }
         long volume = selection.getVolume();

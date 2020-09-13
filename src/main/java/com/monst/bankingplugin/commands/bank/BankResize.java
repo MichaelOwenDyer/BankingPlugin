@@ -3,6 +3,7 @@ package com.monst.bankingplugin.commands.bank;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
+import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.BankUtils;
@@ -16,6 +17,7 @@ import org.bukkit.entity.Player;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BankResize extends BankCommand.SubCommand {
@@ -105,9 +107,11 @@ public class BankResize extends BankCommand.SubCommand {
             p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL_RESIZE, Config.minimumBankVolume, Config.minimumBankVolume - volume));
             return true;
         }
-        if (!bankUtils.isExclusiveSelectionIgnoring(selection, bank)) {
+        Set<Selection> overlappingSelections = bankUtils.getOverlappingSelectionsIgnoring(selection, bank.getSelection());
+        if (!overlappingSelections.isEmpty()) {
             plugin.debug("New selection is overlaps with an existing bank selection");
             p.sendMessage(Messages.SELECTION_OVERLAPS_EXISTING);
+            VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;
         }
         if (bank.getAccounts().stream().anyMatch(account -> !selection.contains(account.getLocation()))) {

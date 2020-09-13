@@ -2,8 +2,8 @@ package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.selections.BlockVector2D;
 import com.monst.bankingplugin.selections.CuboidSelection;
-import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.utils.Pair;
 import me.ryanhamshire.GriefPrevention.Visualization;
 import me.ryanhamshire.GriefPrevention.VisualizationElement;
 import org.bukkit.Location;
@@ -12,130 +12,144 @@ import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Set;
+import java.util.*;
 
-class VisualizationManager {
+public class VisualizationManager {
 
-    private static final BlockData CORNER_BLOCK_DATA = Material.GLOWSTONE.createBlockData();
-    private static final BlockData ACCENT_BLOCK_DATA = Material.GOLD_BLOCK.createBlockData();
-
-    static void visualize(Player p, Selection sel) {
-        Visualization.Apply(p, fromSelection(sel, p.getLocation()));
+    public static void visualizeSelection(Player p, Selection sel) {
+        visualize(Collections.singleton(sel), VisualizationType.NORMAL, p);
     }
 
-    private static Visualization fromSelection(Selection sel, Location playerLocation) {
+    public static void visualizeOverlap(Player p, Collection<Selection> selections) {
+        visualize(selections, VisualizationType.OVERLAP, p);
+    }
+
+    private static void visualize(Collection<Selection> selections, VisualizationType type, Player p) {
+        Visualization.Apply(p, fromSelection(selections, type, p.getLocation()));
+    }
+
+    private static Visualization fromSelection(Collection<Selection> selections, VisualizationType type, Location playerLocation) {
         Visualization visualization = new Visualization();
-        addClaimElements(visualization, sel, playerLocation);
+        for (Selection sel : selections)
+            visualization.elements.addAll(getSelectionElements(sel, playerLocation, type));
         return visualization;
     }
 
-    private static void addClaimElements(Visualization visualization, Selection sel, Location pLoc) {
-        if (sel instanceof CuboidSelection)
-            addClaimElements(visualization, (CuboidSelection) sel, pLoc);
-        else
-            addClaimElements(visualization, (Polygonal2DSelection) sel, pLoc);
-    }
-
-    private static void addClaimElements(Visualization visualization, CuboidSelection sel, Location pLoc) {
+    private static List<VisualizationElement> getSelectionElements(Selection sel, Location playerLoc, VisualizationType type) {
 
         World world = sel.getWorld();
+        List<VisualizationElement> newElements = new ArrayList<>();
 
-        Location min = sel.getMinimumPoint();
-        Location max = sel.getMaximumPoint();
-        int minX = min.getBlockX();
-        int minZ = min.getBlockZ();
-        int minY = min.getBlockY();
-        int maxX = max.getBlockX();
-        int maxZ = max.getBlockZ();
-        int maxY = max.getBlockY();
+        if (sel instanceof CuboidSelection) {
 
-        ArrayList<VisualizationElement> newElements = new ArrayList<>();
+            sel.getVertices().forEach(location -> newElements.add(new VisualizationElement(
+                    location,
+                    type.getCornerBlockData(),
+                    world.getBlockAt(location).getBlockData()
+            )));
 
-        sel.getVertices().forEach(loc -> newElements.add(new VisualizationElement(
-                loc,
-                CORNER_BLOCK_DATA,
-                world.getBlockAt(loc).getBlockData()
-        )));
+            Location min = sel.getMinimumPoint();
+            Location max = sel.getMaximumPoint();
+            MinMax[] dimensions = new MinMax[] {
+                    new MinMax(min.getBlockX(), max.getBlockX()),
+                    new MinMax(min.getBlockY(), max.getBlockY()),
+                    new MinMax(min.getBlockZ(), max.getBlockZ())
+            };
 
-        for (int x : new int[]{minX + 1, maxX - 1})
-            for (int y : new int[]{minY, maxY})
-                for (int z : new int[]{minZ, maxZ}) {
-                    Location loc = new Location(world, x, y, z);
-                    newElements.add(new VisualizationElement(loc, ACCENT_BLOCK_DATA, world.getBlockAt(loc).getBlockData()));
+            // Add blocks that are directly adjacent to corner blocks
+            for (int i = 0; i < 3; i++) {
+                for (int a : new int[] {dimensions[i].getMin() + 1, dimensions[i].getMax() - 1}) {
+                    for (int b : new int[] {dimensions[(i + 1) % 3].getMin(), dimensions[(i + 1) % 3].getMax()}) {
+                        for (int c : new int[] {dimensions[(i + 2) % 3].getMin(), dimensions[(i + 2) % 3].getMax()}) {
+                            Location loc = null;
+                            switch (i) {
+                                case 0: loc = new Location(world, a, b, c);
+                                case 1: loc = new Location(world, c, a, b);
+                                case 2: loc = new Location(world, b, c, a);
+                            }
+                            newElements.add(new VisualizationElement(loc, type.getAccentBlockData(), world.getBlockAt(loc).getBlockData()));
+                        }
+                    }
                 }
+            }
 
-        for (int y : new int[]{minY + 1, maxY - 1})
-            for (int z : new int[]{minZ, maxZ})
-                for (int x : new int[]{minX, maxX}) {
-                    Location loc = new Location(world, x, y, z);
-                    newElements.add(new VisualizationElement(loc, ACCENT_BLOCK_DATA, world.getBlockAt(loc).getBlockData()));
+            // Add blocks that form the lines between the corners in intervals of the integer "step"
+            final int step = 10;
+            for (int i = 0; i < 3; i++) {
+                for (int a = dimensions[i].getMin() + step; a < dimensions[i].getMax() - step / 2; a += step) {
+                    for (int b : new int[] {dimensions[(i + 1) % 3].getMin(), dimensions[(i + 1) % 3].getMax()}) {
+                        for (int c : new int[] {dimensions[(i + 2) % 3].getMin(), dimensions[(i + 2) % 3].getMax()}) {
+                            Location loc = null;
+                            switch (i) {
+                                case 0: loc = new Location(world, a, b, c);
+                                case 1: loc = new Location(world, c, a, b);
+                                case 2: loc = new Location(world, b, c, a);
+                            }
+                            newElements.add(new VisualizationElement(loc, type.getAccentBlockData(), world.getBlockAt(loc).getBlockData()));
+                        }
+                    }
                 }
+            }
 
-        for (int z : new int[]{minZ + 1, maxZ - 1})
-            for (int x : new int[]{minX, maxX})
-                for (int y : new int[]{minY, maxY}) {
-                    Location loc = new Location(world, x, y, z);
-                    newElements.add(new VisualizationElement(loc, ACCENT_BLOCK_DATA, world.getBlockAt(loc).getBlockData()));
-                }
+            newElements.removeIf(e -> outOfRange(playerLoc, e.location));
+            Set<BlockVector2D> blocks = sel.getBlocks();
+            newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
 
-        final int step = 10;
+        } else {
 
-        for (int x = minX + step; x < maxX - step / 2; x += step) {
-            for (int y : new int[]{minY, maxY})
-                for (int z : new int[]{minZ, maxZ}) {
-                    Location loc = new Location(world, x, y, z);
-                    newElements.add(new VisualizationElement(loc, ACCENT_BLOCK_DATA, world.getBlockAt(loc).getBlockData()));
-                }
+            sel.getVertices().forEach(loc -> newElements.add(new VisualizationElement(
+                    loc,
+                    type.getCornerBlockData(),
+                    world.getBlockAt(loc).getBlockData()
+            )));
+
+            newElements.removeIf(e -> outOfRange(playerLoc, e.location));
+            // Set<BlockVector2D> blocks = sel.getBlocks();
+            // newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
+
         }
-
-        for (int y = minY + step; y < maxY - step / 2; y += step) {
-            for (int z : new int[]{minZ, maxZ})
-                for (int x : new int[]{minX, maxX}) {
-                    Location loc = new Location(world, x, y, z);
-                    newElements.add(new VisualizationElement(loc, ACCENT_BLOCK_DATA, world.getBlockAt(loc).getBlockData()));
-                }
-        }
-
-        for (int z = minZ + step; z < maxZ - step / 2; z += step) {
-            for (int x : new int[]{minX, maxX})
-                for (int y : new int[]{minY, maxY}) {
-                    Location loc = new Location(world, x, y, z);
-                    newElements.add(new VisualizationElement(loc, ACCENT_BLOCK_DATA, world.getBlockAt(loc).getBlockData()));
-                }
-        }
-
-        newElements.removeIf(e -> outOfRange(pLoc, e.location));
-        Set<BlockVector2D> blocks = sel.getBlocks();
-        newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
-
-        visualization.elements.addAll(newElements);
-    }
-
-    private static void addClaimElements(Visualization visualization, Polygonal2DSelection sel, Location pLoc) {
-        World world = sel.getWorld();
-        ArrayList<VisualizationElement> newElements = new ArrayList<>();
-
-        sel.getVertices().forEach(loc -> newElements.add(new VisualizationElement(
-                loc,
-                CORNER_BLOCK_DATA,
-                world.getBlockAt(loc).getBlockData()
-        )));
-
-        newElements.removeIf(e -> outOfRange(pLoc, e.location));
-        // Set<BlockVector2D> blocks = sel.getBlocks();
-        // newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
-
-        visualization.elements.addAll(newElements);
+        return newElements;
     }
 
     private static boolean outOfRange(Location currentPos, Location check) {
+        int range = 75;
         int x = check.getBlockX();
         int y = check.getBlockY();
         int z = check.getBlockZ();
-        return x <= currentPos.getBlockX() - 75 || x >= currentPos.getBlockX() + 75
-                || y <= currentPos.getBlockY() - 75 || y >= currentPos.getBlockY() + 75
-                || z <= currentPos.getBlockZ() - 75 || z >= currentPos.getBlockZ() + 75;
+        return x <= currentPos.getBlockX() - range || x >= currentPos.getBlockX() + range
+                || y <= currentPos.getBlockY() - range || y >= currentPos.getBlockY() + range
+                || z <= currentPos.getBlockZ() - range || z >= currentPos.getBlockZ() + range;
+    }
+
+    private static class MinMax extends Pair<Integer, Integer> {
+        MinMax(Integer min, Integer max) {
+            super(min, max);
+        }
+        int getMin() { return super.getFirst(); }
+        int getMax() { return super.getSecond(); }
+    }
+
+    private enum VisualizationType {
+
+        NORMAL (Material.GLOWSTONE.createBlockData(), Material.GOLD_BLOCK.createBlockData()),
+        OVERLAP (Material.REDSTONE_ORE.createBlockData(), Material.NETHERRACK.createBlockData());
+
+        private final BlockData cornerBlockData;
+        private final BlockData accentBlockData;
+
+        VisualizationType(BlockData cornerBlockData, BlockData accentBlockData) {
+            this.cornerBlockData = cornerBlockData;
+            this.accentBlockData = accentBlockData;
+        }
+
+        private BlockData getCornerBlockData() {
+            return cornerBlockData;
+        }
+
+        private BlockData getAccentBlockData() {
+            return accentBlockData;
+        }
+
     }
 
 }
