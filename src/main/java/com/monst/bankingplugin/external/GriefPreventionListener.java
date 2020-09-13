@@ -8,8 +8,7 @@ import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
-import com.monst.bankingplugin.selections.CuboidSelection;
-import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.events.bank.BankSelectEvent;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -93,9 +92,8 @@ public class GriefPreventionListener implements Listener {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
         CommandSender executor = e.getExecutor();
-        Selection sel = e.getBank().getSelection();
-        if (executor instanceof Player && sel instanceof CuboidSelection)
-	    VisualizationManager.visualize(((Player) executor), ((CuboidSelection) sel));
+        if (executor instanceof Player)
+	        VisualizationManager.visualize(((Player) executor), e.getBank().getSelection());
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -103,9 +101,15 @@ public class GriefPreventionListener implements Listener {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
         CommandSender executor = e.getExecutor();
-        Selection sel = e.getBank().getSelection();
-        if (executor instanceof Player && sel instanceof CuboidSelection)
-	    VisualizationManager.visualize(((Player) executor), ((CuboidSelection) sel));
+        if (executor instanceof Player)
+	        VisualizationManager.visualize(((Player) executor), e.getBank().getSelection());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onBankSelect(BankSelectEvent e) {
+	    if (!Config.enableGriefPreventionIntegration)
+	        return;
+        VisualizationManager.visualize(((Player) e.getExecutor()), e.getBank().getSelection());
     }
 
     private boolean handleForLocation(Player player, Location loc, Cancellable e) {

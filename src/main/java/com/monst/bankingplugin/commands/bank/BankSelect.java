@@ -1,10 +1,12 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.events.bank.BankSelectEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -55,6 +57,13 @@ public class BankSelect extends BankCommand.SubCommand {
                 p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
                 return true;
             }
+        }
+
+        BankSelectEvent event = new BankSelectEvent(p, bank);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Bank select event cancelled");
+            return true;
         }
 
         WorldEditReader.setSelection(plugin, bank.getSelection(), p);
