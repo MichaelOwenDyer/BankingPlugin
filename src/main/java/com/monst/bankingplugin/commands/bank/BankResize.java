@@ -47,11 +47,8 @@ public class BankResize extends BankCommand.SubCommand {
             return false;
 
         else if (args.length == 2) {
-
             if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
-
                 selection = WorldEditReader.getSelection(plugin, p);
-
                 if (selection == null) {
                     plugin.debug(p.getName() + " tried to resize a bank with no WorldEdit selection");
                     p.sendMessage(Messages.SELECT_WORLDEDIT_REGION);
@@ -62,7 +59,6 @@ public class BankResize extends BankCommand.SubCommand {
                 p.sendMessage(Messages.WORLDEDIT_NOT_ENABLED);
                 return true;
             }
-
         } else {
             try {
                 selection = bankUtils.parseCoordinates(args, p.getLocation(), 1);
@@ -114,7 +110,7 @@ public class BankResize extends BankCommand.SubCommand {
             p.sendMessage(Messages.SELECTION_OVERLAPS_EXISTING);
             return true;
         }
-        if (!BankUtils.containsAllAccounts(bank, selection)) {
+        if (bank.getAccounts().stream().anyMatch(account -> !selection.contains(account.getLocation()))) {
             plugin.debug("New selection does not contain all accounts");
             p.sendMessage(Messages.SELECTION_CUTS_ACCOUNTS);
             return true;

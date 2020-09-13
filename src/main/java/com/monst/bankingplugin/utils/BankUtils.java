@@ -151,17 +151,6 @@ public class BankUtils extends Observable {
 			return null;
 	}
 
-	/**
-	 * Determines whether a new bank selection still encompasses all the accounts of that bank
-	 * 
-	 * @param bank Bank that is being resized
-	 * @param sel  New selection for the bank
-	 * @return Whether the new selection contains all accounts
-	 */
-	public static boolean containsAllAccounts(Bank bank, Selection sel) {
-		return bank.getAccounts().stream().map(Account::getLocation).allMatch(sel::contains);
-	}
-
     /**
 	 * Adds a bank
 	 * 
