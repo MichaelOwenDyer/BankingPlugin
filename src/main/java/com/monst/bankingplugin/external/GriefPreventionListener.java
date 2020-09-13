@@ -134,7 +134,7 @@ public class GriefPreventionListener implements Listener {
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
-	        VisualizationManager.visualizeSelection(((Player) executor), e.getBank().getSelection());
+	        VisualizationManager.visualizeSelection(((Player) executor), e.getNewSelection());
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

@@ -1,9 +1,11 @@
 package com.monst.bankingplugin.external;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.selections.BlockVector2D;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.Pair;
+import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Visualization;
 import me.ryanhamshire.GriefPrevention.VisualizationElement;
 import org.bukkit.Location;
@@ -16,6 +18,8 @@ import java.util.*;
 
 public class VisualizationManager {
 
+    private static final BankingPlugin plugin = BankingPlugin.getInstance();
+
     public static void visualizeSelection(Player p, Selection sel) {
         visualize(Collections.singleton(sel), VisualizationType.NORMAL, p);
     }
@@ -25,14 +29,12 @@ public class VisualizationManager {
     }
 
     private static void visualize(Collection<Selection> selections, VisualizationType type, Player p) {
-        Visualization.Apply(p, fromSelection(selections, type, p.getLocation()));
-    }
-
-    private static Visualization fromSelection(Collection<Selection> selections, VisualizationType type, Location playerLocation) {
-        Visualization visualization = new Visualization();
-        for (Selection sel : selections)
-            visualization.elements.addAll(getSelectionElements(sel, playerLocation, type));
-        return visualization;
+        Utils.bukkitRunnable(() -> {
+            Visualization visualization = new Visualization();
+            for (Selection sel : selections)
+                visualization.elements.addAll(getSelectionElements(sel, p.getLocation(), type));
+            Visualization.Apply(p, visualization);
+        }).runTaskAsynchronously(plugin);
     }
 
     private static List<VisualizationElement> getSelectionElements(Selection sel, Location playerLoc, VisualizationType type) {
@@ -63,8 +65,8 @@ public class VisualizationManager {
                         for (int c : new int[] {dimensions[(i + 2) % 3].getMin(), dimensions[(i + 2) % 3].getMax()}) {
                             Location loc = null;
                             switch (i) {
-                                case 0: loc = new Location(world, a, b, c);
-                                case 1: loc = new Location(world, c, a, b);
+                                case 0: loc = new Location(world, a, b, c); break;
+                                case 1: loc = new Location(world, c, a, b); break;
                                 case 2: loc = new Location(world, b, c, a);
                             }
                             newElements.add(new VisualizationElement(loc, type.getAccentBlockData(), world.getBlockAt(loc).getBlockData()));
@@ -81,8 +83,8 @@ public class VisualizationManager {
                         for (int c : new int[] {dimensions[(i + 2) % 3].getMin(), dimensions[(i + 2) % 3].getMax()}) {
                             Location loc = null;
                             switch (i) {
-                                case 0: loc = new Location(world, a, b, c);
-                                case 1: loc = new Location(world, c, a, b);
+                                case 0: loc = new Location(world, a, b, c); break;
+                                case 1: loc = new Location(world, c, a, b); break;
                                 case 2: loc = new Location(world, b, c, a);
                             }
                             newElements.add(new VisualizationElement(loc, type.getAccentBlockData(), world.getBlockAt(loc).getBlockData()));
@@ -91,7 +93,6 @@ public class VisualizationManager {
                 }
             }
 
-            newElements.removeIf(e -> outOfRange(playerLoc, e.location));
             Set<BlockVector2D> blocks = sel.getBlocks();
             newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
 
@@ -103,11 +104,11 @@ public class VisualizationManager {
                     world.getBlockAt(loc).getBlockData()
             )));
 
-            newElements.removeIf(e -> outOfRange(playerLoc, e.location));
             // Set<BlockVector2D> blocks = sel.getBlocks();
             // newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
 
         }
+        newElements.removeIf(e -> outOfRange(playerLoc, e.location));
         return newElements;
     }
 
