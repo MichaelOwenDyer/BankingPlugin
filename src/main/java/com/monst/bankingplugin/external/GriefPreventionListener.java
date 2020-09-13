@@ -107,14 +107,14 @@ public class GriefPreventionListener implements Listener {
             if (item != null && investigationTool == item.getType()) {
                 Bank bank = plugin.getBankUtils().getBank(b.getLocation());
                 if (bank != null)
-                    VisualizationManager.visualizeSelection(p, bank.getSelection());
+                    VisualizationManager.visualizeSelection(p, bank);
                 return;
             }
             item = Utils.getItemInOffHand(p);
             if (item != null && investigationTool == item.getType()) {
                 Bank bank = plugin.getBankUtils().getBank(b.getLocation());
                 if (bank != null)
-                    VisualizationManager.visualizeSelection(p, bank.getSelection());
+                    VisualizationManager.visualizeSelection(p, bank);
             }
         }
     }
@@ -125,7 +125,7 @@ public class GriefPreventionListener implements Listener {
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
-	        VisualizationManager.visualizeSelection(((Player) executor), e.getBank().getSelection());
+	        VisualizationManager.visualizeSelection(((Player) executor), e.getBank());
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -134,14 +134,14 @@ public class GriefPreventionListener implements Listener {
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
-	        VisualizationManager.visualizeSelection(((Player) executor), e.getNewSelection());
+	        VisualizationManager.visualizeSelection(((Player) executor), e.getNewSelection(), e.getBank().isAdminBank());
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBankSelect(BankSelectEvent e) {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
-        VisualizationManager.visualizeSelection(((Player) e.getExecutor()), e.getBank().getSelection());
+        VisualizationManager.visualizeSelection(((Player) e.getExecutor()), e.getBank());
     }
 
     private boolean handleForLocation(Player player, Location loc, Cancellable e) {

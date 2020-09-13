@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.selections.BlockVector2D;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Selection;
@@ -20,8 +21,12 @@ public class VisualizationManager {
 
     private static final BankingPlugin plugin = BankingPlugin.getInstance();
 
-    public static void visualizeSelection(Player p, Selection sel) {
-        visualize(Collections.singleton(sel), VisualizationType.NORMAL, p);
+    public static void visualizeSelection(Player p, Bank bank) {
+        visualizeSelection(p, bank.getSelection(), bank.isAdminBank());
+    }
+
+    public static void visualizeSelection(Player p, Selection sel, boolean isAdmin) {
+        visualize(Collections.singleton(sel), isAdmin ? VisualizationType.ADMIN : VisualizationType.NORMAL, p);
     }
 
     public static void visualizeOverlap(Player p, Collection<Selection> selections) {
@@ -133,6 +138,7 @@ public class VisualizationManager {
     private enum VisualizationType {
 
         NORMAL (Material.GLOWSTONE.createBlockData(), Material.GOLD_BLOCK.createBlockData()),
+        ADMIN (Material.GLOWSTONE.createBlockData(), Material.PUMPKIN.createBlockData()),
         OVERLAP (Material.REDSTONE_ORE.createBlockData(), Material.NETHERRACK.createBlockData());
 
         private final BlockData cornerBlockData;
