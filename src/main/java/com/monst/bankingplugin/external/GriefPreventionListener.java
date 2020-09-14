@@ -8,6 +8,7 @@ import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
+import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.events.bank.BankSelectEvent;
 import com.monst.bankingplugin.utils.Utils;
@@ -25,6 +26,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 @SuppressWarnings("unused")
@@ -92,9 +94,19 @@ public class GriefPreventionListener implements Listener {
             }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onSelectionInteract(PlayerInteractEvent e) {
+    private boolean handleForLocation(Player player, Location loc, Cancellable e) {
+        Claim claim = griefPrevention.dataStore.getClaimAt(loc, false, null);
+        if (claim == null)
+            return false;
+        return claim.allowContainers(player) != null;
+    }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSelectionInteract(PlayerInteractEvent e) {
+        if (!Config.enableGriefPreventionIntegration)
+            return;
+	    if (e.getHand() != EquipmentSlot.HAND)
+	        return;
         if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK))
             return;
         Block b = e.getClickedBlock();
@@ -125,7 +137,16 @@ public class GriefPreventionListener implements Listener {
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
-	        VisualizationManager.visualizeSelection(((Player) executor), e.getBank());
+            VisualizationManager.visualizeSelection(((Player) executor), e.getBank());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onBankRemove(BankRemoveEvent e) {
+	    if (!Config.enableGriefPreventionIntegration)
+	        return;
+        CommandSender executor = e.getExecutor();
+        if (executor instanceof Player)
+            VisualizationManager.revertVisualization((Player) executor);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -142,12 +163,5 @@ public class GriefPreventionListener implements Listener {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
         VisualizationManager.visualizeSelection(((Player) e.getExecutor()), e.getBank());
-    }
-
-    private boolean handleForLocation(Player player, Location loc, Cancellable e) {
-        Claim claim = griefPrevention.dataStore.getClaimAt(loc, false, null);
-        if (claim == null) 
-            return false;
-		return claim.allowContainers(player) != null;
     }
 }

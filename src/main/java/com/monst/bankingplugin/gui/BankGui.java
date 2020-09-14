@@ -91,7 +91,7 @@ public class BankGui extends SinglePageGui<Bank> {
 					if (info.getClickType().isLeftClick())
 						player.teleport(Utils.getSafeLocation(guiSubject.getSelection().getCenterPoint())
 								.setDirection(player.getLocation().getDirection()));
-					else
+					else if (info.getClickType().isRightClick())
 						player.teleport(guiSubject.getSelection()
 								.getWorld()
 								.getHighestBlockAt(guiSubject.getSelection().getCenterPoint())

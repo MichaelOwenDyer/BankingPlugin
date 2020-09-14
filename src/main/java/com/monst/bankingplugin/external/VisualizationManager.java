@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.selections.BlockVector2D;
 import com.monst.bankingplugin.selections.CuboidSelection;
+import com.monst.bankingplugin.selections.Polygonal2DSelection;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
@@ -20,6 +21,10 @@ import java.util.*;
 public class VisualizationManager {
 
     private static final BankingPlugin plugin = BankingPlugin.getInstance();
+
+    public static void revertVisualization(Player p) {
+        Visualization.Revert(p);
+    }
 
     public static void visualizeSelection(Player p, Bank bank) {
         visualizeSelection(p, bank.getSelection(), bank.isAdminBank());
@@ -103,22 +108,69 @@ public class VisualizationManager {
 
         } else {
 
+            Polygonal2DSelection poly = ((Polygonal2DSelection) sel);
+
             sel.getVertices().forEach(loc -> newElements.add(new VisualizationElement(
                     loc,
                     type.getCornerBlockData(),
                     world.getBlockAt(loc).getBlockData()
             )));
 
-            // Set<BlockVector2D> blocks = sel.getBlocks();
-            // newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
+            final int step = 10;
+            List<BlockVector2D> points = poly.getNativePoints();
+            for (int i = 0; i < points.size(); i++) {
+                BlockVector2D current = points.get(i);
+                BlockVector2D next = points.get((i + 1) % points.size());
+                BlockVector2D diff = new BlockVector2D(next.getBlockX() - current.getBlockX(), next.getBlockZ() - current.getBlockZ());
+                double distance = Math.sqrt(Math.pow(diff.getBlockX(), 2) + Math.pow(diff.getBlockZ(), 2));
+                double unitAwayX = (double) diff.getBlockX() / distance;
+                double unitAwayZ = (double) diff.getBlockZ() / distance;
 
+                for (int y = poly.getMinY() + step; y < poly.getMaxY() - (step / 2); y += step) {
+                    Location loc = new Location(world, current.getBlockX(), y, current.getBlockZ());
+                    newElements.add(new VisualizationElement(
+                            loc,
+                            type.getAccentBlockData(),
+                            world.getBlockAt(loc).getBlockData()
+                    ));
+                }
+
+                for (int y : new int[] {poly.getMinY(), poly.getMaxY()}) {
+
+                    Location unitAway = new Location(world, current.getBlockX() + 0.5 + unitAwayX, y, current.getBlockZ() + 0.5 + unitAwayZ);
+                    newElements.add(new VisualizationElement(
+                            unitAway,
+                            type.getAccentBlockData(),
+                            world.getBlockAt(unitAway).getBlockData()
+                    ));
+
+                    Location unitAwayNeg = new Location(world, next.getBlockX() + 0.5 - unitAwayX, y, next.getBlockZ() + 0.5 - unitAwayZ);
+                    newElements.add(new VisualizationElement(
+                            unitAwayNeg,
+                            type.getAccentBlockData(),
+                            world.getBlockAt(unitAwayNeg).getBlockData()
+                    ));
+
+                    double increaseX = unitAwayX * step;
+                    double increaseZ = unitAwayZ * step;
+                    Location nextAccent = new Location(world, current.getBlockX() + 0.5 + increaseX, y, current.getBlockZ() + 0.5 + increaseZ);
+                    while (Math.sqrt(Math.pow(next.getBlockX() - nextAccent.getX(), 2) + Math.pow(next.getBlockZ() - nextAccent.getZ(), 2)) > step / 2.0) {
+                        newElements.add(new VisualizationElement(
+                                Utils.blockifyLocation(nextAccent),
+                                type.getAccentBlockData(),
+                                world.getBlockAt(nextAccent).getBlockData()
+                        ));
+                        nextAccent = nextAccent.add(increaseX, 0, increaseZ);
+                    }
+                }
+            }
         }
         newElements.removeIf(e -> outOfRange(playerLoc, e.location));
         return newElements;
     }
 
     private static boolean outOfRange(Location currentPos, Location check) {
-        int range = 75;
+        int range = 100;
         int x = check.getBlockX();
         int y = check.getBlockY();
         int z = check.getBlockZ();

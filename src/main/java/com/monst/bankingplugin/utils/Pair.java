@@ -37,7 +37,7 @@ public abstract class Pair<T,K> {
             return false;
         if (getClass() != o.getClass())
             return false;
-        Pair<?,?> other = (Pair<?,?>) o;
+        Pair<?, ?> other = (Pair<?, ?>) o;
         return first.equals(other.first) && second.equals(other.second);
     }
 
