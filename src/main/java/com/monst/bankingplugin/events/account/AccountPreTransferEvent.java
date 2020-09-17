@@ -5,14 +5,14 @@ import org.bukkit.event.Cancellable;
 
 /**
  * This event is fired when a player uses the
- * {@link com.monst.bankingplugin.commands.account.AccountCreate} command.
+ * {@link com.monst.bankingplugin.commands.account.AccountTransfer} command.
  */
-public class AccountPreCreateEvent extends SingleAccountEvent implements Cancellable {
-	
+public class AccountPreTransferEvent extends SingleAccountEvent implements Cancellable {
+
 	private boolean cancelled;
 	private final String[] args;
 
-	public AccountPreCreateEvent(Player player, String[] args) {
+	public AccountPreTransferEvent(Player player, String[] args) {
 		super(player, null);
 		this.args = args;
 	}

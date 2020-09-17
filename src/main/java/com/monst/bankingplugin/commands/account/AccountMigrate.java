@@ -4,6 +4,7 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
+import com.monst.bankingplugin.events.account.AccountPreMigrateEvent;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -55,6 +56,14 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER);
             return;
         }
+
+        AccountPreMigrateEvent event = new AccountPreMigrateEvent(p, toMigrate);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Account pre-migrate event cancelled");
+            return;
+        }
+
         plugin.debugf("%s wants to migrate account #%d", p.getName(), toMigrate.getID());
         ClickType.setPlayerClickType(p, ClickType.migrate(toMigrate));
         p.sendMessage(String.format(Messages.CLICK_CHEST, "migrate the account to"));

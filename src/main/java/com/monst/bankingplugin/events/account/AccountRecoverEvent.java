@@ -5,6 +5,10 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
+/**
+ * This event is fired when a player clicks a chest with a
+ * {@link com.monst.bankingplugin.utils.ClickType.RecoverClickType}.
+ */
 public class AccountRecoverEvent extends SingleAccountEvent implements Cancellable {
 
     private boolean cancelled;

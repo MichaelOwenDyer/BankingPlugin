@@ -4,6 +4,9 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import org.bukkit.entity.Player;
 
+/**
+ * This event is fired when an {@link Account} is updated with new information.
+ */
 public class AccountConfigureEvent extends SingleAccountEvent {
 
     private final AccountField field;

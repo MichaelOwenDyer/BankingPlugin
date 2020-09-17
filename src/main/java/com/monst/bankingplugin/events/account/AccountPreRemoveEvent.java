@@ -3,6 +3,10 @@ package com.monst.bankingplugin.events.account;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
+/**
+ * This event is fired when a player uses the
+ * {@link com.monst.bankingplugin.commands.account.AccountRemove} command.
+ */
 public class AccountPreRemoveEvent extends SingleAccountEvent implements Cancellable {
 
 	private boolean cancelled;

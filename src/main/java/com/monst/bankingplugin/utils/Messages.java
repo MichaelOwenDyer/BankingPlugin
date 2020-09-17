@@ -141,6 +141,7 @@ public class Messages {
 	
 	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";
 	public static final String NO_PERMISSION_BANK_CREATE_ADMIN = NO_PERMISSION + "create an admin bank.";
+	public static final String NO_PERMISSION_BANK_CREATE_PROTECTED = NO_PERMISSION + "create a bank there.";
 	public static final String NO_PERMISSION_BANK_REMOVE_OTHER = NO_PERMISSION + "remove someone else's bank.";
 	public static final String NO_PERMISSION_BANK_REMOVE_ADMIN = NO_PERMISSION + "remove an admin bank.";
 	public static final String NO_PERMISSION_BANK_REMOVEALL = NO_PERMISSION + "remove all banks.";

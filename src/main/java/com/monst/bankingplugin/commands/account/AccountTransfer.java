@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.events.account.AccountPreTransferEvent;
 import com.monst.bankingplugin.events.account.AccountTransferEvent;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Messages;
@@ -43,6 +44,13 @@ public class AccountTransfer extends AccountCommand.SubCommand {
         if (newOwner == null) {
             p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
             return false;
+        }
+
+        AccountPreTransferEvent event = new AccountPreTransferEvent(p, args);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Account pre-transfer event cancelled");
+            return true;
         }
 
         p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST, "transfer ownership to " + newOwner.getName()));

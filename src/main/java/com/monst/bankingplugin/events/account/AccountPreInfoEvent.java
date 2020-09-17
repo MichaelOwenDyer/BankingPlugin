@@ -3,6 +3,10 @@ package com.monst.bankingplugin.events.account;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
+/**
+ * This event is fired when a player uses the {@link com.monst.bankingplugin.commands.account.AccountInfo}
+ * command without specifying an account ID.
+ */
 public class AccountPreInfoEvent extends SingleAccountEvent implements Cancellable {
 
 	private boolean cancelled;

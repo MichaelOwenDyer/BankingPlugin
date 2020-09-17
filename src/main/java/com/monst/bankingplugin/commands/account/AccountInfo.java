@@ -31,7 +31,15 @@ public class AccountInfo extends AccountCommand.SubCommand {
             try {
                 int id = Integer.parseInt(args[1]);
                 Account account = Objects.requireNonNull(accountUtils.getAccount(id));
-                plugin.debug(sender.getName() + " is displaying info for account #" + id);
+                plugin.debugf("%s is displaying info for account #%d", sender.getName(), id);
+
+                AccountInfoEvent event = new AccountInfoEvent(sender, account);
+                Bukkit.getPluginManager().callEvent(event);
+                if (event.isCancelled()) {
+                    plugin.debug("Account info event cancelled");
+                    return true;
+                }
+
                 if (sender instanceof Player)
                     new AccountGui(account).open((Player) sender);
                 else
@@ -72,7 +80,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
         AccountInfoEvent event = new AccountInfoEvent(player, account);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
-            plugin.debugf("Info event cancelled (#%d)", account.getID());
+            plugin.debugf("Account info event cancelled (#%d)", account.getID());
             return;
         }
 

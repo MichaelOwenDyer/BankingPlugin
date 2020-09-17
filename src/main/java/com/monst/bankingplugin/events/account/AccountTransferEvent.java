@@ -5,6 +5,9 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
+/**
+ * This event is fired when the owner of an account changes.
+ */
 public class AccountTransferEvent extends SingleAccountEvent implements Cancellable {
 
 	private boolean cancelled;

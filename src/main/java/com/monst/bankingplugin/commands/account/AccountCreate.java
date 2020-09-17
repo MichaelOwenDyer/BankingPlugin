@@ -140,7 +140,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
 
         Account account = Account.mint(owner, location);
 
-        AccountCreateEvent event = new AccountCreateEvent(executor, owner, account);
+        AccountCreateEvent event = new AccountCreateEvent(executor, account);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled() && !executor.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             plugin.debug("No permission to create account on a protected chest.");

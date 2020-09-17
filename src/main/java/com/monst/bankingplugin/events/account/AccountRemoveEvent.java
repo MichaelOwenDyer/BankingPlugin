@@ -4,11 +4,16 @@ import com.monst.bankingplugin.banking.account.Account;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
+import javax.annotation.Nonnull;
+
+/**
+ * This event is fired when an account is removed by a player.
+ */
 public class AccountRemoveEvent extends SingleAccountEvent implements Cancellable {
 
 	private boolean cancelled;
 
-	public AccountRemoveEvent(Player player, Account account) {
+	public AccountRemoveEvent(@Nonnull Player player, @Nonnull Account account) {
 		super(player, account);
 	}
 

@@ -1,10 +1,12 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.events.account.AccountListEvent;
 import com.monst.bankingplugin.gui.AccountListGui;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -41,6 +43,13 @@ public class AccountList extends AccountCommand.SubCommand {
 
         if (accounts.isEmpty()) {
             sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "list"));
+            return true;
+        }
+
+        AccountListEvent event = new AccountListEvent(sender, accounts);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Account list event cancelled");
             return true;
         }
 

@@ -1,10 +1,13 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.events.account.AccountPreTrustEvent;
+import com.monst.bankingplugin.events.account.AccountTrustEvent;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -41,6 +44,13 @@ public class AccountTrust extends AccountCommand.SubCommand {
             return true;
         }
 
+        AccountPreTrustEvent event = new AccountPreTrustEvent(p, args);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Account pre-trust event cancelled");
+            return true;
+        }
+
         p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST,
                 "add " + (Utils.samePlayer(playerToTrust, p) ? "yourself" : playerToTrust.getName()) + " as a co-owner"));
         ClickType.setPlayerClickType(p, ClickType.trust(playerToTrust));
@@ -72,6 +82,13 @@ public class AccountTrust extends AccountCommand.SubCommand {
             plugin.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
             p.sendMessage(String.format(account.isOwner(playerToTrust) ? Messages.ALREADY_OWNER : Messages.ALREADY_COOWNER,
                     isSelf ? "You are" : playerToTrust.getName() + " is", "account"));
+            return;
+        }
+
+        AccountTrustEvent event = new AccountTrustEvent(p, account, playerToTrust);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Account trust event cancelled");
             return;
         }
 

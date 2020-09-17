@@ -1,10 +1,13 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.events.account.AccountPreUntrustEvent;
+import com.monst.bankingplugin.events.account.AccountUntrustEvent;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -41,6 +44,13 @@ public class AccountUntrust extends AccountCommand.SubCommand {
             return true;
         }
 
+        AccountPreUntrustEvent event = new AccountPreUntrustEvent(p, args);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Account pre-untrust event cancelled");
+            return true;
+        }
+
         p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST,
                 "remove " + (Utils.samePlayer(playerToUntrust, p) ? "yourself" : playerToUntrust.getName()) + "as a co-owner"));
         ClickType.setPlayerClickType(p, ClickType.untrust(playerToUntrust));
@@ -70,6 +80,13 @@ public class AccountUntrust extends AccountCommand.SubCommand {
             plugin.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
                     playerToUntrust.getName(), account.getID());
             p.sendMessage(String.format(Messages.NOT_A_COOWNER, isSelf ? "You are" : playerToUntrust.getName() + " is", "account"));
+            return;
+        }
+
+        AccountUntrustEvent event = new AccountUntrustEvent(p, account, playerToUntrust);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Account untrust event cancelled");
             return;
         }
 

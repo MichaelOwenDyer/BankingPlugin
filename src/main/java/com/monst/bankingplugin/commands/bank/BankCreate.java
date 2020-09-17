@@ -125,8 +125,9 @@ public class BankCreate extends BankCommand.SubCommand {
 
         BankCreateEvent event = new BankCreateEvent(p, bank);
         Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            plugin.debug("Bank create event cancelled");
+        if (event.isCancelled() && !p.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS)) {
+            plugin.debug("No permission to create bank without WorldGuard flag present");
+            p.sendMessage(Messages.NO_PERMISSION_BANK_CREATE_PROTECTED);
             return true;
         }
 

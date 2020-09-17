@@ -21,8 +21,8 @@ public class AccountLimits extends AccountCommand.SubCommand {
         Player p = ((Player) sender);
         int used = accountUtils.getNumberOfAccounts(p);
         int accLimit = accountUtils.getAccountLimit(p);
-        Object limit = accLimit < 0 ? "∞" : accLimit;
-        plugin.debug(p.getName() + " is viewing their account limits: " + used + " / " + limit);
+        String limit = accLimit < 0 ? "∞" : "" + accLimit;
+        plugin.debugf("%s is viewing their account limits: %s / %s", p.getName(), used, limit);
         p.sendMessage(String.format(Messages.ACCOUNT_LIMIT, used, limit));
         return true;
     }

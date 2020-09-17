@@ -1,29 +1,23 @@
 package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
+import javax.annotation.Nonnull;
+
+/**
+ * This event is fired when a {@link Player} with a {@link com.monst.bankingplugin.utils.ClickType.CreateClickType}
+ * clicks on a chest and creates an account.
+ */
 public class AccountCreateEvent extends SingleAccountEvent implements Cancellable {
 	
 	private boolean cancelled;
-	private final OfflinePlayer accountOwner;
 
-	public AccountCreateEvent(Player executor, OfflinePlayer accountOwner, Account account) {
-		super(executor, account);
-		this.accountOwner = accountOwner;
+	public AccountCreateEvent(@Nonnull Player player, @Nonnull Account account) {
+		super(player, account);
 	}
 
-	public boolean isForSelf() {
-		return Utils.samePlayer(getPlayer(), accountOwner);
-	}
-
-	public OfflinePlayer getAccountOwner() {
-		return accountOwner;
-	}
-	
 	@Override
 	public boolean isCancelled() {
 		return cancelled;
