@@ -126,6 +126,15 @@ public class VisualizationManager {
                 double unitAwayX = (double) diff.getBlockX() / distance;
                 double unitAwayZ = (double) diff.getBlockZ() / distance;
 
+                for (int y : new int[] {poly.getMinY() + 1, poly.getMaxY() - 1}) {
+                    Location loc = new Location(world, current.getBlockX(), y, current.getBlockZ());
+                    newElements.add(new VisualizationElement(
+                            loc,
+                            type.getAccentBlockData(),
+                            world.getBlockAt(loc).getBlockData()
+                    ));
+                }
+
                 for (int y = poly.getMinY() + step; y < poly.getMaxY() - (step / 2); y += step) {
                     Location loc = new Location(world, current.getBlockX(), y, current.getBlockZ());
                     newElements.add(new VisualizationElement(
