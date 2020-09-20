@@ -49,11 +49,13 @@ public class VisualizationManager {
 
     private static List<VisualizationElement> getSelectionElements(Selection sel, Location playerLoc, VisualizationType type) {
 
+        final int step = 10;
         World world = sel.getWorld();
         List<VisualizationElement> newElements = new ArrayList<>();
 
         if (sel instanceof CuboidSelection) {
 
+            // Add blocks at vertices
             sel.getVertices().forEach(location -> newElements.add(new VisualizationElement(
                     location,
                     type.getCornerBlockData(),
@@ -86,7 +88,6 @@ public class VisualizationManager {
             }
 
             // Add blocks that form the lines between the corners in intervals of the integer "step"
-            final int step = 10;
             for (int i = 0; i < 3; i++) {
                 for (int a = dimensions[i].getMin() + step; a < dimensions[i].getMax() - step / 2; a += step) {
                     for (int b : new int[] {dimensions[(i + 1) % 3].getMin(), dimensions[(i + 1) % 3].getMax()}) {
@@ -108,60 +109,67 @@ public class VisualizationManager {
 
         } else {
 
-            Polygonal2DSelection poly = ((Polygonal2DSelection) sel);
-
+            // Add blocks at vertices
             sel.getVertices().forEach(loc -> newElements.add(new VisualizationElement(
                     loc,
                     type.getCornerBlockData(),
                     world.getBlockAt(loc).getBlockData()
             )));
 
-            final int step = 10;
-            List<BlockVector2D> points = poly.getNativePoints();
+            List<BlockVector2D> points = ((Polygonal2DSelection) sel).getNativePoints();
             for (int i = 0; i < points.size(); i++) {
+
                 BlockVector2D current = points.get(i);
+
+                // Add blocks that are immediately vertically adjacent to corner blocks
+                for (int y : new int[] {sel.getMinY() + 1, sel.getMaxY() - 1}) {
+                    Location loc = new Location(world, current.getBlockX(), y, current.getBlockZ());
+                    newElements.add(new VisualizationElement(
+                            loc,
+                            type.getAccentBlockData(),
+                            world.getBlockAt(loc).getBlockData()
+                    ));
+                }
+
+                // Add blocks that form the vertical lines at the corners in intervals of the integer "step"
+                for (int y = sel.getMinY() + step; y < sel.getMaxY() - (step / 2); y += step) {
+                    Location loc = new Location(world, current.getBlockX(), y, current.getBlockZ());
+                    newElements.add(new VisualizationElement(
+                            loc,
+                            type.getAccentBlockData(),
+                            world.getBlockAt(loc).getBlockData()
+                    ));
+                }
+
+                // Get the vertex after the current one; will eventually loop back to the first vertex
                 BlockVector2D next = points.get((i + 1) % points.size());
                 BlockVector2D diff = new BlockVector2D(next.getBlockX() - current.getBlockX(), next.getBlockZ() - current.getBlockZ());
                 double distance = Math.sqrt(Math.pow(diff.getBlockX(), 2) + Math.pow(diff.getBlockZ(), 2));
-                double unitAwayX = (double) diff.getBlockX() / distance;
-                double unitAwayZ = (double) diff.getBlockZ() / distance;
 
-                for (int y : new int[] {poly.getMinY() + 1, poly.getMaxY() - 1}) {
-                    Location loc = new Location(world, current.getBlockX(), y, current.getBlockZ());
-                    newElements.add(new VisualizationElement(
-                            loc,
-                            type.getAccentBlockData(),
-                            world.getBlockAt(loc).getBlockData()
-                    ));
-                }
+                // These two doubles store the direction from the current vertex to the next. Through vector addition they form a diagonal of length 1
+                double unitX = (double) diff.getBlockX() / distance;
+                double unitZ = (double) diff.getBlockZ() / distance;
 
-                for (int y = poly.getMinY() + step; y < poly.getMaxY() - (step / 2); y += step) {
-                    Location loc = new Location(world, current.getBlockX(), y, current.getBlockZ());
-                    newElements.add(new VisualizationElement(
-                            loc,
-                            type.getAccentBlockData(),
-                            world.getBlockAt(loc).getBlockData()
-                    ));
-                }
+                // The following blocks are placed at both minY and maxY
+                for (int y : new int[] {sel.getMinY(), sel.getMaxY()}) {
 
-                for (int y : new int[] {poly.getMinY(), poly.getMaxY()}) {
-
-                    Location unitAway = new Location(world, current.getBlockX() + 0.5 + unitAwayX, y, current.getBlockZ() + 0.5 + unitAwayZ);
+                    // Add the block that is immediately adjacent to the current vertex in the direction of the next vertex
+                    Location unitAway = new Location(world, current.getBlockX() + 0.5 + unitX, y, current.getBlockZ() + 0.5 + unitZ);
                     newElements.add(new VisualizationElement(
                             unitAway,
                             type.getAccentBlockData(),
                             world.getBlockAt(unitAway).getBlockData()
                     ));
 
-                    Location unitAwayNeg = new Location(world, next.getBlockX() + 0.5 - unitAwayX, y, next.getBlockZ() + 0.5 - unitAwayZ);
+                    Location unitAwayNeg = new Location(world, next.getBlockX() + 0.5 - unitX, y, next.getBlockZ() + 0.5 - unitZ);
                     newElements.add(new VisualizationElement(
                             unitAwayNeg,
                             type.getAccentBlockData(),
                             world.getBlockAt(unitAwayNeg).getBlockData()
                     ));
 
-                    double increaseX = unitAwayX * step;
-                    double increaseZ = unitAwayZ * step;
+                    double increaseX = unitX * step;
+                    double increaseZ = unitZ * step;
                     Location nextAccent = new Location(world, current.getBlockX() + 0.5 + increaseX, y, current.getBlockZ() + 0.5 + increaseZ);
                     while (Math.sqrt(Math.pow(next.getBlockX() - nextAccent.getX(), 2) + Math.pow(next.getBlockZ() - nextAccent.getZ(), 2)) > step / 2.0) {
                         newElements.add(new VisualizationElement(
@@ -174,7 +182,10 @@ public class VisualizationManager {
                 }
             }
         }
+
+        // Remove elements that are too far away (>100 blocks) from player
         newElements.removeIf(e -> outOfRange(playerLoc, e.location));
+
         return newElements;
     }
 
