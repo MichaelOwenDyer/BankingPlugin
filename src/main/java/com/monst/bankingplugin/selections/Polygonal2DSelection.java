@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class Polygonal2DSelection implements Selection {
 
 	private final World world;
-	private final List<BlockVector2D> points;
+	private final List<BlockVector2D> vertices;
 	private final int minY;
 	private final int maxY;
 
@@ -30,42 +30,41 @@ public class Polygonal2DSelection implements Selection {
 		);
 	}
 
-	private Polygonal2DSelection(World world, List<BlockVector2D> points, int minY, int maxY) {
+	private Polygonal2DSelection(World world, List<BlockVector2D> vertices, int minY, int maxY) {
 		this.world = world;
-		this.points = points;
+		this.vertices = vertices;
 		this.minY = minY;
 		this.maxY = maxY;
 	}
 
 	public List<BlockVector2D> getNativePoints() {
-		return points;
+		return vertices;
 	}
 
 	@Override
 	@SuppressWarnings("all")
-	public Location getMinimumPoint() {
-		int minX = points.stream().mapToInt(BlockVector2D::getBlockX).min().getAsInt();
-		int minZ = points.stream().mapToInt(BlockVector2D::getBlockZ).min().getAsInt();
-		return new Location(world, minX, minY, minZ);
+	public BlockVector3D getMinimumPoint() {
+		int minX = vertices.stream().mapToInt(BlockVector2D::getBlockX).min().getAsInt();
+		int minZ = vertices.stream().mapToInt(BlockVector2D::getBlockZ).min().getAsInt();
+		return new BlockVector3D(minX, minY, minZ);
 	}
 
 	@Override
 	@SuppressWarnings("all")
-	public Location getMaximumPoint() {
-		int maxX = points.stream().mapToInt(BlockVector2D::getBlockX).max().getAsInt();
-		int maxZ = points.stream().mapToInt(BlockVector2D::getBlockZ).max().getAsInt();
-		return new Location(world, maxX, maxY, maxZ);
+	public BlockVector3D getMaximumPoint() {
+		int maxX = vertices.stream().mapToInt(BlockVector2D::getBlockX).max().getAsInt();
+		int maxZ = vertices.stream().mapToInt(BlockVector2D::getBlockZ).max().getAsInt();
+		return new BlockVector3D(maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Location getCenterPoint() {
-		Location max = getMaximumPoint();
-		Location min = getMinimumPoint();
-		int centerX, centerY, centerZ;
-		centerX = (max.getBlockX() + min.getBlockX()) / 2;
-		centerY = (maxY + minY) / 2;
-		centerZ = (max.getBlockZ() + min.getBlockZ()) / 2;
-		return new Location(getWorld(), centerX, centerY, centerZ);
+	public BlockVector3D getCenterPoint() {
+		BlockVector3D max = getMaximumPoint();
+		BlockVector3D min = getMinimumPoint();
+		int centerX = (max.getBlockX() + min.getBlockX()) / 2;
+		int centerY = (maxY + minY) / 2;
+		int centerZ = (max.getBlockZ() + min.getBlockZ()) / 2;
+		return new BlockVector3D(centerX, centerY, centerZ);
 	}
 
 	@Override
@@ -97,11 +96,11 @@ public class Polygonal2DSelection implements Selection {
 	}
 
 	@Override
-	public Collection<Location> getVertices() {
-		Collection<Location> vertices = new HashSet<>();
-		points.forEach(point -> {
-			vertices.add(new Location(world, point.getBlockX(), minY, point.getBlockZ()));
-			vertices.add(new Location(world, point.getBlockX(), maxY, point.getBlockZ()));
+	public Collection<BlockVector3D> getVertices() {
+		Collection<BlockVector3D> vertices = new HashSet<>();
+		this.vertices.forEach(point -> {
+			vertices.add(new BlockVector3D(point.getBlockX(), minY, point.getBlockZ()));
+			vertices.add(new BlockVector3D(point.getBlockX(), maxY, point.getBlockZ()));
 		});
 		return vertices;
 	}
@@ -117,8 +116,8 @@ public class Polygonal2DSelection implements Selection {
 	@Override
 	public Set<BlockVector2D> getBlocks() {
 		Set<BlockVector2D> blocks = new HashSet<>();
-		Location min = getMinimumPoint();
-		Location max = getMaximumPoint();
+		BlockVector3D min = getMinimumPoint();
+		BlockVector3D max = getMaximumPoint();
 		for (int x = min.getBlockX(); x <= max.getBlockX(); x++)
 			for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
 				BlockVector2D bv = new BlockVector2D(x, z);
@@ -130,11 +129,11 @@ public class Polygonal2DSelection implements Selection {
 
 	@Override
 	public boolean contains(Location pt) {
-		if (pt.getWorld() != null && !pt.getWorld().equals(getWorld()))
-			return false;
-		if (points.size() < 3)
+		if (vertices.size() < 3)
 			return false;
 		if (pt.getBlockY() < minY || pt.getBlockY() > maxY)
+			return false;
+		if (pt.getWorld() != null && !pt.getWorld().equals(getWorld()))
 			return false;
 		return contains(new BlockVector2D(pt.getBlockX(), pt.getBlockZ()));
 	}
@@ -145,12 +144,12 @@ public class Polygonal2DSelection implements Selection {
 		int pointZ = vector.getBlockZ(); //depth
 
 		int nextX, nextZ, x1, z1, x2, z2;
-		int prevX = points.get(points.size() - 1).getBlockX();
-		int prevZ = points.get(points.size() - 1).getBlockZ();
+		int prevX = vertices.get(vertices.size() - 1).getBlockX();
+		int prevZ = vertices.get(vertices.size() - 1).getBlockZ();
 
 		long crossProduct;
 		boolean inside = false;
-		for (BlockVector2D point : points) {
+		for (BlockVector2D point : vertices) {
 			nextX = point.getBlockX();
 			nextZ = point.getBlockZ();
 			if (nextX == pointX && nextZ == pointZ) // Location is on a vertex

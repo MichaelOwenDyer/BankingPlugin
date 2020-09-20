@@ -17,21 +17,21 @@ public interface Selection {
 	 * 
 	 * @return The minimum point
 	 */
-    Location getMinimumPoint();
+    BlockVector3D getMinimumPoint();
 
 	/**
 	 * Gets the upper point of this selection.
 	 * 
 	 * @return The maximum point
 	 */
-    Location getMaximumPoint();
+    BlockVector3D getMaximumPoint();
 
 	/**
 	 * Gets the center point of this selection.
 	 *
 	 * @return the center point
 	 */
-	Location getCenterPoint();
+	BlockVector3D getCenterPoint();
 
 	/**
 	 * Gets the lowest y-coordinate encompassed by this selection.
@@ -76,6 +76,16 @@ public interface Selection {
 	boolean overlaps(Selection sel);
 
 	/**
+	 * Returns true based on whether the selection contains the point,
+	 *
+	 * @param pt The point that may or may not be contained
+	 * @return Whether or not the point is contained
+	 */
+	boolean contains(Location pt);
+
+	boolean contains(BlockVector2D bv);
+
+	/**
 	 * Gets a {@link Set} with a {@link BlockVector2D} for every block in this selection,
 	 * disregarding the y-coordinate.
 	 *
@@ -88,17 +98,7 @@ public interface Selection {
 	 * 
 	 * @return a Collection<Location> representing all vertices.
 	 */
-    Collection<Location> getVertices();
-
-	/**
-	 * Returns true based on whether the selection contains the point,
-	 *
-	 * @param pt The point that may or may not be contained
-	 * @return Whether or not the point is contained
-	 */
-    boolean contains(Location pt);
-
-    boolean contains(BlockVector2D bv);
+    Collection<BlockVector3D> getVertices();
 
 	/**
 	 * Returns the type of selection.

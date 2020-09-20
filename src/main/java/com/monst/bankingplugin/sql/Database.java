@@ -8,10 +8,7 @@ import com.monst.bankingplugin.banking.bank.BankConfig;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
-import com.monst.bankingplugin.selections.BlockVector2D;
-import com.monst.bankingplugin.selections.CuboidSelection;
-import com.monst.bankingplugin.selections.Polygonal2DSelection;
-import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.selections.*;
 import com.monst.bankingplugin.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
@@ -445,8 +442,8 @@ public abstract class Database {
 					CuboidSelection sel = (CuboidSelection) bank.getSelection();
 
 					StringBuilder sb = new StringBuilder(64);
-					Location max = sel.getMaximumPoint();
-					Location min = sel.getMinimumPoint();
+					BlockVector3D max = sel.getMaximumPoint();
+					BlockVector3D min = sel.getMinimumPoint();
 
 					sb.append(max.getBlockX()).append(",").append(max.getBlockY()).append(",").append(max.getBlockZ());
 					sb.append(" | ");
@@ -606,8 +603,8 @@ public abstract class Database {
 						int maxY = Integer.parseInt(coords[1]);
 						int maxZ = Integer.parseInt(coords[2]);
 
-						Location min = new Location(world, minX, minY, minZ);
-						Location max = new Location(world, maxX, maxY, maxZ);
+						BlockVector3D min = new BlockVector3D(minX, minY, minZ);
+						BlockVector3D max = new BlockVector3D(maxX, maxY, maxZ);
 
 						selection = CuboidSelection.of(world, min, max);
 					}

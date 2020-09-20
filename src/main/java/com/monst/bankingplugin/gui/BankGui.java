@@ -89,12 +89,12 @@ public class BankGui extends SinglePageGui<Bank> {
 			case 0:
 				return canTP ? (player, info) -> {
 					if (info.getClickType().isLeftClick())
-						player.teleport(Utils.getSafeLocation(guiSubject.getSelection().getCenterPoint())
+						player.teleport(Utils.getSafeLocation(guiSubject.getSelection().getCenterPoint().toLocation(guiSubject.getSelection().getWorld()))
 								.setDirection(player.getLocation().getDirection()));
 					else if (info.getClickType().isRightClick())
 						player.teleport(guiSubject.getSelection()
 								.getWorld()
-								.getHighestBlockAt(guiSubject.getSelection().getCenterPoint())
+								.getHighestBlockAt(guiSubject.getSelection().getCenterPoint().toLocation(guiSubject.getSelection().getWorld()))
 								.getLocation().add(0.5, 1, 0.5)
 								.setDirection(player.getLocation().getDirection()));
 					this.close(player);

@@ -10,59 +10,45 @@ import java.util.Set;
 public class CuboidSelection implements Selection {
 
 	private final World world;
-	private final Location min;
-	private final Location max;
+	private final BlockVector3D min;
+	private final BlockVector3D max;
 
-	public static CuboidSelection of(World world, Location loc1, Location loc2) {
-		int minX, minY, minZ, maxX, maxY, maxZ;
-		if (loc1.getBlockX() < loc2.getBlockX()) {
-			minX = loc1.getBlockX();
-			maxX = loc2.getBlockX();
-		} else {
-			minX = loc2.getBlockX();
-			maxX = loc1.getBlockX();
-		}
-		if (loc1.getBlockY() < loc2.getBlockY()) {
-			minY = loc1.getBlockY();
-			maxY = loc2.getBlockY();
-		} else {
-			minY = loc2.getBlockY();
-			maxY = loc1.getBlockY();
-		}
-		if (loc1.getBlockZ() < loc2.getBlockZ()) {
-			minZ = loc1.getBlockZ();
-			maxZ = loc2.getBlockZ();
-		} else {
-			minZ = loc2.getBlockZ();
-			maxZ = loc1.getBlockZ();
-		}
-		Location min = new Location(world, minX, minY, minZ);
-		Location max = new Location(world, maxX, maxY, maxZ);
+	public static CuboidSelection of(World world, BlockVector3D bv1, BlockVector3D bv2) {
+		BlockVector3D min = new BlockVector3D(
+				Math.min(bv1.getBlockX(), bv2.getBlockX()),
+				Math.min(bv1.getBlockY(), bv2.getBlockY()),
+				Math.min(bv1.getBlockZ(), bv2.getBlockZ())
+		);
+		BlockVector3D max = new BlockVector3D(
+				Math.min(bv1.getBlockX(), bv2.getBlockX()),
+				Math.min(bv1.getBlockY(), bv2.getBlockY()),
+				Math.min(bv1.getBlockZ(), bv2.getBlockZ())
+		);
 		return new CuboidSelection(world, min, max);
 	}
 
-	private CuboidSelection(World world, Location min, Location max) {
+	private CuboidSelection(World world, BlockVector3D min, BlockVector3D max) {
 		this.world = world;
 		this.min = min;
 		this.max = max;
 	}
 
 	@Override
-	public Location getMinimumPoint() {
+	public BlockVector3D getMinimumPoint() {
 		return min;
 	}
 
 	@Override
-	public Location getMaximumPoint() {
+	public BlockVector3D getMaximumPoint() {
 		return max;
 	}
 
 	@Override
-	public Location getCenterPoint() {
+	public BlockVector3D getCenterPoint() {
 		int centerX = (max.getBlockX() + min.getBlockX()) / 2;
 		int centerY = (max.getBlockY() + min.getBlockY()) / 2;
 		int centerZ = (max.getBlockZ() + min.getBlockZ()) / 2;
-		return new Location(getWorld(), centerX, centerY, centerZ);
+		return new BlockVector3D(centerX, centerY, centerZ);
 	}
 
 	@Override
@@ -82,10 +68,11 @@ public class CuboidSelection implements Selection {
 
 	@Override
 	public String getCoordinates() {
-		Location min = getMinimumPoint();
-		Location max = getMaximumPoint();
-		return "(" + min.getBlockX() + ", " + min.getBlockY() + ", " + min.getBlockZ() + ") -> (" + max.getBlockX()
-				+ ", " + max.getBlockY() + ", " + max.getBlockZ() + ")";
+		BlockVector3D min = getMinimumPoint();
+		BlockVector3D max = getMaximumPoint();
+		return "(" + min.getBlockX() + ", " + min.getBlockY() + ", " + min.getBlockZ() 
+				+ ") -> (" 
+				+ max.getBlockX() + ", " + max.getBlockY() + ", " + max.getBlockZ() + ")";
 	}
 
 	@Override
@@ -113,15 +100,15 @@ public class CuboidSelection implements Selection {
 	}
 
 	@Override
-	public Collection<Location> getVertices() {
-		Collection<Location> vertices = new HashSet<>();
+	public Collection<BlockVector3D> getVertices() {
+		Collection<BlockVector3D> vertices = new HashSet<>();
 		vertices.add(min);
-		vertices.add(new Location(world, max.getX(), min.getY(), min.getZ()));
-		vertices.add(new Location(world, min.getX(), max.getY(), min.getZ()));
-		vertices.add(new Location(world, max.getX(), max.getY(), min.getZ()));
-		vertices.add(new Location(world, min.getX(), min.getY(), max.getZ()));
-		vertices.add(new Location(world, max.getX(), min.getY(), max.getZ()));
-		vertices.add(new Location(world, min.getX(), max.getY(), max.getZ()));
+		vertices.add(new BlockVector3D(max.getBlockX(), min.getBlockY(), min.getBlockZ()));
+		vertices.add(new BlockVector3D(min.getBlockX(), max.getBlockY(), min.getBlockZ()));
+		vertices.add(new BlockVector3D(max.getBlockX(), max.getBlockY(), min.getBlockZ()));
+		vertices.add(new BlockVector3D(min.getBlockX(), min.getBlockY(), max.getBlockZ()));
+		vertices.add(new BlockVector3D(max.getBlockX(), min.getBlockY(), max.getBlockZ()));
+		vertices.add(new BlockVector3D(min.getBlockX(), max.getBlockY(), max.getBlockZ()));
 		vertices.add(max);
 		return vertices;
 	}
@@ -130,16 +117,15 @@ public class CuboidSelection implements Selection {
 	public boolean contains(Location pt) {
 		if (pt.getWorld() != null && !pt.getWorld().equals(getWorld()))
 			return false;
-		int y = pt.getBlockY();
-		return (y <= max.getBlockY() && y >= min.getBlockY()) &&
-				contains(new BlockVector2D(pt.getBlockX(), pt.getBlockZ()));
+		return pt.getBlockY() <= max.getBlockY() && pt.getBlockY() >= min.getBlockY()
+				&& contains(new BlockVector2D(pt.getBlockX(), pt.getBlockZ()));
 	}
 
 	@Override
 	public boolean contains(BlockVector2D bv) {
 		int x = bv.getBlockX();
 		int z = bv.getBlockZ();
-		return (x <= max.getBlockX() && x >= min.getBlockX()) && (z <= max.getBlockZ() && z >= min.getBlockZ());
+		return x <= max.getBlockX() && x >= min.getBlockX() && z <= max.getBlockZ() && z >= min.getBlockZ();
 	}
 
 	@Override

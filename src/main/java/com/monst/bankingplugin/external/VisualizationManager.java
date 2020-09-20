@@ -2,10 +2,7 @@ package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.selections.BlockVector2D;
-import com.monst.bankingplugin.selections.CuboidSelection;
-import com.monst.bankingplugin.selections.Polygonal2DSelection;
-import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.selections.*;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Visualization;
@@ -56,14 +53,14 @@ public class VisualizationManager {
         if (sel instanceof CuboidSelection) {
 
             // Add blocks at vertices
-            sel.getVertices().forEach(location -> newElements.add(new VisualizationElement(
+            sel.getVertices().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(location -> newElements.add(new VisualizationElement(
                     location,
                     type.getCornerBlockData(),
                     world.getBlockAt(location).getBlockData()
             )));
 
-            Location min = sel.getMinimumPoint();
-            Location max = sel.getMaximumPoint();
+            BlockVector3D min = sel.getMinimumPoint();
+            BlockVector3D max = sel.getMaximumPoint();
             MinMax[] dimensions = new MinMax[] {
                     new MinMax(min.getBlockX(), max.getBlockX()),
                     new MinMax(min.getBlockY(), max.getBlockY()),
@@ -110,7 +107,7 @@ public class VisualizationManager {
         } else {
 
             // Add blocks at vertices
-            sel.getVertices().forEach(loc -> newElements.add(new VisualizationElement(
+            sel.getVertices().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(loc -> newElements.add(new VisualizationElement(
                     loc,
                     type.getCornerBlockData(),
                     world.getBlockAt(loc).getBlockData()

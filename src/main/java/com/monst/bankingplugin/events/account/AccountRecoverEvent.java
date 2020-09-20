@@ -7,7 +7,7 @@ import org.bukkit.event.Cancellable;
 
 /**
  * This event is fired when a player clicks a chest with a
- * {@link com.monst.bankingplugin.utils.ClickType.RecoverClickType}.
+ * {@link com.monst.bankingplugin.utils.ClickType} of type <b>recover</b>.
  */
 public class AccountRecoverEvent extends SingleAccountEvent implements Cancellable {
 

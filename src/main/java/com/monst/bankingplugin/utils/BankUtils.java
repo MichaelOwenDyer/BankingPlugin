@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.selections.BlockVector3D;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Selection;
 import org.bukkit.ChatColor;
@@ -118,11 +119,11 @@ public class BankUtils extends Observable {
 			y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1)) + y2 : Integer.parseInt(argY);
 			z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1)) + z2 : Integer.parseInt(argZ);
 
-			Location loc1 = new Location(loc.getWorld(), x1, y1, z1);
-			Location loc2 = new Location(loc.getWorld(), x2, y2, z2);
+			BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);
+			BlockVector3D loc2 = new BlockVector3D(x2, y2, z2);
 			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
 
-		} else if (args.length >= 7 || args.length <= 9) {
+		} else if (args.length >= 7) {
 
 			String argX1 = args[1 + offset];
 			String argY1 = args[2 + offset];
@@ -140,12 +141,13 @@ public class BankUtils extends Observable {
 			y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1)) + loc.getBlockY() : Integer.parseInt(argY2);
 			z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1)) + loc.getBlockZ() : Integer.parseInt(argZ2);
 
-			Location loc1 = new Location(loc.getWorld(), x1, y1, z1);
-			Location loc2 = new Location(loc.getWorld(), x2, y2, z2);
+			BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);
+			BlockVector3D loc2 = new BlockVector3D(x2, y2, z2);
 			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
 
-		} else
-			return null;
+		}
+
+		return null;
 	}
 
     /**

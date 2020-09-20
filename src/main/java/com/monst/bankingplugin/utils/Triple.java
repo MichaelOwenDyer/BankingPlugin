@@ -1,13 +1,15 @@
 package com.monst.bankingplugin.utils;
 
-public abstract class Pair<T, K> {
+public abstract class Triple<T, K, R> {
 
     private T first;
     private K second;
+    private R third;
 
-    public Pair(T t, K k) {
+    public Triple(T t, K k, R r) {
         this.first = t;
         this.second = k;
+        this.third = r;
     }
 
     protected T getFirst() {
@@ -26,9 +28,17 @@ public abstract class Pair<T, K> {
         this.second = second;
     }
 
+    protected R getThird() {
+        return third;
+    }
+
+    protected void setThird(R third) {
+        this.third = third;
+    }
+
     @Override
     public String toString() {
-        return String.format("(%s, %s)", first, second);
+        return String.format("(%s, %s, %s)", first, second, third);
     }
 
     @Override
@@ -37,12 +47,12 @@ public abstract class Pair<T, K> {
             return false;
         if (getClass() != o.getClass())
             return false;
-        Pair<?, ?> other = (Pair<?, ?>) o;
-        return first.equals(other.first) && second.equals(other.second);
+        Triple<?, ?, ?> other = (Triple<?, ?, ?>) o;
+        return first.equals(other.first) && second.equals(other.second) && third.equals(other.third);
     }
 
     @Override
     public int hashCode() {
-        return ((first.hashCode() * 31) + second.hashCode()) * 31;
+        return (((first.hashCode() * 31) + second.hashCode()) * 31) + third.hashCode() * 31;
     }
 }

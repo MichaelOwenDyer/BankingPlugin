@@ -1,10 +1,7 @@
 package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.selections.BlockVector2D;
-import com.monst.bankingplugin.selections.CuboidSelection;
-import com.monst.bankingplugin.selections.Polygonal2DSelection;
-import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.selections.*;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -17,7 +14,6 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
 import com.sk89q.worldedit.regions.selector.CuboidRegionSelector;
 import com.sk89q.worldedit.regions.selector.Polygonal2DRegionSelector;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -41,11 +37,9 @@ public class WorldEditReader {
 				CuboidRegion cuboid = (CuboidRegion) region;
 				BlockVector3 vector1 = cuboid.getPos1();
 				BlockVector3 vector2 = cuboid.getPos2();
-				Location loc1 = new Location(BukkitAdapter.adapt(cuboid.getWorld()), vector1.getBlockX(),
-						vector1.getBlockY(), vector1.getBlockZ());
-				Location loc2 = new Location(BukkitAdapter.adapt(cuboid.getWorld()), vector2.getBlockX(),
-						vector2.getBlockY(), vector2.getBlockZ());
-				return CuboidSelection.of(loc1.getWorld(), loc1, loc2);
+				BlockVector3D loc1 = new BlockVector3D(vector1.getBlockX(), vector1.getBlockY(), vector1.getBlockZ());
+				BlockVector3D loc2 = new BlockVector3D(vector2.getBlockX(), vector2.getBlockY(), vector2.getBlockZ());
+				return CuboidSelection.of(BukkitAdapter.adapt(cuboid.getWorld()), loc1, loc2);
 			} else if (region instanceof Polygonal2DRegion) {
 				Polygonal2DRegion polygon = (Polygonal2DRegion) region;
 				int minY = polygon.getMinimumY();

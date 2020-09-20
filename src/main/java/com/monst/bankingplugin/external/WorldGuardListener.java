@@ -5,6 +5,7 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
+import com.monst.bankingplugin.selections.BlockVector3D;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EClickType;
 import org.bukkit.Location;
@@ -43,8 +44,8 @@ public class WorldGuardListener implements Listener {
 			return;
 
 		IWrappedFlag<WrappedState> flag = getStateFlag("create-bank");
-		for (Location loc : e.getBank().getSelection().getVertices())
-			if (handleForLocation((Player) e.getExecutor(), loc, e, flag))
+		for (BlockVector3D bv : e.getBank().getSelection().getVertices())
+			if (handleForLocation((Player) e.getExecutor(), bv.toLocation(e.getBank().getSelection().getWorld()), e, flag))
 				return;
 	}
 
@@ -54,8 +55,8 @@ public class WorldGuardListener implements Listener {
 			return;
 
 		IWrappedFlag<WrappedState> flag = getStateFlag("create-bank");
-		for (Location loc : e.getNewSelection().getVertices())
-			if (handleForLocation((Player) e.getExecutor(), loc, e, flag))
+		for (BlockVector3D bv : e.getNewSelection().getVertices())
+			if (handleForLocation((Player) e.getExecutor(), bv.toLocation(e.getNewSelection().getWorld()), e, flag))
 				return;
     }
 
