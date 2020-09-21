@@ -164,7 +164,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         if (!Utils.withdrawPlayer(accountOwner, location.getWorld().getName(), creationPrice,
                 Callback.of(plugin,
                         result -> executor.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.format(finalCreationPrice))),
-                        throwable -> executor.sendMessage(Messages.ERROR_OCCURRED))))
+                        error -> executor.sendMessage(Messages.ERROR_OCCURRED))))
             return;
 
         // Bank owner receives the payment from the customer
@@ -173,7 +173,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             Utils.depositPlayer(bankOwner, location.getWorld().getName(), creationPrice, Callback.of(plugin,
                     result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
                             accountOwner.getName(), Utils.format(finalCreationPrice)), bankOwner),
-                    throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+                    error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
         }
 
         if (account.create(true)) {

@@ -139,7 +139,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
                     Callback.of(plugin,
                             result -> p.sendMessage(String.format(
                                     Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalReimbursement))),
-                            throwable -> p.sendMessage(Messages.ERROR_OCCURRED)));
+                            error -> p.sendMessage(Messages.ERROR_OCCURRED)));
         }
 
         // Bank owner of new account receives account creation fee
@@ -149,14 +149,14 @@ public class AccountMigrate extends AccountCommand.SubCommand {
                     Callback.of(plugin,
                             result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
                                     Utils.format(finalCreationPrice)), bankOwner),
-                            throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+                            error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
         }
 
         // Account owner pays creation fee for new account
         if (creationPrice > 0 && !newBank.isOwner(p)) {
             if (!Utils.withdrawPlayer(p, newLocation.getWorld().getName(), finalCreationPrice, Callback.of(plugin,
                     result -> p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.format(finalCreationPrice))),
-                    throwable -> p.sendMessage(Messages.ERROR_OCCURRED))))
+                    error -> p.sendMessage(Messages.ERROR_OCCURRED))))
                 return;
         }
 
@@ -167,7 +167,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
                     Callback.of(plugin,
                             result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
                                     p.getName(), Utils.format(finalReimbursement)), bankOwner),
-                            throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+                            error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
         }
 
         if (newAccount.create(true)) {
@@ -178,7 +178,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
                                 accountUtils.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
                                 p.sendMessage(Messages.ACCOUNT_MIGRATED);
                             },
-                            throwable -> p.sendMessage(Messages.ERROR_OCCURRED))
+                            error -> p.sendMessage(Messages.ERROR_OCCURRED))
             );
         }
     }

@@ -550,7 +550,7 @@ public class Config {
 	}
 
 	private static <T> T ternary(T ifNotNull, T ifNull) {
-		return Utils.ternary(ifNotNull, ifNull);
+		return ternary(ifNotNull, () -> ifNull);
 	}
 
 	private static <T> T ternary(T ifNotNull, Supplier<T> ifNull) {
@@ -567,8 +567,8 @@ public class Config {
 
 	private static ItemStack convertToItemStack(String string) {
 		try {
-			return new ItemStack(Material.getMaterial(string));
-		} catch (Exception e) {
+			return new ItemStack(Objects.requireNonNull(Material.getMaterial(string)));
+		} catch (NullPointerException e) {
 			return null;
 		}
 	}

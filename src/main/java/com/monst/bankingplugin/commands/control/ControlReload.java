@@ -43,14 +43,15 @@ public class ControlReload extends ControlCommand.SubCommand {
                 Callback.of(plugin, result -> {
                     Collection<Bank> banks = result.getBanks();
                     Collection<Account> accounts = result.getAccounts();
+                    plugin.getScheduler().scheduleAll();
                     sender.sendMessage(String.format(Messages.RELOADED_PLUGIN, banks.size(), accounts.size()));
                     plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
-                }, throwable -> {
+                }, error -> {
                     // Database connection probably failed => disable plugin to prevent more errors
                     sender.sendMessage(Messages.ERROR_OCCURRED + "No database access! Disabling BankingPlugin.");
                     plugin.getLogger().severe("No database access! Disabling BankingPlugin.");
-                    if (throwable != null)
-                        plugin.getLogger().severe(throwable.getMessage());
+                    if (error != null)
+                        plugin.getLogger().severe(error.getMessage());
                     plugin.getServer().getPluginManager().disablePlugin(plugin);
                 })
         );

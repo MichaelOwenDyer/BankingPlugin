@@ -81,7 +81,7 @@ public class BankSet extends BankCommand.SubCommand {
                         previousValue, result, bank.getColorizedName()), toNotify
                 );
             },
-            throwable -> sender.sendMessage(((ArgumentParseException) throwable).getErrorMessage()));
+            error -> sender.sendMessage(((ArgumentParseException) error).getErrorMessage()));
 
         if (!bank.set(field, value, callback)) {
             sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);

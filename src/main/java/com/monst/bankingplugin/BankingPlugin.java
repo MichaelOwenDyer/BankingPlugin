@@ -150,7 +150,6 @@ public class BankingPlugin extends JavaPlugin {
         registerListeners();
         registerExternalListeners();
 		initializeBanksAndAccounts();
-		scheduler.scheduleAll();
 
 	}
 
@@ -340,7 +339,7 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	private void initializeBanksAndAccounts() {
 		bankUtils.reload(false, true,
-                Callback.of(this, (result) -> {
+                Callback.of(this, result -> {
                 	Collection<Bank> banks = result.getBanks();
 					Collection<Account> accounts = result.getAccounts();
 
@@ -353,11 +352,13 @@ public class BankingPlugin extends JavaPlugin {
 
 					getLogger().info(message);
 					debug(message);
-				}, (throwable) -> {
+
+					scheduler.scheduleAll();
+				}, error -> {
 					// Database connection probably failed => disable plugin to prevent more errors
 					getLogger().severe("No database access! Disabling BankingPlugin.");
-					if (throwable != null)
-						getLogger().severe(throwable.getMessage());
+					if (error != null)
+						getLogger().severe(error.getMessage());
 
 					getServer().getPluginManager().disablePlugin(BankingPlugin.this);
 				})

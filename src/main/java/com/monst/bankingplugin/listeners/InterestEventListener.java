@@ -140,7 +140,7 @@ public class InterestEventListener implements Listener {
 				boolean online = bankOwner.isOnline();
 				Utils.depositPlayer(bankOwner, bank.getSelection().getWorld().getName(), revenue.doubleValue(), Callback.of(plugin,
 						result -> Utils.notifyPlayers(String.format(Messages.REVENUE_EARNED, Utils.format(revenue), bank.getName()), bankOwner),
-						throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner))
+						error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner))
 				);
 
 				if (Config.enableProfitLog)
@@ -167,7 +167,7 @@ public class InterestEventListener implements Listener {
 								Utils.format(feesReceivable.get(bankOwner).getSum()),
 								count, count == 1 ? "" : "s"), bankOwner);
 					},
-					throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 		}
 
 		// Bank owners pay interest
@@ -187,7 +187,7 @@ public class InterestEventListener implements Listener {
 								Utils.format(interestPayable.get(bankOwner).getSum()),
 								count, count == 1 ? "" : "s"), bankOwner);
 					},
-					throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 		}
 
 		// Account owners receive interest payments
@@ -207,7 +207,7 @@ public class InterestEventListener implements Listener {
 								Utils.format(interestReceivable.get(customer).getSum()),
 								count, count == 1 ? "" : "s"), customer);
 					},
-					throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer))
+					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer))
 			);
 		}
 
@@ -228,7 +228,7 @@ public class InterestEventListener implements Listener {
 								Utils.format(feesPayable.get(customer).getSum()),
 								count, count == 1 ? "" : "s"), customer);
 					},
-					throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer)
+					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer)
 			));
 		}
 	}

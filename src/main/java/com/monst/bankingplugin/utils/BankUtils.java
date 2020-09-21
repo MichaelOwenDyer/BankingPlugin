@@ -162,6 +162,7 @@ public class BankUtils extends Observable {
 		plugin.debug("Adding/updating bank... (#" + bank.getID() + ")");
 
 		bankSelectionMap.put(bank.getSelection(), bank);
+		plugin.getScheduler().schedulePayouts(bank);
 
         if (addToDatabase)
 			plugin.getDatabase().addBank(bank, callback);

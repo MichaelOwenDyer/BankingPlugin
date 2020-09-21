@@ -87,7 +87,7 @@ public class AccountProtectListener implements Listener {
 			// Account owner is reimbursed for the part of the chest that was broken
 			Utils.depositPlayer(p, worldName, finalCreationPrice, Callback.of(plugin,
 					result -> p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice))),
-					throwable -> p.sendMessage(Messages.ERROR_OCCURRED)));
+					error -> p.sendMessage(Messages.ERROR_OCCURRED)));
 
 			// Bank owner reimburses the customer
 			if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
@@ -95,7 +95,7 @@ public class AccountProtectListener implements Listener {
 				Utils.withdrawPlayer(bankOwner, account.getLocation().getWorld().getName(), finalCreationPrice, Callback.of(plugin,
 						result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
 								account.getOwner().getName(), Utils.format(finalCreationPrice)), bankOwner),
-						throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+						error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 			}
 		}
 
@@ -202,7 +202,7 @@ public class AccountProtectListener implements Listener {
 			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
 			if (!Utils.withdrawPlayer(owner, worldName, creationPrice, Callback.of(plugin,
 					result -> p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID, Utils.format(creationPrice))),
-					throwable -> p.sendMessage(Messages.ERROR_OCCURRED)))) {
+					error -> p.sendMessage(Messages.ERROR_OCCURRED)))) {
 				e.setCancelled(true);
 				return;
 			}
@@ -212,7 +212,7 @@ public class AccountProtectListener implements Listener {
 				Utils.depositPlayer(bankOwner, account.getLocation().getWorld().getName(), creationPrice, Callback.of(plugin,
 						result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
 								account.getOwner().getName(), Utils.format(creationPrice)), bankOwner),
-						throwable -> p.sendMessage(Messages.ERROR_OCCURRED)));
+						error -> p.sendMessage(Messages.ERROR_OCCURRED)));
 			}
 		}
 
@@ -236,7 +236,7 @@ public class AccountProtectListener implements Listener {
 	public void onAccountItemMove(InventoryMoveItemEvent e) {
         if ((e.getSource().getType().equals(InventoryType.CHEST)) && (!e.getInitiator().getType().equals(InventoryType.PLAYER))) {
 
-        	for (Inventory inv : new Inventory[]{e.getSource(), e.getDestination()}) {
+        	for (Inventory inv : new Inventory[] {e.getSource(), e.getDestination()}) {
 
 				if (inv.getHolder() instanceof DoubleChest) {
 					DoubleChest dc = (DoubleChest) inv.getHolder();

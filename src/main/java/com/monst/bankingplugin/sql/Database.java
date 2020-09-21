@@ -176,7 +176,7 @@ public abstract class Database {
 					}
 
 					if (callback != null) {
-						callback.callSyncResult(new int[] { banks, accounts });
+						callback.callSyncResult(new int[] {banks, accounts});
 					}
 				}
 			} catch (SQLException e) {

@@ -80,7 +80,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
                 double finalCreationPrice = creationPrice;
                 Utils.depositPlayer(executor.getPlayer(), bank.getSelection().getWorld().getName(), finalCreationPrice, Callback.of(plugin,
                         result -> executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice))),
-                        throwable -> executor.sendMessage(Messages.ERROR_OCCURRED))
+                        error -> executor.sendMessage(Messages.ERROR_OCCURRED))
                 );
             }
         }

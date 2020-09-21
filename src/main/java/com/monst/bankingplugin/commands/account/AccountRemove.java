@@ -71,7 +71,7 @@ public class AccountRemove extends AccountCommand.SubCommand {
                     Callback.of(plugin,
                             result -> executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
                                     Utils.format(finalCreationPrice))),
-                            throwable -> executor.sendMessage(Messages.ERROR_OCCURRED)));
+                            error -> executor.sendMessage(Messages.ERROR_OCCURRED)));
 
             if (account.getBank().isPlayerBank()) {
                 OfflinePlayer bankOwner = account.getBank().getOwner();
@@ -80,7 +80,7 @@ public class AccountRemove extends AccountCommand.SubCommand {
                                 result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
                                         account.getOwner().getName(), Utils.format(finalCreationPrice)),
                                         bankOwner),
-                                throwable -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+                                error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
             }
         }
 

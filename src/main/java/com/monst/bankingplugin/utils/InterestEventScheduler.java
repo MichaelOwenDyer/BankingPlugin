@@ -61,12 +61,12 @@ public class InterestEventScheduler {
         if (!plugin.isEnabled() || bank == null)
             return;
 
-        List<LocalTime> bankPayoutTimes = bank.get(BankField.INTEREST_PAYOUT_TIMES);
         BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>());
 
+        List<LocalTime> bankPayoutTimes = bank.get(BankField.INTEREST_PAYOUT_TIMES);
         for (LocalTime time : bankPayoutTimes) {
-            if (TIME_BANK_MAP.putIfAbsent(time, new HashSet<>()) == null)
-                PAYOUT_TASK_IDS.put(time, scheduleRepeatAtTime(time));
+            if (TIME_BANK_MAP.putIfAbsent(time, new HashSet<>()) == null) // If no other bank already has a payout scheduled at this time
+                PAYOUT_TASK_IDS.put(time, scheduleRepeatAtTime(time)); // Schedule the payout task
             TIME_BANK_MAP.get(time).add(bank);
             BANK_TIME_MAP.get(bank).add(time);
         }
@@ -74,9 +74,9 @@ public class InterestEventScheduler {
             if (!bankPayoutTimes.contains(time)) {
                 TIME_BANK_MAP.get(time).remove(bank);
                 BANK_TIME_MAP.get(bank).remove(time);
-                if (TIME_BANK_MAP.get(time).isEmpty()) {
+                if (TIME_BANK_MAP.get(time).isEmpty()) { // If no more banks have payouts scheduled at this time
+                    descheduleTime(time); // Remove the payout task
                     TIME_BANK_MAP.remove(time);
-                    descheduleTime(time);
                 }
             }
         }

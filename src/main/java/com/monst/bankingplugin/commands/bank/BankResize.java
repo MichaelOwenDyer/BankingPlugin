@@ -135,7 +135,7 @@ public class BankResize extends BankCommand.SubCommand {
                     plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
                     p.sendMessage(Messages.BANK_RESIZED);
                 },
-                throwable -> p.sendMessage(Messages.ERROR_OCCURRED)));
+                error -> p.sendMessage(Messages.ERROR_OCCURRED)));
         return true;
     }
 
