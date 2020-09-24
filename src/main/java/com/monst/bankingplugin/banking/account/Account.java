@@ -375,18 +375,20 @@ public class Account extends Ownable {
 		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account";
 	}
 
+	public void updateName() {
+		if (getRawName() == null || getRawName().isEmpty())
+			setName(getDefaultName());
+		else
+			setName(getRawName());
+	}
+
 	/**
 	 * Create a {@link Callback} that guarantees current name of this account is valid and currently being reflected
 	 * everywhere it should be.
 	 * If the current name is null or empty it will be set to the default name.
 	 */
 	public <T> Callback<T> callUpdateName() {
-		return Callback.of(plugin, result -> {
-			if (getRawName() == null || getRawName().isEmpty())
-				setName(getDefaultName());
-			else
-				setName(getRawName());
-		});
+		return Callback.of(plugin, result -> this.updateName());
 	}
 
 	/**
