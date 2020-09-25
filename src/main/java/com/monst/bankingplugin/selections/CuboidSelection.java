@@ -13,16 +13,16 @@ public class CuboidSelection implements Selection {
 	private final BlockVector3D min;
 	private final BlockVector3D max;
 
-	public static CuboidSelection of(World world, BlockVector3D bv1, BlockVector3D bv2) {
+	public static CuboidSelection of(World world, BlockVector3D loc1, BlockVector3D loc2) {
 		BlockVector3D min = new BlockVector3D(
-				Math.min(bv1.getBlockX(), bv2.getBlockX()),
-				Math.min(bv1.getBlockY(), bv2.getBlockY()),
-				Math.min(bv1.getBlockZ(), bv2.getBlockZ())
+				Math.min(loc1.getBlockX(), loc2.getBlockX()),
+				Math.min(loc1.getBlockY(), loc2.getBlockY()),
+				Math.min(loc1.getBlockZ(), loc2.getBlockZ())
 		);
 		BlockVector3D max = new BlockVector3D(
-				Math.min(bv1.getBlockX(), bv2.getBlockX()),
-				Math.min(bv1.getBlockY(), bv2.getBlockY()),
-				Math.min(bv1.getBlockZ(), bv2.getBlockZ())
+				Math.min(loc1.getBlockX(), loc2.getBlockX()),
+				Math.min(loc1.getBlockY(), loc2.getBlockY()),
+				Math.min(loc1.getBlockZ(), loc2.getBlockZ())
 		);
 		return new CuboidSelection(world, min, max);
 	}
