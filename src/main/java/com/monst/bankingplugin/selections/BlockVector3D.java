@@ -12,7 +12,15 @@ public class BlockVector3D extends Triple<Integer, Integer, Integer> {
     public int getBlockY() { return super.getSecond(); }
     public int getBlockZ() { return super.getThird(); }
 
+    public BlockVector2D toBlockVector2D() {
+        return new BlockVector2D(getBlockX(), getBlockZ());
+    }
+
     public Location toLocation(World world) {
         return new Location(world, getBlockX(), getBlockY(), getBlockZ());
+    }
+
+    public static BlockVector3D fromLocation(Location loc) {
+        return new BlockVector3D(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
     }
 }

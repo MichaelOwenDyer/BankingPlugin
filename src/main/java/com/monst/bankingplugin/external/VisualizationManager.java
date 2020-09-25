@@ -120,7 +120,7 @@ public class VisualizationManager {
 
                 // Add blocks that are immediately vertically adjacent to corner blocks
                 for (int y : new int[] {sel.getMinY() + 1, sel.getMaxY() - 1}) {
-                    Location loc = new Location(world, current.getBlockX(), y, current.getBlockZ());
+                    Location loc = current.toLocation(world, y);
                     newElements.add(new VisualizationElement(
                             loc,
                             type.getAccentBlockData(),
@@ -130,7 +130,7 @@ public class VisualizationManager {
 
                 // Add blocks that form the vertical lines at the corners in intervals of the integer "step"
                 for (int y = sel.getMinY() + step; y < sel.getMaxY() - (step / 2); y += step) {
-                    Location loc = new Location(world, current.getBlockX(), y, current.getBlockZ());
+                    Location loc = current.toLocation(world, y);
                     newElements.add(new VisualizationElement(
                             loc,
                             type.getAccentBlockData(),
@@ -150,7 +150,7 @@ public class VisualizationManager {
                 // The following blocks are placed at both minY and maxY
                 for (int y : new int[] {sel.getMinY(), sel.getMaxY()}) {
 
-                    // Add the block that is immediately adjacent to the current vertex in the direction of the next vertex
+                    // Add the block that is immediately adjacent to the current vertex and pointing in the direction of the next vertex
                     Location unitAway = new Location(world, current.getBlockX() + 0.5 + unitX, y, current.getBlockZ() + 0.5 + unitZ);
                     newElements.add(new VisualizationElement(
                             unitAway,
@@ -158,13 +158,15 @@ public class VisualizationManager {
                             world.getBlockAt(unitAway).getBlockData()
                     ));
 
-                    Location unitAwayNeg = new Location(world, next.getBlockX() + 0.5 - unitX, y, next.getBlockZ() + 0.5 - unitZ);
+                    // Add the block that is immediately adjacent to the next vertex and pointing in the direction of the current vertex
+                    Location unitAwayNext = new Location(world, next.getBlockX() + 0.5 - unitX, y, next.getBlockZ() + 0.5 - unitZ);
                     newElements.add(new VisualizationElement(
-                            unitAwayNeg,
+                            unitAwayNext,
                             type.getAccentBlockData(),
-                            world.getBlockAt(unitAwayNeg).getBlockData()
+                            world.getBlockAt(unitAwayNext).getBlockData()
                     ));
 
+                    // Add blocks that form the lines between the vertices in intervals of the integer "step"
                     double increaseX = unitX * step;
                     double increaseZ = unitZ * step;
                     Location nextAccent = new Location(world, current.getBlockX() + 0.5 + increaseX, y, current.getBlockZ() + 0.5 + increaseZ);

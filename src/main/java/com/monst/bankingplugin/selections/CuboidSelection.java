@@ -20,9 +20,9 @@ public class CuboidSelection implements Selection {
 				Math.min(loc1.getBlockZ(), loc2.getBlockZ())
 		);
 		BlockVector3D max = new BlockVector3D(
-				Math.min(loc1.getBlockX(), loc2.getBlockX()),
-				Math.min(loc1.getBlockY(), loc2.getBlockY()),
-				Math.min(loc1.getBlockZ(), loc2.getBlockZ())
+				Math.max(loc1.getBlockX(), loc2.getBlockX()),
+				Math.max(loc1.getBlockY(), loc2.getBlockY()),
+				Math.max(loc1.getBlockZ(), loc2.getBlockZ())
 		);
 		return new CuboidSelection(world, min, max);
 	}
@@ -101,7 +101,7 @@ public class CuboidSelection implements Selection {
 
 	@Override
 	public Collection<BlockVector3D> getVertices() {
-		Collection<BlockVector3D> vertices = new HashSet<>();
+		Set<BlockVector3D> vertices = new HashSet<>();
 		vertices.add(min);
 		vertices.add(new BlockVector3D(max.getBlockX(), min.getBlockY(), min.getBlockZ()));
 		vertices.add(new BlockVector3D(min.getBlockX(), max.getBlockY(), min.getBlockZ()));
@@ -114,18 +114,28 @@ public class CuboidSelection implements Selection {
 	}
 
 	@Override
-	public boolean contains(Location pt) {
-		if (pt.getWorld() != null && !pt.getWorld().equals(getWorld()))
+	public boolean contains(Location loc) {
+		if (loc.getWorld() != null && !loc.getWorld().equals(getWorld()))
 			return false;
-		return pt.getBlockY() <= max.getBlockY() && pt.getBlockY() >= min.getBlockY()
-				&& contains(new BlockVector2D(pt.getBlockX(), pt.getBlockZ()));
+		return contains(BlockVector3D.fromLocation(loc));
+	}
+
+	@Override
+	public boolean contains(BlockVector3D bv) {
+		int x = bv.getBlockX();
+		int y = bv.getBlockY();
+		int z = bv.getBlockZ();
+		return x <= max.getBlockX() && x >= min.getBlockX()
+				&& y <= max.getBlockY() && y >= min.getBlockY()
+				&& z <= max.getBlockZ() && z >= min.getBlockZ();
 	}
 
 	@Override
 	public boolean contains(BlockVector2D bv) {
 		int x = bv.getBlockX();
 		int z = bv.getBlockZ();
-		return x <= max.getBlockX() && x >= min.getBlockX() && z <= max.getBlockZ() && z >= min.getBlockZ();
+		return x <= max.getBlockX() && x >= min.getBlockX()
+				&& z <= max.getBlockZ() && z >= min.getBlockZ();
 	}
 
 	@Override
@@ -139,7 +149,7 @@ public class CuboidSelection implements Selection {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		CuboidSelection otherSel = ((CuboidSelection) o);
+		CuboidSelection otherSel = (CuboidSelection) o;
 		return getWorld().equals(otherSel.getWorld())
 				&& getMaximumPoint().equals(otherSel.getMaximumPoint())
 				&& getMinimumPoint().equals(otherSel.getMinimumPoint());

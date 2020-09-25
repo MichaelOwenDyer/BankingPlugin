@@ -76,12 +76,14 @@ public interface Selection {
 	boolean overlaps(Selection sel);
 
 	/**
-	 * Returns true based on whether the selection contains the point,
+	 * Returns true based on whether this selection contains the {@link Location},
 	 *
-	 * @param pt The point that may or may not be contained
-	 * @return Whether or not the point is contained
+	 * @param loc The location that may or may not be contained by this selection
+	 * @return Whether or not the location is contained
 	 */
-	boolean contains(Location pt);
+	boolean contains(Location loc);
+
+	boolean contains(BlockVector3D bv);
 
 	boolean contains(BlockVector2D bv);
 

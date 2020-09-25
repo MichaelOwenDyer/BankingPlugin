@@ -3,10 +3,7 @@ package com.monst.bankingplugin.selections;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Polygonal2DSelection implements Selection {
@@ -97,12 +94,12 @@ public class Polygonal2DSelection implements Selection {
 
 	@Override
 	public Collection<BlockVector3D> getVertices() {
-		Collection<BlockVector3D> vertices = new HashSet<>();
-		this.vertices.forEach(point -> {
-			vertices.add(new BlockVector3D(point.getBlockX(), minY, point.getBlockZ()));
-			vertices.add(new BlockVector3D(point.getBlockX(), maxY, point.getBlockZ()));
+		List<BlockVector3D> vertices3D = new ArrayList<>();
+		vertices.stream().forEach(point -> {
+			vertices3D.add(point.toBlockVector3D(minY));
+			vertices3D.add(point.toBlockVector3D(maxY));
 		});
-		return vertices;
+		return vertices3D;
 	}
 
 	@Override
@@ -128,20 +125,24 @@ public class Polygonal2DSelection implements Selection {
 	}
 
 	@Override
-	public boolean contains(Location pt) {
+	public boolean contains(Location loc) {
 		if (vertices.size() < 3)
 			return false;
-		if (pt.getBlockY() < minY || pt.getBlockY() > maxY)
+		if (loc.getWorld() != null && !loc.getWorld().equals(getWorld()))
 			return false;
-		if (pt.getWorld() != null && !pt.getWorld().equals(getWorld()))
-			return false;
-		return contains(new BlockVector2D(pt.getBlockX(), pt.getBlockZ()));
+		return contains(BlockVector3D.fromLocation(loc));
 	}
 
 	@Override
-	public boolean contains(BlockVector2D vector) {
-		int pointX = vector.getBlockX(); //width
-		int pointZ = vector.getBlockZ(); //depth
+	public boolean contains(BlockVector3D bv) {
+		int y = bv.getBlockY();
+		return y <= maxY && y >= minY && contains(bv.toBlockVector2D());
+	}
+
+	@Override
+	public boolean contains(BlockVector2D bv) {
+		int pointX = bv.getBlockX(); //width
+		int pointZ = bv.getBlockZ(); //depth
 
 		int nextX, nextZ, x1, z1, x2, z2;
 		int prevX = vertices.get(vertices.size() - 1).getBlockX();
@@ -190,9 +191,9 @@ public class Polygonal2DSelection implements Selection {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		Polygonal2DSelection other = ((Polygonal2DSelection) o);
+		Polygonal2DSelection other = (Polygonal2DSelection) o;
 		return getMinY() == other.getMinY() && getMaxY() == other.getMaxY()
-				&& getNativePoints().equals(other.getNativePoints())
-				&& getWorld().equals(other.getWorld());
+				&& getWorld().equals(other.getWorld())
+				&& getNativePoints().equals(other.getNativePoints());
 	}
 }
