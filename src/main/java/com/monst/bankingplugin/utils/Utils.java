@@ -20,6 +20,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.ChatPaginator;
 
@@ -433,6 +434,39 @@ public class Utils {
     	if (player == null)
     		player = Bukkit.getOfflinePlayer(name);
     	return player.hasPlayedBefore() ? player : null;
+	}
+
+	static long getLimit(Player player, String permission, String permPrefix, long defaultLimit) {
+		long limit = 0;
+		boolean useDefault = true;
+
+		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+			if (permInfo.getPermission().startsWith(permPrefix)
+					&& player.hasPermission(permInfo.getPermission())) {
+				if (permInfo.getPermission().equalsIgnoreCase(permission)) {
+					limit = -1;
+					useDefault = false;
+					break;
+				} else {
+					String[] spl = permInfo.getPermission().split(permPrefix);
+
+					if (spl.length > 1) {
+						try {
+							long newLimit = Long.parseLong(spl[1]);
+							if (newLimit < 0) {
+								limit = -1;
+								break;
+							}
+							limit = Math.max(limit, newLimit);
+							useDefault = false;
+						} catch (NumberFormatException ignored) {}
+					}
+				}
+			}
+		}
+		if (limit < -1)
+			limit = -1;
+		return useDefault ? defaultLimit : limit;
 	}
 
 	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {

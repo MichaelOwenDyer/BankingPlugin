@@ -14,7 +14,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -210,36 +209,8 @@ public class AccountUtils extends Observable {
      * @return The account limits of the given player
      */
     public int getAccountLimit(Player player) {
-        int limit = 0;
-        boolean useDefault = true;
-
-        for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
-			if (permInfo.getPermission().startsWith("bankingplugin.account.limit.")
-					&& player.hasPermission(permInfo.getPermission())) {
-                if (permInfo.getPermission().equalsIgnoreCase(Permissions.ACCOUNT_NO_LIMIT)) {
-                    limit = -1;
-                    useDefault = false;
-                    break;
-                } else {
-					String[] spl = permInfo.getPermission().split("bankingplugin.account.limit.");
-
-                    if (spl.length > 1) {
-                        try {
-                            int newLimit = Integer.parseInt(spl[1]);
-                            if (newLimit < 0) {
-                                limit = -1;
-                                break;
-                            }
-                            limit = Math.max(limit, newLimit);
-                            useDefault = false;
-						} catch (NumberFormatException ignored) {}
-                    }
-                }
-            }
-        }
-		if (limit < -1)
-			limit = -1;
-        return (useDefault ? Config.defaultAccountLimit : limit);
+    	return (int) Utils.getLimit(player, Permissions.ACCOUNT_NO_LIMIT,
+				"bankingplugin.account.limit.", Config.defaultAccountLimit);
     }
 
 	public static BigDecimal appraise(Account account) {

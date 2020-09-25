@@ -11,7 +11,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -225,47 +224,16 @@ public class BankUtils extends Observable {
 	 * Gets the bank limits of a certain player, to see if the player is allowed to create another bank.
 	 */
 	public static int getBankLimit(Player player) {
-		return (int) getLimit(player, Permissions.BANK_NO_LIMIT, "bankingplugin.bank.limit", Config.defaultBankLimit);
+		return (int) Utils.getLimit(player, Permissions.BANK_NO_LIMIT,
+				"bankingplugin.bank.limit", Config.defaultBankLimit);
 	}
 
 	/**
 	 * Gets the bank volume limit of a certain player, to see if the player is allowed to create a bank of a certain size.
 	 */
 	public static long getVolumeLimit(Player player) {
-		return getLimit(player, Permissions.BANK_NO_SIZE_LIMIT, "bankingplugin.bank.size", Config.maximumBankVolume);
-	}
-
-	private static long getLimit(Player player, String permission, String permPrefix, long defaultLimit) {
-		long limit = 0;
-		boolean useDefault = true;
-
-		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
-			if (permInfo.getPermission().startsWith(permPrefix)
-					&& player.hasPermission(permInfo.getPermission())) {
-				if (permInfo.getPermission().equalsIgnoreCase(permission)) {
-					limit = -1;
-					useDefault = false;
-					break;
-				} else {
-					String[] spl = permInfo.getPermission().split(permPrefix);
-
-					if (spl.length > 1) {
-						try {
-							long newLimit = Long.parseLong(spl[1]);
-							if (newLimit < 0) {
-								limit = -1;
-								break;
-							}
-							limit = Math.max(limit, newLimit);
-							useDefault = false;
-						} catch (NumberFormatException ignored) {}
-					}
-				}
-			}
-		}
-		if (limit < -1)
-			limit = -1;
-		return useDefault ? defaultLimit : limit;
+		return Utils.getLimit(player, Permissions.BANK_NO_SIZE_LIMIT,
+				"bankingplugin.bank.size", Config.maximumBankVolume);
 	}
 
 	/**
