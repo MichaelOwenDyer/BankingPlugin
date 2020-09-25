@@ -53,6 +53,7 @@ public class InterestEventScheduler {
 
     /**
      * Create Bukkit tasks to trigger interest events at the times specified in the {@link Config}
+     *
      * @see #scheduleRepeatAtTime(LocalTime)
      * @see InterestEvent
      * @see InterestEventListener
@@ -85,6 +86,7 @@ public class InterestEventScheduler {
     /**
      * Perform the necessary arithmetic to schedule a {@link LocalTime} from the {@link Config}
      * as a {@link org.bukkit.scheduler.BukkitTask} repeating every 24 hours.
+     *
      * @param time the time to be scheduled
      * @return the ID of the scheduled task, or -1 if the task was not scheduled
      */

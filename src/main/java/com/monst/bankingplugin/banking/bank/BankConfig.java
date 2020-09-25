@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.banking.bank;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
@@ -243,13 +242,9 @@ public class BankConfig {
 				SETTERS.get(field).accept(this, value);
 
 			callback.callSyncResult(getFormatted(field));
-
 		} catch (NumberFormatException | DateTimeParseException e) {
 			callback.callSyncError(new ArgumentParseException(field.getDataType(), value));
-
-		} catch (IllegalAccessException e) {
-			BankingPlugin.getInstance().debug(e);
-		}
+		} catch (IllegalAccessException ignored) {}
 		return true;
 	}
 
@@ -276,7 +271,6 @@ public class BankConfig {
 						(T) field.getLocalVariable().get(this) :
 						(T) field.getConfigPair().getDefault();
         } catch (IllegalAccessException e) {
-            BankingPlugin.getInstance().debug(e);
             return null;
         }
     }

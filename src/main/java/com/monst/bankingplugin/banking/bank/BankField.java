@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.banking.bank;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import org.apache.commons.lang.WordUtils;
 
@@ -47,9 +46,7 @@ public enum BankField {
             fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
             this.localField = BankConfig.class.getDeclaredField(fieldName);
             this.configPair = Config.class.getField(fieldName);
-        } catch (NoSuchFieldException e) {
-            BankingPlugin.getInstance().debug(e);
-        }
+        } catch (NoSuchFieldException ignored) {}
     }
 
     /**
@@ -81,7 +78,6 @@ public enum BankField {
         try {
             return (Config.ConfigPair<?>) configPair.get(null);
         } catch (IllegalAccessException e) {
-            BankingPlugin.getInstance().debug(e);
             return null;
         }
     }

@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.commands.control;
 
 import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,7 +23,7 @@ public class ControlVersion extends ControlCommand.SubCommand {
                     + ChatColor.AQUA + " v" + plugin.getDescription().getVersion()
                     + ChatColor.DARK_GRAY + "\n         by monst");
         } else
-            sender.sendMessage(Utils.getVersionMessage());
+            sender.sendMessage(plugin.VERSION_MSG);
         return true;
     }
 

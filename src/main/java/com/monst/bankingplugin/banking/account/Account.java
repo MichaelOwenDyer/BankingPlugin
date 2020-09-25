@@ -29,6 +29,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Creates a new account.
+	 *
 	 * @return the new account
 	 */
 	public static Account mint(OfflinePlayer owner, Location loc) {
@@ -48,6 +49,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Creates a clone of an already-existing account.
+	 *
 	 * @param account the account to clone
 	 * @return an identical account object
 	 */
@@ -125,6 +127,7 @@ public class Account extends Ownable {
 	/**
 	 * Attempts to create this account. This method will ensure that the chest exists at
 	 * the specified {@link Location} and is able to be opened.
+	 *
 	 * @param showConsoleMessages whether any error messages should be sent to the console
 	 * @return whether this account was successfully created
 	 * @see Utils#isTransparent(Block)
@@ -172,6 +175,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Gets the bank this account is registered at.
+	 *
 	 * @return the {@link Bank} of this account.
 	 */
 	public Bank getBank() {
@@ -180,6 +184,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Sets the bank of this account.
+	 *
 	 * @param bank the new {@link Bank} of this account.
 	 */
 	public void setBank(Bank bank) {
@@ -198,6 +203,7 @@ public class Account extends Ownable {
 	/**
 	 * Gets this account's current balance in {@link BigDecimal} format.
 	 * The balance will always be positive.
+	 *
 	 * @return the current account balance
 	 * @see AccountUtils#appraise(Account)
 	 */
@@ -207,7 +213,8 @@ public class Account extends Ownable {
 
 	/**
 	 * Updates the current balance of this account.
-	 * Called every time the account chest is <b>closed</b> and the contents have changed.
+	 * Called every time the account chest is <b>closed</b> and the value of the contents has changed.
+	 *
 	 * @param newBalance the new (positive) balance of the account.
 	 */
 	public void setBalance(BigDecimal newBalance) {
@@ -221,15 +228,17 @@ public class Account extends Ownable {
 
 	/**
 	 * Gets the balance of this account as it was at the previous interest payout.
+	 *
 	 * @return the previous account balance.
 	 */
 	public BigDecimal getPrevBalance() {
 		return prevBalance;
 	}
-	
+
 	/**
 	 * Saves the current balance of this account into the previous balance.
 	 * Used only at interest payout events.
+	 *
 	 * @see AccountUtils#appraise(Account)
 	 * @see com.monst.bankingplugin.listeners.InterestEventListener
 	 */
@@ -240,6 +249,7 @@ public class Account extends Ownable {
 	/**
 	 * Gets the status of this account.
 	 * This includes information about the current multiplier and interest delay, among other things.
+	 *
 	 * @return the {@link AccountStatus} object associated with this account
 	 */
 	public AccountStatus getStatus() {
@@ -248,6 +258,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Gets the location of this account.
+	 *
 	 * @return the {@link Location} of the account chest.
 	 */
 	public Location getLocation() {
@@ -256,6 +267,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Sets the location of this account.
+	 *
 	 * @param location the new location
 	 */
 	public void setLocation(Location location) {
@@ -265,6 +277,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Gets a nicer-looking description of the account's location.
+	 *
 	 * @return a {@link String} describing the location of the account chest.
 	 */
 	public String getCoordinates() {
@@ -273,6 +286,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Ensures that the account chest is able to be opened.
+	 *
 	 * @throws NotEnoughSpaceException if the chest cannot be opened.
 	 * @see Utils#isTransparent(Block)
 	 */
@@ -286,6 +300,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Ensures that the account chest is able to be located and the inventory saved.
+	 *
 	 * @throws ChestNotFoundException If the chest cannot be located.
 	 */
 	public void updateInventory() throws ChestNotFoundException {
@@ -297,6 +312,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Gets the {@link Inventory} of this account chest.
+	 *
 	 * @return the account inventory.
 	 * @see #updateInventory()
 	 */
@@ -322,6 +338,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Sets the name of this account and updates the chest inventory screen to reflect the new name.
+	 *
 	 * @param name the new name of this account.
 	 */
 	@Override
@@ -369,6 +386,7 @@ public class Account extends Ownable {
 
 	/**
 	 * Gets the default name of this account.
+	 *
 	 * @return the default name of this account.
 	 */
 	public String getDefaultName() {

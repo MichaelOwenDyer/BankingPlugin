@@ -25,6 +25,7 @@ public interface Nameable {
 
     /**
      * Sets the raw name of this nameable.
+     *
      * @param name The new raw name of this nameable
      */
     void setName(String name);

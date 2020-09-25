@@ -35,10 +35,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BankingPlugin extends JavaPlugin {
 
@@ -54,27 +51,34 @@ public class BankingPlugin extends JavaPlugin {
 	private BankUtils bankUtils;
 
 	private InterestEventScheduler scheduler;
-	
+
 	private boolean isUpdateNeeded = false;
 	private String latestVersion = "";
 	private String downloadLink = "";
 	private FileWriter debugWriter;
-	
+
 	private Economy economy;
 	private Essentials essentials;
 	private Database database;
-	
+
 	private Plugin worldGuard;
 	private GriefPrevention griefPrevention;
 	private WorldEditPlugin worldEdit;
-	
+
+	public final String[] VERSION_MSG = new String[] {
+			ChatColor.GREEN + "   __ " + ChatColor.DARK_GREEN + "  __",
+			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |__)   " + ChatColor.DARK_GREEN + "BankingPlugin" + ChatColor.AQUA + " v" + getDescription().getVersion(),
+			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY + "        by monst",
+			""
+	};
+
 	/**
 	 * @return an instance of BankingPlugin
 	 */
 	public static BankingPlugin getInstance() {
 		return instance;
 	}
-	
+
 	@Override
     public void onLoad() {
         instance = this;
@@ -104,8 +108,7 @@ public class BankingPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		for (String s : Utils.getVersionMessage())
-			getLogger().info(ChatColor.stripColor(s));
+		getServer().getConsoleSender().sendMessage(VERSION_MSG);
 
 		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
 			debug("Could not find plugin \"Vault\".");
@@ -132,7 +135,7 @@ public class BankingPlugin extends JavaPlugin {
 				getLogger().warning("Server version not officially supported: " + Utils.getServerVersion() + "!");
 				getLogger().warning("Plugin may still work, but more errors are expected!");
 		}
-		
+
         accountUtils = new AccountUtils(this);
 		bankUtils = new BankUtils(this);
 
@@ -192,7 +195,7 @@ public class BankingPlugin extends JavaPlugin {
 			}
 		}
 	}
-	
+
 	/**
      * Set up the Vault economy
      * @return whether an economy plugin has been registered with Vault
@@ -270,7 +273,7 @@ public class BankingPlugin extends JavaPlugin {
         if (!Config.enableUpdateChecker) {
             return;
         }
-        
+
         Utils.bukkitRunnable(() -> {
 			UpdateChecker uc = new UpdateChecker(BankingPlugin.this);
 			Result result = uc.check();
@@ -393,7 +396,7 @@ public class BankingPlugin extends JavaPlugin {
 	/**
 	 * Prints a {@link Throwable}'s stacktrace to the
 	 * <i>/plugins/BankingPlugin/debug.txt</i> file
-	 * 
+	 *
 	 * @param throwable the {@link Throwable} of which the stacktrace will be printed
 	 */
 	public void debug(Throwable throwable) {
