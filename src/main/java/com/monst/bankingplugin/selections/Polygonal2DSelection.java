@@ -56,12 +56,13 @@ public class Polygonal2DSelection implements Selection {
 
 	@Override
 	public BlockVector3D getCenterPoint() {
-		BlockVector3D max = getMaximumPoint();
-		BlockVector3D min = getMinimumPoint();
-		int centerX = (max.getBlockX() + min.getBlockX()) / 2;
-		int centerY = (maxY + minY) / 2;
-		int centerZ = (max.getBlockZ() + min.getBlockZ()) / 2;
-		return new BlockVector3D(centerX, centerY, centerZ);
+		Integer[][][] polygon = new Integer[1][vertices.size()][2];
+		for (int i = 0; i < vertices.size(); i++) {
+			BlockVector2D point = vertices.get(i);
+			polygon[0][i] = new Integer[] {point.getBlockX(), point.getBlockZ()};
+		}
+		PolyLabel.Result result = PolyLabel.polyLabel(polygon);
+		return new BlockVector3D((int) result.getX(), (maxY + minY) / 2, (int) result.getY());
 	}
 
 	@Override
