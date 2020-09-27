@@ -12,9 +12,8 @@ import java.util.stream.Collectors;
  * a minimum and a maximum y-coordinate, and an ordered list of {@link BlockVector2D} (x,z) coordinate pairs to
  * represent the vertices. An edge of this selection is a line formed between two neighboring coordinate pairs on the list.
  */
-public class PolygonalSelection implements Selection {
+public class PolygonalSelection extends Selection {
 
-	private final World world;
 	private final List<BlockVector2D> vertices;
 	private final int minY;
 	private final int maxY;
@@ -40,7 +39,7 @@ public class PolygonalSelection implements Selection {
 	}
 
 	private PolygonalSelection(World world, List<BlockVector2D> vertices, int minY, int maxY) {
-		this.world = world;
+		super(world);
 		this.vertices = vertices;
 		this.minY = minY;
 		this.maxY = maxY;
@@ -51,22 +50,6 @@ public class PolygonalSelection implements Selection {
 	 */
 	public List<BlockVector2D> getNativePoints() {
 		return vertices;
-	}
-
-	@Override
-	@SuppressWarnings("all")
-	public BlockVector3D getMinimumPoint() {
-		int minX = vertices.stream().mapToInt(BlockVector2D::getBlockX).min().getAsInt();
-		int minZ = vertices.stream().mapToInt(BlockVector2D::getBlockZ).min().getAsInt();
-		return new BlockVector3D(minX, minY, minZ);
-	}
-
-	@Override
-	@SuppressWarnings("all")
-	public BlockVector3D getMaximumPoint() {
-		int maxX = vertices.stream().mapToInt(BlockVector2D::getBlockX).max().getAsInt();
-		int maxZ = vertices.stream().mapToInt(BlockVector2D::getBlockZ).max().getAsInt();
-		return new BlockVector3D(maxX, maxY, maxZ);
 	}
 
 	/**
@@ -87,6 +70,20 @@ public class PolygonalSelection implements Selection {
 	}
 
 	@Override
+	public int getMinX() {
+		if (vertices.isEmpty())
+			throw new IllegalStateException("No vertices in PolygonalSelection!");
+		return vertices.stream().mapToInt(BlockVector2D::getBlockX).min().getAsInt();
+	}
+
+	@Override
+	public int getMaxX() {
+		if (vertices.isEmpty())
+			throw new IllegalStateException("No vertices in PolygonalSelection!");
+		return vertices.stream().mapToInt(BlockVector2D::getBlockX).max().getAsInt();
+	}
+
+	@Override
 	public int getMinY() {
 		return minY;
 	}
@@ -97,8 +94,17 @@ public class PolygonalSelection implements Selection {
 	}
 
 	@Override
-	public World getWorld() {
-		return world;
+	public int getMinZ() {
+		if (vertices.isEmpty())
+			throw new IllegalStateException("No vertices in PolygonalSelection!");
+		return vertices.stream().mapToInt(BlockVector2D::getBlockZ).min().getAsInt();
+	}
+
+	@Override
+	public int getMaxZ() {
+		if (vertices.isEmpty())
+			throw new IllegalStateException("No vertices in PolygonalSelection!");
+		return vertices.stream().mapToInt(BlockVector2D::getBlockZ).max().getAsInt();
 	}
 
 	@Override
