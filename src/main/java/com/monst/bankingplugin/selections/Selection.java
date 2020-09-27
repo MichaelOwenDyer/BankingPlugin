@@ -79,21 +79,20 @@ public abstract class Selection {
 	/**
 	 * Gets a {@link String} that illustrates the location of this selection.
 	 * 
-	 * @return A coordinate string.
+	 * @return a coordinate string
 	 */
 	public abstract String getCoordinates();
 
 	/**
 	 * Gets the number of blocks in this selection.
 	 * 
-	 * @return number of blocks
+	 * @return the number of blocks
 	 */
 	public abstract long getVolume();
 	
 	/**
-	 * Checks whether or not this selection overlaps with another one.
 	 * @param sel The other selection
-	 * @return Yes or no
+	 * @return whether or not this selection overlaps with another one
 	 */
 	public abstract boolean overlaps(Selection sel);
 
@@ -110,22 +109,22 @@ public abstract class Selection {
 	public abstract boolean contains(BlockVector2D bv);
 
 	/**
-	 * Gets a {@link Set} with a {@link BlockVector2D} for every block in this selection,
-	 * disregarding the y-coordinate.
+	 * Gets a {@link Set<BlockVector2D>} containing a horizontal cross-section
+	 * of this selection with no y-coordinate.
 	 *
 	 * @return a set with every {@link BlockVector2D} in this selection
 	 */
-	public abstract Set<BlockVector2D> getBlocks();
+	public abstract Set<BlockVector2D> getFootprint();
 	
 	/**
-	 * Get all vertices of the selection.
+	 * Get all corners of this selection.
 	 * 
 	 * @return a Collection<Location> representing all vertices.
 	 */
-	public abstract Collection<BlockVector3D> getVertices();
+	public abstract Collection<BlockVector3D> getCorners();
 
 	/**
-	 * Returns the type of selection.
+	 * Returns what type of selection this is.
 	 * 
 	 * @return SelectionType.CUBOID or SelectionType.POLYGONAL
 	 */

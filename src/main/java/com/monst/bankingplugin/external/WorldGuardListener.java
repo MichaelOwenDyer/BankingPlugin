@@ -44,7 +44,7 @@ public class WorldGuardListener implements Listener {
 			return;
 
 		IWrappedFlag<WrappedState> flag = getStateFlag("create-bank");
-		for (BlockVector3D bv : e.getBank().getSelection().getVertices())
+		for (BlockVector3D bv : e.getBank().getSelection().getCorners())
 			if (handleForLocation((Player) e.getExecutor(), bv.toLocation(e.getBank().getSelection().getWorld()), e, flag))
 				return;
 	}
@@ -55,7 +55,7 @@ public class WorldGuardListener implements Listener {
 			return;
 
 		IWrappedFlag<WrappedState> flag = getStateFlag("create-bank");
-		for (BlockVector3D bv : e.getNewSelection().getVertices())
+		for (BlockVector3D bv : e.getNewSelection().getCorners())
 			if (handleForLocation((Player) e.getExecutor(), bv.toLocation(e.getNewSelection().getWorld()), e, flag))
 				return;
     }

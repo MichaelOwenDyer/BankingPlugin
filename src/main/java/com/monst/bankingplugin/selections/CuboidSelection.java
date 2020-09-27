@@ -93,12 +93,12 @@ public class CuboidSelection extends Selection {
 	public boolean overlaps(Selection sel) {
 		if (getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY())
 			return false;
-		Set<BlockVector2D> blocks = getBlocks();
-		return sel.getBlocks().stream().anyMatch(blocks::contains);
+		Set<BlockVector2D> blocks = getFootprint();
+		return sel.getFootprint().stream().anyMatch(blocks::contains);
 	}
 
 	@Override
-	public Set<BlockVector2D> getBlocks() {
+	public Set<BlockVector2D> getFootprint() {
 		Set<BlockVector2D> blocks = new HashSet<>();
 		for (int x = getMinX(); x <= getMaxX(); x++)
 			for (int z = getMinZ(); z <= getMaxZ(); z++)
@@ -107,7 +107,7 @@ public class CuboidSelection extends Selection {
 	}
 
 	@Override
-	public Collection<BlockVector3D> getVertices() {
+	public Collection<BlockVector3D> getCorners() {
 		Set<BlockVector3D> vertices = new HashSet<>();
 		vertices.add(min);
 		vertices.add(new BlockVector3D(getMaxX(), getMinZ(), getMinZ()));

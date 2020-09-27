@@ -48,7 +48,7 @@ public class PolygonalSelection extends Selection {
 	/**
 	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalSelection}
 	 */
-	public List<BlockVector2D> getNativePoints() {
+	public List<BlockVector2D> getVertices() {
 		return vertices;
 	}
 
@@ -109,17 +109,17 @@ public class PolygonalSelection extends Selection {
 
 	@Override
 	public String getCoordinates() {
-		return getNativePoints().stream().map(vec -> "(" + vec.getBlockX() + ", " + vec.getBlockZ() + ")")
+		return getVertices().stream().map(vec -> "(" + vec.getBlockX() + ", " + vec.getBlockZ() + ")")
 				.collect(Collectors.joining(", ")) + " at " + minY + " ≤ y ≤ " + maxY;
 	}
 
 	@Override
 	public long getVolume() {
-		return (maxY - minY + 1) * getBlocks().size();
+		return (maxY - minY + 1) * getFootprint().size();
 	}
 
 	@Override
-	public Collection<BlockVector3D> getVertices() {
+	public Collection<BlockVector3D> getCorners() {
 		List<BlockVector3D> vertices3D = new ArrayList<>();
 		for (BlockVector2D point : vertices) {
 			vertices3D.add(point.toBlockVector3D(minY));
@@ -132,12 +132,13 @@ public class PolygonalSelection extends Selection {
 	public boolean overlaps(Selection sel) {
 		if (getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY())
 			return false;
-		Set<BlockVector2D> blocks = sel.getBlocks();
-		return getBlocks().stream().anyMatch(blocks::contains);
+		Set<BlockVector2D> blocks = sel.getFootprint();
+		return getFootprint().stream().anyMatch(blocks::contains);
 	}
 
+	// TODO: Worthy of improvement
 	@Override
-	public Set<BlockVector2D> getBlocks() {
+	public Set<BlockVector2D> getFootprint() {
 		Set<BlockVector2D> blocks = new HashSet<>();
 		BlockVector3D min = getMinimumPoint();
 		BlockVector3D max = getMaximumPoint();
@@ -220,6 +221,6 @@ public class PolygonalSelection extends Selection {
 		PolygonalSelection other = (PolygonalSelection) o;
 		return getMinY() == other.getMinY() && getMaxY() == other.getMaxY()
 				&& getWorld().equals(other.getWorld())
-				&& getNativePoints().equals(other.getNativePoints());
+				&& getVertices().equals(other.getVertices());
 	}
 }

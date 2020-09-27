@@ -432,7 +432,7 @@ public abstract class Database {
 					ps.setInt(i + 6, sel.getMinimumPoint().getBlockY());
 					ps.setInt(i + 7, sel.getMaximumPoint().getBlockY());
 
-					String vertices = sel.getNativePoints().stream()
+					String vertices = sel.getVertices().stream()
 							.map(vector -> "" + vector.getBlockX() + "," + vector.getBlockZ())
 							.collect(Collectors.joining(" | "));
 

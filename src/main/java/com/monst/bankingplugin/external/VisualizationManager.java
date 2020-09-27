@@ -53,7 +53,7 @@ public class VisualizationManager {
         if (sel instanceof CuboidSelection) {
 
             // Add blocks at vertices
-            sel.getVertices().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(location -> newElements.add(new VisualizationElement(
+            sel.getCorners().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(location -> newElements.add(new VisualizationElement(
                     location,
                     type.getCornerBlockData(),
                     world.getBlockAt(location).getBlockData()
@@ -101,19 +101,19 @@ public class VisualizationManager {
                 }
             }
 
-            Set<BlockVector2D> blocks = sel.getBlocks();
+            Set<BlockVector2D> blocks = sel.getFootprint();
             newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
 
         } else {
 
             // Add blocks at vertices
-            sel.getVertices().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(loc -> newElements.add(new VisualizationElement(
+            sel.getCorners().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(loc -> newElements.add(new VisualizationElement(
                     loc,
                     type.getCornerBlockData(),
                     world.getBlockAt(loc).getBlockData()
             )));
 
-            List<BlockVector2D> points = ((PolygonalSelection) sel).getNativePoints();
+            List<BlockVector2D> points = ((PolygonalSelection) sel).getVertices();
             for (int i = 0; i < points.size(); i++) {
 
                 BlockVector2D current = points.get(i);
