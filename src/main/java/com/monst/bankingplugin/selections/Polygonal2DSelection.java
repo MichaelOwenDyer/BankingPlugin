@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.selections;
 
+import com.monst.polylabel.PolyLabel;
 import org.bukkit.Location;
 import org.bukkit.World;
 
