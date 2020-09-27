@@ -120,7 +120,7 @@ public class Utils {
 		if (!b.getRelative(BlockFace.UP).getType().isTransparent()) {
 			return false; // not transparent (will suffocate)
 		}
-		return b.getRelative(BlockFace.DOWN).getType().isSolid();
+		return b.getRelative(BlockFace.DOWN).getType().isSolid() || b.getRelative(BlockFace.DOWN).getType() == Material.WATER;
 	}
 
 	public static String removePunctuation(String s, char... exclude) {
