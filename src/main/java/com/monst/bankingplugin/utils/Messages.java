@@ -41,7 +41,7 @@ public class Messages {
 	public static final String LOW_BALANCE_FEE_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s" + ChatColor.RED + " in low balance fees on %d account%s.";
 	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to " + ChatColor.GREEN + "%d.";
 	public static final String ACCOUNT_LIMIT = ChatColor.GOLD + "You own %d/%s allowed accounts.";
-	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%s allowed banks.";
+	public static final String BANK_LIMIT = ChatColor.GOLD + "You own %d/%s allowed banks of up to %s blocks in size each.";
 	public static final String ABOUT_TO_REMOVE_ACCOUNTS = ChatColor.GOLD + "You are about to remove %d account%s.";
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to remove %d bank%s and %d account%s.";
 	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s to %s.";
