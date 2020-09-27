@@ -20,7 +20,7 @@
 
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/FreshLlamanade/BankingPlugin</url>
+		<url>https://github.com/FreshLlamanade/BankingPlugin/issues</url>
 	</issueManagement>
 
 	<properties>
@@ -60,7 +60,7 @@
 		<dependency>
            	<groupId>org.bukkit</groupId>
            	<artifactId>bukkit</artifactId>
-           	<version>1.16.2-R0.1-SNAPSHOT</version>
+           	<version>1.15.2-R0.1-SNAPSHOT</version>
            	<scope>provided</scope>
        	</dependency>
 		<dependency>
@@ -72,7 +72,7 @@
 		<dependency>
 			<groupId>com.github.TechFortress</groupId>
 			<artifactId>GriefPrevention</artifactId>
-			<version>16.14.0</version>
+			<version>16.15.0</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -96,7 +96,7 @@
 		<dependency>
 			<groupId>net.ess3</groupId>
 			<artifactId>EssentialsX</artifactId>
-			<version>2.18.0</version>
+			<version>2.18.1</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -107,8 +107,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.6.2</version>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.7.0</version>
 			<scope>test</scope>
 		</dependency>
 		
@@ -140,7 +140,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.7.30</version>
+			<version>2.0.0-alpha1</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
