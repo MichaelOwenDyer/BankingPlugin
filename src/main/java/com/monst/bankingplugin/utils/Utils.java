@@ -436,14 +436,14 @@ public class Utils {
     	return player.hasPlayedBefore() ? player : null;
 	}
 
-	static long getLimit(Player player, String permission, String permPrefix, long defaultLimit) {
+	static long getLimit(Player player, String unlimitedPerm, String permPrefix, long defaultLimit) {
 		long limit = 0;
 		boolean useDefault = true;
 
 		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
 			if (permInfo.getPermission().startsWith(permPrefix)
 					&& player.hasPermission(permInfo.getPermission())) {
-				if (permInfo.getPermission().equalsIgnoreCase(permission)) {
+				if (permInfo.getPermission().equalsIgnoreCase(unlimitedPerm)) {
 					limit = -1;
 					useDefault = false;
 					break;
