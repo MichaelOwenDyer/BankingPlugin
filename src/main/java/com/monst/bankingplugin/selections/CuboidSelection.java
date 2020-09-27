@@ -7,12 +7,24 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This class represents a region of space in the shape of a rectangular prism. It is defined by a {@link World} and
+ * a minimum and a maximum {@link BlockVector3D} point in space.
+ */
 public class CuboidSelection implements Selection {
 
 	private final World world;
 	private final BlockVector3D min;
 	private final BlockVector3D max;
 
+	/**
+	 * Creates a new {@link CuboidSelection} with the specified attributes
+	 *
+	 * @param world the world the selection is in
+	 * @param loc1 the first corner bound (any combination of upper/lower x, y, z values)
+	 * @param loc2 the other corner bound
+	 * @return a new CuboidSelection
+	 */
 	public static CuboidSelection of(World world, BlockVector3D loc1, BlockVector3D loc2) {
 		BlockVector3D min = new BlockVector3D(
 				Math.min(loc1.getBlockX(), loc2.getBlockX()),

@@ -7,6 +7,11 @@ import org.bukkit.World;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * This class represents a region of space in the shape of a polygonal prism. It is defined by a {@link World},
+ * a minimum and a maximum y-coordinate, and an ordered list of {@link BlockVector2D} (x,z) coordinate pairs to
+ * represent the vertices. An edge of this selection is a line formed between two neighboring coordinate pairs on the list.
+ */
 public class PolygonalSelection implements Selection {
 
 	private final World world;
@@ -14,14 +19,23 @@ public class PolygonalSelection implements Selection {
 	private final int minY;
 	private final int maxY;
 
+	/**
+	 * Creates a new {@link PolygonalSelection} with the specified attributes
+	 *
+	 * @param world the world the selection is in
+	 * @param points the vertices of the selection
+	 * @param y1 the first y-coordinate bound (upper or lower)
+	 * @param y2 the other y-coordinate bound
+	 * @return a new PolygonalSelection
+	 */
 	public static PolygonalSelection of(World world, List<BlockVector2D> points, int y1, int y2) {
 		y1 = Math.min(Math.max(0, y1), world.getMaxHeight()); // Ensure y1 is between 0 and world.getMaxHeight()
 		y2 = Math.min(Math.max(0, y2), world.getMaxHeight()); // Ensure y2 is between 0 and world.getMaxHeight()
 		return new PolygonalSelection(
 				world,
 				points,
-				Math.min(y1, y2), // Take the lower of the two y values to be minY
-				Math.max(y1, y2) // Take the higher of the two y values to be maxY
+				Math.min(y1, y2), // Take the lower of the two y-values to be minY
+				Math.max(y1, y2) // Take the higher of the two y-values to be maxY
 		);
 	}
 
@@ -32,6 +46,9 @@ public class PolygonalSelection implements Selection {
 		this.maxY = maxY;
 	}
 
+	/**
+	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalSelection}
+	 */
 	public List<BlockVector2D> getNativePoints() {
 		return vertices;
 	}
@@ -52,6 +69,12 @@ public class PolygonalSelection implements Selection {
 		return new BlockVector3D(maxX, maxY, maxZ);
 	}
 
+	/**
+	 * This method finds the "visual center" of this {@link PolygonalSelection} using an external library {@link PolyLabel}.
+	 * This is <b>not</b> the center of the bounding box; it is the point within the polygon that is furthest from any edge.
+	 *
+	 * @return the pole of inaccessibility of this PolygonalSelection
+	 */
 	@Override
 	public BlockVector3D getCenterPoint() {
 		Integer[][][] polygon = new Integer[1][vertices.size()][2];

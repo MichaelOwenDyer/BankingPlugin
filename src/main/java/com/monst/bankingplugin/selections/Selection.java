@@ -13,16 +13,12 @@ public interface Selection {
 	}
 
 	/**
-	 * Gets the lower point of this selection.
-	 * 
-	 * @return The minimum point
+	 * @return the point on the bounding box of this {@link Selection} with the lowest x, y, and z values.
 	 */
     BlockVector3D getMinimumPoint();
 
 	/**
-	 * Gets the upper point of this selection.
-	 * 
-	 * @return The maximum point
+	 * @return the point on the bounding box of this {@link Selection} with the highest x, y, and z values.
 	 */
     BlockVector3D getMaximumPoint();
 
