@@ -83,8 +83,6 @@ public class Polygonal2DSelection implements Selection {
 
 	@Override
 	public String getCoordinates() {
-		int minY = getMinimumPoint().getBlockY();
-		int maxY = getMaximumPoint().getBlockY();
 		return getNativePoints().stream().map(vec -> "(" + vec.getBlockX() + ", " + vec.getBlockZ() + ")")
 				.collect(Collectors.joining(", ")) + " at " + minY + " ≤ y ≤ " + maxY;
 	}
