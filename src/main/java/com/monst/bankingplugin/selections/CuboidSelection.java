@@ -109,14 +109,10 @@ public class CuboidSelection extends Selection {
 	@Override
 	public Collection<BlockVector3D> getCorners() {
 		Set<BlockVector3D> vertices = new HashSet<>();
-		vertices.add(min);
-		vertices.add(new BlockVector3D(getMaxX(), getMinZ(), getMinZ()));
-		vertices.add(new BlockVector3D(getMinX(), getMaxY(), getMinZ()));
-		vertices.add(new BlockVector3D(getMaxX(), getMaxY(), getMinZ()));
-		vertices.add(new BlockVector3D(getMinX(), getMinZ(), getMaxZ()));
-		vertices.add(new BlockVector3D(getMaxX(), getMinZ(), getMaxZ()));
-		vertices.add(new BlockVector3D(getMinX(), getMaxY(), getMaxZ()));
-		vertices.add(max);
+		for (int x : new int[] {getMinX(), getMaxX()})
+			for (int y : new int[] {getMinY(), getMaxY()})
+				for (int z : new int[] {getMinZ(), getMaxZ()})
+					vertices.add(new BlockVector3D(x, y, z));
 		return vertices;
 	}
 
