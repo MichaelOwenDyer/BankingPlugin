@@ -522,7 +522,7 @@ public class Config {
 	}
 
 	private static <T> T nonNull(T ifNotNull, Supplier<T> ifNull) {
-		return Utils.ternary(ifNotNull, ifNull);
+		return Utils.nonNull(ifNotNull, ifNull);
 	}
 
 	private static LocalTime convertToLocalTime(String string) {

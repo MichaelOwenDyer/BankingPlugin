@@ -175,7 +175,7 @@ public class Utils {
 		};
 	}
 
-	public static <T> T ternary(T ifNotNull, Supplier<T> ifNull) {
+	public static <T> T nonNull(T ifNotNull, Supplier<T> ifNull) {
 		return ternary(ifNotNull, ifNull, Objects::nonNull);
 	}
 
