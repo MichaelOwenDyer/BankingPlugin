@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -291,24 +292,7 @@ public class Config {
      * @param value    Value to set
      */
     public void set(String property, String value) {
-    	boolean set = false;
-        try {
-            plugin.getConfig().set(property, Integer.parseInt(value));
-			set = true;
-        } catch (NumberFormatException e) { /* Value not an integer */ }
-
-        if (!set)
-			try {
-				plugin.getConfig().set(property, Double.parseDouble(value));
-				set = true;
-			} catch (NumberFormatException e) { /* Value not a double */ }
-
-        if (!set)
-			if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-				plugin.getConfig().set(property, Boolean.parseBoolean(value));
-				set = true;
-			}
-
+    	boolean set = attemptParse(value, v -> plugin.getConfig().set(property, v));
         if (!set)
         	if (property.equalsIgnoreCase("interest-payout-times.default"))
         		plugin.getConfig().set(property, Arrays.stream(value.replace("-","").split(" "))
@@ -318,11 +302,7 @@ public class Config {
 			else
 				plugin.getConfig().set(property, value);
 
-		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
-		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
-			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
-        plugin.saveConfig();
-		reload();
+		update(property, value);
     }
 
     /**
@@ -334,25 +314,8 @@ public class Config {
      */
     @SuppressWarnings("all")
 	public void add(String property, String value) {
-		List list = (plugin.getConfig().getList(property) == null) ? new ArrayList<>() : plugin.getConfig().getList(property);
-		boolean added = false;
-		try {
-			list.add(Integer.parseInt(value));
-			added = true;
-		} catch (NumberFormatException e) { /* Value not an integer */ }
-
-		if (!added)
-			try {
-				list.add(Double.parseDouble(value));
-				added = true;
-			} catch (NumberFormatException e) { /* Value not a double */ }
-
-		if (!added)
-			if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-				list.add(Boolean.parseBoolean(value));
-				added = true;
-			}
-
+		List list = nonNull(plugin.getConfig().getList(property), ArrayList::new);
+		boolean added = attemptParse(value, v -> list.add(v));
 		if (!added)
 			if (property.equalsIgnoreCase("interest-payout-times.default"))
 				list.addAll(Arrays.stream(value.replace("-","").split(" "))
@@ -362,35 +325,13 @@ public class Config {
 			else
 				list.add(value);
 
-		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
-		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
-			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
-        plugin.saveConfig();
-		reload();
+		update(property, value);
     }
 
 	@SuppressWarnings("all")
     public void remove(String property, String value) {
-        @SuppressWarnings("rawtypes")
-		List list = (plugin.getConfig().getList(property) == null) ? new ArrayList<>() : plugin.getConfig().getList(property);
-		boolean removed = false;
-		try {
-			list.remove(Integer.parseInt(value));
-			removed = true;
-		} catch (NumberFormatException e) { /* Value not an integer */ }
-
-		if (!removed)
-			try {
-				list.remove(Double.parseDouble(value));
-				removed = true;
-			} catch (NumberFormatException e) { /* Value not a double */ }
-
-		if (!removed)
-			if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-				list.remove(Boolean.parseBoolean(value));
-				removed = true;
-			}
-
+		List list = nonNull(plugin.getConfig().getList(property), ArrayList::new);
+		boolean removed = attemptParse(value, v -> list.remove(v));
 		if (!removed)
 			if (property.equalsIgnoreCase("interest-payout-times.default"))
 				list.removeAll(Arrays.stream(value.replace("-","").split(" "))
@@ -400,12 +341,39 @@ public class Config {
 			else
 				list.remove(value);
 
+		update(property, value);
+    }
+
+    private boolean attemptParse(String value, Consumer<Object> listModifier) {
+
+		boolean success = false;
+		try {
+			listModifier.accept(Integer.parseInt(value));
+			success = true;
+		} catch (NumberFormatException ignored) { /* Value not an integer */ }
+
+		if (!success)
+			try {
+				listModifier.accept(Double.parseDouble(value));
+				success = true;
+			} catch (NumberFormatException ignored) { /* Value not a double */ }
+
+		if (!success)
+			if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+				listModifier.accept(Boolean.parseBoolean(value));
+				success = true;
+			}
+
+		return success;
+	}
+
+	private void update(String property, String value) {
 		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
 		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
 			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
-        plugin.saveConfig();
+		plugin.saveConfig();
 		reload();
-    }
+	}
 
     /**
      * Reload the configuration values from config.yml
@@ -415,12 +383,12 @@ public class Config {
         
         FileConfiguration config = plugin.getConfig();
 
-        mainCommandNameBank = ternary(config.getString("main-command-names.bank"), "bank");
-        mainCommandNameAccount = ternary(config.getString("main-command-names.account"), "account");
-		mainCommandNameControl = ternary(config.getString("main-command-names.control"), "bp");
+        mainCommandNameBank = nonNull(config.getString("main-command-names.bank"), "bank");
+        mainCommandNameAccount = nonNull(config.getString("main-command-names.account"), "account");
+		mainCommandNameControl = nonNull(config.getString("main-command-names.control"), "bp");
 		interestPayoutTimes = new ConfigPair<>(
 				config.getBoolean("interest-payout-times.allow-override"),
-				ternary(config.getStringList("interest-payout-times.default").stream()
+				nonNull(config.getStringList("interest-payout-times.default").stream()
 						.map(Config::convertToLocalTime)
 						.filter(Objects::nonNull)
 						.distinct()
@@ -432,7 +400,7 @@ public class Config {
 
 		interestRate = new ConfigPair<>(
 				config.getBoolean("interest-rate.allow-override"),
-				ternary(Math.abs(config.getDouble("interest-rate.default")), 0.01)
+				nonNull(Math.abs(config.getDouble("interest-rate.default")), 0.01)
 		);
 
 		multipliers = new ConfigPair<>(
@@ -443,117 +411,117 @@ public class Config {
 
 		initialInterestDelay = new ConfigPair<>(
 				config.getBoolean("initial-interest-delay.allow-override"),
-				ternary(Math.abs(config.getInt("initial-interest-delay.default")), 0)
+				nonNull(Math.abs(config.getInt("initial-interest-delay.default")), 0)
 		);
 
 		countInterestDelayOffline = new ConfigPair<>(
-				ternary(config.getBoolean("count-interest-delay-offline.allow-override"), false),
-				ternary(config.getBoolean("count-interest-delay-offline.default"), false)
+				nonNull(config.getBoolean("count-interest-delay-offline.allow-override"), false),
+				nonNull(config.getBoolean("count-interest-delay-offline.default"), false)
 		);
 
 		allowedOfflinePayouts = new ConfigPair<>(
 				config.getBoolean("allowed-offline-payouts.allow-override"),
-				ternary(Math.abs(config.getInt("allowed-offline-payouts.default")), 1)
+				nonNull(Math.abs(config.getInt("allowed-offline-payouts.default")), 1)
 		);
 
 		allowedOfflinePayoutsBeforeReset = new ConfigPair<>(
 				config.getBoolean("allowed-offline-payouts-before-multiplier-reset.allow-override"),
-				ternary(Math.abs(config.getInt("allowed-offline-payouts-before-multiplier-reset.default")), 1)
+				nonNull(Math.abs(config.getInt("allowed-offline-payouts-before-multiplier-reset.default")), 1)
 		);
 
 		offlineMultiplierDecrement = new ConfigPair<>(
 				config.getBoolean("offline-multiplier-decrement.allow-override"),
-				ternary(Math.abs(config.getInt("offline-multiplier-decrement.default")), 0)
+				nonNull(Math.abs(config.getInt("offline-multiplier-decrement.default")), 0)
 		);
 
 		withdrawalMultiplierDecrement = new ConfigPair<>(
 				config.getBoolean("withdrawal-multiplier-decrement.allow-override"),
-				ternary(Math.abs(config.getInt("withdrawal-multiplier-decrement.default")), 1)
+				nonNull(Math.abs(config.getInt("withdrawal-multiplier-decrement.default")), 1)
 		);
 
-		accountInfoItem = ternary(
+		accountInfoItem = nonNull(
 				convertToItemStack(config.getString("account-info-item")),
 				() -> new ItemStack(Material.STICK)
 		);
 
-		bankCreationPricePlayer = ternary(Math.abs(config.getDouble("creation-prices.bank.player")), 100000.0);
-		bankCreationPriceAdmin = ternary(Math.abs(config.getDouble("creation-prices.bank.admin")), 0.0);
+		bankCreationPricePlayer = nonNull(Math.abs(config.getDouble("creation-prices.bank.player")), 100000.0);
+		bankCreationPriceAdmin = nonNull(Math.abs(config.getDouble("creation-prices.bank.admin")), 0.0);
 
 		accountCreationPrice = new ConfigPair<>(
 				config.getBoolean("creation-prices.account.allow-override"),
-				ternary(Math.abs(config.getDouble("creation-prices.account.default")), 2500.0)
+				nonNull(Math.abs(config.getDouble("creation-prices.account.default")), 2500.0)
 		);
 
-		reimburseBankCreationPlayer = ternary(config.getBoolean("reimburse-creation.bank.player"), false);
-		reimburseBankCreationAdmin = ternary(config.getBoolean("reimburse-creation.bank.admin"), false);
+		reimburseBankCreationPlayer = nonNull(config.getBoolean("reimburse-creation.bank.player"), false);
+		reimburseBankCreationAdmin = nonNull(config.getBoolean("reimburse-creation.bank.admin"), false);
 
 		reimburseAccountCreation = new ConfigPair<>(
 				config.getBoolean("reimburse-creation.account.allow-override"),
-				ternary(config.getBoolean("reimburse-creation.account.default"), false)
+				nonNull(config.getBoolean("reimburse-creation.account.default"), false)
 		);
 
 		minimumBalance = new ConfigPair<>(
 				config.getBoolean("minimum-account-balance.allow-override"),
-				ternary(Math.abs(config.getDouble("minimum-account-balance.default")), 1000.0)
+				nonNull(Math.abs(config.getDouble("minimum-account-balance.default")), 1000.0)
 		);
 
 		lowBalanceFee = new ConfigPair<>(
 				config.getBoolean("low-balance-fee.allow-override"),
-				ternary(Math.abs(config.getDouble("low-balance-fee.default")), 2000.0)
+				nonNull(Math.abs(config.getDouble("low-balance-fee.default")), 2000.0)
 		);
 
 		payOnLowBalance = new ConfigPair<>(
 				config.getBoolean("pay-interest-on-low-balance.allow-override"),
-				ternary(config.getBoolean("pay-interest-on-low-balance.default"), false)
+				nonNull(config.getBoolean("pay-interest-on-low-balance.default"), false)
 		);
 
 		playerBankAccountLimit = new ConfigPair<>(
 				config.getBoolean("player-bank-account-limit.allow-override"),
-				ternary(config.getInt("player-bank-account-limit.default"), 1)
+				nonNull(config.getInt("player-bank-account-limit.default"), 1)
 		);
 
-		defaultBankLimit = ternary(config.getInt("default-limits.bank"), 1);
-		defaultAccountLimit = ternary(config.getInt("default-limits.account"), 1);
-		minimumBankVolume = Math.max(ternary(config.getInt("bank-size-limits.minimum"), 125), 0);
-		maximumBankVolume = Math.max(ternary(config.getLong("bank-size-limits.maximum"), 100000L), 0);
-		allowSelfBanking = ternary(config.getBoolean("allow-self-banking"), false);
-		confirmOnRemove = ternary(config.getBoolean("confirm-on-remove"), true);
-		confirmOnRemoveAll = ternary(config.getBoolean("confirm-on-removeall"), true);
-		confirmOnTransfer = ternary(config.getBoolean("confirm-on-transfer"), true);
-		trustOnTransfer = ternary(config.getBoolean("trust-on-transfer"), false);
-        enableUpdateChecker = ternary(config.getBoolean("enable-update-checker"), true);
-		enableTransactionLog = ternary(config.getBoolean("enable-transaction-log"), true);
-		enableInterestLog = ternary(config.getBoolean("enable-interest-log"), true);
-		enableProfitLog = ternary(config.getBoolean("enable-profit-log"), true);
-		enableDebugLog = ternary(config.getBoolean("enable-debug-log"), true);
-		cleanupLogDays = ternary(config.getInt("cleanup-log-days"), 30);
-        enableWorldGuardIntegration = ternary(config.getBoolean("enable-worldguard-integration"), true);
-        enableGriefPreventionIntegration = ternary(config.getBoolean("enable-griefprevention-integration"), true);
-		enableWorldEditIntegration = ternary(config.getBoolean("enable-worldedit-integration"), true);
-        removeAccountOnError = ternary(config.getBoolean("remove-account-on-error"), true);
-        blacklist = ternary(config.getStringList("blacklist"), Collections::emptyList);
-		bankRevenueMultiplier = ternary(Math.abs(config.getDouble("bank-revenue-multiplier")), 0.10);
-		wgAllowCreateBankDefault = ternary(config.getBoolean("worldguard-default-flag-value"), false);
-		disabledWorlds = ternary(config.getStringList("disabled-worlds"), Collections::emptyList);
-		enableMail = ternary(config.getBoolean("enable-mail"), true);
-		nameRegex = ternary(config.getString("name-regex"), "");
-		databaseTablePrefix = ternary(config.getString("table-prefix"), "bankingplugin_");
+		defaultBankLimit = nonNull(config.getInt("default-limits.bank"), 1);
+		defaultAccountLimit = nonNull(config.getInt("default-limits.account"), 1);
+		minimumBankVolume = Math.max(nonNull(config.getInt("bank-size-limits.minimum"), 125), 0);
+		maximumBankVolume = Math.max(nonNull(config.getLong("bank-size-limits.maximum"), 100000L), 0);
+		allowSelfBanking = nonNull(config.getBoolean("allow-self-banking"), false);
+		confirmOnRemove = nonNull(config.getBoolean("confirm-on-remove"), true);
+		confirmOnRemoveAll = nonNull(config.getBoolean("confirm-on-removeall"), true);
+		confirmOnTransfer = nonNull(config.getBoolean("confirm-on-transfer"), true);
+		trustOnTransfer = nonNull(config.getBoolean("trust-on-transfer"), false);
+        enableUpdateChecker = nonNull(config.getBoolean("enable-update-checker"), true);
+		enableTransactionLog = nonNull(config.getBoolean("enable-transaction-log"), true);
+		enableInterestLog = nonNull(config.getBoolean("enable-interest-log"), true);
+		enableProfitLog = nonNull(config.getBoolean("enable-profit-log"), true);
+		enableDebugLog = nonNull(config.getBoolean("enable-debug-log"), true);
+		cleanupLogDays = nonNull(config.getInt("cleanup-log-days"), 30);
+        enableWorldGuardIntegration = nonNull(config.getBoolean("enable-worldguard-integration"), true);
+        enableGriefPreventionIntegration = nonNull(config.getBoolean("enable-griefprevention-integration"), true);
+		enableWorldEditIntegration = nonNull(config.getBoolean("enable-worldedit-integration"), true);
+        removeAccountOnError = nonNull(config.getBoolean("remove-account-on-error"), true);
+        blacklist = nonNull(config.getStringList("blacklist"), Collections::emptyList);
+		bankRevenueMultiplier = nonNull(Math.abs(config.getDouble("bank-revenue-multiplier")), 0.10);
+		wgAllowCreateBankDefault = nonNull(config.getBoolean("worldguard-default-flag-value"), false);
+		disabledWorlds = nonNull(config.getStringList("disabled-worlds"), Collections::emptyList);
+		enableMail = nonNull(config.getBoolean("enable-mail"), true);
+		nameRegex = nonNull(config.getString("name-regex"), "");
+		databaseTablePrefix = nonNull(config.getString("table-prefix"), "bankingplugin_");
         
     }
 
     public static class ConfigPair<K> extends Pair<Boolean, K> {
 		private ConfigPair(Boolean b, K k) {
-			super(ternary(b, true), k);
+			super(nonNull(b, true), k);
 		}
 		public boolean isOverridable() { return super.getFirst(); }
 		public K getDefault() { return super.getSecond(); }
 	}
 
-	private static <T> T ternary(T ifNotNull, T ifNull) {
-		return ternary(ifNotNull, () -> ifNull);
+	private static <T> T nonNull(T ifNotNull, T ifNull) {
+		return nonNull(ifNotNull, () -> ifNull);
 	}
 
-	private static <T> T ternary(T ifNotNull, Supplier<T> ifNull) {
+	private static <T> T nonNull(T ifNotNull, Supplier<T> ifNull) {
 		return Utils.ternary(ifNotNull, ifNull);
 	}
 
