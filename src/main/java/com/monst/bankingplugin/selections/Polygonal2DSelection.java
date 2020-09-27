@@ -97,10 +97,10 @@ public class Polygonal2DSelection implements Selection {
 	@Override
 	public Collection<BlockVector3D> getVertices() {
 		List<BlockVector3D> vertices3D = new ArrayList<>();
-		vertices.stream().forEach(point -> {
+		for (BlockVector2D point : vertices) {
 			vertices3D.add(point.toBlockVector3D(minY));
 			vertices3D.add(point.toBlockVector3D(maxY));
-		});
+		}
 		return vertices3D;
 	}
 
