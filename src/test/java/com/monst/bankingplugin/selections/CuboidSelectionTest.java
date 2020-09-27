@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.selections;
 
-import org.bukkit.Location;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,7 +38,7 @@ class CuboidSelectionTest {
     void overlaps() {
         CuboidSelection sel = CuboidSelection.of(
                 null, new BlockVector3D(1, 0, 1), new BlockVector3D(5, 9, 5));
-        Polygonal2DSelection polySel = Polygonal2DSelectionTest.newSel(0, 2,
+        PolygonalSelection polySel = PolygonalSelectionTest.newSel(0, 2,
                 5, 2,
                 5, -6);
         assertTrue(sel.overlaps(polySel));

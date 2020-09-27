@@ -9,17 +9,17 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class Polygonal2DSelectionTest {
+public class PolygonalSelectionTest {
 
-    private static Constructor<Polygonal2DSelection> constructor;
+    private static Constructor<PolygonalSelection> constructor;
     static {
         try {
-            constructor = Polygonal2DSelection.class.getDeclaredConstructor(World.class, List.class, int.class, int.class);
+            constructor = PolygonalSelection.class.getDeclaredConstructor(World.class, List.class, int.class, int.class);
             constructor.setAccessible(true);
         } catch (NoSuchMethodException ignored) {}
     }
 
-    static Polygonal2DSelection newSel(int... args) {
+    static PolygonalSelection newSel(int... args) {
         assertEquals(0, args.length % 2);
         List<BlockVector2D> points = new ArrayList<>();
         for (int i = 0; i < args.length; i += 2) {

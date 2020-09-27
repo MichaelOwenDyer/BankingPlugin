@@ -7,20 +7,20 @@ import org.bukkit.World;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Polygonal2DSelection implements Selection {
+public class PolygonalSelection implements Selection {
 
 	private final World world;
 	private final List<BlockVector2D> vertices;
 	private final int minY;
 	private final int maxY;
 
-	public static Polygonal2DSelection of(World world, List<BlockVector2D> points, int minY, int maxY) {
+	public static PolygonalSelection of(World world, List<BlockVector2D> points, int minY, int maxY) {
 		if (minY > maxY) {
 			int temp = minY;
 			minY = maxY;
 			maxY = temp;
 		}
-		return new Polygonal2DSelection(
+		return new PolygonalSelection(
 				world,
 				points,
 				Math.min(Math.max(0, minY), world.getMaxHeight()),
@@ -28,7 +28,7 @@ public class Polygonal2DSelection implements Selection {
 		);
 	}
 
-	private Polygonal2DSelection(World world, List<BlockVector2D> vertices, int minY, int maxY) {
+	private PolygonalSelection(World world, List<BlockVector2D> vertices, int minY, int maxY) {
 		this.world = world;
 		this.vertices = vertices;
 		this.minY = minY;
@@ -191,7 +191,7 @@ public class Polygonal2DSelection implements Selection {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		Polygonal2DSelection other = (Polygonal2DSelection) o;
+		PolygonalSelection other = (PolygonalSelection) o;
 		return getMinY() == other.getMinY() && getMaxY() == other.getMaxY()
 				&& getWorld().equals(other.getWorld())
 				&& getNativePoints().equals(other.getNativePoints());

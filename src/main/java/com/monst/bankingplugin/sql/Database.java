@@ -427,7 +427,7 @@ public abstract class Database {
 				ps.setString(i + 5, bank.getSelection().getWorld().getName());
 
 				if (bank.getSelection().getType() == SelectionType.POLYGONAL) {
-					Polygonal2DSelection sel = (Polygonal2DSelection) bank.getSelection();
+					PolygonalSelection sel = (PolygonalSelection) bank.getSelection();
 
 					ps.setInt(i + 6, sel.getMinimumPoint().getBlockY());
 					ps.setInt(i + 7, sel.getMaximumPoint().getBlockY());
@@ -590,7 +590,7 @@ public abstract class Database {
 							nativePoints.add(new BlockVector2D(x, z));
 						}
 
-						selection = Polygonal2DSelection.of(world, nativePoints, minY, maxY);
+						selection = PolygonalSelection.of(world, nativePoints, minY, maxY);
 					} else {
 
 						String[] coords = pointArray[0].split(",");

@@ -48,7 +48,7 @@ public class WorldEditReader {
 				List<BlockVector2D> points = new ArrayList<>();
 				polygon.getPoints().stream()
 						.forEach(point -> points.add(new BlockVector2D(point.getBlockX(), point.getBlockZ())));
-				return Polygonal2DSelection.of(world, points, minY, maxY);
+				return PolygonalSelection.of(world, points, minY, maxY);
 			}
 
 		} catch (IncompleteRegionException ignored) {}
@@ -65,7 +65,7 @@ public class WorldEditReader {
 			BlockVector3 max = BlockVector3.at(sel.getMaximumPoint().getBlockX(), sel.getMaximumPoint().getBlockY(), sel.getMaximumPoint().getBlockZ());
 			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(sel.getWorld()), min, max);
 		} else {
-			List<BlockVector2> points = ((Polygonal2DSelection) sel).getNativePoints().stream()
+			List<BlockVector2> points = ((PolygonalSelection) sel).getNativePoints().stream()
 					.map(point -> BlockVector2.at(point.getBlockX(), point.getBlockZ())).collect(Collectors.toList());
 			int minY = sel.getMinimumPoint().getBlockY();
 			int maxY = sel.getMaximumPoint().getBlockY();

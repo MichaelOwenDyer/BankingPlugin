@@ -113,7 +113,7 @@ public class VisualizationManager {
                     world.getBlockAt(loc).getBlockData()
             )));
 
-            List<BlockVector2D> points = ((Polygonal2DSelection) sel).getNativePoints();
+            List<BlockVector2D> points = ((PolygonalSelection) sel).getNativePoints();
             for (int i = 0; i < points.size(); i++) {
 
                 BlockVector2D current = points.get(i);
