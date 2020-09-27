@@ -41,7 +41,7 @@ public class BankCreate extends BankCommand.SubCommand {
         String name = args[1];
 
         Selection selection;
-        if (args.length <= 2) {
+        if (args.length <= 3) {
             if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
                 selection = WorldEditReader.getSelection(plugin, p);
                 if (selection == null) {
