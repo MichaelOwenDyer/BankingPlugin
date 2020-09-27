@@ -97,7 +97,7 @@ public class BankResize extends BankCommand.SubCommand {
         }
         long volume = selection.getVolume();
         long volumeLimit = BankUtils.getVolumeLimit(p);
-        if (bank.isPlayerBank() && volumeLimit != -1 && volume > volumeLimit) {
+        if (bank.isPlayerBank() && volumeLimit >= 0 && volume > volumeLimit) {
             plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
             p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE_RESIZE, volumeLimit, volume - volumeLimit));
             return true;
