@@ -14,17 +14,14 @@ public class PolygonalSelection implements Selection {
 	private final int minY;
 	private final int maxY;
 
-	public static PolygonalSelection of(World world, List<BlockVector2D> points, int minY, int maxY) {
-		if (minY > maxY) {
-			int temp = minY;
-			minY = maxY;
-			maxY = temp;
-		}
+	public static PolygonalSelection of(World world, List<BlockVector2D> points, int y1, int y2) {
+		y1 = Math.min(Math.max(0, y1), world.getMaxHeight()); // Ensure y1 is between 0 and world.getMaxHeight()
+		y2 = Math.min(Math.max(0, y2), world.getMaxHeight()); // Ensure y2 is between 0 and world.getMaxHeight()
 		return new PolygonalSelection(
 				world,
 				points,
-				Math.min(Math.max(0, minY), world.getMaxHeight()),
-				Math.min(Math.max(0, maxY), world.getMaxHeight())
+				Math.min(y1, y2), // Take the lower of the two y values to be minY
+				Math.max(y1, y2) // Take the higher of the two y values to be maxY
 		);
 	}
 
