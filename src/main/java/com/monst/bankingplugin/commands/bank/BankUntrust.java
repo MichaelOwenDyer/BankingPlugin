@@ -34,7 +34,7 @@ public class BankUntrust extends BankCommand.SubCommand {
             sender.sendMessage(Messages.NO_PERMISSION_BANK_UNTRUST);
             return true;
         }
-        Bank bank = plugin.getBankUtils().lookupBank(args[1]);
+        Bank bank = plugin.getBankUtils().getBank(args[1]);
         if (bank == null) {
             sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
             return true;
@@ -92,7 +92,7 @@ public class BankUntrust extends BankCommand.SubCommand {
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 3) {
-            Bank bank = plugin.getBankUtils().lookupBank(args[1]);
+            Bank bank = plugin.getBankUtils().getBank(args[1]);
             if (bank == null)
                 return Collections.emptyList();
             List<String> coowners = bank.getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.toList());

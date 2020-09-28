@@ -36,7 +36,7 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
             banks = plugin.getBankUtils().getBanks();
         else
             banks = Arrays.stream(args)
-                    .map(plugin.getBankUtils()::lookupBank)
+                    .map(plugin.getBankUtils()::getBank)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 

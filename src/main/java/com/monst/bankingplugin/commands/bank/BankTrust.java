@@ -34,7 +34,7 @@ public class BankTrust extends BankCommand.SubCommand {
             sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST);
             return true;
         }
-        Bank bank = plugin.getBankUtils().lookupBank(args[1]);
+        Bank bank = plugin.getBankUtils().getBank(args[1]);
         if (bank == null) {
             sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
             return true;

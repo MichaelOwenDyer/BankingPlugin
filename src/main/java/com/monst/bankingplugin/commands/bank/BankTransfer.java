@@ -41,7 +41,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
         if (args.length < 2)
             return false;
 
-        Bank bank = bankUtils.lookupBank(args[1]);
+        Bank bank = bankUtils.getBank(args[1]);
         if (bank == null) {
             plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
             sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
@@ -144,7 +144,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
             List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
             if (!p.hasPermission(Permissions.BANK_TRANSFER_OTHER) && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN))
                 onlinePlayers.remove(p.getName());
-            Bank bank = bankUtils.lookupBank(args[1]);
+            Bank bank = bankUtils.getBank(args[1]);
             if (bank != null && bank.isPlayerBank())
                 onlinePlayers.remove(bank.getOwner().getName());
             return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[2].toLowerCase()));

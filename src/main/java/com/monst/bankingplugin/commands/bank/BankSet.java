@@ -36,7 +36,7 @@ public class BankSet extends BankCommand.SubCommand {
         if (args.length < 3)
             return false;
 
-        Bank bank = bankUtils.lookupBank(args[1]);
+        Bank bank = bankUtils.getBank(args[1]);
         String fieldName = args[2];
         StringBuilder sb = new StringBuilder(32);
         if (args.length > 3)
@@ -109,7 +109,7 @@ public class BankSet extends BankCommand.SubCommand {
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()
                     .collect(Collectors.toList());
-        else if (args.length == 3 && bankUtils.lookupBank(args[1]) != null)
+        else if (args.length == 3 && bankUtils.getBank(args[1]) != null)
             return BankField.stream()
                     .filter(BankField::isOverrideAllowed)
                     .map(BankField::getName)
@@ -117,7 +117,7 @@ public class BankSet extends BankCommand.SubCommand {
                     .sorted()
                     .collect(Collectors.toList());
         else if (args.length == 4) {
-            Bank bank = bankUtils.lookupBank(args[1]);
+            Bank bank = bankUtils.getBank(args[1]);
             BankField field = BankField.getByName(args[2]);
             if (bank != null && field != null)
                 return Collections.singletonList(bank.getFormatted(field));

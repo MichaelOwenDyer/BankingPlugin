@@ -47,7 +47,7 @@ public class BankUtils extends Observable {
 		return bankSelectionMap.get(selection);
 	}
 
-	public Bank lookupBank(String identifier) {
+	public Bank getBank(String identifier) {
 		try {
 			int id = Integer.parseInt(identifier);
 			return getBanks().stream().filter(b -> b.getID() == id).findFirst().orElse(null);

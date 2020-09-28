@@ -72,7 +72,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 					sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
 				}
 			} else {
-				bank = bankUtils.lookupBank(args[1]);
+				bank = bankUtils.getBank(args[1]);
 				if (bank == null) {
 					plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
 					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));

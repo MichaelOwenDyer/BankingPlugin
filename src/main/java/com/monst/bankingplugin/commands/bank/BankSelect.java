@@ -51,7 +51,7 @@ public class BankSelect extends BankCommand.SubCommand {
                 return true;
             }
         } else {
-            bank = bankUtils.lookupBank(args[1]);
+            bank = bankUtils.getBank(args[1]);
             if (bank == null) {
                 plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
                 p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
