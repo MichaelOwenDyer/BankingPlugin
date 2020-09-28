@@ -145,7 +145,7 @@ public class BankGui extends SinglePageGui<Bank> {
 	}
 
 	static String getEqualityLore(Bank bank) {
-		double gini = 1 - BankUtils.getGiniCoefficient(bank);
+		double gini = 1 - bank.getGiniCoefficient();
 		ChatColor color;
 		String assessment = "";
 		switch ((int) (gini * 5)) {

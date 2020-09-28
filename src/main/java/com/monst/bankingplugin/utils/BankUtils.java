@@ -9,11 +9,11 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class BankUtils extends Observable {
 
@@ -185,34 +185,5 @@ public class BankUtils extends Observable {
 	public static long getVolumeLimit(Player player) {
 		return Utils.getLimit(player, Permissions.BANK_NO_SIZE_LIMIT,
                 Config.maximumBankVolume);
-	}
-
-	/**
-	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
-	 * inequality among all n accounts at the bank.
-	 *
-	 * @return G = ( 2 * (sum(i...n) i * n[i].getBalance()) / n * (sum(i...n) n[i].getBalance()) ) - ( n + 1 / n )
-	 */
-	public static double getGiniCoefficient(Bank bank) {
-		if (bank.getAccounts().isEmpty())
-			return 0;
-		List<BigDecimal> orderedValues = bank.getBalancesByOwner()
-				.values()
-				.stream()
-				.sorted(BigDecimal::compareTo)
-				.collect(Collectors.toList());
-		BigDecimal valueSum = BigDecimal.ZERO;
-		BigDecimal weightedValueSum = BigDecimal.ZERO;
-		for (int i = 0; i < orderedValues.size(); i++) {
-			valueSum = valueSum.add(orderedValues.get(i));
-			weightedValueSum = weightedValueSum.add(orderedValues.get(i).multiply(BigDecimal.valueOf(i + 1)));
-		}
-		valueSum = valueSum.multiply(BigDecimal.valueOf(orderedValues.size()));
-		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
-		if (valueSum.signum() == 0)
-			return 0;
-		BigDecimal leftSide = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
-		BigDecimal rightSide = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
-		return leftSide.subtract(rightSide).setScale(2, RoundingMode.HALF_EVEN).doubleValue();
 	}
 }
