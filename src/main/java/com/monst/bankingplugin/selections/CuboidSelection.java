@@ -129,7 +129,7 @@ public class CuboidSelection extends Selection {
 		int y = bv.getBlockY();
 		int z = bv.getBlockZ();
 		return x <= getMaxX() && x >= getMinX()
-				&& y <= getMaxY() && y >= getMinZ()
+				&& y <= getMaxY() && y >= getMinY()
 				&& z <= getMaxZ() && z >= getMinZ();
 	}
 
