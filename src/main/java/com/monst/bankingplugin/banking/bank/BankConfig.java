@@ -84,7 +84,7 @@ public class BankConfig {
 			});
 			FORMATTERS.putIfAbsent(field, instance -> {
 				try {
-					return "$" + Utils.format((double) field.getLocalVariable().get(instance));
+					return "$" + Utils.format((Double) field.getLocalVariable().get(instance));
 				} catch (IllegalAccessException ignored) {}
 				return "";
 			});

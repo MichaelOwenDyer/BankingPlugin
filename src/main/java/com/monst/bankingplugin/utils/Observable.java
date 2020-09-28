@@ -22,7 +22,7 @@ public abstract class Observable {
         observers.remove(observer);
     }
 
-    public synchronized void notifyObservers() {
+    public void notifyObservers() {
         if (!plugin.isEnabled())
             return;
         if (scheduled)

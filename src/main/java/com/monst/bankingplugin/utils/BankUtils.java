@@ -30,9 +30,9 @@ public class BankUtils extends Observable {
 	 * @return Bank at the given location or <b>null</b> if no bank is found there
 	 */
 	public Bank getBank(Location location) {
-		for (Selection sel : bankSelectionMap.keySet())
-			if (sel.contains(location))
-				return bankSelectionMap.get(sel);
+		for (Map.Entry<Selection, Bank> selectionBankPair : bankSelectionMap.entrySet())
+			if (selectionBankPair.getKey().contains(location))
+				return selectionBankPair.getValue();
 		return null;
     }
 

@@ -401,17 +401,17 @@ public class BankingPlugin extends JavaPlugin {
 
 					getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(this, map -> {
 
-								for (Bank bank : map.keySet()) {
+								map.forEach((bank, bankAccounts) -> {
 									bankUtils.addBank(bank, false);
 									reloadedBanks.add(bank);
-									for (Account account : map.get(bank)) {
+									for (Account account : bankAccounts) {
 										if (account.create(showConsoleMessages)) {
 											accountUtils.addAccount(account, false, account.callUpdateName());
 											reloadedAccounts.add(account);
 										} else
 											debug("Could not re-create account from database! (#" + account.getID() + ")");
 									}
-								}
+								});
 
 								if (banks.size() != reloadedBanks.size())
 									debugf("Number of banks before load was %d and is now %d.",
@@ -447,7 +447,7 @@ public class BankingPlugin extends JavaPlugin {
 			try {
 				Calendar c = Calendar.getInstance();
 				String timestamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(c.getTime());
-				debugWriter.write(String.format("[%s] %s\r\n", timestamp, message));
+				debugWriter.write(String.format("[%s] %s%n", timestamp, message));
 				debugWriter.flush();
 			} catch (IOException e) {
 				getLogger().severe("Failed to print debug message.");

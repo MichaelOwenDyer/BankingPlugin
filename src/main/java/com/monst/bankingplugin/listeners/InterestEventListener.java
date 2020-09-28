@@ -57,8 +57,8 @@ public class InterestEventListener implements Listener {
 		Map<OfflinePlayer, Counter> interestPayable = new HashMap<>(); // The amount of interest each bank owner must pay for how many banks
 		Map<OfflinePlayer, Counter> feesReceivable = new HashMap<>(); // The amount of fees each bank owner receives as income on how many banks
 
-		for (OfflinePlayer accountOwner : playerAccountMap.keySet()) {
-			for (Account account : playerAccountMap.get(accountOwner)) {
+		playerAccountMap.forEach((accountOwner, accounts) -> {
+			for (Account account : accounts) {
 				if (!account.getStatus().allowNextPayout(account.isTrustedPlayerOnline())) {
 					accountUtils.addAccount(account, true);
 					continue;
@@ -119,11 +119,11 @@ public class InterestEventListener implements Listener {
 			}
 			if (accountOwner.isOnline())
 				plugin.getDatabase().logLogout(accountOwner.getPlayer(), null);
-		}
+		});
 
 		// Bank owners earn revenue on their banks
-		for (OfflinePlayer bankOwner : playerBankMap.keySet()) {
-			for (Bank bank : playerBankMap.get(bankOwner)) {
+		playerBankMap.forEach((bankOwner, banks) -> {
+			for (Bank bank : banks) {
 				if (bank.getTotalValue().signum() == 0)
 					continue;
 
@@ -146,13 +146,15 @@ public class InterestEventListener implements Listener {
 				if (Config.enableProfitLog)
 					plugin.getDatabase().logBankCashFlow(bank, revenue, null);
 			}
-		}
+		});
 
 		String fallbackWorldName = playerAccountMap.values().stream().flatMap(Collection::stream)
 				.collect(Collectors.toList()).get(0).getLocation().getWorld().getName();
 
 		// Bank owners receive low balance fees
-		for (OfflinePlayer bankOwner : feesReceivable.keySet()) {
+		for (Map.Entry<OfflinePlayer, Counter> entry : feesReceivable.entrySet()) {
+			OfflinePlayer bankOwner = entry.getKey();
+			Counter counter = entry.getValue();
 			if (feesReceivable.get(bankOwner).getSum().signum() == 0)
 				continue;
 			if (!bankOwner.hasPlayedBefore())
@@ -171,8 +173,10 @@ public class InterestEventListener implements Listener {
 		}
 
 		// Bank owners pay interest
-		for (OfflinePlayer bankOwner : interestPayable.keySet()) {
-			if (interestPayable.get(bankOwner).getSum().signum() == 0)
+		for (Map.Entry<OfflinePlayer, Counter> entry : interestPayable.entrySet()) {
+			OfflinePlayer bankOwner = entry.getKey();
+			Counter counter = entry.getValue();
+			if (counter.getSum().signum() == 0)
 				continue;
 			if (!bankOwner.hasPlayedBefore())
 				continue;
@@ -180,19 +184,21 @@ public class InterestEventListener implements Listener {
 			boolean isOnline = bankOwner.isOnline();
 			String worldName = isOnline ? bankOwner.getPlayer().getWorld().getName() : fallbackWorldName;
 
-			Utils.withdrawPlayer(bankOwner, worldName, interestPayable.get(bankOwner).getSum().doubleValue(), Callback.of(plugin,
+			Utils.withdrawPlayer(bankOwner, worldName, counter.getSum().doubleValue(), Callback.of(plugin,
 					result -> {
-						int count = interestPayable.get(bankOwner).getCount();
+						int count = counter.getCount();
 						Utils.notifyPlayers(String.format(Messages.INTEREST_PAID,
-								Utils.format(interestPayable.get(bankOwner).getSum()),
+								Utils.format(counter.getSum()),
 								count, count == 1 ? "" : "s"), bankOwner);
 					},
 					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
 		}
 
 		// Account owners receive interest payments
-		for (OfflinePlayer customer : interestReceivable.keySet()) {
-			if (interestReceivable.get(customer).getSum().signum() == 0)
+		for (Map.Entry<OfflinePlayer, Counter> entry : interestReceivable.entrySet()) {
+			OfflinePlayer customer = entry.getKey();
+			Counter counter = entry.getValue();
+			if (counter.getSum().signum() == 0)
 				continue;
 
 			boolean online = customer.isOnline();
@@ -200,11 +206,11 @@ public class InterestEventListener implements Listener {
 					? playerAccountMap.get(customer).get(0).getLocation().getWorld().getName()
 					: (online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
 
-			Utils.depositPlayer(customer, worldName, interestReceivable.get(customer).getSum().doubleValue(), Callback.of(plugin,
+			Utils.depositPlayer(customer, worldName, counter.getSum().doubleValue(), Callback.of(plugin,
 					result -> {
-						int count = interestReceivable.get(customer).getCount();
+						int count = counter.getCount();
 						Utils.notifyPlayers(String.format(Messages.INTEREST_EARNED,
-								Utils.format(interestReceivable.get(customer).getSum()),
+								Utils.format(counter.getSum()),
 								count, count == 1 ? "" : "s"), customer);
 					},
 					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer))
@@ -212,8 +218,10 @@ public class InterestEventListener implements Listener {
 		}
 
 		// Customers pay low balance fees
-		for (OfflinePlayer customer : feesPayable.keySet()) {
-			if (feesPayable.get(customer).getSum().signum() == 0)
+		for (Map.Entry<OfflinePlayer, Counter> entry : feesPayable.entrySet()) {
+			OfflinePlayer customer = entry.getKey();
+			Counter counter = entry.getValue();
+			if (counter.getSum().signum() == 0)
 				continue;
 
 			boolean online = customer.isOnline();
@@ -221,11 +229,11 @@ public class InterestEventListener implements Listener {
 					playerAccountMap.get(customer).get(0).getLocation().getWorld().getName() :
 					(online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
 
-			Utils.withdrawPlayer(customer, worldName, feesPayable.get(customer).getSum().doubleValue(), Callback.of(plugin,
+			Utils.withdrawPlayer(customer, worldName, counter.getSum().doubleValue(), Callback.of(plugin,
 					result -> {
-						int count = feesPayable.get(customer).getCount();
+						int count = counter.getCount();
 						Utils.notifyPlayers(String.format(Messages.LOW_BALANCE_FEE_PAID,
-								Utils.format(feesPayable.get(customer).getSum()),
+								Utils.format(counter.getSum()),
 								count, count == 1 ? "" : "s"), customer);
 					},
 					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer)

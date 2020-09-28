@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +24,7 @@ public class AccountContentsGui extends SinglePageGui<Account> {
 
     @Override
     void evaluateClearance(Player player) {
-        canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
+        // canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER); TODO: Implement remote editing
     }
 
     @Override
