@@ -4,8 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.selections.BlockVector3D;
-import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.selections.Selection;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -87,61 +85,6 @@ public class BankUtils extends Observable {
     	if (ignore != null)
     		overlappingSelections.remove(ignore);
 		return overlappingSelections;
-	}
-
-	/**
-	 * Parses coordinates for a new bank selection from command arguments
-	 * @param args the arguments to parse
-	 * @param loc the location of the player sending the command
-	 * @param offset how many extra arguments there are before the coordinates start
-	 * @return a {@link CuboidSelection} described by the command arguments
-	 * @throws NumberFormatException if the coordinates could not be parsed
-	 */
-	public CuboidSelection parseCoordinates(String[] args, Location loc, int offset) throws NumberFormatException {
-		if (args.length >= 4 && args.length <= 6) {
-
-			String argX = args[1 + offset];
-			String argY = args[2 + offset];
-			String argZ = args[3 + offset];
-
-			int x1, y1, z1, x2, y2, z2;
-
-			x2 = loc.getBlockX();
-			y2 = loc.getBlockY();
-			z2 = loc.getBlockZ();
-
-			x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1)) + x2 : Integer.parseInt(argX);
-			y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1)) + y2 : Integer.parseInt(argY);
-			z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1)) + z2 : Integer.parseInt(argZ);
-
-			BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);
-			BlockVector3D loc2 = new BlockVector3D(x2, y2, z2);
-			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
-
-		} else if (args.length >= 7) {
-
-			String argX1 = args[1 + offset];
-			String argY1 = args[2 + offset];
-			String argZ1 = args[3 + offset];
-			String argX2 = args[4 + offset];
-			String argY2 = args[5 + offset];
-			String argZ2 = args[6 + offset];
-
-			int x1, y1, z1, x2, y2, z2;
-
-			x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1)) + loc.getBlockX() : Integer.parseInt(argX1);
-			y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1)) + loc.getBlockY() : Integer.parseInt(argY1);
-			z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1)) + loc.getBlockZ() : Integer.parseInt(argZ1);
-			x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1)) + loc.getBlockX() : Integer.parseInt(argX2);
-			y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1)) + loc.getBlockY() : Integer.parseInt(argY2);
-			z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1)) + loc.getBlockZ() : Integer.parseInt(argZ2);
-
-			BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);
-			BlockVector3D loc2 = new BlockVector3D(x2, y2, z2);
-			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
-
-		}
-		return null;
 	}
 
     /**

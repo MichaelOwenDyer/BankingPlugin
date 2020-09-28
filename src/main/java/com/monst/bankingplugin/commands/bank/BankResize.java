@@ -63,7 +63,7 @@ public class BankResize extends BankCommand.SubCommand {
             }
         } else {
             try {
-                selection = bankUtils.parseCoordinates(args, p.getLocation(), 1);
+                selection = parseCoordinates(args, p.getLocation());
             } catch (NumberFormatException e) {
                 plugin.debug("Could not parse coordinates in command args: \"" + Arrays.toString(args) + "\"");
                 p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
