@@ -143,7 +143,7 @@ public class BankResize extends BankCommand.SubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 2) {
-            return bankUtils.getBanksCopy().stream()
+            return bankUtils.getBanks().stream()
                     .map(Bank::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()

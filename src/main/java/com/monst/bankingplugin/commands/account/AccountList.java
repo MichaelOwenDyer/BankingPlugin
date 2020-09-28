@@ -66,12 +66,12 @@ public class AccountList extends AccountCommand.SubCommand {
     private List<Account> lookupAccounts(CommandSender sender, String[] args) {
         List<Account> accounts;
         if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
-            accounts = accountUtils.getAccountsCopy().stream()
+            accounts = accountUtils.getAccounts().stream()
                     .filter(a -> a.isOwner((Player) sender))
                     .sorted(Comparator.comparing(Account::getBalance).reversed())
                     .collect(Collectors.toList());
         } else if (args.length == 1) {
-            accounts = accountUtils.getAccountsCopy().stream()
+            accounts = accountUtils.getAccounts().stream()
                     .sorted(Comparator.comparing(Account::getBalance).reversed())
                     .collect(Collectors.toList());
         } else {
@@ -79,7 +79,7 @@ public class AccountList extends AccountCommand.SubCommand {
                     .map(Utils::getPlayer)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
-            accounts = accountUtils.getAccountsCopy().stream()
+            accounts = accountUtils.getAccounts().stream()
                     .filter(a -> players.contains(a.getOwner()))
                     .sorted(Comparator.<Account, Integer>comparing(a -> players.indexOf(a.getOwner()))
                             .thenComparing(Account::getBalance, BigDecimal::compareTo).reversed())

@@ -124,20 +124,11 @@ public class Bank extends Ownable {
 	}
 
 	/**
-	 * Does the same as {@link #getAccounts()} but is safe
-	 * to use for removing all accounts from the bank.
-	 * @return a {@link Collection<Account>} containing a copy of all accounts at this bank
-	 */
-	public Set<Account> getAccountsCopy() {
-		return Collections.unmodifiableSet(getAccounts());
-	}
-
-	/**
 	 * Get a copy of all accounts that fulfill a certain predicate
 	 * @param filter the predicate to be applied to each account at this bank
 	 * @return a {@link Set} containing the filtered accounts
 	 */
-	public Set<Account> getAccountsCopy(Predicate<? super Account> filter) {
+	public Set<Account> getAccounts(Predicate<? super Account> filter) {
 		return Collections.unmodifiableSet(Utils.filter(getAccounts(), filter));
 	}
 

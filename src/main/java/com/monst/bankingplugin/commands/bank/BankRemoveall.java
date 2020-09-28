@@ -36,7 +36,7 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
             return true;
         }
 
-        Set<Bank> banks = bankUtils.getBanksCopy();
+        Set<Bank> banks = bankUtils.getBanks();
 
         int affectedAccounts = banks.stream().map(Bank::getAccounts).mapToInt(Collection::size).sum();
         if (sender instanceof Player && Config.confirmOnRemoveAll && !isConfirmed((Player) sender, args)) {

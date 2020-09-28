@@ -76,7 +76,7 @@ public class BankSelect extends BankCommand.SubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2 && sender.hasPermission(Permissions.BANK_SELECT)) {
-            return bankUtils.getBanksCopy().stream()
+            return bankUtils.getBanks().stream()
                     .map(Bank::getName)
                     .sorted()
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))

@@ -98,7 +98,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return bankUtils.getBanksCopy().stream()
+            return bankUtils.getBanks().stream()
                     .filter(bank -> (sender instanceof Player && bank.isOwner((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)))

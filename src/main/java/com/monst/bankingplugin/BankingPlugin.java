@@ -176,7 +176,7 @@ public class BankingPlugin extends JavaPlugin {
 
 		ClickType.clear();
 
-		bankUtils.getBanksCopy().forEach(bank -> {
+		bankUtils.getBanks().forEach(bank -> {
 			bankUtils.removeBank(bank, false);
 			debugf("Removed bank \"%s\" (#%d)", bank.getName(), bank.getID());
 		});

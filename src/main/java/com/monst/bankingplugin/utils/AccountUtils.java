@@ -43,7 +43,7 @@ public class AccountUtils extends Observable {
     }
 
     public Account getAccount(int id) {
-		return getAccountsCopy(account -> account.getID() == id).stream().findFirst().orElse(null);
+		return getAccounts(account -> account.getID() == id).stream().findFirst().orElse(null);
 	}
 
     /**
@@ -59,25 +59,14 @@ public class AccountUtils extends Observable {
      * Gets all accounts on the server.
      * Do not use for removing while iterating!
      *
-     * @see #getAccountsCopy()
+     * @see #getAccounts()
      * @return Read-only collection of all accounts
      */
     public Set<Account> getAccounts() {
 		return new HashSet<>(accountLocationMap.values());
     }
 
-    /**
-     * Gets all accounts on the server.
-     * Does the same thing as {@link #getAccounts()} but this is safe to remove while iterating.
-     *
-     * @see #getAccounts()
-     * @return Copy of collection of all accounts, may contain duplicates
-     */
-    public Set<Account> getAccountsCopy() {
-		return Collections.unmodifiableSet(getAccounts());
-    }
-
-    public Set<Account> getAccountsCopy(Predicate<? super Account> filter) {
+    public Set<Account> getAccounts(Predicate<? super Account> filter) {
 		return Collections.unmodifiableSet(Utils.filter(getAccounts(), filter));
     }
 
@@ -88,7 +77,7 @@ public class AccountUtils extends Observable {
 	 * @return The number of accounts owned by the player
 	 */
 	public int getNumberOfAccounts(OfflinePlayer player) {
-		return getAccountsCopy(account -> account.isOwner(player)).size();
+		return getAccounts(account -> account.isOwner(player)).size();
 	}
 
 	/**

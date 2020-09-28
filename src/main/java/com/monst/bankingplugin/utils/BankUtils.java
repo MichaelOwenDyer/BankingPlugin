@@ -28,9 +28,9 @@ public class BankUtils extends Observable {
     }
 
     /**
-	 * Get the bank at a given location
+	 * Gets the {@link Bank} at a given location
 	 *
-	 * @param location Location of the bank
+	 * @param location {@link Location} of the bank
 	 * @return Bank at the given location or <b>null</b> if no bank is found there
 	 */
 	public Bank getBank(Location location) {
@@ -41,9 +41,9 @@ public class BankUtils extends Observable {
     }
 
 	/**
-	 * Get the bank in a given selection
+	 * Gets the {@link Bank} with a given selection
 	 *
-	 * @param selection Region of the bank
+	 * @param selection {@link Selection} of the bank
 	 * @return Bank in the given region or <b>null</b> if no bank is found there
 	 */
 	public Bank getBank(Selection selection) {
@@ -51,27 +51,20 @@ public class BankUtils extends Observable {
 	}
 
     /**
-	 * Get all banks Do not use for removing while iterating!
+	 * Gets all banks on the server
 	 *
-	 * @see #getBanksCopy()
-	 * @return Read-only collection of all banks
+	 * @return A new {@link HashSet} containing all banks
 	 */
 	public Set<Bank> getBanks() {
 		return new HashSet<>(bankSelectionMap.values());
     }
 
-    /**
-	 * Get all banks Same as {@link #getBanks()} but this is safe to remove while
-	 * iterating
+	/**
+	 * Gets all banks on the server that fulfill a certain {@link Predicate}
 	 *
-	 * @see #getBanks()
-	 * @return Copy of collection of all banks
+	 * @return A new {@link HashSet} containing all banks
 	 */
-	public Set<Bank> getBanksCopy() {
-		return Collections.unmodifiableSet(getBanks());
-    }
-
-    public Set<Bank> getBanksCopy(Predicate<? super Bank> filter) {
+    public Set<Bank> getBanks(Predicate<? super Bank> filter) {
 		return Collections.unmodifiableSet(Utils.filter(getBanks(), filter));
 	}
 
@@ -81,8 +74,8 @@ public class BankUtils extends Observable {
 
 	public boolean isUniqueNameIgnoring(String name, String without) {
 		if (without != null)
-			return getBanksCopy(b -> !b.getName().contentEquals(without) && b.getName().contentEquals(name)).isEmpty();
-		return getBanksCopy(b -> b.getName().contentEquals(name)).isEmpty();
+			return getBanks(b -> !b.getName().contentEquals(without) && b.getName().contentEquals(name)).isEmpty();
+		return getBanks(b -> b.getName().contentEquals(name)).isEmpty();
 	}
 
 	public Set<Selection> getOverlappingSelections(Selection sel) {
@@ -90,7 +83,10 @@ public class BankUtils extends Observable {
 	}
 
 	public Set<Selection> getOverlappingSelectionsIgnoring(Selection sel, Selection ignore) {
-		return Utils.filter(bankSelectionMap.keySet(), s -> !s.equals(ignore) && s.overlaps(sel));
+    	Set<Selection> overlappingSelections = Utils.filter(bankSelectionMap.keySet(), s -> s.overlaps(sel));
+    	if (ignore != null)
+    		overlappingSelections.remove(ignore);
+		return overlappingSelections;
 	}
 
 	/**
@@ -145,7 +141,6 @@ public class BankUtils extends Observable {
 			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
 
 		}
-
 		return null;
 	}
 
@@ -191,7 +186,7 @@ public class BankUtils extends Observable {
 	public void removeBank(Bank bank, boolean removeFromDatabase, Callback<Void> callback) {
 		plugin.debug("Removing bank (#" + bank.getID() + ")");
 
-		for (Account account : bank.getAccountsCopy())
+		for (Account account : bank.getAccounts())
 			plugin.getAccountUtils().removeAccount(account, removeFromDatabase);
 
 		bankSelectionMap.remove(bank.getSelection());
@@ -243,7 +238,7 @@ public class BankUtils extends Observable {
 	 * @return The number of accounts owned by the player
 	 */
 	public int getNumberOfBanks(OfflinePlayer player) {
-		return getBanksCopy(b -> b.isOwner(player)).size();
+		return getBanks(b -> b.isOwner(player)).size();
 	}
 
     /**
@@ -265,14 +260,14 @@ public class BankUtils extends Observable {
 		}
 
 		plugin.getDatabase().connect(Callback.of(plugin, result -> {
-					Collection<Bank> banks = getBanksCopy();
-					Collection<Account> accounts = accountUtils.getAccountsCopy();
+					Collection<Bank> banks = getBanks();
+					Collection<Account> accounts = accountUtils.getAccounts();
 
 					Set<Bank> reloadedBanks = new HashSet<>();
 					Set<Account> reloadedAccounts = new HashSet<>();
 
 					for (Bank bank : banks) {
-						for (Account account : bank.getAccountsCopy()) {
+						for (Account account : bank.getAccounts()) {
 							accountUtils.removeAccount(account, false);
 							plugin.debugf("Removed account (#%d)", account.getID());
 						}
@@ -322,9 +317,9 @@ public class BankUtils extends Observable {
 	public Bank lookupBank(String identifier) {
 		try {
 			int id = Integer.parseInt(identifier);
-			return getBanksCopy().stream().filter(b -> b.getID() == id).findFirst().orElse(null);
+			return getBanks().stream().filter(b -> b.getID() == id).findFirst().orElse(null);
 		} catch (NumberFormatException ignored) {}
-		return getBanksCopy().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
+		return getBanks().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
 	}
 
 	/**

@@ -132,7 +132,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 2) {
-            return bankUtils.getBanksCopy().stream()
+            return bankUtils.getBanks().stream()
                     .filter(bank -> bank.isOwner(p)
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))

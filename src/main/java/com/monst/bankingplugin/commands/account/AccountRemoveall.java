@@ -41,7 +41,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
         Set<Account> accounts;
 
         if (args.length == 1) {
-            accounts = accountUtils.getAccountsCopy();
+            accounts = accountUtils.getAccounts();
         } else {
             Map<String, Player> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
                     Collectors.toMap(
@@ -59,7 +59,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
                         owners.add(player);
                 }
             }
-            accounts = accountUtils.getAccountsCopy(a -> owners.contains(a.getOwner()));
+            accounts = accountUtils.getAccounts(a -> owners.contains(a.getOwner()));
         }
 
         if (accounts == null || accounts.isEmpty()) {

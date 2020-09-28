@@ -55,7 +55,7 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
         if (!sender.hasPermission(Permissions.PAY_INTEREST))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
-        return plugin.getBankUtils().getBanksCopy().stream()
+        return plugin.getBankUtils().getBanks().stream()
                 .map(Bank::getName)
                 .filter(name -> !argList.contains(name))
                 .sorted()

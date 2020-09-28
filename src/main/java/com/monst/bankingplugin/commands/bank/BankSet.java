@@ -101,7 +101,7 @@ public class BankSet extends BankCommand.SubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2)
-            return bankUtils.getBanksCopy().stream()
+            return bankUtils.getBanks().stream()
                     .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))

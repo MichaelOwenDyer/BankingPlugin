@@ -98,7 +98,7 @@ public class BankRename extends BankCommand.SubCommand {
             if (args[1].isEmpty() && bank != null)
                 return Collections.singletonList(bank.getName());
 
-            return bankUtils.getBanksCopy().stream()
+            return bankUtils.getBanks().stream()
                     .filter(b -> ((sender instanceof Player && b.isTrusted((Player) sender))
                             || (b.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (b.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))
