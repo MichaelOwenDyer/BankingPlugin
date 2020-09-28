@@ -120,12 +120,12 @@ public class PolygonalSelection extends Selection {
 
 	@Override
 	public Collection<BlockVector3D> getCorners() {
-		List<BlockVector3D> vertices3D = new ArrayList<>();
+		List<BlockVector3D> corners = new ArrayList<>();
 		for (BlockVector2D point : vertices) {
-			vertices3D.add(point.toBlockVector3D(minY));
-			vertices3D.add(point.toBlockVector3D(maxY));
+			corners.add(point.toBlockVector3D(minY));
+			corners.add(point.toBlockVector3D(maxY));
 		}
-		return vertices3D;
+		return corners;
 	}
 
 	@Override
