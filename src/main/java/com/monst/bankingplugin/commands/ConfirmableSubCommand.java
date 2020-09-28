@@ -14,9 +14,13 @@ public interface ConfirmableSubCommand extends Confirmable<String[]> {
 	Map<UUID, BukkitTask> confirmationTimers = new HashMap<>();
 
 	@Override
+	default boolean hasEntry(Player p) {
+		return unconfirmedCommands.containsKey(p.getUniqueId());
+	}
+
+	@Override
 	default boolean hasEntry(Player p, String[] args) {
-		return unconfirmedCommands.containsKey(p.getUniqueId())
-				&& Arrays.equals(args, unconfirmedCommands.get(p.getUniqueId()));
+		return hasEntry(p) && Arrays.equals(args, unconfirmedCommands.get(p.getUniqueId()));
 	}
 
 	@Override
@@ -29,11 +33,16 @@ public interface ConfirmableSubCommand extends Confirmable<String[]> {
 	}
 
 	@Override
-	default void removeEntry(Player p, String[] args) {
+	default void removeEntry(Player p) {
 		UUID uuid = p.getUniqueId();
 		unconfirmedCommands.remove(uuid);
 		Optional.ofNullable(confirmationTimers.get(uuid)).ifPresent(BukkitTask::cancel);
 		confirmationTimers.remove(uuid);
 	}
-	
+
+	@Override
+	default void removeEntry(Player p, String[] args) {
+		removeEntry(p);
+	}
+
 }

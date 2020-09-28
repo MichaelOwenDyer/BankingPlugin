@@ -22,8 +22,6 @@ import java.util.*;
 
 public class AccountInteractListener implements Listener, ConfirmableAccountAction {
 	
-	private static final Map<UUID, Set<Integer>> unconfirmed = new HashMap<>();
-
 	private final BankingPlugin plugin;
 	private final AccountUtils accountUtils;
 
@@ -219,7 +217,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 				p.sendMessage(Messages.MUST_BE_OWNER);
 			else
 				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
-			return !unconfirmed.containsKey(p.getUniqueId());
+			return !hasEntry(p);
 		}
 
 		if ((account.getBalance().signum() > 0 || Config.confirmOnRemove)) {
@@ -242,7 +240,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 				p.sendMessage(Messages.MUST_BE_OWNER);
 			else
 				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER);
-			return !unconfirmed.containsKey(p.getUniqueId());
+			return !hasEntry(p);
 		}
 		if (account.isOwner(newOwner)) {
 			boolean isSelf = Utils.samePlayer(p, newOwner);

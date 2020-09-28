@@ -13,9 +13,13 @@ public interface Confirmable<T> {
         return false;
     }
 
+    boolean hasEntry(Player p);
+
     boolean hasEntry(Player p, T t);
 
     void putEntry(Player p, T t);
+
+    void removeEntry(Player p);
 
     void removeEntry(Player p, T t);
 

@@ -11,8 +11,13 @@ public interface ConfirmableAccountAction extends Confirmable<Integer> {
     Map<UUID, Set<Integer>> unconfirmed = new HashMap<>();
 
     @Override
+    default boolean hasEntry(Player p) {
+        return unconfirmed.containsKey(p.getUniqueId());
+    }
+
+    @Override
     default boolean hasEntry(Player p, Integer id) {
-        return unconfirmed.containsKey(p.getUniqueId()) && unconfirmed.get(p.getUniqueId()).contains(id);
+        return hasEntry(p) && unconfirmed.get(p.getUniqueId()).contains(id);
     }
 
     @Override
@@ -20,6 +25,12 @@ public interface ConfirmableAccountAction extends Confirmable<Integer> {
         Set<Integer> ids = getEntries(p);
         ids.add(id);
         unconfirmed.put(p.getUniqueId(), ids);
+    }
+
+    @Override
+    default void removeEntry(Player p) {
+        unconfirmed.remove(p.getUniqueId());
+        ClickType.removePlayerClickType(p);
     }
 
     @Override
@@ -34,8 +45,7 @@ public interface ConfirmableAccountAction extends Confirmable<Integer> {
     }
 
     default Set<Integer> getEntries(Player p) {
-        return unconfirmed.containsKey(p.getUniqueId()) ?
-                unconfirmed.get(p.getUniqueId()) : new HashSet<>();
+        return hasEntry(p) ? unconfirmed.get(p.getUniqueId()) : new HashSet<>();
     }
 
 }
