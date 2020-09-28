@@ -225,7 +225,7 @@ public class BankUtils extends Observable {
 	 */
 	public static int getBankLimit(Player player) {
 		return (int) Utils.getLimit(player, Permissions.BANK_NO_LIMIT,
-				"bankingplugin.bank.limit.", Config.defaultBankLimit);
+                Config.defaultBankLimit);
 	}
 
 	/**
@@ -233,7 +233,7 @@ public class BankUtils extends Observable {
 	 */
 	public static long getVolumeLimit(Player player) {
 		return Utils.getLimit(player, Permissions.BANK_NO_SIZE_LIMIT,
-				"bankingplugin.bank.size.", Config.maximumBankVolume);
+                Config.maximumBankVolume);
 	}
 
 	/**

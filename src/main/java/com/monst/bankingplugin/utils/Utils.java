@@ -3,9 +3,6 @@ package com.monst.bankingplugin.utils;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.User;
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.TransactionFailedException;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -45,23 +42,24 @@ public class Utils {
 		decimalFormatter.setMaximumFractionDigits(2);
 	}
 
-	public static Location blockifyLocation(Location loc) {
-		return new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-	}
-	
-	public static List<String> getOnlinePlayerNames(BankingPlugin plugin) {
-		return plugin.getServer().getOnlinePlayers().stream()
-				.map(HumanEntity::getName)
-				.sorted()
-				.collect(Collectors.toList());
-	}
-
 	public static boolean isAllowedName(String name) {
 		try {
 			return Config.nameRegex.trim().isEmpty() || Pattern.matches(Config.nameRegex, name);
 		} catch (PatternSyntaxException e) {
 			return true;
 		}
+	}
+
+	public static String removePunctuation(String s, char... exclude) {
+		StringBuilder regex = new StringBuilder("[\\p{Punct}");
+		if (exclude.length > 0) {
+			regex.append("&&[^");
+			for (char c : exclude)
+				regex.append(c);
+			regex.append("]");
+		}
+		regex.append("]");
+		return s.replaceAll(regex.toString(), "");
 	}
 
 	public static String colorize(String s) {
@@ -84,6 +82,10 @@ public class Utils {
 
 	public static String format(BigDecimal bd) {
 		return decimalFormatter.format(bd.setScale(2, RoundingMode.HALF_EVEN));
+	}
+
+	public static Location blockifyLocation(Location loc) {
+		return new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 	}
 
 	/**
@@ -121,26 +123,14 @@ public class Utils {
 		return b.getRelative(BlockFace.DOWN).getType().isSolid() || b.getRelative(BlockFace.DOWN).getType() == Material.WATER;
 	}
 
-	public static String removePunctuation(String s, char... exclude) {
-		StringBuilder regex = new StringBuilder("[\\p{Punct}");
-		if (exclude.length > 0) {
-			regex.append("&&[^");
-			for (char c : exclude)
-				regex.append(c);
-			regex.append("]");
-		}
-		regex.append("]");
-		return s.replaceAll(regex.toString(), "");
-	}
-
 	@SuppressWarnings("deprecation")
 	public static boolean isTransparent(Block block) {
 		return block.getType() == Material.CHEST
-			|| block.getType() == Material.TRAPPED_CHEST
-			|| block.getBlockData() instanceof Slab
-			|| block.getBlockData() instanceof Stairs
-			|| block.getType().isTransparent();
-    }
+				|| block.getType() == Material.TRAPPED_CHEST
+				|| block.getBlockData() instanceof Slab
+				|| block.getBlockData() instanceof Stairs
+				|| block.getType().isTransparent();
+	}
 
 	public static BukkitRunnable bukkitRunnable(Runnable runnable) {
 		return new BukkitRunnable() {
@@ -259,57 +249,6 @@ public class Utils {
 	}
 
 	/**
-     * @param p Player whose held item should be returned
-     * @return the {@link ItemStack} in the player's main hand, or {@code null} if the player isn't holding anything
-	 * in their main hand
-     */
-	@SuppressWarnings("deprecation")
-	public static ItemStack getItemInMainHand(Player p) {
-        if (getMajorVersion() < 9) {
-            if (p.getItemInHand().getType() == Material.AIR)
-                return null;
-            else
-                return p.getItemInHand();
-        }
-        if (p.getInventory().getItemInMainHand().getType() == Material.AIR)
-            return null;
-        else
-            return p.getInventory().getItemInMainHand();
-    }
-
-    /**
-     * @param p Player whose secondary held item should be returned
-     * @return the {@link ItemStack} in the player's off hand, or {@code null} if they player isn't holding anything
-	 * in their off hand or the server version is below 1.9
-     */
-    public static ItemStack getItemInOffHand(Player p) {
-        if (getMajorVersion() < 9)
-            return null;
-        if (p.getInventory().getItemInOffHand().getType() == Material.AIR)
-            return null;
-        return p.getInventory().getItemInOffHand();
-    }
-
-    /**
-     * @param p Player to check
-     * @return Whether the player is holding an axe in one of their hands
-     */
-    public static boolean hasAxeInHand(Player p) {
-        List<String> axes;
-        if (Utils.getMajorVersion() < 13)
-            axes = Arrays.asList("WOOD_AXE", "STONE_AXE", "IRON_AXE", "GOLD_AXE", "DIAMOND_AXE");
-        else 
-            axes = Arrays.asList("WOODEN_AXE", "STONE_AXE", "IRON_AXE", "GOLDEN_AXE", "DIAMOND_AXE");
-
-        ItemStack item = getItemInMainHand(p);
-        if (item == null || !axes.contains(item.getType().toString())) {
-            item = getItemInOffHand(p);
-        }
-
-        return item != null && axes.contains(item.getType().toString());
-    }
-
-	/**
 	 * Get a set of locations of the inventory
 	 * @param ih The inventory holder to get the locations of
 	 * @return A set of 1 or 2 locations
@@ -325,6 +264,12 @@ public class Utils {
 		return chestLocations;
 	}
 
+	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {
+		if (p1 == null || p2 == null)
+			return false;
+		return p1.getUniqueId().equals(p2.getUniqueId());
+	}
+
 	@SuppressWarnings("deprecation")
 	public static OfflinePlayer getPlayer(String name) {
     	OfflinePlayer player = Bukkit.getPlayerExact(name);
@@ -333,14 +278,23 @@ public class Utils {
     	return player.hasPlayedBefore() ? player : null;
 	}
 
-	static long getLimit(Player player, String unlimitedPerm, String permPrefix, long defaultLimit) {
+	public static List<String> getOnlinePlayerNames(BankingPlugin plugin) {
+		return plugin.getServer().getOnlinePlayers().stream()
+				.map(HumanEntity::getName)
+				.sorted()
+				.collect(Collectors.toList());
+	}
+
+	static long getLimit(Player player, String permission, long defaultLimit) {
 		long limit = 0;
 		boolean useDefault = true;
+
+		String permPrefix = permission.replaceAll("\\*", "");
 
 		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
 			if (permInfo.getPermission().startsWith(permPrefix)
 					&& player.hasPermission(permInfo.getPermission())) {
-				if (permInfo.getPermission().equalsIgnoreCase(unlimitedPerm)) {
+				if (permInfo.getPermission().equalsIgnoreCase(permission)) {
 					limit = -1;
 					useDefault = false;
 					break;
@@ -364,12 +318,6 @@ public class Utils {
 		if (limit < -1)
 			limit = -1;
 		return useDefault ? defaultLimit : limit;
-	}
-
-	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {
-    	if (p1 == null || p2 == null)
-    		return false;
-    	return p1.getUniqueId().equals(p2.getUniqueId());
 	}
 
 	@SafeVarargs
@@ -423,6 +371,57 @@ public class Utils {
 		return collection.stream().map(mapper).collect(collector);
 	}
 
+	/**
+	 * @param p Player whose held item should be returned
+	 * @return the {@link ItemStack} in the player's main hand, or {@code null} if the player isn't holding anything
+	 * in their main hand
+	 */
+	@SuppressWarnings("deprecation")
+	public static ItemStack getItemInMainHand(Player p) {
+		if (getMajorVersion() < 9) {
+			if (p.getItemInHand().getType() == Material.AIR)
+				return null;
+			else
+				return p.getItemInHand();
+		}
+		if (p.getInventory().getItemInMainHand().getType() == Material.AIR)
+			return null;
+		else
+			return p.getInventory().getItemInMainHand();
+	}
+
+	/**
+	 * @param p Player whose secondary held item should be returned
+	 * @return the {@link ItemStack} in the player's off hand, or {@code null} if they player isn't holding anything
+	 * in their off hand or the server version is below 1.9
+	 */
+	public static ItemStack getItemInOffHand(Player p) {
+		if (getMajorVersion() < 9)
+			return null;
+		if (p.getInventory().getItemInOffHand().getType() == Material.AIR)
+			return null;
+		return p.getInventory().getItemInOffHand();
+	}
+
+	/**
+	 * @param p Player to check
+	 * @return Whether the player is holding an axe in one of their hands
+	 */
+	public static boolean hasAxeInHand(Player p) {
+		List<String> axes;
+		if (Utils.getMajorVersion() < 13)
+			axes = Arrays.asList("WOOD_AXE", "STONE_AXE", "IRON_AXE", "GOLD_AXE", "DIAMOND_AXE");
+		else
+			axes = Arrays.asList("WOODEN_AXE", "STONE_AXE", "IRON_AXE", "GOLDEN_AXE", "DIAMOND_AXE");
+
+		ItemStack item = getItemInMainHand(p);
+		if (item == null || !axes.contains(item.getType().toString())) {
+			item = getItemInOffHand(p);
+		}
+
+		return item != null && axes.contains(item.getType().toString());
+	}
+
     /**
      * @return The current server version with revision number (e.g. v1_15_R1, v1_16_R2)
      */
@@ -438,11 +437,4 @@ public class Utils {
         return Integer.parseInt(getServerVersion().split("_")[1]);
     }
 
-	public static String[] getVersionMessage() {
-		return new String[] {
-				ChatColor.GREEN + "   __ " + ChatColor.DARK_GREEN + "  __",
-				ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |__)   " + ChatColor.DARK_GREEN + "BankingPlugin" + ChatColor.AQUA + " v" + BankingPlugin.getInstance().getDescription().getVersion(),
-				ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY + "        by monst",
-				"" };
-	}
 }

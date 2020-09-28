@@ -210,7 +210,7 @@ public class AccountUtils extends Observable {
      */
     public int getAccountLimit(Player player) {
     	return (int) Utils.getLimit(player, Permissions.ACCOUNT_NO_LIMIT,
-				"bankingplugin.account.limit.", Config.defaultAccountLimit);
+                Config.defaultAccountLimit);
     }
 
 	public static BigDecimal appraise(Account account) {
