@@ -39,7 +39,7 @@ public class ControlReload extends ControlCommand.SubCommand {
             return true;
         }
 
-        plugin.getBankUtils().reload(true, true,
+        plugin.reload(true, true,
                 Callback.of(plugin, result -> {
                     Collection<Bank> banks = result.getBanks();
                     Collection<Account> accounts = result.getAccounts();

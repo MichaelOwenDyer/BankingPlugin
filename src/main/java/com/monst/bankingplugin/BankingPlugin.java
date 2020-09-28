@@ -152,7 +152,7 @@ public class BankingPlugin extends JavaPlugin {
 		initDatabase();
         registerListeners();
         registerExternalListeners();
-		initializeBanksAndAccounts();
+		initializeBanking();
 
 	}
 
@@ -340,8 +340,8 @@ public class BankingPlugin extends JavaPlugin {
 	/**
 	 * Initializes all banks and accounts stored in the {@link Database}.
 	 */
-	private void initializeBanksAndAccounts() {
-		bankUtils.reload(false, true,
+	private void initializeBanking() {
+		reload(false, true,
                 Callback.of(this, result -> {
                 	Collection<Bank> banks = result.getBanks();
 					Collection<Account> accounts = result.getAccounts();
@@ -366,6 +366,76 @@ public class BankingPlugin extends JavaPlugin {
 					getServer().getPluginManager().disablePlugin(BankingPlugin.this);
 				})
 		);
+	}
+
+	/**
+	 * Reload the plugin
+	 *
+	 * @param reloadConfig        Whether the configuration should also be reloaded
+	 * @param showConsoleMessages Whether messages about the language file should be
+	 *                            shown in the console
+	 * @param callback            Callback that - if succeeded - returns the amount
+	 *                            of accounts that were reloaded (as {@code int})
+	 */
+	public void reload(boolean reloadConfig, boolean showConsoleMessages, Callback<ReloadResult> callback) {
+		debug("Loading banks and accounts from database...");
+
+		if (reloadConfig)
+			getPluginConfig().reload();
+
+		getDatabase().connect(Callback.of(this, result -> {
+					Collection<Bank> banks = bankUtils.getBanks();
+					Collection<Account> accounts = accountUtils.getAccounts();
+
+					Set<Bank> reloadedBanks = new HashSet<>();
+					Set<Account> reloadedAccounts = new HashSet<>();
+
+					for (Bank bank : banks) {
+						for (Account account : bank.getAccounts()) {
+							accountUtils.removeAccount(account, false);
+							debugf("Removed account (#%d)", account.getID());
+						}
+						bankUtils.removeBank(bank, false);
+						debugf("Removed bank (#%d)", bank.getID());
+					}
+
+					getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(this, map -> {
+
+								for (Bank bank : map.keySet()) {
+									bankUtils.addBank(bank, false);
+									reloadedBanks.add(bank);
+									for (Account account : map.get(bank)) {
+										if (account.create(showConsoleMessages)) {
+											accountUtils.addAccount(account, false, account.callUpdateName());
+											reloadedAccounts.add(account);
+										} else
+											debug("Could not re-create account from database! (#" + account.getID() + ")");
+									}
+								}
+
+								if (banks.size() != reloadedBanks.size())
+									debugf("Number of banks before load was %d and is now %d.",
+											banks.size(), reloadedBanks.size());
+								if (accounts.size() != reloadedAccounts.size())
+									debugf("Number of accounts before load was %d and is now %d",
+											accounts.size(), reloadedAccounts.size());
+
+								if (callback != null)
+									callback.callSyncResult(new ReloadResult(reloadedBanks, reloadedAccounts));
+							},
+							callback::callSyncError
+					));
+				},
+				callback::callSyncError
+		));
+	}
+
+	public static class ReloadResult extends Pair<Collection<Bank>, Collection<Account>> {
+		public ReloadResult(Collection<Bank> banks, Collection<Account> accounts) {
+			super(banks, accounts);
+		}
+		public Collection<Bank> getBanks() { return super.getFirst(); }
+		public Collection<Account> getAccounts() { return super.getSecond(); }
 	}
 
 	/**
