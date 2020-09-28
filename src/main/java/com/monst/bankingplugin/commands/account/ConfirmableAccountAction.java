@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.listeners;
+package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Confirmable;

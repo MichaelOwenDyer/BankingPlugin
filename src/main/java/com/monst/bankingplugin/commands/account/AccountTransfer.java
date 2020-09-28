@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountPreTransferEvent;
 import com.monst.bankingplugin.events.account.AccountTransferEvent;
 import com.monst.bankingplugin.utils.ClickType;
@@ -15,10 +16,17 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 
-public class AccountTransfer extends AccountCommand.SubCommand {
+public class AccountTransfer extends AccountCommand.SubCommand implements ConfirmableAccountAction {
+
+    private static AccountTransfer instance;
+
+    public static AccountTransfer getInstance() {
+        return instance;
+    }
 
     AccountTransfer() {
         super("transfer", true);
+        instance = this;
     }
 
     @Override
@@ -69,7 +77,10 @@ public class AccountTransfer extends AccountCommand.SubCommand {
         return Utils.filter(returnCompletions, string -> string.toLowerCase().startsWith(args[1].toLowerCase()));
     }
 
-    public static void transfer(Player p, OfflinePlayer newOwner, Account account) {
+    public void transfer(Player p, OfflinePlayer newOwner, Account account) {
+        if (!confirm(p, newOwner, account))
+            return;
+
         plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of "
                 + newOwner.getName());
 
@@ -89,6 +100,37 @@ public class AccountTransfer extends AccountCommand.SubCommand {
         if (hasDefaultNickname)
             account.setName(account.getDefaultName());
         plugin.getAccountUtils().addAccount(account, true);
+        ClickType.removePlayerClickType(p);
+    }
+
+    private boolean confirm(Player p, OfflinePlayer newOwner, Account account) {
+
+        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
+            if (account.isTrusted(p))
+                p.sendMessage(Messages.MUST_BE_OWNER);
+            else
+                p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER);
+            return !hasEntry(p);
+        }
+
+        if (account.isOwner(newOwner)) {
+            boolean isSelf = Utils.samePlayer(p, newOwner);
+            plugin.debug(p.getName() + " is already owner of account");
+            p.sendMessage(String.format(Messages.ALREADY_OWNER, isSelf ? "You are" : newOwner.getName() + " is", "account"));
+            return false;
+        }
+
+        if (Config.confirmOnTransfer) {
+            if (!isConfirmed(p, account.getID())) {
+                plugin.debug("Needs confirmation");
+                p.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
+                        account.isOwner(p) ? "your account" : account.getOwner().getName() + "'s account", newOwner.getName()));
+                p.sendMessage(Messages.CLICK_TO_CONFIRM);
+                return false;
+            }
+        } else
+            ClickType.removePlayerClickType(p);
+        return true;
     }
 
 }

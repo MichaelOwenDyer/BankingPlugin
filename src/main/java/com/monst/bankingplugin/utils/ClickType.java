@@ -3,7 +3,6 @@ package com.monst.bankingplugin.utils;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
-import com.monst.bankingplugin.listeners.AccountInteractListener;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -84,10 +83,8 @@ public abstract class ClickType<T> {
         Optional.ofNullable(playerTimers.get(uuid)).ifPresent(BukkitTask::cancel);
 
         // Remove ClickType after 15 seconds if player has not clicked a chest
-        playerTimers.put(uuid, Utils.bukkitRunnable(() -> {
-			playerClickTypes.remove(uuid);
-			AccountInteractListener.clearUnconfirmed(player);
-		}).runTaskLater(BankingPlugin.getInstance(), 300));
+        playerTimers.put(uuid, Utils.bukkitRunnable(() -> playerClickTypes.remove(uuid))
+				.runTaskLater(BankingPlugin.getInstance(), 300));
 
     }
 

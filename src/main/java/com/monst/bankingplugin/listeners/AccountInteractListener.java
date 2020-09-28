@@ -20,7 +20,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
-public class AccountInteractListener implements Listener, ConfirmableAccountAction {
+public class AccountInteractListener implements Listener {
 	
 	private final BankingPlugin plugin;
 	private final AccountUtils accountUtils;
@@ -86,9 +86,9 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 
 				case MIGRATE:
 
-					if (clickType.get() == null) {
+					if (clickType.get() == null)
 						AccountMigrate.migratePartOne(p, Objects.requireNonNull(account));
-					} else {
+					else {
 						if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 							p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED);
 							plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
@@ -112,8 +112,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 				case REMOVE:
 
 					Objects.requireNonNull(account);
-					if (confirmRemove(p, account))
-						AccountRemove.remove(p, account);
+					AccountRemove.getInstance().remove(p, account);
 					e.setCancelled(true);
 					break;
 
@@ -138,10 +137,7 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 
 					Objects.requireNonNull(account);
 					OfflinePlayer newOwner = clickType.get();
-					if (confirmTransfer(p, newOwner, account)) {
-						AccountTransfer.transfer(p, newOwner, account);
-						ClickType.removePlayerClickType(p);
-					}
+					AccountTransfer.getInstance().transfer(p, newOwner, account);
 					e.setCancelled(true);
 					break;
 
@@ -209,61 +205,4 @@ public class AccountInteractListener implements Listener, ConfirmableAccountActi
 			}
 		}
 	}
-
-	private boolean confirmRemove(Player p, Account account) {
-
-		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(p)) {
-			if (account.isTrusted(p))
-				p.sendMessage(Messages.MUST_BE_OWNER);
-			else
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVE_OTHER);
-			return !hasEntry(p);
-		}
-
-		if ((account.getBalance().signum() > 0 || Config.confirmOnRemove)) {
-			if (!isConfirmed(p, account.getID())) {
-				plugin.debug("Needs confirmation");
-				if (account.getBalance().signum() > 0) {
-					p.sendMessage(Messages.ACCOUNT_BALANCE_NOT_ZERO);
-				}
-				p.sendMessage(Messages.CLICK_TO_CONFIRM);
-				return false;
-			}
-		} else
-			ClickType.removePlayerClickType(p);
-		return true;
-	}
-
-	private boolean confirmTransfer(Player p, OfflinePlayer newOwner, Account account) {
-		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
-			if (account.isTrusted(p))
-				p.sendMessage(Messages.MUST_BE_OWNER);
-			else
-				p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER);
-			return !hasEntry(p);
-		}
-		if (account.isOwner(newOwner)) {
-			boolean isSelf = Utils.samePlayer(p, newOwner);
-			plugin.debug(p.getName() + " is already owner of account");
-			p.sendMessage(String.format(Messages.ALREADY_OWNER, isSelf ? "You are" : newOwner.getName() + " is", "account"));
-			return false;
-		}
-
-		if (Config.confirmOnTransfer) {
-			if (!isConfirmed(p, account.getID())) {
-				plugin.debug("Needs confirmation");
-				p.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
-						account.isOwner(p) ? "your account" : account.getOwner().getName() + "'s account", newOwner.getName()));
-				p.sendMessage(Messages.CLICK_TO_CONFIRM);
-				return false;
-			}
-		} else
-			ClickType.removePlayerClickType(p);
-		return true;
-	}
-
-	public static void clearUnconfirmed(OfflinePlayer p) {
-		unconfirmed.remove(p.getUniqueId());
-	}
-
 }
