@@ -73,7 +73,6 @@ public class AccountInteractListener implements Listener {
 						AccountCreate.create(p, owner, b);
 					}
 					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
 					break;
 
 				case INFO:
@@ -81,7 +80,6 @@ public class AccountInteractListener implements Listener {
 					Objects.requireNonNull(account);
 					AccountInfo.info(p, account);
 					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
 					break;
 
 				case MIGRATE:
@@ -98,7 +96,6 @@ public class AccountInteractListener implements Listener {
 						}
 						ClickType.removePlayerClickType(p);
 					}
-					e.setCancelled(true);
 					break;
 
 				case RECOVER:
@@ -106,14 +103,12 @@ public class AccountInteractListener implements Listener {
 					Account toRecover = Objects.requireNonNull(clickType.get());
 					AccountRecover.recover(p, b, toRecover);
 					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
 					break;
 
 				case REMOVE:
 
 					Objects.requireNonNull(account);
 					AccountRemove.getInstance().remove(p, account);
-					e.setCancelled(true);
 					break;
 
 				case RENAME:
@@ -122,7 +117,6 @@ public class AccountInteractListener implements Listener {
 					Objects.requireNonNull(account);
 					AccountRename.rename(p, account, newName);
 					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
 					break;
 
 				case SET:
@@ -130,7 +124,6 @@ public class AccountInteractListener implements Listener {
 					SetPair pair = clickType.get();
 					AccountSet.set(p, account, pair.getField(), pair.getValue());
 					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
 					break;
 
 				case TRANSFER:
@@ -138,7 +131,6 @@ public class AccountInteractListener implements Listener {
 					Objects.requireNonNull(account);
 					OfflinePlayer newOwner = clickType.get();
 					AccountTransfer.getInstance().transfer(p, newOwner, account);
-					e.setCancelled(true);
 					break;
 
 				case TRUST:
@@ -147,7 +139,6 @@ public class AccountInteractListener implements Listener {
 					OfflinePlayer playerToTrust = clickType.get();
 					AccountTrust.trust(p, account, playerToTrust);
 					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
 					break;
 
 				case UNTRUST:
@@ -156,10 +147,9 @@ public class AccountInteractListener implements Listener {
 					OfflinePlayer playerToUntrust = clickType.get();
 					AccountUntrust.untrust(p, account, playerToUntrust);
 					ClickType.removePlayerClickType(p);
-					e.setCancelled(true);
 					break;
 			}
-
+			e.setCancelled(true);
 		} else {
 
 			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK))
