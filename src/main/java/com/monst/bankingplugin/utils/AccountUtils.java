@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.utils;
 
-import com.earth2me.essentials.Essentials;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
@@ -17,7 +16,10 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class AccountUtils extends Observable {
@@ -29,6 +31,15 @@ public class AccountUtils extends Observable {
     public AccountUtils(BankingPlugin plugin) {
         this.plugin = plugin;
     }
+
+	/**
+	 * Checks whether there is a account at a given location
+	 * @param location Location to check
+	 * @return Whether there is a account at the given location
+	 */
+	public boolean isAccount(Location location) {
+		return getAccount(location) != null;
+	}
 
     /**
      * Get the account at a given location
@@ -42,18 +53,15 @@ public class AccountUtils extends Observable {
 		return accountLocationMap.get(Utils.blockifyLocation(location));
     }
 
+	/**
+	 * Get the account with a given ID
+	 *
+	 * @param id ID of the account
+	 * @return Account with the given ID or <b>null</b> if no account has that ID
+	 */
     public Account getAccount(int id) {
 		return getAccounts(account -> account.getID() == id).stream().findFirst().orElse(null);
 	}
-
-    /**
-     * Checks whether there is a account at a given location
-     * @param location Location to check
-     * @return Whether there is a account at the given location
-     */
-    public boolean isAccount(Location location) {
-        return getAccount(location) != null;
-    }
 
     /**
      * Gets all accounts on the server.
@@ -78,6 +86,15 @@ public class AccountUtils extends Observable {
 	 */
 	public int getNumberOfAccounts(OfflinePlayer player) {
 		return getAccounts(account -> account.isOwner(player)).size();
+	}
+
+	/**
+	 * Adds and saves an account in the current session. Can also be used to update an already existing account.
+	 * @param account Account to add
+	 * @param addToDatabase Whether the account should also be added to or updated in the database
+	 */
+	public void addAccount(Account account, boolean addToDatabase) {
+		addAccount(account, addToDatabase, null);
 	}
 
 	/**
@@ -122,14 +139,14 @@ public class AccountUtils extends Observable {
         notifyObservers();
     }
 
-    /**
-     * Adds and saves an account in the current session. Can also be used to update an already existing account.
-     * @param account Account to add
-     * @param addToDatabase Whether the account should also be added to or updated in the database
-     */
-    public void addAccount(Account account, boolean addToDatabase) {
-        addAccount(account, addToDatabase, null);
-    }
+	/**
+	 * Remove an account. May not work properly if double chest doesn't exist!
+	 * @param account Account to remove
+	 * @param removeFromDatabase Whether the account should also be removed from the database
+	 */
+	public void removeAccount(Account account, boolean removeFromDatabase) {
+		removeAccount(account, removeFromDatabase, null);
+	}
 
     /** Remove a account. May not work properly if double chest doesn't exist!
      * @param account Account to remove
@@ -165,14 +182,9 @@ public class AccountUtils extends Observable {
         notifyObservers();
     }
 
-    /**
-     * Remove an account. May not work properly if double chest doesn't exist!
-     * @param account Account to remove
-     * @param removeFromDatabase Whether the account should also be removed from the database
-	 */
-    public void removeAccount(Account account, boolean removeFromDatabase) {
-        removeAccount(account, removeFromDatabase, null);
-    }
+	public Set<Account> getInvalidAccounts() {
+		return new HashSet<>(invalidAccounts);
+	}
 
 	public void addInvalidAccount(Account account) {
     	if (account == null)
@@ -188,10 +200,6 @@ public class AccountUtils extends Observable {
 		notifyObservers();
 	}
 
-	public Set<Account> getInvalidAccounts() {
-    	return new HashSet<>(invalidAccounts);
-	}
-
     /**
      * Get the account limits of a player
      * @param player Player, whose account limits should be returned
@@ -202,18 +210,14 @@ public class AccountUtils extends Observable {
                 Config.defaultAccountLimit);
     }
 
-	public static BigDecimal appraise(Account account) {
-    	BankingPlugin plugin = BankingPlugin.getInstance();
-		plugin.debugf("Appraising account... (#%d)", account.getID());
-		Essentials essentials = plugin.getEssentials();
-
+	public BigDecimal appraise(ItemStack[] contents) {
 		BigDecimal sum = BigDecimal.ZERO;
-		for (ItemStack item : account.getInventory(true).getContents()) {
+		for (ItemStack item : contents) {
 			if (item == null)
 				continue;
 			if (Config.blacklist.contains(item.getType().toString()))
 				continue;
-			BigDecimal itemValue = getWorth(essentials, item);
+			BigDecimal itemValue = getWorth(item);
 			if (item.getItemMeta() instanceof BlockStateMeta) {
 				BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
                 if (im.getBlockState() instanceof ShulkerBox) {
@@ -223,7 +227,7 @@ public class AccountUtils extends Observable {
                 			continue;
                 		if (Config.blacklist.contains(innerItem.getType().toString()))
 							continue;
-						BigDecimal innerItemValue = getWorth(essentials, innerItem);
+						BigDecimal innerItemValue = getWorth(innerItem);
 						if (innerItemValue.signum() != 0)
             				innerItemValue = innerItemValue.multiply(BigDecimal.valueOf(innerItem.getAmount()));
 						itemValue = itemValue.add(innerItemValue);
@@ -234,13 +238,11 @@ public class AccountUtils extends Observable {
 				itemValue = itemValue.multiply(BigDecimal.valueOf(item.getAmount()));
 			sum = sum.add(itemValue);
 		}
-		plugin.debug("Appraised account balance: $" + Utils.format(sum) + " (#" + account.getID() + ")");
 		return sum.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
-	private static BigDecimal getWorth(Essentials ess, ItemStack item) {
-		BigDecimal worth = ess.getWorth().getPrice(ess, item);
-		return worth != null ? worth : BigDecimal.ZERO;
+	private BigDecimal getWorth(ItemStack item) {
+		return Utils.nonNull(plugin.getEssentials().getWorth().getPrice(plugin.getEssentials(), item), () -> BigDecimal.ZERO);
 	}
 
 }

@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 
 /**
  * Continuously updates account balances.
- * @see AccountUtils#appraise(Account)
+ * @see Account#calculateValue()
  */
 public class AccountBalanceListener implements Listener {
 	
@@ -43,11 +43,14 @@ public class AccountBalanceListener implements Listener {
 		if (account == null)
 			return;
 
-		BigDecimal valueOnClose = AccountUtils.appraise(account);
+		BigDecimal valueOnClose = account.calculateValue();
 		BigDecimal difference = valueOnClose.subtract(account.getBalance());
 
 		if (difference.signum() == 0)
 			return;
+
+		plugin.debugf("Appraised account balance: $%s, diff: $%s (#%d)",
+				Utils.format(valueOnClose), Utils.format(difference), account.getID());
 
 		Player executor = (Player) e.getPlayer();
 		executor.sendMessage(String.format(difference.signum() > 0 ? Messages.ACCOUNT_DEPOSIT : Messages.ACCOUNT_WITHDRAWAL,

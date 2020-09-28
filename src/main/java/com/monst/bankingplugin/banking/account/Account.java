@@ -6,7 +6,6 @@ import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
-import com.monst.bankingplugin.utils.AccountUtils;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Nameable;
 import com.monst.bankingplugin.utils.Utils;
@@ -155,7 +154,7 @@ public class Account extends Ownable {
 			return false;
 		}
 
-		final BigDecimal checkedBalance = AccountUtils.appraise(this);
+		final BigDecimal checkedBalance = calculateValue();
 		final int diff = checkedBalance.compareTo(getBalance());
 		if (diff > 0) {
 			if (getBalance().signum() == 0)
@@ -205,7 +204,7 @@ public class Account extends Ownable {
 	 * The balance will always be positive.
 	 *
 	 * @return the current account balance
-	 * @see AccountUtils#appraise(Account)
+	 * @see #calculateValue()
 	 */
 	public BigDecimal getBalance() {
 		return balance;
@@ -239,7 +238,7 @@ public class Account extends Ownable {
 	 * Saves the current balance of this account into the previous balance.
 	 * Used only at interest payout events.
 	 *
-	 * @see AccountUtils#appraise(Account)
+	 * @see #calculateValue()
 	 * @see com.monst.bankingplugin.listeners.InterestEventListener
 	 */
 	public void updatePrevBalance() {
@@ -414,6 +413,15 @@ public class Account extends Ownable {
 	 */
 	public void clearChestName() {
 		setChestName("");
+	}
+
+	/**
+	 * Calculates the value of the inventory contents of this account. This does not update the balance.
+	 * @return the current value of the items inside this account's inventory
+	 */
+	public BigDecimal calculateValue() {
+		plugin.debugf("Appraising account... (#%d)", getID());
+		return plugin.getAccountUtils().appraise(getInventory(true).getContents());
 	}
 
 	@Override
