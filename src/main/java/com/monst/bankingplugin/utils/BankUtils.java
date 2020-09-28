@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.Selection;
@@ -74,10 +73,10 @@ public class BankUtils extends Observable {
 	}
 
 	/**
-	 * Get the number of accounts owned by a certain player
+	 * Get the number of banks owned by a certain player
 	 *
-	 * @param player Player whose accounts should be counted
-	 * @return The number of accounts owned by the player
+	 * @param player Player whose banks should be counted
+	 * @return The number of banks owned by the player
 	 */
 	public int getNumberOfBanks(OfflinePlayer player) {
 		return getBanks(b -> b.isOwner(player)).size();
@@ -136,8 +135,7 @@ public class BankUtils extends Observable {
 	public void removeBank(Bank bank, boolean removeFromDatabase, Callback<Void> callback) {
 		plugin.debug("Removing bank (#" + bank.getID() + ")");
 
-		for (Account account : bank.getAccounts())
-			plugin.getAccountUtils().removeAccount(account, removeFromDatabase);
+		bank.getAccounts().forEach(account -> plugin.getAccountUtils().removeAccount(account, removeFromDatabase));
 
 		bankSelectionMap.remove(bank.getSelection());
 		plugin.getBankUtils().notifyObservers();
