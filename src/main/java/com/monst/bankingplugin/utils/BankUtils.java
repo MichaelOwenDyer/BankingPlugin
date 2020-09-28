@@ -63,7 +63,7 @@ public class BankUtils extends Observable {
 	 * @return A new {@link HashSet} containing all banks
 	 */
     public Set<Bank> getBanks(Predicate<? super Bank> filter) {
-		return Collections.unmodifiableSet(Utils.filter(getBanks(), filter));
+		return Utils.filter(getBanks(), filter);
 	}
 
 	public boolean isUniqueName(String name) {

@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -61,7 +62,7 @@ public abstract class Ownable extends Observable implements Nameable {
 	 */
 	public Set<OfflinePlayer> getCoowners() {
 		coowners.removeIf(Objects::isNull);
-		return Collections.unmodifiableSet(coowners);
+		return new HashSet<>(coowners);
 	}
 
 	/**
@@ -71,7 +72,7 @@ public abstract class Ownable extends Observable implements Nameable {
 	public Set<OfflinePlayer> getTrustedPlayers() {
 		if (owner == null)
 			return getCoowners();
-		return Collections.unmodifiableSet(Utils.mergeCollections(Collections.singleton(getOwner()), getCoowners()));
+		return Utils.mergeCollections(Collections.singleton(getOwner()), getCoowners());
 	}
 
 	/**

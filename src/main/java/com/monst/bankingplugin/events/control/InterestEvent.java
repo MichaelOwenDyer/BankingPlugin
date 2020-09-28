@@ -6,7 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class InterestEvent extends ControlEvent implements Cancellable {
@@ -29,7 +29,7 @@ public class InterestEvent extends ControlEvent implements Cancellable {
 
 	public InterestEvent(BankingPlugin plugin, CommandSender sender, Set<Bank> banks) {
 		super(plugin, sender);
-		this.banks = Collections.unmodifiableSet(banks);
+		this.banks = new HashSet<>(banks);
 	}
 
 	public Set<Bank> getBanks() {

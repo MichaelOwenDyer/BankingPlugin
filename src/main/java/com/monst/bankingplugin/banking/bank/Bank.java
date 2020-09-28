@@ -129,7 +129,7 @@ public class Bank extends Ownable {
 	 * @return a {@link Set} containing the filtered accounts
 	 */
 	public Set<Account> getAccounts(Predicate<? super Account> filter) {
-		return Collections.unmodifiableSet(Utils.filter(getAccounts(), filter));
+		return Utils.filter(getAccounts(), filter);
 	}
 
 	/**

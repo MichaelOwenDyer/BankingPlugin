@@ -67,7 +67,7 @@ public class AccountUtils extends Observable {
     }
 
     public Set<Account> getAccounts(Predicate<? super Account> filter) {
-		return Collections.unmodifiableSet(Utils.filter(getAccounts(), filter));
+		return Utils.filter(getAccounts(), filter);
     }
 
 	/**
