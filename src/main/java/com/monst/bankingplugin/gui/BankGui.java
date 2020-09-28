@@ -140,8 +140,39 @@ public class BankGui extends SinglePageGui<Bank> {
 						Utils.format(guiSubject.getAccounts().isEmpty()
 								? BigDecimal.ZERO
 								: guiSubject.getTotalValue().divide(BigDecimal.valueOf(guiSubject.getAccounts().size()), RoundingMode.HALF_EVEN)),
-				"Equality score: " + BankUtils.getEqualityLore(guiSubject)
+				"Equality score: " + getEqualityLore(guiSubject)
 		);
+	}
+
+	static String getEqualityLore(Bank bank) {
+		double gini = 1 - BankUtils.getGiniCoefficient(bank);
+		ChatColor color;
+		String assessment = "";
+		switch ((int) (gini * 5)) {
+			case 0:
+				color = ChatColor.DARK_RED;
+				assessment = "(Very Poor)";
+				break;
+			case 1:
+				color = ChatColor.RED;
+				assessment = "(Poor)";
+				break;
+			case 2:
+				color = ChatColor.YELLOW;
+				assessment = "(Good)";
+				break;
+			case 3:
+				color = ChatColor.GREEN;
+				assessment = "(Very Good)";
+				break;
+			case 4: case 5:
+				color = ChatColor.DARK_GREEN;
+				assessment = "(Excellent)";
+				break;
+			default:
+				color = ChatColor.GRAY;
+		}
+		return "" + color + Math.round(gini * 100) + "% " + assessment;
 	}
 
 	private List<String> getCreationLore() {

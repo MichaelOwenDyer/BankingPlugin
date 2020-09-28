@@ -306,8 +306,7 @@ public class Bank extends Ownable {
 		info.append(ChatColor.GRAY + "Accounts: " + ChatColor.AQUA + getAccounts().size());
 		info.append(ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
 		info.append(ChatColor.GRAY + "Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().divide(BigDecimal.valueOf(getAccounts().size()), BigDecimal.ROUND_HALF_EVEN)));
-		info.append(ChatColor.GRAY + "Equality score: ");
-		info.append(BankUtils.getEqualityLore(this));
+		info.append(ChatColor.GRAY + "Equality score: " + BankUtils.getGiniCoefficient(this));
 		info.append(ChatColor.GRAY + "Location: " + ChatColor.AQUA + getSelection().getCoordinates());
 
 		return info.toString();
@@ -320,7 +319,7 @@ public class Bank extends Ownable {
 				+ "Owner: " + (isPlayerBank() ? getOwner().getName() : "ADMIN") + ", "
 				+ "Number of accounts: " + getAccounts().size() + ", "
 				+ "Total value: " + Utils.format(getTotalValue()) + ", "
-				+ "Equality score: " + BankUtils.getEqualityLore(this) + ", "
+				+ "Equality score: " + BankUtils.getGiniCoefficient(this) + ", "
 				+ "Selection type: " + getSelection().getType() + ", "
 				+ "Location: " + getSelection().getCoordinates();
 	}

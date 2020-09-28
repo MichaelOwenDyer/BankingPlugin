@@ -5,7 +5,6 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.Selection;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -48,6 +47,14 @@ public class BankUtils extends Observable {
 		return bankSelectionMap.get(selection);
 	}
 
+	public Bank lookupBank(String identifier) {
+		try {
+			int id = Integer.parseInt(identifier);
+			return getBanks().stream().filter(b -> b.getID() == id).findFirst().orElse(null);
+		} catch (NumberFormatException ignored) {}
+		return getBanks().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
+	}
+
     /**
 	 * Gets all banks on the server
 	 *
@@ -66,25 +73,24 @@ public class BankUtils extends Observable {
 		return Utils.filter(getBanks(), filter);
 	}
 
-	public boolean isUniqueName(String name) {
-		return isUniqueNameIgnoring(name, null);
+	/**
+	 * Get the number of accounts owned by a certain player
+	 *
+	 * @param player Player whose accounts should be counted
+	 * @return The number of accounts owned by the player
+	 */
+	public int getNumberOfBanks(OfflinePlayer player) {
+		return getBanks(b -> b.isOwner(player)).size();
 	}
 
-	public boolean isUniqueNameIgnoring(String name, String without) {
-		if (without != null)
-			return getBanks(b -> !b.getName().contentEquals(without) && b.getName().contentEquals(name)).isEmpty();
-		return getBanks(b -> b.getName().contentEquals(name)).isEmpty();
-	}
-
-	public Set<Selection> getOverlappingSelections(Selection sel) {
-		return getOverlappingSelectionsIgnoring(sel, null);
-	}
-
-	public Set<Selection> getOverlappingSelectionsIgnoring(Selection sel, Selection ignore) {
-    	Set<Selection> overlappingSelections = Utils.filter(bankSelectionMap.keySet(), s -> s.overlaps(sel));
-    	if (ignore != null)
-    		overlappingSelections.remove(ignore);
-		return overlappingSelections;
+	/**
+	 * Add a bank
+	 *
+	 * @param bank          Bank to add
+	 * @param addToDatabase Whether the bank should also be added to the database
+	 */
+	public void addBank(Bank bank, boolean addToDatabase) {
+		addBank(bank, addToDatabase, null);
 	}
 
     /**
@@ -108,15 +114,16 @@ public class BankUtils extends Observable {
 
     }
 
-    /**
-	 * Add a bank
-	 * 
-	 * @param bank          Bank to add
-	 * @param addToDatabase Whether the bank should also be added to the database
+	/**
+	 * Remove an bank. May not work properly if double chest doesn't exist!
+	 *
+	 * @param bank               Bank to remove
+	 * @param removeFromDatabase Whether the bank should also be removed from the
+	 *                           database
 	 */
-	public void addBank(Bank bank, boolean addToDatabase) {
-		addBank(bank, addToDatabase, null);
-    }
+	public void removeBank(Bank bank, boolean removeFromDatabase) {
+		removeBank(bank, removeFromDatabase, null);
+	}
 
 	/**
 	 * Remove a bank. May not work properly if double chest doesn't exist!
@@ -143,19 +150,25 @@ public class BankUtils extends Observable {
 			callback.callSyncResult(null);
     }
 
-    /**
-	 * Remove an bank. May not work properly if double chest doesn't exist!
-	 * 
-	 * @param bank               Bank to remove
-	 * @param removeFromDatabase Whether the bank should also be removed from the
-	 *                           database
-	 */
-	public void removeBank(Bank bank, boolean removeFromDatabase) {
-		removeBank(bank, removeFromDatabase, null);
-    }
+	public boolean isUniqueName(String name) {
+		return isUniqueNameIgnoring(name, null);
+	}
 
-	public void removeBanks(Collection<Bank> banks, boolean removeFromDatabase) {
-		banks.forEach(bank -> removeBank(bank, removeFromDatabase));
+	public boolean isUniqueNameIgnoring(String name, String without) {
+		if (without != null)
+			return getBanks(b -> !b.getName().contentEquals(without) && b.getName().contentEquals(name)).isEmpty();
+		return getBanks(b -> b.getName().contentEquals(name)).isEmpty();
+	}
+
+	public Set<Selection> getOverlappingSelections(Selection sel) {
+		return getOverlappingSelectionsIgnoring(sel, null);
+	}
+
+	public Set<Selection> getOverlappingSelectionsIgnoring(Selection sel, Selection ignore) {
+		Set<Selection> overlappingSelections = Utils.filter(bankSelectionMap.keySet(), s -> s.overlaps(sel));
+		if (ignore != null)
+			overlappingSelections.remove(ignore);
+		return overlappingSelections;
 	}
 
 	/**
@@ -172,16 +185,6 @@ public class BankUtils extends Observable {
 	public static long getVolumeLimit(Player player) {
 		return Utils.getLimit(player, Permissions.BANK_NO_SIZE_LIMIT,
                 Config.maximumBankVolume);
-	}
-
-	/**
-	 * Get the number of accounts owned by a certain player
-	 * 
-	 * @param player Player whose accounts should be counted
-	 * @return The number of accounts owned by the player
-	 */
-	public int getNumberOfBanks(OfflinePlayer player) {
-		return getBanks(b -> b.isOwner(player)).size();
 	}
 
     /**
@@ -257,14 +260,6 @@ public class BankUtils extends Observable {
 		public Collection<Account> getAccounts() { return super.getSecond(); }
 	}
 
-	public Bank lookupBank(String identifier) {
-		try {
-			int id = Integer.parseInt(identifier);
-			return getBanks().stream().filter(b -> b.getID() == id).findFirst().orElse(null);
-		} catch (NumberFormatException ignored) {}
-		return getBanks().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
-	}
-
 	/**
 	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
 	 * inequality among all n accounts at the bank.
@@ -292,36 +287,5 @@ public class BankUtils extends Observable {
 		BigDecimal leftSide = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
 		BigDecimal rightSide = BigDecimal.valueOf((orderedValues.size() + 1) / orderedValues.size());
 		return leftSide.subtract(rightSide).setScale(2, RoundingMode.HALF_EVEN).doubleValue();
-	}
-
-	public static String getEqualityLore(Bank bank) {
-		double gini = 1 - getGiniCoefficient(bank);
-		ChatColor color;
-		String assessment = "";
-		switch ((int) (gini * 5)) {
-			case 0:
-				color = ChatColor.DARK_RED;
-				assessment = "(Very Poor)";
-				break;
-			case 1:
-				color = ChatColor.RED;
-				assessment = "(Poor)";
-				break;
-			case 2:
-				color = ChatColor.YELLOW;
-				assessment = "(Good)";
-				break;
-			case 3:
-				color = ChatColor.GREEN;
-				assessment = "(Very Good)";
-				break;
-			case 4: case 5:
-				color = ChatColor.DARK_GREEN;
-				assessment = "(Excellent)";
-				break;
-			default:
-				color = ChatColor.GRAY;
-		}
-		return "" + color + Math.round(gini * 100) + "% " + assessment;
 	}
 }

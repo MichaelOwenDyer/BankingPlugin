@@ -53,7 +53,7 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
             return true;
         }
 
-        bankUtils.removeBanks(banks, true);
+        banks.forEach(bank -> bankUtils.removeBank(bank, true));
         plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
         sender.sendMessage(String.format(Messages.BANKS_REMOVED, banks.size(), banks.size() == 1 ? "" : "s", affectedAccounts, affectedAccounts == 1 ? "" : "s"));
         for (Bank bank : banks) {
