@@ -3,7 +3,6 @@ package com.monst.bankingplugin.utils;
 public class Permissions {
 
 	public static final String ACCOUNT_CREATE = "bankingplugin.account.create";
-	public static final String ACCOUNT_CREATE_OTHER = "bankingplugin.account.create.other";
 	public static final String ACCOUNT_CREATE_PROTECTED = "bankingplugin.account.create.protected";
 	public static final String ACCOUNT_TRUST = "bankingplugin.account.trust";
 	public static final String ACCOUNT_TRUST_OTHER = "bankingplugin.account.trust.other";

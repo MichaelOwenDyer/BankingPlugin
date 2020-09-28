@@ -68,10 +68,8 @@ public class AccountInteractListener implements Listener {
 					if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 						p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
 						plugin.debug(p.getName() + " does not have permission to create an account on a protected chest.");
-					} else {
-						OfflinePlayer owner = clickType.get();
-						AccountCreate.create(p, owner, b);
-					}
+					} else
+						AccountCreate.create(p, b);
 					ClickType.removePlayerClickType(p);
 					break;
 

@@ -136,7 +136,6 @@ public class Messages {
 	public static final String NO_PERMISSION_ACCOUNT_TRANSFER_OTHER = NO_PERMISSION + "transfer ownership of another player's account.";
 	public static final String NO_PERMISSION_ACCOUNT_EXTEND_OTHER = NO_PERMISSION + "extend someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_SET = NO_PERMISSION + "configure internal account values.";
-	public static final String NO_PERMISSION_ACCOUNT_CREATE_OTHER = NO_PERMISSION + "create an account in someone else's name.";
 	public static final String NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED = NO_PERMISSION + "extend a protected account chest.";
 	
 	public static final String NO_PERMISSION_BANK_CREATE = NO_PERMISSION + "create a bank.";

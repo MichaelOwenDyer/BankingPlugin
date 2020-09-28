@@ -99,8 +99,8 @@ public abstract class ClickType<T> {
 		CREATE, INFO, MIGRATE, RECOVER, REMOVE, RENAME, SET, TRANSFER, TRUST, UNTRUST
     }
 
-    public static CreateClickType create(OfflinePlayer newOwner) {
-    	return new CreateClickType(newOwner);
+    public static CreateClickType create() {
+    	return new CreateClickType();
 	}
 
 	public static InfoClickType info() {
@@ -139,9 +139,9 @@ public abstract class ClickType<T> {
 		return new UntrustClickType(toUntrust);
 	}
 
-	private static class CreateClickType extends ClickType<OfflinePlayer> {
-		private CreateClickType(OfflinePlayer owner) {
-			super(EClickType.CREATE, owner);
+	private static class CreateClickType extends ClickType<Void> {
+		private CreateClickType() {
+			super(EClickType.CREATE, null);
 		}
 	}
 
