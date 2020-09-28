@@ -63,7 +63,7 @@ public class BankGui extends SinglePageGui<Bank> {
 			case 9:
 				return createSlotItem(Material.ENCHANTED_BOOK, "Account Creation", getCreationLore());
 			case 10:
-				return createSlotItem(Material.NETHER_STAR, "Multipliers", Utils.getMultiplierLore(guiSubject));
+				return createSlotItem(Material.NETHER_STAR, "Multipliers", getMultiplierLore(guiSubject));
 			case 11:
 				return createSlotItem(Material.IRON_BARS, "Balance Restrictions", getBalanceRestrictionLore());
 			case 12:

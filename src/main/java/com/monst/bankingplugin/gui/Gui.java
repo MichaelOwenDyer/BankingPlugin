@@ -1,6 +1,9 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -14,14 +17,15 @@ import org.bukkit.util.ChatPaginator;
 import org.ipvp.canvas.Menu;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class Gui<T> {
+
+	enum GuiType {
+		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY
+	}
 
 	static BankingPlugin plugin = BankingPlugin.getInstance();
 
@@ -69,6 +73,33 @@ public abstract class Gui<T> {
 		return this;
 	}
 
+	void shortenGuiChain() {
+		shortenGuiChain(prevGui, EnumSet.of(getType()));
+	}
+
+	/**
+	 * Descends down the list of previous open Guis, and severs the link when it
+	 * finds a Gui of a type it has seen before. This prevents the Gui chain
+	 * from becoming too long and unwieldy.
+	 */
+	private void shortenGuiChain(Gui<?> gui, EnumSet<GuiType> types) {
+		if (gui == null)
+			return;
+		if (!types.contains(gui.getType())) {
+			types.add(gui.getType());
+			shortenGuiChain(gui.prevGui, types);
+		} else
+			gui.prevGui = null;
+	}
+
+	boolean isInForeground() {
+		return inForeground;
+	}
+
+	boolean isLinked() {
+		return prevGui != null;
+	}
+
 	/**
 	 * Create a specialized player head {@link ItemStack} to be placed in the Gui.
 	 * @param owner the {@link OfflinePlayer} whose head should be used
@@ -106,33 +137,6 @@ public abstract class Gui<T> {
 		return item;
 	}
 
-	void shortenGuiChain() {
-		shortenGuiChain(prevGui, EnumSet.of(getType()));
-	}
-
-	/**
-	 * Descends down the list of previous open Guis, and severs the link when it
-	 * finds a Gui of a type it has seen before. This prevents the Gui chain
-	 * from becoming too long and unwieldy.
-	 */
-	private void shortenGuiChain(Gui<?> gui, EnumSet<GuiType> types) {
-		if (gui == null)
-			return;
-		if (!types.contains(gui.getType())) {
-			types.add(gui.getType());
-			shortenGuiChain(gui.prevGui, types);
-		} else
-			gui.prevGui = null;
-	}
-
-	boolean isInForeground() {
-		return inForeground;
-	}
-
-	boolean isLinked() {
-		return prevGui != null;
-	}
-
 	static List<String> wordWrapAll(List<String> lore) {
 		return wordWrapAll(30, lore.stream());
 	}
@@ -156,7 +160,81 @@ public abstract class Gui<T> {
 				.collect(Collectors.toList());
 	}
 
-	enum GuiType {
-		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY
+	static List<String> getMultiplierLore(Bank bank) {
+		return getMultiplierLore(bank.get(BankField.MULTIPLIERS), -1);
+	}
+
+	static List<String> getMultiplierLore(Account account) {
+		return getMultiplierLore(account.getBank().get(BankField.MULTIPLIERS), account.getStatus().getMultiplierStage());
+	}
+
+	private static List<String> getMultiplierLore(List<Integer> multipliers, int highlightStage) {
+
+		if (multipliers.isEmpty())
+			return Collections.singletonList(ChatColor.GREEN + "1x");
+
+		List<List<Integer>> stackedMultipliers = Utils.stackList(multipliers);
+
+		int stage = -1;
+		if (highlightStage != -1)
+			for (List<Integer> level : stackedMultipliers) {
+				stage++;
+				if (highlightStage - level.size() < 0)
+					break;
+				else
+					highlightStage -= level.size();
+			}
+
+		List<String> lore = new ArrayList<>();
+
+		final int listSize = 5;
+		int lower = 0;
+		int upper = stackedMultipliers.size();
+
+		if (stage != -1 && stackedMultipliers.size() > listSize) {
+			lower = stage - (listSize / 2);
+			upper = stage + (listSize / 2) + 1;
+			while (lower < 0) {
+				lower++;
+				upper++;
+			}
+			while (upper > stackedMultipliers.size()) {
+				lower--;
+				upper--;
+			}
+
+			if (lower > 0)
+				lore.add("...");
+		}
+
+		for (int i = lower; i < upper; i++) {
+			StringBuilder number = new StringBuilder("" + ChatColor.GOLD + (i == stage ? ChatColor.BOLD : ""));
+
+			number.append(" - ").append(stackedMultipliers.get(i).get(0)).append("x" + ChatColor.DARK_GRAY);
+
+			int levelSize = stackedMultipliers.get(i).size();
+			if (levelSize > 1) {
+				if (stage == -1) {
+					number.append(" (" + ChatColor.GRAY + "x" + ChatColor.AQUA + levelSize + ChatColor.DARK_GRAY + ")");
+				} else if (i < stage) {
+					number.append(" (" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
+				} else if (i > stage) {
+					number.append(" (" + ChatColor.RED + "0" + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
+				} else {
+					ChatColor color;
+					if (highlightStage * 3 >= levelSize * 2)
+						color = ChatColor.GREEN;
+					else if (highlightStage * 3 >= levelSize)
+						color = ChatColor.GOLD;
+					else
+						color = ChatColor.RED;
+					number.append(" (" + color + highlightStage + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
+				}
+			}
+			lore.add(number.toString());
+		}
+		if (upper < stackedMultipliers.size())
+			lore.add("...");
+		return lore;
 	}
 }

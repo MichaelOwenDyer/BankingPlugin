@@ -59,7 +59,7 @@ public class AccountGui extends SinglePageGui<Account> {
 				return createSlotItem(Material.GOLD_INGOT, "Account Standing", NO_PERMISSION);
 			case 4:
 				if (isTrusted)
-					return createSlotItem(Material.NETHER_STAR, "Multiplier Status", Utils.getMultiplierLore(guiSubject));
+					return createSlotItem(Material.NETHER_STAR, "Multiplier Status", getMultiplierLore(guiSubject));
 				return createSlotItem(Material.NETHER_STAR, "Multiplier Status", NO_PERMISSION);
 			case 5:
 				if (isTrusted)
