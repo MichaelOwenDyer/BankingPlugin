@@ -47,7 +47,7 @@ public class AccountRecoveryGui extends MultiPageGui<Collection<Account>> {
 
     private List<String> getRecoveryLore(Account account) {
         String worldName = account.getLocation().getWorld() == null ? "" : " in \"" + account.getLocation().getWorld().getName() + "\"";
-        return Utils.wordWrapAll(40,
+        return wordWrapAll(40,
                 "Account ID: " + ChatColor.DARK_GRAY + account.getID(),
                 "Owner: " + account.getOwnerDisplayName(),
                 "Location: " + ChatColor.AQUA + account.getCoordinates() + worldName,

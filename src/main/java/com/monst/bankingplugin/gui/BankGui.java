@@ -128,7 +128,7 @@ public class BankGui extends SinglePageGui<Bank> {
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to bank.");
-		return Utils.wordWrapAll(45, lore);
+		return wordWrapAll(45, lore);
 	}
 
 	private List<String> getStatisticsLore() {
@@ -165,7 +165,7 @@ public class BankGui extends SinglePageGui<Bank> {
 			lore.add("Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
 					+ " continue " + ChatColor.GRAY + "to be paid out when the account balance is low.");
 		}
-		return Utils.wordWrapAll(38, lore);
+		return wordWrapAll(38, lore);
 	}
 
 	private List<String> getOfflinePayoutsLore() {
@@ -192,12 +192,12 @@ public class BankGui extends SinglePageGui<Bank> {
 					: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY
 					+ String.format(" time%s", beforeReset == 1 ? "" : "s")) + ".");
 		}
-		return Utils.wordWrapAll(lore);
+		return wordWrapAll(lore);
 	}
 
 	private List<String> getInterestRateLore() {
 		double interestRate = guiSubject.get(BankField.INTEREST_RATE);
-		return Utils.wordWrapAll(
+		return wordWrapAll(
 			"" + ChatColor.GREEN + String.format("%,.1f", interestRate * 100) + "%"
 		);
 	}
@@ -217,12 +217,12 @@ public class BankGui extends SinglePageGui<Bank> {
 					: ChatColor.RED + "must be online")
 						+ ChatColor.GRAY + " for these cycles to be counted toward the delay.");
 		}
-		return Utils.wordWrapAll(lore);
+		return wordWrapAll(lore);
 	}
 
 	private List<String> getWithdrawalPolicyLore() {
 		int withdrawalDecrement = guiSubject.get(BankField.WITHDRAWAL_MULTIPLIER_DECREMENT);
-		return Utils.wordWrapAll(
+		return wordWrapAll(
 				"Account multipliers will " + (withdrawalDecrement == 0
 						? ChatColor.GREEN + "not be affected on" + ChatColor.GRAY
 						: "decrease by " + ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY
@@ -232,7 +232,7 @@ public class BankGui extends SinglePageGui<Bank> {
 
 	private List<String> getAccountLimitLore() {
 		int accountLimit = guiSubject.get(BankField.PLAYER_BANK_ACCOUNT_LIMIT);
-		return Utils.wordWrapAll(
+		return wordWrapAll(
 				(accountLimit == 0
 						? "Account creation is currently " + ChatColor.RED + "disabled" + ChatColor.GRAY
 						: "Players may create " + (accountLimit > 0
@@ -251,6 +251,6 @@ public class BankGui extends SinglePageGui<Bank> {
 				lore.add(ChatColor.GOLD + " - " + time.toString());
 		} else
 			lore.add("Accounts will not generate interest.");
-		return Utils.wordWrapAll(lore);
+		return wordWrapAll(lore);
 	}
 }

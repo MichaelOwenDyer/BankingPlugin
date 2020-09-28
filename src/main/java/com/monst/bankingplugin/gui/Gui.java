@@ -10,12 +10,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.util.ChatPaginator;
 import org.ipvp.canvas.Menu;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class Gui<T> {
 
@@ -127,6 +131,29 @@ public abstract class Gui<T> {
 
 	boolean isLinked() {
 		return prevGui != null;
+	}
+
+	static List<String> wordWrapAll(List<String> lore) {
+		return wordWrapAll(30, lore.stream());
+	}
+
+	static List<String> wordWrapAll(int lineLength, List<String> lore) {
+		return wordWrapAll(lineLength, lore.stream());
+	}
+
+	static List<String> wordWrapAll(String... args) {
+		return wordWrapAll(30, Arrays.stream(args));
+	}
+
+	static List<String> wordWrapAll(int lineLength, String... args) {
+		return wordWrapAll(lineLength, Arrays.stream(args));
+	}
+
+	static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
+		return lines.map(s -> ChatPaginator.wordWrap(s, lineLength))
+				.flatMap(Arrays::stream)
+				.map(s -> s.replace("" + ChatColor.WHITE, ""))
+				.collect(Collectors.toList());
 	}
 
 	enum GuiType {

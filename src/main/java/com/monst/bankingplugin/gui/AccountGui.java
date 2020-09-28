@@ -111,12 +111,12 @@ public class AccountGui extends SinglePageGui<Account> {
 		lore.add("Location: " + ChatColor.AQUA + "(" + guiSubject.getCoordinates() + ")");
 		if (canTP)
 			lore.add("Click to teleport to account.");
-		return Utils.wordWrapAll(60, lore);
+		return wordWrapAll(60, lore);
 	}
 
 	private List<String> getBankInfoLore() {
 		Bank bank = guiSubject.getBank();
-		return Utils.wordWrapAll(55,
+		return wordWrapAll(55,
 				"Name: \"" + ChatColor.RED + bank.getColorizedName() + ChatColor.GRAY + "\"",
 				"Owner: " + ChatColor.GOLD + bank.getOwnerDisplayName(),
 				"Co-owners: " + (bank.getCoowners().isEmpty() ?
@@ -156,7 +156,7 @@ public class AccountGui extends SinglePageGui<Account> {
 		int remainingOffline = status.getRemainingOfflinePayouts();
 		int untilReset = status.getRemainingOfflinePayoutsUntilReset();
 		int offlineDecrement = guiSubject.getBank().get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
-		return Utils.wordWrapAll(
+		return wordWrapAll(
 				(delay == 0 ?
 						"This account will generate interest in the next payout cycle." :
 						"This account will begin generating interest in " + ChatColor.AQUA + delay + ChatColor.GRAY

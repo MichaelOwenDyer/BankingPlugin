@@ -22,7 +22,6 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.ChatPaginator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,7 +34,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Utils {
 
@@ -144,33 +142,11 @@ public class Utils {
 			|| block.getType().isTransparent();
     }
 
-	public static List<String> wordWrapAll(List<String> lore) {
-		return wordWrapAll(30, lore.stream());
-	}
-
-	public static List<String> wordWrapAll(int lineLength, List<String> lore) {
-		return wordWrapAll(lineLength, lore.stream());
-	}
-
-    public static List<String> wordWrapAll(String... args) {
-		return wordWrapAll(30, Arrays.stream(args));
-	}
-    public static List<String> wordWrapAll(int lineLength, String... args) {
-		return wordWrapAll(lineLength, Arrays.stream(args));
-	}
-
-    private static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
-		return lines.map(s -> ChatPaginator.wordWrap(s, lineLength))
-				.flatMap(Arrays::stream)
-				.map(s -> s.replace("" + ChatColor.WHITE, ""))
-				.collect(Collectors.toList());
-	}
-
-	public static BukkitRunnable bukkitRunnable(Runnable run) {
+	public static BukkitRunnable bukkitRunnable(Runnable runnable) {
 		return new BukkitRunnable() {
 			@Override
 			public void run() {
-				run.run();
+				runnable.run();
 			}
 		};
 	}
