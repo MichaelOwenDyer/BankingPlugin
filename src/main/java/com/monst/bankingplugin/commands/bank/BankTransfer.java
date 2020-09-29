@@ -104,24 +104,19 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
             return true;
         }
 
-        boolean isSelf = sender instanceof Player && Utils.samePlayer(newOwner, ((Player) sender));
-        sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", isSelf ? "yourself" :
+        boolean forSelf = sender instanceof Player && Utils.samePlayer(newOwner, ((Player) sender));
+        sender.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You", forSelf ? "yourself" :
                 (newOwner != null ? newOwner.getName() : "ADMIN"), "bank " + bank.getColorizedName()));
 
-        if (!isSelf)
-            Utils.notifyPlayers(
-                    String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), "you", "bank " + bank.getColorizedName()),
-                    newOwner
-            );
+        if (!forSelf)
+            Utils.notify(newOwner, String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), "you", "bank " + bank.getColorizedName()));
 
-        Set<OfflinePlayer> toNotify = Utils.mergeCollections(bank.getCustomers(), bank.getTrustedPlayers());
-        toNotify.remove(newOwner);
+        Set<OfflinePlayer> toMessage = Utils.mergeCollections(bank.getCustomers(), bank.getTrustedPlayers());
+        toMessage.remove(newOwner);
         if (sender instanceof Player)
-            toNotify.remove(sender);
-        Utils.notifyPlayers(
-                String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(), newOwner != null ? newOwner.getName() : "ADMIN", "bank " + bank.getColorizedName()),
-                toNotify
-        );
+            toMessage.remove(sender);
+        Utils.message(toMessage, String.format(Messages.OWNERSHIP_TRANSFERRED, sender.getName(),
+                newOwner != null ? newOwner.getName() : "ADMIN", "bank " + bank.getColorizedName()));
 
         bank.transferOwnership(newOwner);
         bankUtils.addBank(bank, true);

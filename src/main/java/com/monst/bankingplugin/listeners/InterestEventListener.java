@@ -138,38 +138,31 @@ public class InterestEventListener implements Listener {
 						.setScale(2, RoundingMode.HALF_EVEN);
 
 				boolean online = bankOwner.isOnline();
-				Utils.depositPlayer(bankOwner, bank.getSelection().getWorld().getName(), revenue.doubleValue(), Callback.of(plugin,
-						result -> Utils.notifyPlayers(String.format(Messages.REVENUE_EARNED, Utils.format(revenue), bank.getName()), bankOwner),
-						error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner))
-				);
+				Utils.depositPlayer(bankOwner, revenue.doubleValue(), Callback.of(plugin,
+						result -> Utils.message(bankOwner, String.format(Messages.REVENUE_EARNED, Utils.format(revenue), bank.getName())),
+						error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+				));
 
 				if (Config.enableProfitLog)
 					plugin.getDatabase().logBankCashFlow(bank, revenue, null);
 			}
 		});
 
-		String fallbackWorldName = playerAccountMap.values().stream().flatMap(Collection::stream)
-				.collect(Collectors.toList()).get(0).getLocation().getWorld().getName();
-
 		// Bank owners receive low balance fees
 		for (Map.Entry<OfflinePlayer, Counter> entry : feesReceivable.entrySet()) {
 			OfflinePlayer bankOwner = entry.getKey();
 			Counter counter = entry.getValue();
-			if (feesReceivable.get(bankOwner).getSum().signum() == 0)
-				continue;
-			if (!bankOwner.hasPlayedBefore())
+			if (counter.getSum().signum() == 0)
 				continue;
 
-			boolean isOnline = bankOwner.isOnline();
-			String worldName = isOnline ? bankOwner.getPlayer().getWorld().getName() : fallbackWorldName;
-			Utils.depositPlayer(bankOwner, worldName, feesReceivable.get(bankOwner).getSum().doubleValue(), Callback.of(plugin,
+			Utils.depositPlayer(bankOwner, counter.getSum().doubleValue(), Callback.of(plugin,
 					result -> {
-						int count = feesReceivable.get(bankOwner).getCount();
-						Utils.notifyPlayers(String.format(Messages.LOW_BALANCE_FEE_EARNED,
-								Utils.format(feesReceivable.get(bankOwner).getSum()),
-								count, count == 1 ? "" : "s"), bankOwner);
+						int count = counter.getCount();
+						Utils.message(bankOwner, String.format(Messages.LOW_BALANCE_FEE_EARNED,
+								Utils.format(counter.getSum()), count, count == 1 ? "" : "s"));
 					},
-					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+					error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+			));
 		}
 
 		// Bank owners pay interest
@@ -178,20 +171,15 @@ public class InterestEventListener implements Listener {
 			Counter counter = entry.getValue();
 			if (counter.getSum().signum() == 0)
 				continue;
-			if (!bankOwner.hasPlayedBefore())
-				continue;
 
-			boolean isOnline = bankOwner.isOnline();
-			String worldName = isOnline ? bankOwner.getPlayer().getWorld().getName() : fallbackWorldName;
-
-			Utils.withdrawPlayer(bankOwner, worldName, counter.getSum().doubleValue(), Callback.of(plugin,
+			Utils.withdrawPlayer(bankOwner, counter.getSum().doubleValue(), Callback.of(plugin,
 					result -> {
 						int count = counter.getCount();
-						Utils.notifyPlayers(String.format(Messages.INTEREST_PAID,
-								Utils.format(counter.getSum()),
-								count, count == 1 ? "" : "s"), bankOwner);
+						Utils.message(bankOwner, String.format(Messages.INTEREST_PAID,
+								Utils.format(counter.getSum()), count, count == 1 ? "" : "s"));
 					},
-					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+					error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+			));
 		}
 
 		// Account owners receive interest payments
@@ -201,20 +189,14 @@ public class InterestEventListener implements Listener {
 			if (counter.getSum().signum() == 0)
 				continue;
 
-			boolean online = customer.isOnline();
-			String worldName = playerAccountMap.get(customer) != null
-					? playerAccountMap.get(customer).get(0).getLocation().getWorld().getName()
-					: (online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
-
-			Utils.depositPlayer(customer, worldName, counter.getSum().doubleValue(), Callback.of(plugin,
+			Utils.depositPlayer(customer, counter.getSum().doubleValue(), Callback.of(plugin,
 					result -> {
 						int count = counter.getCount();
-						Utils.notifyPlayers(String.format(Messages.INTEREST_EARNED,
-								Utils.format(counter.getSum()),
-								count, count == 1 ? "" : "s"), customer);
+						Utils.message(customer, String.format(Messages.INTEREST_EARNED,
+								Utils.format(counter.getSum()), count, count == 1 ? "" : "s"));
 					},
-					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer))
-			);
+					error -> Utils.message(customer, Messages.ERROR_OCCURRED)
+			));
 		}
 
 		// Customers pay low balance fees
@@ -224,19 +206,13 @@ public class InterestEventListener implements Listener {
 			if (counter.getSum().signum() == 0)
 				continue;
 
-			boolean online = customer.isOnline();
-			String worldName = playerAccountMap.get(customer) != null ?
-					playerAccountMap.get(customer).get(0).getLocation().getWorld().getName() :
-					(online ? customer.getPlayer().getWorld().getName() : fallbackWorldName);
-
-			Utils.withdrawPlayer(customer, worldName, counter.getSum().doubleValue(), Callback.of(plugin,
+			Utils.withdrawPlayer(customer, counter.getSum().doubleValue(), Callback.of(plugin,
 					result -> {
 						int count = counter.getCount();
-						Utils.notifyPlayers(String.format(Messages.LOW_BALANCE_FEE_PAID,
-								Utils.format(counter.getSum()),
-								count, count == 1 ? "" : "s"), customer);
+						Utils.message(customer, String.format(Messages.LOW_BALANCE_FEE_PAID,
+								Utils.format(counter.getSum()), count, count == 1 ? "" : "s"));
 					},
-					error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, customer)
+					error -> Utils.message(customer, Messages.ERROR_OCCURRED)
 			));
 		}
 	}

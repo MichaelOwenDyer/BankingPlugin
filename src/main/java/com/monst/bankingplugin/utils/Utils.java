@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.utils;
 
-import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.User;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
@@ -149,13 +148,13 @@ public class Utils {
 		return pred.test(ifTrue) ? ifTrue : ifFalse.get();
 	}
 
-	public static void depositPlayer(OfflinePlayer recipient, String worldName, double amount, Callback<Void> callback) {
+	public static void depositPlayer(OfflinePlayer recipient, double amount, Callback<Void> callback) {
 		if (recipient == null)
 			return;
 		if (amount <= 0)
 			return;
 
-		EconomyResponse response = BankingPlugin.getInstance().getEconomy().depositPlayer(recipient, worldName, amount);
+		EconomyResponse response = BankingPlugin.getInstance().getEconomy().depositPlayer(recipient, amount);
 		if (response.transactionSuccess()) {
 			callback.callSyncResult(null);
 			return;
@@ -163,13 +162,13 @@ public class Utils {
 		callback.callSyncError(new TransactionFailedException(response.errorMessage));
 	}
 
-	public static boolean withdrawPlayer(OfflinePlayer payer, String worldName, double amount, Callback<Void> callback) {
+	public static boolean withdrawPlayer(OfflinePlayer payer, double amount, Callback<Void> callback) {
 		if (payer == null)
 			return false;
 		if (amount <= 0)
 			return true;
 
-		EconomyResponse response = BankingPlugin.getInstance().getEconomy().withdrawPlayer(payer, worldName, amount);
+		EconomyResponse response = BankingPlugin.getInstance().getEconomy().withdrawPlayer(payer, amount);
 		if (response.transactionSuccess()) {
 			callback.callSyncResult(null);
 			return true;
@@ -178,22 +177,17 @@ public class Utils {
 		return false;
 	}
 
-	public static void notifyPlayers(String message, OfflinePlayer player, Essentials essentials) {
+	public static void notify(Collection<OfflinePlayer> players, String message) {
+		players.forEach(p -> notify(p, message));
+	}
+
+	public static void notify(OfflinePlayer player, String message) {
 		if (player == null)
 			return;
 		if (player.isOnline())
 			message(player, message);
 		else
-			mail(player, message, essentials);
-	}
-
-	public static void notifyPlayers(String message, OfflinePlayer player) {
-		notifyPlayers(message, player, BankingPlugin.getInstance().getEssentials());
-	}
-
-	public static void notifyPlayers(String message, Collection<OfflinePlayer> players) {
-		Essentials essentials = BankingPlugin.getInstance().getEssentials();
-		players.forEach(p -> notifyPlayers(message, p, essentials));
+			mail(player, message);
 	}
 
 	public static void message(Collection<OfflinePlayer> players, String message) {
@@ -208,18 +202,18 @@ public class Utils {
 		player.getPlayer().sendMessage(message);
 	}
 
-	public static void mail(OfflinePlayer player, String message, Essentials essentials) {
+	public static void mail(OfflinePlayer player, String message) {
 		if (!Config.enableMail || player == null)
 			return;
-		User user = essentials.getUserMap().getUser(player.getUniqueId());
+		User user = BankingPlugin.getInstance().getEssentials().getUserMap().getUser(player.getUniqueId());
 		if (user != null)
 			user.addMail(message);
 	}
 
-	public static void mail(Collection<OfflinePlayer> players, String message, Essentials essentials) {
+	public static void mail(Collection<OfflinePlayer> players, String message) {
 		if (!Config.enableMail || players == null)
 			return;
-		players.forEach(p -> mail(p, message, essentials));
+		players.forEach(p -> mail(p, message));
 	}
 
 	/**

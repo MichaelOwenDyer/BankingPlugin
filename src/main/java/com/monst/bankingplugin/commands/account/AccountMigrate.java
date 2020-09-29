@@ -135,51 +135,51 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         // Customer receives reimbursement for old account
         if (finalReimbursement > 0 && !oldBank.isOwner(p)) {
-            Utils.depositPlayer(p.getPlayer(), toMigrate.getLocation().getWorld().getName(), finalReimbursement,
-                    Callback.of(plugin,
-                            result -> p.sendMessage(String.format(
-                                    Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalReimbursement))),
-                            error -> p.sendMessage(Messages.ERROR_OCCURRED)));
+            Utils.depositPlayer(p.getPlayer(), finalReimbursement, Callback.of(plugin,
+                    result -> p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
+                            Utils.format(finalReimbursement))),
+                    error -> p.sendMessage(Messages.ERROR_OCCURRED)
+            ));
         }
 
         // Bank owner of new account receives account creation fee
         if (finalCreationPrice > 0 && newBank.isPlayerBank() && !newBank.isOwner(p)) {
             OfflinePlayer bankOwner = newBank.getOwner();
-            Utils.depositPlayer(bankOwner, toMigrate.getLocation().getWorld().getName(), finalCreationPrice,
-                    Callback.of(plugin,
-                            result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
-                                    Utils.format(finalCreationPrice)), bankOwner),
-                            error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+            Utils.depositPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
+                    result -> Utils.message(bankOwner, String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
+                            Utils.format(finalCreationPrice))),
+                    error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+            ));
         }
 
         // Account owner pays creation fee for new account
         if (creationPrice > 0 && !newBank.isOwner(p)) {
-            if (!Utils.withdrawPlayer(p, newLocation.getWorld().getName(), finalCreationPrice, Callback.of(plugin,
+            if (!Utils.withdrawPlayer(p, finalCreationPrice, Callback.of(plugin,
                     result -> p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.format(finalCreationPrice))),
-                    error -> p.sendMessage(Messages.ERROR_OCCURRED))))
+                    error -> p.sendMessage(Messages.ERROR_OCCURRED)
+            )))
                 return;
         }
 
         // Bank owner of old account pays reimbursement
         if (reimbursement > 0 && oldBank.isPlayerBank() && !oldBank.isOwner(p)) {
             OfflinePlayer bankOwner = oldBank.getOwner();
-            Utils.withdrawPlayer(bankOwner, newLocation.getWorld().getName(), finalReimbursement,
-                    Callback.of(plugin,
-                            result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-                                    p.getName(), Utils.format(finalReimbursement)), bankOwner),
-                            error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+            Utils.withdrawPlayer(bankOwner, finalReimbursement, Callback.of(plugin,
+                    result -> Utils.message(bankOwner, String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
+                            p.getName(), Utils.format(finalReimbursement))),
+                    error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+            ));
         }
 
         if (newAccount.create(true)) {
             plugin.debugf("Account migrated (#%d)", newAccount.getID());
-            accountUtils.removeAccount(toMigrate, false,
-                    Callback.of(plugin,
-                            result -> {
-                                accountUtils.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
-                                p.sendMessage(Messages.ACCOUNT_MIGRATED);
-                            },
-                            error -> p.sendMessage(Messages.ERROR_OCCURRED))
-            );
+            accountUtils.removeAccount(toMigrate, false, Callback.of(plugin,
+                    result -> {
+                        accountUtils.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
+                        p.sendMessage(Messages.ACCOUNT_MIGRATED);
+                    },
+                    error -> p.sendMessage(Messages.ERROR_OCCURRED)
+            ));
         }
     }
 

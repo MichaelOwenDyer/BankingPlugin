@@ -77,9 +77,9 @@ public class BankSet extends BankCommand.SubCommand {
                 Set<OfflinePlayer> toNotify = Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers());
                 if (sender instanceof Player)
                     toNotify.remove(sender);
-                Utils.notifyPlayers(String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(),
-                        previousValue, result, bank.getColorizedName()), toNotify
-                );
+                Utils.notify(toNotify, String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(),
+                        previousValue, result, bank.getColorizedName()
+                ));
             },
             error -> sender.sendMessage(((ArgumentParseException) error).getErrorMessage()));
 

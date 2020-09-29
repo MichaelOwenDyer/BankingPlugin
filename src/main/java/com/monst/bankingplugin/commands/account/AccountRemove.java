@@ -77,20 +77,19 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 
             double finalCreationPrice = creationPrice;
-            Utils.depositPlayer(p.getPlayer(), account.getLocation().getWorld().getName(), finalCreationPrice,
-                    Callback.of(plugin,
-                            result -> p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
-                                    Utils.format(finalCreationPrice))),
-                            error -> p.sendMessage(Messages.ERROR_OCCURRED)));
+            Utils.depositPlayer(p.getPlayer(), finalCreationPrice, Callback.of(plugin,
+                    result -> p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED,
+                            Utils.format(finalCreationPrice))),
+                    error -> p.sendMessage(Messages.ERROR_OCCURRED)));
 
             if (account.getBank().isPlayerBank()) {
                 OfflinePlayer bankOwner = account.getBank().getOwner();
-                Utils.withdrawPlayer(bankOwner, account.getLocation().getWorld().getName(), finalCreationPrice,
-                        Callback.of(plugin,
-                                result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-                                        account.getOwner().getName(), Utils.format(finalCreationPrice)),
-                                        bankOwner),
-                                error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+                Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
+                    result -> Utils.message(bankOwner, String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
+                            account.getOwner().getName(), Utils.format(finalCreationPrice)
+                    )),
+                    error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+                ));
             }
         }
         p.sendMessage(Messages.ACCOUNT_REMOVED);

@@ -138,23 +138,23 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return;
         }
 
-        OfflinePlayer accountOwner = p.getPlayer();
         double finalCreationPrice = creationPrice;
         if (creationPrice > 0)
         // Account owner pays the bank owner the creation fee
-        if (!Utils.withdrawPlayer(accountOwner, location.getWorld().getName(), creationPrice,
-                Callback.of(plugin,
-                        result -> p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.format(finalCreationPrice))),
-                        error -> p.sendMessage(Messages.ERROR_OCCURRED))))
+        if (!Utils.withdrawPlayer(p, creationPrice, Callback.of(plugin,
+                result -> p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.format(finalCreationPrice))),
+                error -> p.sendMessage(Messages.ERROR_OCCURRED)
+        )))
             return;
 
         // Bank owner receives the payment from the customer
         if (creationPrice > 0 && bank.isPlayerBank()) {
             OfflinePlayer bankOwner = account.getBank().getOwner();
-            Utils.depositPlayer(bankOwner, location.getWorld().getName(), creationPrice, Callback.of(plugin,
-                    result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
-                            accountOwner.getName(), Utils.format(finalCreationPrice)), bankOwner),
-                    error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+            Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
+                    result -> Utils.message(bankOwner, String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
+                            p.getName(), Utils.format(finalCreationPrice))),
+                    error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+            ));
         }
 
         if (account.create(true)) {

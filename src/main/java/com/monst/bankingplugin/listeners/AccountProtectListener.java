@@ -85,17 +85,19 @@ public class AccountProtectListener implements Listener {
 			double finalCreationPrice = creationPrice;
 			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
 			// Account owner is reimbursed for the part of the chest that was broken
-			Utils.depositPlayer(p, worldName, finalCreationPrice, Callback.of(plugin,
+			Utils.depositPlayer(p, finalCreationPrice, Callback.of(plugin,
 					result -> p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice))),
-					error -> p.sendMessage(Messages.ERROR_OCCURRED)));
+					error -> p.sendMessage(Messages.ERROR_OCCURRED)
+			));
 
 			// Bank owner reimburses the customer
 			if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
 				OfflinePlayer bankOwner = bank.getOwner();
-				Utils.withdrawPlayer(bankOwner, account.getLocation().getWorld().getName(), finalCreationPrice, Callback.of(plugin,
-						result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-								account.getOwner().getName(), Utils.format(finalCreationPrice)), bankOwner),
-						error -> Utils.notifyPlayers(Messages.ERROR_OCCURRED, bankOwner)));
+				Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
+						result -> Utils.message(bankOwner, String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
+								account.getOwner().getName(), Utils.format(finalCreationPrice))),
+						error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+				));
 			}
 		}
 
@@ -199,20 +201,21 @@ public class AccountProtectListener implements Listener {
 		double creationPrice = account.getBank().get(BankField.ACCOUNT_CREATION_PRICE);
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
-			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
-			if (!Utils.withdrawPlayer(owner, worldName, creationPrice, Callback.of(plugin,
+			if (!Utils.withdrawPlayer(owner, creationPrice, Callback.of(plugin,
 					result -> p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID, Utils.format(creationPrice))),
-					error -> p.sendMessage(Messages.ERROR_OCCURRED)))) {
+					error -> p.sendMessage(Messages.ERROR_OCCURRED)
+			))) {
 				e.setCancelled(true);
 				return;
 			}
 
 			if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 				OfflinePlayer bankOwner = account.getBank().getOwner();
-				Utils.depositPlayer(bankOwner, account.getLocation().getWorld().getName(), creationPrice, Callback.of(plugin,
-						result -> Utils.notifyPlayers(String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
-								account.getOwner().getName(), Utils.format(creationPrice)), bankOwner),
-						error -> p.sendMessage(Messages.ERROR_OCCURRED)));
+				Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
+						result -> Utils.message(bankOwner, String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
+								account.getOwner().getName(), Utils.format(creationPrice))),
+						error -> p.sendMessage(Messages.ERROR_OCCURRED)
+				));
 			}
 		}
 

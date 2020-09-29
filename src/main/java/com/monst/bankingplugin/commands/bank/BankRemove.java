@@ -78,10 +78,10 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
             Player executor = (Player) sender;
             if (creationPrice > 0 && (bank.isAdminBank() || bank.isOwner(executor))) {
                 double finalCreationPrice = creationPrice;
-                Utils.depositPlayer(executor.getPlayer(), bank.getSelection().getWorld().getName(), finalCreationPrice, Callback.of(plugin,
+                Utils.depositPlayer(executor.getPlayer(), finalCreationPrice, Callback.of(plugin,
                         result -> executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice))),
-                        error -> executor.sendMessage(Messages.ERROR_OCCURRED))
-                );
+                        error -> executor.sendMessage(Messages.ERROR_OCCURRED)
+                ));
             }
         }
 
@@ -91,7 +91,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
         Set<OfflinePlayer> toNotify = Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers());
         if (sender instanceof Player)
             toNotify.remove(sender);
-        Utils.notifyPlayers(String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()), toNotify);
+        Utils.notify(toNotify, String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()));
         return true;
     }
 

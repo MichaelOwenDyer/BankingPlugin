@@ -138,8 +138,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
 
-        String worldName = p.getLocation().getWorld() != null ? p.getLocation().getWorld().getName() : "World";
-        if (!Utils.withdrawPlayer(p.getPlayer(), worldName, creationPrice, Callback.of(plugin,
+        if (!Utils.withdrawPlayer(p.getPlayer(), creationPrice, Callback.of(plugin,
                 result -> p.sendMessage(String.format(Messages.BANK_CREATE_FEE_PAID, Utils.format(creationPrice))),
                 error -> p.sendMessage(Messages.ERROR_OCCURRED)
         )))
