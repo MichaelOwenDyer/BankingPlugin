@@ -148,73 +148,36 @@ public class InterestEventListener implements Listener {
 			}
 		});
 
-		// Bank owners receive low balance fees
-		for (Map.Entry<OfflinePlayer, Counter> entry : feesReceivable.entrySet()) {
-			OfflinePlayer bankOwner = entry.getKey();
-			Counter counter = entry.getValue();
-			if (counter.getSum().signum() == 0)
-				continue;
+		transactAll(feesReceivable, Utils::depositPlayer, Messages.LOW_BALANCE_FEE_EARNED); // Bank owners receive low balance fees
 
-			Utils.depositPlayer(bankOwner, counter.getSum().doubleValue(), Callback.of(plugin,
-					result -> {
-						int count = counter.getCount();
-						Utils.message(bankOwner, String.format(Messages.LOW_BALANCE_FEE_EARNED,
-								Utils.format(counter.getSum()), count, count == 1 ? "" : "s"));
-					},
-					error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
-			));
-		}
+		transactAll(interestPayable, Utils::withdrawPlayer, Messages.INTEREST_PAID); // Bank owners pay interest
 
-		// Bank owners pay interest
-		for (Map.Entry<OfflinePlayer, Counter> entry : interestPayable.entrySet()) {
-			OfflinePlayer bankOwner = entry.getKey();
-			Counter counter = entry.getValue();
-			if (counter.getSum().signum() == 0)
-				continue;
+		transactAll(interestReceivable, Utils::depositPlayer, Messages.INTEREST_EARNED); // Account owners receive interest payments
 
-			Utils.withdrawPlayer(bankOwner, counter.getSum().doubleValue(), Callback.of(plugin,
-					result -> {
-						int count = counter.getCount();
-						Utils.message(bankOwner, String.format(Messages.INTEREST_PAID,
-								Utils.format(counter.getSum()), count, count == 1 ? "" : "s"));
-					},
-					error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
-			));
-		}
+		transactAll(feesPayable, Utils::withdrawPlayer, Messages.LOW_BALANCE_FEE_PAID); // Customers pay low balance fees
+	}
 
-		// Account owners receive interest payments
-		for (Map.Entry<OfflinePlayer, Counter> entry : interestReceivable.entrySet()) {
+	private void transactAll(Map<OfflinePlayer, Counter> map, Transactor transactor, String message) {
+		for (Map.Entry<OfflinePlayer, Counter> entry : map.entrySet()) {
 			OfflinePlayer customer = entry.getKey();
 			Counter counter = entry.getValue();
 			if (counter.getSum().signum() == 0)
 				continue;
 
-			Utils.depositPlayer(customer, counter.getSum().doubleValue(), Callback.of(plugin,
+			transactor.transact(customer, counter.getSum().doubleValue(), Callback.of(plugin,
 					result -> {
 						int count = counter.getCount();
-						Utils.message(customer, String.format(Messages.INTEREST_EARNED,
+						Utils.message(customer, String.format(message,
 								Utils.format(counter.getSum()), count, count == 1 ? "" : "s"));
 					},
 					error -> Utils.message(customer, Messages.ERROR_OCCURRED)
 			));
 		}
+	}
 
-		// Customers pay low balance fees
-		for (Map.Entry<OfflinePlayer, Counter> entry : feesPayable.entrySet()) {
-			OfflinePlayer customer = entry.getKey();
-			Counter counter = entry.getValue();
-			if (counter.getSum().signum() == 0)
-				continue;
-
-			Utils.withdrawPlayer(customer, counter.getSum().doubleValue(), Callback.of(plugin,
-					result -> {
-						int count = counter.getCount();
-						Utils.message(customer, String.format(Messages.LOW_BALANCE_FEE_PAID,
-								Utils.format(counter.getSum()), count, count == 1 ? "" : "s"));
-					},
-					error -> Utils.message(customer, Messages.ERROR_OCCURRED)
-			));
-		}
+	@FunctionalInterface
+	private interface Transactor {
+		void transact(OfflinePlayer player, double amount, Callback<Void> callback);
 	}
 
 	private static class Counter extends Pair<BigDecimal, Integer> {
