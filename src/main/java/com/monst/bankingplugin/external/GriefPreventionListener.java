@@ -101,34 +101,38 @@ public class GriefPreventionListener implements Listener {
         return claim.allowContainers(player) != null;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onSelectionInteract(PlayerInteractEvent e) {
         if (!Config.enableGriefPreventionIntegration)
             return;
+        if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
+            return;
 	    if (e.getHand() != EquipmentSlot.HAND)
 	        return;
-        if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK))
+
+        ItemStack itemInHand = Utils.getItemInMainHand(e.getPlayer());
+        if (itemInHand == null)
             return;
-        Block b = e.getClickedBlock();
-        if (b == null || b.getType() == Material.AIR || b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST)
+        if (itemInHand.getType() != griefPrevention.config_claims_investigationTool)
             return;
-        Player p = e.getPlayer();
-        Material investigationTool = griefPrevention.config_claims_investigationTool;
-        if (investigationTool != null) {
-            ItemStack item = Utils.getItemInMainHand(p);
-            if (item != null && investigationTool == item.getType()) {
-                Bank bank = plugin.getBankUtils().getBank(b.getLocation());
-                if (bank != null)
-                    VisualizationManager.visualizeSelection(p, bank);
-                return;
-            }
-            item = Utils.getItemInOffHand(p);
-            if (item != null && investigationTool == item.getType()) {
-                Bank bank = plugin.getBankUtils().getBank(b.getLocation());
-                if (bank != null)
-                    VisualizationManager.visualizeSelection(p, bank);
-            }
-        }
+
+        Block clickedBlock;
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK)
+            clickedBlock = e.getClickedBlock();
+        else if (e.getAction() == Action.RIGHT_CLICK_AIR)
+            clickedBlock = e.getPlayer().getTargetBlock(null, 100);
+        else
+            return;
+        if (clickedBlock == null || clickedBlock.getType() == Material.AIR)
+            return;
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.CHEST || clickedBlock.getType() == Material.TRAPPED_CHEST))
+            return;
+
+        Bank bank = plugin.getBankUtils().getBank(clickedBlock.getLocation());
+        if (bank == null)
+            return;
+
+        VisualizationManager.visualizeSelection(e.getPlayer(), bank);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
