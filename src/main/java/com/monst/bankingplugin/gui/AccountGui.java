@@ -59,7 +59,7 @@ public class AccountGui extends SinglePageGui<Account> {
 				return createSlotItem(Material.GOLD_INGOT, "Account Standing", NO_PERMISSION);
 			case 4:
 				if (isTrusted)
-					return createSlotItem(Material.NETHER_STAR, "Account Multiplier", getMultiplierLore(guiSubject));
+					return createSlotItem(Material.NETHER_STAR, "Account Multiplier", getMultiplierLore());
 				return createSlotItem(Material.NETHER_STAR, "Account Multiplier", NO_PERMISSION);
 			case 5:
 				if (isTrusted)
@@ -148,6 +148,10 @@ public class AccountGui extends SinglePageGui<Account> {
 						+ (isLowBalance && payOnLowBalance ? ChatColor.GRAY + " (" + ChatColor.GREEN + "$" + Utils.format(fullPayout)
 						+ ChatColor.GRAY + " - " + ChatColor.RED + "$" + Utils.format(lowBalanceFee) + ChatColor.GRAY + ")" : "")
 		);
+	}
+
+	List<String> getMultiplierLore() {
+		return getMultiplierLore(guiSubject.getBank().get(BankField.MULTIPLIERS), guiSubject.getStatus().getMultiplierStage());
 	}
 
 	private List<String> getAccountRestrictionsLore() {

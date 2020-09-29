@@ -2,7 +2,6 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
-import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -63,7 +62,7 @@ public class BankGui extends SinglePageGui<Bank> {
 			case 9:
 				return createSlotItem(Material.ENCHANTED_BOOK, "Account Creation", getCreationLore());
 			case 10:
-				return createSlotItem(Material.NETHER_STAR, "Multipliers", getMultiplierLore(guiSubject));
+				return createSlotItem(Material.NETHER_STAR, "Multipliers", getMultiplierLore());
 			case 11:
 				return createSlotItem(Material.IRON_BARS, "Balance Restrictions", getBalanceRestrictionLore());
 			case 12:
@@ -181,6 +180,10 @@ public class BankGui extends SinglePageGui<Bank> {
 				"Fee per chest: " + ChatColor.GREEN + guiSubject.getFormatted(BankField.ACCOUNT_CREATION_PRICE),
 				"Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
+	}
+
+	private List<String> getMultiplierLore() {
+		return getMultiplierLore(guiSubject.get(BankField.MULTIPLIERS), -1);
 	}
 
 	private List<String> getBalanceRestrictionLore() {
