@@ -22,6 +22,7 @@ import org.bukkit.inventory.Inventory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Account extends Ownable {
@@ -493,6 +494,6 @@ public class Account extends Ownable {
 
 	@Override
 	public int hashCode() {
-		return getID() != -1 ? getID() : super.hashCode();
+		return getID() != -1 ? getID() : Objects.hash(owner, coowners, bank, location, name);
 	}
 }

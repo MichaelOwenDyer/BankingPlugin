@@ -5,6 +5,7 @@ import org.bukkit.World;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -156,6 +157,11 @@ public class CuboidSelection extends Selection {
 		return getWorld().equals(otherSel.getWorld())
 				&& getMaximumPoint().equals(otherSel.getMaximumPoint())
 				&& getMinimumPoint().equals(otherSel.getMinimumPoint());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getWorld(), getMinX(), getMaxX(), getMinY(), getMaxY(), getMinZ(), getMaxZ());
 	}
 
 }

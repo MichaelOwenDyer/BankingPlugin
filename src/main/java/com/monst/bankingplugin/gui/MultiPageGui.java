@@ -2,6 +2,7 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.Ownable;
 import com.monst.bankingplugin.utils.Observable;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.ipvp.canvas.Menu;
@@ -13,6 +14,7 @@ import org.ipvp.canvas.slot.Slot;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui<C> {
@@ -109,5 +111,25 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
     abstract void addItems(PaginatedMenuBuilder builder);
 
     abstract Observable getSubject();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        MultiPageGui<?> other = (MultiPageGui<?>) o;
+        return inForeground == other.inForeground
+                && currentPage == other.currentPage
+                && getType() == other.getType()
+                && Utils.samePlayer(viewer, other.viewer)
+                && guiSubjects.get().equals(other.guiSubjects);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(guiSubjects.get(), viewer, inForeground, currentPage, getType());
+    }
 
 }

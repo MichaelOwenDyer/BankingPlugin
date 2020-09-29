@@ -223,4 +223,15 @@ public class PolygonalSelection extends Selection {
 				&& getWorld().equals(other.getWorld())
 				&& getVertices().equals(other.getVertices());
 	}
+
+	@Override
+	public int hashCode() {
+		Object[] attributes = new Object[vertices.size() + 3];
+		attributes[0] = getWorld();
+		attributes[1] = getMinY();
+		attributes[2] = getMaxY();
+		for (int i = 0; i < vertices.size(); i++)
+			attributes[i + 3] = vertices.get(i);
+		return Objects.hash(attributes);
+	}
 }

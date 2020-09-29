@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.utils;
 
+import java.util.Objects;
+
 public abstract class Triple<T, K, R> {
 
     private T first;
@@ -53,6 +55,6 @@ public abstract class Triple<T, K, R> {
 
     @Override
     public int hashCode() {
-        return (((first.hashCode() * 31) + second.hashCode()) * 31) + third.hashCode() * 31;
+        return Objects.hash(first, second, third);
     }
 }

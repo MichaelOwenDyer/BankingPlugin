@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.utils;
 
+import java.util.Objects;
+
 public abstract class Pair<T, K> {
 
     private T first;
@@ -43,6 +45,6 @@ public abstract class Pair<T, K> {
 
     @Override
     public int hashCode() {
-        return ((first.hashCode() * 31) + second.hashCode()) * 31;
+        return Objects.hash(first, second);
     }
 }

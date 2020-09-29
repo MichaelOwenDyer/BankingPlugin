@@ -1,10 +1,13 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.Ownable;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot;
+
+import java.util.Objects;
 
 public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
 
@@ -54,5 +57,24 @@ public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
     abstract ItemStack createSlotItem(int i);
 
     abstract Slot.ClickHandler createClickHandler(int i);
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        SinglePageGui<?> other = (SinglePageGui<?>) o;
+        return inForeground == other.inForeground
+                && getType() == other.getType()
+                && Utils.samePlayer(viewer, other.viewer)
+                && guiSubject.equals(other.guiSubject);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(guiSubject, viewer, inForeground, getType());
+    }
 
 }

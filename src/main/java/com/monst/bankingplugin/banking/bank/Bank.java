@@ -366,6 +366,6 @@ public class Bank extends Ownable {
 
 	@Override
 	public int hashCode() {
-		return getID() != -1 ? getID() : super.hashCode();
+		return getID() != -1 ? getID() : Objects.hash(owner, coowners, selection, name);
 	}
 }
