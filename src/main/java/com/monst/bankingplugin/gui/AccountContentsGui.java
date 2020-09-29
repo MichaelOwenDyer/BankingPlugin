@@ -11,7 +11,7 @@ import org.ipvp.canvas.type.ChestMenu;
 
 public class AccountContentsGui extends SinglePageGui<Account> {
 
-    boolean canEdit;
+    // boolean canEdit; TODO: Implement remote editing
 
     public AccountContentsGui(Account account) {
         super(account);
@@ -24,7 +24,7 @@ public class AccountContentsGui extends SinglePageGui<Account> {
 
     @Override
     void evaluateClearance(Player player) {
-        // canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER); TODO: Implement remote editing
+        // canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
     }
 
     @Override

@@ -16,11 +16,11 @@ public class AccountPreTrustEvent extends SingleAccountEvent implements Cancella
 
 	public AccountPreTrustEvent(Player player, String[] args) {
 		super(player, null);
-		this.args = args;
+		this.args = Arrays.copyOf(args, args.length);
 	}
 
 	public String[] getArgs() {
-		return Arrays.copyOf(args, args.length);
+		return args;
 	}
 
 	@Override

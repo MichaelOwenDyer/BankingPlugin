@@ -16,11 +16,11 @@ public class AccountPreUntrustEvent extends SingleAccountEvent implements Cancel
 
 	public AccountPreUntrustEvent(Player player, String[] args) {
 		super(player, null);
-		this.args = args;
+		this.args = Arrays.copyOf(args, args.length);
 	}
 
 	public String[] getArgs() {
-		return Arrays.copyOf(args, args.length);
+		return args;
 	}
 
 	@Override
