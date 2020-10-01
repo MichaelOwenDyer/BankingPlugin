@@ -221,7 +221,7 @@
 							<shadedPattern>com.monst.bankingplugin.dependencies.bstats</shadedPattern>
 						</relocation>
 						<relocation>
-							<pattern>com.monst.polylabel-java</pattern>
+							<pattern>com.monst.polylabel</pattern>
 							<shadedPattern>com.monst.bankingplugin.dependencies.polylabel</shadedPattern>
 						</relocation>
 					</relocations>
