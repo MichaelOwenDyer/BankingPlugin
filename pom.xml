@@ -155,6 +155,12 @@
 			<version>1.2</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.mariuszgromada.math</groupId>
+			<artifactId>MathParser.org-mXparser</artifactId>
+			<version>4.4.2</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -197,6 +203,7 @@
 							<include>org.slf4j</include>
 							<include>org.bstats</include>
 							<include>com.monst:polylabel-java</include>
+							<include>org.mariuszgromada.math:MathParser.org-mXparser</include>
 						</includes>
 					</artifactSet>
 					<relocations>
@@ -223,6 +230,10 @@
 						<relocation>
 							<pattern>com.monst.polylabel</pattern>
 							<shadedPattern>com.monst.bankingplugin.dependencies.polylabel</shadedPattern>
+						</relocation>
+						<relocation>
+							<pattern>org.mariuszgromada.math.mxparser</pattern>
+							<shadedPattern>com.monst.bankingplugin.dependencies.mxparser</shadedPattern>
 						</relocation>
 					</relocations>
 					<filters>
