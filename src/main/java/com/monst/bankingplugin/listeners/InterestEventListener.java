@@ -148,7 +148,7 @@ public class InterestEventListener implements Listener {
 			}
 		});
 
-		transactAll(feesReceivable, Utils::depositPlayer, Messages.LOW_BALANCE_FEE_EARNED); // Bank owners receive low balance fees
+		transactAll(feesReceivable, Utils::depositPlayer, Messages.LOW_BALANCE_FEE_RECEIVED); // Bank owners receive low balance fees
 
 		transactAll(interestPayable, Utils::withdrawPlayer, Messages.INTEREST_PAID); // Bank owners pay interest
 

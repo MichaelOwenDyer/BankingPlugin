@@ -114,7 +114,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         }
         int playerAccountLimit = bank.get(BankField.PLAYER_BANK_ACCOUNT_LIMIT);
         if (playerAccountLimit > 0 && bank.getAccounts(account -> account.isOwner(p)).size() >= playerAccountLimit) {
-            p.sendMessage(Messages.PER_BANK_ACCOUNT_LIMIT_REACHED);
+            p.sendMessage(Messages.ACCOUNT_LIMIT_AT_BANK_REACHED);
             plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
             return;
         }

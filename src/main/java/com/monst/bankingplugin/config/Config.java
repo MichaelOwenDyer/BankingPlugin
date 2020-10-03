@@ -10,6 +10,11 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -261,6 +266,9 @@ public class Config {
 	 */
 	public static List<String> disabledWorlds;
 
+	/**
+	 * Whether to enable in-game mail from the plugin.
+	 */
 	public static boolean enableMail;
 
 	/**
@@ -268,21 +276,34 @@ public class Config {
 	 * against.
 	 */
 	public static String nameRegex;
+
+	/**
+	 * The language file to use.
+	 */
+	public static String languageFile;
     
     /**
      * The prefix to be used for database tables.
      */
     public static String databaseTablePrefix;
 
+	/* ----------------------------------------------- */
+
 	private final BankingPlugin plugin;
 
-    public Config(BankingPlugin plugin) {
+	private LanguageConfig langConfig;
+
+	public Config(BankingPlugin plugin) {
         this.plugin = plugin;
 
         plugin.saveDefaultConfig();
 
 		reload();
     }
+
+    public LanguageConfig getLanguageConfig() {
+		return langConfig;
+	}
 
     /**
      * <p>Set a configuration value</p>
@@ -539,5 +560,89 @@ public class Config {
 		} catch (NullPointerException e) {
 			return null;
 		}
+	}
+
+	private void loadLanguageConfig(boolean showMessages) {
+		langConfig = new LanguageConfig(plugin, showMessages);
+		File langFolder = new File(plugin.getDataFolder(), "lang");
+
+		if (!(new File(langFolder, "en_US.lang")).exists())
+			plugin.saveResource("lang/en_US.lang", false);
+
+		if (!(new File(langFolder, "de_DE.lang")).exists())
+			plugin.saveResource("lang/de_DE.lang", false);
+
+		File langConfigFile = new File(langFolder, languageFile + ".lang");
+		File langDefaultFile = new File(langFolder, "en_US.lang");
+
+		if (!langConfigFile.exists()) {
+			if (!langDefaultFile.exists()) {
+				try {
+					Reader reader = getTextResource("lang/" + langConfigFile.getName(), showMessages);
+
+					if (reader == null)
+						reader = getTextResource("lang/en_US.lang", showMessages);
+
+					if (reader != null && showMessages)
+						plugin.getLogger().info("Using locale \"" + langConfigFile.getName().substring(0, langConfigFile.getName().length() - 5) + "\" (Streamed from jar file)");
+
+					if (reader == null) {
+						if (showMessages)
+							plugin.getLogger().warning("Using default language values");
+						plugin.debug("Using default language values (#1)");
+					}
+
+					BufferedReader br = new BufferedReader(reader);
+
+					StringBuilder sb = new StringBuilder();
+					String line = br.readLine();
+
+					while (line != null) {
+						sb.append(line);
+						sb.append("\n");
+						line = br.readLine();
+					}
+
+					langConfig.loadFromString(sb.toString());
+				} catch (IOException e) {
+					if (showMessages) {
+						plugin.getLogger().warning("Using default language values");
+					}
+				}
+			} else {
+				try {
+					langConfig.load(langDefaultFile);
+					if (showMessages)
+						plugin.getLogger().info("Using locale \"en_US\"");
+				} catch (IOException e) {
+					plugin.debug("Using default language values (#3)");
+					plugin.debug(e);
+					if (showMessages)
+						plugin.getLogger().warning("Using default language values");
+				}
+			}
+		} else {
+			try {
+				if (showMessages)
+					plugin.getLogger().info("Using locale \"" + langConfigFile.getName().substring(0, langConfigFile.getName().length() - 5) + "\"");
+				langConfig.load(langConfigFile);
+			} catch (IOException e) {
+				plugin.debug("Using default language values (#4)");
+				plugin.debug(e);
+				if (showMessages)
+					plugin.getLogger().warning("Using default language values");
+			}
+		}
+	}
+
+	private Reader getTextResource(String file, boolean showMessages) {
+		try {
+			return (Reader) plugin.getClass().getDeclaredMethod("getTextResource", String.class).invoke(plugin, file);
+		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+			if (showMessages) plugin.getLogger().severe("Failed to get file from jar: " + file);
+			plugin.debug("Failed to get file from jar: " + file);
+			plugin.debug(e);
+		}
+		return null;
 	}
 }

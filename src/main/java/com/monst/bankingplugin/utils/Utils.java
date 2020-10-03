@@ -76,7 +76,7 @@ public class Utils {
 	}
 
 	public static String format(Double d) {
-		return format(BigDecimal.valueOf(d));
+		return BankingPlugin.getInstance().getEconomy().format(d);
 	}
 
 	public static String format(BigDecimal bd) {

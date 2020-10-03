@@ -176,7 +176,7 @@ public class AccountInteractListener implements Listener {
 			if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !p.isSneaking()) {
 				if (!account.isTrusted(p) && !account.getBank().isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
 					e.setCancelled(true);
-					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
+					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_VIEW_OTHER);
 					plugin.debug(p.getName() + " does not have permission to open " + account.getOwner().getName()
 							+ "'s account chest.");
 					return;

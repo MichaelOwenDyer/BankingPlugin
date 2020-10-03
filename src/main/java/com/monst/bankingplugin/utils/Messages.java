@@ -16,7 +16,7 @@ public class Messages {
 	public static final String ACCOUNT_EXTEND_FEE_RECEIVED = ChatColor.GOLD + "%s has paid you " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to extend an account at your bank.";
 	public static final String BANK_CREATE_FEE_PAID = ChatColor.GOLD + "You have been charged " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " to create a bank.";
 	public static final String NAME_NOT_UNIQUE = ChatColor.RED + "A bank with that name already exists.";
-	public static final String NAME_ALREADY = ChatColor.RED + "The bank name was not changed.";
+	public static final String NAME_NOT_CHANGED = ChatColor.RED + "The bank name was not changed.";
 	public static final String NAME_NOT_ALLOWED = ChatColor.RED + "Name is not allowed.";
 	public static final String CHEST_ALREADY_ACCOUNT = ChatColor.RED + "That chest is already an account!";
 	public static final String CHEST_BLOCKED = ChatColor.RED + "Chest is blocked!";
@@ -37,7 +37,7 @@ public class Messages {
 	public static final String REVENUE_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in revenue from %s!";
 	public static final String INTEREST_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s " + ChatColor.GOLD + "in interest on %d account%s!";
 	public static final String INTEREST_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s " + ChatColor.RED + "in interest on %d account%s!";
-	public static final String LOW_BALANCE_FEE_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in low balance fees on %d account%s.";
+	public static final String LOW_BALANCE_FEE_RECEIVED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in low balance fees on %d account%s.";
 	public static final String LOW_BALANCE_FEE_PAID = ChatColor.RED + "You paid " + ChatColor.GREEN + "$%s" + ChatColor.RED + " in low balance fees on %d account%s.";
 	public static final String MULTIPLIER_DECREASED = ChatColor.RED + "Your account multiplier has decreased to " + ChatColor.GREEN + "%d.";
 	public static final String ACCOUNT_LIMIT = ChatColor.GOLD + "You own %d/%s allowed accounts.";
@@ -46,7 +46,7 @@ public class Messages {
 	public static final String ABOUT_TO_REMOVE_BANKS = ChatColor.GOLD + "You are about to remove %d bank%s and %d account%s.";
 	public static final String ABOUT_TO_TRANSFER = ChatColor.RED + "You are about to transfer ownership of %s to %s.";
 
-	public static final String OFFLINE_INTEREST_EARNED = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in interest while you were offline!";
+	public static final String OFFLINE_ACCOUNT_INTEREST = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in interest while you were offline!";
 	public static final String OFFLINE_BANK_PROFIT = ChatColor.GOLD + "You earned " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + " in bank profit while you were offline.";
 	public static final String OFFLINE_BANK_LOSS = ChatColor.RED + "You lost $%s in bank losses while you were offline.";
 
@@ -68,7 +68,7 @@ public class Messages {
 	public static final String ACCOUNT_NEW_BALANCE = ChatColor.GOLD + "Your new balance is " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String BANK_SELECTED = ChatColor.GOLD + "Bank region selected as %s.";
 	public static final String OWNERSHIP_TRANSFERRED = ChatColor.GOLD + "%s transferred %s ownership of %s" + ChatColor.GOLD + ".";
-	public static final String NAME_CHANGED = ChatColor.GOLD + "Bank name was successfully changed.";
+	public static final String BANK_NAME_CHANGED = ChatColor.GOLD + "Bank name was successfully changed.";
 	
 	// DENY NOTIFICATIONS
 	public static final String MUST_BE_OWNER = ChatColor.RED + "You must be the owner of the account to do that.";
@@ -99,7 +99,7 @@ public class Messages {
 	public static final String BANK_LIMIT_REACHED = "You are not allowed to create any more banks!";
 	public static final String ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create any more accounts!";
 	public static final String NO_SELF_BANKING = ChatColor.RED + "You are not allowed to create an account at your own bank.";
-	public static final String PER_BANK_ACCOUNT_LIMIT_REACHED = ChatColor.RED + "You are not allowed to create another account at this bank.";
+	public static final String ACCOUNT_LIMIT_AT_BANK_REACHED = ChatColor.RED + "You are not allowed to create another account at this bank.";
 	public static final String PLAYER_COMMAND_ONLY = ChatColor.RED + "Only players can use that command.";
 	public static final String SAME_ACCOUNT = ChatColor.RED + "Nothing happened. That is the same account.";
 	public static final String SELECTION_TOO_LARGE = ChatColor.RED + "You are not allowed to create a bank of that size, as it would exceed the volume limit of %d blocks by %d.";
@@ -123,9 +123,8 @@ public class Messages {
 	public static final String NO_PERMISSION_ACCOUNT_UNTRUST_OTHER = NO_PERMISSION + "remove a co-owner from someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_REMOVE_OTHER = NO_PERMISSION + "remove someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_REMOVEALL = NO_PERMISSION + "remove all accounts.";
-	public static final String NO_PERMISSION_ACCOUNT_LIST_OTHER = NO_PERMISSION + "view a list of others' accounts.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_VIEW = NO_PERMISSION + "view someone else's account.";
-	public static final String NO_PERMISSION_ACCOUNT_OTHER_EDIT = NO_PERMISSION + "edit someone else's account contents.";
+	public static final String NO_PERMISSION_ACCOUNT_VIEW_OTHER = NO_PERMISSION + "view someone else's account.";
+	public static final String NO_PERMISSION_ACCOUNT_EDIT_OTHER = NO_PERMISSION + "edit someone else's account contents.";
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE = NO_PERMISSION + "migrate an account.";
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE_OTHER = NO_PERMISSION + "migrate someone else's account.";
 	public static final String NO_PERMISSION_ACCOUNT_MIGRATE_BANK = NO_PERMISSION + "migrate an account to another bank.";

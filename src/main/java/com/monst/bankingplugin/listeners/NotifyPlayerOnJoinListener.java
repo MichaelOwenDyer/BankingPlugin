@@ -42,7 +42,7 @@ public class NotifyPlayerOnJoinListener implements Listener {
 
             database.getOfflineAccountRevenue(p, logoutTime, Callback.of(plugin, bigDecimal -> {
                 if (bigDecimal.signum() > 0)
-                    p.sendMessage(String.format(Messages.OFFLINE_INTEREST_EARNED, Utils.format(bigDecimal)));
+                    p.sendMessage(String.format(Messages.OFFLINE_ACCOUNT_INTEREST, Utils.format(bigDecimal)));
             }));
 
             // Player does not actually log off here, this saves the last time the player was notified about changes

@@ -1,0 +1,332 @@
+# Set the message when an account is created at the clicked chest.
+# Usable placeholders: %CREATION-PRICE%
+message.account-created=&6You were withdrawn &c%CREATION-PRICE% &6to create this account.
+
+# Set the message when an admin account is created at the clicked chest.
+# Usable placeholders: %CREATION-PRICE%
+message.admin-account-created=&6You were withdrawn &c%CREATION-PRICE% &6to create this admin account.
+
+# Set the message when the clicked chest already is an account.
+message.chest-already-account=&cChest is already an account.
+
+# Set the message when there is a block above the clicked chest.
+message.chest-blocked=&cThere must not be a block above the chest.
+
+# Set the message when a player tries to place a chest next to an account's chest
+# to create a double chest account, but there is a block above the placed chest.
+message.double-chest-blocked=&cThere must not be a block above the chest.
+
+# Set the message when the clicked account is removed but no refund was given.
+message.account-removed=&6Account removed.
+
+# Set the message when the clicked account is removed and the player is refunded
+# the creation price.
+# Usable placeholders: %CREATION-PRICE%
+message.account-removed-refund=&6Account removed. You were refunded &c%CREATION-PRICE%&6.
+
+# Set the message when all shops of a player were removed.
+# Usable placeholders: %AMOUNT%, %VENDOR%
+message.all-shops-removed=&6Removed all (&c%AMOUNT%&6) shops of &c%VENDOR%&6.
+
+# Set the message when the clicked chest is not an account.
+message.chest-no-account=&cChest is not an account.
+
+# Set the message when the player doesn't have enough money to create an account
+# Usable placeholders: %CREATION-PRICE%
+message.account-create-not-enough-money=&cNot enough money. You need &6%CREATION-PRICE% &cto create an account.
+
+# Set the vendor message the player gets after entering '/account info'.
+# Usable placeholders: %VENDOR%
+message.shopInfo.vendor=&6Vendor: &e%VENDOR%
+
+# Set the product message the player gets after entering '/account info'.
+# Usable placeholders: %AMOUNT%, %ITEMNAME%
+message.shopInfo.product=&6Product: &e%AMOUNT% x %ITEMNAME%
+
+# Set the in-stock message the player after entering '/account info'.
+# Usable placeholders=%STOCK%
+message.shopInfo.stock=&6In Stock: &e%STOCK%
+
+# Set the chest-space message the player after entering '/account info'.
+# Usable placeholders=%CHEST-SPACE%
+message.shopInfo.chest-space=&6Space in chest: &e%CHEST-SPACE%
+
+# Set the price message the player gets after entering '/account info'.
+# Usable placeholders: %BUY-PRICE%, %SELL-PRICE%
+message.shopInfo.price=&6Price: Buy: &e%BUY-PRICE%&6 Sell: &e%SELL-PRICE%
+
+# If the sell price or buy price is disabled, this message will be displayed instead of the price in the message above.
+message.shopInfo.disabled=&7Disabled
+
+# Set the type message the player gets after entering '/account info' ...
+# ... when the account is normal.
+message.shopInfo.is-normal=&6Type: &eNormal
+
+# ... when the account is an admin account.
+message.shopInfo.is-admin=&6Type: &eAdmin
+
+# Set the message when the player tries to create an account with sell price and buy price set to 0
+message.buy-and-sell-disabled=&cYou can't create an account with buying and selling disabled.
+
+# Set the message when the player successfully bought something.
+# Usable placeholders: %AMOUNT%, %ITEMNAME%, %BUY-PRICE%, %VENDOR%
+message.buy-success=&aYou bought &6%AMOUNT% x %ITEMNAME%&a for &6%BUY-PRICE%&a from &6%VENDOR%&a.
+
+# Set the message when the player successfully bought something from an admin account.
+# Usable placeholders: %AMOUNT%, %ITEMNAME%, %BUY-PRICE%
+message.buy-success-admin=&aYou bought &6%AMOUNT% x %ITEMNAME%&a for &6%BUY-PRICE%&a.
+
+# Set the message when the player successfully sold something.
+# Usable placeholders: %AMOUNT%, %ITEMNAME%, %SELL-PRICE%, %VENDOR%
+message.sell-success=&aYou sold &6%AMOUNT% x %ITEMNAME%&a for &6%SELL-PRICE%&a to &6%VENDOR%&a.
+
+# Set the message when the player successfully sold something to an admin account.
+# Usable placeholders: %AMOUNT%, %ITEMNAME%, %SELL-PRICE%
+message.sell-success-admin=&aYou sold &6%AMOUNT% x %ITEMNAME%&a for &6%SELL-PRICE%&a.
+
+# Set the message when a player bought something from the player's account.
+# Usable placeholders: %AMOUNT%, %ITEMNAME%, %BUY-PRICE%, %PLAYER%
+message.someone-bought=&6%PLAYER% &abought &6%AMOUNT% x %ITEMNAME%&a for &6%BUY-PRICE%&a from your account.
+
+# Set the message when a player sold something to the player's account.
+# Usable placeholders: %AMOUNT%, %ITEMNAME%, %SELL-PRICE%, %PLAYER%
+message.someone-sold=&6%PLAYER% &asold &6%AMOUNT% x %ITEMNAME%&a for &6%SELL-PRICE%&a to your account.
+
+# Set the message when a player joins and made a revenue while he was offline.
+# Usable placeholders: %REVENUE%
+message.revenue-while-offline=&6While you were offline, your shops have made a revenue of &c%REVENUE%&6.
+
+# Set the message when the inventory is full when the player is buying something.
+message.not-enough-inventory-space=&cNot enough space in inventory.
+
+# Set the message when the account's inventory is full when the player is selling something.
+message.chest-not-enough-inventory-space=&cAccount is full.
+
+# Set the message when the player doesn't have enough money to buy something.
+message.not-enough-money=&cNot enough money.
+
+# Set the message when the player doesn't have enough items to sell.
+message.not-enough-items=&cNot enough items.
+
+# Set the message when the vendor doesn't have enough money to buy something from the player
+message.vendor-not-enough-money=&cVendor has not enough money.
+
+# Set the message when the account is out of stock.
+message.out-of-stock=&cAccount out of stock.
+
+# Set the message the vendor gets when his account is out of stock
+# Usable placeholders: %AMOUNT%, %ITEMNAME%
+message.vendor-out-of-stock=&cYour account that sells &6%AMOUNT% x %ITEMNAME% &cis out of stock.
+
+# Set the message when an error occurred.
+# Usable placeholders: %ERROR%
+message.error-occurred=&cAn error occurred: %ERROR%
+
+# Set the message when the arguments <AMOUNT>, <BUY-PRICE> and/or <SELL-PRICE> of '/account create' are not a number.
+message.amount-and-price-not-number=&cAmount and prices must be numbers.
+
+# Set the message when the argument <AMOUNT> is zero
+message.amount-is-zero=&cAmount must be greater than 0.
+
+# Set the message when the config value "allow-decimals-in-prices" is set to false
+# and a player enters a price with decimals
+message.prices-contain-decimals=&cPrices must not contain decimals.
+
+# Set the message when the player doesn't hold an item in the hand.
+message.no-item-in-hand=&cNo item in hand
+
+# Set the message when the player must click a chest to create an account.
+message.click-chest-to-create-account=&aClick a chest within 15 seconds to create an account.
+
+# Set the message when the player must click an account to remove it.
+message.click-chest-to-remove-account=&aClick an account within 15 seconds to remove it.
+
+# Set the message when the player must click an account to retrieve information.
+message.click-chest-for-info=&aClick an account within 15 seconds to retrieve information.
+
+# Set the message when the player must click an account to open it.
+message.click-chest-to-open-account=&aClick an account within 15 seconds to open it.
+
+# Set the message when the player must click the account again to confirm the buy/sell.
+message.click-to-confirm=&aClick again to confirm.
+
+# Set the message when the player opened an account.
+# Usable placeholders: %VENDOR%
+message.opened-account=&aYou opened %VENDOR%'s account.
+
+# Set the message when the player tries to break an account.
+message.cannot-break-account=&cYou can't break an account.
+
+# Set the message when the player tries to sell a broken item.
+message.cannot-sell-broken-item=&cYou can't sell a broken item.
+
+# Set the message when the entered buy price is below the minimum price.
+# Usable placeholders: %MIN-PRICE%
+message.buy-price-too-low=&cThe buy price must be higher than %MIN-PRICE%.
+
+# Set the message when the entered sell price is below the minimum price.
+# Usable placeholders: %MIN-PRICE%
+message.sell-price-too-low=&cThe sell price must be higher than %MIN-PRICE%.
+
+# Set the message when the entered buy price is below the maximum price.
+# Usable placeholders: %MAX-PRICE%
+message.buy-price-too-high=&cThe buy price must be lower than %MAX-PRICE%.
+
+# Set the message when the entered sell price is below the maximum price.
+# Usable placeholders: %MAX-PRICE%
+message.sell-price-too-high=&cThe sell price must be lower than %MAX-PRICE%.
+
+# Set the message when buying is disabled at the account.
+message.buying-disabled=&cBuying is disabled at this account.
+
+# Set the message when selling is disabled at the account.
+message.selling-disabled=&cSelling is disabled at this account.
+
+# Set the message when reloading is done.
+# Usable placeholders: %AMOUNT% (Amount of shops)
+message.reloaded-shops=&aSuccessfully reloaded %AMOUNT% account/s.
+
+# Set the message when the player's account limit is reached.
+# Usable placeholders: %LIMIT%
+message.account-limit-reached=&cYou reached your limit of &6%LIMIT% &cshop/s.
+
+# Set the message that shows the player how many account slots of his account limit he has occupied.
+# Usable placeholders: %LIMIT%, %AMOUNT% (Amount of shops)
+message.occupied-account-slots=&6You have &c%AMOUNT%/%LIMIT% &6shop slot/s occupied.
+
+# Set the message when the player tries to create an account with an item which is listed in the blacklist.
+message.cannot-sell-item=&cYou cannot create an account with this item.
+
+# Set the message when the player tries to use an account in creative mode.
+message.use-in-creative=&cYou cannot use an account in creative mode.
+
+# Set the message when the player has to select an item from the creative menu.
+message.select-item=&aOpen your inventory, and drop an item to select it.
+
+# Set the message when the player has selected an item from the creative menu.
+# Usable placeholders: %ITEMNAME%
+message.item-selected=&aItem has been selected: &6%ITEMNAME%
+
+# Set the message when the player closes the creative menu to select an item.
+message.creation-cancelled=&cAccount creation has been cancelled.
+
+# Set the message when an update is available.
+# Usable placeholders: %VERSION%
+message.update.update-available=&6&lVersion &c&l%VERSION% &6&lof &c&lAccountChest &6&lis available &c&lhere.
+
+# Set the message you get when hovering over the available message.
+message.update.click-to-download=Click to download
+
+# Set the message when no update is available.
+message.update.no-update=&6&lNo new update available.
+
+# Set the message when the update checker is started.
+message.update.checking=&6&lChecking for updates...
+
+# Set the message when an error occurs while checking for updates.
+message.update.error=&c&lError while checking for updates.
+
+# Set the message when a not permitted player tries to create an account.
+message.noPermission.create=&cYou don't have permission to create an account.
+
+# Set the message when a not permitted player tries to create an admin account.
+message.noPermission.create-admin=&cYou don't have permission to create an admin account.
+
+# Set the message when a not permitted player tries to create an account on a protected chest.
+message.noPermission.create-protected=&cYou don't have permission to create an account here.
+
+# Set the message when a not permitted player tries to open another player's account.
+message.noPermission.open-others=&cYou don't have permission to open this chest.
+
+# Set the message when a not permitted player tries to buy something.
+message.noPermission.buy=&cYou don't have permission to buy something.
+
+# Set the message when a not permitted player tries to sell something.
+message.noPermission.sell=&cYou don't have permission to sell something.
+
+# Set the message when a player tries to buy something in a region/plot that denied account use.
+message.noPermission.buy-here=&cYou don't have permission to buy something here.
+
+# Set the message when a player tries to sell something in a region/plot region that denied account use.
+message.noPermission.sell-here=&cYou don't have permission to sell something here.
+
+# Set the message when a not permitted player tries to remove another player's account.
+message.noPermission.remove-others=&cYou don't have permission to remove this account.
+
+# Set the message when a not permitted player tries to remove an admin account.
+message.noPermission.remove-admin=&cYou don't have permission to remove an admin account.
+
+# Set the message when a not permitted player tries to reload the shops.
+message.noPermission.reload=&cYou don't have permission to reload the shops.
+
+# Set the message when a not permitted player tries to check for updates.
+message.noPermission.update=&cYou don't have permission to check for updates.
+
+# Set the message when a not permitted player tries to change configuration values.
+message.noPermission.config=&cYou don't have permission to change configuration values.
+
+# Set the message when a not permitted player tries to extend another player's account's chest.
+message.noPermission.extend-others=&cYou don't have permission to extend this chest.
+
+# Set the message when a not permitted player tries to extend a chest into a protected region/plot (e.g. WorldGuard/Towny).
+message.noPermission.extend-protected=&cYou don't have permission to extend this chest to here.
+
+# Set the header of the help message the player gets after entering '/account' or an invalid command.
+# Usable placeholders: %COMMAND%
+message.commandDescription.header=&6==== &c/%COMMAND% &6Help
+
+# Set the footer of the help message the player gets after entering '/account' or an invalid command.
+# Usable placeholders: %COMMAND%
+message.commandDescription.footer=&6==== End
+
+# Set the command description message for '/account create' when you type '/account'.
+# Usable placeholders: %COMMAND%
+message.commandDescription.create=&a/%COMMAND% create <amount> <buy-price> <sell-price> - Create an account.
+
+# Set the command description message for '/account create' when you type '/account' and have permission "shopchest.create.admin"
+# Usable placeholders: %COMMAND%
+message.commandDescription.create-admin=&a/%COMMAND% create <amount> <buy-price> <sell-price> [normal|admin] - Create an account.
+
+# Set the command description message for '/account remove' when you type '/account'.
+# Usable placeholders: %COMMAND%
+message.commandDescription.remove=&a/%COMMAND% remove - Remove an account.
+
+# Set the command description message for '/account info' when you type '/account'.
+# Usable placeholders: %COMMAND%
+message.commandDescription.info=&a/%COMMAND% info - Retrieve account information.
+
+# Set the command description message for '/account removeall' when you type '/account'.
+# Usable placeholders: %COMMAND%
+message.commandDescription.removeall=&a/%COMMAND% removeall - Remove all shops of a player.
+
+# Set the command description message for '/account reload' when you type '/account'.
+# Usable placeholders: %COMMAND%
+message.commandDescription.reload=&a/%COMMAND% reload - Reload shops.
+
+# Set the command description message for '/account update' when you type '/account'.
+# Usable placeholders: %COMMAND%
+message.commandDescription.update=&a/%COMMAND% update - Check for Updates.
+
+# Set the command description message for '/account limits' when you type '/account'.
+# Usable placeholders: %COMMAND%
+message.commandDescription.limits=&a/%COMMAND% limits - View account limits.
+
+# Set the command description message for '/account open' when you type '/account'.
+# Usable placeholders: %COMMAND%
+message.commandDescription.open=&a/%COMMAND% open - Open an account.
+
+# Set the command description message for '/account config' when you type '/account'.
+# Usable placeholders: %COMMAND%
+message.commandDescription.config=&a/%COMMAND% config <set|add|remove> <property> <value> - Change configuration values.
+
+# Set the message a player gets after setting a configuration value per command
+# Usable placeholders: %PROPERTY%, %VALUE%
+message.config.set=&6Changed &a%PROPERTY% &6to &a%VALUE%&6.
+
+# Set the message a player gets after adding a value to a list in the configuration per command
+# Usable placeholders: %PROPERTY%, %VALUE%
+message.config.added=&6Added &a%VALUE% &6to &a%PROPERTY%&6.
+
+# Set the message a player gets after removing a value from a list in the configuration per command
+# Usable placeholders: %PROPERTY%, %VALUE%
+message.config.removed=&6Removed &a%VALUE% &6from &a%PROPERTY%&6.

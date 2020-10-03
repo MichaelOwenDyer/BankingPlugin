@@ -274,7 +274,7 @@ public class AccountProtectListener implements Listener {
 		Account account = accountUtils.getAccount(e.getInventory().getLocation());
 		Player executor = (Player) e.getWhoClicked();
 		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
-			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_EDIT);
+			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EDIT_OTHER);
 			e.setCancelled(true);
 		}
 	}

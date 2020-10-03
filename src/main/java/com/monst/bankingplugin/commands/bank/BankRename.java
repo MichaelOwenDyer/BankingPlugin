@@ -71,7 +71,7 @@ public class BankRename extends BankCommand.SubCommand {
         }
         if (bank.getName().contentEquals(newName)) {
             plugin.debug("Same name");
-            sender.sendMessage(Messages.NAME_ALREADY);
+            sender.sendMessage(Messages.NAME_NOT_CHANGED);
             return true;
         }
         if (!bankUtils.isUniqueNameIgnoring(newName, bank.getName())) {
@@ -86,7 +86,7 @@ public class BankRename extends BankCommand.SubCommand {
         }
 
         plugin.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
-        sender.sendMessage(Messages.NAME_CHANGED);
+        sender.sendMessage(Messages.BANK_NAME_CHANGED);
         bank.setName(newName);
         return true;
     }
