@@ -1,28 +1,25 @@
 package com.monst.bankingplugin.lang;
 
+import com.monst.bankingplugin.BankingPlugin;
+
 public enum Placeholder {
 
-    OWNER("%OWNER%"),
-    BALANCE("%BALANCE%", true),
-    ITEM_NAME("%ITEMNAME%"),
-    CREATION_PRICE("%CREATION-PRICE%", true),
-    ERROR("%ERROR%"),
-    MIN_BALANCE("%MIN-BALANCE%", true),
-    MAX_BALANCE("%MAX-BALANCE%", true),
-    BUY_PRICE("%BUY-PRICE%", true),
-    SELL_PRICE("%SELL-PRICE%", true),
-    LIMIT("%LIMIT%"),
-    PLAYER("%PLAYER%"),
-    PROPERTY("%PROPERTY%"),
-    VALUE("%VALUE%"),
-    EXTENDED("%EXTENDED%"),
-    REVENUE("%REVENUE%", true),
-    GENERATION("%GENERATION%"),
-    STOCK("%STOCK%"),
-    CHEST_SPACE("%CHEST-SPACE%"),
-    MAX_STACK("%MAX-STACK%"),
-    COMMAND("%COMMAND%"),
-    VERSION("%VERSION%");
+    AMOUNT ("%AMOUNT%", true),
+    BANK_NAME ("%BANK_NAME%"),
+    PLAYER ("%PLAYER%"),
+    OWNER ("%OWNER%"),
+    NUMBER_OF_ACCOUNTS ("%NUMBER_OF_ACCOUNTS%"),
+    NUMBER_OF_BANKS ("%NUMBER_OF_BANKS%"),
+    NUMBER ("%NUMBER%"),
+    STRING ("%STRING%"),
+    ACCOUNT_BALANCE ("%ACCOUNT_BALANCE%", true),
+    MULTIPLIER ("%MULTIPLIER%"),
+    ERROR ("%ERROR%"),
+    LIMIT ("%LIMIT%"),
+    PROPERTY ("%PROPERTY%"),
+    VALUE ("%VALUE%"),
+    COMMAND ("%COMMAND%"),
+    VERSION ("%VERSION%");
 
     private final String name;
     private final boolean isMoney;
@@ -36,12 +33,10 @@ public enum Placeholder {
         this.isMoney = isMoney;
     }
 
-    public boolean isMoney() {
-        return isMoney;
-    }
-
     @Override
     public String toString() {
+        if (isMoney)
+            return BankingPlugin.getInstance().getEconomy().format(Double.parseDouble(name));
         return name;
     }
 

@@ -29,7 +29,7 @@ public class Messages {
 	public static final String ACCOUNT_REIMBURSEMENT_RECEIVED = ChatColor.GOLD + "You have been reimbursed " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_REIMBURSEMENT_PAID = ChatColor.GOLD + "You reimbursed %s " + ChatColor.GREEN + "$%s" + ChatColor.GOLD + ".";
 	public static final String ACCOUNT_BALANCE_NOT_ZERO = ChatColor.RED + "That account is not empty. Are you sure?";
-	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "%d account%s successfully removed.";
+	public static final String ACCOUNTS_REMOVED = ChatColor.GREEN + "%d account%s were removed.";
 	public static final String BANKS_REMOVED = ChatColor.GREEN + "%d bank%s and %d account%s were removed.";
 	
 	// NOTIFICATIONS
@@ -173,7 +173,7 @@ public class Messages {
 	public static final String COMMAND_USAGE_ACCOUNT_CREATE = ACCOUNT_USAGE_PREFIX + "create";
 	public static final String COMMAND_USAGE_ACCOUNT_REMOVE = ACCOUNT_USAGE_PREFIX + "remove";
 	public static final String COMMAND_USAGE_ACCOUNT_INFO = ACCOUNT_USAGE_PREFIX + "info";
-	public static final String COMMAND_USAGE_ACCOUNT_LIST = ACCOUNT_USAGE_PREFIX + "list <all>";
+	public static final String COMMAND_USAGE_ACCOUNT_LIST = ACCOUNT_USAGE_PREFIX + "list";
 	public static final String COMMAND_USAGE_ACCOUNT_LIMITS = ACCOUNT_USAGE_PREFIX + "limits";
 	public static final String COMMAND_USAGE_ACCOUNT_REMOVEALL = ACCOUNT_USAGE_PREFIX + "removeall";
 	public static final String COMMAND_USAGE_ACCOUNT_SET = ACCOUNT_USAGE_PREFIX + "set [field] [value]";
