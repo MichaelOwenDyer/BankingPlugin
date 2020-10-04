@@ -252,15 +252,21 @@ blacklist:
 # - "DIORITE"
 
 
-# Set this value to customize how much revenue banks should generate for their owners.
-# Bank revenue is calculated as a function of the total value of the bank and of the inequality (https://en.wikipedia.org/wiki/Gini_coefficient) of the balances of its accounts.
-# The calculation follows this formula: [ R = (this config value) * (total value of bank) * (1 - gini) * ln(number of accounts with unique owners) ]
-# The more unequal the balances of the bank's accounts, the less the owner will earn.
-# In this way, a large number of medium-sized accounts are more valuable to the bank owner than many small accounts and a few very valuable ones, assuming the total value is equal.
-# View the graph of the function here: https://www.desmos.com/calculator/csrmrifa7u
-# Type: double
-# Default: 0.10
-bank-revenue-multiplier: 0.10
+# Set this value to customize how much revenue banks owners should earn based on a variety of factors.
+# The available variables are as follows:
+#
+# x = total value of all accounts at the bank
+#
+# g = gini coefficient (equality score) of the bank https://en.wikipedia.org/wiki/Gini_coefficient
+#
+# n = number of account holders at the bank
+#
+# a = number of accounts at the bank
+#
+# View the graph of the default function here: https://www.desmos.com/calculator/csrmrifa7u
+# Type: Function
+# Default: '(0.10 * x) * (1 - g) * ln(n)'
+bank-revenue-function: '(0.10 * x) * (1 - g) * ln(n)'
 
 # Set whether the custom WorldGuard flag should be allowed by default.
 worldguard-default-flag-value: false
