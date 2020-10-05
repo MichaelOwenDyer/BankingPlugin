@@ -276,6 +276,7 @@ disabled-worlds:
 # per Essentials mail while they are offline.
 enable-mail: true
 
+language-file: "en_US"
   
 # Set the regex pattern that bank names and account nicknames should be matched against. Players will not be allowed to set names that fail to match with this pattern. Invalid patterns will not be considered.
 # Type: String

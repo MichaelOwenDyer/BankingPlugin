@@ -1,6 +1,8 @@
 package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import javax.annotation.Nonnull;
@@ -10,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LanguageConfig extends FileConfiguration {
 
@@ -25,28 +28,40 @@ public class LanguageConfig extends FileConfiguration {
         this.showMessages = showMessages;
     }
 
-    @Override
     @Nonnull
+    public String getString(@Nonnull Message message) {
+        String path = message.getPath();
+        String defaultMessage = message.getDefaultMessage();
+        return Utils.nonNull(getString(path, null), () -> {
+            // Value was missing
+            values.put(path, defaultMessage);
+            if (file != null) {
+                // Append missing entry to loaded language file
+                try (FileWriter writer = new FileWriter(file, true)) {
+                    writer.write("# " + message.getDescription() + "\n");
+                    writer.write("# Available placeholders: "
+                            + message.getAvailablePlaceholders().stream()
+                                    .map(p -> "%" + p.toString() + "%")
+                                    .collect(Collectors.joining(", ")) + "\n");
+                    writer.write(path + "=" + defaultMessage + "\n");
+                    if (showMessages)
+                        plugin.getLogger().info("Missing translation for \"" + path + "\" has been added as \"" + defaultMessage + "\" to the selected language file.");
+                } catch (IOException e) {
+                    plugin.debug("Failed to add language entry");
+                    plugin.debug(e);
+                    if (showMessages)
+                        plugin.getLogger().severe("Failed to add missing translation for \"" + path + "\".");
+                }
+            }
+            return defaultMessage;
+        });
+    }
+
+    @Override
     public String getString(@Nonnull String path, String defaultValue) {
         for (Map.Entry<String, String> entry : values.entrySet())
             if (entry.getKey().equals(path))
                 return entry.getValue();
-
-        // Value was missing
-        values.put(path, defaultValue);
-        if (file != null) {
-            // Append missing entry to loaded language file
-            try (FileWriter writer = new FileWriter(file, true)) {
-                writer.write(path + "=" + defaultValue + "\n");
-                if (showMessages)
-                    plugin.getLogger().info("Missing translation for \"" + path + "\" has been added as \"" + defaultValue + "\" to the selected language file.");
-            } catch (IOException e) {
-                plugin.debug("Failed to add language entry");
-                plugin.debug(e);
-                if (showMessages)
-                    plugin.getLogger().severe("Failed to add missing translation for \"" + path + "\".");
-            }
-        }
         return defaultValue;
     }
 

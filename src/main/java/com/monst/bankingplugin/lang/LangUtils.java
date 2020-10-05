@@ -12,10 +12,10 @@ public class LangUtils {
     private static final BankingPlugin plugin = BankingPlugin.getInstance();
     private static final EnumMap<Message, String> messages = new EnumMap<>(Message.class);
 
-    private static void reload() {
+    public static void reload() {
         LanguageConfig langConfig = plugin.getPluginConfig().getLanguageConfig();
         for (Message message : Message.values())
-            messages.put(message, langConfig.getString(message.getPath(), message.getDefaultMessage()));
+            messages.put(message, langConfig.getString(message));
     }
 
     /**

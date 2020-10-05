@@ -3,6 +3,7 @@ package com.monst.bankingplugin.config;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
+import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -298,7 +299,7 @@ public class Config {
 
         plugin.saveDefaultConfig();
 
-		reload();
+		reload(true, true);
     }
 
     public LanguageConfig getLanguageConfig() {
@@ -393,13 +394,13 @@ public class Config {
 		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
 			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
 		plugin.saveConfig();
-		reload();
+		reload(false, true);
 	}
 
     /**
      * Reload the configuration values from config.yml
      */
-	public void reload() {
+	public void reload(boolean firstLoad, boolean langReload) {
         plugin.reloadConfig();
         
         FileConfiguration config = plugin.getConfig();
@@ -525,9 +526,14 @@ public class Config {
 		wgAllowCreateBankDefault = nonNull(config.getBoolean("worldguard-default-flag-value"), false);
 		disabledWorlds = nonNull(config.getStringList("disabled-worlds"), Collections::emptyList);
 		enableMail = nonNull(config.getBoolean("enable-mail"), true);
+		languageFile = nonNull(config.getString("language-file"), "en_US");
 		nameRegex = nonNull(config.getString("name-regex"), "");
 		databaseTablePrefix = nonNull(config.getString("table-prefix"), "bankingplugin_");
-        
+
+		if (firstLoad || langReload)
+			loadLanguageConfig(true);
+		if (!firstLoad && langReload)
+			LangUtils.reload();
     }
 
     public static class ConfigPair<K> extends Pair<Boolean, K> {
