@@ -6,6 +6,7 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 
 import java.util.EnumMap;
+import java.util.EnumSet;
 
 public class LangUtils {
 
@@ -27,8 +28,20 @@ public class LangUtils {
         String finalMessage = messages.get(message);
         if (finalMessage == null)
             return ChatColor.RED + "An error occurred: Message not found: " + message.toString();
-        for (Replacement replacement : replacements)
-            finalMessage = finalMessage.replace(replacement.getPlaceholder().toString(), replacement.getReplacement());
+
+        EnumSet<Placeholder> allowedPlaceholders = message.getAvailablePlaceholders().clone();
+
+        for (Replacement replacement : replacements) {
+            Placeholder placeholder = replacement.getPlaceholder();
+            if (!allowedPlaceholders.contains(placeholder))
+                continue;
+            finalMessage = finalMessage.replace(placeholder.toString(), replacement.getReplacement());
+            allowedPlaceholders.remove(placeholder); // Should be empty by end of loop
+        }
+
+        for (Placeholder placeholder : allowedPlaceholders)
+            plugin.debugf("Placeholder missing from message call! Message: %s, Placeholder: %s", message.toString(), placeholder.toString());
+
         return Utils.colorize(finalMessage);
     }
 

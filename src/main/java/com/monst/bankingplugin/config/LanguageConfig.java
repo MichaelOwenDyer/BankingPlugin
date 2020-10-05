@@ -2,6 +2,7 @@ package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -38,12 +39,12 @@ public class LanguageConfig extends FileConfiguration {
             if (file != null) {
                 // Append missing entry to loaded language file
                 try (FileWriter writer = new FileWriter(file, true)) {
-                    writer.write("# " + message.getDescription() + "\n");
-                    writer.write("# Available placeholders: "
+                    writer.write("\n# Scenario: " + message.getDescription());
+                    writer.write("\n# Available placeholders: "
                             + message.getAvailablePlaceholders().stream()
-                                    .map(p -> "%" + p.toString() + "%")
-                                    .collect(Collectors.joining(", ")) + "\n");
-                    writer.write(path + "=" + defaultMessage + "\n");
+                                    .map(Placeholder::toString)
+                                    .collect(Collectors.joining(", ")));
+                    writer.write("\n" + path + "=" + defaultMessage + "\n");
                     if (showMessages)
                         plugin.getLogger().info("Missing translation for \"" + path + "\" has been added as \"" + defaultMessage + "\" to the selected language file.");
                 } catch (IOException e) {

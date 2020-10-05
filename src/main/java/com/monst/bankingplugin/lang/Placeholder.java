@@ -7,21 +7,25 @@ public enum Placeholder {
     AMOUNT_REMAINING (true),
     PLAYER_BALANCE (true),
     ACCOUNT_BALANCE (true),
-    BANK,
+    BANK_NAME,
+    ACCOUNT_NAME,
     PLAYER,
-    OWNER,
     NUMBER_OF_ACCOUNTS,
     NUMBER_OF_BANKS,
     NUMBER,
     STRING,
-    MULTIPLIER,
     ERROR,
     LIMIT,
     PROPERTY,
     VALUE,
-    COMMAND,
+    PREVIOUS_VALUE,
+    WORLD,
+    ACCOUNT_COMMAND,
+    BANK_COMMAND,
+    CONTROL_COMMAND,
     VERSION;
 
+    private String placeholder = null;
     private final boolean isMoney;
 
     Placeholder() {
@@ -34,7 +38,7 @@ public enum Placeholder {
 
     @Override
     public String toString() {
-        return "%" + name() + "%";
+        return placeholder != null ? placeholder : (placeholder = "%" + name() + "%");
     }
 
     public boolean isMoney() {

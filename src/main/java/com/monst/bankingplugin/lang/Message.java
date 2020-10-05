@@ -1,800 +1,900 @@
 package com.monst.bankingplugin.lang;
 
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.EnumSet;
 
 public enum Message {
 
-    ACCOUNT_CREATED(
-            "An account is created at the clicked chest.",
+    ACCOUNT_CREATED (
+            "A player creates an account at a bank.",
             "&6Account created!",
-            Placeholder.PRICE
+            Placeholder.BANK_NAME
     ),
-    ACCOUNT_CREATE_INSUFFICIENT_FUNDS(
+    ACCOUNT_CREATE_INSUFFICIENT_FUNDS (
             "A player cannot afford to create an account.",
-            "&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to create an account."
+            "&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to create an account.",
+            Placeholder.PRICE, Placeholder.PLAYER_BALANCE, Placeholder.AMOUNT_REMAINING
     ),
-    NO_SELF_BANKING(
+    NO_SELF_BANKING (
             "A player tries and is not allowed to create an account at their own bank.",
-            "&cYou are not allowed to create an account at your own bank."
+            "&cYou are not allowed to create an account at your own bank.",
+            Placeholder.BANK_NAME
     ),
-    ACCOUNT_CREATE_FEE_PAID(
+    ACCOUNT_CREATE_FEE_PAID (
             "A player is charged money to create an account at a bank.",
-            "&6You have been charged &a%AMOUNT% &6to create an account at &7%BANK%&6."
+            "&6You have been charged &a%PRICE% &6to create an account at &7%BANK%&6.",
+            Placeholder.PRICE, Placeholder.BANK_NAME
     ),
-    ACCOUNT_CREATE_FEE_RECEIVED(
-            "",
-            "&6%PLAYER% has paid you &a%AMOUNT% &6to create an account at &7%BANK%&6."
+    ACCOUNT_CREATE_FEE_RECEIVED (
+            "A bank owner receives payment from a player who created an account.",
+            "&6%PLAYER% has paid you &a%AMOUNT% &6to create an account at &7%BANK%&6.",
+            Placeholder.PLAYER, Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
-    ACCOUNT_EXTEND_FEE_PAID(
-            "",
-            "&6You have been charged &a%AMOUNT% &6to extend an account at &7%BANK%&6."
+    ACCOUNT_EXTEND_FEE_PAID (
+            "A player is charged money to extend their account chest into a double chest.",
+            "&6You have been charged &a%PRICE% &6to extend an account at &7%BANK%&6.",
+            Placeholder.PRICE, Placeholder.BANK_NAME
     ),
-    ACCOUNT_EXTEND_FEE_RECEIVED(
-            "",
-            "&6%PLAYER% has paid you &a%AMOUNT% &6to extend an account at &7%BANK%&6."
+    ACCOUNT_EXTEND_FEE_RECEIVED (
+            "A bank owner receives payment from a player who extended their account.",
+            "&6%PLAYER% has paid you &a%AMOUNT% &6to extend an account at &7%BANK%&6.",
+            Placeholder.PLAYER, Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
-    ACCOUNT_REMOVED(
-            "",
-            "&6Account removed."
+    ACCOUNT_REMOVED (
+            "A player removes an account at a bank.",
+            "&6Account removed.",
+            Placeholder.BANK_NAME
     ),
-    ACCOUNT_REMOVED_ALL(
-            "",
-            "&6Successfully removed &b%NUMBER_OF_ACCOUNTS% &6account%s."
+    ACCOUNT_REMOVED_ALL (
+            "An admin removes multiple accounts at once.",
+            "&6Successfully removed &b%NUMBER_OF_ACCOUNTS% &6account%s.",
+            Placeholder.NUMBER_OF_ACCOUNTS
     ),
-    ACCOUNTS_NOT_FOUND(
-            "",
+    ACCOUNTS_NOT_FOUND (
+            "A player attempts to list the accounts of a player who does not have any accounts.",
             "&cNo accounts found."
     ),
-    ABOUT_TO_REMOVE_ACCOUNTS(
-            "",
-            "&6You are about to remove &b%NUMBER_OF_ACCOUNTS% &6account(s). Execute again to confirm."
+    ACCOUNT_CONFIRM_REMOVE_ALL (
+            "An admin must confirm removing multiple accounts at once.",
+            "&6You are about to remove &b%NUMBER_OF_ACCOUNTS% &6account(s). Execute again to confirm.",
+            Placeholder.NUMBER_OF_ACCOUNTS
     ),
-    ACCOUNT_BALANCE_NOT_ZERO(
-            "",
-            "&cThat account still has a balance of &a%BALANCE%&c. Are you sure?"
+    ACCOUNT_BALANCE_NOT_ZERO (
+            "A player tries to remove an account that still has items in it and must click again to confirm.",
+            "&cThat account still has a balance of &a%ACCOUNT_BALANCE%&c. Click again to confirm removal.",
+            Placeholder.ACCOUNT_BALANCE
     ),
-    ACCOUNT_LIMIT(
-            "",
-            "&6You own &b%NUMBER_OF_ACCOUNTS%&6/&b%LIMIT% &6allowed accounts."
+    ACCOUNT_LIMIT (
+            "A player executes the /account limits command.",
+            "&6You own &b%NUMBER_OF_ACCOUNTS%&6/&b%LIMIT% &6allowed accounts.",
+            Placeholder.NUMBER_OF_ACCOUNTS, Placeholder.LIMIT
     ),
-    ACCOUNT_LIMIT_REACHED(
-            "",
-            "&cYou are not allowed to create any more accounts!"
+    ACCOUNT_LIMIT_REACHED (
+            "A player attempts to create an account but has reached their account limit.",
+            "&cYou are not allowed to create any more accounts!",
+            Placeholder.LIMIT
     ),
-    ACCOUNT_RENAMED(
-            "",
-            "&6Account renamed."
+    ACCOUNT_RENAMED (
+            "A player sets an account nickname.",
+            "&6Account renamed.",
+            Placeholder.ACCOUNT_NAME
     ),
-    ACCOUNT_SET_MULTIPLIER(
-            "",
-            "&6Account multiplier set to &b%MULTIPLIER%&6."
+    ACCOUNT_SET_MULTIPLIER (
+            "An admin sets an account multiplier.",
+            "&6Account multiplier set to &b%NUMBER%&6.",
+            Placeholder.NUMBER
     ),
-    ACCOUNT_SET_INTEREST_DELAY(
-            "",
-            "&6Account interest delay set to &b%NUMBER%&6."
+    ACCOUNT_SET_INTEREST_DELAY (
+            "An admin sets an account interest delay.",
+            "&6Account interest delay set to &b%NUMBER%&6.",
+            Placeholder.NUMBER
     ),
-    ACCOUNT_SET_REMAINING_OFFLINE(
-            "",
-            "&6Account remaining offline payouts set to &b%NUMBER%&6."
+    ACCOUNT_SET_REMAINING_OFFLINE (
+            "A player sets the remaining offline payouts at an account.",
+            "&6Account remaining offline payouts set to &b%NUMBER%&6.",
+            Placeholder.NUMBER
     ),
-    ACCOUNT_SET_REMAINING_OFFLINE_RESET(
-            "",
-            "&6Account remaining offline payouts until multiplier reset set to &b%NUMBER%&6."
+    ACCOUNT_SET_REMAINING_OFFLINE_RESET (
+            "A player sets the remaining offline payouts before multiplier reset at an account.",
+            "&6Account remaining offline payouts until multiplier reset set to &b%NUMBER%&6.",
+            Placeholder.NUMBER
     ),
-    ACCOUNT_ABOUT_TO_TRANSFER(
-            "",
-            "&6Click again to confirm transferring ownership of an account to %PLAYER%."
+    ACCOUNT_CONFIRM_TRANSFER (
+            "A player clicks an account to transfer it to another player and must click again to confirm.",
+            "&6Click again to confirm transferring ownership of an account to %PLAYER%.",
+            Placeholder.PLAYER
     ),
-    ACCOUNT_TRANSFERRED(
-            "",
-            "&6You transferred %PLAYER% ownership of an account."
+    ACCOUNT_TRANSFERRED (
+            "A player transfers ownership of an account to another player.",
+            "&6You transferred %PLAYER% ownership of an account.",
+            Placeholder.PLAYER
     ),
-    ACCOUNT_TRANSFERRED_TO_YOU(
-            "",
-            "&6%OWNER% transferred you ownership of an account."
+    ACCOUNT_TRANSFERRED_TO_YOU (
+            "A player is transferred ownership of an account by another player.",
+            "&6%PLAYER% transferred you ownership of an account.",
+            Placeholder.PLAYER
     ),
-    ACCOUNT_MIGRATED(
-            "",
+    ACCOUNT_MIGRATED (
+            "A player clicks a chest to migrate an account into it.",
             "&6Account migrated!"
     ),
-    ACCOUNT_RECOVERED(
-            "",
+    ACCOUNT_RECOVERED (
+            "A player clicks a chest to recover a lost account into it.",
             "&6Account recovered!"
     ),
-    ACCOUNT_OPENED(
-            "",
-            "&6You opened %PLAYER%'s account chest."
+    ACCOUNT_OPENED (
+            "A player opens someone else's account chest using the account.view-other permission.",
+            "&6You opened %PLAYER%'s account chest.",
+            Placeholder.PLAYER
     ),
-    ACCOUNT_DEPOSIT(
-            "",
-            "&6You deposited &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6."
+    ACCOUNT_DEPOSIT (
+            "A player puts items into an account chest and closes the chest.",
+            "&6You deposited &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6.",
+            Placeholder.AMOUNT, Placeholder.ACCOUNT_BALANCE
     ),
-    ACCOUNT_WITHDRAWAL(
-            "",
-            "&6You withdrew &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6."
+    ACCOUNT_WITHDRAWAL (
+            "A player takes items out of an account chest and closes the chest.",
+            "&6You withdrew &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6.",
+            Placeholder.AMOUNT, Placeholder.ACCOUNT_BALANCE
     ),
-    ACCOUNT_INTEREST_EARNED(
-            "",
-            "&6You earned &a%AMOUNT% &6in interest on &b%NUMBER_OF_ACCOUNTS% &6accounts."
+    ACCOUNT_INTEREST_EARNED (
+            "A player earns interest on at least one account.",
+            "&6You earned &a%AMOUNT% &6in interest on &b%NUMBER_OF_ACCOUNTS% &6account(s).",
+            Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
-    OFFLINE_ACCOUNT_INTEREST(
-            "",
-            "&6You earned &a%AMOUNT% &6in interest while you were offline."
+    OFFLINE_ACCOUNT_INTEREST (
+            "A player logs onto the server after having earned interest offline.",
+            "&6You earned &a%AMOUNT% &6in interest while you were offline.",
+            Placeholder.AMOUNT
     ),
-    LOW_BALANCE_FEE_PAID(
-            "",
-            "&cYou paid &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccounts."
+    LOW_BALANCE_FEE_PAID (
+            "A player must pay low balance fees on at least one account.",
+            "&cYou paid &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccount(s).",
+            Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
-    MULTIPLIER_DECREASED(
-            "",
-            "&cAccount multiplier decreased to &b%MULTIPLIER%&c."
+    MULTIPLIER_DECREASED (
+            "A player removes too much worth from their account chest and causes the multiplier to decrease.",
+            "&cAccount multiplier decreased to &b%NUMBER%&c.",
+            Placeholder.NUMBER
     ),
-    CHEST_BLOCKED(
-            "",
+    CHEST_BLOCKED (
+            "A player attempts to create an account on a chest that cannot be opened due to an obstruction.",
             "&cChest is blocked."
     ),
-    CHEST_ALREADY_ACCOUNT(
-            "",
+    CHEST_ALREADY_ACCOUNT (
+            "A player attempts to create an account on a chest that is already an account.",
             "&cChest is already an account."
     ),
-    CANNOT_BREAK_ACCOUNT(
-            "",
+    CANNOT_BREAK_ACCOUNT (
+            "A player attempts to break an account chest.",
             "&cYou cannot break that account chest."
     ),
-    CHEST_NOT_IN_BANK(
-            "",
+    CHEST_NOT_IN_BANK (
+            "A player attempts to create an account at a chest not located in a bank.",
             "&cChest is not in a bank."
     ),
-
-    BANK_CREATED(
-            "",
-            "&6Bank created!"
+    BANK_CREATED (
+            "A player creates a bank.",
+            "&6Bank created!",
+            Placeholder.BANK_NAME
     ),
-    BANK_CREATE_INSUFFICIENT_FUNDS(
-            "",
-            "&cNot enough money. You need &a%AMOUNT% &cmore to create a bank."
+    BANK_CREATE_INSUFFICIENT_FUNDS (
+            "A player cannot afford to create a bank.",
+            "&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to create a bank.",
+            Placeholder.PRICE, Placeholder.AMOUNT_REMAINING, Placeholder.PLAYER_BALANCE
     ),
-    BANK_CREATE_FEE_PAID(
-            "",
-            "&6You have been charged &a%AMOUNT% &6to create a bank."
+    BANK_CREATE_FEE_PAID (
+            "A player is charged money to create a bank.",
+            "&6You have been charged &a%PRICE% &6to create a bank.",
+            Placeholder.PRICE
     ),
-    BANK_SELECT_REGION(
-            "",
+    BANK_SELECT_REGION (
+            "A player attempts to create a bank without a WorldEdit selection or specifying coordinates in the command.",
             "&cYou must select a WorldEdit region or specify coordinates manually."
     ),
-    WORLDEDIT_NOT_ENABLED(
-            "",
+    WORLDEDIT_NOT_ENABLED (
+            "A player attempts to create a bank without specifying coordinates in the command and WorldEdit is not enabled.",
             "&cWorldEdit is not currently enabled. Please enter coordinates manually."
     ),
-    BANK_COORDINATE_PARSE_ERROR(
-            "",
-            "&cCould not parse coordinates in command arguments."
+    BANK_COORDINATE_PARSE_ERROR (
+            "A player attempts to create a bank but provides invalid coordinates in the command arguments.",
+            "&cCould not parse coordinates in command arguments.",
+            Placeholder.STRING
     ),
-    BANK_CREATION_DISABLED(
-            "",
-            "&cBank creation is disabled in this world."
+    WORLD_DISABLED (
+            "A player attempts to create a bank in world that is disabled in the config.",
+            "&cBank creation is disabled in this world.",
+            Placeholder.WORLD
     ),
-    BANK_SELECTION_TOO_LARGE(
-            "",
-            "&cThat selection is too large. It exceeds the maximum bank size by &b%NUMBER% &cblocks."
+    BANK_SELECTION_TOO_LARGE (
+            "A player attempts to create a bank with a size that is greater than the maximum defined in the config.",
+            "&cThat selection is too large. It exceeds the maximum bank size by &b%NUMBER% &cblocks.",
+            Placeholder.NUMBER
     ),
-    BANK_SELECTION_TOO_SMALL(
-            "",
-            "&cThat selection is too small. It falls short of the minimum bank size by &b%NUMBER% &cblocks."
+    BANK_SELECTION_TOO_SMALL (
+            "A player attempts to create a bank with a size that is smaller than the minimum defined in the config.",
+            "&cThat selection is too small. It falls short of the minimum bank size by &b%NUMBER% &cblocks.",
+            Placeholder.NUMBER
     ),
-    BANK_SELECTION_OVERLAPS_EXISTING(
-            "",
+    BANK_SELECTION_OVERLAPS_EXISTING (
+            "A player attempts to create a bank that overlaps with an already existing bank.",
             "&cThat selection overlaps with another bank."
     ),
-    BANK_SELECTION_CUTS_ACCOUNTS(
-            "",
+    BANK_SELECTION_CUTS_ACCOUNTS (
+            "A player attempts to resize a bank to a selection that does not encompass all accounts at the bank.",
             "&cThat selection does not include all accounts at the bank."
     ),
-    BANK_REMOVED(
-            "",
-            "&6Bank removed."
+    BANK_REMOVED (
+            "A player removes a bank and all its accounts.",
+            "&6Bank removed.",
+            Placeholder.BANK_NAME, Placeholder.NUMBER_OF_ACCOUNTS
     ),
-    BANK_REMOVED_ALL(
-            "",
-            "&6Successfully removed &b%NUMBER_OF_BANKS% &6banks and &b%NUMBER_OF_ACCOUNTS% &6accounts."
+    BANK_REMOVED_ALL (
+            "A player removes multiple banks at once.",
+            "&6Successfully removed &b%NUMBER_OF_BANKS% &6banks and &b%NUMBER_OF_ACCOUNTS% &6accounts.",
+            Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
-    BANKS_NOT_FOUND(
-            "",
+    BANKS_NOT_FOUND (
+            "A player attempts to list banks, but there are none to list.",
             "&cNo banks found."
     ),
-    BANKS_TO_BE_REMOVED(
-            "",
-            "&6You are about to remove &b%NUMBER_OF_BANKS% &6banks and &b%NUMBER_OF_ACCOUNTS% &6accounts. Execute again to confirm."
+    BANK_CONFIRM_REMOVE_ALL (
+            "An admin must confirm removing multiple banks at once.",
+            "&6You are about to remove &b%NUMBER_OF_BANKS% &6banks and &b%NUMBER_OF_ACCOUNTS% &6accounts. Execute again to confirm.",
+            Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
-    BANK_NOT_FOUND(
-            "",
-            "&cCould not find bank with the name or ID \"%STRING%\"."
+    BANK_NOT_FOUND (
+            "A player attempts to open a GUI of a bank with a specified name or ID, but no bank could be found.",
+            "&cCould not find bank with the name or ID \"%STRING%\".",
+            Placeholder.STRING
     ),
-    BANK_SPECIFY_NAME(
-            "",
+    BANK_SPECIFY_NAME (
+            "A player attempts to open a GUI of a bank, but is not standing in a bank.",
             "&cYou must stand in or specify the name or ID of a bank."
     ),
-    BANK_LIMIT(
-            "",
-            "&6You own %NUMBER_OF_BANKS%&a/%LIMIT% allowed banks."
+    BANK_LIMIT (
+            "A player executes the /bank limits command.",
+            "&6You own %NUMBER_OF_BANKS%&a/%LIMIT% allowed banks.",
+            Placeholder.NUMBER_OF_BANKS, Placeholder.LIMIT
     ),
-    BANK_LIMIT_REACHED(
-            "",
+    BANK_LIMIT_REACHED (
+            "A player attempts to create a bank, but has reached their bank limit.",
             "&cYou are not allowed to create any more banks!"
     ),
-    BANK_ABOUT_TO_TRANSFER(
-            "",
-            "&6Click again to confirm transferring ownership of bank &7%BANK% &6to %PLAYER%."
+    BANK_CONFIRM_TRANSFER (
+            "A player executes a command to transfer a bank to another player and must execute it again to confirm.",
+            "&6Execute command again to confirm transferring ownership of bank &7%BANK% &6to %PLAYER%.",
+            Placeholder.PLAYER, Placeholder.BANK_NAME
     ),
-    BANK_TRANSFERRED(
-            "",
-            "&6You transferred %PLAYER% ownership of bank &7%BANK%&6."
+    BANK_TRANSFERRED (
+            "A player transfers ownership of a bank to another player.",
+            "&6You transferred %PLAYER% ownership of bank &7%BANK%&6.",
+            Placeholder.PLAYER, Placeholder.BANK_NAME
     ),
-    BANK_TRANSFERRED_TO_YOU(
-            "",
-            "&6%OWNER% transferred you ownership of bank &7%BANK%&6."
+    BANK_TRANSFERRED_TO_YOU (
+            "A player is transferred ownership of a bank by another player.",
+            "&6%PLAYER% transferred you ownership of bank &7%BANK%&6.",
+            Placeholder.PLAYER, Placeholder.BANK_NAME
     ),
-    BANK_ALREADY_ADMIN(
-            "",
-            "&7%BANK% &cis alread an admin bank."
+    BANK_ALREADY_ADMIN (
+            "A player attempts to transfer a bank to an admin bank, but the bank is already an admin bank.",
+            "&7%BANK% &cis alread an admin bank.",
+            Placeholder.BANK_NAME
     ),
-    BANK_RESIZED(
-            "",
-            "&6Bank resized."
+    BANK_RESIZED (
+            "A player resizes a bank to a certain number of blocks.",
+            "&6Bank resized.",
+            Placeholder.NUMBER
     ),
-    BANK_FIELD_SET(
-            "",
-            "&6Changed &b%PROPERTY% &6at bank &7%BANK% &6to &b%VALUE%&6."
+    BANK_PROPERTY_SET (
+            "A player sets a property at a bank to a new value.",
+            "&6Changed &b%PROPERTY% &6at bank &7%BANK% &6to &b%VALUE%&6.",
+            Placeholder.PROPERTY, Placeholder.BANK_NAME, Placeholder.VALUE
     ),
-    BANK_FIELD_NOT_OVERRIDABLE(
-            "",
-            "&cThat property is not overridable."
+    BANK_PROPERTY_NOT_OVERRIDABLE (
+            "A player attempts to set a property at a bank, but that property is configured as not overridable.",
+            "&cThat property is not overridable.",
+            Placeholder.PROPERTY
     ),
-    BANK_SELECTED(
-            "",
-            "&6Bank &7%BANK% &6was selected with WorldEdit."
+    BANK_SELECTED (
+            "A player selects a bank with WorldEdit.",
+            "&6Bank &7%BANK% &6was selected with WorldEdit.",
+            Placeholder.BANK_NAME
     ),
-    NOT_A_NUMBER(
-            "",
-            "&c\"%STRING%\" is not a number."
+    NOT_A_NUMBER (
+            "A player attempts to set a bank property to a number, but provided a string that was not a number.",
+            "&c\"%STRING%\" is not a number.",
+            Placeholder.STRING
     ),
-    NOT_AN_INTEGER(
-            "",
-            "&c\"%STRING%\" is not an integer."
+    NOT_AN_INTEGER (
+            "A player attempts to set a bank property to an integer, but provided a string that was not an integer.",
+            "&c\"%STRING%\" is not an integer.",
+            Placeholder.STRING
     ),
-    NOT_A_FIELD(
-            "",
-            "&c\"%STRING%\" is not a property."
+    NOT_A_PROPERTY (
+            "A player attempts to set a bank property, but provided a string that was not a property.",
+            "&c\"%STRING%\" is not a property.",
+            Placeholder.STRING
     ),
-    NOT_A_LIST(
-            "",
-            "&c\"%STRING%\" is not a parsable list."
+    NOT_A_LIST (
+            "A player attempts to set a bank property to a list, but provided a string that was not a list.",
+            "&c\"%STRING%\" is not a parsable list.",
+            Placeholder.STRING
     ),
-    NAME_NOT_UNIQUE(
-            "",
+    NAME_NOT_UNIQUE (
+            "A player attempts to create or rename a bank with a name already in use by another bank.",
             "&cA bank with that name already exists."
     ),
-    NAME_NOT_ALLOWED(
-            "",
+    NAME_NOT_ALLOWED (
+            "A player attempts to create or rename a bank with a name that does not match the name-regex pattern in the config.",
             "&cName is not allowed."
     ),
-    NAME_NOT_CHANGED(
-            "",
-            "&cThe bank name was not changed."
+    NAME_NOT_CHANGED (
+            "A player renames a bank to the same name.",
+            "&cThe bank name was not changed.",
+            Placeholder.BANK_NAME
     ),
-    NAME_CHANGED(
-            "",
-            "&6The bank was successfully renamed to &7%NAME%&6."
+    NAME_CHANGED (
+            "A player renames a bank to a different name.",
+            "&6The bank was successfully renamed to &7%BANK%&6.",
+            Placeholder.BANK_NAME
     ),
-    BANK_INTEREST_PAID(
-            "",
-            "&6You paid account holders &a%AMOUNT% &6in interest."
+    BANK_INTEREST_PAID (
+            "A bank owner pays interest to the account holders at their bank.",
+            "&6You paid account holders &a%AMOUNT% &6in interest.",
+            Placeholder.AMOUNT
     ),
-    BANK_REVENUE_EARNED(
-            "",
-            "&6You earned &a%AMOUNT% &6in revenue at bank &7%BANK%&6."
+    BANK_REVENUE_EARNED (
+            "A bank owner earns revenue on their bank.",
+            "&6You earned &a%AMOUNT% &6in revenue at bank &7%BANK%&6.",
+            Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
-    BANK_REVENUE_EARNED_OFFLINE(
-            "",
-            "&6You earned &a%AMOUNT% &6in bank revenue while you were offline."
+    BANK_REVENUE_EARNED_OFFLINE (
+            "A bank owner logs onto the server after having earned bank revenue while offline.",
+            "&6You earned &a%AMOUNT% &6in bank revenue while you were offline.",
+            Placeholder.AMOUNT
     ),
-    BANK_LOSS_OFFLINE(
-            "",
-            "&cYou lost &a%AMOUNT% &cin bank revenue while you were offline."
+    BANK_LOSS_OFFLINE (
+            "A bank owner logs onto the server after having lost bank revenue while offline.",
+            "&cYou lost &a%AMOUNT% &cin bank revenue while you were offline.",
+            Placeholder.AMOUNT
     ),
-    LOW_BALANCE_FEE_RECEIVED(
-            "",
-            "&6You received &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccounts."
+    LOW_BALANCE_FEE_RECEIVED (
+            "A bank owner receives low balance fee payments from account holders.",
+            "&6You received &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccounts.",
+            Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
-    REIMBURSEMENT_RECEIVED(
-            "",
-            "&6You have been reimbursed &a%AMOUNT%&6."
+    REIMBURSEMENT_RECEIVED (
+            "A player is reimbursed by the bank owner after removing an account.",
+            "&6You have been reimbursed &a%AMOUNT%&6.",
+            Placeholder.AMOUNT
     ),
-    REIMBURSEMENT_PAID(
-            "",
-            "&6You reimbursed %PLAYER% &a%AMOUNT%&6."
+    REIMBURSEMENT_PAID (
+            "A bank owner reimburses a player who removed an account at their bank.",
+            "&6You reimbursed %PLAYER% &a%AMOUNT%&6.",
+            Placeholder.PLAYER, Placeholder.AMOUNT
     ),
 
-    ADDED_COOWNER(
-            "",
-            "&6%PLAYER% added as a co-owner."
+    ADDED_COOWNER (
+            "A player adds another player as a co-owner of an account or a bank.",
+            "&6%PLAYER% added as a co-owner.",
+            Placeholder.PLAYER
     ),
-    REMOVED_COOWNER(
-            "",
-            "&6%PLAYER% removed as a co-owner."
+    REMOVED_COOWNER (
+            "A player removes another player as a co-owner of an account or a bank.",
+            "&6%PLAYER% removed as a co-owner.",
+            Placeholder.PLAYER
     ),
-    ALREADY_COOWNER(
-            "",
-            "&c%PLAYER% is already a co-owner."
+    ALREADY_COOWNER (
+            "A player attempts to add another player as a co-owner of an account or a bank, but that player is already a co-owner.",
+            "&c%PLAYER% is already a co-owner.",
+            Placeholder.PLAYER
     ),
-    NOT_A_COOWNER(
-            "",
-            "&c%PLAYER% is not a co-owner."
+    NOT_A_COOWNER (
+            "A player attempts to remove another player as a co-owner of an account or a bank, but that player is not a co-owner.",
+            "&c%PLAYER% is not a co-owner.",
+            Placeholder.PLAYER
     ),
-    ALREADY_OWNER(
-            "",
-            "&c%OWNER% is already owner."
+    ALREADY_OWNER (
+            "A player attempts to transfer ownership of an account or bank to the player who already owns it.",
+            "&c%PLAYER% is already owner.",
+            Placeholder.PLAYER
     ),
-    MUST_BE_OWNER(
-            "",
+    MUST_BE_OWNER (
+            "A co-owner attempts to perform an action on a bank or account that only the owner can perfom.",
             "&cYou must be the owner to do that."
     ),
 
-    ERROR_OCCURRED(
-            "",
-            "&cAn error occurred: %ERROR%"
+    ERROR_OCCURRED (
+            "An error occurs, usually during transactions when a loan was not permitted.",
+            "&cAn error occurred: %ERROR%",
+            Placeholder.ERROR
     ),
 
-    PLAYER_NOT_FOUND(
-            "",
-            "&cNo player was found with the name \"%STRING%\"."
+    PLAYER_NOT_FOUND (
+            "A player references another player in command arguments who either does not exist or who has never played on the server before.",
+            "&cNo player was found with the name \"%STRING%\".",
+            Placeholder.STRING
     ),
-    ACCOUNT_LIMIT_AT_BANK_REACHED(
-            "",
-            "&cYou are not allowed to create another account at this bank."
+    ACCOUNT_LIMIT_AT_BANK_REACHED (
+            "A player attempts to create an account at a bank, but has reached their limit for that specific bank.",
+            "&cYou are not allowed to create another account at this bank.",
+            Placeholder.BANK_NAME
     ),
-    PLAYER_COMMAND_ONLY(
-            "",
+    PLAYER_COMMAND_ONLY (
+            "An admin attempts to execute a player-only command from the console.",
             "&cPlayer command only."
     ),
-    SAME_ACCOUNT(
-            "",
+    SAME_ACCOUNT (
+            "A player attempts to migrate an account to the same chest.",
             "&cThat is the same account."
     ),
 
-    CLICK_CHEST_CREATE(
-            "",
+    CLICK_CHEST_CREATE (
+            "A player runs the /account create command and must click a chest.",
             "&6Click a chest to create an account."
     ),
-    CLICK_ACCOUNT_INFO(
-            "",
+    CLICK_ACCOUNT_INFO (
+            "A player runs the /account info command and must click an account chest.",
             "&6Click an account chest to view info."
     ),
-    CLICK_ACCOUNT_MIGRATE(
-            "",
+    CLICK_ACCOUNT_MIGRATE (
+            "A player runs the /account migrate command and must click an account.",
             "&6Click an account chest to migrate it."
     ),
-    CLICK_CHEST_MIGRATE(
-            "",
+    CLICK_CHEST_MIGRATE (
+            "A player is migrating an account and and must click another chest.",
             "&6Click a chest to migrate the account to."
     ),
-    CLICK_CHEST_RECOVER(
-            "",
+    CLICK_CHEST_RECOVER (
+            "A player runs the /account recover command, selects a lost account, and must click a chest.",
             "&6Click a chest to recover the account."
     ),
-    CLICK_ACCOUNT_REMOVE(
-            "",
+    CLICK_ACCOUNT_REMOVE (
+            "A player runs the /account remove command and must click an account chest.",
             "&6Click an account chest to remove an account."
     ),
-    CLICK_ACCOUNT_RENAME(
-            "",
+    CLICK_ACCOUNT_RENAME (
+            "A player runs the /account rename command and must click an account chest.",
             "&6Click an account chest to rename it."
     ),
-    CLICK_ACCOUNT_SET(
-            "",
-            "&6Click an account chest to set it."
+    CLICK_ACCOUNT_SET (
+            "A player runs the /account set command and must click an account chest.",
+            "&6Click an account chest to set it.",
+            Placeholder.PROPERTY, Placeholder.VALUE
     ),
-    CLICK_ACCOUNT_TRANSFER(
-            "",
-            "&6Click an account chest to transfer it to %PLAYER%."
+    CLICK_ACCOUNT_TRANSFER (
+            "A player runs the /account transfer command and must click an account chest.",
+            "&6Click an account chest to transfer it to %PLAYER%.",
+            Placeholder.PLAYER
     ),
-    CLICK_ACCOUNT_TRUST(
-            "",
-            "&6Click an account chest to add %PLAYER% as a co-owner."
+    CLICK_ACCOUNT_TRUST (
+            "A player runs the /account trust command and must click an account chest.",
+            "&6Click an account chest to add %PLAYER% as a co-owner.",
+            Placeholder.PLAYER
     ),
-    CLICK_ACCOUNT_UNTRUST(
-            "",
-            "&6Click an account chest to remove %PLAYER% as a co-owner."
+    CLICK_ACCOUNT_UNTRUST (
+            "A player runs the /account untrust command and must click an account chest.",
+            "&6Click an account chest to remove %PLAYER% as a co-owner.",
+            Placeholder.PLAYER
     ),
 
-    NO_PERMISSION_ACCOUNT_CREATE(
-            "",
+    NO_PERMISSION_ACCOUNT_CREATE (
+            "A player attempts to create an account without permission.",
             "&cYou do not have permission to create an account."
     ),
-    NO_PERMISSION_ACCOUNT_CREATE_PROTECTED(
-            "",
+    NO_PERMISSION_ACCOUNT_CREATE_PROTECTED (
+            "A player attempts to create an account on a protected chest without permission.",
             "&cYou do not have permission to create an account on a protected chest."
     ),
-    NO_PERMISSION_ACCOUNT_TRUST(
-            "",
+    NO_PERMISSION_ACCOUNT_TRUST (
+            "A player attempts to add another player as a co-owner of their account without permission.",
             "&cYou do not have permission to add a co-owner to an account."
     ),
-    NO_PERMISSION_ACCOUNT_TRUST_OTHER(
-            "",
+    NO_PERMISSION_ACCOUNT_TRUST_OTHER (
+            "A player attempts to add another player as a co-owner of someone else's account without permission.",
             "&cYou do not have permission to add a co-owner to someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_UNTRUST(
-            "",
+    NO_PERMISSION_ACCOUNT_UNTRUST (
+            "A player attempts to remove another player as a co-owner of their account without permission.",
             "&cYou do not have permission to remove a co-owner from an account."
     ),
-    NO_PERMISSION_ACCOUNT_UNTRUST_OTHER(
-            "",
+    NO_PERMISSION_ACCOUNT_UNTRUST_OTHER (
+            "A player attempts to remove another player as a co-owner of someone else's account without permission.",
             "&cYou do not have permission to remove a co-owner from someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_REMOVE_OTHER(
-            "",
+    NO_PERMISSION_ACCOUNT_REMOVE_OTHER (
+            "A player attempts to remove someone else's account without permission.",
             "&cYou do not have permission to remove someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_REMOVEALL(
-            "",
+    NO_PERMISSION_ACCOUNT_REMOVEALL (
+            "A player attempts to remove multiple accounts at once without permission.",
             "&cYou do not have permission to remove all accounts."
     ),
-    NO_PERMISSION_ACCOUNT_VIEW_OTHER(
-            "",
+    NO_PERMISSION_ACCOUNT_VIEW_OTHER (
+            "A player attempts to open someone else's account chest without permission.",
             "&cYou do not have permission to view someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_EDIT_OTHER(
-            "",
+    NO_PERMISSION_ACCOUNT_EDIT_OTHER (
+            "A player attempts to edit the contents of someone else's account chest without permission.",
             "&cYou do not have permission to edit someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_MIGRATE(
-            "",
+    NO_PERMISSION_ACCOUNT_MIGRATE (
+            "A player attempts to migrate an account without permission.",
             "&cYou do not have permission to migrate an account."
     ),
-    NO_PERMISSION_ACCOUNT_MIGRATE_OTHER(
-            "",
+    NO_PERMISSION_ACCOUNT_MIGRATE_OTHER (
+            "A player attempts to migrate someone else's account without permission.",
             "&cYou do not have permission to migrate someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_MIGRATE_BANK(
-            "",
+    NO_PERMISSION_ACCOUNT_MIGRATE_BANK (
+            "A player attempts to migrate an account to another bank without permission.",
             "&cYou do not have permission to migrate an account to another bank."
     ),
-    NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED(
-            "",
+    NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED (
+            "A player attempts to migrate an account to a protected chest without permission.",
             "&cYou do not have permission to migrate an account to a protected chest."
     ),
-    NO_PERMISSION_ACCOUNT_RENAME(
-            "",
+    NO_PERMISSION_ACCOUNT_RENAME (
+            "A player attempts to rename an account without permission.",
             "&cYou do not have permission to rename an account."
     ),
-    NO_PERMISSION_ACCOUNT_RENAME_OTHER(
-            "",
+    NO_PERMISSION_ACCOUNT_RENAME_OTHER (
+            "A player attempts to rename someone else's account without permission.",
             "&cYou do not have permission to rename someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_TRANSFER(
-            "",
+    NO_PERMISSION_ACCOUNT_TRANSFER (
+            "A player attempts to transfer ownership of an account without permission.",
             "&cYou do not have permission to transfer ownership of an account."
     ),
-    NO_PERMISSION_ACCOUNT_TRANSFER_OTHER(
-            "",
+    NO_PERMISSION_ACCOUNT_TRANSFER_OTHER (
+            "A player attempts to transfer ownership of someone else's account without permission.",
             "&cYou do not have permission to transfer ownership of someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_EXTEND_OTHER(
-            "",
+    NO_PERMISSION_ACCOUNT_EXTEND_OTHER (
+            "A player attempts to extend someone else's account chest without permission.",
             "&cYou do not have permission to extend someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED(
-            "",
+    NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED (
+            "A player attempts to extend a protected account chest without permission.",
             "&cYou do not have permission to extend a protected account chest."
     ),
-    NO_PERMISSION_ACCOUNT_SET(
-            "",
+    NO_PERMISSION_ACCOUNT_SET (
+            "A player attempts to set the multiplier, interest delay, etc. of an account without permission.",
             "&cYou do not have permission to set internal account values."
     ),
 
-    NO_PERMISSION_BANK_CREATE(
-            "",
+    NO_PERMISSION_BANK_CREATE (
+            "A player attempts to create a bank without permission.",
             "&cYou do not have permission to create a bank."
     ),
-    NO_PERMISSION_BANK_CREATE_ADMIN(
-            "",
+    NO_PERMISSION_BANK_CREATE_ADMIN (
+            "A player attempts to create an admin bank without permission.",
             "&cYou do not have permission to create an admin bank."
     ),
-    NO_PERMISSION_BANK_CREATE_PROTECTED(
-            "",
+    NO_PERMISSION_BANK_CREATE_PROTECTED (
+            "A player attempts to create a bank on land without the WorldGuard create-bank flag without permission.",
             "&cYou do not have permission to create a bank there."
     ),
-    NO_PERMISSION_BANK_REMOVE_OTHER(
-            "",
+    NO_PERMISSION_BANK_REMOVE_OTHER (
+            "A player attempts to remove someone else's bank without permission.",
             "&cYou do not have permission to remove someone else's bank."
     ),
-    NO_PERMISSION_BANK_REMOVE_ADMIN(
-            "",
+    NO_PERMISSION_BANK_REMOVE_ADMIN (
+            "A player attempts to remove an admin bank without permission.",
             "&cYou do not have permission to remove an admin bank."
     ),
-    NO_PERMISSION_BANK_REMOVEALL(
-            "",
+    NO_PERMISSION_BANK_REMOVEALL (
+            "A player attempts to remove multiple banks at once without permission.",
             "&cYou do not have permission to remove all banks."
     ),
-    NO_PERMISSION_BANK_RESIZE(
-            "",
+    NO_PERMISSION_BANK_RESIZE (
+            "A player attempts to resize a bank without permission.",
             "&cYou do not have permission to resize a bank."
     ),
-    NO_PERMISSION_BANK_RESIZE_OTHER(
-            "",
+    NO_PERMISSION_BANK_RESIZE_OTHER (
+            "A player attempts to resize someone else's bank without permission.",
             "&cYou do not have permission to resize someone else's bank."
     ),
-    NO_PERMISSION_BANK_RESIZE_ADMIN(
-            "",
+    NO_PERMISSION_BANK_RESIZE_ADMIN (
+            "A player attempts to resize an admin bank without permission.",
             "&cYou do not have permission to resize an admin bank."
     ),
-    NO_PERMISSION_BANK_TRUST(
-            "",
+    NO_PERMISSION_BANK_TRUST (
+            "A player attempts to add another player as a co-owner of their bank without permission.",
             "&cYou do not have permission to add a co-owner to a bank."
     ),
-    NO_PERMISSION_BANK_TRUST_OTHER(
-            "",
+    NO_PERMISSION_BANK_TRUST_OTHER (
+            "A player attempts to add another player as a co-owner of someone else's bank without permission.",
             "&cYou do not have permission to add a co-owner to someone else's bank."
     ),
-    NO_PERMISSION_BANK_TRUST_ADMIN(
-            "",
+    NO_PERMISSION_BANK_TRUST_ADMIN (
+            "A player attempts to add another player as a co-owner of an admin bank without permission.",
             "&cYou do not have permission to add a co-owner to an admin bank."
     ),
-    NO_PERMISSION_BANK_UNTRUST(
-            "",
+    NO_PERMISSION_BANK_UNTRUST (
+            "A player attempts to remove another player as a co-owner of their bank without permission.",
             "&cYou do not have permission to remove a co-owner from a bank."
     ),
-    NO_PERMISSION_BANK_UNTRUST_OTHER(
-            "",
+    NO_PERMISSION_BANK_UNTRUST_OTHER (
+            "A player attempts to remove another player as a co-owner of someone else's bank without permission.",
             "&cYou do not have permission to remove a co-owner from someone else's bank."
     ),
-    NO_PERMISSION_BANK_UNTRUST_ADMIN(
-            "",
+    NO_PERMISSION_BANK_UNTRUST_ADMIN (
+            "A player attempts to remove another player as a co-owner of an admin bank without permission.",
             "&cYou do not have permission to remove a co-owner from an admin bank."
     ),
-    NO_PERMISSION_BANK_TRANSFER(
-            "",
+    NO_PERMISSION_BANK_TRANSFER (
+            "A player attempts to transfer ownership of a bank without permission.",
             "&cYou do not have permission to transfer ownership of a bank."
     ),
-    NO_PERMISSION_BANK_TRANSFER_OTHER(
-            "",
+    NO_PERMISSION_BANK_TRANSFER_OTHER (
+            "A player attempts to transfer ownership of someone else's bank without permission.",
             "&cYou do not have permission to transfer ownership of someone else's bank."
     ),
-    NO_PERMISSION_BANK_TRANSFER_ADMIN(
-            "",
+    NO_PERMISSION_BANK_TRANSFER_ADMIN (
+            "A player attempts to transfer ownership of an admin bank without permission.",
             "&cYou do not have permission to transfer ownership of an admin bank."
     ),
-    NO_PERMISSION_BANK_SET_OTHER(
-            "",
+    NO_PERMISSION_BANK_SET_OTHER (
+            "A player attempts to change a property of someone else's bank without permission.",
             "&cYou do not have permission to configure someone else's bank."
     ),
-    NO_PERMISSION_BANK_SET_ADMIN(
-            "",
+    NO_PERMISSION_BANK_SET_ADMIN (
+            "A player attempts to change a property of an admin bank without permission.",
             "&cYou do not have permission to configure an admin bank."
     ),
-    NO_PERMISSION_BANK_SELECT(
-            "",
+    NO_PERMISSION_BANK_SELECT (
+            "A player attempts to select a bank without the WorldEdit permission worldedit.selection.pos.",
             "&cYou do not have permission to select a bank."
     ),
 
-    NO_PERMISSION_RELOAD(
-            "",
+    NO_PERMISSION_RELOAD (
+            "A player attempts to reload the plugin without permission.",
             "&cYou do not have permission to reload the plugin."
     ),
-    NO_PERMISSION_CONFIG(
-            "",
+    NO_PERMISSION_CONFIG (
+            "A player attempts to configure the plugin without permission.",
             "&cYou do not have permission to configure the plugin."
     ),
-    NO_PERMISSION_UPDATE(
-            "",
+    NO_PERMISSION_UPDATE (
+            "A player attempts to update the plugin without permission.",
             "&cYou do not have permission to update the plugin."
     ),
-    NO_PERMISSION_PAY_INTEREST(
-            "",
+    NO_PERMISSION_PAY_INTEREST (
+            "A player attempts to trigger an interest payment without permission.",
             "&cYou do not have permission to trigger an interest payment."
     ),
 
-    COMMAND_USAGE_ACCOUNT_CREATE(
+    COMMAND_USAGE_ACCOUNT_CREATE (
             "",
-            "&a/%COMMAND% create - Create an account."
+            "&a/%COMMAND% create - Create an account.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_REMOVE(
+    COMMAND_USAGE_ACCOUNT_REMOVE (
             "",
-            "&a/%COMMAND% remove - Remove an account."
+            "&a/%COMMAND% remove - Remove an account.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_INFO(
+    COMMAND_USAGE_ACCOUNT_INFO (
             "",
-            "&a/%COMMAND% info - Open an account GUI."
+            "&a/%COMMAND% info - Open an account GUI.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_LIST(
+    COMMAND_USAGE_ACCOUNT_LIST (
             "",
-            "&a/%COMMAND% list <names> - View a list of accounts."
+            "&a/%COMMAND% list <names> - View a list of accounts.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_LIMITS(
+    COMMAND_USAGE_ACCOUNT_LIMITS (
             "",
-            "&a/%COMMAND% limits - View your account limits."
+            "&a/%COMMAND% limits - View your account limits.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_REMOVEALL(
+    COMMAND_USAGE_ACCOUNT_REMOVE_ALL (
             "",
-            "&a/%COMMAND% removeall - Remove all accounts."
+            "&a/%COMMAND% removeall - Remove all accounts.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_SET(
+    COMMAND_USAGE_ACCOUNT_SET (
             "",
-            "&a/%COMMAND% set [property] [value] - Set an account value."
+            "&a/%COMMAND% set [property] [value] - Set an account value.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_TRUST(
+    COMMAND_USAGE_ACCOUNT_TRUST (
             "",
-            "&a/%COMMAND% trust [name] - Add a co-owner to an account."
+            "&a/%COMMAND% trust [name] - Add a co-owner to an account.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_UNTRUST(
+    COMMAND_USAGE_ACCOUNT_UNTRUST (
             "",
-            "&a/%COMMAND% untrust [name] - Remove a co-owner from an account."
+            "&a/%COMMAND% untrust [name] - Remove a co-owner from an account.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_MIGRATE(
+    COMMAND_USAGE_ACCOUNT_MIGRATE (
             "",
-            "&a/%COMMAND% migrate - Migrate an account to a different chest."
+            "&a/%COMMAND% migrate - Migrate an account to a different chest.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_RECOVER(
+    COMMAND_USAGE_ACCOUNT_RECOVER (
             "",
-            "&a/%COMMAND% recover - Recover a lost account to a new chest."
+            "&a/%COMMAND% recover - Recover a lost account to a new chest.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_RENAME(
+    COMMAND_USAGE_ACCOUNT_RENAME (
             "",
-            "&a/%COMMAND% rename [name] - Give an account a nickname."
+            "&a/%COMMAND% rename [name] - Give an account a nickname.",
+            Placeholder.ACCOUNT_COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_TRANSFER(
+    COMMAND_USAGE_ACCOUNT_TRANSFER (
             "",
-            "&a/%COMMAND% transfer [name] - Transfer ownership of an account."
-    ),
-
-    COMMAND_USAGE_BANK_CREATE(
-            "",
-            "&a/%COMMAND% create - Create a bank."
-    ),
-    COMMAND_USAGE_BANK_REMOVE(
-            "",
-            "&a/%COMMAND% remove - Remove a bank."
-    ),
-    COMMAND_USAGE_BANK_INFO(
-            "",
-            "&a/%COMMAND% info - Open a bank GUI."
-    ),
-    COMMAND_USAGE_BANK_LIST(
-            "",
-            "&a/%COMMAND% list - View a list of banks."
-    ),
-    COMMAND_USAGE_BANK_LIMITS(
-            "",
-            "&a/%COMMAND% limits - View your bank limits."
-    ),
-    COMMAND_USAGE_BANK_REMOVEALL(
-            "",
-            "&a/%COMMAND% removeall - Remove all banks."
-    ),
-    COMMAND_USAGE_BANK_RESIZE(
-            "",
-            "&a/%COMMAND% resize - Resize a bank."
-    ),
-    COMMAND_USAGE_BANK_TRUST(
-            "",
-            "&a/%COMMAND% trust - Add a co-owner to a bank."
-    ),
-    COMMAND_USAGE_BANK_UNTRUST(
-            "",
-            "&a/%COMMAND% untrust - Remove a co-owner from a bank."
-    ),
-    COMMAND_USAGE_BANK_RENAME(
-            "",
-            "&a/%COMMAND% rename - Rename a bank."
-    ),
-    COMMAND_USAGE_BANK_SET(
-            "",
-            "&a/%COMMAND% set - Configure a bank."
-    ),
-    COMMAND_USAGE_BANK_SELECT(
-            "",
-            "&a/%COMMAND% select - Select a bank with WorldEdit."
-    ),
-    COMMAND_USAGE_BANK_TRANSFER(
-            "",
-            "&a/%COMMAND% transfer - Transfer ownership of a bank."
+            "&a/%COMMAND% transfer [name] - Transfer ownership of an account.",
+            Placeholder.ACCOUNT_COMMAND
     ),
 
-    COMMAND_USAGE_VERSION(
+    COMMAND_USAGE_BANK_CREATE (
             "",
-            "&a/%COMMAND% version - View the version of BankingPlugin."
+            "&a/%COMMAND% create - Create a bank.",
+            Placeholder.BANK_COMMAND
     ),
-    COMMAND_USAGE_RELOAD(
+    COMMAND_USAGE_BANK_REMOVE (
             "",
-            "&a/%COMMAND% reload - Reload BankingPlugin."
+            "&a/%COMMAND% remove - Remove a bank.",
+            Placeholder.BANK_COMMAND
     ),
-    COMMAND_USAGE_CONFIG(
+    COMMAND_USAGE_BANK_INFO (
             "",
-            "&a/%COMMAND% config [set|add|remove] [property] [value] - Configure BankingPlugin."
+            "&a/%COMMAND% info - Open a bank GUI.",
+            Placeholder.BANK_COMMAND
     ),
-    COMMAND_USAGE_UPDATE(
+    COMMAND_USAGE_BANK_LIST (
             "",
-            "&a/%COMMAND% update - Update BankingPlugin."
+            "&a/%COMMAND% list - View a list of banks.",
+            Placeholder.BANK_COMMAND
     ),
-    COMMAND_USAGE_PAY_INTEREST(
+    COMMAND_USAGE_BANK_LIMITS (
             "",
-            "&a/%COMMAND% payinterest <banks> - Trigger an interest payment."
+            "&a/%COMMAND% limits - View your bank limits.",
+            Placeholder.BANK_COMMAND
+    ),
+    COMMAND_USAGE_BANK_REMOVEALL (
+            "",
+            "&a/%COMMAND% removeall - Remove all banks.",
+            Placeholder.BANK_COMMAND
+    ),
+    COMMAND_USAGE_BANK_RESIZE (
+            "",
+            "&a/%COMMAND% resize - Resize a bank.",
+            Placeholder.BANK_COMMAND
+    ),
+    COMMAND_USAGE_BANK_TRUST (
+            "",
+            "&a/%COMMAND% trust - Add a co-owner to a bank.",
+            Placeholder.BANK_COMMAND
+    ),
+    COMMAND_USAGE_BANK_UNTRUST (
+            "",
+            "&a/%COMMAND% untrust - Remove a co-owner from a bank.",
+            Placeholder.BANK_COMMAND
+    ),
+    COMMAND_USAGE_BANK_RENAME (
+            "",
+            "&a/%COMMAND% rename - Rename a bank.",
+            Placeholder.BANK_COMMAND
+    ),
+    COMMAND_USAGE_BANK_SET (
+            "",
+            "&a/%COMMAND% set - Configure a bank.",
+            Placeholder.BANK_COMMAND
+    ),
+    COMMAND_USAGE_BANK_SELECT (
+            "",
+            "&a/%COMMAND% select - Select a bank with WorldEdit.",
+            Placeholder.BANK_COMMAND
+    ),
+    COMMAND_USAGE_BANK_TRANSFER (
+            "",
+            "&a/%COMMAND% transfer - Transfer ownership of a bank.",
+            Placeholder.BANK_COMMAND
     ),
 
-    ACCOUNT_COMMAND_DESC(
+    COMMAND_USAGE_VERSION (
+            "",
+            "&a/%COMMAND% version - View the version of BankingPlugin.",
+            Placeholder.CONTROL_COMMAND
+    ),
+    COMMAND_USAGE_RELOAD (
+            "",
+            "&a/%COMMAND% reload - Reload BankingPlugin.",
+            Placeholder.CONTROL_COMMAND
+    ),
+    COMMAND_USAGE_CONFIG (
+            "",
+            "&a/%COMMAND% config [set|add|remove] [property] [value] - Configure BankingPlugin.",
+            Placeholder.CONTROL_COMMAND
+    ),
+    COMMAND_USAGE_UPDATE (
+            "",
+            "&a/%COMMAND% update - Update BankingPlugin.",
+            Placeholder.CONTROL_COMMAND
+    ),
+    COMMAND_USAGE_PAY_INTEREST (
+            "",
+            "&a/%COMMAND% payinterest <banks> - Trigger an interest payment.",
+            Placeholder.CONTROL_COMMAND
+    ),
+
+    ACCOUNT_COMMAND_DESC (
             "",
             "Create, manage, and remove accounts."
     ),
-    BANK_COMMAND_DESC(
+    BANK_COMMAND_DESC (
             "",
             "Create, manage, and remove banks."
     ),
-    CONTROL_COMMAND_DESC(
+    CONTROL_COMMAND_DESC (
             "",
             "Manage the plugin."
     ),
 
-    CONFIG_VALUE_ADDED(
-            "",
-            "&6Added &a%VALUE% &6to &a%PROPERTY%&6."
+    CONFIG_VALUE_ADDED (
+            "An admin adds a value to a property in the config.",
+            "&6Added &a%VALUE% &6to &a%PROPERTY%&6.",
+            Placeholder.VALUE, Placeholder.PROPERTY
     ),
-    CONFIG_VALUE_REMOVED(
-            "",
-            "&6Removed &a%VALUE% &6from &a%PROPERTY%&6."
+    CONFIG_VALUE_REMOVED (
+            "An admin removes a value from a property in the config.",
+            "&6Removed &a%VALUE% &6from &a%PROPERTY%&6.",
+            Placeholder.VALUE, Placeholder.PROPERTY
     ),
-    CONFIG_VALUE_SET(
-            "",
-            "&6Changed &a%PROPERTY% &6from &a%PREVIOUS_VALUE% &6to &a%VALUE%&6."
+    CONFIG_VALUE_SET (
+            "An admin sets the value of a property in the config.",
+            "&6Changed &a%PROPERTY% &6from &a%PREVIOUS_VALUE% &6to &a%VALUE%&6.",
+            Placeholder.PROPERTY, Placeholder.PREVIOUS_VALUE, Placeholder.VALUE
     ),
-    INTEREST_PAYOUT_TRIGGERED(
-            "",
-            "&6Triggered an interest payout at &b%NUMBER_OF_BANKS% &6banks."
+    INTEREST_PAYOUT_TRIGGERED (
+            "An admin triggers an interest payout.",
+            "&6Triggered an interest payout at &b%NUMBER_OF_BANKS% &6banks.",
+            Placeholder.NUMBER_OF_BANKS
     ),
-    RELOADED_PLUGIN(
-            "",
-            "&6Successfully reloaded &b%NUMBER_OF_BANKS% &6banks and &b%NUMBER_OF_ACCOUNTS% &6accounts."
+    RELOADED_PLUGIN (
+            "An admin reloads all banks and accounts on the server.",
+            "&6Successfully reloaded &b%NUMBER_OF_BANKS% &6banks and &b%NUMBER_OF_ACCOUNTS% &6accounts.",
+            Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
 
-    UPDATE_AVAILABLE(
-            "",
-            "&6&lVersion &c%VERSION% &6of &aBanking&2Plugin &6is available &chere&6."
+    UPDATE_AVAILABLE (
+            "An admin is notified that an update to BankingPlugin is available.",
+            "&6&lVersion &c%VERSION% &6of &aBanking&2Plugin &6is available &chere&6.",
+            Placeholder.VERSION
     ),
-    UPDATE_CLICK_TO_DOWNLOAD(
-            "",
+    UPDATE_CLICK_TO_DOWNLOAD (
+            "An admin is notified of the download location for the update.",
             "&6Click to download."
     ),
-    UPDATE_NO_UPDATE(
-            "",
+    UPDATE_NO_UPDATE (
+            "An admin is notified that no new updates are available.",
             "&6&lNo new version available."
     ),
-    UPDATE_CHECKING(
-            "",
+    UPDATE_CHECKING (
+            "An admin is notified that the plugin is checking for updates.",
             "&6&lChecking for updates..."
     ),
-    UPDATE_ERROR(
-            "",
+    UPDATE_ERROR (
+            "An admin is notified that an error occurred while checking for updates.",
             "&c&lError while checking for updates."
     );
 
     private final String description;
     private final String defaultMessage;
-    private final Set<Placeholder> placeholders;
+    private final EnumSet<Placeholder> placeholders;
+    private String path = null;
 
-    Message(String defaultMessage) {
-        this("", defaultMessage);
-    }
-
-    Message(String defaultMessage, Placeholder... placeholders) {
-        this("", defaultMessage, placeholders);
-    }
-
-    Message(String description, String defaultMessage, Placeholder... placeholders) {
+    Message(String description, String defaultMsg, Placeholder... placeholders) {
         this.description = description;
-        this.defaultMessage = defaultMessage;
-        this.placeholders = Arrays.stream(placeholders).filter(Objects::nonNull).collect(Collectors.toSet());
+        this.defaultMessage = defaultMsg;
+        this.placeholders = EnumSet.noneOf(Placeholder.class);
+        this.placeholders.addAll(Arrays.asList(placeholders));
     }
 
     public String getDescription() {
@@ -805,12 +905,12 @@ public enum Message {
         return defaultMessage;
     }
 
-    public Set<Placeholder> getAvailablePlaceholders() {
+    public EnumSet<Placeholder> getAvailablePlaceholders() {
         return placeholders;
     }
 
     public String getPath() {
-        return "message." + toString().toLowerCase().replace("_", "-");
+        return path != null ? path : (path = "message." + toString().toLowerCase().replace("_", "-"));
     }
 
 }
