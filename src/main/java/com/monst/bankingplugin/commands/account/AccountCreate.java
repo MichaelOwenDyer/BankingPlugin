@@ -6,6 +6,10 @@ import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -26,7 +30,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? Messages.COMMAND_USAGE_ACCOUNT_CREATE : "";
+        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_CREATE, getReplacement()) : "";
     }
 
     @Override
@@ -37,14 +41,14 @@ public class AccountCreate extends AccountCommand.SubCommand {
         boolean hasPermission = hasPermission(p, Permissions.ACCOUNT_CREATE);
 
         if (!hasPermission) {
-            p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE);
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE));
             plugin.debug(p.getName() + " is not permitted to create an account");
             return true;
         }
 
         int limit = accountUtils.getAccountLimit(p);
         if (limit != -1 && accountUtils.getNumberOfAccounts(p) >= limit) {
-            p.sendMessage(Messages.ACCOUNT_LIMIT_REACHED);
+            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
             plugin.debug(p.getName() + " has reached their account limit");
             return true;
         }
@@ -57,7 +61,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         }
 
         plugin.debug(p.getName() + " can now click a chest to create an account");
-        p.sendMessage(String.format(Messages.CLICK_CHEST, "create an account"));
+        p.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_CREATE));
         ClickType.setPlayerClickType(p, ClickType.create());
         return true;
     }
@@ -75,12 +79,12 @@ public class AccountCreate extends AccountCommand.SubCommand {
         Location location = b.getLocation();
 
         if (accountUtils.isAccount(location)) {
-            p.sendMessage(Messages.CHEST_ALREADY_ACCOUNT);
+            p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             plugin.debug("Chest is already an account.");
             return;
         }
         if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
-            p.sendMessage(Messages.CHEST_BLOCKED);
+            p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             plugin.debug("Chest is blocked.");
             return;
         }
@@ -94,27 +98,29 @@ public class AccountCreate extends AccountCommand.SubCommand {
             bank = left == null ? null : bankUtils.getBank(left.getLocation());
             Bank otherBank = right == null ? null : bankUtils.getBank(right.getLocation());
             if (bank == null || !bank.equals(otherBank)) {
-                p.sendMessage(Messages.CHEST_NOT_IN_BANK);
+                p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
                 plugin.debug("Chest is not in a bank.");
                 return;
             }
         } else {
             bank = bankUtils.getBank(location);
             if (bank == null) {
-                p.sendMessage(Messages.CHEST_NOT_IN_BANK);
+                p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
                 plugin.debug("Chest is not in a bank.");
                 return;
             }
         }
 
         if (!Config.allowSelfBanking && bank.isOwner(p)) {
-            p.sendMessage(Messages.NO_SELF_BANKING);
+            p.sendMessage(LangUtils.getMessage(Message.NO_SELF_BANKING, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
             plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
             return;
         }
         int playerAccountLimit = bank.get(BankField.PLAYER_BANK_ACCOUNT_LIMIT);
         if (playerAccountLimit > 0 && bank.getAccounts(account -> account.isOwner(p)).size() >= playerAccountLimit) {
-            p.sendMessage(Messages.ACCOUNT_LIMIT_AT_BANK_REACHED);
+            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_AT_BANK_REACHED,
+                    new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
+                    new Replacement(Placeholder.LIMIT, playerAccountLimit)));
             plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
             return;
         }
@@ -125,7 +131,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             plugin.debug("No permission to create account on a protected chest.");
-            p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
             return;
         }
 
@@ -133,8 +139,13 @@ public class AccountCreate extends AccountCommand.SubCommand {
         creationPrice *= ((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1;
         creationPrice *= bank.isOwner(p) ? 0 : 1;
 
-        if (creationPrice > 0 && creationPrice > plugin.getEconomy().getBalance(p)) {
-            p.sendMessage(Messages.ACCOUNT_CREATE_INSUFFICIENT_FUNDS);
+        double balance = plugin.getEconomy().getBalance(p);
+        if (creationPrice > 0 && creationPrice > balance) {
+            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS,
+                    new Replacement(Placeholder.PRICE, creationPrice),
+                    new Replacement(Placeholder.PLAYER_BALANCE, balance),
+                    new Replacement(Placeholder.AMOUNT_REMAINING, creationPrice - balance)
+            ));
             return;
         }
 
@@ -142,8 +153,11 @@ public class AccountCreate extends AccountCommand.SubCommand {
         if (creationPrice > 0)
         // Account owner pays the bank owner the creation fee
         if (!Utils.withdrawPlayer(p, creationPrice, Callback.of(plugin,
-                result -> p.sendMessage(String.format(Messages.ACCOUNT_CREATE_FEE_PAID, Utils.format(finalCreationPrice))),
-                error -> p.sendMessage(Messages.ERROR_OCCURRED)
+                result -> p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_PAID,
+                        new Replacement(Placeholder.PRICE, finalCreationPrice),
+                        new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
+                )),
+                error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
         )))
             return;
 
@@ -151,19 +165,22 @@ public class AccountCreate extends AccountCommand.SubCommand {
         if (creationPrice > 0 && bank.isPlayerBank()) {
             OfflinePlayer bankOwner = account.getBank().getOwner();
             Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
-                    result -> Utils.message(bankOwner, String.format(Messages.ACCOUNT_CREATE_FEE_RECEIVED,
-                            p.getName(), Utils.format(finalCreationPrice))),
-                    error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+                    result -> Utils.message(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
+                            new Replacement(Placeholder.PLAYER, p::getName),
+                            new Replacement(Placeholder.AMOUNT, finalCreationPrice),
+                            new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
+                    )),
+                    error -> Utils.message(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
             ));
         }
 
         if (account.create(true)) {
             plugin.debug("Account created");
             accountUtils.addAccount(account, true, account.callUpdateName());
-            p.sendMessage(Messages.ACCOUNT_CREATED);
+            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         } else {
             plugin.debugf("Could not create account");
-            p.sendMessage(Messages.ERROR_OCCURRED);
+            p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, "Could not create account")));
         }
     }
 }

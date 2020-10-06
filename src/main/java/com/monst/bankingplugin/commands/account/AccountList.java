@@ -3,7 +3,8 @@ package com.monst.bankingplugin.commands.account;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.events.account.AccountListEvent;
 import com.monst.bankingplugin.gui.AccountListGui;
-import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -24,7 +25,7 @@ public class AccountList extends AccountCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return Messages.COMMAND_USAGE_ACCOUNT_LIST;
+        return LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_LIST, getReplacement());
     }
 
     @Override
@@ -34,7 +35,7 @@ public class AccountList extends AccountCommand.SubCommand {
         if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
             if (!(sender instanceof Player)) {
                 plugin.debug("Only players can list their own accounts");
-                sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+                sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
                 return true;
             }
         }
@@ -42,7 +43,7 @@ public class AccountList extends AccountCommand.SubCommand {
         List<Account> accounts = lookupAccounts(sender, args);
 
         if (accounts.isEmpty()) {
-            sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "list"));
+            sender.sendMessage(LangUtils.getMessage(Message.ACCOUNTS_NOT_FOUND));
             return true;
         }
 

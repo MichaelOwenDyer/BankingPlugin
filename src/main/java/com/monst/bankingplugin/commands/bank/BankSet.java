@@ -4,18 +4,19 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BankSet extends BankCommand.SubCommand {
@@ -26,7 +27,7 @@ public class BankSet extends BankCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_SET : "";
+        return hasPermission(sender, Permissions.BANK_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_SET, getReplacement()) : "";
     }
 
     @Override
@@ -46,26 +47,26 @@ public class BankSet extends BankCommand.SubCommand {
         String value = sb.toString();
 
         if (bank == null) {
-            plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
-            sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+            sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return true;
         }
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
             plugin.debug(sender.getName() + " does not have permission to configure another player's bank");
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_OTHER);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_OTHER));
             return true;
         }
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
             plugin.debug(sender.getName() + " does not have permission to configure an admin bank");
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_ADMIN);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_ADMIN));
             return true;
         }
 
         BankField field = BankField.getByName(fieldName);
         if (field == null) {
             plugin.debug("No bank config field could be found with name " + fieldName);
-            sender.sendMessage(String.format(Messages.NOT_A_FIELD, fieldName));
+            sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.STRING, fieldName)));
             return true;
         }
 
@@ -73,18 +74,21 @@ public class BankSet extends BankCommand.SubCommand {
         Callback<String> callback = Callback.of(plugin,
             result -> {
                 plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + bank.getName() + " from " + previousValue + " to " + result);
-                sender.sendMessage(String.format(Messages.BANK_FIELD_SET, "You", field.getName(), previousValue, result, bank.getColorizedName()));
-                Set<OfflinePlayer> toNotify = Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers());
-                if (sender instanceof Player)
-                    toNotify.remove(sender);
-                Utils.notify(toNotify, String.format(Messages.BANK_FIELD_SET, sender.getName(), field.getName(),
-                        previousValue, result, bank.getColorizedName()
-                ));
+                Utils.notify(Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()),
+                        LangUtils.getMessage(Message.BANK_PROPERTY_SET,
+                                new Replacement(Placeholder.PROPERTY, field::getName),
+                                new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
+                                new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
+                                new Replacement(Placeholder.VALUE, result)
+                        )
+                );
             },
-            error -> sender.sendMessage(((ArgumentParseException) error).getErrorMessage()));
+            error -> sender.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
+                    new Replacement(Placeholder.ERROR, ((ArgumentParseException) error)::getErrorMessage)))
+        );
 
         if (!bank.set(field, value, callback)) {
-            sender.sendMessage(Messages.FIELD_NOT_OVERRIDABLE);
+            sender.sendMessage(LangUtils.getMessage(Message.BANK_PROPERTY_NOT_OVERRIDABLE, new Replacement(Placeholder.PROPERTY, field::getName)));
             return true;
         }
 

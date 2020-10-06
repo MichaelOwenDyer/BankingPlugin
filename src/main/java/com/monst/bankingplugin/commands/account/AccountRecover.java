@@ -4,6 +4,10 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
 import com.monst.bankingplugin.gui.AccountRecoveryGui;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -23,7 +27,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
         plugin.debug(sender.getName() + " wants to recover invalid accounts");
 
         if (accountUtils.getInvalidAccounts().isEmpty()) {
-            sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "recover"));
+            sender.sendMessage(LangUtils.getMessage(Message.ACCOUNTS_NOT_FOUND));
             return true;
         }
 
@@ -35,7 +39,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
     @Override
     protected String getHelpMessage(CommandSender sender) {
         return sender.hasPermission(Permissions.ACCOUNT_RECOVER) && !accountUtils.getInvalidAccounts().isEmpty() ?
-                Messages.COMMAND_USAGE_ACCOUNT_RECOVER : "";
+                LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_RECOVER, getReplacement()) : "";
     }
 
     public static void recover(Player p, Block b, Account toMigrate) {
@@ -44,17 +48,17 @@ public class AccountRecover extends AccountCommand.SubCommand {
         Location newLocation = b.getLocation();
         if (accountUtils.isAccount(newLocation)) {
             plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
-            p.sendMessage(Messages.CHEST_ALREADY_ACCOUNT);
+            p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             return;
         }
         if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
-            p.sendMessage(Messages.CHEST_BLOCKED);
+            p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             plugin.debug("Chest is blocked.");
             return;
         }
         Bank newBank = bankUtils.getBank(newLocation); // May or may not be the same as previous bank
         if (newBank == null) {
-            p.sendMessage(Messages.CHEST_NOT_IN_BANK);
+            p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             plugin.debug("Chest is not in a bank.");
             return;
         }
@@ -67,7 +71,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             plugin.debug("No permission to recover an account to a protected chest.");
-            p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
             return;
         }
 
@@ -75,10 +79,10 @@ public class AccountRecover extends AccountCommand.SubCommand {
             plugin.debugf("Account recovered (#%d)", newAccount.getID());
             accountUtils.removeInvalidAccount(toMigrate);
             accountUtils.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
-            p.sendMessage(Messages.ACCOUNT_RECOVERED);
+            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RECOVERED));
         } else {
             plugin.debug("Could not recover account");
-            p.sendMessage(Messages.ERROR_OCCURRED);
+            p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, "Could not recover account.")));
         }
     }
 }

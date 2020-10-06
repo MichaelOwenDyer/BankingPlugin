@@ -5,6 +5,10 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -63,7 +67,7 @@ public class AccountProtectListener implements Listener {
 				}
 			}
 			e.setCancelled(true);
-			e.getPlayer().sendMessage(Messages.CANNOT_BREAK_ACCOUNT);
+			e.getPlayer().sendMessage(LangUtils.getMessage(Message.CANNOT_BREAK_ACCOUNT));
 		}
 	}
 
@@ -86,17 +90,23 @@ public class AccountProtectListener implements Listener {
 			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
 			// Account owner is reimbursed for the part of the chest that was broken
 			Utils.depositPlayer(p, finalCreationPrice, Callback.of(plugin,
-					result -> p.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice))),
-					error -> p.sendMessage(Messages.ERROR_OCCURRED)
+					result -> p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
+							new Replacement(Placeholder.AMOUNT, finalCreationPrice)
+					)),
+					error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
 			));
 
 			// Bank owner reimburses the customer
 			if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
 				OfflinePlayer bankOwner = bank.getOwner();
 				Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
-						result -> Utils.message(bankOwner, String.format(Messages.ACCOUNT_REIMBURSEMENT_PAID,
-								account.getOwner().getName(), Utils.format(finalCreationPrice))),
-						error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+						result -> Utils.message(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+								new Replacement(Placeholder.PLAYER, p::getName),
+								new Replacement(Placeholder.AMOUNT, finalCreationPrice)
+						)),
+						error -> Utils.message(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+								new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
+						))
 				));
 			}
 		}
@@ -117,7 +127,7 @@ public class AccountProtectListener implements Listener {
 		} else {
 			accountUtils.removeAccount(account, true);
 			plugin.debugf("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
-			p.sendMessage(Messages.ACCOUNT_REMOVED);
+			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
 		}
 	}
 
@@ -172,7 +182,7 @@ public class AccountProtectListener implements Listener {
 		Bank bank = plugin.getBankUtils().getBank(b.getLocation());
 		if (bank == null || !bank.equals(account.getBank())) {
 			e.setCancelled(true);
-			p.sendMessage(Messages.CHEST_NOT_IN_BANK);
+			p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
 			return;
 		}
 
@@ -182,19 +192,19 @@ public class AccountProtectListener implements Listener {
         Bukkit.getPluginManager().callEvent(event);
 		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             e.setCancelled(true);
-			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED);
+			p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED));
             return;
         }
 
 		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)) {
             e.setCancelled(true);
-			p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EXTEND_OTHER);
+			p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_OTHER));
             return;
         }
 
 		if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
             e.setCancelled(true);
-			p.sendMessage(Messages.CHEST_BLOCKED);
+			p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             return;
 		}
 
@@ -202,8 +212,11 @@ public class AccountProtectListener implements Listener {
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
 			if (!Utils.withdrawPlayer(owner, creationPrice, Callback.of(plugin,
-					result -> p.sendMessage(String.format(Messages.ACCOUNT_EXTEND_FEE_PAID, Utils.format(creationPrice))),
-					error -> p.sendMessage(Messages.ERROR_OCCURRED)
+					result -> p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_PAID,
+							new Replacement(Placeholder.PRICE, creationPrice),
+							new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
+					)),
+					error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
 			))) {
 				e.setCancelled(true);
 				return;
@@ -212,9 +225,14 @@ public class AccountProtectListener implements Listener {
 			if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 				OfflinePlayer bankOwner = account.getBank().getOwner();
 				Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
-						result -> Utils.message(bankOwner, String.format(Messages.ACCOUNT_EXTEND_FEE_RECEIVED,
-								account.getOwner().getName(), Utils.format(creationPrice))),
-						error -> p.sendMessage(Messages.ERROR_OCCURRED)
+						result -> Utils.message(bankOwner, LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_RECEIVED,
+								new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName()),
+								new Replacement(Placeholder.AMOUNT, creationPrice),
+								new Replacement(Placeholder.BANK_NAME, () -> account.getBank().getColorizedName())
+						)),
+						error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
+								new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
+						))
 				));
 			}
 		}
@@ -227,7 +245,9 @@ public class AccountProtectListener implements Listener {
 					plugin.debugf("%s extended %s's account (#%d)",
 							p.getName(), account.getOwner().getName(), account.getID());
 				} else
-					p.sendMessage(Messages.ERROR_OCCURRED);
+					p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
+							new Replacement(Placeholder.ERROR, "Failed to create account.")
+					));
 			})
 		);
     }
@@ -274,7 +294,7 @@ public class AccountProtectListener implements Listener {
 		Account account = accountUtils.getAccount(e.getInventory().getLocation());
 		Player executor = (Player) e.getWhoClicked();
 		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
-			executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_EDIT_OTHER);
+			executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_VIEW_OTHER));
 			e.setCancelled(true);
 		}
 	}

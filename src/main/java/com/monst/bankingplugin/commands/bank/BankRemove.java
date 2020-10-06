@@ -4,18 +4,19 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BankRemove extends BankCommand.SubCommand implements ConfirmableSubCommand {
@@ -26,7 +27,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_REMOVE : "";
+        return hasPermission(sender, Permissions.BANK_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_REMOVE, getReplacement()) : "";
     }
 
     @Override
@@ -42,24 +43,25 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
                 || sender.hasPermission(Permissions.BANK_REMOVE_OTHER))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
                 plugin.debug(sender.getName() + " does not have permission to remove another player's bank as a co-owner");
-                sender.sendMessage(Messages.MUST_BE_OWNER);
+                sender.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
                 return true;
             }
             plugin.debug(sender.getName() + " does not have permission to remove another player's bank");
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_REMOVE_OTHER);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_REMOVE_OTHER));
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)) {
             plugin.debug(sender.getName() + " does not have permission to remove an admin bank");
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_REMOVE_ADMIN);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_REMOVE_ADMIN));
             return true;
         }
 
         if (sender instanceof Player && Config.confirmOnRemove && !isConfirmed((Player) sender, args)) {
-            sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_BANKS, 1, "", bank.getAccounts().size(),
-                    bank.getAccounts().size() == 1 ? "" : "s"));
-            sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+            sender.sendMessage(LangUtils.getMessage(Message.BANK_CONFIRM_REMOVE,
+                    new Replacement(Placeholder.NUMBER_OF_BANKS, 1),
+                    new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, () -> bank.getAccounts().size())
+            ));
             return true;
         }
 
@@ -79,19 +81,23 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
             if (creationPrice > 0 && (bank.isAdminBank() || bank.isOwner(executor))) {
                 double finalCreationPrice = creationPrice;
                 Utils.depositPlayer(executor.getPlayer(), finalCreationPrice, Callback.of(plugin,
-                        result -> executor.sendMessage(String.format(Messages.ACCOUNT_REIMBURSEMENT_RECEIVED, Utils.format(finalCreationPrice))),
-                        error -> executor.sendMessage(Messages.ERROR_OCCURRED)
+                        result -> executor.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
+                                new Replacement(Placeholder.AMOUNT, finalCreationPrice)
+                        )),
+                        error -> executor.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
+                                new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
+                        ))
                 ));
             }
         }
-
-        bankUtils.removeBank(bank, true);
         plugin.debug("Bank #" + bank.getID() + " removed from the database");
-        sender.sendMessage(Messages.BANK_REMOVED);
-        Set<OfflinePlayer> toNotify = Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers());
-        if (sender instanceof Player)
-            toNotify.remove(sender);
-        Utils.notify(toNotify, String.format(Messages.PLAYER_REMOVED_BANK, sender.getName(), bank.getName()));
+        bankUtils.removeBank(bank, true);
+        Utils.notify(Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()),
+                LangUtils.getMessage(Message.BANK_REMOVED,
+                        new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
+                        new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, () -> bank.getAccounts().size())
+                )
+        );
         return true;
     }
 

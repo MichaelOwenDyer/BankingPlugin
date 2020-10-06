@@ -4,8 +4,11 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountPreTransferEvent;
 import com.monst.bankingplugin.events.account.AccountTransferEvent;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -31,7 +34,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.ACCOUNT_TRANSFER) ? Messages.COMMAND_USAGE_ACCOUNT_TRANSFER : "";
+        return sender.hasPermission(Permissions.ACCOUNT_TRANSFER) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_TRANSFER, getReplacement()) : "";
     }
 
     @Override
@@ -41,7 +44,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
         if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER)) {
             plugin.debug(p.getName() + " does not have permission to transfer ownership of an account");
-            p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRANSFER);
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER));
             return true;
         }
 
@@ -50,7 +53,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
         OfflinePlayer newOwner = Utils.getPlayer(args[1]);
         if (newOwner == null) {
-            p.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+            p.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return false;
         }
 
@@ -61,7 +64,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
             return true;
         }
 
-        p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST, "transfer ownership to " + newOwner.getName()));
+        p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_TRANSFER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
         ClickType.setPlayerClickType(p, ClickType.transfer(newOwner));
         plugin.debug(p.getName() + " is transferring ownership of an account to " + newOwner.getName());
         return true;
@@ -81,8 +84,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         if (!confirm(p, newOwner, account))
             return;
 
-        plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of "
-                + newOwner.getName());
+        plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
 
         AccountTransferEvent event = new AccountTransferEvent(p, account, newOwner);
         Bukkit.getPluginManager().callEvent(event);
@@ -92,10 +94,15 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         }
 
         boolean hasDefaultNickname = account.getRawName().contentEquals(account.getDefaultName());
+        boolean forSelf = Utils.samePlayer(p, newOwner);
 
-        p.sendMessage(String.format(Messages.OWNERSHIP_TRANSFERRED, "You",
-                Utils.samePlayer(account.getOwner(), p) ? "your account" : p.getName() + "'s account",
-                newOwner.getName()));
+        p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED,
+                new Replacement(Placeholder.PLAYER, newOwner::getName)
+        ));
+        if (!forSelf)
+            Utils.notify(newOwner, LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED_TO_YOU,
+                    new Replacement(Placeholder.PLAYER, p::getName)
+            ));
         account.transferOwnership(newOwner);
         if (hasDefaultNickname)
             account.setName(account.getDefaultName());
@@ -107,25 +114,24 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
             if (account.isTrusted(p))
-                p.sendMessage(Messages.MUST_BE_OWNER);
+                p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
             else
-                p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER);
+                p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER));
             return !hasEntry(p);
         }
 
         if (account.isOwner(newOwner)) {
-            boolean isSelf = Utils.samePlayer(p, newOwner);
             plugin.debug(p.getName() + " is already owner of account");
-            p.sendMessage(String.format(Messages.ALREADY_OWNER, isSelf ? "You are" : newOwner.getName() + " is", "account"));
+            p.sendMessage(LangUtils.getMessage(Message.ALREADY_OWNER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
             return false;
         }
 
         if (Config.confirmOnTransfer) {
             if (!isConfirmed(p, account.getID())) {
                 plugin.debug("Needs confirmation");
-                p.sendMessage(String.format(Messages.ABOUT_TO_TRANSFER,
-                        account.isOwner(p) ? "your account" : account.getOwner().getName() + "'s account", newOwner.getName()));
-                p.sendMessage(Messages.CLICK_TO_CONFIRM);
+                p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CONFIRM_TRANSFER,
+                        new Replacement(Placeholder.PLAYER, newOwner::getName)
+                ));
                 return false;
             }
         } else

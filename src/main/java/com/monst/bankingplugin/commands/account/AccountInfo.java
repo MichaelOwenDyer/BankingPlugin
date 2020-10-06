@@ -4,8 +4,9 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
 import com.monst.bankingplugin.gui.AccountGui;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,7 +21,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return Messages.COMMAND_USAGE_ACCOUNT_INFO;
+        return LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_INFO, getReplacement());
     }
 
     @Override
@@ -50,7 +51,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
 
         if (!(sender instanceof Player)) {
             plugin.debug(sender.getName() + " is not a player");
-            sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
             return true;
         }
 
@@ -62,7 +63,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
         }
 
         plugin.debug(sender.getName() + " can now click an account to get info");
-        sender.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST, "view info"));
+        sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_INFO));
         ClickType.setPlayerClickType(((Player) sender), ClickType.info());
         return true;
     }

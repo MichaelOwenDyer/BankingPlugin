@@ -3,8 +3,10 @@ package com.monst.bankingplugin.commands.bank;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.bank.BankSelectEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
-import com.monst.bankingplugin.selections.Selection;
-import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -22,7 +24,7 @@ public class BankSelect extends BankCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.BANK_SELECT) ? Messages.COMMAND_USAGE_BANK_SELECT : "";
+        return sender.hasPermission(Permissions.BANK_SELECT) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_SELECT, getReplacement()) : "";
     }
 
     @Override
@@ -32,13 +34,13 @@ public class BankSelect extends BankCommand.SubCommand {
 
         if (!plugin.hasWorldEdit()) {
             plugin.debug("WorldEdit is not enabled");
-            p.sendMessage(Messages.WORLDEDIT_NOT_ENABLED);
+            p.sendMessage(LangUtils.getMessage(Message.WORLDEDIT_NOT_ENABLED));
             return true;
         }
 
         if (!p.hasPermission(Permissions.BANK_SELECT)) {
             plugin.debug(p.getName() + " does not have permission to select a bank");
-            p.sendMessage(Messages.NO_PERMISSION_BANK_SELECT);
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SELECT));
             return true;
         }
 
@@ -47,14 +49,14 @@ public class BankSelect extends BankCommand.SubCommand {
             bank = bankUtils.getBank(p.getLocation());
             if (bank == null) {
                 plugin.debug(p.getName() + " wasn't standing in a bank");
-                p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+                p.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
                 return true;
             }
         } else {
             bank = bankUtils.getBank(args[1]);
             if (bank == null) {
-                plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
-                p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+                plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+                p.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
                 return true;
             }
         }
@@ -68,8 +70,9 @@ public class BankSelect extends BankCommand.SubCommand {
 
         WorldEditReader.setSelection(plugin, bank.getSelection(), p);
         plugin.debug(p.getName() + " has selected a bank");
-        p.sendMessage(String.format(Messages.BANK_SELECTED,
-                bank.getSelection().getType() == Selection.SelectionType.CUBOID ? "cuboid" : "polygon"));
+        p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTED,
+                new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
+        ));
         return true;
     }
 

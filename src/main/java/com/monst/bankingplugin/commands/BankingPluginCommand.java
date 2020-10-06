@@ -7,6 +7,7 @@ import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -96,7 +97,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 	private class BaseCommandExecutor implements CommandExecutor {
 
 		@Override
-		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, String[] args) {
 			if (args.length > 0) {
 				for (SubCommand subCommand : subCommands) {
 					if (subCommand.getName().equalsIgnoreCase(args[0])) {
@@ -121,7 +122,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 	private class BaseTabCompleter implements TabCompleter {
 
 		@Override
-		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {
 
 			if (!(sender instanceof Player))
 				return Collections.emptyList();

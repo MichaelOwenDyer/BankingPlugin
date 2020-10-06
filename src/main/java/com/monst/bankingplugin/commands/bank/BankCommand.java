@@ -5,10 +5,13 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
 import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.selections.BlockVector3D;
 import com.monst.bankingplugin.selections.CuboidSelection;
 import com.monst.bankingplugin.utils.BankUtils;
-import com.monst.bankingplugin.utils.Messages;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -28,7 +31,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
         }
         
         this.name = Config.mainCommandNameBank;
-        this.desc = Messages.BANK_COMMAND_DESC;
+        this.desc = LangUtils.getMessage(Message.BANK_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
 
 		addSubCommand(new BankCreate());
@@ -58,7 +61,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 			super(name, playerCommand);
 		}
 
-		Bank getBank(CommandSender sender, String[] args) {
+		static Bank getBank(CommandSender sender, String[] args) {
 			Bank bank = null;
 			if (args.length == 1) {
 				if (sender instanceof Player) {
@@ -66,22 +69,22 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 					bank = bankUtils.getBank(p.getLocation());
 					if (bank == null) {
 						plugin.debug(p.getName() + " wasn't standing in a bank");
-						p.sendMessage(Messages.NOT_STANDING_IN_BANK);
+						p.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
 					}
 				} else {
-					sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+					sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
 				}
 			} else {
 				bank = bankUtils.getBank(args[1]);
 				if (bank == null) {
-					plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
-					sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+					plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+					sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
 				}
 			}
 			return bank;
 		}
 
-		String getCoordLookingAt(Player p, int argLength) {
+		static String getCoordLookingAt(Player p, int argLength) {
 			Location loc = p.getTargetBlock(null, 150).getLocation();
 			switch (argLength % 3) {
 				case 0: return "" + loc.getBlockX();
@@ -98,7 +101,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		 * @return a {@link CuboidSelection} described by the command arguments
 		 * @throws NumberFormatException if the coordinates could not be parsed
 		 */
-		CuboidSelection parseCoordinates(String[] args, Location loc) throws NumberFormatException {
+		static CuboidSelection parseCoordinates(String[] args, Location loc) throws NumberFormatException {
 			if (args.length == 5 || args.length == 6) {
 
 				String argX = args[2];
@@ -143,6 +146,10 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 
 			}
 			return null;
+		}
+
+		static Replacement getReplacement() {
+			return new Replacement(Placeholder.COMMAND, Config.mainCommandNameBank);
 		}
 	}
 }

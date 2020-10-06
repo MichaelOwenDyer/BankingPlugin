@@ -1,7 +1,10 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -20,7 +23,7 @@ public class BankTrust extends BankCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.BANK_TRUST) ? Messages.COMMAND_USAGE_BANK_TRUST : "";
+        return hasPermission(sender, Permissions.BANK_TRUST) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_TRUST, getReplacement()) : "";
     }
 
     @Override
@@ -31,17 +34,18 @@ public class BankTrust extends BankCommand.SubCommand {
         plugin.debug(sender.getName() + " wants to trust a player to a bank");
 
         if (!sender.hasPermission(Permissions.BANK_TRUST)) {
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRUST));
             return true;
         }
         Bank bank = plugin.getBankUtils().getBank(args[1]);
         if (bank == null) {
-            sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+            sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return true;
         }
         OfflinePlayer playerToTrust = Utils.getPlayer(args[2]);
         if (playerToTrust == null) {
-            sender.sendMessage(String.format(Messages.PLAYER_NOT_FOUND, args[1]));
+            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return true;
         }
 
@@ -50,31 +54,34 @@ public class BankTrust extends BankCommand.SubCommand {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
                 plugin.debugf("%s does not have permission to trust a player to bank %s as a co-owner",
                         sender.getName(), bank.getName());
-                sender.sendMessage(Messages.MUST_BE_OWNER);
+                sender.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
                 return true;
             }
             plugin.debugf("%s does not have permission to trust a player to bank %s", sender.getName(), bank.getName());
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST_OTHER);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRUST_OTHER));
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRUST_ADMIN)) {
             plugin.debugf("%s does not have permission to trust a player to admin bank %s", sender.getName(), bank.getName());
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_TRUST_ADMIN);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRUST_ADMIN));
             return true;
         }
 
         boolean isSelf = sender instanceof Player && Utils.samePlayer(playerToTrust, ((Player) sender));
         if (bank.isTrusted(playerToTrust)) {
             plugin.debugf("%s was already trusted at bank %s (#%d)", playerToTrust.getName(), bank.getName(), bank.getID());
-            sender.sendMessage(String.format(bank.isOwner(playerToTrust) ? Messages.ALREADY_OWNER : Messages.ALREADY_COOWNER,
-                    isSelf ? "You are" : playerToTrust.getName() + " is", "bank"));
+            sender.sendMessage(LangUtils.getMessage(bank.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER,
+                    new Replacement(Placeholder.PLAYER, playerToTrust::getName)
+            ));
             return true;
         }
 
         plugin.debugf("%s has trusted %s to bank %s (#%d)",
                 sender.getName(), playerToTrust.getName(), bank.getName(), bank.getID());
-        sender.sendMessage(String.format(Messages.ADDED_COOWNER, isSelf ? "You have been" : playerToTrust.getName() + " has been"));
+        sender.sendMessage(LangUtils.getMessage(Message.ADDED_COOWNER,
+                new Replacement(Placeholder.PLAYER, playerToTrust::getName)
+        ));
         bank.trustPlayer(playerToTrust);
         return true;
     }

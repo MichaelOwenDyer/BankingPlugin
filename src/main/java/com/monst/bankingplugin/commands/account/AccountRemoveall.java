@@ -4,7 +4,10 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
-import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -24,7 +27,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.ACCOUNT_REMOVEALL) ? Messages.COMMAND_USAGE_ACCOUNT_REMOVEALL : "";
+        return sender.hasPermission(Permissions.ACCOUNT_REMOVEALL) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_REMOVE_ALL, getReplacement()) : "";
     }
 
     @Override
@@ -34,7 +37,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
 
         if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL)) {
             plugin.debug(sender.getName() + " does not have permission to remove all accounts");
-            sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_REMOVEALL);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVEALL));
             return true;
         }
 
@@ -63,13 +66,15 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
         }
 
         if (accounts == null || accounts.isEmpty()) {
-            sender.sendMessage(String.format(Messages.NONE_FOUND, "accounts", "remove"));
+            sender.sendMessage(LangUtils.getMessage(Message.ACCOUNTS_NOT_FOUND));
             return true;
         }
 
         if (sender instanceof Player && Config.confirmOnRemoveAll && !isConfirmed((Player) sender, args)) {
-            sender.sendMessage(String.format(Messages.ABOUT_TO_REMOVE_ACCOUNTS, accounts.size(), accounts.size() == 1 ? "" : "s"));
-            sender.sendMessage(Messages.EXECUTE_AGAIN_TO_CONFIRM);
+            sender.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CONFIRM_REMOVE_ALL,
+                    new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
+            ));
+            sender.sendMessage(LangUtils.getMessage(Message.EXECUTE_AGAIN_TO_CONFIRM));
             return true;
         }
 
@@ -80,9 +85,9 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
             return true;
         }
         plugin.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
-        sender.sendMessage(String.format(Messages.ACCOUNTS_REMOVED,
-                accounts.size(),
-                accounts.size() == 1 ? " was" : "s were"));
+        sender.sendMessage(LangUtils.getMessage(Message.ALL_ACCOUNTS_REMOVED,
+                new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
+        ));
         accounts.forEach(a -> accountUtils.removeAccount(a, true));
         return true;
     }

@@ -12,6 +12,10 @@ public enum Placeholder {
     PLAYER,
     NUMBER_OF_ACCOUNTS,
     NUMBER_OF_BANKS,
+    BANK_SIZE,
+    MINIMUM,
+    MAXIMUM,
+    DIFFERENCE,
     NUMBER,
     STRING,
     ERROR,
@@ -20,9 +24,7 @@ public enum Placeholder {
     VALUE,
     PREVIOUS_VALUE,
     WORLD,
-    ACCOUNT_COMMAND,
-    BANK_COMMAND,
-    CONTROL_COMMAND,
+    COMMAND,
     VERSION;
 
     private String placeholder = null;

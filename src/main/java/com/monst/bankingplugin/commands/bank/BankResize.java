@@ -5,10 +5,13 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.BankUtils;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -28,7 +31,7 @@ public class BankResize extends BankCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RESIZE : "";
+        return hasPermission(sender, Permissions.BANK_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_RESIZE, getReplacement()) : "";
     }
 
     @Override
@@ -38,7 +41,7 @@ public class BankResize extends BankCommand.SubCommand {
 
         if (!p.hasPermission(Permissions.BANK_CREATE)) {
             plugin.debug(p.getName() + " does not have permission to resize a bank");
-            p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE);
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_RESIZE));
             return true;
         }
 
@@ -53,12 +56,12 @@ public class BankResize extends BankCommand.SubCommand {
                 selection = WorldEditReader.getSelection(plugin, p);
                 if (selection == null) {
                     plugin.debug(p.getName() + " tried to resize a bank with no WorldEdit selection");
-                    p.sendMessage(Messages.SELECT_WORLDEDIT_REGION);
+                    p.sendMessage(LangUtils.getMessage(Message.BANK_SELECT_REGION));
                     return true;
                 }
             } else {
                 plugin.debug("WorldEdit is not enabled");
-                p.sendMessage(Messages.WORLDEDIT_NOT_ENABLED);
+                p.sendMessage(LangUtils.getMessage(Message.WORLDEDIT_NOT_ENABLED));
                 return true;
             }
         } else {
@@ -66,7 +69,7 @@ public class BankResize extends BankCommand.SubCommand {
                 selection = parseCoordinates(args, p.getLocation());
             } catch (NumberFormatException e) {
                 plugin.debug("Could not parse coordinates in command args: \"" + Arrays.toString(args) + "\"");
-                p.sendMessage(Messages.COORDINATES_PARSE_ERROR);
+                p.sendMessage(LangUtils.getMessage(Message.BANK_COORDINATE_PARSE_ERROR));
                 return false;
             }
         }
@@ -76,48 +79,57 @@ public class BankResize extends BankCommand.SubCommand {
 
         bank = bankUtils.getBank(args[1]);
         if (bank == null) {
-            plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
-            p.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+            p.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return true;
         }
         if (bank.isPlayerBank() && !bank.isOwner(p) && !p.hasPermission(Permissions.BANK_RESIZE_OTHER)) {
             plugin.debug(p.getName() + " does not have permission to resize another player's bank");
-            p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE_OTHER);
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_RESIZE_OTHER));
             return true;
         }
         if (bank.isAdminBank() && !p.hasPermission(Permissions.BANK_RESIZE_ADMIN)) {
             plugin.debug(p.getName() + " does not have permission to resize an admin bank");
-            p.sendMessage(Messages.NO_PERMISSION_BANK_RESIZE_ADMIN);
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_RESIZE_ADMIN));
             return true;
         }
         if (Config.disabledWorlds.contains(selection.getWorld().getName())) {
             plugin.debug("BankingPlugin is disabled in world " + selection.getWorld().getName());
-            p.sendMessage(Messages.WORLD_DISABLED);
+            p.sendMessage(LangUtils.getMessage(Message.WORLD_DISABLED));
             return true;
         }
         long volume = selection.getVolume();
         long volumeLimit = BankUtils.getVolumeLimit(p);
         if (bank.isPlayerBank() && volumeLimit >= 0 && volume > volumeLimit) {
             plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
-            p.sendMessage(String.format(Messages.SELECTION_TOO_LARGE_RESIZE, volumeLimit, volume - volumeLimit));
+            p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_LARGE,
+                    new Replacement(Placeholder.BANK_SIZE, volume),
+                    new Replacement(Placeholder.MAXIMUM, volumeLimit),
+                    new Replacement(Placeholder.DIFFERENCE, () -> volume - volumeLimit)
+            ));
             return true;
         }
         if (bank.isPlayerBank() && volume < Config.minimumBankVolume) {
             plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume + ")");
-            p.sendMessage(String.format(Messages.SELECTION_TOO_SMALL_RESIZE, Config.minimumBankVolume, Config.minimumBankVolume - volume));
+            p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_SMALL,
+                    new Replacement(Placeholder.BANK_SIZE, volume),
+                    new Replacement(Placeholder.MINIMUM, Config.minimumBankVolume),
+                    new Replacement(Placeholder.DIFFERENCE, () -> Config.minimumBankVolume - volume)
+            ));
             return true;
         }
         Set<Selection> overlappingSelections = bankUtils.getOverlappingSelectionsIgnoring(selection, bank.getSelection());
         if (!overlappingSelections.isEmpty()) {
             plugin.debug("New selection is overlaps with an existing bank selection");
-            p.sendMessage(Messages.SELECTION_OVERLAPS_EXISTING);
+            p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING));
             if (plugin.hasGriefPrevention() && Config.enableGriefPreventionIntegration)
                 VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;
         }
-        if (bank.getAccounts().stream().anyMatch(account -> !selection.contains(account.getLocation()))) {
+        long cutAccounts = bank.getAccounts().stream().filter(account -> !selection.contains(account.getLocation())).count();
+        if (cutAccounts > 0) {
             plugin.debug("New selection does not contain all accounts");
-            p.sendMessage(Messages.SELECTION_CUTS_ACCOUNTS);
+            p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_CUTS_ACCOUNTS, new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, cutAccounts)));
             return true;
         }
 
@@ -133,9 +145,12 @@ public class BankResize extends BankCommand.SubCommand {
         bankUtils.addBank(bank, true, Callback.of(plugin,
                 result -> {
                     plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
-                    p.sendMessage(Messages.BANK_RESIZED);
+                    p.sendMessage(LangUtils.getMessage(Message.BANK_RESIZED, new Replacement(Placeholder.BANK_SIZE, selection::getVolume)));
                 },
-                error -> p.sendMessage(Messages.ERROR_OCCURRED)));
+                error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
+                        new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
+                ))
+        ));
         return true;
     }
 

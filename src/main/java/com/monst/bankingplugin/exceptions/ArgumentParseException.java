@@ -1,9 +1,11 @@
 package com.monst.bankingplugin.exceptions;
 
-import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 
 import java.util.List;
-import java.util.Set;
 
 public class ArgumentParseException extends Exception {
     private static final long serialVersionUID = 379872395581293355L;
@@ -19,11 +21,11 @@ public class ArgumentParseException extends Exception {
 
     public String getErrorMessage() {
         if (dataType.equals(Double.class))
-            return String.format(Messages.NOT_A_NUMBER, value);
+            return LangUtils.getMessage(Message.NOT_A_NUMBER, new Replacement(Placeholder.STRING, value));
         if (dataType.equals(Integer.class))
-            return String.format(Messages.NOT_AN_INTEGER, value);
-        if (dataType.equals(List.class) || dataType.equals(Set.class))
-            return String.format(Messages.NOT_A_LIST, value);
+            return LangUtils.getMessage(Message.NOT_AN_INTEGER, new Replacement(Placeholder.STRING, value));
+        if (dataType.equals(List.class))
+            return LangUtils.getMessage(Message.NOT_A_LIST, new Replacement(Placeholder.STRING, value));
         return "";
     }
 }
