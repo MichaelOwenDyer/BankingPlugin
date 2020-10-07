@@ -3,7 +3,6 @@ package com.monst.bankingplugin.commands.bank;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
-import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -72,7 +71,7 @@ public class BankSet extends BankCommand.SubCommand {
 
         String previousValue = bank.getFormatted(field);
         Callback<String> callback = Callback.of(plugin,
-            result -> {
+            result -> { //FIXME: Must also send message to executor!
                 plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + bank.getName() + " from " + previousValue + " to " + result);
                 Utils.notify(Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()),
                         LangUtils.getMessage(Message.BANK_PROPERTY_SET,
@@ -83,8 +82,7 @@ public class BankSet extends BankCommand.SubCommand {
                         )
                 );
             },
-            error -> sender.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-                    new Replacement(Placeholder.ERROR, ((ArgumentParseException) error)::getErrorMessage)))
+            error -> sender.sendMessage(error.getLocalizedMessage())
         );
 
         if (!bank.set(field, value, callback)) {

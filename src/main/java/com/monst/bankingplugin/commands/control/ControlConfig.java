@@ -45,26 +45,26 @@ public class ControlConfig extends ControlCommand.SubCommand {
 
         switch (args[1].toLowerCase()) {
             case "set":
-                plugin.getPluginConfig().set(property, value);
                 sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_SET,
                         new Replacement(Placeholder.PROPERTY, property),
                         new Replacement(Placeholder.PREVIOUS_VALUE, () -> plugin.getConfig().getString(property)),
                         new Replacement(Placeholder.VALUE, value)
                 ));
+                plugin.getPluginConfig().set(property, value);
                 break;
             case "add":
-                plugin.getPluginConfig().add(property, value);
                 sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_ADDED,
                         new Replacement(Placeholder.PROPERTY, property),
                         new Replacement(Placeholder.VALUE, value)
                 ));
+                plugin.getPluginConfig().add(property, value);
                 break;
             case "remove":
-                plugin.getPluginConfig().remove(property, value);
                 sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_ADDED,
                         new Replacement(Placeholder.PROPERTY, property),
                         new Replacement(Placeholder.VALUE, value)
                 ));
+                plugin.getPluginConfig().remove(property, value);
                 break;
             default:
                 return false;

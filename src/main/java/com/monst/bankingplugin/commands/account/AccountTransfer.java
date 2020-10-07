@@ -81,10 +81,32 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
     }
 
     public void transfer(Player p, OfflinePlayer newOwner, Account account) {
-        if (!confirm(p, newOwner, account))
-            return;
-
         plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
+
+        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
+            plugin.debug(p.getName() + " does not have permission to transfer the account.");
+            if (account.isTrusted(p))
+                p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+            else
+                p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER));
+            ClickType.removePlayerClickType(p);
+            return;
+        }
+
+        if (account.isOwner(newOwner)) {
+            plugin.debug(p.getName() + " is already owner of account");
+            p.sendMessage(LangUtils.getMessage(Message.ALREADY_OWNER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
+            ClickType.removePlayerClickType(p);
+            return;
+        }
+
+        if (Config.confirmOnTransfer && !isConfirmed(p, account.getID())) {
+            plugin.debug("Needs confirmation");
+            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CONFIRM_TRANSFER,
+                    new Replacement(Placeholder.PLAYER, newOwner::getName)
+            ));
+            return;
+        }
 
         AccountTransferEvent event = new AccountTransferEvent(p, account, newOwner);
         Bukkit.getPluginManager().callEvent(event);
@@ -108,35 +130,6 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
             account.setName(account.getDefaultName());
         plugin.getAccountUtils().addAccount(account, true);
         ClickType.removePlayerClickType(p);
-    }
-
-    private boolean confirm(Player p, OfflinePlayer newOwner, Account account) {
-
-        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
-            if (account.isTrusted(p))
-                p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
-            else
-                p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER));
-            return !hasEntry(p);
-        }
-
-        if (account.isOwner(newOwner)) {
-            plugin.debug(p.getName() + " is already owner of account");
-            p.sendMessage(LangUtils.getMessage(Message.ALREADY_OWNER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
-            return false;
-        }
-
-        if (Config.confirmOnTransfer) {
-            if (!isConfirmed(p, account.getID())) {
-                plugin.debug("Needs confirmation");
-                p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CONFIRM_TRANSFER,
-                        new Replacement(Placeholder.PLAYER, newOwner::getName)
-                ));
-                return false;
-            }
-        } else
-            ClickType.removePlayerClickType(p);
-        return true;
     }
 
 }

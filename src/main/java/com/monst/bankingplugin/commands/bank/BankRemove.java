@@ -65,13 +65,6 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
             return true;
         }
 
-        BankRemoveEvent event = new BankRemoveEvent(sender, bank);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            plugin.debug("Bank remove event cancelled");
-            return true;
-        }
-
         if (sender instanceof Player) {
             double creationPrice = bank.isAdminBank() ? Config.bankCreationPriceAdmin : Config.bankCreationPricePlayer;
             boolean reimburse = bank.isAdminBank() ? Config.reimburseBankCreationAdmin : Config.reimburseBankCreationPlayer;
@@ -90,6 +83,14 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
                 ));
             }
         }
+
+        BankRemoveEvent event = new BankRemoveEvent(sender, bank);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            plugin.debug("Bank remove event cancelled");
+            return true;
+        }
+
         plugin.debug("Bank #" + bank.getID() + " removed from the database");
         bankUtils.removeBank(bank, true);
         Utils.notify(Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()),

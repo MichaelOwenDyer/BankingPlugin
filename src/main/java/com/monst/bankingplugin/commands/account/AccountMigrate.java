@@ -36,7 +36,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         Player p = ((Player) sender);
         plugin.debug(p.getName() + " wants to migrate an account");
 
-        if (!p.hasPermission(Permissions.ACCOUNT_CREATE)) {
+        if (!p.hasPermission(Permissions.ACCOUNT_MIGRATE)) {
             plugin.debug(p.getName() + " does not have permission to migrate an account");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE));
             return true;
@@ -80,7 +80,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         if (accountUtils.isAccount(newLocation)) {
             if (toMigrate.equals(accountUtils.getAccount(newLocation))) {
                 plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
-                p.sendMessage(LangUtils.getMessage(Message.SAME_ACCOUNT));
+                p.sendMessage(LangUtils.getMessage(Message.SAME_CHEST));
                 return;
             }
             plugin.debugf("%s clicked an already existing account chest to migrate to", p.getName());
@@ -130,7 +130,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         double net = reimbursement - creationPrice;
         double balance = plugin.getEconomy().getBalance(p);
-        if (balance < net * -1) {
+        if (net < 0 && balance < net * -1) { // TODO: Test
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS,
                     new Replacement(Placeholder.PRICE, net),
                     new Replacement(Placeholder.PLAYER_BALANCE, balance),

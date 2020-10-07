@@ -178,7 +178,9 @@ public class InterestEventListener implements Listener {
 							new Replacement(Placeholder.AMOUNT, counter::getSum),
 							new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, counter::getCount)
 					)),
-					error -> Utils.message(customer, LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
+					error -> Utils.message(customer, LangUtils.getMessage(Message.ERROR_OCCURRED,
+							new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
+					))
 			));
 		}
 	}

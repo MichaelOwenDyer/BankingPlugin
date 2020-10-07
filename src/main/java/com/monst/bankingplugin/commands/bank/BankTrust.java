@@ -52,8 +52,7 @@ public class BankTrust extends BankCommand.SubCommand {
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
                 || sender.hasPermission(Permissions.BANK_TRUST_OTHER))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
-                plugin.debugf("%s does not have permission to trust a player to bank %s as a co-owner",
-                        sender.getName(), bank.getName());
+                plugin.debugf("%s does not have permission to trust a player to bank %s as a co-owner", sender.getName(), bank.getName());
                 sender.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
                 return true;
             }
@@ -68,7 +67,6 @@ public class BankTrust extends BankCommand.SubCommand {
             return true;
         }
 
-        boolean isSelf = sender instanceof Player && Utils.samePlayer(playerToTrust, ((Player) sender));
         if (bank.isTrusted(playerToTrust)) {
             plugin.debugf("%s was already trusted at bank %s (#%d)", playerToTrust.getName(), bank.getName(), bank.getID());
             sender.sendMessage(LangUtils.getMessage(bank.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER,

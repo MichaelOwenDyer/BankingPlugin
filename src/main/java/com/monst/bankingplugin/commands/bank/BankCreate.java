@@ -122,26 +122,18 @@ public class BankCreate extends BankCommand.SubCommand {
         }
         if (!bankUtils.isUniqueName(name)) {
             plugin.debug("Name is not unique");
-            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE));
+            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, name)));
             return true;
         }
         if (!Utils.isAllowedName(name)) {
             plugin.debug("Name is not allowed");
-            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED));
+            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, name)));
             return true;
         }
 
         Bank bank = isAdminBank ?
                 Bank.mint(name, selection) :
                 Bank.mint(name, p, selection);
-
-        BankCreateEvent event = new BankCreateEvent(p, bank);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled() && !p.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS)) {
-            plugin.debug("No permission to create bank without WorldGuard flag present");
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_CREATE_PROTECTED));
-            return true;
-        }
 
         double creationPrice = isAdminBank ? Config.bankCreationPriceAdmin : Config.bankCreationPricePlayer;
         double balance = plugin.getEconomy().getBalance(p);
@@ -164,6 +156,14 @@ public class BankCreate extends BankCommand.SubCommand {
                 ))
         )))
             return true;
+
+        BankCreateEvent event = new BankCreateEvent(p, bank);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled() && !p.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS)) {
+            plugin.debug("No permission to create bank without WorldGuard flag present");
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_CREATE_PROTECTED));
+            return true;
+        }
 
         bankUtils.addBank(bank, true);
         plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");

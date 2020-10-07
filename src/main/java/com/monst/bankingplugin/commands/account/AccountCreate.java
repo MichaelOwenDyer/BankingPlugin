@@ -38,9 +38,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         Player p = ((Player) sender);
         plugin.debug(p.getName() + " wants to create an account");
 
-        boolean hasPermission = hasPermission(p, Permissions.ACCOUNT_CREATE);
-
-        if (!hasPermission) {
+        if (!hasPermission(p, Permissions.ACCOUNT_CREATE)) {
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE));
             plugin.debug(p.getName() + " is not permitted to create an account");
             return true;
@@ -120,7 +118,8 @@ public class AccountCreate extends AccountCommand.SubCommand {
         if (playerAccountLimit > 0 && bank.getAccounts(account -> account.isOwner(p)).size() >= playerAccountLimit) {
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_AT_BANK_REACHED,
                     new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
-                    new Replacement(Placeholder.LIMIT, playerAccountLimit)));
+                    new Replacement(Placeholder.LIMIT, playerAccountLimit)
+            ));
             plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
             return;
         }

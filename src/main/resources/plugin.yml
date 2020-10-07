@@ -32,6 +32,7 @@ permissions:
             bankingplugin.account.list-other: true
             bankingplugin.account.view-other: true
             bankingplugin.account.edit-other: true
+            bankingplugin.account.migrate: true
             bankingplugin.account.migrate.other: true
             bankingplugin.account.migrate.bank: true
             bankingplugin.account.recover: true
@@ -99,6 +100,12 @@ permissions:
         children:
             bankingplugin.account.view-other: true
     
+    bankingplugin.account.migrate:
+        description: Migrate an account chest to a different chest.
+        default: op
+        children:
+            bankingplugin.account.create: true
+
     bankingplugin.account.migrate.other:
         description: Migrate the account chest of another player to a different chest.
         default: op
@@ -182,6 +189,8 @@ permissions:
     bankingplugin.bank.create.admin:
         description: Create, manage, and remove admin banks.
         default: op
+        children:
+            bankingplugin.account.create: true
         
     bankingplugin.bank.remove.other:
         description: Remove another player's bank and all accounts at that bank.
@@ -209,17 +218,25 @@ permissions:
     bankingplugin.bank.size.*:
         description: Create a bank of unlimited volume.
         default: op
+
+    bankingplugin.bank.resize:
+        description: Resize a bank.
+        default: op
+        children:
+            bankingplugin.bank.create: true
         
     bankingplugin.bank.resize.other:
         description: Resize another player's bank.
         default: op
         children:
+            bankingplugin.bank.resize: true
             bankingplugin.bank.create: true
-        
+
     bankingplugin.bank.resize.admin:
         description: Resize an admin bank.
         default: op
         children:
+            bankingplugin.bank.resize.other: true
             bankingplugin.bank.create.admin: true
 
     bankingplugin.bank.trust:
@@ -238,7 +255,7 @@ permissions:
         description: Add or remove other players (or yourself) as co-owners of an admin bank.
         default: op
         children:
-            bankingplugin.bank.trust: true
+            bankingplugin.bank.trust.other: true
 
     bankingplugin.bank.transfer:
         description: Transfer ownership of your bank to another player.

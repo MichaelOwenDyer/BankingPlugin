@@ -33,10 +33,9 @@ public class LangUtils {
 
         for (Replacement replacement : replacements) {
             Placeholder placeholder = replacement.getPlaceholder();
-            if (!allowedPlaceholders.contains(placeholder) || !finalMessage.contains(placeholder.toString()))
+            if (!allowedPlaceholders.remove(placeholder) || !finalMessage.contains(placeholder.toString()))
                 continue;
             finalMessage = finalMessage.replace(placeholder.toString(), replacement.getReplacement());
-            allowedPlaceholders.remove(placeholder); // Should be empty by end of loop
         }
 
         for (Placeholder placeholder : allowedPlaceholders)

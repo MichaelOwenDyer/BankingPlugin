@@ -41,7 +41,7 @@ public class AccountRename extends AccountCommand.SubCommand {
 
         if (!nickname.trim().isEmpty() && !Utils.isAllowedName(nickname)) {
             plugin.debug("Name \"" + nickname + "\" is not allowed");
-            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED));
+            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, nickname)));
             return true;
         }
 
@@ -67,7 +67,7 @@ public class AccountRename extends AccountCommand.SubCommand {
                     executor.getName(), value, account.getID());
             account.setName(value);
         }
-        executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RENAMED, new Replacement(Placeholder.ACCOUNT_NAME, account::getName)));
+        executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RENAMED, new Replacement(Placeholder.ACCOUNT_NAME, account::getChestName)));
         plugin.getAccountUtils().addAccount(account, true, account.callUpdateName());
         AccountConfigureEvent e = new AccountConfigureEvent(executor, account, AccountField.NICKNAME, value);
         Bukkit.getPluginManager().callEvent(e);

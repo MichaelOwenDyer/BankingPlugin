@@ -58,7 +58,7 @@ public class AccountBalanceListener implements Listener {
 		Player executor = (Player) e.getPlayer();
 		executor.sendMessage(LangUtils.getMessage(difference.signum() > 0 ? Message.ACCOUNT_DEPOSIT : Message.ACCOUNT_WITHDRAWAL,
 				new Replacement(Placeholder.AMOUNT, difference::abs),
-				new Replacement(Placeholder.ACCOUNT_BALANCE, account::getBalance)
+				new Replacement(Placeholder.ACCOUNT_BALANCE, valueOnClose)
 		));
 
 		if (difference.signum() < 0 && valueOnClose.compareTo(account.getPrevBalance()) < 0)

@@ -39,7 +39,7 @@ public class BankResize extends BankCommand.SubCommand {
         Player p = ((Player) sender);
         plugin.debug(p.getName() + " wants to resize a bank");
 
-        if (!p.hasPermission(Permissions.BANK_CREATE)) {
+        if (!p.hasPermission(Permissions.BANK_RESIZE)) {
             plugin.debug(p.getName() + " does not have permission to resize a bank");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_RESIZE));
             return true;

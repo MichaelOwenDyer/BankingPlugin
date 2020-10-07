@@ -17,6 +17,8 @@ public enum Placeholder {
     MAXIMUM,
     DIFFERENCE,
     NUMBER,
+    MULTIPLIER,
+    MULTIPLIER_STAGE,
     STRING,
     ERROR,
     LIMIT,

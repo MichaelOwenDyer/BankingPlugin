@@ -50,7 +50,7 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
             plugin.debug("Interest event cancelled");
             return true;
         }
-        plugin.debugf("%s has triggered an interest payment at %s" + Utils.map(banks, Bank::getName));
+        plugin.debugf("%s has triggered an interest payment at %s", sender.getName(), Utils.map(banks, Bank::getName));
         sender.sendMessage(LangUtils.getMessage(Message.INTEREST_PAYOUT_TRIGGERED, new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size)));
         return true;
     }

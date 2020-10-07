@@ -58,8 +58,29 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
      * @param account  Account to be removed
      */
     public void remove(Player p, Account account) {
-        if (!confirm(p, account))
+
+        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(p)) {
+            if (account.isTrusted(p))
+                p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+            else
+                p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER));
+            if (!hasEntry(p))
+                ClickType.removePlayerClickType(p);
             return;
+        }
+
+        if (account.getBalance().signum() > 0 || Config.confirmOnRemove) {
+            if (!isConfirmed(p, account.getID())) {
+                plugin.debug("Needs confirmation");
+                if (account.getBalance().signum() > 0) {
+                    p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_BALANCE_NOT_ZERO,
+                            new Replacement(Placeholder.ACCOUNT_BALANCE, account::getBalance)
+                    ));
+                }
+                p.sendMessage(LangUtils.getMessage(Message.CLICK_AGAIN_TO_CONFIRM));
+                return;
+            }
+        }
 
         plugin.debugf("%s is removing %s account (#%d)",
                 p.getName(),
@@ -78,7 +99,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         creationPrice *= account.getSize();
         creationPrice *= bank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
 
-        if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
+        if (creationPrice > 0 && account.isOwner(p) && !bank.isOwner(p)) {
 
             double finalCreationPrice = creationPrice;
             Utils.depositPlayer(p.getPlayer(), finalCreationPrice, Callback.of(plugin,
@@ -90,8 +111,8 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
                     ))
             ));
 
-            if (account.getBank().isPlayerBank()) {
-                OfflinePlayer bankOwner = account.getBank().getOwner();
+            if (bank.isPlayerBank()) {
+                OfflinePlayer bankOwner = bank.getOwner();
                 Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
                         result -> Utils.message(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
                                 new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName()),
@@ -103,35 +124,11 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
                 ));
             }
         }
-        p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, () -> account.getBank().getColorizedName())));
+
+        p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         plugin.getAccountUtils().removeAccount(account, true);
+        ClickType.removePlayerClickType(p);
         plugin.debug("Removed account (#" + account.getID() + ")");
-    }
-
-    private boolean confirm(Player p, Account account) {
-
-        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(p)) {
-            if (account.isTrusted(p))
-                p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
-            else
-                p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER));
-            return !hasEntry(p);
-        }
-
-        if ((account.getBalance().signum() > 0 || Config.confirmOnRemove)) {
-            if (!isConfirmed(p, account.getID())) {
-                plugin.debug("Needs confirmation");
-                if (account.getBalance().signum() > 0) {
-                    p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_BALANCE_NOT_ZERO,
-                            new Replacement(Placeholder.ACCOUNT_BALANCE, account::getBalance)
-                    ));
-                }
-                p.sendMessage(LangUtils.getMessage(Message.CLICK_AGAIN_TO_CONFIRM));
-                return false;
-            }
-        } else
-            ClickType.removePlayerClickType(p);
-        return true;
     }
 
 }

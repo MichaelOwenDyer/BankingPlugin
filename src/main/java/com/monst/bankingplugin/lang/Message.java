@@ -22,22 +22,22 @@ public enum Message {
     ),
     ACCOUNT_CREATE_FEE_PAID (
             "A player is charged money to create an account at a bank.",
-            "&6You have been charged &a%PRICE% &6to create an account at &7%BANK%&6.",
+            "&6You have been charged &a%PRICE% &6to create an account at &7%BANK_NAME%&6.",
             Placeholder.PRICE, Placeholder.BANK_NAME
     ),
     ACCOUNT_CREATE_FEE_RECEIVED (
-            "A bank owner receives payment from a player who created an account.",
-            "&6%PLAYER% has paid you &a%AMOUNT% &6to create an account at &7%BANK%&6.",
+            "A bank owner receives payment from a player who created an account.", // TODO: Test
+            "&6%PLAYER% has paid you &a%AMOUNT% &6to create an account at &7%BANK_NAME%&6.",
             Placeholder.PLAYER, Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
     ACCOUNT_EXTEND_FEE_PAID (
             "A player is charged money to extend their account chest into a double chest.",
-            "&6You have been charged &a%PRICE% &6to extend an account at &7%BANK%&6.",
+            "&6You have been charged &a%PRICE% &6to extend an account at &7%BANK_NAME%&6.",
             Placeholder.PRICE, Placeholder.BANK_NAME
     ),
     ACCOUNT_EXTEND_FEE_RECEIVED (
-            "A bank owner receives payment from a player who extended their account.",
-            "&6%PLAYER% has paid you &a%AMOUNT% &6to extend an account at &7%BANK%&6.",
+            "A bank owner receives payment from a player who extended their account.", // TODO: Test
+            "&6%PLAYER% has paid you &a%AMOUNT% &6to extend an account at &7%BANK_NAME%&6.",
             Placeholder.PLAYER, Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
     ACCOUNT_REMOVED (
@@ -45,19 +45,19 @@ public enum Message {
             "&6Account removed.",
             Placeholder.BANK_NAME
     ),
+    ACCOUNT_CONFIRM_REMOVE_ALL (
+            "An admin must confirm removing multiple accounts at once.",
+            "&6You are about to remove &b%NUMBER_OF_ACCOUNTS% &6account(s).",
+            Placeholder.NUMBER_OF_ACCOUNTS
+    ),
     ALL_ACCOUNTS_REMOVED (
             "An admin removes multiple accounts at once.",
-            "&6Successfully removed &b%NUMBER_OF_ACCOUNTS% &6account%s.",
+            "&6Successfully removed &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_ACCOUNTS
     ),
     ACCOUNTS_NOT_FOUND (
             "A player attempts to list the accounts of a player who does not have any accounts.",
             "&cNo accounts found."
-    ),
-    ACCOUNT_CONFIRM_REMOVE_ALL (
-            "An admin must confirm removing multiple accounts at once.",
-            "&6You are about to remove &b%NUMBER_OF_ACCOUNTS% &6account(s).",
-            Placeholder.NUMBER_OF_ACCOUNTS
     ),
     ACCOUNT_BALANCE_NOT_ZERO (
             "A player tries to remove an account that still has items in it and must click again to confirm.",
@@ -66,7 +66,7 @@ public enum Message {
     ),
     ACCOUNT_LIMIT (
             "A player executes the /account limits command.",
-            "&6You own &b%NUMBER_OF_ACCOUNTS%&6/&b%LIMIT% &6allowed accounts.",
+            "&6You own &b%NUMBER_OF_ACCOUNTS%&6/&b%LIMIT% &6allowed account(s).",
             Placeholder.NUMBER_OF_ACCOUNTS, Placeholder.LIMIT
     ),
     ACCOUNT_LIMIT_REACHED (
@@ -76,13 +76,13 @@ public enum Message {
     ),
     ACCOUNT_RENAMED (
             "A player sets an account nickname.",
-            "&6Account renamed to %ACCOUNT_NAME%.",
+            "&6Account renamed to &7%ACCOUNT_NAME%&6.",
             Placeholder.ACCOUNT_NAME
     ),
     ACCOUNT_SET_MULTIPLIER (
-            "An admin sets an account multiplier.",
-            "&6Account multiplier set to &b%NUMBER%&6.",
-            Placeholder.NUMBER
+            "An admin sets an account multiplier.", // TODO: Test
+            "&6Account multiplier set to &b%MULTIPLIER%x&6.",
+            Placeholder.MULTIPLIER, Placeholder.MULTIPLIER_STAGE
     ),
     ACCOUNT_SET_INTEREST_DELAY (
             "An admin sets an account interest delay.",
@@ -110,7 +110,7 @@ public enum Message {
             Placeholder.PLAYER
     ),
     ACCOUNT_TRANSFERRED_TO_YOU (
-            "A player is transferred ownership of an account by another player.",
+            "A player is transferred ownership of an account by another player.", // TODO: Test
             "&6%PLAYER% transferred you ownership of an account.",
             Placeholder.PLAYER
     ),
@@ -128,12 +128,12 @@ public enum Message {
             Placeholder.PLAYER
     ),
     ACCOUNT_DEPOSIT (
-            "A player puts items into an account chest and closes the chest.",
+            "A player puts items into an account chest and closes the chest.", // TODO: Test
             "&6You deposited &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6.",
             Placeholder.AMOUNT, Placeholder.ACCOUNT_BALANCE
     ),
     ACCOUNT_WITHDRAWAL (
-            "A player takes items out of an account chest and closes the chest.",
+            "A player takes items out of an account chest and closes the chest.", // TODO: Test
             "&6You withdrew &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6.",
             Placeholder.AMOUNT, Placeholder.ACCOUNT_BALANCE
     ),
@@ -226,12 +226,12 @@ public enum Message {
     ),
     BANK_REMOVED (
             "A player removes a bank and all its accounts.",
-            "&6Bank %BANK_NAME% was removed.",
+            "&6Bank %BANK_NAME% and %NUMBER_OF_ACCOUNTS% account(s) were removed.",
             Placeholder.BANK_NAME, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     ALL_BANKS_REMOVED (
             "A player removes multiple banks at once.",
-            "&6Successfully removed &b%NUMBER_OF_BANKS% &6banks and &b%NUMBER_OF_ACCOUNTS% &6accounts.",
+            "&6Successfully removed &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     BANKS_NOT_FOUND (
@@ -240,7 +240,7 @@ public enum Message {
     ),
     BANK_CONFIRM_REMOVE (
             "An admin must confirm removing one bank or more.",
-            "&6Execute command again to remove &b%NUMBER_OF_BANKS% &6banks and &b%NUMBER_OF_ACCOUNTS% &6accounts.",
+            "&6Execute command again to remove &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     BANK_NOT_FOUND (
@@ -254,7 +254,7 @@ public enum Message {
     ),
     BANK_LIMIT (
             "A player executes the /bank limits command.",
-            "&6You own %NUMBER_OF_BANKS%&a/%LIMIT% allowed banks of up to %BANK_SIZE% blocks in size each.",
+            "&6You own %NUMBER_OF_BANKS%&a/%LIMIT% allowed bank(s) of up to %BANK_SIZE% blocks in size each.",
             Placeholder.NUMBER_OF_BANKS, Placeholder.LIMIT, Placeholder.BANK_SIZE
     ),
     BANK_LIMIT_REACHED (
@@ -264,22 +264,22 @@ public enum Message {
     ),
     BANK_CONFIRM_TRANSFER (
             "A player executes a command to transfer a bank to another player and must execute it again to confirm.",
-            "&6Execute command again to confirm transferring ownership of bank &7%BANK% &6to %PLAYER%.",
+            "&6Execute command again to confirm transferring ownership of bank &7%BANK_NAME% &6to %PLAYER%.",
             Placeholder.PLAYER, Placeholder.BANK_NAME
     ),
     BANK_TRANSFERRED (
             "A player transfers ownership of a bank to another player.",
-            "&6You transferred %PLAYER% ownership of bank &7%BANK%&6.",
+            "&6You transferred %PLAYER% ownership of bank &7%BANK_NAME%&6.",
             Placeholder.PLAYER, Placeholder.BANK_NAME
     ),
     BANK_TRANSFERRED_TO_YOU (
             "A player is transferred ownership of a bank by another player.",
-            "&6%PLAYER% transferred you ownership of bank &7%BANK%&6.",
+            "&6%PLAYER% transferred you ownership of bank &7%BANK_NAME%&6.",
             Placeholder.PLAYER, Placeholder.BANK_NAME
     ),
     BANK_ALREADY_ADMIN (
             "A player attempts to transfer a bank to an admin bank, but the bank is already an admin bank.",
-            "&7%BANK% &cis alread an admin bank.",
+            "&7%BANK_NAME% &cis already an admin bank.",
             Placeholder.BANK_NAME
     ),
     BANK_RESIZED (
@@ -289,7 +289,7 @@ public enum Message {
     ),
     BANK_PROPERTY_SET (
             "A player sets a property at a bank to a new value.",
-            "&6Changed &b%PROPERTY% &6at bank &7%BANK% &6to &b%VALUE%&6.",
+            "&6Changed &b%PROPERTY% &6at bank &7%BANK_NAME% &6from &b%PREVIOUS_VALUE% &6to &b%VALUE%&6.",
             Placeholder.PROPERTY, Placeholder.BANK_NAME, Placeholder.PREVIOUS_VALUE, Placeholder.VALUE
     ),
     BANK_PROPERTY_NOT_OVERRIDABLE (
@@ -299,7 +299,7 @@ public enum Message {
     ),
     BANK_SELECTED (
             "A player selects a bank with WorldEdit.",
-            "&6Bank &7%BANK% &6was selected with WorldEdit.",
+            "&6Bank &7%BANK_NAME% &6was selected with WorldEdit.",
             Placeholder.BANK_NAME
     ),
     NOT_A_NUMBER (
@@ -324,11 +324,13 @@ public enum Message {
     ),
     NAME_NOT_UNIQUE (
             "A player attempts to create or rename a bank with a name already in use by another bank.",
-            "&cA bank with that name already exists."
+            "&cA bank with that name already exists.",
+            Placeholder.BANK_NAME
     ),
     NAME_NOT_ALLOWED (
             "A player attempts to create or rename a bank with a name that does not match the name-regex pattern in the config.",
-            "&cName is not allowed."
+            "&cName is not allowed.",
+            Placeholder.BANK_NAME
     ),
     NAME_NOT_CHANGED (
             "A player renames a bank to the same name.",
@@ -337,7 +339,7 @@ public enum Message {
     ),
     NAME_CHANGED (
             "A player renames a bank to a different name.",
-            "&6The bank was successfully renamed to &7%BANK%&6.",
+            "&6The bank was successfully renamed to &7%BANK_NAME%&6.",
             Placeholder.BANK_NAME // TODO: Allow previous bank name?
     ),
     INTEREST_PAID (
@@ -347,7 +349,7 @@ public enum Message {
     ),
     BANK_REVENUE_EARNED (
             "A bank owner earns revenue on their bank.",
-            "&6You earned &a%AMOUNT% &6in revenue at bank &7%BANK%&6.",
+            "&6You earned &a%AMOUNT% &6in revenue at bank &7%BANK_NAME%&6.",
             Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
     BANK_REVENUE_EARNED_OFFLINE (
@@ -362,7 +364,7 @@ public enum Message {
     ),
     LOW_BALANCE_FEE_RECEIVED (
             "A bank owner receives low balance fee payments from account holders.",
-            "&6You received &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccounts.",
+            "&6You received &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccount(s).",
             Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     REIMBURSEMENT_RECEIVED (
@@ -371,19 +373,19 @@ public enum Message {
             Placeholder.AMOUNT
     ),
     REIMBURSEMENT_PAID (
-            "A bank owner reimburses a player who removed an account at their bank.",
+            "A bank owner reimburses a player who removed an account at their bank.", // TODO: Test
             "&6You reimbursed %PLAYER% &a%AMOUNT%&6.",
             Placeholder.PLAYER, Placeholder.AMOUNT
     ),
 
     ADDED_COOWNER (
             "A player adds another player as a co-owner of an account or a bank.",
-            "&6%PLAYER% added as a co-owner.",
+            "&6Added %PLAYER% as a co-owner.",
             Placeholder.PLAYER
     ),
     REMOVED_COOWNER (
             "A player removes another player as a co-owner of an account or a bank.",
-            "&6%PLAYER% removed as a co-owner.",
+            "&6Removed %PLAYER% as a co-owner.",
             Placeholder.PLAYER
     ),
     ALREADY_COOWNER (
@@ -426,9 +428,9 @@ public enum Message {
             "An admin attempts to execute a player-only command from the console.",
             "&cPlayer command only."
     ),
-    SAME_ACCOUNT (
+    SAME_CHEST (
             "A player attempts to migrate an account to the same chest.",
-            "&cThat is the same account."
+            "&cThat is the same chest."
     ),
 
     CLICK_CHEST_CREATE (
@@ -461,7 +463,7 @@ public enum Message {
     ),
     CLICK_ACCOUNT_SET (
             "A player runs the /account set command and must click an account chest.",
-            "&6Click an account chest to set it.",
+            "&6Click an account chest to set &b%PROPERTY%&6 to &b%VALUE%&6.",
             Placeholder.PROPERTY, Placeholder.VALUE
     ),
     CLICK_ACCOUNT_TRANSFER (
@@ -564,7 +566,7 @@ public enum Message {
             "A player attempts to extend someone else's account chest without permission.",
             "&cYou do not have permission to extend someone else's account."
     ),
-    NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED (
+    NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED ( // TODO: Test
             "A player attempts to extend a protected account chest without permission.",
             "&cYou do not have permission to extend a protected account chest."
     ),
@@ -597,7 +599,7 @@ public enum Message {
             "A player attempts to remove multiple banks at once without permission.",
             "&cYou do not have permission to remove all banks."
     ),
-    NO_PERMISSION_BANK_RESIZE (
+    NO_PERMISSION_BANK_RESIZE ( // TODO: Test
             "A player attempts to resize a bank without permission.",
             "&cYou do not have permission to resize a bank."
     ),
@@ -677,159 +679,159 @@ public enum Message {
 
     COMMAND_USAGE_ACCOUNT_CREATE (
             "",
-            "&a/%COMMAND% create - Create an account.",
+            "&a/%COMMAND% create &6-Create an account.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_REMOVE (
             "",
-            "&a/%COMMAND% remove - Remove an account.",
+            "&a/%COMMAND% remove &6-Remove an account.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_INFO (
             "",
-            "&a/%COMMAND% info - Open an account GUI.",
+            "&a/%COMMAND% info &6-Open an account GUI.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_LIST (
             "",
-            "&a/%COMMAND% list <names> - View a list of accounts.",
+            "&a/%COMMAND% list <names> &6-View a list of accounts.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_LIMITS (
             "",
-            "&a/%COMMAND% limits - View your account limits.",
+            "&a/%COMMAND% limits &6-View your account limits.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_REMOVE_ALL (
             "",
-            "&a/%COMMAND% removeall - Remove all accounts.",
+            "&a/%COMMAND% removeall &6-Remove all accounts.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_SET (
             "",
-            "&a/%COMMAND% set [property] [value] - Set an account value.",
+            "&a/%COMMAND% set [property] [value] &6-Set an account value.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_TRUST (
             "",
-            "&a/%COMMAND% trust [name] - Add a co-owner to an account.",
+            "&a/%COMMAND% trust [name] &6-Add a co-owner to an account.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_UNTRUST (
             "",
-            "&a/%COMMAND% untrust [name] - Remove a co-owner from an account.",
+            "&a/%COMMAND% untrust [name] &6-Remove a co-owner from an account.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_MIGRATE (
             "",
-            "&a/%COMMAND% migrate - Migrate an account to a different chest.",
+            "&a/%COMMAND% migrate &6-Migrate an account to a different chest.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_RECOVER (
             "",
-            "&a/%COMMAND% recover - Recover a lost account to a new chest.",
+            "&a/%COMMAND% recover &6-Recover a lost account to a new chest.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_RENAME (
             "",
-            "&a/%COMMAND% rename [name] - Give an account a nickname.",
+            "&a/%COMMAND% rename [name] &6-Give an account a nickname.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_TRANSFER (
             "",
-            "&a/%COMMAND% transfer [name] - Transfer ownership of an account.",
+            "&a/%COMMAND% transfer [name] &6-Transfer ownership of an account.",
             Placeholder.COMMAND
     ),
 
     COMMAND_USAGE_BANK_CREATE (
             "",
-            "&a/%COMMAND% create - Create a bank.",
+            "&a/%COMMAND% create &6-Create a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_REMOVE (
             "",
-            "&a/%COMMAND% remove - Remove a bank.",
+            "&a/%COMMAND% remove &6-Remove a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_INFO (
             "",
-            "&a/%COMMAND% info - Open a bank GUI.",
+            "&a/%COMMAND% info &6-Open a bank GUI.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_LIST (
             "",
-            "&a/%COMMAND% list - View a list of banks.",
+            "&a/%COMMAND% list &6-View a list of banks.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_LIMITS (
             "",
-            "&a/%COMMAND% limits - View your bank limits.",
+            "&a/%COMMAND% limits &6-View your bank limits.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_REMOVEALL (
             "",
-            "&a/%COMMAND% removeall - Remove all banks.",
+            "&a/%COMMAND% removeall &6-Remove all banks.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_RESIZE (
             "",
-            "&a/%COMMAND% resize - Resize a bank.",
+            "&a/%COMMAND% resize &6-Resize a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_TRUST (
             "",
-            "&a/%COMMAND% trust - Add a co-owner to a bank.",
+            "&a/%COMMAND% trust &6-Add a co-owner to a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_UNTRUST (
             "",
-            "&a/%COMMAND% untrust - Remove a co-owner from a bank.",
+            "&a/%COMMAND% untrust &6-Remove a co-owner from a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_RENAME (
             "",
-            "&a/%COMMAND% rename - Rename a bank.",
+            "&a/%COMMAND% rename &6-Rename a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_SET (
             "",
-            "&a/%COMMAND% set - Configure a bank.",
+            "&a/%COMMAND% set &6-Configure a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_SELECT (
             "",
-            "&a/%COMMAND% select - Select a bank with WorldEdit.",
+            "&a/%COMMAND% select &6-Select a bank with WorldEdit.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_TRANSFER (
             "",
-            "&a/%COMMAND% transfer - Transfer ownership of a bank.",
+            "&a/%COMMAND% transfer &6-Transfer ownership of a bank.",
             Placeholder.COMMAND
     ),
 
     COMMAND_USAGE_VERSION (
             "",
-            "&a/%COMMAND% version - View the version of BankingPlugin.",
+            "&a/%COMMAND% version &6-View the version of BankingPlugin.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_RELOAD (
             "",
-            "&a/%COMMAND% reload - Reload BankingPlugin.",
+            "&a/%COMMAND% reload &6-Reload BankingPlugin.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_CONFIG (
             "",
-            "&a/%COMMAND% config [set|add|remove] [property] [value] - Configure BankingPlugin.",
+            "&a/%COMMAND% config [set|add|remove] [property] [value] &6-Configure BankingPlugin.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_UPDATE (
             "",
-            "&a/%COMMAND% update - Update BankingPlugin.",
+            "&a/%COMMAND% update &6-Update BankingPlugin.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_PAY_INTEREST (
             "",
-            "&a/%COMMAND% payinterest <banks> - Trigger an interest payment.",
+            "&a/%COMMAND% payinterest <banks> &6-Trigger an interest payment.",
             Placeholder.COMMAND
     ),
 
@@ -863,12 +865,12 @@ public enum Message {
     ),
     INTEREST_PAYOUT_TRIGGERED (
             "An admin triggers an interest payout.",
-            "&6Triggered an interest payout at &b%NUMBER_OF_BANKS% &6banks.",
+            "&6Triggered an interest payout at &b%NUMBER_OF_BANKS% &6bank(s).",
             Placeholder.NUMBER_OF_BANKS
     ),
     RELOADED_PLUGIN (
             "An admin reloads all banks and accounts on the server.",
-            "&6Successfully reloaded &b%NUMBER_OF_BANKS% &6banks and &b%NUMBER_OF_ACCOUNTS% &6accounts.",
+            "&6Successfully reloaded &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
 

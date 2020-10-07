@@ -72,19 +72,19 @@ public class BankRename extends BankCommand.SubCommand {
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_OTHER));
             return true;
         }
-        if (bank.getName().contentEquals(newName)) {
+        if (bank.getRawName().contentEquals(newName)) {
             plugin.debug("Same name");
-            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_CHANGED));
+            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
         if (!bankUtils.isUniqueNameIgnoring(newName, bank.getName())) {
             plugin.debug("Name is not unique");
-            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE));
+            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
         if (!Utils.isAllowedName(newName)) {
             plugin.debug("Name is not allowed");
-            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED));
+            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
 

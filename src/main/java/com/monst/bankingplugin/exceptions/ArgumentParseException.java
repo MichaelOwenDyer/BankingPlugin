@@ -19,13 +19,14 @@ public class ArgumentParseException extends Exception {
         this.dataType = dataType;
     }
 
-    public String getErrorMessage() {
+    @Override
+    public String getLocalizedMessage() {
         if (dataType.equals(Double.class))
             return LangUtils.getMessage(Message.NOT_A_NUMBER, new Replacement(Placeholder.STRING, value));
         if (dataType.equals(Integer.class))
             return LangUtils.getMessage(Message.NOT_AN_INTEGER, new Replacement(Placeholder.STRING, value));
         if (dataType.equals(List.class))
             return LangUtils.getMessage(Message.NOT_A_LIST, new Replacement(Placeholder.STRING, value));
-        return "";
+        return LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, ""));
     }
 }

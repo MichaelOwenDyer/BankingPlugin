@@ -8,7 +8,6 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -59,7 +58,7 @@ public class AccountList extends AccountCommand.SubCommand {
         } else {
             int i = 0;
             for (Account account : accounts)
-                sender.sendMessage(ChatColor.AQUA + "" + ++i + ". " + account.getColorizedName());
+                sender.sendMessage(Utils.colorize("&b" + ++i + ". &7" + account.getColorizedName() + "&7(#" + account.getID() + ")"));
         }
         return true;
     }

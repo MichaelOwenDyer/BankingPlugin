@@ -79,7 +79,8 @@ public class AccountSet extends AccountCommand.SubCommand {
         }
         sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_SET,
                 new Replacement(Placeholder.PROPERTY, args[1]),
-                new Replacement(Placeholder.VALUE, args[2])));
+                new Replacement(Placeholder.VALUE, args[2])
+        ));
         return true;
     }
 
@@ -96,7 +97,8 @@ public class AccountSet extends AccountCommand.SubCommand {
                 account.getStatus().setMultiplierStage(intValue);
 
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_MULTIPLIER,
-                        new Replacement(Placeholder.NUMBER, () -> account.getStatus().getRealMultiplier())
+                        new Replacement(Placeholder.MULTIPLIER, () -> account.getStatus().getRealMultiplier()),
+                        new Replacement(Placeholder.MULTIPLIER_STAGE, () -> account.getStatus().getMultiplierStage())
                 ));
                 plugin.debugf("%s has set the multiplier stage of account #%d to %d",
                         executor.getName(), account.getID(), account.getStatus().getMultiplierStage());
