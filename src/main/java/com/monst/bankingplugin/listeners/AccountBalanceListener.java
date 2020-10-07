@@ -52,7 +52,7 @@ public class AccountBalanceListener implements Listener {
 		if (difference.signum() == 0)
 			return;
 
-		plugin.debugf("Appraised account balance: $%s, diff: $%s (#%d)",
+		plugin.debugf("Appraised account balance: %s, diff: %s (#%d)",
 				Utils.format(valueOnClose), Utils.format(difference), account.getID());
 
 		Player executor = (Player) e.getPlayer();
@@ -70,7 +70,7 @@ public class AccountBalanceListener implements Listener {
 		account.setBalance(valueOnClose);
 		accountUtils.addAccount(account, true);
 
-		plugin.debugf("Account #%d has been updated with a new balance ($%s)", account.getID(), Utils.format(valueOnClose));
+		plugin.debugf("Account #%d has been updated with a new balance (%s)", account.getID(), Utils.format(valueOnClose));
 		Bukkit.getPluginManager().callEvent(new AccountTransactionEvent(executor, account, difference, valueOnClose));
 
 		if (account.getOwner().isOnline())

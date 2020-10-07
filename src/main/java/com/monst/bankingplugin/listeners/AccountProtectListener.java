@@ -209,7 +209,17 @@ public class AccountProtectListener implements Listener {
 		}
 
 		double creationPrice = account.getBank().get(BankField.ACCOUNT_CREATION_PRICE);
-		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
+		double balance = plugin.getEconomy().getBalance(p);
+		if (creationPrice > 0 && creationPrice > balance) {
+			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_INSUFFICIENT_FUNDS,
+					new Replacement(Placeholder.PRICE, creationPrice),
+					new Replacement(Placeholder.AMOUNT_REMAINING, creationPrice - balance),
+					new Replacement(Placeholder.PLAYER_BALANCE, balance)
+			));
+			e.setCancelled(true);
+			return;
+		}
+		if (creationPrice > 0 && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
 			if (!Utils.withdrawPlayer(owner, creationPrice, Callback.of(plugin,
 					result -> p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_PAID,
@@ -222,7 +232,7 @@ public class AccountProtectListener implements Listener {
 				return;
 			}
 
-			if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
+			if (creationPrice > 0 && !account.getBank().isOwner(p)) {
 				OfflinePlayer bankOwner = account.getBank().getOwner();
 				Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
 						result -> Utils.message(bankOwner, LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_RECEIVED,

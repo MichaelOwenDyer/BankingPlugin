@@ -30,6 +30,11 @@ public enum Message {
             "&6%PLAYER% has paid you &a%AMOUNT% &6to create an account at &7%BANK_NAME%&6.",
             Placeholder.PLAYER, Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
+    ACCOUNT_EXTEND_INSUFFICIENT_FUNDS (
+            "A player cannot afford to extend an account.",
+            "&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to extend an account.",
+            Placeholder.PRICE, Placeholder.PLAYER_BALANCE, Placeholder.AMOUNT_REMAINING
+    ),
     ACCOUNT_EXTEND_FEE_PAID (
             "A player is charged money to extend their account chest into a double chest.",
             "&6You have been charged &a%PRICE% &6to extend an account at &7%BANK_NAME%&6.",

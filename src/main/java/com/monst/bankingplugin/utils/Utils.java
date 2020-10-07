@@ -20,7 +20,6 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.function.Function;
@@ -71,16 +70,12 @@ public class Utils {
 		return ChatColor.stripColor(colorize(s));
 	}
 
-	public static String format(long i) {
-		return integerFormatter.format(i);
-	}
-
 	public static String format(Double d) {
 		return BankingPlugin.getInstance().getEconomy().format(d);
 	}
 
 	public static String format(BigDecimal bd) {
-		return decimalFormatter.format(bd.setScale(2, RoundingMode.HALF_EVEN));
+		return format(bd.doubleValue());
 	}
 
 	public static Location blockifyLocation(Location loc) {

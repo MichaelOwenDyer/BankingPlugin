@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.lang;
 
-import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.utils.Utils;
 
 import java.util.function.Supplier;
 
@@ -24,7 +24,7 @@ public class Replacement {
      */
     public String getReplacement() {
         if (placeholder.isMoney())
-            return BankingPlugin.getInstance().getEconomy().format(Double.parseDouble(String.valueOf(replacement.get())));
+            return Utils.format(Double.parseDouble(String.valueOf(replacement.get())));
         return String.valueOf(replacement.get());
     }
 

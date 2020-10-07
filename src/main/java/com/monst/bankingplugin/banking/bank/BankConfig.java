@@ -69,7 +69,7 @@ public class BankConfig {
 						.abs().setScale(3, RoundingMode.HALF_UP).doubleValue());
 			} catch (IllegalAccessException ignored) {}
 		});
-		FORMATTERS.put(BankField.INTEREST_RATE, instance -> { // Special formatter without $ symbol
+		FORMATTERS.put(BankField.INTEREST_RATE, instance -> { // Special formatter without currency symbol
 			try {
 				return interestRateFormatter.format(BankField.INTEREST_RATE.getLocalVariable().get(instance));
 			} catch (IllegalAccessException ignored) {}
@@ -84,7 +84,7 @@ public class BankConfig {
 			});
 			FORMATTERS.putIfAbsent(field, instance -> {
 				try {
-					return "$" + Utils.format((Double) field.getLocalVariable().get(instance));
+					return Utils.format((Double) field.getLocalVariable().get(instance));
 				} catch (IllegalAccessException ignored) {}
 				return "";
 			});
@@ -104,7 +104,7 @@ public class BankConfig {
 			});
 			FORMATTERS.put(field, instance -> {
 				try {
-					return Utils.format((int) field.getLocalVariable().get(instance));
+					return String.valueOf(field.getLocalVariable().get(instance));
 				} catch (IllegalAccessException ignored) {}
 				return "";
 			});
