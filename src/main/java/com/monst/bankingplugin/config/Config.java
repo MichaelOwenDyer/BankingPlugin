@@ -254,7 +254,7 @@ public class Config {
 	/**
 	 * The bank revenue multiplier.
 	 */
-	public static double bankRevenueMultiplier;
+	public static String bankRevenueFunction;
 
 	/**
 	 * Worlds where banking should be disabled
@@ -498,10 +498,10 @@ public class Config {
         enableWorldGuardIntegration = nonNull(config.getBoolean("enable-worldguard-integration"), true);
         enableGriefPreventionIntegration = nonNull(config.getBoolean("enable-griefprevention-integration"), true);
 		enableWorldEditIntegration = nonNull(config.getBoolean("enable-worldedit-integration"), true);
-		wgAllowCreateBankDefault = nonNull(config.getBoolean("worldguard-default-flag-value"), false);
         removeAccountOnError = nonNull(config.getBoolean("remove-account-on-error"), true);
         blacklist = nonNull(config.getStringList("blacklist"), Collections::emptyList);
-		bankRevenueMultiplier = nonNull(Math.abs(config.getDouble("bank-revenue-multiplier")), 0.10);
+		bankRevenueFunction = nonNull(config.getString("bank-revenue-function"), "(0.10 * x) * (1 - g) * ln(n)");
+		wgAllowCreateBankDefault = nonNull(config.getBoolean("worldguard-default-flag-value"), false);
 		disabledWorlds = nonNull(config.getStringList("disabled-worlds"), Collections::emptyList);
 		enableMail = nonNull(config.getBoolean("enable-mail"), true);
 		nameRegex = nonNull(config.getString("name-regex"), "");
@@ -540,4 +540,5 @@ public class Config {
 			return null;
 		}
 	}
+
 }

@@ -10,6 +10,8 @@ import com.monst.bankingplugin.utils.*;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.mariuszgromada.math.mxparser.Argument;
+import org.mariuszgromada.math.mxparser.Expression;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -124,18 +126,29 @@ public class InterestEventListener implements Listener {
 		// Bank owners earn revenue on their banks
 		playerBankMap.forEach((bankOwner, banks) -> {
 			for (Bank bank : banks) {
-				if (bank.getTotalValue().signum() == 0)
+
+				String function = Config.bankRevenueFunction;
+
+				List<Argument> args = new ArrayList<>();
+				if (function.contains("x"))
+					args.add(new Argument("x", bank.getTotalValue().doubleValue()));
+				if (function.contains("n"))
+					args.add(new Argument("n", bank.getAccountsByOwner().size()));
+				if (function.contains("a"))
+					args.add(new Argument("a", bank.getAccounts().size()));
+				if (function.contains("g"))
+					args.add(new Argument("g", bank.getGiniCoefficient()));
+
+				Expression revenueExpression = new Expression(function, args.toArray(new Argument[0]));
+				BigDecimal revenue;
+				try {
+					revenue = BigDecimal.valueOf(revenueExpression.calculate()).setScale(2, RoundingMode.HALF_EVEN);
+				} catch (NumberFormatException ex) {
 					continue;
+				}
 
-				BigDecimal totalValue = bank.getTotalValue();
-				double multiplier = Config.bankRevenueMultiplier;
-				double gini = bank.getGiniCoefficient();
-				int numberOfAccounts = bank.getAccountsByOwner().size();
-
-				BigDecimal revenue = totalValue.multiply(BigDecimal.valueOf(multiplier))
-						.multiply(BigDecimal.valueOf(1.0 - gini))
-						.multiply(BigDecimal.valueOf(Math.log(numberOfAccounts + 1)))
-						.setScale(2, RoundingMode.HALF_EVEN);
+				if (revenue.signum() == 0)
+					continue;
 
 				boolean online = bankOwner.isOnline();
 				Utils.depositPlayer(bankOwner, revenue.doubleValue(), Callback.of(plugin,

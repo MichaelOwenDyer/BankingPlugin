@@ -19,6 +19,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -140,11 +142,12 @@ public class Utils {
 		};
 	}
 
-	public static <T> T nonNull(T ifNotNull, Supplier<T> ifNull) {
+	@Nonnull
+	public static <T> T nonNull(@Nullable T ifNotNull, @Nonnull Supplier<T> ifNull) {
 		return ternary(ifNotNull, ifNull, Objects::nonNull);
 	}
 
-	public static <T> T ternary(T ifTrue, Supplier<T> ifFalse, Predicate<? super T> pred) {
+	public static <T> T ternary(@Nullable T ifTrue, @Nonnull Supplier<T> ifFalse, @Nonnull Predicate<? super T> pred) {
 		return pred.test(ifTrue) ? ifTrue : ifFalse.get();
 	}
 
