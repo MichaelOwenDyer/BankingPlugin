@@ -4,10 +4,10 @@
 #
 #
 
-# Set the main command names to be used for bank management, account management, and system control in this plugin.
+# Set the command names to be used for bank management, account management, and system control in this plugin.
 # Type: String
 # Defaults: "bank", "account", "bankingplugin"
-main-command-names:
+command-names:
   bank: bank
   account: account
   control: bp

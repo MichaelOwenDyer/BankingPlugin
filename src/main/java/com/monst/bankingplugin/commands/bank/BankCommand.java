@@ -25,12 +25,12 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
         super(plugin);
         
         if (commandCreated) {
-            IllegalStateException e = new IllegalStateException("Command \"" + Config.mainCommandNameBank + "\" has already been registered!");
+            IllegalStateException e = new IllegalStateException("Command \"" + Config.commandNameBank + "\" has already been registered!");
             plugin.debug(e);
             throw e;
         }
         
-        this.name = Config.mainCommandNameBank;
+        this.name = Config.commandNameBank;
         this.desc = LangUtils.getMessage(Message.BANK_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
 
@@ -149,7 +149,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		}
 
 		static Replacement getReplacement() {
-			return new Replacement(Placeholder.COMMAND, Config.mainCommandNameBank);
+			return new Replacement(Placeholder.COMMAND, Config.commandNameBank);
 		}
 	}
 }

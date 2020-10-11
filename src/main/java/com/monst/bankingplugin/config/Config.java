@@ -28,17 +28,17 @@ public class Config {
     /**
      * The bank command of BankingPlugin <i>(default: bank)</i>
      **/
-    public static String mainCommandNameBank;
+    public static String commandNameBank;
 
     /**
      * The account command of BankingPlugin <i>(default: account)</i>
      **/
-    public static String mainCommandNameAccount;
+    public static String commandNameAccount;
     
     /**
      * The control command of BankingPlugin <i>(default: bankingplugin)</i>
      **/
-    public static String mainCommandNameControl;
+    public static String commandNameControl;
 
     /**
      * The real-life times for account interest payouts.
@@ -405,9 +405,9 @@ public class Config {
 
         FileConfiguration config = plugin.getConfig();
 
-        mainCommandNameBank = nonNull(config.getString("main-command-names.bank"), "bank");
-        mainCommandNameAccount = nonNull(config.getString("main-command-names.account"), "account");
-		mainCommandNameControl = nonNull(config.getString("main-command-names.control"), "bp");
+        commandNameBank = nonNull(config.getString("main-command-names.bank"), "bank");
+        commandNameAccount = nonNull(config.getString("main-command-names.account"), "account");
+		commandNameControl = nonNull(config.getString("main-command-names.control"), "bp");
 		interestPayoutTimes = new ConfigPair<>(
 				config.getBoolean("interest-payout-times.allow-override"),
 				nonNull(config.getStringList("interest-payout-times.default").stream()
