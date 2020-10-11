@@ -74,14 +74,9 @@ public class LanguageConfig extends FileConfiguration {
         InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
         BufferedReader br = new BufferedReader(isr);
 
-        StringBuilder sb = new StringBuilder(32);
+        StringBuilder sb = new StringBuilder(1024);
 
-        String line = br.readLine();
-        while (line != null) {
-            sb.append(line);
-            sb.append("\n");
-            line = br.readLine();
-        }
+        br.lines().forEach(line -> sb.append(line).append("\n"));
 
         fis.close();
         isr.close();

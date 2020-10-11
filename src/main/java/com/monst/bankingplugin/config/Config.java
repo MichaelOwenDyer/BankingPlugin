@@ -299,7 +299,7 @@ public class Config {
 
         plugin.saveDefaultConfig();
 
-		reload(true, true);
+		reload(true, true, true);
     }
 
     public LanguageConfig getLanguageConfig() {
@@ -394,15 +394,15 @@ public class Config {
 		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
 			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
 		plugin.saveConfig();
-		reload(false, true);
+		reload(false, true, false);
 	}
 
     /**
      * Reload the configuration values from config.yml
      */
-	public void reload(boolean firstLoad, boolean langReload) {
+	public void reload(boolean firstLoad, boolean langReload, boolean showMessages) {
         plugin.reloadConfig();
-        
+
         FileConfiguration config = plugin.getConfig();
 
         mainCommandNameBank = nonNull(config.getString("main-command-names.bank"), "bank");
@@ -531,7 +531,7 @@ public class Config {
 		databaseTablePrefix = nonNull(config.getString("table-prefix"), "bankingplugin_");
 
 		if (firstLoad || langReload)
-			loadLanguageConfig(true);
+			loadLanguageConfig(showMessages);
 		if (!firstLoad && langReload)
 			LangUtils.reload();
     }
@@ -578,65 +578,53 @@ public class Config {
 		if (!(new File(langFolder, "de_DE.lang")).exists())
 			plugin.saveResource("lang/de_DE.lang", false);
 
-		File langConfigFile = new File(langFolder, languageFile + ".lang");
-		File langDefaultFile = new File(langFolder, "en_US.lang");
-
-		if (!langConfigFile.exists()) {
-			if (!langDefaultFile.exists()) {
+		File specifiedLangFile = new File(langFolder, languageFile + ".lang");
+		if (specifiedLangFile.exists()) {
+			try {
+				if (showMessages)
+					plugin.getLogger().info("Using locale \"" + specifiedLangFile.getName().substring(0, specifiedLangFile.getName().length() - 5) + "\"");
+				langConfig.load(specifiedLangFile);
+			} catch (IOException e) {
+				if (showMessages)
+					plugin.getLogger().warning("Using default language values.");
+				plugin.debug("Using default language values (#1)");
+				plugin.debug(e);
+			}
+		} else {
+			File defaultLangFile = new File(langFolder, "en_US.lang");
+			if (defaultLangFile.exists()) {
 				try {
-					Reader reader = getTextResource("lang/" + langConfigFile.getName(), showMessages);
-
-					if (reader == null)
-						reader = getTextResource("lang/en_US.lang", showMessages);
-
-					if (reader != null && showMessages)
-						plugin.getLogger().info("Using locale \"" + langConfigFile.getName().substring(0, langConfigFile.getName().length() - 5) + "\" (Streamed from jar file)");
-
-					if (reader == null) {
-						if (showMessages)
-							plugin.getLogger().warning("Using default language values");
-						plugin.debug("Using default language values (#1)");
-					}
-
-					BufferedReader br = new BufferedReader(reader);
-
-					StringBuilder sb = new StringBuilder();
-					String line = br.readLine();
-
-					while (line != null) {
-						sb.append(line);
-						sb.append("\n");
-						line = br.readLine();
-					}
-
-					langConfig.loadFromString(sb.toString());
-				} catch (IOException e) {
-					if (showMessages) {
-						plugin.getLogger().warning("Using default language values");
-					}
-				}
-			} else {
-				try {
-					langConfig.load(langDefaultFile);
+					langConfig.load(defaultLangFile);
 					if (showMessages)
 						plugin.getLogger().info("Using locale \"en_US\"");
 				} catch (IOException e) {
-					plugin.debug("Using default language values (#3)");
-					plugin.debug(e);
 					if (showMessages)
-						plugin.getLogger().warning("Using default language values");
+						plugin.getLogger().warning("Using default language values.");
+					plugin.debug("Using default language values (#2)");
+					plugin.debug(e);
 				}
-			}
-		} else {
-			try {
-				if (showMessages)
-					plugin.getLogger().info("Using locale \"" + langConfigFile.getName().substring(0, langConfigFile.getName().length() - 5) + "\"");
-				langConfig.load(langConfigFile);
-			} catch (IOException e) {
-				plugin.debug("Using default language values (#4)");
-				plugin.debug(e);
-				if (showMessages)
-					plugin.getLogger().warning("Using default language values");
+			} else {
+				Reader reader = getTextResource("lang/" + specifiedLangFile.getName(), showMessages);
+
+				if (reader == null)
+					reader = getTextResource("lang/en_US.lang", showMessages);
+
+				if (reader != null && showMessages)
+					plugin.getLogger().info("Using locale \"" + specifiedLangFile.getName().substring(0, specifiedLangFile.getName().length() - 5) + "\" (Streamed from jar file)");
+
+				if (reader != null) {
+					BufferedReader br = new BufferedReader(reader);
+
+					StringBuilder sb = new StringBuilder(1024);
+
+					br.lines().forEach(line -> sb.append(line).append("\n"));
+
+					langConfig.loadFromString(sb.toString());
+				} else {
+					if (showMessages)
+						plugin.getLogger().warning("Using default language values.");
+					plugin.debug("Using default language values (#3, Reader is null)");
+				}
 			}
 		}
 	}

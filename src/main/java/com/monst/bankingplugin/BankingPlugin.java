@@ -385,7 +385,7 @@ public class BankingPlugin extends JavaPlugin {
 		debug("Loading banks and accounts from database...");
 
 		if (reloadConfig)
-			getPluginConfig().reload(false, true);
+			getPluginConfig().reload(false, true, true);
 
 		getDatabase().connect(Callback.of(this, result -> {
 					Collection<Bank> banks = bankUtils.getBanks();
