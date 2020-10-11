@@ -40,7 +40,7 @@ public class GriefPreventionListener implements Listener {
         this.griefPrevention = plugin.getGriefPrevention();
     }
 
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onAccountCreate(AccountCreateEvent e) {
         if (!Config.enableGriefPreventionIntegration)
             return;
@@ -135,7 +135,7 @@ public class GriefPreventionListener implements Listener {
         VisualizationManager.visualizeSelection(e.getPlayer(), bank);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankCreate(BankCreateEvent e) {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
@@ -144,7 +144,7 @@ public class GriefPreventionListener implements Listener {
             VisualizationManager.visualizeSelection(((Player) executor), e.getBank());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankRemove(BankRemoveEvent e) {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
@@ -153,7 +153,7 @@ public class GriefPreventionListener implements Listener {
             VisualizationManager.revertVisualization((Player) executor);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankResize(BankResizeEvent e) {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
@@ -162,7 +162,7 @@ public class GriefPreventionListener implements Listener {
 	        VisualizationManager.visualizeSelection(((Player) executor), e.getNewSelection(), e.getBank().isAdminBank());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankSelect(BankSelectEvent e) {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
