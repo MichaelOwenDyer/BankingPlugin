@@ -14,6 +14,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
+import java.util.List;
+
 public class AccountRename extends AccountCommand.SubCommand {
 
     AccountRename() {
@@ -71,6 +74,13 @@ public class AccountRename extends AccountCommand.SubCommand {
         plugin.getAccountUtils().addAccount(account, true, account.callUpdateName());
         AccountConfigureEvent e = new AccountConfigureEvent(executor, account, AccountField.NICKNAME, value);
         Bukkit.getPluginManager().callEvent(e);
+    }
+
+    @Override
+    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+        if (args.length == 2 && args[1].isEmpty())
+            return Collections.singletonList("[name]");
+        return Collections.emptyList();
     }
 
 }
