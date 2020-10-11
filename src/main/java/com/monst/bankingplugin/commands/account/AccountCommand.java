@@ -4,8 +4,11 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
 import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.Messages;
 
 public class AccountCommand extends BankingPluginCommand<AccountCommand.SubCommand> {
 
@@ -23,7 +26,7 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 		}
 
 		this.name = Config.mainCommandNameAccount;
-		this.desc = Messages.ACCOUNT_COMMAND_DESC;
+		this.desc = LangUtils.getMessage(Message.ACCOUNT_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
 
 		addSubCommand(new AccountCreate());
@@ -47,12 +50,14 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 
 	abstract static class SubCommand extends BankingPluginSubCommand {
 
-		final AccountUtils accountUtils = plugin.getAccountUtils();
+		static final AccountUtils accountUtils = plugin.getAccountUtils();
 
 		SubCommand(String name, boolean playerCommand) {
 			super(name, playerCommand);
 		}
 
+		static Replacement getReplacement() {
+			return new Replacement(Placeholder.COMMAND, Config.mainCommandNameAccount);
+		}
 	}
-
 }

@@ -3,8 +3,11 @@ package com.monst.bankingplugin.commands.account;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.events.account.AccountConfigureEvent;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -19,14 +22,14 @@ public class AccountRename extends AccountCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_RENAME) ? Messages.COMMAND_USAGE_ACCOUNT_RENAME : "";
+        return hasPermission(sender, Permissions.ACCOUNT_RENAME) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_RENAME, getReplacement()) : "";
     }
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (!p.hasPermission(Permissions.ACCOUNT_RENAME)) {
-            p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_RENAME);
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_RENAME));
             return true;
         }
         StringBuilder sb = new StringBuilder(32);
@@ -38,19 +41,19 @@ public class AccountRename extends AccountCommand.SubCommand {
 
         if (!nickname.trim().isEmpty() && !Utils.isAllowedName(nickname)) {
             plugin.debug("Name \"" + nickname + "\" is not allowed");
-            p.sendMessage(Messages.NAME_NOT_ALLOWED);
+            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, nickname)));
             return true;
         }
 
         ClickType.setPlayerClickType(p, ClickType.rename(nickname));
-        p.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST, "rename"));
+        p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_RENAME));
         return true;
     }
 
     public static void rename(Player executor, Account account, String value) {
         if (!(account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_RENAME_OTHER))) {
             plugin.debugf("%s does not have permission to rename another player's account", executor.getName());
-            executor.sendMessage(Messages.NO_PERMISSION_ACCOUNT_RENAME_OTHER);
+            executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_RENAME_OTHER));
             return;
         }
 
@@ -64,7 +67,7 @@ public class AccountRename extends AccountCommand.SubCommand {
                     executor.getName(), value, account.getID());
             account.setName(value);
         }
-        executor.sendMessage(Messages.ACCOUNT_RENAMED);
+        executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RENAMED, new Replacement(Placeholder.ACCOUNT_NAME, account::getChestName)));
         plugin.getAccountUtils().addAccount(account, true, account.callUpdateName());
         AccountConfigureEvent e = new AccountConfigureEvent(executor, account, AccountField.NICKNAME, value);
         Bukkit.getPluginManager().callEvent(e);

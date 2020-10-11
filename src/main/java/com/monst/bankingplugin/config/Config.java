@@ -3,6 +3,7 @@ package com.monst.bankingplugin.config;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
+import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -10,6 +11,11 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -254,13 +260,16 @@ public class Config {
 	/**
 	 * The bank revenue multiplier.
 	 */
-	public static String bankRevenueFunction;
+	public static double bankRevenueMultiplier;
 
 	/**
 	 * Worlds where banking should be disabled
 	 */
 	public static List<String> disabledWorlds;
 
+	/**
+	 * Whether to enable in-game mail from the plugin.
+	 */
 	public static boolean enableMail;
 
 	/**
@@ -268,21 +277,34 @@ public class Config {
 	 * against.
 	 */
 	public static String nameRegex;
+
+	/**
+	 * The language file to use.
+	 */
+	public static String languageFile;
     
     /**
      * The prefix to be used for database tables.
      */
     public static String databaseTablePrefix;
 
+	/* ----------------------------------------------- */
+
 	private final BankingPlugin plugin;
 
-    public Config(BankingPlugin plugin) {
+	private LanguageConfig langConfig;
+
+	public Config(BankingPlugin plugin) {
         this.plugin = plugin;
 
         plugin.saveDefaultConfig();
 
-		reload();
+		reload(true, true);
     }
+
+    public LanguageConfig getLanguageConfig() {
+		return langConfig;
+	}
 
     /**
      * <p>Set a configuration value</p>
@@ -372,13 +394,13 @@ public class Config {
 		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
 			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
 		plugin.saveConfig();
-		reload();
+		reload(false, true);
 	}
 
     /**
      * Reload the configuration values from config.yml
      */
-	public void reload() {
+	public void reload(boolean firstLoad, boolean langReload) {
         plugin.reloadConfig();
         
         FileConfiguration config = plugin.getConfig();
@@ -500,13 +522,18 @@ public class Config {
 		enableWorldEditIntegration = nonNull(config.getBoolean("enable-worldedit-integration"), true);
         removeAccountOnError = nonNull(config.getBoolean("remove-account-on-error"), true);
         blacklist = nonNull(config.getStringList("blacklist"), Collections::emptyList);
-		bankRevenueFunction = nonNull(config.getString("bank-revenue-function"), "(0.10 * x) * (1 - g) * ln(n)");
+		bankRevenueMultiplier = nonNull(Math.abs(config.getDouble("bank-revenue-multiplier")), 0.10);
 		wgAllowCreateBankDefault = nonNull(config.getBoolean("worldguard-default-flag-value"), false);
 		disabledWorlds = nonNull(config.getStringList("disabled-worlds"), Collections::emptyList);
 		enableMail = nonNull(config.getBoolean("enable-mail"), true);
+		languageFile = nonNull(config.getString("language-file"), "en_US");
 		nameRegex = nonNull(config.getString("name-regex"), "");
 		databaseTablePrefix = nonNull(config.getString("table-prefix"), "bankingplugin_");
-        
+
+		if (firstLoad || langReload)
+			loadLanguageConfig(true);
+		if (!firstLoad && langReload)
+			LangUtils.reload();
     }
 
     public static class ConfigPair<K> extends Pair<Boolean, K> {
@@ -541,4 +568,87 @@ public class Config {
 		}
 	}
 
+	private void loadLanguageConfig(boolean showMessages) {
+		langConfig = new LanguageConfig(plugin, showMessages);
+		File langFolder = new File(plugin.getDataFolder(), "lang");
+
+		if (!(new File(langFolder, "en_US.lang")).exists())
+			plugin.saveResource("lang/en_US.lang", false);
+
+		if (!(new File(langFolder, "de_DE.lang")).exists())
+			plugin.saveResource("lang/de_DE.lang", false);
+
+		File langConfigFile = new File(langFolder, languageFile + ".lang");
+		File langDefaultFile = new File(langFolder, "en_US.lang");
+
+		if (!langConfigFile.exists()) {
+			if (!langDefaultFile.exists()) {
+				try {
+					Reader reader = getTextResource("lang/" + langConfigFile.getName(), showMessages);
+
+					if (reader == null)
+						reader = getTextResource("lang/en_US.lang", showMessages);
+
+					if (reader != null && showMessages)
+						plugin.getLogger().info("Using locale \"" + langConfigFile.getName().substring(0, langConfigFile.getName().length() - 5) + "\" (Streamed from jar file)");
+
+					if (reader == null) {
+						if (showMessages)
+							plugin.getLogger().warning("Using default language values");
+						plugin.debug("Using default language values (#1)");
+					}
+
+					BufferedReader br = new BufferedReader(reader);
+
+					StringBuilder sb = new StringBuilder();
+					String line = br.readLine();
+
+					while (line != null) {
+						sb.append(line);
+						sb.append("\n");
+						line = br.readLine();
+					}
+
+					langConfig.loadFromString(sb.toString());
+				} catch (IOException e) {
+					if (showMessages) {
+						plugin.getLogger().warning("Using default language values");
+					}
+				}
+			} else {
+				try {
+					langConfig.load(langDefaultFile);
+					if (showMessages)
+						plugin.getLogger().info("Using locale \"en_US\"");
+				} catch (IOException e) {
+					plugin.debug("Using default language values (#3)");
+					plugin.debug(e);
+					if (showMessages)
+						plugin.getLogger().warning("Using default language values");
+				}
+			}
+		} else {
+			try {
+				if (showMessages)
+					plugin.getLogger().info("Using locale \"" + langConfigFile.getName().substring(0, langConfigFile.getName().length() - 5) + "\"");
+				langConfig.load(langConfigFile);
+			} catch (IOException e) {
+				plugin.debug("Using default language values (#4)");
+				plugin.debug(e);
+				if (showMessages)
+					plugin.getLogger().warning("Using default language values");
+			}
+		}
+	}
+
+	private Reader getTextResource(String file, boolean showMessages) {
+		try {
+			return (Reader) plugin.getClass().getDeclaredMethod("getTextResource", String.class).invoke(plugin, file);
+		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+			if (showMessages) plugin.getLogger().severe("Failed to get file from jar: " + file);
+			plugin.debug("Failed to get file from jar: " + file);
+			plugin.debug(e);
+		}
+		return null;
+	}
 }

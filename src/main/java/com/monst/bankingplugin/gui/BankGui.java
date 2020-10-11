@@ -134,8 +134,8 @@ public class BankGui extends SinglePageGui<Bank> {
 		return Arrays.asList(
 				"Number of accounts: " + ChatColor.AQUA + guiSubject.getAccounts().size(),
 				"Number of account holders: " + ChatColor.AQUA + guiSubject.getAccountsByOwner().keySet().size(),
-				"Total value: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getTotalValue()),
-				"Average account value: " + ChatColor.GREEN + "$" +
+				"Total value: " + ChatColor.GREEN + Utils.format(guiSubject.getTotalValue()),
+				"Average account value: " + ChatColor.GREEN +
 						Utils.format(guiSubject.getAccounts().isEmpty()
 								? BigDecimal.ZERO
 								: guiSubject.getTotalValue().divide(BigDecimal.valueOf(guiSubject.getAccounts().size()), RoundingMode.HALF_EVEN)),
@@ -192,8 +192,8 @@ public class BankGui extends SinglePageGui<Bank> {
 		boolean strikethrough = minBalance == 0;
 		boolean payOnLowBalance = guiSubject.get(BankField.PAY_ON_LOW_BALANCE);
 		List<String> lore = new ArrayList<>();
-		lore.add("Minimum balance: " + ChatColor.GREEN + "$" + Utils.format(minBalance));
-		lore.add("Low balance fee: " + ChatColor.RED + (strikethrough ? ChatColor.STRIKETHROUGH : "") + "$" + Utils.format(lowBalanceFee));
+		lore.add("Minimum balance: " + ChatColor.GREEN + Utils.format(minBalance));
+		lore.add("Low balance fee: " + ChatColor.RED + (strikethrough ? ChatColor.STRIKETHROUGH : "") + Utils.format(lowBalanceFee));
 		if (!strikethrough) {
 			lore.add("");
 			lore.add("Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")

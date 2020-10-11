@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.control;
 
-import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,7 +14,7 @@ public class ControlVersion extends ControlCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return Messages.COMMAND_USAGE_VERSION;
+        return LangUtils.getMessage(Message.COMMAND_USAGE_VERSION, getReplacement());
     }
 
     @Override

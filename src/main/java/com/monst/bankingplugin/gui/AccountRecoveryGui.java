@@ -1,10 +1,10 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Observable;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
@@ -37,7 +37,7 @@ public class AccountRecoveryGui extends MultiPageGui<Collection<Account>> {
                     ChatColor.DARK_RED + "Invalid Account", getRecoveryLore(account));
             ItemStackTemplate template = new StaticItemTemplate(item);
             Slot.ClickHandler clickHandler = (player, info) -> {
-                player.sendMessage(String.format(Messages.CLICK_CHEST, "recover the account to"));
+                player.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_RECOVER));
                 ClickType.setPlayerClickType(player, ClickType.recover(account));
                 close(player);
             };

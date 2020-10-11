@@ -2,8 +2,12 @@ package com.monst.bankingplugin.commands.control;
 
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.control.InterestEvent;
-import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
@@ -18,7 +22,7 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.UPDATE) ? Messages.COMMAND_USAGE_PAY_INTEREST : "";
+        return sender.hasPermission(Permissions.UPDATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_PAY_INTEREST, getReplacement()) : "";
     }
 
     @Override
@@ -27,7 +31,7 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
 
         if (!sender.hasPermission(Permissions.PAY_INTEREST)) {
             plugin.debug(sender.getName() + " does not have permission to trigger an interest payout");
-            sender.sendMessage(Messages.NO_PERMISSION_PAY_INTEREST);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_PAY_INTEREST));
             return true;
         }
 
@@ -46,8 +50,8 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
             plugin.debug("Interest event cancelled");
             return true;
         }
-        plugin.debugf(Messages.INTEREST_PAYOUT_TRIGGERED, banks.size(), banks.size() == 1 ? "" : "s");
-        sender.sendMessage(String.format(Messages.INTEREST_PAYOUT_TRIGGERED, banks.size(), banks.size() == 1 ? "" : "s"));
+        plugin.debugf("%s has triggered an interest payment at %s", sender.getName(), Utils.map(banks, Bank::getName));
+        sender.sendMessage(LangUtils.getMessage(Message.INTEREST_PAYOUT_TRIGGERED, new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size)));
         return true;
     }
 

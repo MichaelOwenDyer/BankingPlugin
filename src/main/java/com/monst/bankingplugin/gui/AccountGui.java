@@ -134,19 +134,19 @@ public class AccountGui extends SinglePageGui<Account> {
 		double interestRate = bank.get(BankField.INTEREST_RATE);
 		int multiplier = guiSubject.getStatus().getRealMultiplier();
 		double fullPayout = (isLowBalance && !payOnLowBalance) ?
-				0.0d : guiSubject.getBalance().doubleValue() * interestRate * multiplier;
+				0.0 : guiSubject.getBalance().doubleValue() * interestRate * multiplier;
 		double lowBalanceFee = isLowBalance && (double) bank.get(BankField.LOW_BALANCE_FEE) > 0 ?
-				bank.get(BankField.LOW_BALANCE_FEE) : 0.0d;
+				bank.get(BankField.LOW_BALANCE_FEE) : 0.0;
 		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
-				"Balance: " + ChatColor.GREEN + "$" + Utils.format(guiSubject.getBalance()) + (isLowBalance ?
-						ChatColor.RED + " ($" + Utils.format(minBalance - guiSubject.getBalance().doubleValue()) + " below minimum)" :
+				"Balance: " + ChatColor.GREEN + Utils.format(guiSubject.getBalance()) + (isLowBalance ?
+						ChatColor.RED + " (" + Utils.format(minBalance - guiSubject.getBalance().doubleValue()) + " below minimum)" :
 						""),
 				"Interest rate: " + ChatColor.GREEN + BigDecimal.valueOf(interestRate * multiplier * 100).setScale(1, BigDecimal.ROUND_HALF_EVEN)
 						+ "% " + ChatColor.GRAY + "(" + interestRate + " x " + multiplier + ")",
-				"Next payout: " + (nextPayout > 0 ? ChatColor.GREEN : ChatColor.RED) + "$" + Utils.format(nextPayout)
-						+ (isLowBalance && payOnLowBalance ? ChatColor.GRAY + " (" + ChatColor.GREEN + "$" + Utils.format(fullPayout)
-						+ ChatColor.GRAY + " - " + ChatColor.RED + "$" + Utils.format(lowBalanceFee) + ChatColor.GRAY + ")" : "")
+				"Next payout: " + (nextPayout > 0 ? ChatColor.GREEN : ChatColor.RED) + Utils.format(nextPayout)
+						+ (isLowBalance && payOnLowBalance ? ChatColor.GRAY + " (" + ChatColor.GREEN + Utils.format(fullPayout)
+						+ ChatColor.GRAY + " - " + ChatColor.RED + Utils.format(lowBalanceFee) + ChatColor.GRAY + ")" : "")
 		);
 	}
 

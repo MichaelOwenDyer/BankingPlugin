@@ -1,10 +1,12 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messages;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,14 +37,16 @@ public class NotifyPlayerOnJoinListener implements Listener {
             database.getOfflineBankRevenue(p, logoutTime, Callback.of(plugin, profit -> {
                 if (profit.signum() == 0)
                     return;
-                p.sendMessage(String.format(
-                        profit.signum() > 0 ? Messages.OFFLINE_BANK_PROFIT : Messages.OFFLINE_BANK_LOSS,
-                        Utils.format(profit)));
+                p.sendMessage(LangUtils.getMessage(profit.signum() > 0 ? Message.BANK_REVENUE_EARNED_OFFLINE : Message.BANK_LOSS_OFFLINE,
+                        new Replacement(Placeholder.AMOUNT, profit)
+                ));
             }));
 
             database.getOfflineAccountRevenue(p, logoutTime, Callback.of(plugin, bigDecimal -> {
                 if (bigDecimal.signum() > 0)
-                    p.sendMessage(String.format(Messages.OFFLINE_INTEREST_EARNED, Utils.format(bigDecimal)));
+                    p.sendMessage(LangUtils.getMessage(Message.OFFLINE_ACCOUNT_INTEREST,
+                            new Replacement(Placeholder.AMOUNT, bigDecimal)
+                    ));
             }));
 
             // Player does not actually log off here, this saves the last time the player was notified about changes

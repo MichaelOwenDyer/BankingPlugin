@@ -3,8 +3,11 @@ package com.monst.bankingplugin.commands.account;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.events.account.AccountConfigureEvent;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -23,7 +26,7 @@ public class AccountSet extends AccountCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_SET) ? Messages.COMMAND_USAGE_ACCOUNT_SET : "";
+        return hasPermission(sender, Permissions.ACCOUNT_SET) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_SET, getReplacement()) : "";
     }
 
     @Override
@@ -34,18 +37,20 @@ public class AccountSet extends AccountCommand.SubCommand {
         plugin.debug(sender.getName() + " wants to configure an account");
         if (!sender.hasPermission(Permissions.ACCOUNT_SET)) {
             plugin.debug(sender.getName() + " does not have permission to configure an account");
-            sender.sendMessage(Messages.NO_PERMISSION_ACCOUNT_SET);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_SET));
             return true;
         }
 
         try {
             Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
-            sender.sendMessage(String.format(Messages.NOT_A_NUMBER, args[2]));
+            sender.sendMessage(LangUtils.getMessage(Message.NOT_A_NUMBER, new Replacement(Placeholder.STRING, args[2])));
             return true;
         }
 
-        switch (args[1].toLowerCase()) {
+        args[1] = args[1].toLowerCase();
+
+        switch (args[1]) {
 
             case "multiplier":
 
@@ -69,10 +74,13 @@ public class AccountSet extends AccountCommand.SubCommand {
 
             default:
 
-                sender.sendMessage(String.format(Messages.NOT_A_FIELD, args[1]));
+                sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.STRING, args[1])));
                 return true;
         }
-        sender.sendMessage(String.format(Messages.CLICK_ACCOUNT_CHEST, "set"));
+        sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_SET,
+                new Replacement(Placeholder.PROPERTY, args[1]),
+                new Replacement(Placeholder.VALUE, args[2])
+        ));
         return true;
     }
 
@@ -88,7 +96,10 @@ public class AccountSet extends AccountCommand.SubCommand {
                 value += isRelative ? account.getStatus().getMultiplierStage() : 0;
                 account.getStatus().setMultiplierStage(intValue);
 
-                executor.sendMessage(String.format(Messages.MULTIPLIER_SET, account.getStatus().getRealMultiplier()));
+                executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_MULTIPLIER,
+                        new Replacement(Placeholder.MULTIPLIER, () -> account.getStatus().getRealMultiplier()),
+                        new Replacement(Placeholder.MULTIPLIER_STAGE, () -> account.getStatus().getMultiplierStage())
+                ));
                 plugin.debugf("%s has set the multiplier stage of account #%d to %d",
                         executor.getName(), account.getID(), account.getStatus().getMultiplierStage());
                 break;
@@ -100,8 +111,9 @@ public class AccountSet extends AccountCommand.SubCommand {
 
                 plugin.debugf("%s has set the interest delay of account #%d to %d.",
                         executor.getName(), account.getID(), account.getStatus().getDelayUntilNextPayout());
-                executor.sendMessage(String.format(Messages.INTEREST_DELAY_SET,
-                        account.getStatus().getDelayUntilNextPayout()));
+                executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_INTEREST_DELAY,
+                        new Replacement(Placeholder.NUMBER, () -> account.getStatus().getDelayUntilNextPayout())
+                ));
                 break;
 
             case REMAINING_OFFLINE_PAYOUTS:
@@ -111,8 +123,9 @@ public class AccountSet extends AccountCommand.SubCommand {
 
                 plugin.debugf("%s has set the remaining offline payouts of account #%d to %d.",
                         executor.getName(), account.getID(), account.getStatus().getRemainingOfflinePayouts());
-                executor.sendMessage(String.format(Messages.REMAINING_OFFLINE_PAYOUTS_SET,
-                        account.getStatus().getRemainingOfflinePayouts()));
+                executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE,
+                        new Replacement(Placeholder.NUMBER, () -> account.getStatus().getRemainingOfflinePayouts())
+                ));
                 break;
 
             case REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET:
@@ -122,8 +135,9 @@ public class AccountSet extends AccountCommand.SubCommand {
 
                 plugin.debugf("%s has set the remaining offline payouts until reset of account #%d to %d.",
                         executor.getName(), account.getID(), account.getStatus().getRemainingOfflinePayoutsUntilReset());
-                executor.sendMessage(String.format(Messages.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET_SET,
-                        account.getStatus().getRemainingOfflinePayoutsUntilReset()));
+                executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE_RESET,
+                        new Replacement(Placeholder.NUMBER, () -> account.getStatus().getRemainingOfflinePayoutsUntilReset())
+                ));
                 break;
 
         }

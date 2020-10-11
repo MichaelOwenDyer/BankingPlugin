@@ -159,13 +159,13 @@ public class Account extends Ownable {
 		final int diff = checkedBalance.compareTo(getBalance());
 		if (diff > 0) {
 			if (getBalance().signum() == 0)
-				plugin.debugf("Cool! Account #%d was created with a balance of $%s already inside.",
+				plugin.debugf("Cool! Account #%d was created with a balance of %s already inside.",
 						getID(), Utils.format(checkedBalance));
 			else
-				plugin.debugf("Value of account #%d was found higher than expected. Expected: $%s but was: $%s.",
+				plugin.debugf("Value of account #%d was found higher than expected. Expected: %s but was: %s.",
 						getID(), Utils.format(getBalance()), Utils.format(checkedBalance));
 		} else if (diff < 0)
-			plugin.debugf("Value of account #%d was found lower than expected. Expected: $%s but was: $%s.",
+			plugin.debugf("Value of account #%d was found lower than expected. Expected: %s but was: %s.",
 					getID(), Utils.format(getBalance()), Utils.format(checkedBalance));
 		setBalance(checkedBalance);
 
@@ -449,7 +449,7 @@ public class Account extends Ownable {
 		info.append(ChatColor.GRAY + "Owner: " + ChatColor.GOLD + getOwnerDisplayName());
 		if (!getCoowners().isEmpty())
 			info.append(ChatColor.GRAY + "Co-owners: " + Utils.map(getCoowners(), OfflinePlayer::getName).toString());
-		info.append(ChatColor.GRAY + "Balance: " + ChatColor.GREEN + "$" + Utils.format(getBalance()));
+		info.append(ChatColor.GRAY + "Balance: " + ChatColor.GREEN + Utils.format(getBalance()));
 		info.append(ChatColor.GRAY + "Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier()
 				+ ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
 		StringBuilder interestRate = new StringBuilder(ChatColor.GRAY + "Interest rate: ");
@@ -470,8 +470,8 @@ public class Account extends Ownable {
 		   return "Account ID: " + getID() + ", "
 				+ "Owner: " + getOwner().getName() + ", "
 				+ "Bank: " + getBank().getName() + ", "
-				+ "Balance: $" + Utils.format(getBalance()) + ", "
-				+ "Previous balance: $" + Utils.format(getPrevBalance()) + ", "
+				+ "Balance: " + Utils.format(getBalance()) + ", "
+				+ "Previous balance: " + Utils.format(getPrevBalance()) + ", "
 				+ "Multiplier: " + getStatus().getRealMultiplier() + ", "
 					+ " (stage " + getStatus().getMultiplierStage() + "), "
 				+ "Delay until next payout: " + getStatus().getDelayUntilNextPayout() + ", "

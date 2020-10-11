@@ -333,8 +333,8 @@ public class Bank extends Ownable {
 		info.append(ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + getFormatted(BankField.MINIMUM_BALANCE));
 		info.append(ChatColor.GRAY + " (" + ChatColor.RED + getFormatted(BankField.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
 		info.append(ChatColor.GRAY + "Accounts: " + ChatColor.AQUA + getAccounts().size());
-		info.append(ChatColor.GRAY + "Total value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue()));
-		info.append(ChatColor.GRAY + "Average account value: " + ChatColor.GREEN + "$" + Utils.format(getTotalValue().divide(BigDecimal.valueOf(getAccounts().size()), BigDecimal.ROUND_HALF_EVEN)));
+		info.append(ChatColor.GRAY + "Total value: " + ChatColor.GREEN + Utils.format(getTotalValue()));
+		info.append(ChatColor.GRAY + "Average account value: " + ChatColor.GREEN + Utils.format(getTotalValue().divide(BigDecimal.valueOf(getAccounts().size()), BigDecimal.ROUND_HALF_EVEN)));
 		info.append(ChatColor.GRAY + "Equality score: " + getGiniCoefficient());
 		info.append(ChatColor.GRAY + "Location: " + ChatColor.AQUA + getSelection().getCoordinates());
 

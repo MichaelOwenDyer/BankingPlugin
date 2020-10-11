@@ -1,7 +1,10 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
@@ -19,7 +22,7 @@ public class BankRename extends BankCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_RENAME : "";
+        return sender.hasPermission(Permissions.BANK_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_RENAME, getReplacement()) : "";
     }
 
     @Override
@@ -35,21 +38,21 @@ public class BankRename extends BankCommand.SubCommand {
         if (args.length == 2) {
             if (!(sender instanceof Player)) {
                 plugin.debug("Must be player");
-                sender.sendMessage(Messages.PLAYER_COMMAND_ONLY);
+                sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
                 return true;
             }
             bank = bankUtils.getBank(((Player) sender).getLocation());
             if (bank == null) {
                 plugin.debug(sender.getName() + " was not standing in a bank");
-                sender.sendMessage(Messages.NOT_STANDING_IN_BANK);
+                sender.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
                 return true;
             }
             newName = args[1];
         } else {
             bank = bankUtils.getBank(args[1]);
             if (bank == null) {
-                plugin.debugf(Messages.BANK_NOT_FOUND, args[1]);
-                sender.sendMessage(String.format(Messages.BANK_NOT_FOUND, args[1]));
+                plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+                sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
                 return true;
             }
             sb = new StringBuilder(args[2]);
@@ -60,33 +63,33 @@ public class BankRename extends BankCommand.SubCommand {
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
             plugin.debug(sender.getName() + " does not have permission to change the name of an admin bank");
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_ADMIN);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_ADMIN));
             return true;
         }
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
             plugin.debug(sender.getName() + " does not have permission to change the name of another player's bank");
-            sender.sendMessage(Messages.NO_PERMISSION_BANK_SET_OTHER);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_OTHER));
             return true;
         }
-        if (bank.getName().contentEquals(newName)) {
+        if (bank.getRawName().contentEquals(newName)) {
             plugin.debug("Same name");
-            sender.sendMessage(Messages.NAME_ALREADY);
+            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
         if (!bankUtils.isUniqueNameIgnoring(newName, bank.getName())) {
             plugin.debug("Name is not unique");
-            sender.sendMessage(Messages.NAME_NOT_UNIQUE);
+            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
         if (!Utils.isAllowedName(newName)) {
             plugin.debug("Name is not allowed");
-            sender.sendMessage(Messages.NAME_NOT_ALLOWED);
+            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
 
         plugin.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
-        sender.sendMessage(Messages.NAME_CHANGED);
+        sender.sendMessage(LangUtils.getMessage(Message.NAME_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
         bank.setName(newName);
         return true;
     }

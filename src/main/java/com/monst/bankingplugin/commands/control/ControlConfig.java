@@ -1,6 +1,9 @@
 package com.monst.bankingplugin.commands.control;
 
-import com.monst.bankingplugin.utils.Messages;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
@@ -17,7 +20,7 @@ public class ControlConfig extends ControlCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.CONFIG) ? Messages.COMMAND_USAGE_CONFIG : "";
+        return sender.hasPermission(Permissions.CONFIG) ? LangUtils.getMessage(Message.COMMAND_USAGE_CONFIG, getReplacement()) : "";
     }
 
     @Override
@@ -26,7 +29,7 @@ public class ControlConfig extends ControlCommand.SubCommand {
 
         if (!sender.hasPermission(Permissions.CONFIG)) {
             plugin.debug(sender.getName() + " does not have permission to configure the config");
-            sender.sendMessage(Messages.NO_PERMISSION_CONFIG);
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_CONFIG));
             return true;
         }
 
@@ -42,16 +45,26 @@ public class ControlConfig extends ControlCommand.SubCommand {
 
         switch (args[1].toLowerCase()) {
             case "set":
+                sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_SET,
+                        new Replacement(Placeholder.PROPERTY, property),
+                        new Replacement(Placeholder.PREVIOUS_VALUE, () -> plugin.getConfig().getString(property)),
+                        new Replacement(Placeholder.VALUE, value)
+                ));
                 plugin.getPluginConfig().set(property, value);
-                sender.sendMessage(String.format(Messages.CONFIG_VALUE_SET, property, value));
                 break;
             case "add":
+                sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_ADDED,
+                        new Replacement(Placeholder.PROPERTY, property),
+                        new Replacement(Placeholder.VALUE, value)
+                ));
                 plugin.getPluginConfig().add(property, value);
-                sender.sendMessage(String.format(Messages.CONFIG_VALUE_ADDED, property));
                 break;
             case "remove":
+                sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_ADDED,
+                        new Replacement(Placeholder.PROPERTY, property),
+                        new Replacement(Placeholder.VALUE, value)
+                ));
                 plugin.getPluginConfig().remove(property, value);
-                sender.sendMessage(String.format(Messages.CONFIG_VALUE_REMOVED, property));
                 break;
             default:
                 return false;

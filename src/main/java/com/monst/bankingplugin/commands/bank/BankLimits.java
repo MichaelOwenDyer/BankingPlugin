@@ -1,9 +1,11 @@
 package com.monst.bankingplugin.commands.bank;
 
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.BankUtils;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -15,7 +17,7 @@ public class BankLimits extends BankCommand.SubCommand {
 
     @Override
     protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.BANK_CREATE) ? Messages.COMMAND_USAGE_BANK_LIMITS : "";
+        return hasPermission(sender, Permissions.BANK_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_LIMITS, getReplacement()) : "";
     }
 
     @Override
@@ -25,9 +27,13 @@ public class BankLimits extends BankCommand.SubCommand {
         int allowedBanks = BankUtils.getBankLimit(p);
         long allowedVolume = BankUtils.getVolumeLimit(p);
         String bankLimit = allowedBanks < 0 ? "∞" : "" + allowedBanks;
-        String volumeLimit = allowedVolume < 0 ? "∞" : Utils.format(allowedVolume);
+        String volumeLimit = allowedVolume < 0 ? "∞" : "" + allowedVolume;
         plugin.debugf("%s is viewing their bank limits: %d / %s, max volume: %d", p.getName(), banksUsed, bankLimit, allowedVolume);
-        p.sendMessage(String.format(Messages.BANK_LIMIT, banksUsed, bankLimit, volumeLimit));
+        p.sendMessage(LangUtils.getMessage(Message.BANK_LIMIT,
+                new Replacement(Placeholder.NUMBER_OF_BANKS, banksUsed),
+                new Replacement(Placeholder.LIMIT, bankLimit),
+                new Replacement(Placeholder.BANK_SIZE, volumeLimit)
+        ));
         return true;
     }
 

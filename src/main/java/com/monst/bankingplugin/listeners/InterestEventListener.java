@@ -6,6 +6,10 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.control.InterestEvent;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
@@ -152,8 +156,13 @@ public class InterestEventListener implements Listener {
 
 				boolean online = bankOwner.isOnline();
 				Utils.depositPlayer(bankOwner, revenue.doubleValue(), Callback.of(plugin,
-						result -> Utils.message(bankOwner, String.format(Messages.REVENUE_EARNED, Utils.format(revenue), bank.getName())),
-						error -> Utils.message(bankOwner, Messages.ERROR_OCCURRED)
+						result -> Utils.message(bankOwner, LangUtils.getMessage(Message.BANK_REVENUE_EARNED,
+								new Replacement(Placeholder.AMOUNT, revenue),
+								new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
+						)),
+						error -> Utils.message(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+								new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
+						))
 				));
 
 				if (Config.enableProfitLog)
@@ -161,16 +170,16 @@ public class InterestEventListener implements Listener {
 			}
 		});
 
-		transactAll(feesReceivable, Utils::depositPlayer, Messages.LOW_BALANCE_FEE_EARNED); // Bank owners receive low balance fees
+		transactAll(feesReceivable, Utils::depositPlayer, Message.LOW_BALANCE_FEE_RECEIVED); // Bank owners receive low balance fees
 
-		transactAll(interestPayable, Utils::withdrawPlayer, Messages.INTEREST_PAID); // Bank owners pay interest
+		transactAll(interestPayable, Utils::withdrawPlayer, Message.INTEREST_PAID); // Bank owners pay interest
 
-		transactAll(interestReceivable, Utils::depositPlayer, Messages.INTEREST_EARNED); // Account owners receive interest payments
+		transactAll(interestReceivable, Utils::depositPlayer, Message.INTEREST_EARNED); // Account owners receive interest payments
 
-		transactAll(feesPayable, Utils::withdrawPlayer, Messages.LOW_BALANCE_FEE_PAID); // Customers pay low balance fees
+		transactAll(feesPayable, Utils::withdrawPlayer, Message.LOW_BALANCE_FEE_PAID); // Customers pay low balance fees
 	}
 
-	private void transactAll(Map<OfflinePlayer, Counter> map, Transactor transactor, String message) {
+	private void transactAll(Map<OfflinePlayer, Counter> map, Transactor transactor, Message message) {
 		for (Map.Entry<OfflinePlayer, Counter> entry : map.entrySet()) {
 			OfflinePlayer customer = entry.getKey();
 			Counter counter = entry.getValue();
@@ -178,12 +187,13 @@ public class InterestEventListener implements Listener {
 				continue;
 
 			transactor.transact(customer, counter.getSum().doubleValue(), Callback.of(plugin,
-					result -> {
-						int count = counter.getCount();
-						Utils.message(customer, String.format(message,
-								Utils.format(counter.getSum()), count, count == 1 ? "" : "s"));
-					},
-					error -> Utils.message(customer, Messages.ERROR_OCCURRED)
+					result -> Utils.message(customer, LangUtils.getMessage(message,
+							new Replacement(Placeholder.AMOUNT, counter::getSum),
+							new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, counter::getCount)
+					)),
+					error -> Utils.message(customer, LangUtils.getMessage(Message.ERROR_OCCURRED,
+							new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
+					))
 			));
 		}
 	}

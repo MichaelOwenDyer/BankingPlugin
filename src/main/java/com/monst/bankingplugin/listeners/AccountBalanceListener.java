@@ -4,8 +4,11 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.AccountUtils;
-import com.monst.bankingplugin.utils.Messages;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -49,22 +52,25 @@ public class AccountBalanceListener implements Listener {
 		if (difference.signum() == 0)
 			return;
 
-		plugin.debugf("Appraised account balance: $%s, diff: $%s (#%d)",
+		plugin.debugf("Appraised account balance: %s, diff: %s (#%d)",
 				Utils.format(valueOnClose), Utils.format(difference), account.getID());
 
 		Player executor = (Player) e.getPlayer();
-		executor.sendMessage(String.format(difference.signum() > 0 ? Messages.ACCOUNT_DEPOSIT : Messages.ACCOUNT_WITHDRAWAL,
-				Utils.format(difference.abs()), (account.isOwner(executor)) ? "your" : account.getOwner().getName() + "'s"));
-		executor.sendMessage(String.format(Messages.ACCOUNT_NEW_BALANCE, Utils.format(valueOnClose)));
+		executor.sendMessage(LangUtils.getMessage(difference.signum() > 0 ? Message.ACCOUNT_DEPOSIT : Message.ACCOUNT_WITHDRAWAL,
+				new Replacement(Placeholder.AMOUNT, difference::abs),
+				new Replacement(Placeholder.ACCOUNT_BALANCE, valueOnClose)
+		));
 
 		if (difference.signum() < 0 && valueOnClose.compareTo(account.getPrevBalance()) < 0)
 			if (account.getStatus().getMultiplierStage() != account.getStatus().processWithdrawal())
-				executor.sendMessage(String.format(Messages.MULTIPLIER_DECREASED, account.getStatus().getRealMultiplier()));
+				executor.sendMessage(LangUtils.getMessage(Message.MULTIPLIER_DECREASED,
+						new Replacement(Placeholder.NUMBER, () -> account.getStatus().getRealMultiplier())
+				));
 
 		account.setBalance(valueOnClose);
 		accountUtils.addAccount(account, true);
 
-		plugin.debugf("Account #%d has been updated with a new balance ($%s)", account.getID(), Utils.format(valueOnClose));
+		plugin.debugf("Account #%d has been updated with a new balance (%s)", account.getID(), Utils.format(valueOnClose));
 		Bukkit.getPluginManager().callEvent(new AccountTransactionEvent(executor, account, difference, valueOnClose));
 
 		if (account.getOwner().isOnline())

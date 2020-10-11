@@ -70,7 +70,7 @@ public class GriefPreventionListener implements Listener {
 	        return;
 
 	    Block b = e.getNewAccountLocation().getBlock();
-	    Chest chest = (Chest) b.getBlockData();
+	    Chest chest = (Chest) b.getState();
 	    for (Location loc : Utils.getChestLocations(chest.getInventory().getHolder()))
             if (handleForLocation(e.getPlayer(), loc, e)) {
                 e.setCancelled(true);
@@ -85,7 +85,7 @@ public class GriefPreventionListener implements Listener {
 	        return;
 
 	    Block b = e.getNewAccountLocation().getBlock();
-	    Chest chest = (Chest) b.getBlockData();
+	    Chest chest = (Chest) b.getState();
 	    for (Location loc : Utils.getChestLocations(chest.getInventory().getHolder()))
             if (handleForLocation(e.getPlayer(), loc, e)) {
                 e.setCancelled(true);

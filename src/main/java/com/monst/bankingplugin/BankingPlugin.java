@@ -12,6 +12,7 @@ import com.monst.bankingplugin.events.bank.BankInitializedEvent;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.external.WorldGuardListener;
+import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.listeners.*;
 import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.sql.SQLite;
@@ -129,6 +130,7 @@ public class BankingPlugin extends JavaPlugin {
 			case "v1_15_R2":
 			case "v1_16_R1":
 			case "v1_16_R2":
+			case "v1_16_R3":
 				break;
 			default:
 				debug("Server version not officially supported: " + Utils.getServerVersion() + "!");
@@ -138,6 +140,8 @@ public class BankingPlugin extends JavaPlugin {
 
         accountUtils = new AccountUtils(this);
 		bankUtils = new BankUtils(this);
+
+		LangUtils.reload();
 
 		loadExternalPlugins();
 
@@ -381,7 +385,7 @@ public class BankingPlugin extends JavaPlugin {
 		debug("Loading banks and accounts from database...");
 
 		if (reloadConfig)
-			getPluginConfig().reload();
+			getPluginConfig().reload(false, true);
 
 		getDatabase().connect(Callback.of(this, result -> {
 					Collection<Bank> banks = bankUtils.getBanks();

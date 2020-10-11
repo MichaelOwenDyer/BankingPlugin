@@ -4,6 +4,10 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.commands.account.*;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.*;
 import com.monst.bankingplugin.utils.ClickType.EClickType;
 import com.monst.bankingplugin.utils.ClickType.SetPair;
@@ -66,7 +70,7 @@ public class AccountInteractListener implements Listener {
 				case CREATE:
 
 					if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-						p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED);
+						p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
 						plugin.debug(p.getName() + " does not have permission to create an account on a protected chest.");
 					} else
 						AccountCreate.create(p, b);
@@ -86,7 +90,7 @@ public class AccountInteractListener implements Listener {
 						AccountMigrate.migratePartOne(p, Objects.requireNonNull(account));
 					else {
 						if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-							p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED);
+							p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED));
 							plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
 						} else {
 							Account toMigrate = Objects.requireNonNull(clickType.get());
@@ -176,7 +180,7 @@ public class AccountInteractListener implements Listener {
 			if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !p.isSneaking()) {
 				if (!account.isTrusted(p) && !account.getBank().isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
 					e.setCancelled(true);
-					p.sendMessage(Messages.NO_PERMISSION_ACCOUNT_OTHER_VIEW);
+					p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_VIEW_OTHER));
 					plugin.debug(p.getName() + " does not have permission to open " + account.getOwner().getName()
 							+ "'s account chest.");
 					return;
@@ -185,7 +189,9 @@ public class AccountInteractListener implements Listener {
 				if (e.isCancelled())
 					e.setCancelled(false);
 				if (!account.isTrusted(p))
-					p.sendMessage(String.format(Messages.ACCOUNT_OPENED, account.getOwner().getName()));
+					p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_OPENED,
+							new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName())
+					));
 
 				plugin.debugf("%s is opening %s account%s (#%d)",
 						p.getName(), (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"),

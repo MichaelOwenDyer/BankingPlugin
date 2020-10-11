@@ -1,0 +1,787 @@
+#
+# Placeholder definitions:
+# %PRICE% = A price.
+# %AMOUNT% = A generic amount of money.
+# %AMOUNT_REMAINING% = How much more money a player needs.
+# %PLAYER_BALANCE% = A player's balance.
+# %ACCOUNT_BALANCE = An account balance.
+# %BANK_NAME% = The (possibly colored) name of a bank.
+# %ACCOUNT_NAME% = The (possibly colored) name of an account.
+# %PLAYER% = The name of a player.
+# %NUMBER_OF_ACCOUNTS% = An integer number of accounts.
+# %NUMBER_OF_BANKS% = An integer number of banks.
+# %NUMBER% = A generic integer.
+# %STRING% = Something that was typed by the player in a command.
+# %ERROR% = An error message.
+# %LIMIT% = An integer bank or account limit.
+# %PROPERTY% = A property in a configration context.
+# %VALUE% = The value of a property in a configuration context.
+# %PREVIOUS_VALUE% = The previous value of a property in a configuration context, before it was changed.
+# %COMMAND% = The custom name of one of the three BankingPlugin command.
+# %VERSION% = The plugin version.
+#
+
+# Scenario: A player creates an account at a bank.
+# Available placeholders: %BANK_NAME%
+message.account-created=&6Account created!
+
+# Scenario: A player cannot afford to create an account.
+# Available placeholders: %PRICE%, %AMOUNT_REMAINING%, %PLAYER_BALANCE%
+message.account-create-insufficient-funds=&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to create an account.
+
+# Scenario: A player tries and is not allowed to create an account at their own bank.
+# Available placeholders: %BANK_NAME%
+message.no-self-banking=&cYou are not allowed to create an account at your own bank.
+
+# Scenario: A player is charged money to create an account at a bank.
+# Available placeholders: %PRICE%, %BANK_NAME%
+message.account-create-fee-paid=&6You have been charged &a%PRICE% &6to create an account at &7%BANK_NAME%&6.
+
+# Scenario: A bank owner receives payment from a player who created an account.
+# Available placeholders: %AMOUNT%, %BANK_NAME%, %PLAYER%
+message.account-create-fee-received=&6%PLAYER% has paid you &a%AMOUNT% &6to create an account at &7%BANK_NAME%&6.
+
+# Scenario: A player is charged money to extend their account chest into a double chest.
+# Available placeholders: %PRICE%, %BANK_NAME%
+message.account-extend-fee-paid=&6You have been charged &a%PRICE% &6to extend an account at &7%BANK_NAME%&6.
+
+# Scenario: A bank owner receives payment from a player who extended their account.
+# Available placeholders: %AMOUNT%, %BANK_NAME%, %PLAYER%
+message.account-extend-fee-received=&6%PLAYER% has paid you &a%AMOUNT% &6to extend an account at &7%BANK_NAME%&6.
+
+# Scenario: A player removes an account at a bank.
+# Available placeholders: %BANK_NAME%
+message.account-removed=&6Account removed.
+
+# Scenario: An admin must confirm removing multiple accounts at once.
+# Available placeholders: %NUMBER_OF_ACCOUNTS%
+message.account-confirm-remove-all=&6You are about to remove &b%NUMBER_OF_ACCOUNTS% &6account(s).
+
+# Scenario: An admin removes multiple accounts at once.
+# Available placeholders: %NUMBER_OF_ACCOUNTS%
+message.all-accounts-removed=&6Successfully removed &b%NUMBER_OF_ACCOUNTS% &6account(s).
+
+# Scenario: A player attempts to list the accounts of a player who does not have any accounts.
+# Available placeholders:
+message.accounts-not-found=&cNo accounts found.
+
+# Scenario: A player tries to remove an account that still has items in it and must click again to confirm.
+# Available placeholders: %ACCOUNT_BALANCE%
+message.account-balance-not-zero=&cThat account still has a balance of &a%ACCOUNT_BALANCE%&c. Are you sure?
+
+# Scenario: A player executes the /account limits command.
+# Available placeholders: %NUMBER_OF_ACCOUNTS%, %LIMIT%
+message.account-limit=&6You own &b%NUMBER_OF_ACCOUNTS%&6/&b%LIMIT% &6allowed account(s).
+
+# Scenario: A player attempts to create an account but has reached their account limit.
+# Available placeholders: %LIMIT%
+message.account-limit-reached=&cYou are not allowed to create any more accounts!
+
+# Scenario: A player sets an account nickname.
+# Available placeholders: %ACCOUNT_NAME%
+message.account-renamed=&6Account renamed to &7%ACCOUNT_NAME%&6.
+
+# Scenario: An admin sets an account multiplier.
+# Available placeholders: %MULTIPLIER%, %MULTIPLIER_STAGE%
+message.account-set-multiplier=&6Account multiplier set to &b%MULTIPLIER%x&6.
+
+# Scenario: An admin sets an account interest delay.
+# Available placeholders: %NUMBER%
+message.account-set-interest-delay=&6Account interest delay set to &b%NUMBER%&6.
+
+# Scenario: A player sets the remaining offline payouts at an account.
+# Available placeholders: %NUMBER%
+message.account-set-remaining-offline=&6Account remaining offline payouts set to &b%NUMBER%&6.
+
+# Scenario: A player sets the remaining offline payouts before multiplier reset at an account.
+# Available placeholders: %NUMBER%
+message.account-set-remaining-offline-reset=&6Account remaining offline payouts until multiplier reset set to &b%NUMBER%&6.
+
+# Scenario: A player clicks an account to transfer it to another player and must click again to confirm.
+# Available placeholders: %PLAYER%
+message.account-confirm-transfer=&6Click again to confirm transferring ownership of an account to %PLAYER%.
+
+# Scenario: A player transfers ownership of an account to another player.
+# Available placeholders: %PLAYER%
+message.account-transferred=&6You transferred %PLAYER% ownership of an account.
+
+# Scenario: A player is transferred ownership of an account by another player.
+# Available placeholders: %PLAYER%
+message.account-transferred-to-you=&6%PLAYER% transferred you ownership of an account.
+
+# Scenario: A player clicks a chest to migrate an account into it.
+# Available placeholders:
+message.account-migrated=&6Account migrated!
+
+# Scenario: A player clicks a chest to recover a lost account into it.
+# Available placeholders:
+message.account-recovered=&6Account recovered!
+
+# Scenario: A player opens someone else's account chest using the account.view-other permission.
+# Available placeholders: %PLAYER%
+message.account-opened=&6You opened %PLAYER%'s account chest.
+
+# Scenario: A player puts items into an account chest and closes the chest.
+# Available placeholders: %AMOUNT%, %ACCOUNT_BALANCE%
+message.account-deposit=&6You deposited &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6.
+
+# Scenario: A player takes items out of an account chest and closes the chest.
+# Available placeholders: %AMOUNT%, %ACCOUNT_BALANCE%
+message.account-withdrawal=&6You withdrew &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6.
+
+# Scenario: A player earns interest on at least one account.
+# Available placeholders: %AMOUNT%, %NUMBER_OF_ACCOUNTS%
+message.interest-earned=&6You earned &a%AMOUNT% &6in interest on &b%NUMBER_OF_ACCOUNTS% &6account(s).
+
+# Scenario: A player logs onto the server after having earned interest offline.
+# Available placeholders: %AMOUNT%
+message.offline-account-interest=&6You earned &a%AMOUNT% &6in interest while you were offline.
+
+# Scenario: A player must pay low balance fees on at least one account.
+# Available placeholders: %AMOUNT%, %NUMBER_OF_ACCOUNTS%
+message.low-balance-fee-paid=&cYou paid &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccount(s).
+
+# Scenario: A player removes too much worth from their account chest and causes the multiplier to decrease.
+# Available placeholders: %NUMBER%
+message.multiplier-decreased=&cAccount multiplier decreased to &b%NUMBER%&c.
+
+# Scenario: A player attempts to create an account on a chest that cannot be opened due to an obstruction.
+# Available placeholders:
+message.chest-blocked=&cChest is blocked.
+
+# Scenario: A player attempts to create an account on a chest that is already an account.
+# Available placeholders:
+message.chest-already-account=&cChest is already an account.
+
+# Scenario: A player attempts to break an account chest.
+# Available placeholders:
+message.cannot-break-account=&cYou cannot break that account chest.
+
+# Scenario: A player attempts to create an account at a chest not located in a bank.
+# Available placeholders:
+message.chest-not-in-bank=&cChest is not in a bank.
+
+# Scenario: A player creates a bank.
+# Available placeholders: %BANK_NAME%
+message.bank-created=&6Bank created!
+
+# Scenario: A player cannot afford to create a bank.
+# Available placeholders: %PRICE%, %AMOUNT_REMAINING%, %PLAYER_BALANCE%
+message.bank-create-insufficient-funds=&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to create a bank.
+
+# Scenario: A player is charged money to create a bank.
+# Available placeholders: %PRICE%
+message.bank-create-fee-paid=&6You have been charged &a%PRICE% &6to create a bank.
+
+# Scenario: A player attempts to create a bank without a WorldEdit selection or specifying coordinates in the command.
+# Available placeholders:
+message.bank-select-region=&cYou must select a WorldEdit region or specify coordinates manually.
+
+# Scenario: A player attempts to create a bank without specifying coordinates in the command and WorldEdit is not enabled.
+# Available placeholders:
+message.worldedit-not-enabled=&cWorldEdit is not currently enabled. Please enter coordinates manually.
+
+# Scenario: A player attempts to create a bank but provides invalid coordinates in the command arguments.
+# Available placeholders:
+message.bank-coordinate-parse-error=&cCould not parse coordinates in command arguments.
+
+# Scenario: A player attempts to create a bank in world that is disabled in the config.
+# Available placeholders: %WORLD%
+message.world-disabled=&cBank creation is disabled in this world.
+
+# Scenario: A player attempts to create a bank with a size that is greater than the maximum defined in the config.
+# Available placeholders: %BANK_SIZE%, %MAXIMUM%, %DIFFERENCE%
+message.bank-selection-too-large=&cThat selection is too large. It exceeds the maximum bank size by &b%DIFFERENCE% &cblocks.
+
+# Scenario: A player attempts to create a bank with a size that is smaller than the minimum defined in the config.
+# Available placeholders: %BANK_SIZE%, %MINIMUM%, %DIFFERENCE%
+message.bank-selection-too-small=&cThat selection is too small. It falls short of the minimum bank size by &b%DIFFERENCE% &cblocks.
+
+# Scenario: A player attempts to create a bank that overlaps with an already existing bank.
+# Available placeholders:
+message.bank-selection-overlaps-existing=&cThat selection overlaps with another bank.
+
+# Scenario: A player attempts to resize a bank to a selection that does not encompass all accounts at the bank.
+# Available placeholders: %NUMBER_OF_ACCOUNTS%
+message.bank-selection-cuts-accounts=&cThat selection does not include all accounts at the bank.
+
+# Scenario: A player removes a bank and all its accounts.
+# Available placeholders: %BANK_NAME%, %NUMBER_OF_ACCOUNTS%
+message.bank-removed=&6Bank %BANK_NAME% and %NUMBER_OF_ACCOUNTS% account(s) were removed.
+
+# Scenario: A player removes multiple banks at once.
+# Available placeholders: %NUMBER_OF_ACCOUNTS%, %NUMBER_OF_BANKS%
+message.all-banks-removed=&6Successfully removed &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).
+
+# Scenario: A player attempts to list banks, but there are none to list.
+# Available placeholders:
+message.banks-not-found=&cNo banks found.
+
+# Scenario: An admin must confirm removing one bank or more.
+# Available placeholders: %NUMBER_OF_ACCOUNTS%, %NUMBER_OF_BANKS%
+message.bank-confirm-remove=&6Execute command again to remove &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).
+
+# Scenario: A player attempts to open a GUI of a bank with a specified name or ID, but no bank could be found.
+# Available placeholders: %STRING%
+message.bank-not-found=&cCould not find bank with the name or ID "%STRING%".
+
+# Scenario: A player attempts to open a GUI of a bank, but is not standing in a bank.
+# Available placeholders:
+message.must-stand-in-bank=&cYou must stand in or specify the name or ID of a bank.
+
+# Scenario: A player executes the /bank limits command.
+# Available placeholders: %NUMBER_OF_BANKS%, %BANK_SIZE%, %LIMIT%
+message.bank-limit=&6You own %NUMBER_OF_BANKS%&a/%LIMIT% allowed bank(s) of up to %BANK_SIZE% blocks in size each.
+
+# Scenario: A player attempts to create a bank, but has reached their bank limit.
+# Available placeholders: %LIMIT%
+message.bank-limit-reached=&cYou are not allowed to create any more banks!
+
+# Scenario: A player executes a command to transfer a bank to another player and must execute it again to confirm.
+# Available placeholders: %BANK_NAME%, %PLAYER%
+message.bank-confirm-transfer=&6Execute command again to confirm transferring ownership of bank &7%BANK_NAME% &6to %PLAYER%.
+
+# Scenario: A player transfers ownership of a bank to another player.
+# Available placeholders: %BANK_NAME%, %PLAYER%
+message.bank-transferred=&6You transferred %PLAYER% ownership of bank &7%BANK_NAME%&6.
+
+# Scenario: A player is transferred ownership of a bank by another player.
+# Available placeholders: %BANK_NAME%, %PLAYER%
+message.bank-transferred-to-you=&6%PLAYER% transferred you ownership of bank &7%BANK_NAME%&6.
+
+# Scenario: A player attempts to transfer a bank to an admin bank, but the bank is already an admin bank.
+# Available placeholders: %BANK_NAME%
+message.bank-already-admin=&7%BANK_NAME% &cis already an admin bank.
+
+# Scenario: A player resizes a bank to a certain number of blocks.
+# Available placeholders: %BANK_SIZE%
+message.bank-resized=&6Bank resized.
+
+# Scenario: A player sets a property at a bank to a new value.
+# Available placeholders: %BANK_NAME%, %PROPERTY%, %VALUE%, %PREVIOUS_VALUE%
+message.bank-property-set=&6Changed &b%PROPERTY% &6at bank &7%BANK_NAME% &6from &b%PREVIOUS_VALUE% &6to &b%VALUE%&6.
+
+# Scenario: A player attempts to set a property at a bank, but that property is configured as not overridable.
+# Available placeholders: %PROPERTY%
+message.bank-property-not-overridable=&cThat property is not overridable.
+
+# Scenario: A player selects a bank with WorldEdit.
+# Available placeholders: %BANK_NAME%
+message.bank-selected=&6Bank &7%BANK_NAME% &6was selected with WorldEdit.
+
+# Scenario: A player attempts to set a bank property to a number, but provided a string that was not a number.
+# Available placeholders: %STRING%
+message.not-a-number=&c"%STRING%" is not a number.
+
+# Scenario: A player attempts to set a bank property to an integer, but provided a string that was not an integer.
+# Available placeholders: %STRING%
+message.not-an-integer=&c"%STRING%" is not an integer.
+
+# Scenario: A player attempts to set a bank property, but provided a string that was not a property.
+# Available placeholders: %STRING%
+message.not-a-property=&c"%STRING%" is not a property.
+
+# Scenario: A player attempts to set a bank property to a list, but provided a string that was not a list.
+# Available placeholders: %STRING%
+message.not-a-list=&c"%STRING%" is not a parsable list.
+
+# Scenario: A player attempts to create or rename a bank with a name already in use by another bank.
+# Available placeholders: %BANK_NAME%
+message.name-not-unique=&cA bank with that name already exists.
+
+# Scenario: A player attempts to create or rename a bank with a name that does not match the name-regex pattern in the config.
+# Available placeholders: %BANK_NAME%
+message.name-not-allowed=&cName is not allowed.
+
+# Scenario: A player renames a bank to the same name.
+# Available placeholders: %BANK_NAME%
+message.name-not-changed=&cThe bank name was not changed.
+
+# Scenario: A player renames a bank to a different name.
+# Available placeholders: %BANK_NAME%
+message.name-changed=&6The bank was successfully renamed to &7%BANK_NAME%&6.
+
+# Scenario: A bank owner pays interest to the account holders at their bank.
+# Available placeholders: %AMOUNT%, %NUMBER_OF_ACCOUNTS%
+message.interest-paid=&6You paid account holders &a%AMOUNT% &6in interest.
+
+# Scenario: A bank owner earns revenue on their bank.
+# Available placeholders: %AMOUNT%, %BANK_NAME%
+message.bank-revenue-earned=&6You earned &a%AMOUNT% &6in revenue at bank &7%BANK_NAME%&6.
+
+# Scenario: A bank owner logs onto the server after having earned bank revenue while offline.
+# Available placeholders: %AMOUNT%
+message.bank-revenue-earned-offline=&6You earned &a%AMOUNT% &6in bank revenue while you were offline.
+
+# Scenario: A bank owner logs onto the server after having lost bank revenue while offline.
+# Available placeholders: %AMOUNT%
+message.bank-loss-offline=&cYou lost &a%AMOUNT% &cin bank revenue while you were offline.
+
+# Scenario: A bank owner receives low balance fee payments from account holders.
+# Available placeholders: %AMOUNT%, %NUMBER_OF_ACCOUNTS%
+message.low-balance-fee-received=&6You received &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccount(s).
+
+# Scenario: A player is reimbursed by the bank owner after removing an account.
+# Available placeholders: %AMOUNT%
+message.reimbursement-received=&6You have been reimbursed &a%AMOUNT%&6.
+
+# Scenario: A bank owner reimburses a player who removed an account at their bank.
+# Available placeholders: %AMOUNT%, %PLAYER%
+message.reimbursement-paid=&6You reimbursed %PLAYER% &a%AMOUNT%&6.
+
+# Scenario: A player adds another player as a co-owner of an account or a bank.
+# Available placeholders: %PLAYER%
+message.added-coowner=&6Added %PLAYER% as a co-owner.
+
+# Scenario: A player removes another player as a co-owner of an account or a bank.
+# Available placeholders: %PLAYER%
+message.removed-coowner=&6Removed %PLAYER% as a co-owner.
+
+# Scenario: A player attempts to add another player as a co-owner of an account or a bank, but that player is already a co-owner.
+# Available placeholders: %PLAYER%
+message.already-coowner=&c%PLAYER% is already a co-owner.
+
+# Scenario: A player attempts to remove another player as a co-owner of an account or a bank, but that player is not a co-owner.
+# Available placeholders: %PLAYER%
+message.not-a-coowner=&c%PLAYER% is not a co-owner.
+
+# Scenario: A player attempts to transfer ownership of an account or bank to the player who already owns it.
+# Available placeholders: %PLAYER%
+message.already-owner=&c%PLAYER% is already owner.
+
+# Scenario: A co-owner attempts to perform an action on a bank or account that only the owner can perfom.
+# Available placeholders:
+message.must-be-owner=&cYou must be the owner to do that.
+
+# Scenario: An error occurs, usually during transactions when a loan was not permitted.
+# Available placeholders: %ERROR%
+message.error-occurred=&cAn error occurred: %ERROR%
+
+# Scenario: A player references another player in command arguments who either does not exist or who has never played on the server before.
+# Available placeholders: %STRING%
+message.player-not-found=&cNo player was found with the name "%STRING%".
+
+# Scenario: A player attempts to create an account at a bank, but has reached their limit for that specific bank.
+# Available placeholders: %BANK_NAME%, %LIMIT%
+message.account-limit-at-bank-reached=&cYou are not allowed to create another account at this bank.
+
+# Scenario: An admin attempts to execute a player-only command from the console.
+# Available placeholders:
+message.player-command-only=&cPlayer command only.
+
+# Scenario: A player attempts to migrate an account to the same chest.
+# Available placeholders:
+message.same-chest=&cThat is the same chest.
+
+# Scenario: A player runs the /account create command and must click a chest.
+# Available placeholders:
+message.click-chest-create=&6Click a chest to create an account.
+
+# Scenario: A player runs the /account info command and must click an account chest.
+# Available placeholders:
+message.click-account-info=&6Click an account chest to view info.
+
+# Scenario: A player runs the /account migrate command and must click an account.
+# Available placeholders:
+message.click-account-migrate=&6Click an account chest to migrate it.
+
+# Scenario: A player is migrating an account and and must click another chest.
+# Available placeholders:
+message.click-chest-migrate=&6Click a chest to migrate the account to.
+
+# Scenario: A player runs the /account recover command, selects a lost account, and must click a chest.
+# Available placeholders:
+message.click-chest-recover=&6Click a chest to recover the account.
+
+# Scenario: A player runs the /account remove command and must click an account chest.
+# Available placeholders:
+message.click-account-remove=&6Click an account chest to remove an account.
+
+# Scenario: A player runs the /account rename command and must click an account chest.
+# Available placeholders:
+message.click-account-rename=&6Click an account chest to rename it.
+
+# Scenario: A player runs the /account set command and must click an account chest.
+# Available placeholders: %PROPERTY%, %VALUE%
+message.click-account-set=&6Click an account chest to set &b%PROPERTY%&6 to &b%VALUE%&6.
+
+# Scenario: A player runs the /account transfer command and must click an account chest.
+# Available placeholders: %PLAYER%
+message.click-account-transfer=&6Click an account chest to transfer it to %PLAYER%.
+
+# Scenario: A player runs the /account trust command and must click an account chest.
+# Available placeholders: %PLAYER%
+message.click-account-trust=&6Click an account chest to add %PLAYER% as a co-owner.
+
+# Scenario: A player runs the /account untrust command and must click an account chest.
+# Available placeholders: %PLAYER%
+message.click-account-untrust=&6Click an account chest to remove %PLAYER% as a co-owner.
+
+# Scenario: A player must click a chest for a second time to confirm an action.
+# Available placeholders:
+message.click-again-to-confirm=&6Click again to confirm.
+
+# Scenario: A player must execute a command for a second time to confirm.
+# Available placeholders:
+message.execute-again-to-confirm=&6Execute again to confirm.
+
+# Scenario: A player attempts to create an account without permission.
+# Available placeholders:
+message.no-permission-account-create=&cYou do not have permission to create an account.
+
+# Scenario: A player attempts to create an account on a protected chest without permission.
+# Available placeholders:
+message.no-permission-account-create-protected=&cYou do not have permission to create an account on a protected chest.
+
+# Scenario: A player attempts to add another player as a co-owner of their account without permission.
+# Available placeholders:
+message.no-permission-account-trust=&cYou do not have permission to add a co-owner to an account.
+
+# Scenario: A player attempts to add another player as a co-owner of someone else's account without permission.
+# Available placeholders:
+message.no-permission-account-trust-other=&cYou do not have permission to add a co-owner to someone else's account.
+
+# Scenario: A player attempts to remove another player as a co-owner of their account without permission.
+# Available placeholders:
+message.no-permission-account-untrust=&cYou do not have permission to remove a co-owner from an account.
+
+# Scenario: A player attempts to remove another player as a co-owner of someone else's account without permission.
+# Available placeholders:
+message.no-permission-account-untrust-other=&cYou do not have permission to remove a co-owner from someone else's account.
+
+# Scenario: A player attempts to remove someone else's account without permission.
+# Available placeholders:
+message.no-permission-account-remove-other=&cYou do not have permission to remove someone else's account.
+
+# Scenario: A player attempts to remove multiple accounts at once without permission.
+# Available placeholders:
+message.no-permission-account-removeall=&cYou do not have permission to remove all accounts.
+
+# Scenario: A player attempts to open someone else's account chest without permission.
+# Available placeholders:
+message.no-permission-account-view-other=&cYou do not have permission to view someone else's account.
+
+# Scenario: A player attempts to edit the contents of someone else's account chest without permission.
+# Available placeholders:
+message.no-permission-account-edit-other=&cYou do not have permission to edit someone else's account.
+
+# Scenario: A player attempts to migrate an account without permission.
+# Available placeholders:
+message.no-permission-account-migrate=&cYou do not have permission to migrate an account.
+
+# Scenario: A player attempts to migrate someone else's account without permission.
+# Available placeholders:
+message.no-permission-account-migrate-other=&cYou do not have permission to migrate someone else's account.
+
+# Scenario: A player attempts to migrate an account to another bank without permission.
+# Available placeholders:
+message.no-permission-account-migrate-bank=&cYou do not have permission to migrate an account to another bank.
+
+# Scenario: A player attempts to migrate an account to a protected chest without permission.
+# Available placeholders:
+message.no-permission-account-migrate-protected=&cYou do not have permission to migrate an account to a protected chest.
+
+# Scenario: A player attempts to rename an account without permission.
+# Available placeholders:
+message.no-permission-account-rename=&cYou do not have permission to rename an account.
+
+# Scenario: A player attempts to rename someone else's account without permission.
+# Available placeholders:
+message.no-permission-account-rename-other=&cYou do not have permission to rename someone else's account.
+
+# Scenario: A player attempts to transfer ownership of an account without permission.
+# Available placeholders:
+message.no-permission-account-transfer=&cYou do not have permission to transfer ownership of an account.
+
+# Scenario: A player attempts to transfer ownership of someone else's account without permission.
+# Available placeholders:
+message.no-permission-account-transfer-other=&cYou do not have permission to transfer ownership of someone else's account.
+
+# Scenario: A player attempts to extend someone else's account chest without permission.
+# Available placeholders:
+message.no-permission-account-extend-other=&cYou do not have permission to extend someone else's account.
+
+# Scenario: A player attempts to extend a protected account chest without permission.
+# Available placeholders:
+message.no-permission-account-extend-protected=&cYou do not have permission to extend a protected account chest.
+
+# Scenario: A player attempts to set the multiplier, interest delay, etc. of an account without permission.
+# Available placeholders:
+message.no-permission-account-set=&cYou do not have permission to set internal account values.
+
+# Scenario: A player attempts to create a bank without permission.
+# Available placeholders:
+message.no-permission-bank-create=&cYou do not have permission to create a bank.
+
+# Scenario: A player attempts to create an admin bank without permission.
+# Available placeholders:
+message.no-permission-bank-create-admin=&cYou do not have permission to create an admin bank.
+
+# Scenario: A player attempts to create a bank on land without the WorldGuard create-bank flag without permission.
+# Available placeholders:
+message.no-permission-bank-create-protected=&cYou do not have permission to create a bank there.
+
+# Scenario: A player attempts to remove someone else's bank without permission.
+# Available placeholders:
+message.no-permission-bank-remove-other=&cYou do not have permission to remove someone else's bank.
+
+# Scenario: A player attempts to remove an admin bank without permission.
+# Available placeholders:
+message.no-permission-bank-remove-admin=&cYou do not have permission to remove an admin bank.
+
+# Scenario: A player attempts to remove multiple banks at once without permission.
+# Available placeholders:
+message.no-permission-bank-removeall=&cYou do not have permission to remove all banks.
+
+# Scenario: A player attempts to resize a bank without permission.
+# Available placeholders:
+message.no-permission-bank-resize=&cYou do not have permission to resize a bank.
+
+# Scenario: A player attempts to resize someone else's bank without permission.
+# Available placeholders:
+message.no-permission-bank-resize-other=&cYou do not have permission to resize someone else's bank.
+
+# Scenario: A player attempts to resize an admin bank without permission.
+# Available placeholders:
+message.no-permission-bank-resize-admin=&cYou do not have permission to resize an admin bank.
+
+# Scenario: A player attempts to add another player as a co-owner of their bank without permission.
+# Available placeholders:
+message.no-permission-bank-trust=&cYou do not have permission to add a co-owner to a bank.
+
+# Scenario: A player attempts to add another player as a co-owner of someone else's bank without permission.
+# Available placeholders:
+message.no-permission-bank-trust-other=&cYou do not have permission to add a co-owner to someone else's bank.
+
+# Scenario: A player attempts to add another player as a co-owner of an admin bank without permission.
+# Available placeholders:
+message.no-permission-bank-trust-admin=&cYou do not have permission to add a co-owner to an admin bank.
+
+# Scenario: A player attempts to remove another player as a co-owner of their bank without permission.
+# Available placeholders:
+message.no-permission-bank-untrust=&cYou do not have permission to remove a co-owner from a bank.
+
+# Scenario: A player attempts to remove another player as a co-owner of someone else's bank without permission.
+# Available placeholders:
+message.no-permission-bank-untrust-other=&cYou do not have permission to remove a co-owner from someone else's bank.
+
+# Scenario: A player attempts to remove another player as a co-owner of an admin bank without permission.
+# Available placeholders:
+message.no-permission-bank-untrust-admin=&cYou do not have permission to remove a co-owner from an admin bank.
+
+# Scenario: A player attempts to transfer ownership of a bank without permission.
+# Available placeholders:
+message.no-permission-bank-transfer=&cYou do not have permission to transfer ownership of a bank.
+
+# Scenario: A player attempts to transfer ownership of someone else's bank without permission.
+# Available placeholders:
+message.no-permission-bank-transfer-other=&cYou do not have permission to transfer ownership of someone else's bank.
+
+# Scenario: A player attempts to transfer ownership of an admin bank without permission.
+# Available placeholders:
+message.no-permission-bank-transfer-admin=&cYou do not have permission to transfer ownership of an admin bank.
+
+# Scenario: A player attempts to change a property of someone else's bank without permission.
+# Available placeholders:
+message.no-permission-bank-set-other=&cYou do not have permission to configure someone else's bank.
+
+# Scenario: A player attempts to change a property of an admin bank without permission.
+# Available placeholders:
+message.no-permission-bank-set-admin=&cYou do not have permission to configure an admin bank.
+
+# Scenario: A player attempts to select a bank without the WorldEdit permission worldedit.selection.pos.
+# Available placeholders:
+message.no-permission-bank-select=&cYou do not have permission to select a bank.
+
+# Scenario: A player attempts to reload the plugin without permission.
+# Available placeholders:
+message.no-permission-reload=&cYou do not have permission to reload the plugin.
+
+# Scenario: A player attempts to configure the plugin without permission.
+# Available placeholders:
+message.no-permission-config=&cYou do not have permission to configure the plugin.
+
+# Scenario: A player attempts to update the plugin without permission.
+# Available placeholders:
+message.no-permission-update=&cYou do not have permission to update the plugin.
+
+# Scenario: A player attempts to trigger an interest payment without permission.
+# Available placeholders:
+message.no-permission-pay-interest=&cYou do not have permission to trigger an interest payment.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-create=&a/%COMMAND% create &6-Create an account.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-remove=&a/%COMMAND% remove &6-Remove an account.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-info=&a/%COMMAND% info &6-Open an account GUI.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-list=&a/%COMMAND% list <names> &6-View a list of accounts.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-limits=&a/%COMMAND% limits &6-View your account limits.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-remove-all=&a/%COMMAND% removeall &6-Remove all accounts.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-set=&a/%COMMAND% set [property] [value] &6-Set an account value.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-trust=&a/%COMMAND% trust [name] &6-Add a co-owner to an account.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-untrust=&a/%COMMAND% untrust [name] &6-Remove a co-owner from an account.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-migrate=&a/%COMMAND% migrate &6-Migrate an account to a different chest.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-recover=&a/%COMMAND% recover &6-Recover a lost account to a new chest.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-rename=&a/%COMMAND% rename [name] &6-Give an account a nickname.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-account-transfer=&a/%COMMAND% transfer [name] &6-Transfer ownership of an account.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-create=&a/%COMMAND% create &6-Create a bank.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-remove=&a/%COMMAND% remove &6-Remove a bank.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-info=&a/%COMMAND% info &6-Open a bank GUI.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-list=&a/%COMMAND% list &6-View a list of banks.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-limits=&a/%COMMAND% limits &6-View your bank limits.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-removeall=&a/%COMMAND% removeall &6-Remove all banks.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-resize=&a/%COMMAND% resize &6-Resize a bank.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-trust=&a/%COMMAND% trust &6-Add a co-owner to a bank.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-untrust=&a/%COMMAND% untrust &6-Remove a co-owner from a bank.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-rename=&a/%COMMAND% rename &6-Rename a bank.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-set=&a/%COMMAND% set &6-Configure a bank.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-select=&a/%COMMAND% select &6-Select a bank with WorldEdit.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-transfer=&a/%COMMAND% transfer &6-Transfer ownership of a bank.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-version=&a/%COMMAND% version &6-View the version of BankingPlugin.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-reload=&a/%COMMAND% reload &6-Reload BankingPlugin.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-config=&a/%COMMAND% config [set|add|remove] [property] [value] &6-Configure BankingPlugin.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-update=&a/%COMMAND% update &6-Update BankingPlugin.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-pay-interest=&a/%COMMAND% payinterest <banks> &6-Trigger an interest payment.
+
+# Scenario:
+# Available placeholders:
+message.account-command-desc=Create, manage, and remove accounts.
+
+# Scenario:
+# Available placeholders:
+message.bank-command-desc=Create, manage, and remove banks.
+
+# Scenario:
+# Available placeholders:
+message.control-command-desc=Manage the plugin.
+
+# Scenario: An admin adds a value to a property in the config.
+# Available placeholders: %PROPERTY%, %VALUE%
+message.config-value-added=&6Added &a%VALUE% &6to &a%PROPERTY%&6.
+
+# Scenario: An admin removes a value from a property in the config.
+# Available placeholders: %PROPERTY%, %VALUE%
+message.config-value-removed=&6Removed &a%VALUE% &6from &a%PROPERTY%&6.
+
+# Scenario: An admin sets the value of a property in the config.
+# Available placeholders: %PROPERTY%, %VALUE%, %PREVIOUS_VALUE%
+message.config-value-set=&6Changed &a%PROPERTY% &6from &a%PREVIOUS_VALUE% &6to &a%VALUE%&6.
+
+# Scenario: An admin triggers an interest payout.
+# Available placeholders: %NUMBER_OF_BANKS%
+message.interest-payout-triggered=&6Triggered an interest payout at &b%NUMBER_OF_BANKS% &6bank(s).
+
+# Scenario: An admin reloads all banks and accounts on the server.
+# Available placeholders: %NUMBER_OF_ACCOUNTS%, %NUMBER_OF_BANKS%
+message.reloaded-plugin=&6Successfully reloaded &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).
+
+# Scenario: An admin is notified that an update to BankingPlugin is available.
+# Available placeholders: %VERSION%
+message.update-available=&6&lVersion &c%VERSION% &6of &aBanking&2Plugin &6is available &chere&6.
+
+# Scenario: An admin is notified of the download location for the update.
+# Available placeholders:
+message.update-click-to-download=&6Click to download.
+
+# Scenario: An admin is notified that no new updates are available.
+# Available placeholders:
+message.update-no-update=&6&lNo new version available.
+
+# Scenario: An admin is notified that the plugin is checking for updates.
+# Available placeholders:
+message.update-checking=&6&lChecking for updates...
+
+# Scenario: An admin is notified that an error occurred while checking for updates.
+# Available placeholders:
+message.update-error=&c&lError while checking for updates.
+
