@@ -292,7 +292,7 @@ public class Config {
 
 	private final BankingPlugin plugin;
 
-	private LanguageConfig langConfig;
+	private LangConfig langConfig;
 
 	public Config(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -302,7 +302,7 @@ public class Config {
 		reload(true, true, true);
     }
 
-    public LanguageConfig getLanguageConfig() {
+    public LangConfig getLanguageConfig() {
 		return langConfig;
 	}
 
@@ -569,7 +569,7 @@ public class Config {
 	}
 
 	private void loadLanguageConfig(boolean showMessages) {
-		langConfig = new LanguageConfig(plugin, showMessages);
+		langConfig = new LangConfig(plugin, showMessages);
 		File langFolder = new File(plugin.getDataFolder(), "lang");
 
 		if (!(new File(langFolder, "en_US.lang")).exists())

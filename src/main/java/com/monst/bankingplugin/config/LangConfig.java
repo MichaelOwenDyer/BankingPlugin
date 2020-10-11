@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class LanguageConfig extends FileConfiguration {
+public class LangConfig extends FileConfiguration {
 
     private final ArrayList<String> lines = new ArrayList<>();
     private final HashMap<String, String> values = new HashMap<>();
@@ -24,7 +24,7 @@ public class LanguageConfig extends FileConfiguration {
     private final boolean showMessages;
     private File file;
 
-    public LanguageConfig(BankingPlugin plugin, boolean showMessages) {
+    LangConfig(BankingPlugin plugin, boolean showMessages) {
         this.plugin = plugin;
         this.showMessages = showMessages;
     }
