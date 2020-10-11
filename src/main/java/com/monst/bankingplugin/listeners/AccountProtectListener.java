@@ -140,7 +140,7 @@ public class AccountProtectListener implements Listener {
 	 * This means that when an account chest is extended and this handler is executed,
 	 * for all intents and purposes the account chest is actually still a single chest.
 	 */
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
 	public void onAccountExtend(BlockPlaceEvent e) {
         final Player p = e.getPlayer();
         final Block b = e.getBlockPlaced();
