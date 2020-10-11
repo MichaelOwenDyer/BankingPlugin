@@ -258,9 +258,9 @@ public class Config {
     public static List<String> blacklist;
 
 	/**
-	 * The bank revenue multiplier.
+	 * The bank revenue function.
 	 */
-	public static double bankRevenueMultiplier;
+	public static String bankRevenueFunction;
 
 	/**
 	 * Worlds where banking should be disabled
@@ -522,7 +522,7 @@ public class Config {
 		enableWorldEditIntegration = nonNull(config.getBoolean("enable-worldedit-integration"), true);
         removeAccountOnError = nonNull(config.getBoolean("remove-account-on-error"), true);
         blacklist = nonNull(config.getStringList("blacklist"), Collections::emptyList);
-		bankRevenueMultiplier = nonNull(Math.abs(config.getDouble("bank-revenue-multiplier")), 0.10);
+		bankRevenueFunction = nonNull(config.getString("bank-revenue-function"), "(0.10 * x) * (1 - g) * ln(n)");
 		wgAllowCreateBankDefault = nonNull(config.getBoolean("worldguard-default-flag-value"), false);
 		disabledWorlds = nonNull(config.getStringList("disabled-worlds"), Collections::emptyList);
 		enableMail = nonNull(config.getBoolean("enable-mail"), true);
