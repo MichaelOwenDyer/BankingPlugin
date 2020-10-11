@@ -684,159 +684,159 @@ public enum Message {
 
     COMMAND_USAGE_ACCOUNT_CREATE (
             "",
-            "&a/%COMMAND% create &6-Create an account.",
+            "&a/%COMMAND% create &6- Create an account.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_REMOVE (
             "",
-            "&a/%COMMAND% remove &6-Remove an account.",
+            "&a/%COMMAND% remove &6- Remove an account.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_INFO (
             "",
-            "&a/%COMMAND% info &6-Open an account GUI.",
+            "&a/%COMMAND% info &6- Open an account GUI.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_LIST (
             "",
-            "&a/%COMMAND% list <names> &6-View a list of accounts.",
+            "&a/%COMMAND% list <names> &6- View a list of accounts.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_LIMITS (
             "",
-            "&a/%COMMAND% limits &6-View your account limits.",
+            "&a/%COMMAND% limits &6- View your account limits.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_REMOVE_ALL (
             "",
-            "&a/%COMMAND% removeall &6-Remove all accounts.",
+            "&a/%COMMAND% removeall &6- Remove all accounts.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_SET (
             "",
-            "&a/%COMMAND% set [property] [value] &6-Set an account value.",
+            "&a/%COMMAND% set [property] [value] &6- Set an account value.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_TRUST (
             "",
-            "&a/%COMMAND% trust [name] &6-Add a co-owner to an account.",
+            "&a/%COMMAND% trust [name] &6- Add a co-owner to an account.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_UNTRUST (
             "",
-            "&a/%COMMAND% untrust [name] &6-Remove a co-owner from an account.",
+            "&a/%COMMAND% untrust [name] &6- Remove a co-owner from an account.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_MIGRATE (
             "",
-            "&a/%COMMAND% migrate &6-Migrate an account to a different chest.",
+            "&a/%COMMAND% migrate &6- Migrate an account to a different chest.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_RECOVER (
             "",
-            "&a/%COMMAND% recover &6-Recover a lost account to a new chest.",
+            "&a/%COMMAND% recover &6- Recover a lost account to a new chest.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_RENAME (
             "",
-            "&a/%COMMAND% rename [name] &6-Give an account a nickname.",
+            "&a/%COMMAND% rename [name] &6- Give an account a nickname.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_TRANSFER (
             "",
-            "&a/%COMMAND% transfer [name] &6-Transfer ownership of an account.",
+            "&a/%COMMAND% transfer [name] &6- Transfer ownership of an account.",
             Placeholder.COMMAND
     ),
 
     COMMAND_USAGE_BANK_CREATE (
             "",
-            "&a/%COMMAND% create &6-Create a bank.",
+            "&a/%COMMAND% create &6- Create a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_REMOVE (
             "",
-            "&a/%COMMAND% remove &6-Remove a bank.",
+            "&a/%COMMAND% remove &6- Remove a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_INFO (
             "",
-            "&a/%COMMAND% info &6-Open a bank GUI.",
+            "&a/%COMMAND% info &6- Open a bank GUI.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_LIST (
             "",
-            "&a/%COMMAND% list &6-View a list of banks.",
+            "&a/%COMMAND% list &6- View a list of banks.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_LIMITS (
             "",
-            "&a/%COMMAND% limits &6-View your bank limits.",
+            "&a/%COMMAND% limits &6- View your bank limits.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_REMOVEALL (
             "",
-            "&a/%COMMAND% removeall &6-Remove all banks.",
+            "&a/%COMMAND% removeall &6- Remove all banks.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_RESIZE (
             "",
-            "&a/%COMMAND% resize &6-Resize a bank.",
+            "&a/%COMMAND% resize &6- Resize a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_TRUST (
             "",
-            "&a/%COMMAND% trust &6-Add a co-owner to a bank.",
+            "&a/%COMMAND% trust &6- Add a co-owner to a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_UNTRUST (
             "",
-            "&a/%COMMAND% untrust &6-Remove a co-owner from a bank.",
+            "&a/%COMMAND% untrust &6- Remove a co-owner from a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_RENAME (
             "",
-            "&a/%COMMAND% rename &6-Rename a bank.",
+            "&a/%COMMAND% rename &6- Rename a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_SET (
             "",
-            "&a/%COMMAND% set &6-Configure a bank.",
+            "&a/%COMMAND% set &6- Configure a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_SELECT (
             "",
-            "&a/%COMMAND% select &6-Select a bank with WorldEdit.",
+            "&a/%COMMAND% select &6- Select a bank with WorldEdit.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_TRANSFER (
             "",
-            "&a/%COMMAND% transfer &6-Transfer ownership of a bank.",
+            "&a/%COMMAND% transfer &6- Transfer ownership of a bank.",
             Placeholder.COMMAND
     ),
 
     COMMAND_USAGE_VERSION (
             "",
-            "&a/%COMMAND% version &6-View the version of BankingPlugin.",
+            "&a/%COMMAND% version &6- View the version of BankingPlugin.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_RELOAD (
             "",
-            "&a/%COMMAND% reload &6-Reload BankingPlugin.",
+            "&a/%COMMAND% reload &6- Reload BankingPlugin.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_CONFIG (
             "",
-            "&a/%COMMAND% config [set|add|remove] [property] [value] &6-Configure BankingPlugin.",
+            "&a/%COMMAND% config [set|add|remove] [property] [value] &6- Configure BankingPlugin.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_UPDATE (
             "",
-            "&a/%COMMAND% update &6-Update BankingPlugin.",
+            "&a/%COMMAND% update &6- Update BankingPlugin.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_PAY_INTEREST (
             "",
-            "&a/%COMMAND% payinterest <banks> &6-Trigger an interest payment.",
+            "&a/%COMMAND% payinterest <banks> &6- Trigger an interest payment.",
             Placeholder.COMMAND
     ),
 
