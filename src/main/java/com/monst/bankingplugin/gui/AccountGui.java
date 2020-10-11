@@ -131,14 +131,13 @@ public class AccountGui extends SinglePageGui<Account> {
 		double minBalance = bank.get(BankField.MINIMUM_BALANCE);
 		boolean isLowBalance = guiSubject.getBalance().doubleValue() < minBalance;
 		boolean payOnLowBalance = bank.get(BankField.PAY_ON_LOW_BALANCE);
-		boolean willPayOut = guiSubject.getStatus().getDelayUntilNextPayout() > 0;
 		double interestRate = bank.get(BankField.INTEREST_RATE);
 		int multiplier = guiSubject.getStatus().getRealMultiplier();
 		double fullPayout = (isLowBalance && !payOnLowBalance) ?
 				0.0 : guiSubject.getBalance().doubleValue() * interestRate * multiplier;
 		double lowBalanceFee = isLowBalance && (double) bank.get(BankField.LOW_BALANCE_FEE) > 0 ?
 				bank.get(BankField.LOW_BALANCE_FEE) : 0.0;
-		double nextPayout = willPayOut ? fullPayout - lowBalanceFee : 0.0;
+		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
 				"Balance: " + ChatColor.GREEN + Utils.format(guiSubject.getBalance()) + (isLowBalance ?
 						ChatColor.RED + " (" + Utils.format(minBalance - guiSubject.getBalance().doubleValue()) + " below minimum)" :
