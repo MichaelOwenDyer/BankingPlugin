@@ -40,7 +40,7 @@ public class GriefPreventionListener implements Listener {
         this.griefPrevention = plugin.getGriefPrevention();
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onAccountCreate(AccountCreateEvent e) {
         if (!Config.enableGriefPreventionIntegration)
             return;
