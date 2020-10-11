@@ -71,14 +71,15 @@ public class InterestEventScheduler {
             TIME_BANK_MAP.get(time).add(bank);
             BANK_TIME_MAP.get(bank).add(time);
         }
-        for (LocalTime time : BANK_TIME_MAP.get(bank)) {
-            if (!bankPayoutTimes.contains(time)) {
-                TIME_BANK_MAP.get(time).remove(bank);
-                BANK_TIME_MAP.get(bank).remove(time);
-                if (TIME_BANK_MAP.get(time).isEmpty()) { // If no more banks have payouts scheduled at this time
-                    descheduleTime(time); // Remove the payout task
-                    TIME_BANK_MAP.remove(time);
-                }
+        for (Iterator<LocalTime> iterator = BANK_TIME_MAP.get(bank).iterator(); iterator.hasNext();) {
+            LocalTime time = iterator.next();
+            if (bankPayoutTimes.contains(time))
+                continue;
+            iterator.remove();
+            TIME_BANK_MAP.get(time).remove(bank);
+            if (TIME_BANK_MAP.get(time).isEmpty()) { // If no more banks have payouts scheduled at this time
+                descheduleTime(time); // Remove the payout task
+                TIME_BANK_MAP.remove(time);
             }
         }
     }
