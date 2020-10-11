@@ -41,6 +41,10 @@ message.account-create-fee-paid=&6You have been charged &a%PRICE% &6to create an
 # Available placeholders: %AMOUNT%, %BANK_NAME%, %PLAYER%
 message.account-create-fee-received=&6%PLAYER% has paid you &a%AMOUNT% &6to create an account at &7%BANK_NAME%&6.
 
+# Scenario: A player cannot afford to extend an account.
+# Available placeholders: %PRICE%, %AMOUNT_REMAINING%, %PLAYER_BALANCE%
+message.account-extend-insufficient-funds=&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to extend an account.
+
 # Scenario: A player is charged money to extend their account chest into a double chest.
 # Available placeholders: %PRICE%, %BANK_NAME%
 message.account-extend-fee-paid=&6You have been charged &a%PRICE% &6to extend an account at &7%BANK_NAME%&6.
@@ -611,127 +615,127 @@ message.no-permission-pay-interest=&cYou do not have permission to trigger an in
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-create=&a/%COMMAND% create &6-Create an account.
+message.command-usage-account-create=&a/%COMMAND% create &6- Create an account.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-remove=&a/%COMMAND% remove &6-Remove an account.
+message.command-usage-account-remove=&a/%COMMAND% remove &6- Remove an account.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-info=&a/%COMMAND% info &6-Open an account GUI.
+message.command-usage-account-info=&a/%COMMAND% info &6- Open an account GUI.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-list=&a/%COMMAND% list <names> &6-View a list of accounts.
+message.command-usage-account-list=&a/%COMMAND% list <names> &6- View a list of accounts.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-limits=&a/%COMMAND% limits &6-View your account limits.
+message.command-usage-account-limits=&a/%COMMAND% limits &6- View your account limits.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-remove-all=&a/%COMMAND% removeall &6-Remove all accounts.
+message.command-usage-account-remove-all=&a/%COMMAND% removeall &6- Remove all accounts.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-set=&a/%COMMAND% set [property] [value] &6-Set an account value.
+message.command-usage-account-set=&a/%COMMAND% set [property] [value] &6- Set an account value.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-trust=&a/%COMMAND% trust [name] &6-Add a co-owner to an account.
+message.command-usage-account-trust=&a/%COMMAND% trust [name] &6- Add a co-owner to an account.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-untrust=&a/%COMMAND% untrust [name] &6-Remove a co-owner from an account.
+message.command-usage-account-untrust=&a/%COMMAND% untrust [name] &6- Remove a co-owner from an account.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-migrate=&a/%COMMAND% migrate &6-Migrate an account to a different chest.
+message.command-usage-account-migrate=&a/%COMMAND% migrate &6- Migrate an account to a different chest.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-recover=&a/%COMMAND% recover &6-Recover a lost account to a new chest.
+message.command-usage-account-recover=&a/%COMMAND% recover &6- Recover a lost account to a new chest.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-rename=&a/%COMMAND% rename [name] &6-Give an account a nickname.
+message.command-usage-account-rename=&a/%COMMAND% rename [name] &6- Give an account a nickname.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-transfer=&a/%COMMAND% transfer [name] &6-Transfer ownership of an account.
+message.command-usage-account-transfer=&a/%COMMAND% transfer [name] &6- Transfer ownership of an account.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-create=&a/%COMMAND% create &6-Create a bank.
+message.command-usage-bank-create=&a/%COMMAND% create &6- Create a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-remove=&a/%COMMAND% remove &6-Remove a bank.
+message.command-usage-bank-remove=&a/%COMMAND% remove &6- Remove a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-info=&a/%COMMAND% info &6-Open a bank GUI.
+message.command-usage-bank-info=&a/%COMMAND% info &6- Open a bank GUI.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-list=&a/%COMMAND% list &6-View a list of banks.
+message.command-usage-bank-list=&a/%COMMAND% list &6- View a list of banks.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-limits=&a/%COMMAND% limits &6-View your bank limits.
+message.command-usage-bank-limits=&a/%COMMAND% limits &6- View your bank limits.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-removeall=&a/%COMMAND% removeall &6-Remove all banks.
+message.command-usage-bank-removeall=&a/%COMMAND% removeall &6- Remove all banks.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-resize=&a/%COMMAND% resize &6-Resize a bank.
+message.command-usage-bank-resize=&a/%COMMAND% resize &6- Resize a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-trust=&a/%COMMAND% trust &6-Add a co-owner to a bank.
+message.command-usage-bank-trust=&a/%COMMAND% trust &6- Add a co-owner to a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-untrust=&a/%COMMAND% untrust &6-Remove a co-owner from a bank.
+message.command-usage-bank-untrust=&a/%COMMAND% untrust &6- Remove a co-owner from a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-rename=&a/%COMMAND% rename &6-Rename a bank.
+message.command-usage-bank-rename=&a/%COMMAND% rename &6- Rename a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-set=&a/%COMMAND% set &6-Configure a bank.
+message.command-usage-bank-set=&a/%COMMAND% set &6- Configure a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-select=&a/%COMMAND% select &6-Select a bank with WorldEdit.
+message.command-usage-bank-select=&a/%COMMAND% select &6- Select a bank with WorldEdit.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-transfer=&a/%COMMAND% transfer &6-Transfer ownership of a bank.
+message.command-usage-bank-transfer=&a/%COMMAND% transfer &6- Transfer ownership of a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-version=&a/%COMMAND% version &6-View the version of BankingPlugin.
+message.command-usage-version=&a/%COMMAND% version &6- View the version of BankingPlugin.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-reload=&a/%COMMAND% reload &6-Reload BankingPlugin.
+message.command-usage-reload=&a/%COMMAND% reload &6- Reload BankingPlugin.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-config=&a/%COMMAND% config [set|add|remove] [property] [value] &6-Configure BankingPlugin.
+message.command-usage-config=&a/%COMMAND% config [set|add|remove] [property] [value] &6- Configure BankingPlugin.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-update=&a/%COMMAND% update &6-Update BankingPlugin.
+message.command-usage-update=&a/%COMMAND% update &6- Update BankingPlugin.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-pay-interest=&a/%COMMAND% payinterest <banks> &6-Trigger an interest payment.
+message.command-usage-pay-interest=&a/%COMMAND% payinterest <banks> &6- Trigger an interest payment.
 
 # Scenario:
 # Available placeholders:
