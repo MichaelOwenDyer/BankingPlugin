@@ -31,22 +31,24 @@ public class AccountUntrust extends AccountCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+
+        plugin.debug(sender.getName() + " wants to untrust a player from an account");
+
+        if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST));
+            return true;
+        }
+
         if (args.length < 2)
             return false;
 
-        plugin.debug(p.getName() + " wants to untrust a player from an account");
-
-        if (!p.hasPermission(Permissions.ACCOUNT_TRUST)) {
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST));
-            return true;
-        }
         OfflinePlayer playerToUntrust = Utils.getPlayer(args[1]);
         if (playerToUntrust == null) {
-            p.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return true;
         }
 
+        Player p = ((Player) sender);
         AccountPreUntrustEvent event = new AccountPreUntrustEvent(p, args);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
@@ -54,9 +56,9 @@ public class AccountUntrust extends AccountCommand.SubCommand {
             return true;
         }
 
-        p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_UNTRUST, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
+        sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_UNTRUST, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
         ClickType.setPlayerClickType(p, ClickType.untrust(playerToUntrust));
-        plugin.debug(p.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
+        plugin.debug(sender.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
         return true;
     }
 

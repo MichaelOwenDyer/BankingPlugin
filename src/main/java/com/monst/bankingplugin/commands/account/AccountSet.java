@@ -31,55 +31,46 @@ public class AccountSet extends AccountCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        if (args.length < 3)
-            return false;
-        
         plugin.debug(sender.getName() + " wants to configure an account");
+
         if (!sender.hasPermission(Permissions.ACCOUNT_SET)) {
             plugin.debug(sender.getName() + " does not have permission to configure an account");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_SET));
             return true;
         }
 
+        if (args.length < 3)
+            return false;
+
+        String value;
         try {
-            Integer.parseInt(args[2]);
+            value = "" + Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_NUMBER, new Replacement(Placeholder.STRING, args[2])));
             return true;
         }
 
-        args[1] = args[1].toLowerCase();
-
-        switch (args[1]) {
-
+        String property = args[1].toLowerCase();
+        switch (property) {
             case "multiplier":
-
-                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.MULTIPLIER, args[2]));
+                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.MULTIPLIER, value));
                 break;
-
             case "delay-until-next-payout":
-
-                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.DELAY_UNTIL_NEXT_PAYOUT, args[2]));
+                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.DELAY_UNTIL_NEXT_PAYOUT, value));
                 break;
-
             case "remaining-offline-payouts":
-
-                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.REMAINING_OFFLINE_PAYOUTS, args[2]));
+                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.REMAINING_OFFLINE_PAYOUTS, value));
                 break;
-
             case "remaining-offline-payouts-until-reset":
-
-                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET, args[2]));
+                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET, value));
                 break;
-
             default:
-
                 sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.STRING, args[1])));
                 return true;
         }
         sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_SET,
-                new Replacement(Placeholder.PROPERTY, args[1]),
-                new Replacement(Placeholder.VALUE, args[2])
+                new Replacement(Placeholder.PROPERTY, property),
+                new Replacement(Placeholder.VALUE, value)
         ));
         return true;
     }

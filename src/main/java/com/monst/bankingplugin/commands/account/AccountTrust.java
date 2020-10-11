@@ -31,22 +31,23 @@ public class AccountTrust extends AccountCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+        plugin.debug(sender.getName() + " wants to trust a player to an account");
+
+        if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
+            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRUST));
+            return true;
+        }
+
         if (args.length < 2)
             return false;
 
-        plugin.debug(p.getName() + " wants to trust a player to an account");
-
-        if (!p.hasPermission(Permissions.ACCOUNT_TRUST)) {
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRUST));
-            return true;
-        }
         OfflinePlayer playerToTrust = Utils.getPlayer(args[1]);
         if (playerToTrust == null) {
-            p.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return true;
         }
 
+        Player p = ((Player) sender);
         AccountPreTrustEvent event = new AccountPreTrustEvent(p, args);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
@@ -54,9 +55,9 @@ public class AccountTrust extends AccountCommand.SubCommand {
             return true;
         }
 
-        p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_TRUST, new Replacement(Placeholder.PLAYER, playerToTrust::getName)));
+        sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_TRUST, new Replacement(Placeholder.PLAYER, playerToTrust::getName)));
         ClickType.setPlayerClickType(p, ClickType.trust(playerToTrust));
-        plugin.debug(p.getName() + " is trusting " + playerToTrust.getName() + " to an account");
+        plugin.debug(sender.getName() + " is trusting " + playerToTrust.getName() + " to an account");
         return true;
     }
 
