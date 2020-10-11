@@ -6,12 +6,12 @@ import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
 import com.monst.bankingplugin.gui.AccountGui;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.Objects;
 
 public class AccountInfo extends AccountCommand.SubCommand {
 
@@ -31,7 +31,12 @@ public class AccountInfo extends AccountCommand.SubCommand {
         if (args.length > 1) {
             try {
                 int id = Integer.parseInt(args[1]);
-                Account account = Objects.requireNonNull(accountUtils.getAccount(id));
+                Account account = accountUtils.getAccount(id);
+                if (account == null) {
+                    sender.sendMessage(LangUtils.getMessage(Message.ACCOUNT_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+                    return true;
+                }
+
                 plugin.debugf("%s is displaying info for account #%d", sender.getName(), id);
 
                 AccountInfoEvent event = new AccountInfoEvent(sender, account);
@@ -46,7 +51,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
                 else
                     sender.sendMessage(account.getInformation());
                 return true;
-            } catch (NumberFormatException | NullPointerException ignored) {}
+            } catch (NumberFormatException ignored) {}
         }
 
         if (!(sender instanceof Player)) {

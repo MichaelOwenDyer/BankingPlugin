@@ -60,6 +60,11 @@ public enum Message {
             "&6Successfully removed &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_ACCOUNTS
     ),
+    ACCOUNT_NOT_FOUND (
+            "A player attempts to open a GUI of an account with a specific ID, but there is no account with that ID.",
+            "&cCould not find account with ID &b%STRING%&c.",
+            Placeholder.STRING
+    ),
     ACCOUNTS_NOT_FOUND (
             "A player attempts to list the accounts of a player who does not have any accounts.",
             "&cNo accounts found."
@@ -239,6 +244,11 @@ public enum Message {
             "&6Successfully removed &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
+    BANK_NOT_FOUND (
+            "A player attempts to open a GUI of a bank with a specified name or ID, but no bank could be found.",
+            "&cCould not find bank with the name or ID \"%STRING%\".",
+            Placeholder.STRING
+    ),
     BANKS_NOT_FOUND (
             "A player attempts to list banks, but there are none to list.",
             "&cNo banks found."
@@ -247,11 +257,6 @@ public enum Message {
             "An admin must confirm removing one bank or more.",
             "&6Execute command again to remove &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
-    ),
-    BANK_NOT_FOUND (
-            "A player attempts to open a GUI of a bank with a specified name or ID, but no bank could be found.",
-            "&cCould not find bank with the name or ID \"%STRING%\".",
-            Placeholder.STRING
     ),
     MUST_STAND_IN_BANK (
             "A player attempts to open a GUI of a bank, but is not standing in a bank.",

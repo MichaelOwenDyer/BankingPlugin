@@ -65,6 +65,10 @@ message.account-confirm-remove-all=&6You are about to remove &b%NUMBER_OF_ACCOUN
 # Available placeholders: %NUMBER_OF_ACCOUNTS%
 message.all-accounts-removed=&6Successfully removed &b%NUMBER_OF_ACCOUNTS% &6account(s).
 
+# Scenario: A player attempts to open a GUI of an account with a specific ID, but there is no account with that ID.
+# Available placeholders: %STRING%
+message.account-not-found=&cCould not find account with ID &b%STRING%&c.
+
 # Scenario: A player attempts to list the accounts of a player who does not have any accounts.
 # Available placeholders:
 message.accounts-not-found=&cNo accounts found.
