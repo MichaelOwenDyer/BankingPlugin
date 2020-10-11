@@ -72,6 +72,7 @@ public class ControlConfig extends ControlCommand.SubCommand {
         return true;
     }
 
+    @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (!sender.hasPermission(Permissions.CONFIG))
             return Collections.emptyList();

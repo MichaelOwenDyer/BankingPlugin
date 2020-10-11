@@ -61,6 +61,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
         return true;
     }
 
+    @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length != 2)
             return Collections.emptyList();

@@ -138,6 +138,7 @@ public class AccountSet extends AccountCommand.SubCommand {
         Bukkit.getPluginManager().callEvent(e);
     }
 
+    @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length != 2 || !sender.hasPermission(Permissions.ACCOUNT_SET))
             return Collections.emptyList();

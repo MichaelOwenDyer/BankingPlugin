@@ -92,6 +92,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
         return true;
     }
 
+    @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL))
             return Collections.emptyList();

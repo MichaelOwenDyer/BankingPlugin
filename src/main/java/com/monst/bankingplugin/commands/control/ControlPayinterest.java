@@ -55,6 +55,7 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
         return true;
     }
 
+    @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (!sender.hasPermission(Permissions.PAY_INTEREST))
             return Collections.emptyList();
