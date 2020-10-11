@@ -242,6 +242,9 @@ enable-worldguard-integration: true
 enable-griefprevention-integration: true
 enable-worldedit-integration: true
 
+# Set whether the custom WorldGuard flag should be allowed by default.
+worldguard-default-flag-value: false
+
 # Set whether accounts should automatically be removed from the database if
 # an error occurred while loading.
 # (e.g. no chest, no space above chest, or unknown world)
@@ -261,9 +264,6 @@ blacklist:
 # Type: double
 # Default: 0.10
 bank-revenue-multiplier: 0.10
-
-# Set whether the custom WorldGuard flag should be allowed by default.
-worldguard-default-flag-value: false
 
 # Set the worlds in which banking should be disabled.
 # Please ensure the names are spelled exactly how they exist in the server folder.

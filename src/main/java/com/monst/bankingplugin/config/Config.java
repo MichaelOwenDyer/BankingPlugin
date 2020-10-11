@@ -498,10 +498,10 @@ public class Config {
         enableWorldGuardIntegration = nonNull(config.getBoolean("enable-worldguard-integration"), true);
         enableGriefPreventionIntegration = nonNull(config.getBoolean("enable-griefprevention-integration"), true);
 		enableWorldEditIntegration = nonNull(config.getBoolean("enable-worldedit-integration"), true);
+		wgAllowCreateBankDefault = nonNull(config.getBoolean("worldguard-default-flag-value"), false);
         removeAccountOnError = nonNull(config.getBoolean("remove-account-on-error"), true);
         blacklist = nonNull(config.getStringList("blacklist"), Collections::emptyList);
 		bankRevenueMultiplier = nonNull(Math.abs(config.getDouble("bank-revenue-multiplier")), 0.10);
-		wgAllowCreateBankDefault = nonNull(config.getBoolean("worldguard-default-flag-value"), false);
 		disabledWorlds = nonNull(config.getStringList("disabled-worlds"), Collections::emptyList);
 		enableMail = nonNull(config.getBoolean("enable-mail"), true);
 		nameRegex = nonNull(config.getString("name-regex"), "");
