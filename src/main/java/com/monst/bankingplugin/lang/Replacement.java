@@ -1,38 +1,35 @@
 package com.monst.bankingplugin.lang;
 
+import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
 
+import javax.annotation.Nonnull;
 import java.util.function.Supplier;
 
-public class Replacement {
+public class Replacement extends Pair<Placeholder, Supplier<Object>> {
 
-    private final Placeholder placeholder;
-    private final Supplier<Object> replacement;
-
-    public Replacement(Placeholder placeholder, Object replacement) {
-        this.placeholder = placeholder;
-        this.replacement = () -> replacement;
+    public Replacement(@Nonnull Placeholder placeholder, @Nonnull Object replacement) {
+        this(placeholder, () -> replacement);
     }
 
-    public Replacement(Placeholder placeholder, Supplier<Object> replacement) {
-        this.placeholder = placeholder;
-        this.replacement = replacement;
+    public Replacement(@Nonnull Placeholder placeholder, @Nonnull Supplier<Object> replacement) {
+        super(placeholder, replacement);
     }
 
     /**
      * @return String which will replace the placeholder
      */
     public String getReplacement() {
-        if (placeholder.isMoney())
-            return Utils.format(Double.parseDouble(String.valueOf(replacement.get())));
-        return String.valueOf(replacement.get());
+        if (getFirst().isMoney())
+            return Utils.format(Double.parseDouble(String.valueOf(getSecond().get())));
+        return String.valueOf(getSecond().get());
     }
 
     /**
      * @return Placeholder that will be replaced
      */
     public Placeholder getPlaceholder() {
-        return placeholder;
+        return getFirst();
     }
 
 }
