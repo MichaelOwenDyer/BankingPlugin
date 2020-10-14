@@ -7,7 +7,6 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -74,15 +73,13 @@ public class LangConfig extends FileConfiguration {
         InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
         BufferedReader br = new BufferedReader(isr);
 
-        StringBuilder sb = new StringBuilder(1024);
-
-        br.lines().forEach(line -> sb.append(line).append("\n"));
+        String string = br.lines().collect(Collectors.joining("\n"));
 
         fis.close();
         isr.close();
         br.close();
 
-        loadFromString(sb.toString());
+        loadFromString(string);
     }
 
     @Override
@@ -111,8 +108,8 @@ public class LangConfig extends FileConfiguration {
     }
 
     @Override
-    @Nullable
+    @Nonnull
     protected String buildHeader() {
-        return null;
+        return "";
     }
 }

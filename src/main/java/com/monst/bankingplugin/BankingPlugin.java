@@ -31,10 +31,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.ipvp.canvas.MenuFunctionListener;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -581,6 +578,10 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public ControlCommand getControlCommand() {
 		return controlCommand;
+	}
+
+	public Reader getTextResourceMirror(String file) {
+		return getTextResource(file);
 	}
 
 }

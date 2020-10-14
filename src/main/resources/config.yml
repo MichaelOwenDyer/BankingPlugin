@@ -174,7 +174,7 @@ default-limits:
   # specific permission may have.
   # If you don't want players to have a limit by default set the value to -1.
   bank: 1
-  account: 1
+  account: 2
 
 # Bank volume limits are handled with permissions.
 # A player with permission "bankingplugin.bank.size.X" can create banks with a volume of up to X.
@@ -248,7 +248,7 @@ worldguard-default-flag-value: false
 # Set whether accounts should automatically be removed from the database if
 # an error occurred while loading.
 # (e.g. no chest, no space above chest, or unknown world)
-remove-account-on-error: true
+remove-account-on-error: false
 
 # Set the items for which a player will earn no interest in their account.
 blacklist:
@@ -290,4 +290,4 @@ language-file: "en_US"
 name-regex: ''
 
 # Set the prefix of all SQLite table names related to this plugin.
-table-prefix: "bankingplugin_"
+database-table-prefix: "bankingplugin_"

@@ -15,7 +15,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -405,9 +404,9 @@ public class Config {
 
         FileConfiguration config = plugin.getConfig();
 
-        commandNameBank = nonNull(config.getString("main-command-names.bank"), "bank");
-        commandNameAccount = nonNull(config.getString("main-command-names.account"), "account");
-		commandNameControl = nonNull(config.getString("main-command-names.control"), "bp");
+        commandNameBank = nonNull(config.getString("command-names.bank"), "bank");
+        commandNameAccount = nonNull(config.getString("command-names.account"), "account");
+		commandNameControl = nonNull(config.getString("command-names.control"), "bp");
 		interestPayoutTimes = new ConfigPair<>(
 				config.getBoolean("interest-payout-times.allow-override"),
 				nonNull(config.getStringList("interest-payout-times.default").stream()
@@ -528,7 +527,7 @@ public class Config {
 		enableMail = nonNull(config.getBoolean("enable-mail"), true);
 		languageFile = nonNull(config.getString("language-file"), "en_US");
 		nameRegex = nonNull(config.getString("name-regex"), "");
-		databaseTablePrefix = nonNull(config.getString("table-prefix"), "bankingplugin_");
+		databaseTablePrefix = nonNull(config.getString("database-table-prefix"), "bankingplugin_");
 
 		if (firstLoad || langReload)
 			loadLanguageConfig(showMessages);
@@ -604,39 +603,27 @@ public class Config {
 					plugin.debug(e);
 				}
 			} else {
-				Reader reader = getTextResource("lang/" + specifiedLangFile.getName(), showMessages);
-
+				Reader reader = plugin.getTextResourceMirror("lang/" + specifiedLangFile.getName());
 				if (reader == null)
-					reader = getTextResource("lang/en_US.lang", showMessages);
-
-				if (reader != null && showMessages)
-					plugin.getLogger().info("Using locale \"" + specifiedLangFile.getName().substring(0, specifiedLangFile.getName().length() - 5) + "\" (Streamed from jar file)");
+					reader = plugin.getTextResourceMirror("lang/en_US.lang");
 
 				if (reader != null) {
-					BufferedReader br = new BufferedReader(reader);
-
-					StringBuilder sb = new StringBuilder(1024);
-
-					br.lines().forEach(line -> sb.append(line).append("\n"));
-
-					langConfig.loadFromString(sb.toString());
+					try (BufferedReader br = new BufferedReader(reader)) {
+						langConfig.loadFromString(br.lines().collect(Collectors.joining("\n")));
+						if (showMessages)
+							plugin.getLogger().info("Using locale \"" + specifiedLangFile.getName()
+									.substring(0, specifiedLangFile.getName().length() - 5) + "\" (Streamed from jar file)");
+					} catch (IOException e) {
+						if (showMessages)
+							plugin.getLogger().warning("Using default language values.");
+						plugin.debug("Using default language values (#3)");
+					}
 				} else {
 					if (showMessages)
 						plugin.getLogger().warning("Using default language values.");
-					plugin.debug("Using default language values (#3, Reader is null)");
+					plugin.debug("Using default language values (#4, Reader is null)");
 				}
 			}
 		}
-	}
-
-	private Reader getTextResource(String file, boolean showMessages) {
-		try {
-			return (Reader) plugin.getClass().getDeclaredMethod("getTextResource", String.class).invoke(plugin, file);
-		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-			if (showMessages) plugin.getLogger().severe("Failed to get file from jar: " + file);
-			plugin.debug("Failed to get file from jar: " + file);
-			plugin.debug(e);
-		}
-		return null;
 	}
 }
