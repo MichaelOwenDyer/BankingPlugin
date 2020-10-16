@@ -158,12 +158,12 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         if (finalCreationPrice > 0 && newBank.isPlayerBank() && !newBank.isOwner(p)) {
             OfflinePlayer bankOwner = newBank.getOwner();
             Utils.depositPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
-                    result -> Utils.message(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
+                    result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, finalCreationPrice),
                             new Replacement(Placeholder.BANK_NAME, newBank::getColorizedName)
                     )),
-                    error -> Utils.message(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+                    error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
                             new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
                     ))
             ));
@@ -187,11 +187,11 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         if (reimbursement > 0 && oldBank.isPlayerBank() && !oldBank.isOwner(p)) {
             OfflinePlayer bankOwner = oldBank.getOwner();
             Utils.withdrawPlayer(bankOwner, finalReimbursement, Callback.of(plugin,
-                    result -> Utils.message(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+                    result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, finalReimbursement)
                     )),
-                    error -> Utils.message(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+                    error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
                             new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
                     ))
             ));

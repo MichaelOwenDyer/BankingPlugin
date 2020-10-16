@@ -9,6 +9,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.Messenger;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -119,13 +120,18 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         boolean hasDefaultNickname = account.getRawName().contentEquals(account.getDefaultName());
         boolean forSelf = Utils.samePlayer(p, newOwner);
 
-        p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED,
+        Messenger messenger = new Messenger(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED,
                 new Replacement(Placeholder.PLAYER, newOwner::getName)
         ));
-        if (!forSelf)
-            Utils.notify(newOwner, LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED_TO_YOU,
-                    new Replacement(Placeholder.PLAYER, p::getName)
-            ));
+        messenger.addRecipient(p);
+        messenger.send();
+        messenger.setMessage(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED_TO_YOU,
+                new Replacement(Placeholder.PLAYER, p::getName)
+        ));
+        messenger.addOfflineRecipient(newOwner);
+        messenger.removeRecipient(p);
+        messenger.send();
+
         account.transferOwnership(newOwner);
         if (hasDefaultNickname)
             account.setName(account.getDefaultName());

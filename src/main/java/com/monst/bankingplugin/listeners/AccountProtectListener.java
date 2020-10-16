@@ -100,11 +100,11 @@ public class AccountProtectListener implements Listener {
 			if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
 				OfflinePlayer bankOwner = bank.getOwner();
 				Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
-						result -> Utils.message(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+						result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
 								new Replacement(Placeholder.PLAYER, p::getName),
 								new Replacement(Placeholder.AMOUNT, finalCreationPrice)
 						)),
-						error -> Utils.message(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+						error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
 								new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
 						))
 				));
@@ -148,7 +148,7 @@ public class AccountProtectListener implements Listener {
 		if (!(b.getType().equals(Material.CHEST) || b.getType().equals(Material.TRAPPED_CHEST))) {
             return;
         }
-        
+
         Chest chest = (Chest) b.getState();
 		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) chest.getBlockData();
 
@@ -235,7 +235,7 @@ public class AccountProtectListener implements Listener {
 			if (creationPrice > 0 && !account.getBank().isOwner(p)) {
 				OfflinePlayer bankOwner = account.getBank().getOwner();
 				Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
-						result -> Utils.message(bankOwner, LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_RECEIVED,
+						result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_RECEIVED,
 								new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName()),
 								new Replacement(Placeholder.AMOUNT, creationPrice),
 								new Replacement(Placeholder.BANK_NAME, () -> account.getBank().getColorizedName())

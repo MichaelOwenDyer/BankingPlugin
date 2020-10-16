@@ -164,12 +164,12 @@ public class AccountCreate extends AccountCommand.SubCommand {
         if (creationPrice > 0 && bank.isPlayerBank()) {
             OfflinePlayer bankOwner = account.getBank().getOwner();
             Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
-                    result -> Utils.message(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
+                    result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, finalCreationPrice),
                             new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
                     )),
-                    error -> Utils.message(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
+                    error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
             ));
         }
 

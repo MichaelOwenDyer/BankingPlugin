@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.utils;
 
-import com.earth2me.essentials.User;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.TransactionFailedException;
@@ -173,45 +172,6 @@ public class Utils {
 		}
 		callback.callSyncError(new TransactionFailedException(response.errorMessage));
 		return false;
-	}
-
-	public static void notify(Collection<OfflinePlayer> players, String message) {
-		players.forEach(p -> notify(p, message));
-	}
-
-	public static void notify(OfflinePlayer player, String message) {
-		if (player == null)
-			return;
-		if (player.isOnline())
-			message(player, message);
-		else
-			mail(player, message);
-	}
-
-	public static void message(Collection<OfflinePlayer> players, String message) {
-		if (players == null)
-			return;
-		players.forEach(p -> message(p, message));
-	}
-
-	public static void message(OfflinePlayer player, String message) {
-		if (player == null || !player.isOnline())
-			return;
-		player.getPlayer().sendMessage(message);
-	}
-
-	public static void mail(OfflinePlayer player, String message) {
-		if (!Config.enableMail || player == null)
-			return;
-		User user = BankingPlugin.getInstance().getEssentials().getUserMap().getUser(player.getUniqueId());
-		if (user != null)
-			user.addMail(message);
-	}
-
-	public static void mail(Collection<OfflinePlayer> players, String message) {
-		if (!Config.enableMail || players == null)
-			return;
-		players.forEach(p -> mail(p, message));
 	}
 
 	/**

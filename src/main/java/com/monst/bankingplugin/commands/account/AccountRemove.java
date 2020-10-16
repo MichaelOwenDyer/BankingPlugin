@@ -114,11 +114,11 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
             if (bank.isPlayerBank()) {
                 OfflinePlayer bankOwner = bank.getOwner();
                 Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
-                        result -> Utils.message(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+                        result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
                                 new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName()),
                                 new Replacement(Placeholder.AMOUNT, finalCreationPrice)
                         )),
-                        error -> Utils.message(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+                        error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
                                 new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
                         ))
                 ));

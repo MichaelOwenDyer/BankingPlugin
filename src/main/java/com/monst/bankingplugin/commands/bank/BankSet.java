@@ -8,6 +8,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.Messenger;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -71,16 +72,18 @@ public class BankSet extends BankCommand.SubCommand {
 
         String previousValue = bank.getFormatted(field);
         Callback<String> callback = Callback.of(plugin,
-            result -> { //FIXME: Must also send message to executor!
+            result -> {
                 plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + bank.getName() + " from " + previousValue + " to " + result);
-                Utils.notify(Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()),
-                        LangUtils.getMessage(Message.BANK_PROPERTY_SET,
-                                new Replacement(Placeholder.PROPERTY, field::getName),
-                                new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
-                                new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
-                                new Replacement(Placeholder.VALUE, result)
-                        )
-                );
+                Messenger messenger = new Messenger(LangUtils.getMessage(Message.BANK_PROPERTY_SET,
+                        new Replacement(Placeholder.PROPERTY, field::getName),
+                        new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
+                        new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
+                        new Replacement(Placeholder.VALUE, result)
+                ));
+                messenger.addOfflineRecipient(bank.getTrustedPlayers());
+                messenger.addOfflineRecipient(bank.getCustomers());
+                messenger.addRecipient(sender);
+                messenger.send(); // TODO: Mail as well?
             },
             error -> sender.sendMessage(error.getLocalizedMessage())
         );

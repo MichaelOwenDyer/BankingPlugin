@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("unused")
 public class InterestEventListener implements Listener {
-	
+
 	private final BankingPlugin plugin;
 	private final AccountUtils accountUtils;
 
@@ -156,11 +156,11 @@ public class InterestEventListener implements Listener {
 
 				boolean online = bankOwner.isOnline();
 				Utils.depositPlayer(bankOwner, revenue.doubleValue(), Callback.of(plugin,
-						result -> Utils.message(bankOwner, LangUtils.getMessage(Message.BANK_REVENUE_EARNED,
+						result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.BANK_REVENUE_EARNED,
 								new Replacement(Placeholder.AMOUNT, revenue),
 								new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
 						)),
-						error -> Utils.message(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+						error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
 								new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
 						))
 				));
@@ -187,11 +187,11 @@ public class InterestEventListener implements Listener {
 				continue;
 
 			transactor.transact(customer, counter.getSum().doubleValue(), Callback.of(plugin,
-					result -> Utils.message(customer, LangUtils.getMessage(message,
+					result -> Messenger.notify(customer, LangUtils.getMessage(message,
 							new Replacement(Placeholder.AMOUNT, counter::getSum),
 							new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, counter::getCount)
 					)),
-					error -> Utils.message(customer, LangUtils.getMessage(Message.ERROR_OCCURRED,
+					error -> Messenger.notify(customer, LangUtils.getMessage(Message.ERROR_OCCURRED,
 							new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
 					))
 			));

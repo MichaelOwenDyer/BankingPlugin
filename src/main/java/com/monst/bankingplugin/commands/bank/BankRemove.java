@@ -9,6 +9,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.Messenger;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -93,12 +94,14 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
 
         plugin.debug("Bank #" + bank.getID() + " removed from the database");
         bankUtils.removeBank(bank, true);
-        Utils.notify(Utils.mergeCollections(bank.getTrustedPlayers(), bank.getCustomers()),
-                LangUtils.getMessage(Message.BANK_REMOVED,
-                        new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
-                        new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, () -> bank.getAccounts().size())
-                )
-        );
+        Messenger messenger = new Messenger(LangUtils.getMessage(Message.BANK_REMOVED,
+                new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
+                new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, () -> bank.getAccounts().size())
+        ));
+        messenger.addOfflineRecipient(bank.getTrustedPlayers());
+        messenger.addOfflineRecipient(bank.getCustomers());
+        messenger.addRecipient(sender);
+        messenger.send();
         return true;
     }
 

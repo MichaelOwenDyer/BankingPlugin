@@ -8,10 +8,10 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.utils.Messenger;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -67,13 +67,13 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, affectedAccounts)
         ));
         for (Bank bank : banks) {
-            Collection<OfflinePlayer> toNotify = bank.getTrustedPlayers();
-            if (sender instanceof Player)
-                toNotify.remove(sender);
-            Utils.message(toNotify, LangUtils.getMessage(Message.BANK_REMOVED,
+            Messenger messenger = new Messenger(LangUtils.getMessage(Message.BANK_REMOVED,
                     new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                     new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, () -> bank.getAccounts().size())
             ));
+            messenger.addOfflineRecipient(bank.getTrustedPlayers());
+            messenger.removeRecipient(sender);
+            messenger.send();
         }
         banks.forEach(bank -> bankUtils.removeBank(bank, true));
         plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
