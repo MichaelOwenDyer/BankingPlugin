@@ -1,4 +1,6 @@
-package com.monst.bankingplugin.utils;
+package com.monst.bankingplugin.banking;
+
+import com.monst.bankingplugin.utils.Utils;
 
 public interface Nameable {
 

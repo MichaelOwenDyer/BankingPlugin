@@ -7,7 +7,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Nameable;
+import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

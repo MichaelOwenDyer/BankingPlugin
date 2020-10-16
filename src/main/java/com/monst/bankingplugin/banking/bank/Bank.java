@@ -5,7 +5,7 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.selections.Selection;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Nameable;
+import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -317,7 +317,7 @@ public class Bank extends Ownable {
 	public String getInformation() {
 
 		StringBuilder info = new StringBuilder(196);
-		
+
 		info.append("\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")");
 		info.append(ChatColor.GRAY + "Owner: " + getOwnerDisplayName());
 		info.append(ChatColor.GRAY + "Co-owners: " + (!getCoowners().isEmpty() ?

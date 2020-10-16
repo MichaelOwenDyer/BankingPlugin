@@ -2,7 +2,6 @@ package com.monst.bankingplugin.banking;
 
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.utils.Nameable;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
