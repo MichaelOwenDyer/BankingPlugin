@@ -3,7 +3,6 @@ package com.monst.bankingplugin.config;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import javax.annotation.Nonnull;
@@ -31,18 +30,17 @@ public class LangConfig extends FileConfiguration {
     @Nonnull
     public String getString(@Nonnull Message message) {
         String path = message.getPath();
-        String defaultMessage = message.getDefaultMessage();
-        return Utils.nonNull(getString(path, null), () -> {
+        String finalMessage = getString(path, null);
+        if (finalMessage == null) {
             // Value was missing
+            String defaultMessage = message.getDefaultMessage();
             values.put(path, defaultMessage);
             if (file != null) {
                 // Append missing entry to loaded language file
                 try (FileWriter writer = new FileWriter(file, true)) {
                     writer.write("\n# Scenario: " + message.getDescription());
-                    writer.write("\n# Available placeholders: "
-                            + message.getAvailablePlaceholders().stream()
-                                    .map(Placeholder::toString)
-                                    .collect(Collectors.joining(", ")));
+                    writer.write("\n# Available placeholders: " + message.getAvailablePlaceholders().stream()
+                            .map(Placeholder::toString).collect(Collectors.joining(", ")));
                     writer.write("\n" + path + "=" + defaultMessage + "\n");
                     if (showMessages)
                         plugin.getLogger().info("Missing translation for \"" + path + "\" has been added as \"" + defaultMessage + "\" to the selected language file.");
@@ -54,7 +52,8 @@ public class LangConfig extends FileConfiguration {
                 }
             }
             return defaultMessage;
-        });
+        }
+        return finalMessage;
     }
 
     @Override
