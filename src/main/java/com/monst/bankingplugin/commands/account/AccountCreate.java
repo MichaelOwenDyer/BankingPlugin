@@ -20,7 +20,6 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
 
 public class AccountCreate extends AccountCommand.SubCommand {
 
@@ -81,26 +80,28 @@ public class AccountCreate extends AccountCommand.SubCommand {
             plugin.debug("Chest is already an account.");
             return;
         }
-        if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
-            p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
-            plugin.debug("Chest is blocked.");
-            return;
-        }
 
         Bank bank;
-        InventoryHolder holder = ((Chest) b.getState()).getInventory().getHolder();
-        if (holder instanceof DoubleChest) {
-            DoubleChest dc = ((DoubleChest) holder);
-            Chest left = (Chest) dc.getLeftSide();
-            Chest right = (Chest) dc.getRightSide();
-            bank = left == null ? null : bankUtils.getBank(left.getLocation());
-            Bank otherBank = right == null ? null : bankUtils.getBank(right.getLocation());
+        Block attachedChestBlock = Utils.getAttachedChestBlock(b);
+        if (attachedChestBlock != null) {
+            if (!Utils.isTransparent(b.getRelative(BlockFace.UP)) || !Utils.isTransparent(attachedChestBlock.getRelative(BlockFace.UP))) {
+                p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
+                plugin.debug("Chest is blocked.");
+                return;
+            }
+            bank = bankUtils.getBank(b.getLocation());
+            Bank otherBank = bankUtils.getBank(attachedChestBlock.getLocation());
             if (bank == null || !bank.equals(otherBank)) {
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
                 plugin.debug("Chest is not in a bank.");
                 return;
             }
         } else {
+            if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
+                p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
+                plugin.debug("Chest is blocked.");
+                return;
+            }
             bank = bankUtils.getBank(location);
             if (bank == null) {
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));

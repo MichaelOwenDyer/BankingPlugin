@@ -18,7 +18,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
-import org.bukkit.block.data.type.Chest.Type;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -149,33 +148,12 @@ public class AccountProtectListener implements Listener {
             return;
         }
 
-        Chest chest = (Chest) b.getState();
-		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) chest.getBlockData();
+		Block otherChest = Utils.getAttachedChestBlock(b);
 
-		if (data.getType() == Type.SINGLE) {
+		if (otherChest == null)
 			return;
-		}
 
-		BlockFace neighborFacing;
-
-		switch (data.getFacing()) {
-		case NORTH:
-			neighborFacing = data.getType() == Type.LEFT ? BlockFace.EAST : BlockFace.WEST;
-			break;
-		case EAST:
-			neighborFacing = data.getType() == Type.LEFT ? BlockFace.SOUTH : BlockFace.NORTH;
-			break;
-		case SOUTH:
-			neighborFacing = data.getType() == Type.LEFT ? BlockFace.WEST : BlockFace.EAST;
-			break;
-		case WEST:
-			neighborFacing = data.getType() == Type.LEFT ? BlockFace.NORTH : BlockFace.SOUTH;
-			break;
-		default:
-			throw new IllegalStateException("Unknown chest orientation! " + data.toString());
-		}
-
-		final Account account = accountUtils.getAccount(b.getRelative(neighborFacing).getLocation());
+		final Account account = accountUtils.getAccount(otherChest.getLocation());
 		if (account == null)
             return;
 

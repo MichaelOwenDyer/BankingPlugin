@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.block.data.type.Chest.Type;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.HumanEntity;
@@ -33,7 +34,6 @@ import java.util.stream.Collectors;
 
 public class Utils {
 
-	private static final NumberFormat integerFormatter = NumberFormat.getInstance();
 	private static final NumberFormat decimalFormatter = NumberFormat.getInstance();
 	static {
 		decimalFormatter.setMinimumIntegerDigits(1);
@@ -198,6 +198,38 @@ public class Utils {
 			}
 		}
 		return stackedList;
+	}
+
+	public static Block getAttachedChestBlock(Block b) {
+
+		if (!(b.getState() instanceof Chest))
+			return null;
+
+		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) b.getState().getBlockData();
+
+		if (data.getType() == Type.SINGLE) {
+			return null;
+		}
+
+		BlockFace neighborFacing;
+		switch (data.getFacing()) {
+			case NORTH:
+				neighborFacing = data.getType() == Type.LEFT ? BlockFace.EAST : BlockFace.WEST;
+				break;
+			case EAST:
+				neighborFacing = data.getType() == Type.LEFT ? BlockFace.SOUTH : BlockFace.NORTH;
+				break;
+			case SOUTH:
+				neighborFacing = data.getType() == Type.LEFT ? BlockFace.WEST : BlockFace.EAST;
+				break;
+			case WEST:
+				neighborFacing = data.getType() == Type.LEFT ? BlockFace.NORTH : BlockFace.SOUTH;
+				break;
+			default:
+				return null;
+		}
+
+		return b.getRelative(neighborFacing);
 	}
 
 	/**
