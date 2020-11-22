@@ -257,6 +257,24 @@ public class Account extends Ownable {
 	}
 
 	/**
+	 * Determines whether to allow the next interest payout or not.
+	 *
+	 * @see AccountStatus#allowNextPayout(boolean)
+	 */
+	public boolean allowNextPayout() {
+		return getStatus().allowNextPayout(isTrustedPlayerOnline());
+	}
+
+	/**
+	 * Increments this account's multiplier stage.
+	 *
+	 * @see AccountStatus#incrementMultiplier(boolean)
+	 */
+	public void incrementMultiplier() {
+		getStatus().incrementMultiplier(isTrustedPlayerOnline());
+	}
+
+	/**
 	 * Gets the location of this account.
 	 *
 	 * @return the {@link Location} of the account chest.

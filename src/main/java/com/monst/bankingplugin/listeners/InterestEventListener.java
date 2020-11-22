@@ -65,19 +65,21 @@ public class InterestEventListener implements Listener {
 
 		playerAccountMap.forEach((accountOwner, accounts) -> {
 			for (Account account : accounts) {
-				if (!account.getStatus().allowNextPayout(account.isTrustedPlayerOnline())) {
+				if (!account.allowNextPayout()) {
 					accountUtils.addAccount(account, true);
 					continue;
 				}
 
 				Set<OfflinePlayer> trustedPlayers = account.getTrustedPlayers();
+				int numberOfTrustedPlayers = trustedPlayers.size();
 				if (account.getBank().isPlayerBank())
-					trustedPlayers.remove(account.getBank().getOwner());
+					trustedPlayers.remove(account.getBank().getOwner()); // Bank owner should not be considered, since he would be paying himself
 
 				Bank bank = account.getBank();
 
+				// trustedPlayers would be empty if the bank owner was the only trusted player
 				if (!trustedPlayers.isEmpty() && (double) bank.get(BankField.MINIMUM_BALANCE) > 0
-						&& account.getBalance().compareTo(BigDecimal.valueOf((double) bank.get(BankField.MINIMUM_BALANCE))) < 0) {
+						&& account.getBalance().doubleValue() < (double) bank.get(BankField.MINIMUM_BALANCE)) {
 					feesPayable.putIfAbsent(accountOwner, new Counter());
 					feesPayable.get(accountOwner).add(BigDecimal.valueOf((double) bank.get(BankField.LOW_BALANCE_FEE)));
 					if (account.getBank().isPlayerBank()) {
@@ -95,12 +97,11 @@ public class InterestEventListener implements Listener {
 				BigDecimal baseInterest = account.getBalance()
 						.multiply(BigDecimal.valueOf((double) bank.get(BankField.INTEREST_RATE)))
 						.setScale(2, RoundingMode.HALF_EVEN);
-				BigDecimal interest = baseInterest;
 
 				int multiplier = account.getStatus().getRealMultiplier();
-				interest = interest.multiply(BigDecimal.valueOf(multiplier));
+				BigDecimal interest = baseInterest.multiply(BigDecimal.valueOf(multiplier));
 
-				account.getStatus().incrementMultiplier(account.isTrustedPlayerOnline());
+				account.incrementMultiplier();
 				account.updatePrevBalance();
 
 				if (trustedPlayers.isEmpty()) {
@@ -108,7 +109,7 @@ public class InterestEventListener implements Listener {
 					continue;
 				}
 
-				BigDecimal cut = interest.divide(BigDecimal.valueOf(trustedPlayers.size()), RoundingMode.HALF_EVEN);
+				BigDecimal cut = interest.divide(BigDecimal.valueOf(numberOfTrustedPlayers), RoundingMode.HALF_EVEN);
 				for (OfflinePlayer recipient : trustedPlayers) {
 					interestReceivable.putIfAbsent(recipient, new Counter());
 					interestReceivable.get(recipient).add(cut);
@@ -127,23 +128,26 @@ public class InterestEventListener implements Listener {
 				plugin.getDatabase().logLogout(accountOwner.getPlayer(), null);
 		});
 
+		boolean containsX = Config.bankRevenueFunction.contains("x");
+		boolean containsN = Config.bankRevenueFunction.contains("n");
+		boolean containsA = Config.bankRevenueFunction.contains("a");
+		boolean containsG = Config.bankRevenueFunction.contains("g");
+
 		// Bank owners earn revenue on their banks
 		playerBankMap.forEach((bankOwner, banks) -> {
 			for (Bank bank : banks) {
 
-				String function = Config.bankRevenueFunction;
-
 				List<Argument> args = new ArrayList<>();
-				if (function.contains("x"))
+				if (containsX)
 					args.add(new Argument("x", bank.getTotalValue().doubleValue()));
-				if (function.contains("n"))
+				if (containsN)
 					args.add(new Argument("n", bank.getAccountsByOwner().size()));
-				if (function.contains("a"))
+				if (containsA)
 					args.add(new Argument("a", bank.getAccounts().size()));
-				if (function.contains("g"))
+				if (containsG)
 					args.add(new Argument("g", bank.getGiniCoefficient()));
 
-				Expression revenueExpression = new Expression(function, args.toArray(new Argument[0]));
+				Expression revenueExpression = new Expression(Config.bankRevenueFunction, args.toArray(new Argument[0]));
 				BigDecimal revenue;
 				try {
 					revenue = BigDecimal.valueOf(revenueExpression.calculate()).setScale(2, RoundingMode.HALF_EVEN);

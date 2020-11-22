@@ -77,7 +77,7 @@ public abstract class Ownable extends Observable implements Nameable {
 	/**
 	 * @return whether or not any player trusted on this ownable is online.
 	 */
-	public boolean isTrustedPlayerOnline() {
+	protected boolean isTrustedPlayerOnline() {
 		return getTrustedPlayers().stream().anyMatch(OfflinePlayer::isOnline);
 	}
 
