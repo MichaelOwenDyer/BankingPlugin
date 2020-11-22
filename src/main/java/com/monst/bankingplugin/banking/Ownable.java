@@ -7,7 +7,6 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -69,9 +68,10 @@ public abstract class Ownable extends Observable implements Nameable {
 	 * @return a {@link Set<OfflinePlayer>} containing all players trusted on this ownable.
 	 */
 	public Set<OfflinePlayer> getTrustedPlayers() {
-		if (owner == null)
-			return getCoowners();
-		return Utils.mergeCollections(Collections.singleton(getOwner()), getCoowners());
+		Set<OfflinePlayer> trustedPlayers = getCoowners();
+		if (owner != null)
+			trustedPlayers.add(owner);
+		return trustedPlayers;
 	}
 
 	/**
