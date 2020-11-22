@@ -908,13 +908,12 @@ public enum Message {
 
     private final String description;
     private final String defaultMessage;
-    private final EnumSet<Placeholder> placeholders;
+    private final EnumSet<Placeholder> placeholders = EnumSet.noneOf(Placeholder.class);
     private String path = null;
 
     Message(String description, String defaultMsg, Placeholder... placeholders) {
         this.description = description;
         this.defaultMessage = defaultMsg;
-        this.placeholders = EnumSet.noneOf(Placeholder.class);
         this.placeholders.addAll(Arrays.asList(placeholders));
     }
 
