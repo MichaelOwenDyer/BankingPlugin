@@ -2,7 +2,6 @@ package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -24,7 +23,7 @@ import java.math.BigDecimal;
  * @see Account#calculateValue()
  */
 public class AccountBalanceListener implements Listener {
-	
+
 	private final BankingPlugin plugin;
 	private final AccountUtils accountUtils;
 
@@ -76,10 +75,7 @@ public class AccountBalanceListener implements Listener {
 		if (account.getOwner().isOnline())
 			plugin.getDatabase().logLogout(account.getOwner().getPlayer(), null);
 
-		if (Config.enableTransactionLog) {
-			plugin.getDatabase().logAccountTransaction(executor, account, difference, null);
-			plugin.debug("Logging transaction to database...");
-		}
+		plugin.getDatabase().logAccountTransaction(executor, account, difference, null);
 	}
 }
 

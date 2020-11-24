@@ -91,10 +91,10 @@ public abstract class Database {
 	 * <p>
 	 * (Re-)Connects to the the database and initializes it.
 	 * </p>
-	 * 
+	 *
 	 * All tables are created if necessary and if the database structure has to be
 	 * updated, that is done as well.
-	 * 
+	 *
 	 * @param callback Callback that - if succeeded - returns the amount of banks and accounts
 	 *                 that were found (as {@code int[]})
 	 */
@@ -153,8 +153,7 @@ public abstract class Database {
 					}
 
 				// Clean up economy log
-				if (Config.cleanupLogDays > 0)
-					cleanUpLogs(false);
+				cleanUpLogs(false);
 
 				// Count accounts entries in database
 				try (Statement s = con.createStatement()) {
@@ -278,7 +277,7 @@ public abstract class Database {
 
 	/**
 	 * Add an account to the database
-	 * 
+	 *
 	 * @param account  Account to add
 	 * @param callback Callback that - if succeeded - returns the ID the account was
 	 *                 given (as {@code int})
@@ -386,10 +385,10 @@ public abstract class Database {
 			}
 		}).runTaskAsynchronously(plugin);
 	}
-	
+
 	/**
 	 * Add a bank to the database
-	 * 
+	 *
 	 * @param bank     Bank to add
 	 * @param callback Callback that - if succeeded - returns the ID the bank was
 	 *                 given (as {@code int})
@@ -526,7 +525,7 @@ public abstract class Database {
 
 	/**
 	 * Get all banks and accounts from the database
-	 * 
+	 *
 	 * @param showConsoleMessages Whether console messages (errors or warnings)
 	 *                            should be shown
 	 * @param callback            Callback that - if succeeded - returns a read-only
@@ -678,7 +677,7 @@ public abstract class Database {
 
 	/**
 	 * Get all accounts from the database under a certain bank
-	 * 
+	 *
 	 * @param bank                The bank to get the accounts of
 	 * @param showConsoleMessages Whether console messages (errors or warnings)
 	 *                            should be shown
@@ -769,70 +768,73 @@ public abstract class Database {
 
 	/**
 	 * Log an economy transaction to the database
-	 * 
+	 *
 	 * @param executor Player who performed a transaction
 	 * @param account  The {@link Account} the player performed the transaction on
 	 * @param amount   The {@link BigDecimal} transaction amount
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
 	public void logAccountTransaction(final Player executor, Account account, BigDecimal amount, Callback<Void> callback) {
+		if (!Config.enableTransactionLog) {
+			if (callback != null)
+				callback.callSyncResult(null);
+			return;
+		}
+
 		final String query = "INSERT INTO " + tableTransactionLog
 				+ " (account_id,bank_id,timestamp,time,owner_name,owner_uuid,executor_name,executor_uuid,transaction_type,amount,new_balance,world,x,y,z)"
 				+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-		if (Config.enableTransactionLog) {
-			Utils.bukkitRunnable(() -> {
-				try (Connection con = dataSource.getConnection();
-						PreparedStatement ps = con.prepareStatement(query)) {
+		Utils.bukkitRunnable(() -> {
+			try (Connection con = dataSource.getConnection();
+					PreparedStatement ps = con.prepareStatement(query)) {
 
-					long millis = System.currentTimeMillis();
+				long millis = System.currentTimeMillis();
 
-					ps.setInt(1, account.getID());
-					ps.setInt(2, account.getBank().getID());
-					ps.setString(3, dateFormat.format(millis));
-					ps.setLong(4, millis);
-					ps.setString(5, account.getOwner().getName());
-					ps.setString(6, account.getOwner().getUniqueId().toString());
-					if (!account.isOwner(executor)) {
-						ps.setString(7, executor.getName());
-						ps.setString(8, executor.getUniqueId().toString());
-					} else {
-						ps.setString(7, null);
-						ps.setString(8, null);
-					}
-					ps.setString(9, amount.signum() > 0 ? "DEPOSIT" : "WITHDRAWAL");
-					ps.setString(10, amount.abs().toString());
-					ps.setString(11, account.getBalance().toString());
-					ps.setString(12, account.getLocation().getWorld() != null
-							? account.getLocation().getWorld().getName()
-							: "world");
-					ps.setInt(13, account.getLocation().getBlockX());
-					ps.setInt(14, account.getLocation().getBlockY());
-					ps.setInt(15, account.getLocation().getBlockZ());
-					ps.executeUpdate();
-
-					if (callback != null) {
-						callback.callSyncResult(null);
-					}
-
-					plugin.debug("Logged transaction to database");
-				} catch (SQLException e) {
-					if (callback != null) {
-						callback.callSyncError(e);
-					}
-
-					plugin.getLogger().severe("Failed to log banking transaction to database.");
-					plugin.debug("Failed to log banking transaction to database.");
-					plugin.debug(e);
+				ps.setInt(1, account.getID());
+				ps.setInt(2, account.getBank().getID());
+				ps.setString(3, dateFormat.format(millis));
+				ps.setLong(4, millis);
+				ps.setString(5, account.getOwner().getName());
+				ps.setString(6, account.getOwner().getUniqueId().toString());
+				if (!account.isOwner(executor)) {
+					ps.setString(7, executor.getName());
+					ps.setString(8, executor.getUniqueId().toString());
+				} else {
+					ps.setString(7, null);
+					ps.setString(8, null);
 				}
-			}).runTaskAsynchronously(plugin);
-		} else if (callback != null)
-			callback.callSyncResult(null);
+				ps.setString(9, amount.signum() > 0 ? "DEPOSIT" : "WITHDRAWAL");
+				ps.setString(10, amount.abs().toString());
+				ps.setString(11, account.getBalance().toString());
+				ps.setString(12, account.getLocation().getWorld() != null
+						? account.getLocation().getWorld().getName()
+						: "world");
+				ps.setInt(13, account.getLocation().getBlockX());
+				ps.setInt(14, account.getLocation().getBlockY());
+				ps.setInt(15, account.getLocation().getBlockZ());
+				ps.executeUpdate();
+
+				if (callback != null) {
+					callback.callSyncResult(null);
+				}
+
+				plugin.debug("Logged transaction to database");
+			} catch (SQLException e) {
+				if (callback != null) {
+					callback.callSyncError(e);
+				}
+
+				plugin.getLogger().severe("Failed to log banking transaction to database.");
+				plugin.debug("Failed to log banking transaction to database.");
+				plugin.debug(e);
+			}
+		}).runTaskAsynchronously(plugin);
 	}
 
 	/**
 	 * Log an interest payout to the database
-	 * 
+	 *
 	 * @param account  The {@link Account} the interest was derived from
 	 * @param baseAmount   The {@link BigDecimal} base transaction amount
 	 * @param multiplier	The multiplier of the transaction
@@ -840,92 +842,100 @@ public abstract class Database {
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
 	public void logAccountInterest(Account account, BigDecimal baseAmount, int multiplier, BigDecimal amount, Callback<Void> callback) {
+		if (!Config.enableInterestLog) {
+			if (callback != null)
+				callback.callSyncResult(null);
+			return;
+		}
+
 		final String query = "INSERT INTO " + tableInterestLog
 				+ " (account_id,bank_id,owner_name,owner_uuid,base_amount,multiplier,amount,timestamp,time)"
 				+ " VALUES(?,?,?,?,?,?,?,?,?)";
 
-		if (Config.enableInterestLog) {
-			Utils.bukkitRunnable(() -> {
-				try (Connection con = dataSource.getConnection();
-						PreparedStatement ps = con.prepareStatement(query)) {
+		Utils.bukkitRunnable(() -> {
+			try (Connection con = dataSource.getConnection();
+					PreparedStatement ps = con.prepareStatement(query)) {
 
-					long millis = System.currentTimeMillis();
+				long millis = System.currentTimeMillis();
 
-					ps.setInt(1, account.getID());
-					ps.setInt(2, account.getBank().getID());
-					ps.setString(3, account.getOwner().getName());
-					ps.setString(4, account.getOwner().getUniqueId().toString());
-					ps.setString(5, baseAmount.toString());
-					ps.setInt(6, multiplier);
-					ps.setString(7, amount.toString());
-					ps.setString(8, dateFormat.format(millis));
-					ps.setLong(9, millis);
+				ps.setInt(1, account.getID());
+				ps.setInt(2, account.getBank().getID());
+				ps.setString(3, account.getOwner().getName());
+				ps.setString(4, account.getOwner().getUniqueId().toString());
+				ps.setString(5, baseAmount.toString());
+				ps.setInt(6, multiplier);
+				ps.setString(7, amount.toString());
+				ps.setString(8, dateFormat.format(millis));
+				ps.setLong(9, millis);
 
-					ps.executeUpdate();
+				ps.executeUpdate();
 
-					if (callback != null) {
-						callback.callSyncResult(null);
-					}
-
-					plugin.debug("Logged interest to database");
-				} catch (SQLException e) {
-					if (callback != null) {
-						callback.callSyncError(e);
-					}
-
-					plugin.getLogger().severe("Failed to log interest to database.");
-					plugin.debug("Failed to log interest to database.");
-					plugin.debug(e);
+				if (callback != null) {
+					callback.callSyncResult(null);
 				}
-			}).runTaskAsynchronously(plugin);
-		} else if (callback != null)
-			callback.callSyncResult(null);
+
+				plugin.debug("Logged interest to database");
+			} catch (SQLException e) {
+				if (callback != null) {
+					callback.callSyncError(e);
+				}
+
+				plugin.getLogger().severe("Failed to log interest to database.");
+				plugin.debug("Failed to log interest to database.");
+				plugin.debug(e);
+			}
+		}).runTaskAsynchronously(plugin);
 	}
 
 	public void logBankCashFlow(Bank bank, BigDecimal amount, Callback<Void> callback) {
+		if (!Config.enableProfitLog) {
+			if (callback != null)
+				callback.callSyncResult(null);
+			return;
+		}
+
 		final String query = "INSERT INTO " + tableBankProfitLog
 				+ " (bank_id,owner_name,owner_uuid,amount,timestamp,time)"
 				+ " VALUES(?,?,?,?,?,?)";
 
-		if (Config.enableInterestLog) {
-			Utils.bukkitRunnable(() -> {
-				try (Connection con = dataSource.getConnection();
-					 PreparedStatement ps = con.prepareStatement(query)) {
+		Utils.bukkitRunnable(() -> {
+			try (Connection con = dataSource.getConnection();
+				 PreparedStatement ps = con.prepareStatement(query)) {
 
-					long millis = System.currentTimeMillis();
+				long millis = System.currentTimeMillis();
 
-					ps.setInt(1, bank.getID());
-					ps.setString(2, bank.getOwner().getName());
-					ps.setString(3, bank.getOwner().getUniqueId().toString());
-					ps.setString(4, amount.toString());
-					ps.setString(5, dateFormat.format(millis));
-					ps.setLong(6, millis);
+				ps.setInt(1, bank.getID());
+				ps.setString(2, bank.getOwner().getName());
+				ps.setString(3, bank.getOwner().getUniqueId().toString());
+				ps.setString(4, amount.toString());
+				ps.setString(5, dateFormat.format(millis));
+				ps.setLong(6, millis);
 
-					ps.executeUpdate();
+				ps.executeUpdate();
 
-					if (callback != null)
-						callback.callSyncResult(null);
+				if (callback != null)
+					callback.callSyncResult(null);
 
-					plugin.debug("Logged profit to database");
-				} catch (SQLException e) {
-					if (callback != null)
-						callback.callSyncError(e);
+				plugin.debug("Logged profit to database");
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
 
-					plugin.getLogger().severe("Failed to log profit to database.");
-					plugin.debug("Failed to log profit to database.");
-					plugin.debug(e);
-				}
-			}).runTaskAsynchronously(plugin);
-		} else if (callback != null)
-			callback.callSyncResult(null);
+				plugin.getLogger().severe("Failed to log profit to database.");
+				plugin.debug("Failed to log profit to database.");
+				plugin.debug(e);
+			}
+		}).runTaskAsynchronously(plugin);
 	}
 
 	/**
 	 * Cleans up the economy log to reduce file size
-	 * 
+	 *
 	 * @param async Whether the call should be executed asynchronously
 	 */
 	public void cleanUpLogs(boolean async) {
+		if (Config.cleanupLogDays <= 0)
+			return;
 		BukkitRunnable runnable = Utils.bukkitRunnable(() -> {
 			long time = System.currentTimeMillis() - Config.cleanupLogDays * 86400000L;
 			String queryCleanUpTransactionLog = "DELETE FROM " + tableTransactionLog + " WHERE time < " + time;
@@ -956,7 +966,7 @@ public abstract class Database {
 
     /**
      * Log a logout to the database
-     * 
+     *
      * @param player    Player who logged out
      * @param callback  Callback that - if succeeded - returns {@code null}
      */
@@ -988,7 +998,7 @@ public abstract class Database {
 
     /**
      * Gets the revenue a player received in account interest while they were offline
-     * 
+     *
      * @param player     Player whose revenue to get
      * @param logoutTime Time in milliseconds when he logged out the last time
      * @param callback   Callback that - if succeeded - returns the revenue the
