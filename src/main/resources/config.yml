@@ -24,7 +24,7 @@ interest-payout-times:
   - '15:00'
   - '18:00'
   allow-override: false
-  
+
 # Set the base interest rate for all bank accounts on the server.
 # Value should be a floating point number greater than 0.
 # Type: double
@@ -58,7 +58,7 @@ initial-interest-delay:
     default: 0
     allow-override: true
 
-# Whether to decrement the interest delay period while a player is offline. 
+# Whether to decrement the interest delay period while a player is offline.
 # Set this to false to only decrement the delay period when a player is online for
 # an interest payout event, and not while offline.
 # Type: boolean
@@ -228,7 +228,7 @@ enable-interest-log: true
 enable-profit-log: true
 enable-debug-log: true
 
-# Set the maximum age for economy log entries in days.
+# Set the maximum age for log entries in days.
 # All log entries older than this will be deleted on server start.
 # Set this to 0 to disable this feature.
 # Type: int
@@ -242,7 +242,7 @@ enable-worldguard-integration: true
 enable-griefprevention-integration: true
 enable-worldedit-integration: true
 
-# Set whether the custom WorldGuard flag should be allowed by default.
+# Set whether the WorldGuard flag create-bank should be allowed by default.
 worldguard-default-flag-value: false
 
 # Set whether accounts should automatically be removed from the database if
@@ -283,7 +283,7 @@ disabled-worlds:
 enable-mail: true
 
 language-file: "en_US"
-  
+
 # Set the regex pattern that bank names and account nicknames should be matched against. Players will not be allowed to set names that fail to match with this pattern. Invalid patterns will not be considered.
 # Type: String
 # Default: ''
