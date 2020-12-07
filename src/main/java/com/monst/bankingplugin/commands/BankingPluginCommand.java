@@ -80,17 +80,16 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 	}
 
 	/**
-	 * Sends the basic help message
+	 * Displays a list of all subcommands and their syntax.
 	 *
 	 * @param sender {@link CommandSender} who will receive the message
 	 */
 	protected void sendBasicHelpMessage(CommandSender sender) {
 		plugin.debug("Sending basic help message to " + sender.getName());
 		for (SubCommand subCommand : subCommands) {
-			String msg = subCommand.getHelpMessage(sender);
-			if (msg == null || msg.isEmpty())
-				continue;
-			sender.sendMessage(msg);
+			String msg = subCommand.getHelpMessage(sender, BankingPluginCommand.this.name);
+			if (msg != null && !msg.isEmpty())
+				sender.sendMessage(msg);
 		}
 	}
 
@@ -106,7 +105,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 							return true;
 						}
 						if (!subCommand.execute(sender, args)) {
-							String helpMessage = subCommand.getHelpMessage(sender);
+							String helpMessage = subCommand.getHelpMessage(sender, BankingPluginCommand.this.name);
 							if (helpMessage != null && !helpMessage.isEmpty())
 								sender.sendMessage(helpMessage);
 						}

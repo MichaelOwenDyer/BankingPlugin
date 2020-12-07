@@ -21,8 +21,13 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.UPDATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_PAY_INTEREST, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.UPDATE;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_PAY_INTEREST;
     }
 
     @Override

@@ -15,8 +15,13 @@ public class AccountLimits extends AccountCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_LIMITS, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.ACCOUNT_CREATE;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_LIMITS;
     }
 
     @Override

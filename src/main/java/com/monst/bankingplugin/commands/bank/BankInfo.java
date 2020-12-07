@@ -2,7 +2,6 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.gui.BankGui;
-import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,8 +17,8 @@ public class BankInfo extends BankCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return LangUtils.getMessage(Message.COMMAND_USAGE_BANK_INFO, getReplacement());
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_BANK_INFO;
     }
 
     @Override

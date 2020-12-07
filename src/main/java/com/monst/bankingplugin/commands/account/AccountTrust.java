@@ -25,8 +25,13 @@ public class AccountTrust extends AccountCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.ACCOUNT_TRUST) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_TRUST, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.ACCOUNT_TRUST;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_TRUST;
     }
 
     @Override

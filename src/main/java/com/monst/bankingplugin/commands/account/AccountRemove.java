@@ -30,8 +30,13 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_REMOVE, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.ACCOUNT_CREATE;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_REMOVE;
     }
 
     @Override

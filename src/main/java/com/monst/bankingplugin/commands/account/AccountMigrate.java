@@ -27,8 +27,13 @@ public class AccountMigrate extends AccountCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_MIGRATE, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.ACCOUNT_CREATE;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_MIGRATE;
     }
 
     @Override

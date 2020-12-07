@@ -23,8 +23,8 @@ public class AccountList extends AccountCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_LIST, getReplacement());
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_LIST;
     }
 
     @Override

@@ -10,7 +10,6 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Messenger;
 import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -26,8 +25,13 @@ public class BankSet extends BankCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.BANK_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_SET, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.BANK_CREATE;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_BANK_SET;
     }
 
     @Override

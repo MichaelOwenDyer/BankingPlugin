@@ -26,8 +26,13 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.ACCOUNT_REMOVEALL) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_REMOVE_ALL, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.ACCOUNT_REMOVEALL;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_REMOVE_ALL;
     }
 
     @Override

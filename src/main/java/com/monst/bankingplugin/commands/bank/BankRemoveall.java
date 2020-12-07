@@ -25,8 +25,13 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.BANK_REMOVEALL) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_REMOVEALL, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.BANK_REMOVEALL;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_BANK_REMOVEALL;
     }
 
     @Override

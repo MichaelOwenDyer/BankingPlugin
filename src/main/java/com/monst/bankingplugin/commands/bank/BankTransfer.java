@@ -27,8 +27,13 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.BANK_TRANSFER) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_TRANSFER, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.BANK_TRANSFER;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_BANK_TRANSFER;
     }
 
     @Override

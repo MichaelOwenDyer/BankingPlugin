@@ -22,8 +22,13 @@ public class BankUntrust extends BankCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.BANK_TRUST) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_UNTRUST, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.BANK_TRUST;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_BANK_UNTRUST;
     }
 
     @Override

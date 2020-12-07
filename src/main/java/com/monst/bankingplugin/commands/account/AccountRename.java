@@ -24,8 +24,13 @@ public class AccountRename extends AccountCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_RENAME) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_RENAME, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.ACCOUNT_RENAME;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_RENAME;
     }
 
     @Override

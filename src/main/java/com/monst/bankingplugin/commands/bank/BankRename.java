@@ -21,8 +21,13 @@ public class BankRename extends BankCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.BANK_CREATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_RENAME, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.BANK_CREATE;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_BANK_RENAME;
     }
 
     @Override

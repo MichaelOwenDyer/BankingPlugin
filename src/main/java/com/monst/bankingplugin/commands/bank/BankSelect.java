@@ -23,8 +23,13 @@ public class BankSelect extends BankCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.BANK_SELECT) ? LangUtils.getMessage(Message.COMMAND_USAGE_BANK_SELECT, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.BANK_SELECT;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_BANK_SELECT;
     }
 
     @Override

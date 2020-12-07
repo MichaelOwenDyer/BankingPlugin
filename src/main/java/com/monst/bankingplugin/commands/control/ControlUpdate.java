@@ -14,8 +14,13 @@ public class ControlUpdate extends ControlCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.UPDATE) ? LangUtils.getMessage(Message.COMMAND_USAGE_UPDATE, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.UPDATE;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_UPDATE;
     }
 
     @Override

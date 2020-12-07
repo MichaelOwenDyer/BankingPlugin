@@ -20,8 +20,8 @@ public class AccountInfo extends AccountCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_INFO, getReplacement());
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_INFO;
     }
 
     @Override

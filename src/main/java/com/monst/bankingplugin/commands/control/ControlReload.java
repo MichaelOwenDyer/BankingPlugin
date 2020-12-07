@@ -21,8 +21,13 @@ public class ControlReload extends ControlCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.RELOAD) ? LangUtils.getMessage(Message.COMMAND_USAGE_RELOAD, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.RELOAD;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_RELOAD;
     }
 
     @Override

@@ -6,8 +6,6 @@ import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.AccountUtils;
 
 public class AccountCommand extends BankingPluginCommand<AccountCommand.SubCommand> {
@@ -19,8 +17,7 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 		super(plugin);
 
 		if (commandCreated) {
-			IllegalStateException e = new IllegalStateException(
-					"Command \"" + Config.commandNameAccount + "\" has already been registered!");
+			IllegalStateException e = new IllegalStateException("Command \"" + name + "\" has already been registered!");
 			plugin.debug(e);
 			throw e;
 		}
@@ -56,8 +53,5 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 			super(name, playerCommand);
 		}
 
-		static Replacement getReplacement() {
-			return new Replacement(Placeholder.COMMAND, Config.commandNameAccount);
-		}
 	}
 }

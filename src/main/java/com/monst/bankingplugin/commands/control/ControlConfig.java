@@ -19,8 +19,13 @@ public class ControlConfig extends ControlCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.CONFIG) ? LangUtils.getMessage(Message.COMMAND_USAGE_CONFIG, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.CONFIG;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_CONFIG;
     }
 
     @Override

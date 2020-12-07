@@ -34,8 +34,13 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.ACCOUNT_TRANSFER) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_TRANSFER, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.ACCOUNT_TRANSFER;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_TRANSFER;
     }
 
     @Override

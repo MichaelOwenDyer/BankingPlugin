@@ -1,6 +1,10 @@
 package com.monst.bankingplugin.commands;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Replacement;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
@@ -10,7 +14,7 @@ import java.util.List;
 public abstract class BankingPluginSubCommand {
 
     protected static final BankingPlugin plugin = BankingPlugin.getInstance();
-	
+
 	private final String name;
 	private final boolean playerCommand;
 
@@ -48,24 +52,41 @@ public abstract class BankingPluginSubCommand {
     }
 
     /**
+     * @return the permission node required to see and execute this command.
+     */
+    protected String getPermission() {
+        return null;
+    }
+
+    /**
+     * @return the {@link Message} describing the syntax of this subcommand.
+     */
+    protected abstract Message getUsageMessage();
+
+    /**
      * Sends a message to the command sender describing how to use this subcommand
      * @param sender Sender to receive the help message
      * @return The help message for the command.
      */
-    protected abstract String getHelpMessage(CommandSender sender);
+    String getHelpMessage(CommandSender sender, String commandName) {
+        return hasPermission(sender, getPermission()) ?
+                LangUtils.getMessage(getUsageMessage(), new Replacement(Placeholder.COMMAND, commandName)) : "";
+    }
 
     protected boolean hasPermission(CommandSender sender, String permission) {
-        boolean receiveCreateMessage = sender.hasPermission(permission);
-        if (!receiveCreateMessage) {
+        if (sender == null || permission == null || permission.isEmpty())
+            return true;
+        boolean hasPermission = sender.hasPermission(permission);
+        if (!hasPermission) {
             for (PermissionAttachmentInfo permInfo : sender.getEffectivePermissions()) {
                 String perm = permInfo.getPermission();
                 if (perm.startsWith(permission) && sender.hasPermission(perm)) {
-                    receiveCreateMessage = true;
+                    hasPermission = true;
                     break;
                 }
             }
         }
-        return receiveCreateMessage;
+        return hasPermission;
     }
 
 }

@@ -25,8 +25,13 @@ public class AccountSet extends AccountCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return hasPermission(sender, Permissions.ACCOUNT_SET) ? LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_SET, getReplacement()) : "";
+    protected String getPermission() {
+        return Permissions.ACCOUNT_SET;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_SET;
     }
 
     @Override

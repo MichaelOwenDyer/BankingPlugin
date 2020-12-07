@@ -20,8 +20,8 @@ public class BankList extends BankCommand.SubCommand {
     }
 
     @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return LangUtils.getMessage(Message.COMMAND_USAGE_BANK_LIST, getReplacement());
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_BANK_LIST;
     }
 
     @Override

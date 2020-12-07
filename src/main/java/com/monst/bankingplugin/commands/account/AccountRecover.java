@@ -23,6 +23,16 @@ public class AccountRecover extends AccountCommand.SubCommand {
     }
 
     @Override
+    protected String getPermission() {
+        return Permissions.ACCOUNT_RECOVER;
+    }
+
+    @Override
+    protected Message getUsageMessage() {
+        return Message.COMMAND_USAGE_ACCOUNT_RECOVER;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to recover invalid accounts");
 
@@ -34,12 +44,6 @@ public class AccountRecover extends AccountCommand.SubCommand {
         if (sender instanceof Player)
             new AccountRecoveryGui(accountUtils::getInvalidAccounts).open(((Player) sender));
         return true;
-    }
-
-    @Override
-    protected String getHelpMessage(CommandSender sender) {
-        return sender.hasPermission(Permissions.ACCOUNT_RECOVER) && !accountUtils.getInvalidAccounts().isEmpty() ?
-                LangUtils.getMessage(Message.COMMAND_USAGE_ACCOUNT_RECOVER, getReplacement()) : "";
     }
 
     public static void recover(Player p, Block b, Account toMigrate) {

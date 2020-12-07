@@ -21,15 +21,15 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 	private static boolean commandCreated = false;
 
     public BankCommand(final BankingPlugin plugin) {
-    	    	
+
         super(plugin);
-        
+
         if (commandCreated) {
-            IllegalStateException e = new IllegalStateException("Command \"" + Config.commandNameBank + "\" has already been registered!");
+            IllegalStateException e = new IllegalStateException("Command \"" + name + "\" has already been registered!");
             plugin.debug(e);
             throw e;
         }
-        
+
         this.name = Config.commandNameBank;
         this.desc = LangUtils.getMessage(Message.BANK_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
@@ -104,6 +104,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		static CuboidSelection parseCoordinates(String[] args, Location loc) throws NumberFormatException {
 			if (args.length == 5 || args.length == 6) {
 
+				// TODO: Redo with arrays
 				String argX = args[2];
 				String argY = args[3];
 				String argZ = args[4];
@@ -148,8 +149,5 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 			return null;
 		}
 
-		static Replacement getReplacement() {
-			return new Replacement(Placeholder.COMMAND, Config.commandNameBank);
-		}
 	}
 }
