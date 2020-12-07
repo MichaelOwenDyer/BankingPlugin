@@ -102,51 +102,29 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		 * @throws NumberFormatException if the coordinates could not be parsed
 		 */
 		static CuboidSelection parseCoordinates(String[] args, Location loc) throws NumberFormatException {
+			int x1, y1, z1, x2, y2, z2;
 			if (args.length == 5 || args.length == 6) {
-
-				// TODO: Redo with arrays
-				String argX = args[2];
-				String argY = args[3];
-				String argZ = args[4];
-
-				int x1, y1, z1, x2, y2, z2;
-
-				x2 = loc.getBlockX();
-				y2 = loc.getBlockY();
-				z2 = loc.getBlockZ();
-
-				x1 = argX.startsWith("~") ? Integer.parseInt(argX.substring(1)) + x2 : Integer.parseInt(argX);
-				y1 = argY.startsWith("~") ? Integer.parseInt(argY.substring(1)) + y2 : Integer.parseInt(argY);
-				z1 = argZ.startsWith("~") ? Integer.parseInt(argZ.substring(1)) + z2 : Integer.parseInt(argZ);
-
-				BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);
-				BlockVector3D loc2 = new BlockVector3D(x2, y2, z2);
-				return CuboidSelection.of(loc.getWorld(), loc1, loc2);
+				x1 = parseCoordinate(args[2], x2 = loc.getBlockX());
+				y1 = parseCoordinate(args[3], y2 = loc.getBlockY());
+				z1 = parseCoordinate(args[4], z2 = loc.getBlockZ());
 
 			} else if (args.length >= 8) {
+				x1 = parseCoordinate(args[2], loc.getBlockX());
+				y1 = parseCoordinate(args[3], loc.getBlockY());
+				z1 = parseCoordinate(args[4], loc.getBlockZ());
+				x2 = parseCoordinate(args[5], loc.getBlockX());
+				y2 = parseCoordinate(args[6], loc.getBlockY());
+				z2 = parseCoordinate(args[7], loc.getBlockZ());
 
-				String argX1 = args[2];
-				String argY1 = args[3];
-				String argZ1 = args[4];
-				String argX2 = args[5];
-				String argY2 = args[6];
-				String argZ2 = args[7];
+			} else
+				return null;
+			BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);
+			BlockVector3D loc2 = new BlockVector3D(x2, y2, z2);
+			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
+		}
 
-				int x1, y1, z1, x2, y2, z2;
-
-				x1 = argX1.startsWith("~") ? Integer.parseInt(argX1.substring(1)) + loc.getBlockX() : Integer.parseInt(argX1);
-				y1 = argY1.startsWith("~") ? Integer.parseInt(argY1.substring(1)) + loc.getBlockY() : Integer.parseInt(argY1);
-				z1 = argZ1.startsWith("~") ? Integer.parseInt(argZ1.substring(1)) + loc.getBlockZ() : Integer.parseInt(argZ1);
-				x2 = argX2.startsWith("~") ? Integer.parseInt(argX2.substring(1)) + loc.getBlockX() : Integer.parseInt(argX2);
-				y2 = argY2.startsWith("~") ? Integer.parseInt(argY2.substring(1)) + loc.getBlockY() : Integer.parseInt(argY2);
-				z2 = argZ2.startsWith("~") ? Integer.parseInt(argZ2.substring(1)) + loc.getBlockZ() : Integer.parseInt(argZ2);
-
-				BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);
-				BlockVector3D loc2 = new BlockVector3D(x2, y2, z2);
-				return CuboidSelection.of(loc.getWorld(), loc1, loc2);
-
-			}
-			return null;
+		private static int parseCoordinate(String arg, int relativeTo) throws NumberFormatException {
+			return arg.startsWith("~") ? Integer.parseInt(arg.substring(1)) + relativeTo : Integer.parseInt(arg);
 		}
 
 	}
