@@ -34,7 +34,7 @@ public class NotifyPlayerOnJoinListener implements Listener {
                 return;
             }
 
-            database.getOfflineBankRevenue(p, logoutTime, Callback.of(plugin, profit -> {
+            database.getBankRevenueEarnedOffline(p, logoutTime, Callback.of(plugin, profit -> {
                 if (profit.signum() == 0)
                     return;
                 p.sendMessage(LangUtils.getMessage(profit.signum() > 0 ? Message.BANK_REVENUE_EARNED_OFFLINE : Message.BANK_LOSS_OFFLINE,
@@ -42,7 +42,7 @@ public class NotifyPlayerOnJoinListener implements Listener {
                 ));
             }));
 
-            database.getOfflineAccountRevenue(p, logoutTime, Callback.of(plugin, bigDecimal -> {
+            database.getAccountInterestEarnedOffline(p, logoutTime, Callback.of(plugin, bigDecimal -> {
                 if (bigDecimal.signum() > 0)
                     p.sendMessage(LangUtils.getMessage(Message.OFFLINE_ACCOUNT_INTEREST,
                             new Replacement(Placeholder.AMOUNT, bigDecimal)
@@ -50,13 +50,13 @@ public class NotifyPlayerOnJoinListener implements Listener {
             }));
 
             // Player does not actually log off here, this saves the last time the player was notified about changes
-            database.logLogout(p, null);
+            database.logLastSeen(p, null);
 		}));
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
-		plugin.getDatabase().logLogout(e.getPlayer(), null);
+		plugin.getDatabase().logLastSeen(e.getPlayer(), null);
     }
 
 }

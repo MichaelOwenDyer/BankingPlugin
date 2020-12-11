@@ -24,7 +24,7 @@ import java.math.BigDecimal;
  * @see Account#calculateValue()
  */
 public class AccountBalanceListener implements Listener {
-	
+
 	private final BankingPlugin plugin;
 	private final AccountUtils accountUtils;
 
@@ -74,9 +74,9 @@ public class AccountBalanceListener implements Listener {
 		Bukkit.getPluginManager().callEvent(new AccountTransactionEvent(executor, account, difference, valueOnClose));
 
 		if (account.getOwner().isOnline())
-			plugin.getDatabase().logLogout(account.getOwner().getPlayer(), null);
+			plugin.getDatabase().logLastSeen(account.getOwner().getPlayer(), null);
 
-		if (Config.enableTransactionLog) {
+		if (Config.enableAccountTransactionLog) {
 			plugin.getDatabase().logAccountTransaction(executor, account, difference, null);
 			plugin.debug("Logging transaction to database...");
 		}

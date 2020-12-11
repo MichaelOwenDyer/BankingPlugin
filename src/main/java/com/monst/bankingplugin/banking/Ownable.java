@@ -89,6 +89,7 @@ public abstract class Ownable extends Observable implements Nameable {
 		if (p != null)
 			coowners.add(p);
 		notifyObservers();
+		plugin.getDatabase().addCoowner(this, p, null);
 	}
 
 	/**
@@ -99,6 +100,7 @@ public abstract class Ownable extends Observable implements Nameable {
 		if (p != null)
 			coowners.remove(p);
 		notifyObservers();
+		plugin.getDatabase().removeCoowner(this, p, null);
 	}
 
 	/**

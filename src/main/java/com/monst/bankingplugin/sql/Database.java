@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.sql;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.Ownable;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountStatus;
 import com.monst.bankingplugin.banking.bank.Bank;
@@ -24,7 +25,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public abstract class Database {
@@ -33,11 +33,14 @@ public abstract class Database {
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	String tableBanks;
+	String tableCoOwnsBank;
 	String tableAccounts;
-	String tableTransactionLog;
-	String tableInterestLog;
-	String tableBankProfitLog;
-	String tableLogouts;
+	String tableCoOwnsAccount;
+	String tableAccountTransactions;
+	String tableAccountInterest;
+	String tableBankRevenue;
+	String tableLowBalanceFees;
+	String tablePlayers;
 	String tableFields;
 
 	final BankingPlugin plugin;
@@ -49,41 +52,42 @@ public abstract class Database {
 
 	abstract HikariDataSource getDataSource();
 
+	abstract String getQueryCreateTable(String tableName, String... columns);
+
 	abstract String getQueryCreateTableBanks();
+
+	abstract String getQueryCreateTableCoOwnsBank();
 
 	abstract String getQueryCreateTableAccounts();
 
-	abstract String getQueryCreateTableTransactionLog();
+	abstract String getQueryCreateTableCoOwnsAccount();
 
-	abstract String getQueryCreateTableInterestLog();
+	abstract String getQueryCreateTableAccountTransactions();
 
-	abstract String getQueryCreateTableProfitLog();
+	abstract String getQueryCreateTableAccountInterest();
 
-	abstract String getQueryCreateTableLogout();
+	abstract String getQueryCreateTableBankRevenue();
+
+	abstract String getQueryCreateTableLowBalanceFees();
+
+	abstract String getQueryCreateTablePlayers();
 
 	abstract String getQueryCreateTableFields();
 
-	abstract String getQueryGetTable();
-
 	private int getDatabaseVersion() throws SQLException {
-		try (Connection con = dataSource.getConnection()) {
-			try (Statement s = con.createStatement()) {
-				ResultSet rs = s.executeQuery("SELECT value FROM " + tableFields + " WHERE field='version'");
-				if (rs.next()) {
-					return rs.getInt("value");
-				}
-			}
+		try (ResultSet rs = dataSource.getConnection().createStatement()
+				.executeQuery("SELECT Value FROM " + tableFields + " WHERE Field = 'Version'")) {
+			if (rs.next())
+				return rs.getInt(1);
 		}
 		return 0;
 	}
 
 	private void setDatabaseVersion(int version) throws SQLException {
-		String queryUpdateVersion = "REPLACE INTO " + tableFields + " VALUES ('version', ?)";
-		try (Connection con = dataSource.getConnection()) {
-			try (PreparedStatement ps = con.prepareStatement(queryUpdateVersion)) {
-				ps.setInt(1, version);
-				ps.executeUpdate();
-			}
+		try (Connection con = dataSource.getConnection();
+			 PreparedStatement ps = con.prepareStatement("REPLACE INTO " + tableFields + " VALUES ('Version', ?)")) {
+			ps.setInt(1, version);
+			ps.executeUpdate();
 		}
 	}
 
@@ -91,27 +95,25 @@ public abstract class Database {
 	 * <p>
 	 * (Re-)Connects to the the database and initializes it.
 	 * </p>
-	 * 
+	 *
 	 * All tables are created if necessary and if the database structure has to be
 	 * updated, that is done as well.
-	 * 
+	 *
 	 * @param callback Callback that - if succeeded - returns the amount of banks and accounts
 	 *                 that were found (as {@code int[]})
 	 */
 	public void connect(final Callback<int[]> callback) {
-		if (!Config.databaseTablePrefix.matches("^([a-zA-Z0-9\\-_]+)?$")) {
-			// Only letters, numbers dashes and underscores are allowed
-			plugin.getLogger().severe("Database table prefix contains illegal letters, using 'bankingplugin_' prefix.");
-			Config.databaseTablePrefix = "bankingplugin_";
-		}
 
-		this.tableBanks = Config.databaseTablePrefix + "banks";
-		this.tableAccounts = Config.databaseTablePrefix + "accounts";
-		this.tableTransactionLog = Config.databaseTablePrefix + "transaction_log";
-		this.tableInterestLog = Config.databaseTablePrefix + "interest_log";
-		this.tableBankProfitLog = Config.databaseTablePrefix + "profit_log";
-		this.tableLogouts = Config.databaseTablePrefix + "player_logouts";
-		this.tableFields = Config.databaseTablePrefix + "fields";
+		this.tableBanks = "Banks";
+		this.tableCoOwnsBank = "co_owns_bank";
+		this.tableAccounts = "Accounts";
+		this.tableCoOwnsAccount = "co_owns_account";
+		this.tableAccountTransactions = "AccountTransactions";
+		this.tableAccountInterest = "AccountInterest";
+		this.tableBankRevenue = "BankRevenue";
+		this.tableLowBalanceFees = "LowBalanceFees";
+		this.tablePlayers = "Players";
+		this.tableFields = "Fields";
 
 		Utils.bukkitRunnable(() -> {
 			disconnect();
@@ -133,24 +135,26 @@ public abstract class Database {
 
 			try (Connection con = dataSource.getConnection()) {
 				// Update database structure if necessary
-				if (update()) {
+				if (update())
 					plugin.getLogger().info("Updating database finished.");
-				}
 
 				plugin.debug("Starting table creation");
 
-				for (String query : new String[] {
-						getQueryCreateTableBanks(), // Create banks table
-						getQueryCreateTableAccounts(), // Create accounts table
-						getQueryCreateTableTransactionLog(), // Create transaction log table
-						getQueryCreateTableInterestLog(), // Create interest log table
-						getQueryCreateTableProfitLog(), // Create profit log table
-						getQueryCreateTableLogout(), // Create logout table
-						getQueryCreateTableFields() // Create fields table
-				})
-					try (Statement s = con.createStatement()) {
+				try (Statement s = con.createStatement()) {
+					for (String query : new String[] {
+							getQueryCreateTableBanks(), // Create banks table
+							getQueryCreateTableCoOwnsBank(), // Create co_owns_bank table
+							getQueryCreateTableAccounts(), // Create accounts table
+							getQueryCreateTableCoOwnsAccount(), // Create co_owns_account table
+							getQueryCreateTableAccountTransactions(), // Create account transaction log table
+							getQueryCreateTableAccountInterest(), // Create account interest log table
+							getQueryCreateTableBankRevenue(), // Create bank revenue log table
+							getQueryCreateTableLowBalanceFees(), // Create low balance fee log table
+							getQueryCreateTablePlayers(), // Create players table
+							getQueryCreateTableFields() // Create fields table
+					})
 						s.executeUpdate(query);
-					}
+				}
 
 				// Clean up economy log
 				if (Config.cleanupLogDays > 0)
@@ -159,32 +163,31 @@ public abstract class Database {
 				// Count accounts entries in database
 				try (Statement s = con.createStatement()) {
 					int accounts;
-					ResultSet rsAccounts = s.executeQuery("SELECT COUNT(id) FROM " + tableAccounts);
+					ResultSet rsAccounts = s.executeQuery("SELECT COUNT(AccountID) FROM " + tableAccounts);
 					if (rsAccounts.next()) {
 						accounts = rsAccounts.getInt(1);
 						plugin.debug("Initialized database with " + accounts + " account entries");
 					} else {
 						throw new SQLException("Count result set has no account entries");
 					}
+					rsAccounts.close();
 
 					int banks;
-					ResultSet rsBanks = s.executeQuery("SELECT COUNT(id) FROM " + tableBanks);
+					ResultSet rsBanks = s.executeQuery("SELECT COUNT(BankID) FROM " + tableBanks);
 					if (rsBanks.next()) {
 						banks = rsBanks.getInt(1);
 						plugin.debug("Initialized database with " + banks + " bank entries");
-					} else {
+					} else
 						throw new SQLException("Count result set has no bank entries");
-					}
+					rsBanks.close();
 
-					if (callback != null) {
+					if (callback != null)
 						callback.callSyncResult(new int[] {banks, accounts});
-					}
+
 				}
 			} catch (SQLException e) {
-				if (callback != null) {
+				if (callback != null)
 					callback.callSyncError(e);
-				}
-
 				plugin.getLogger().severe("Failed to initialize or connect to database.");
 				plugin.debug("Failed to initialize or connect to database.");
 				plugin.debug(e);
@@ -192,172 +195,82 @@ public abstract class Database {
 		}).runTaskAsynchronously(plugin);
 	}
 
+	/**
+	 * Carry out any potential updates on the database structure if necessary.
+	 * @return whether the database was updated or not
+	 * @throws SQLException if there was an error updating the database
+	 */
 	private boolean update() throws SQLException {
-
-		try (Connection con = dataSource.getConnection()) {
-
-			try (PreparedStatement ps = con.prepareStatement(getQueryGetTable())) {
-				ps.setString(1, tableBanks);
-				ResultSet rs = ps.executeQuery();
-				if (!rs.next()) {
-					return false;
-				}
-			}
-
-			boolean needsReordering = false;
-			String checkOrderQuery = "SELECT account_config FROM " + tableBanks;
-			try (Statement s = con.createStatement()) {
-				ResultSet rs = s.executeQuery(checkOrderQuery);
-				if (rs.next()) {
-					String[] accConfig = rs.getString("account_config").split(" \\| ");
-					try {
-						Double.parseDouble(accConfig[0]);
-						needsReordering = true;
-					} catch (NumberFormatException ignored) {} // Already updated
-				}
-			}
-
-			if (needsReordering) {
-
-				List<String> backupTableQueries = new ArrayList<>();
-				List<String> recreateTableQueries = new ArrayList<>();
-
-				backupTableQueries.add("ALTER TABLE " + tableBanks + " RENAME TO backup_banks"); // for backup
-				recreateTableQueries.add(getQueryCreateTableBanks());
-
-				for (String query : backupTableQueries)
-					try (Statement s = con.createStatement()) {
-						s.executeUpdate(query);
-					}
-
-				for (String query : recreateTableQueries)
-					try (Statement s = con.createStatement()) {
-						s.executeUpdate(query);
-					}
-
-				plugin.getLogger().info("Updating database... (reordering)");
-
-				// Convert banks table
-				try (Statement s = con.createStatement()) {
-					ResultSet rs = s.executeQuery("SELECT id,account_config FROM backup_banks");
-					while (rs.next()) {
-						String[] accConfig = rs.getString("account_config").split(" \\| ");
-						int offset = accConfig.length == 15 ? 1 : 0;
-						List<String> newAccConfig = new ArrayList<>();
-						newAccConfig.add(accConfig[3 + offset]);
-						newAccConfig.add(accConfig[9 + offset]);
-						newAccConfig.add(accConfig[12 + offset]);
-						newAccConfig.add(accConfig[0]);
-						newAccConfig.add(accConfig[8 + offset]);
-						newAccConfig.add(accConfig[10 + offset]);
-						newAccConfig.add(accConfig[11 + offset]);
-						newAccConfig.add(accConfig[2 + offset]);
-						newAccConfig.add(accConfig[4 + offset]);
-						newAccConfig.add(accConfig[5 + offset]);
-						newAccConfig.add(accConfig[6 + offset]);
-						newAccConfig.add(accConfig[7 + offset]);
-						newAccConfig.add(accConfig[13 + offset]);
-						newAccConfig.add(accConfig[1]);
-						newAccConfig.add(offset == 1 ? accConfig[2] : Config.interestPayoutTimes.getDefault().toString());
-
-						String insertQuery = "INSERT INTO " + tableBanks
-								+ " SELECT id,name,owner,co_owners,selection_type,world,minY,maxY,points,? FROM backup_banks"
-								+ " WHERE id = ?";
-						try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
-							ps.setString(1, String.join(" | ", newAccConfig));
-							ps.setInt(2, rs.getInt("id"));
-							ps.executeUpdate();
-						}
-					}
-				}
-			}
-
-			return needsReordering;
-		}
+		return false;
 	}
 
 	/**
-	 * Add an account to the database
-	 * 
+	 * Adds an account to the database
+	 *
 	 * @param account  Account to add
 	 * @param callback Callback that - if succeeded - returns the ID the account was
 	 *                 given (as {@code int})
 	 */
 	public void addAccount(final Account account, final Callback<Integer> callback) {
-		final String queryNoId = "REPLACE INTO " + tableAccounts
-				+ " (bank_id,nickname,owner,co_owners,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		final String queryWithId = "REPLACE INTO " + tableAccounts
-				+ " (id,bank_id,nickname,owner,co_owners,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		final String query = "REPLACE INTO " + tableAccounts + " (" +
+				(account.hasID() ? "AccountID, " : "") + "BankID, Nickname, OwnerUUID, Balance, PreviousBalance, MultiplierStage, " +
+				"DelayUntilNextPayout, RemainingOfflinePayouts, RemainingOfflinePayoutsUntilReset, World, x, y, z)" +
+				"VALUES(" + (account.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		Utils.bukkitRunnable(() -> {
-			String query = account.hasID() ? queryWithId : queryNoId;
-
 			try (Connection con = dataSource.getConnection();
-					PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-				int i = 0;
-				if (account.hasID()) {
-					ps.setInt(1, account.getID());
-					i++;
-				}
+				 PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-				ps.setInt(i + 1, account.getBank().getID());
-				ps.setString(i + 2, account.getRawName());
-				ps.setString(i + 3, account.getOwner().getUniqueId().toString());
-				ps.setString(i + 4, account.getCoowners().isEmpty() ? null
-						: account.getCoowners().stream()
-								.map(p -> "" + p.getUniqueId())
-								.collect(Collectors.joining(" | "))
-				);
-				ps.setInt(i + 5, account.getSize());
+				ValueInserter values = new ValueInserter(ps);
 
-				ps.setString(i + 6, account.getBalance().toString());
-				ps.setString(i + 7, account.getPrevBalance().toString());
-
-				ps.setInt(i + 8, account.getStatus().getMultiplierStage());
-				ps.setInt(i + 9, account.getStatus().getDelayUntilNextPayout());
-				ps.setInt(i + 10, account.getStatus().getRemainingOfflinePayouts());
-				ps.setInt(i + 11, account.getStatus().getRemainingOfflinePayoutsUntilReset());
-
-				ps.setString(i + 12, account.getLocation().getWorld() != null ?
-						account.getLocation().getWorld().getName() :
-						"world");
-				ps.setInt(i + 13, account.getLocation().getBlockX());
-				ps.setInt(i + 14, account.getLocation().getBlockY());
-				ps.setInt(i + 15, account.getLocation().getBlockZ());
+				if (account.hasID())
+					values.addNext(account.getID());
+				values.addNext(account.getBank().getID());
+				values.addNext(account.getRawName());
+				values.addNext(account.getOwner().getUniqueId().toString());
+				values.addNext(account.getBalance().toString());
+				values.addNext(account.getPrevBalance().toString());
+				values.addNext(account.getStatus().getMultiplierStage());
+				values.addNext(account.getStatus().getDelayUntilNextPayout());
+				values.addNext(account.getStatus().getRemainingOfflinePayouts());
+				values.addNext(account.getStatus().getRemainingOfflinePayoutsUntilReset());
+				values.addNext(account.getLocation().getWorld().getName());
+				values.addNext(account.getLocation().getBlockX());
+				values.addNext(account.getLocation().getBlockY());
+				values.addNext(account.getLocation().getBlockZ());
 
 				ps.executeUpdate();
 
 				if (!account.hasID()) {
 					int accountId = -1;
 					ResultSet rs = ps.getGeneratedKeys();
-					if (rs.next()) {
+					if (rs.next())
 						accountId = rs.getInt(1);
-					}
+					rs.close();
 					account.setID(accountId);
 				}
 
 				account.getBank().addAccount(account);
-				account.getBank().notifyObservers();
 
-				if (callback != null) {
+				for (OfflinePlayer coowner : account.getCoowners())
+					addCoowner(account, coowner, null, con);
+
+				if (callback != null)
 					callback.callSyncResult(account.getID());
-				}
 
-				plugin.debug("Added account to database (#" + account.getID() + ").");
+				plugin.debugf("Added account to database (#%d).", account.getID());
 			} catch (SQLException e) {
-				if (callback != null) {
+				if (callback != null)
 					callback.callSyncError(e);
-				}
-
-				plugin.getLogger().severe("Failed to add account to database (#" + account.getID() + ").");
-				plugin.debug("Failed to add account to database (#" + account.getID() + ").");
+				plugin.getLogger().severe(String.format("Failed to add account to database (#%d).", account.getID()));
+				plugin.debugf("Failed to add account to database (#%d).", account.getID());
 				plugin.debug(e);
 			}
 		}).runTaskAsynchronously(plugin);
 	}
 
 	/**
-	 * Remove an account from the database
+	 * Removes an account from the database
 	 *
 	 * @param account  Account to remove
 	 * @param callback Callback that - if succeeded - returns {@code null}
@@ -366,294 +279,340 @@ public abstract class Database {
 		Utils.bukkitRunnable(() -> {
 			try (Connection con = dataSource.getConnection();
 					PreparedStatement ps = con
-							.prepareStatement("DELETE FROM " + tableAccounts + " WHERE id = ?")) {
+							.prepareStatement("DELETE FROM " + tableAccounts + " WHERE AccountID = ?")) {
+
 				ps.setInt(1, account.getID());
+
 				ps.executeUpdate();
 
-				plugin.debug("Removing account from database (#" + account.getID() + ")");
-
-				if (callback != null) {
+				if (callback != null)
 					callback.callSyncResult(null);
-				}
-			} catch (SQLException e) {
-				if (callback != null) {
-					callback.callSyncError(e);
-				}
 
-				plugin.getLogger().severe("Failed to remove account from database (#" + account.getID() + ").");
-				plugin.debug("Failed to remove account from database (#" + account.getID() + ").");
+				plugin.debugf("Removing account from database (#%d)", account.getID());
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
+				plugin.getLogger().severe(String.format("Failed to remove account from database (#%d).", account.getID()));
+				plugin.debugf("Failed to remove account from database (#%d).", account.getID());
 				plugin.debug(e);
 			}
 		}).runTaskAsynchronously(plugin);
 	}
-	
+
 	/**
-	 * Add a bank to the database
-	 * 
+	 * Adds a bank to the database
+	 *
 	 * @param bank     Bank to add
 	 * @param callback Callback that - if succeeded - returns the ID the bank was
 	 *                 given (as {@code int})
 	 */
 	public void addBank(final Bank bank, final Callback<Integer> callback) {
-		final String queryWithId = "REPLACE INTO " + tableBanks
-				+ " (id,name,owner,co_owners,selection_type,world,minY,maxY,points,account_config) VALUES(?,?,?,?,?,?,?,?,?,?)";
-		final String queryNoId = "REPLACE INTO " + tableBanks
-				+ " (name,owner,co_owners,selection_type,world,minY,maxY,points,account_config) VALUES(?,?,?,?,?,?,?,?,?)";
+		final String query = "REPLACE INTO " + tableBanks + " (" +
+				(bank.hasID() ? "BankID, " : "") + "Name, OwnerUUID, CountInterestDelayOffline, ReimburseAccountCreation, " +
+				"PayOnLowBalance, InterestRate, AccountCreationPrice, MinimumBalance, LowBalanceFee, InitialInterestDelay, " +
+				"AllowedOfflinePayouts, AllowedOfflinePayoutsBeforeMultiplierReset, OfflineMultiplierDecrement, " +
+				"WithdrawalMultiplierDecrement, PlayerBankAccountLimit, Multipliers, InterestPayoutTimes, " +
+				"World, MinX, MaxX, MinY, MaxY, MinZ, MaxZ, PolygonVertices) " +
+				"VALUES(" + (bank.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		Utils.bukkitRunnable(() -> {
-			String query = bank.hasID() ? queryWithId : queryNoId;
-
 			try (Connection con = dataSource.getConnection();
-					PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-				int i = 0;
-				if (bank.hasID()) {
-					i = 1;
-					ps.setInt(1, bank.getID());
-				}
+				 PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-				ps.setString(i + 1, bank.getRawName() != null ? bank.getRawName() : "Bank");
+				ValueInserter values = new ValueInserter(ps);
 
-				if (bank.isAdminBank()) {
-					ps.setString(i + 2, "$ADMIN$");
-					ps.setString(i + 3, null);
-				} else {
-					ps.setString(i + 2, bank.getOwner().getUniqueId().toString());
-					ps.setString(i + 3, bank.getCoowners().isEmpty() ? null :
-							bank.getCoowners().stream()
-									.map(p -> "" + p.getUniqueId())
-									.collect(Collectors.joining(" | "))
-					);
-				}
-				ps.setString(i + 4, bank.getSelection().getType().toString());
-				ps.setString(i + 5, bank.getSelection().getWorld().getName());
-
-				if (bank.getSelection().getType() == SelectionType.POLYGONAL) {
-					PolygonalSelection sel = (PolygonalSelection) bank.getSelection();
-
-					ps.setInt(i + 6, sel.getMinimumPoint().getBlockY());
-					ps.setInt(i + 7, sel.getMaximumPoint().getBlockY());
-
-					String vertices = sel.getVertices().stream()
-							.map(vector -> "" + vector.getBlockX() + "," + vector.getBlockZ())
-							.collect(Collectors.joining(" | "));
-
-					ps.setString(i + 8, vertices);
-
-				} else if (bank.getSelection().getType() == SelectionType.CUBOID) {
-					CuboidSelection sel = (CuboidSelection) bank.getSelection();
-
-					StringBuilder sb = new StringBuilder(64);
-					BlockVector3D max = sel.getMaximumPoint();
-					BlockVector3D min = sel.getMinimumPoint();
-
-					sb.append(max.getBlockX()).append(",").append(max.getBlockY()).append(",").append(max.getBlockZ());
-					sb.append(" | ");
-					sb.append(min.getBlockX()).append(",").append(min.getBlockY()).append(",").append(min.getBlockZ());
-
-					ps.setInt(i + 6, -1);
-					ps.setInt(i + 7, -1);
-
-					ps.setString(i + 8, sb.toString());
-				} else {
-					IllegalStateException e = new IllegalStateException("Bank selection neither cuboid nor polygonal! (#" + bank.getID() + ")");
-					plugin.debug(e);
-					throw e;
-				}
-
-				ps.setString(i + 9, BankField.stream()
-						.map(field -> "" + bank.get(field, true))
-						.collect(Collectors.joining(" | "))
-				);
+				if (bank.hasID())
+					values.addNext(bank.getID());
+				values.addNext(bank.getRawName());
+				values.addNext(bank.isPlayerBank() ? bank.getOwner().getUniqueId().toString() : null);
+				values.addNext((boolean) bank.get(BankField.COUNT_INTEREST_DELAY_OFFLINE));
+				values.addNext((boolean) bank.get(BankField.REIMBURSE_ACCOUNT_CREATION));
+				values.addNext((boolean) bank.get(BankField.PAY_ON_LOW_BALANCE));
+				values.addNext((double) bank.get(BankField.INTEREST_RATE));
+				values.addNext((double) bank.get(BankField.ACCOUNT_CREATION_PRICE));
+				values.addNext((double) bank.get(BankField.MINIMUM_BALANCE));
+				values.addNext((double) bank.get(BankField.LOW_BALANCE_FEE));
+				values.addNext((int) bank.get(BankField.INITIAL_INTEREST_DELAY));
+				values.addNext((int) bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS));
+				values.addNext((int) bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET));
+				values.addNext((int) bank.get(BankField.OFFLINE_MULTIPLIER_DECREMENT));
+				values.addNext((int) bank.get(BankField.WITHDRAWAL_MULTIPLIER_DECREMENT));
+				values.addNext((int) bank.get(BankField.PLAYER_BANK_ACCOUNT_LIMIT));
+				values.addNext((List<?>) bank.get(BankField.MULTIPLIERS));
+				values.addNext((List<?>) bank.get(BankField.INTEREST_PAYOUT_TIMES));
+				values.addNext(bank.getSelection().getWorld().getName());
+				values.addNext(bank.getSelection().getMinX());
+				values.addNext(bank.getSelection().getMaxX());
+				values.addNext(bank.getSelection().getMinY());
+				values.addNext(bank.getSelection().getMaxY());
+				values.addNext(bank.getSelection().getMinZ());
+				values.addNext(bank.getSelection().getMaxZ());
+				values.addNext(bank.getSelection().getType() == SelectionType.POLYGONAL ?
+						((PolygonalSelection) bank.getSelection()).getVertices() : null);
 
 				ps.executeUpdate();
 
 				if (!bank.hasID()) {
 					int bankId = -1;
 					ResultSet rs = ps.getGeneratedKeys();
-					if (rs.next()) {
+					if (rs.next())
 						bankId = rs.getInt(1);
-					}
+					rs.close();
 					bank.setID(bankId);
 				}
 
-				if (callback != null) {
+				for (OfflinePlayer coowner : bank.getCoowners())
+					addCoowner(bank, coowner, null, con);
+
+				if (callback != null)
 					callback.callSyncResult(bank.getID());
-				}
 
-				plugin.debug("Adding bank to database (#" + bank.getID() + ")");
+				plugin.debugf("Adding bank to database (#%d)", bank.getID());
 			} catch (SQLException e) {
-				if (callback != null) {
+				if (callback != null)
 					callback.callSyncError(e);
-				}
-
 				plugin.getLogger().severe("Failed to add bank to database.");
-				plugin.debug("Failed to add bank to database (#" + bank.getID() + ")");
+				plugin.debugf("Failed to add bank to database (#%d)", bank.getID());
 				plugin.debug(e);
 			}
 		}).runTaskAsynchronously(plugin);
 	}
 
 	/**
-	 * Remove a bank from the database
+	 * Removes a bank from the database. All accounts associated with this bank will automatically be removed from the database as well.
 	 *
 	 * @param bank     Bank to remove
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
-	public void removeBank(final Bank bank, final Callback<Void> callback) {
+	public void removeBank(final Bank bank, final Callback<Void> callback) { //TODO: Accounts need not be manually removed after this
 		Utils.bukkitRunnable(() -> {
 			try (Connection con = dataSource.getConnection();
-					PreparedStatement ps = con
-							.prepareStatement("DELETE FROM " + tableBanks + " WHERE id = ?")) {
+				 PreparedStatement ps = con
+						 .prepareStatement("DELETE FROM " + tableBanks + " WHERE BankID = ?")) {
+
 				ps.setInt(1, bank.getID());
+
 				ps.executeUpdate();
 
-				plugin.debug("Removing account from database (#" + bank.getID() + ")");
-
-				if (callback != null) {
+				if (callback != null)
 					callback.callSyncResult(null);
-				}
-			} catch (SQLException e) {
-				if (callback != null) {
-					callback.callSyncError(e);
-				}
 
-				plugin.getLogger().severe("Failed to remove bank from database (#" + bank.getID() + ").");
-				plugin.debug("Failed to remove bank from database (#" + bank.getID() + ").");
+				plugin.debugf("Removing bank from database (#%d)", bank.getID());
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
+				plugin.getLogger().severe(String.format("Failed to remove bank from database (#%d).", bank.getID()));
+				plugin.debugf("Failed to remove bank from database (#%d).", bank.getID());
 				plugin.debug(e);
 			}
 		}).runTaskAsynchronously(plugin);
 	}
 
 	/**
+	 * Adds a co-owner to the database. This method runs asynchronously and should be called from a synchronous context!
+	 * @param ownable ownable the player co-owns
+	 * @param coowner the co-owner to be added
+	 */
+	public void addCoowner(final Ownable ownable, final OfflinePlayer coowner, final Callback<Void> callback) {
+		Utils.bukkitRunnable(() -> {
+			try (Connection con = dataSource.getConnection()) {
+				addCoowner(ownable, coowner, callback, con);
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
+				plugin.getLogger().severe(String.format("Failed to add co-owner to database (#%d, UUID: %s).", ownable.getID(), coowner.getUniqueId().toString()));
+				plugin.debugf("Failed to add co-owner to database (#%d, UUID: %s). Connection failed.", ownable.getID(), coowner.getUniqueId().toString());
+				plugin.debug(e);
+			}
+		}).runTaskAsynchronously(plugin);
+	}
+
+	/**
+	 * Adds a co-owner to the database. This method runs synchronously and must be called from an asynchronous context!
+	 * @param ownable ownable the player co-owns
+	 * @param coowner the co-owner to be added
+	 */
+	private void addCoowner(final Ownable ownable, final OfflinePlayer coowner, final Callback<Void> callback, final Connection con) {
+		final String query;
+		if (ownable instanceof Account)
+			query = "REPLACE INTO " + tableCoOwnsAccount + " (CoOwnerUUID, AccountID) VALUES(?,?)";
+		else
+			query = "REPLACE INTO " + tableCoOwnsBank + " (CoOwnerUUID, BankID) VALUES(?,?)";
+		try (PreparedStatement ps = con.prepareStatement(query)) {
+
+			ps.setString(1, coowner.getUniqueId().toString());
+			ps.setInt(2, ownable.getID());
+
+			ps.executeUpdate();
+
+			if (callback != null)
+				callback.callSyncResult(null);
+
+			plugin.debugf("Added co-owner to database (#%d, UUID: %s).", ownable.getID(), coowner.getUniqueId().toString());
+		} catch (SQLException e) {
+			if (callback != null)
+				callback.callSyncError(e);
+			plugin.getLogger().severe(String.format("Failed to add co-owner to database (#%d, UUID: %s).", ownable.getID(), coowner.getUniqueId().toString()));
+			plugin.debugf("Failed to add co-owner to database (#%d, UUID: %s). PreparedStatement failed.", ownable.getID(), coowner.getUniqueId().toString());
+			plugin.debug(e);
+		}
+	}
+
+	/**
+	 * Removes a co-owner from the database. This method runs asynchronously and should be called from a synchronous context!
+	 * @param ownable ownable the player no longer co-owns
+	 * @param coowner the co-owner to be removed
+	 */
+	public void removeCoowner(final Ownable ownable, final OfflinePlayer coowner, final Callback<Void> callback) {
+		Utils.bukkitRunnable(() -> {
+			try (Connection con = dataSource.getConnection()) {
+				removeCoowner(ownable, coowner, callback, con);
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
+				plugin.getLogger().severe(String.format("Failed to remove co-owner from database (#%d, UUID: %s).", ownable.getID(), coowner.getUniqueId().toString()));
+				plugin.debugf("Failed to remove co-owner from database (#%d, UUID: %s). Connection failed.", ownable.getID(), coowner.getUniqueId().toString());
+				plugin.debug(e);
+			}
+		}).runTaskAsynchronously(plugin);
+	}
+
+	/**
+	 * Removes a co-owner from the database. This method runs synchronously and must be called from an asynchronous context!
+	 * @param ownable ownable the player no longer co-owns
+	 * @param coowner the co-owner to be removed
+	 */
+	private void removeCoowner(final Ownable ownable, final OfflinePlayer coowner, final Callback<Void> callback, final Connection con) {
+		final String query;
+		if (ownable instanceof Account)
+			query = "DELETE FROM " + tableCoOwnsAccount + " WHERE CoOwnerUUID = ? AND AccountID = ?";
+		else
+			query = "DELETE FROM " + tableCoOwnsBank + " WHERE CoOwnerUUID = ? AND BankID = ?";
+		try (PreparedStatement ps = con.prepareStatement(query)) {
+
+			ps.setString(1, coowner.getUniqueId().toString());
+			ps.setInt(2, ownable.getID());
+
+			ps.executeUpdate();
+
+			if (callback != null)
+				callback.callSyncResult(null);
+
+			plugin.debugf("Removed co-owner from database (#%d, UUID: %s).", ownable.getID(), coowner.getUniqueId().toString());
+		} catch (SQLException e) {
+			if (callback != null)
+				callback.callSyncError(e);
+			plugin.getLogger().severe(String.format("Failed to remove co-owner from database (#%d, UUID: %s).", ownable.getID(), coowner.getUniqueId().toString()));
+			plugin.debugf("Failed to remove co-owner from database (#%d, UUID: %s). PreparedStatement failed.", ownable.getID(), coowner.getUniqueId().toString());
+			plugin.debug(e);
+		}
+	}
+
+	/**
 	 * Get all banks and accounts from the database
-	 * 
+	 *
 	 * @param showConsoleMessages Whether console messages (errors or warnings)
 	 *                            should be shown
 	 * @param callback            Callback that - if succeeded - returns a read-only
 	 *                            collection of all banks (as
 	 *                            {@code Collection<Account>})
 	 */
-	public void getBanksAndAccounts(final boolean showConsoleMessages, final Callback<Map<Bank, Collection<Account>>> callback) {
+	public void getBanksAndAccounts(final boolean showConsoleMessages, final Callback<Map<Bank, Set<Account>>> callback) {
 		Utils.bukkitRunnable(() -> {
-
 			try (Connection con = dataSource.getConnection();
-					PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableBanks + "")) {
-				// id,name,selection_type,world,minY,maxY,points,account_config
-				ResultSet rs = ps.executeQuery();
+				 ResultSet rs = con.createStatement().executeQuery("SELECT * FROM " + tableBanks)) {
 
-				Map<Bank, Set<Account>> banksAndAccounts = new ConcurrentHashMap<>();
+				ValueGrabber values = new ValueGrabber(rs);
+
+				Map<Bank, Set<Account>> banksAndAccounts = new HashMap<>();
+
 				while (rs.next()) {
+					int bankID = values.getNextInt();
+					plugin.debugf("Getting bank from database... (#%d)", bankID);
+					String name = values.getNextString();
+					String ownerUUID = values.getNextString();
+					OfflinePlayer owner = ownerUUID != null ? Bukkit.getOfflinePlayer(UUID.fromString(ownerUUID)) : null;
 
-					int bankId = rs.getInt("id");
+					boolean countInterestDelayOffline = values.getNextBoolean();
+					boolean reimburseAccountCreation = values.getNextBoolean();
+					boolean payOnLowBalance = values.getNextBoolean();
+					double interestRate = values.getNextDouble();
+					double accountCreationPrice = values.getNextDouble();
+					double minimumBalance = values.getNextDouble();
+					double lowBalanceFee = values.getNextDouble();
+					int initialInterestDelay = values.getNextInt();
+					int allowedOfflinePayouts = values.getNextInt();
+					int allowedOfflinePayoutsBeforeMultiplierReset = values.getNextInt();
+					int offlineMultiplierDecrement = values.getNextInt();
+					int withdrawalMultiplierDecrement = values.getNextInt();
+					int playerBankAccountLimit = values.getNextInt();
+					List<Integer> multipliers;
+					try {
+						multipliers = Arrays.stream(values.getNextString().split(", ")).map(Integer::parseInt).collect(Collectors.toList());
+					} catch (NumberFormatException e) {
+						multipliers = Config.multipliers.getDefault();
+					}
+					List<LocalTime> interestPayoutTimes;
+					try {
+						interestPayoutTimes = Arrays.stream(values.getNextString().split(", ")).map(LocalTime::parse).collect(Collectors.toList());
+					} catch (DateTimeParseException e) {
+						interestPayoutTimes = Config.interestPayoutTimes.getDefault();
+					}
+					BankConfig bankConfig = new BankConfig(countInterestDelayOffline, reimburseAccountCreation, payOnLowBalance,
+							interestRate, accountCreationPrice, minimumBalance, lowBalanceFee, initialInterestDelay,
+							allowedOfflinePayouts, allowedOfflinePayoutsBeforeMultiplierReset, offlineMultiplierDecrement,
+							withdrawalMultiplierDecrement, playerBankAccountLimit, multipliers, interestPayoutTimes);
 
-					plugin.debug("Getting bank from database... (#" + bankId + ")");
-
-					String worldName = rs.getString("world");
+					String worldName = values.getNextString();
 					World world = Bukkit.getWorld(worldName);
-
 					if (world == null) {
 						WorldNotFoundException e = new WorldNotFoundException(worldName);
 						if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
 							plugin.getLogger().warning(e.getMessage());
 							notFoundWorlds.add(worldName);
 						}
-						plugin.debug("Failed to get bank (#" + bankId + ")");
+						plugin.debugf("Failed to get bank (#%d)",  bankID);
 						plugin.debug(e);
 						continue;
 					}
 
-					String name = rs.getString("name");
-					boolean isAdminBank = rs.getString("owner").equals("$ADMIN$");
-					Set<OfflinePlayer> coowners = rs.getString("co_owners") == null ?
-							new HashSet<>() :
-							Arrays.stream(rs.getString("co_owners").split(" \\| "))
-									.filter(string -> !string.isEmpty())
-									.map(UUID::fromString)
-									.map(Bukkit::getOfflinePlayer)
-									.collect(Collectors.toCollection(HashSet::new));
-					OfflinePlayer owner = null;
-					if (!isAdminBank) {
-						owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
-					}
-
-					String[] pointArray = rs.getString("points").split(" \\| ");
+					int minX = values.getNextInt();
+					int maxX = values.getNextInt();
+					int minY = values.getNextInt();
+					int maxY = values.getNextInt();
+					int minZ = values.getNextInt();
+					int maxZ = values.getNextInt();
+					String vertices = values.getNextString();
 					Selection selection;
-					if (rs.getString("selection_type").equals("POLYGONAL")) {
-						int minY = rs.getInt("minY");
-						int maxY = rs.getInt("maxY");
-
-						List<BlockVector2D> nativePoints = new ArrayList<>();
-
-						for (String point : pointArray) {
-							String[] coords = point.split(",");
-							int x = Integer.parseInt(coords[0]);
-							int z = Integer.parseInt(coords[1]);
-							nativePoints.add(new BlockVector2D(x, z));
-						}
-
-						selection = PolygonalSelection.of(world, nativePoints, minY, maxY);
+					if (vertices == null) {
+						selection = CuboidSelection.of(world, new BlockVector3D(minX, minY, minZ), new BlockVector3D(maxX, maxY, maxZ));
 					} else {
-
-						String[] coords = pointArray[0].split(",");
-						int minX = Integer.parseInt(coords[0]);
-						int minY = Integer.parseInt(coords[1]);
-						int minZ = Integer.parseInt(coords[2]);
-
-						coords = pointArray[1].split(",");
-						int maxX = Integer.parseInt(coords[0]);
-						int maxY = Integer.parseInt(coords[1]);
-						int maxZ = Integer.parseInt(coords[2]);
-
-						BlockVector3D min = new BlockVector3D(minX, minY, minZ);
-						BlockVector3D max = new BlockVector3D(maxX, maxY, maxZ);
-
-						selection = CuboidSelection.of(world, min, max);
+						selection = PolygonalSelection.of(world,
+								Arrays.stream(vertices.substring(1, vertices.length() - 1).split("\\), \\(")).map(string -> {
+									String[] xAndZ = string.split(", ");
+									return new BlockVector2D(Integer.parseInt(xAndZ[0]), Integer.parseInt(xAndZ[1]));
+								}).collect(Collectors.toList()),
+								minY, maxY);
 					}
 
-					String[] accConfig = rs.getString("account_config").split(" \\| ");
-					List<Integer> multipliers;
-					try {
-						multipliers = Arrays.stream(accConfig[13].substring(1, accConfig[13].length() - 1).split(","))
-								.map(String::trim)
-								.map(Integer::parseInt)
-								.collect(Collectors.toList());
-					} catch (NumberFormatException e) {
-						multipliers = Config.multipliers.getDefault();
-					}
-					List<LocalTime> interestPayoutTimes;
-					try {
-						interestPayoutTimes =
-								Arrays.stream(accConfig[14].substring(1, accConfig[14].length() - 1).split(","))
-								.map(LocalTime::parse)
-								.collect(Collectors.toList());
-					} catch (DateTimeParseException e) {
-						interestPayoutTimes = Config.interestPayoutTimes.getDefault();
+					Set<OfflinePlayer> coowners = new HashSet<>();
+					try (Statement s = con.createStatement();
+						 ResultSet rs2 = s.executeQuery("SELECT CoOwnerUUID FROM " + tableCoOwnsBank + " WHERE BankID = " + bankID)) {
+
+						while (rs2.next())
+							coowners.add(Bukkit.getOfflinePlayer(UUID.fromString(rs2.getString(1))));
+
+					} catch (SQLException e) {
+						plugin.getLogger().severe(String.format("Failed to get bank co-owners from database (#%d)", bankID));
+						plugin.debugf("Failed to get bank co-owners database (#%d)", bankID);
+						plugin.debug(e);
 					}
 
-					BankConfig bankConfig = new BankConfig(
-							Boolean.parseBoolean(accConfig[0]),
-							Boolean.parseBoolean(accConfig[1]),
-							Boolean.parseBoolean(accConfig[2]),
-							Double.parseDouble(accConfig[3]),
-							Double.parseDouble(accConfig[4]),
-							Double.parseDouble(accConfig[5]),
-							Double.parseDouble(accConfig[6]),
-							Integer.parseInt(accConfig[7]),
-							Integer.parseInt(accConfig[8]),
-							Integer.parseInt(accConfig[9]),
-							Integer.parseInt(accConfig[10]),
-							Integer.parseInt(accConfig[11]),
-							Integer.parseInt(accConfig[12]),
-							multipliers,
-							interestPayoutTimes
-					);
+					plugin.debugf("Initializing bank \"%s\"... (#%d)", ChatColor.stripColor(name), bankID);
 
-					plugin.debug("Initializing bank"
-							+ (name != null ? " \"" + ChatColor.stripColor(name) + "\"" : "") + "... (#" + bankId + ")");
-
-					Bank bank = isAdminBank ?
-							Bank.recreate(bankId, name, coowners, selection, bankConfig) :
-							Bank.recreate(bankId, name, owner, coowners, selection, bankConfig);
+					Bank bank = owner == null ?
+							Bank.recreate(bankID, name, coowners, selection, bankConfig) :
+							Bank.recreate(bankID, name, owner, coowners, selection, bankConfig);
 
 					getAccountsAtBank(bank, showConsoleMessages, Callback.of(plugin,
 							result -> banksAndAccounts.put(bank, result),
@@ -661,14 +620,12 @@ public abstract class Database {
 					));
 				}
 
-				if (callback != null) {
+				if (callback != null)
 					callback.callSyncResult(Collections.unmodifiableMap(banksAndAccounts));
-				}
-			} catch (SQLException e) {
-				if (callback != null) {
-					callback.callSyncError(e);
-				}
 
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
 				plugin.getLogger().severe("Failed to get banks from database.");
 				plugin.debug("Failed to get banks from database.");
 				plugin.debug(e);
@@ -677,8 +634,8 @@ public abstract class Database {
 	}
 
 	/**
-	 * Get all accounts from the database under a certain bank
-	 * 
+	 * Gets all accounts registered at a certain bank from the database
+	 *
 	 * @param bank                The bank to get the accounts of
 	 * @param showConsoleMessages Whether console messages (errors or warnings)
 	 *                            should be shown
@@ -686,262 +643,291 @@ public abstract class Database {
 	 *                            collection of all accounts (as
 	 *                            {@code Collection<Account>})
 	 */
-	private void getAccountsAtBank(Bank bank, final boolean showConsoleMessages, final Callback<Set<Account>> callback) {
-		try (Connection con = dataSource.getConnection();
-			 PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableAccounts + " WHERE bank_id = ?")) {
-			ps.setInt(1, bank.getID());
-			ResultSet rs = ps.executeQuery();
+	private void getAccountsAtBank(final Bank bank, final boolean showConsoleMessages, final Callback<Set<Account>> callback) {
+		try (Connection con = dataSource.getConnection(); ResultSet rs = con.createStatement()
+				.executeQuery("SELECT * FROM " + tableAccounts + " WHERE BankID = " + bank.getID())) {
 
 			Set<Account> accounts = new HashSet<>();
+
+			ValueGrabber values = new ValueGrabber(rs);
+
 			while (rs.next()) {
 
-				int accountId = rs.getInt("id");
+				int accountID = values.getNextInt();
+				values.getNextInt();
+				String nickname = values.getNextString();
+				String ownerUUID = values.getNextString();
+				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(ownerUUID));
 
-				plugin.debug("Getting account from database... (#" + accountId + ")");
+				BigDecimal balance = BigDecimal.valueOf(values.getNextDouble());
+				BigDecimal prevBalance = BigDecimal.valueOf(values.getNextDouble());
 
-				String worldName = rs.getString("world");
+				int multiplierStage = values.getNextInt();
+				int delayUntilNextPayout = values.getNextInt();
+				int remainingOfflinePayouts = values.getNextInt();
+				int remainingOfflinePayoutsUntilReset = values.getNextInt();
+				AccountStatus accountStatus = new AccountStatus(bank, multiplierStage, delayUntilNextPayout,
+						remainingOfflinePayouts, remainingOfflinePayoutsUntilReset);
+
+				String worldName = values.getNextString();
 				World world = Bukkit.getWorld(worldName);
-
 				if (world == null) {
 					WorldNotFoundException e = new WorldNotFoundException(worldName);
 					if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
 						plugin.getLogger().warning(e.getMessage());
 						notFoundWorlds.add(worldName);
 					}
-					plugin.debug("Failed to get account (#" + accountId + ")");
+					plugin.debugf ("Failed to get account (#%d)", accountID);
 					plugin.debug(e);
 					continue;
 				}
+				int x = values.getNextInt();
+				int y = values.getNextInt();
+				int z = values.getNextInt();
+				Location location = new Location(world, x, y, z);
 
-				AccountStatus status;
-				try {
-					int multiplierStage = rs.getInt("multiplier_stage");
-					int remainingUntilPayout = rs.getInt("remaining_until_payout");
-					int remainingOfflinePayouts = rs.getInt("remaining_offline_payouts");
-					int remainingOfflineUntilReset = rs.getInt("remaining_offline_until_reset");
+				Set<OfflinePlayer> coowners = new HashSet<>();
+				try (ResultSet rs2 = con.createStatement()
+						.executeQuery("SELECT CoOwnerUUID FROM " + tableCoOwnsAccount + " WHERE AccountID = " + accountID)) {
 
-					status = new AccountStatus(bank, multiplierStage, remainingUntilPayout,
-							remainingOfflinePayouts, remainingOfflineUntilReset);
+					while (rs2.next())
+						coowners.add(Bukkit.getOfflinePlayer(UUID.fromString(rs2.getString(1))));
 
 				} catch (SQLException e) {
-					plugin.getLogger().severe("Failed to create account status (#" + accountId + ").");
-					plugin.debug("Failed to create account status.");
+					plugin.getLogger().severe(String.format("Failed to get account co-owners from database (#%d)", accountID));
+					plugin.debugf("Failed to get account co-owners database (#%d)", accountID);
 					plugin.debug(e);
-					continue;
 				}
 
-				BigDecimal balance = BigDecimal.valueOf(Double.parseDouble(rs.getString("balance")));
-				BigDecimal prevBalance = BigDecimal.valueOf(Double.parseDouble(rs.getString("prev_balance")));
+				plugin.debugf("Initializing account #%d at bank \"%s\"", accountID, bank.getName());
 
-				int x = rs.getInt("x");
-				int y = rs.getInt("y");
-				int z = rs.getInt("z");
-				Location location = new Location(world, x, y, z);
-				OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("owner")));
-				Set<OfflinePlayer> coowners = rs.getString("co_owners") == null
-						? new HashSet<>()
-						: Arrays.stream(rs.getString("co_owners").split(" \\| "))
-						.filter(string -> !string.isEmpty())
-						.map(UUID::fromString)
-						.map(Bukkit::getOfflinePlayer)
-						.collect(Collectors.toCollection(HashSet::new));
-				String nickname = rs.getString("nickname");
-
-				plugin.debugf("Initializing account #%d at bank \"%s\"", accountId, bank.getName());
-
-				Account account = Account.reopen(accountId, owner, coowners, bank, location, status, nickname, balance, prevBalance);
+				Account account = Account.reopen(accountID, owner, coowners, bank, location, accountStatus, nickname, balance, prevBalance);
 				accounts.add(account);
 			}
 
-			if (callback != null) {
+			if (callback != null)
 				callback.callSyncResult(Collections.unmodifiableSet(accounts));
-			}
-		} catch (SQLException e) {
-			if (callback != null) {
-				callback.callSyncError(e);
-			}
 
-			plugin.getLogger().severe("Failed to get accounts from database.");
-			plugin.debug("Failed to get accounts from database.");
+		} catch (SQLException e) {
+			if (callback != null)
+				callback.callSyncError(e);
+			plugin.getLogger().severe(String.format("Failed to get accounts from database (bank #%d).", bank.getID()));
+			plugin.debugf("Failed to get accounts from database (bank #%d).", bank.getID());
 			plugin.debug(e);
 		}
 	}
 
 	/**
-	 * Log an economy transaction to the database
-	 * 
+	 * Log an account transaction to the database
+	 *
 	 * @param executor Player who performed a transaction
 	 * @param account  The {@link Account} the player performed the transaction on
 	 * @param amount   The {@link BigDecimal} transaction amount
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
-	public void logAccountTransaction(final Player executor, Account account, BigDecimal amount, Callback<Void> callback) {
-		final String query = "INSERT INTO " + tableTransactionLog
-				+ " (account_id,bank_id,timestamp,time,owner_name,owner_uuid,executor_name,executor_uuid,transaction_type,amount,new_balance,world,x,y,z)"
-				+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	public void logAccountTransaction(final Player executor, final Account account, final BigDecimal amount, final Callback<Integer> callback) {
+		if (!Config.enableAccountTransactionLog) {
+			if (callback != null)
+				callback.callSyncResult(null);
+			return;
+		}
+		Utils.bukkitRunnable(() -> {
+			final String query = "INSERT INTO " + tableAccountTransactions +
+					"(AccountID, ExecutorUUID, Amount, NewBalance, Timestamp, Time) " +
+					"VALUES(?,?,?,?,?,?)";
+			try (Connection con = dataSource.getConnection();
+				 PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-		if (Config.enableTransactionLog) {
-			Utils.bukkitRunnable(() -> {
-				try (Connection con = dataSource.getConnection();
-						PreparedStatement ps = con.prepareStatement(query)) {
+				ValueInserter values = new ValueInserter(ps);
 
-					long millis = System.currentTimeMillis();
+				long millis = System.currentTimeMillis();
+				values.addNext(account.getID());
+				values.addNext(executor.getUniqueId().toString());
+				values.addNext(amount.doubleValue());
+				values.addNext(account.getBalance().doubleValue());
+				values.addNext(dateFormat.format(millis));
+				values.addNext(millis);
 
-					ps.setInt(1, account.getID());
-					ps.setInt(2, account.getBank().getID());
-					ps.setString(3, dateFormat.format(millis));
-					ps.setLong(4, millis);
-					ps.setString(5, account.getOwner().getName());
-					ps.setString(6, account.getOwner().getUniqueId().toString());
-					if (!account.isOwner(executor)) {
-						ps.setString(7, executor.getName());
-						ps.setString(8, executor.getUniqueId().toString());
-					} else {
-						ps.setString(7, null);
-						ps.setString(8, null);
-					}
-					ps.setString(9, amount.signum() > 0 ? "DEPOSIT" : "WITHDRAWAL");
-					ps.setString(10, amount.abs().toString());
-					ps.setString(11, account.getBalance().toString());
-					ps.setString(12, account.getLocation().getWorld() != null
-							? account.getLocation().getWorld().getName()
-							: "world");
-					ps.setInt(13, account.getLocation().getBlockX());
-					ps.setInt(14, account.getLocation().getBlockY());
-					ps.setInt(15, account.getLocation().getBlockZ());
-					ps.executeUpdate();
+				ps.executeUpdate();
 
-					if (callback != null) {
-						callback.callSyncResult(null);
-					}
+				int transactionID = -1;
+				ResultSet rs = ps.getGeneratedKeys();
+				if (rs.next())
+					transactionID = rs.getInt(1);
+				rs.close();
+				if (callback != null)
+					callback.callSyncResult(transactionID);
 
-					plugin.debug("Logged transaction to database");
-				} catch (SQLException e) {
-					if (callback != null) {
-						callback.callSyncError(e);
-					}
-
-					plugin.getLogger().severe("Failed to log banking transaction to database.");
-					plugin.debug("Failed to log banking transaction to database.");
-					plugin.debug(e);
-				}
-			}).runTaskAsynchronously(plugin);
-		} else if (callback != null)
-			callback.callSyncResult(null);
+				plugin.debugf("Logged account transaction to database (#%d).", transactionID);
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
+				plugin.getLogger().severe("Failed to log account transaction to database.");
+				plugin.debug("Failed to log account transaction to database.");
+				plugin.debug(e);
+			}
+		}).runTaskAsynchronously(plugin);
 	}
 
 	/**
 	 * Log an interest payout to the database
-	 * 
+	 *
 	 * @param account  The {@link Account} the interest was derived from
-	 * @param baseAmount   The {@link BigDecimal} base transaction amount
-	 * @param multiplier	The multiplier of the transaction
 	 * @param amount   The {@link BigDecimal} final transaction amount
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
-	public void logAccountInterest(Account account, BigDecimal baseAmount, int multiplier, BigDecimal amount, Callback<Void> callback) {
-		final String query = "INSERT INTO " + tableInterestLog
-				+ " (account_id,bank_id,owner_name,owner_uuid,base_amount,multiplier,amount,timestamp,time)"
-				+ " VALUES(?,?,?,?,?,?,?,?,?)";
+	public void logAccountInterest(final Account account, final BigDecimal amount, final Callback<Integer> callback) {
+		if (!Config.enableAccountInterestLog) {
+			if (callback != null)
+				callback.callSyncResult(null);
+			return;
+		}
+		Utils.bukkitRunnable(() -> {
+			final String query = "INSERT INTO " + tableAccountInterest +
+					"(AccountID, BankID, Amount, Timestamp, Time) " +
+					"VALUES(?,?,?,?,?)";
+			try (Connection con = dataSource.getConnection();
+				 PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-		if (Config.enableInterestLog) {
-			Utils.bukkitRunnable(() -> {
-				try (Connection con = dataSource.getConnection();
-						PreparedStatement ps = con.prepareStatement(query)) {
+				ValueInserter values = new ValueInserter(ps);
 
-					long millis = System.currentTimeMillis();
+				long millis = System.currentTimeMillis();
+				values.addNext(account.getID());
+				values.addNext(account.getBank().getID());
+				values.addNext(amount.doubleValue());
+				values.addNext(dateFormat.format(millis));
+				values.addNext(millis);
 
-					ps.setInt(1, account.getID());
-					ps.setInt(2, account.getBank().getID());
-					ps.setString(3, account.getOwner().getName());
-					ps.setString(4, account.getOwner().getUniqueId().toString());
-					ps.setString(5, baseAmount.toString());
-					ps.setInt(6, multiplier);
-					ps.setString(7, amount.toString());
-					ps.setString(8, dateFormat.format(millis));
-					ps.setLong(9, millis);
+				ps.executeUpdate();
 
-					ps.executeUpdate();
+				int interestID = -1;
+				ResultSet rs = ps.getGeneratedKeys();
+				if (rs.next())
+					interestID = rs.getInt(1);
+				rs.close();
+				if (callback != null)
+					callback.callSyncResult(interestID);
 
-					if (callback != null) {
-						callback.callSyncResult(null);
-					}
-
-					plugin.debug("Logged interest to database");
-				} catch (SQLException e) {
-					if (callback != null) {
-						callback.callSyncError(e);
-					}
-
-					plugin.getLogger().severe("Failed to log interest to database.");
-					plugin.debug("Failed to log interest to database.");
-					plugin.debug(e);
-				}
-			}).runTaskAsynchronously(plugin);
-		} else if (callback != null)
-			callback.callSyncResult(null);
+				plugin.debugf("Logged interest to database (#%d at account #%d).", interestID, account.getID());
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
+				plugin.getLogger().severe("Failed to log interest to database.");
+				plugin.debug("Failed to log interest to database.");
+				plugin.debug(e);
+			}
+		}).runTaskAsynchronously(plugin);
 	}
 
-	public void logBankCashFlow(Bank bank, BigDecimal amount, Callback<Void> callback) {
-		final String query = "INSERT INTO " + tableBankProfitLog
-				+ " (bank_id,owner_name,owner_uuid,amount,timestamp,time)"
-				+ " VALUES(?,?,?,?,?,?)";
+	public void logBankRevenue(final Bank bank, final BigDecimal amount, final Callback<Integer> callback) {
+		if (!Config.enableBankRevenueLog) {
+			if (callback != null)
+				callback.callSyncResult(null);
+			return;
+		}
+		Utils.bukkitRunnable(() -> {
+			final String query = "INSERT INTO " + tableBankRevenue +
+					"(BankID, Amount, Timestamp, Time) " +
+					"VALUES(?,?,?,?)";
+			try (Connection con = dataSource.getConnection();
+				 PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-		if (Config.enableInterestLog) {
-			Utils.bukkitRunnable(() -> {
-				try (Connection con = dataSource.getConnection();
-					 PreparedStatement ps = con.prepareStatement(query)) {
+				ValueInserter values = new ValueInserter(ps);
 
-					long millis = System.currentTimeMillis();
+				long millis = System.currentTimeMillis();
+				values.addNext(bank.getID());
+				values.addNext(amount.doubleValue());
+				values.addNext(dateFormat.format(millis));
+				values.addNext(millis);
 
-					ps.setInt(1, bank.getID());
-					ps.setString(2, bank.getOwner().getName());
-					ps.setString(3, bank.getOwner().getUniqueId().toString());
-					ps.setString(4, amount.toString());
-					ps.setString(5, dateFormat.format(millis));
-					ps.setLong(6, millis);
+				ps.executeUpdate();
 
-					ps.executeUpdate();
+				int revenueID = -1;
+				ResultSet rs = ps.getGeneratedKeys();
+				if (rs.next())
+					revenueID = rs.getInt(1);
+				rs.close();
+				if (callback != null)
+					callback.callSyncResult(revenueID);
 
-					if (callback != null)
-						callback.callSyncResult(null);
+				plugin.debugf("Logged revenue to database (#%d at bank #%s).", revenueID, bank.getID());
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
+				plugin.getLogger().severe("Failed to log revenue to database.");
+				plugin.debug("Failed to log revenue to database.");
+				plugin.debug(e);
+			}
+		}).runTaskAsynchronously(plugin);
+	}
 
-					plugin.debug("Logged profit to database");
-				} catch (SQLException e) {
-					if (callback != null)
-						callback.callSyncError(e);
+	public void logLowBalanceFee(final Account account, final BigDecimal amount, final Callback<Integer> callback) {
+		if (!Config.enableLowBalanceFeeLog) {
+			if (callback != null)
+				callback.callSyncResult(null);
+			return;
+		}
+		Utils.bukkitRunnable(() -> {
+			final String query = "INSERT INTO " + tableLowBalanceFees +
+					"(AccountID, BankID, Amount, Timestamp, Time) " +
+					"VALUES(?,?,?,?)";
+			try (Connection con = dataSource.getConnection();
+				 PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-					plugin.getLogger().severe("Failed to log profit to database.");
-					plugin.debug("Failed to log profit to database.");
-					plugin.debug(e);
-				}
-			}).runTaskAsynchronously(plugin);
-		} else if (callback != null)
-			callback.callSyncResult(null);
+				ValueInserter values = new ValueInserter(ps);
+
+				long millis = System.currentTimeMillis();
+				values.addNext(account.getID());
+				values.addNext(account.getBank().getID());
+				values.addNext(amount.doubleValue());
+				values.addNext(dateFormat.format(millis));
+				values.addNext(millis);
+
+				ps.executeUpdate();
+
+				int revenueID = -1;
+				ResultSet rs = ps.getGeneratedKeys();
+				if (rs.next())
+					revenueID = rs.getInt(1);
+				rs.close();
+				if (callback != null)
+					callback.callSyncResult(revenueID);
+
+				plugin.debugf("Logged low balance fee to database (#%d at account #%s).", revenueID, account.getID());
+			} catch (SQLException e) {
+				if (callback != null)
+					callback.callSyncError(e);
+				plugin.getLogger().severe("Failed to log low balance fee to database.");
+				plugin.debug("Failed to log low balance fee to database.");
+				plugin.debug(e);
+			}
+		}).runTaskAsynchronously(plugin);
 	}
 
 	/**
 	 * Cleans up the economy log to reduce file size
-	 * 
+	 *
 	 * @param async Whether the call should be executed asynchronously
 	 */
 	public void cleanUpLogs(boolean async) {
+		if (Config.cleanupLogDays < 0)
+			return;
 		BukkitRunnable runnable = Utils.bukkitRunnable(() -> {
 			long time = System.currentTimeMillis() - Config.cleanupLogDays * 86400000L;
-			String queryCleanUpTransactionLog = "DELETE FROM " + tableTransactionLog + " WHERE time < " + time;
-			String queryCleanUpInterestLog = "DELETE FROM " + tableInterestLog + " WHERE time < " + time;
-			String queryCleanUpLogouts = "DELETE FROM " + tableLogouts + " WHERE time < " + time;
 
-			try (Connection con = dataSource.getConnection();
-					Statement s = con.createStatement();
-					Statement s2 = con.createStatement();
-					Statement s3 = con.createStatement()) {
-				s.executeUpdate(queryCleanUpTransactionLog);
-				s2.executeUpdate(queryCleanUpInterestLog);
-				s3.executeUpdate(queryCleanUpLogouts);
+			try (Statement s = dataSource.getConnection().createStatement()) {
+
+				s.addBatch("DELETE FROM " + tableAccountTransactions + " WHERE Time < " + time);
+				s.addBatch("DELETE FROM " + tableAccountInterest + " WHERE Time < " + time);
+				s.addBatch("DELETE FROM " + tableBankRevenue + " WHERE Time < " + time);
+				s.addBatch("DELETE FROM " + tableLowBalanceFees + " WHERE Time < " + time);
+				s.addBatch("DELETE FROM " + tablePlayers + " WHERE LastSeen < " + time);
+
+				int[] affectedRows = s.executeBatch();
 
 				plugin.getLogger().info("Cleaned up banking logs.");
-				plugin.debug("Cleaned up banking logs.");
+				plugin.debugf("Cleaned up banking logs (%d transactions, %d interests, %d revenues, %d low balance fees, %d players).",
+						affectedRows[0], affectedRows[1], affectedRows[2], affectedRows[3], affectedRows[4]);
 			} catch (SQLException e) {
 				plugin.getLogger().severe("Failed to clean up banking logs.");
 				plugin.debug("Failed to clean up banking logs.");
@@ -955,32 +941,32 @@ public abstract class Database {
 	}
 
     /**
-     * Log a logout to the database
-     * 
+     * Logs player's last seen time to the database
+     *
      * @param player    Player who logged out
      * @param callback  Callback that - if succeeded - returns {@code null}
      */
-    public void logLogout(final Player player, final Callback<Void> callback) {
+    public void logLastSeen(final Player player, final Callback<Void> callback) {
 		Utils.bukkitRunnable(() -> {
-			try (Connection con = dataSource.getConnection();
-					PreparedStatement ps = con.prepareStatement("REPLACE INTO " + tableLogouts + " (player,time) VALUES(?,?)")) {
+			try (PreparedStatement ps = dataSource.getConnection()
+					.prepareStatement("REPLACE INTO " + tablePlayers + " (PlayerUUID,Name,LastSeen) VALUES(?,?,?)")) {
 
 				ps.setString(1, player.getUniqueId().toString());
-				ps.setLong(2, System.currentTimeMillis());
+				ps.setString(2, player.getName());
+				ps.setLong(3, System.currentTimeMillis());
 				ps.executeUpdate();
 
 				if (callback != null)
 					callback.callSyncResult(null);
 
 				if (!player.isOnline())
-					plugin.debug("Logged logout to database");
+					plugin.debug("Logged last seen time to database");
 
 			} catch (final SQLException ex) {
 				if (callback != null)
 					callback.callSyncError(ex);
-
-				plugin.getLogger().severe("Failed to log last logout to database.");
-				plugin.debug("Failed to log logout to database.");
+				plugin.getLogger().severe("Failed to log last seen time to database.");
+				plugin.debug("Failed to log last seen time to database.");
 				plugin.debug(ex);
 			}
         }).runTaskAsynchronously(plugin);
@@ -988,14 +974,14 @@ public abstract class Database {
 
     /**
      * Gets the revenue a player received in account interest while they were offline
-     * 
+     *
      * @param player     Player whose revenue to get
      * @param logoutTime Time in milliseconds when he logged out the last time
      * @param callback   Callback that - if succeeded - returns the revenue the
      *                   player made while offline (as {@code double})
      */
-	public void getOfflineAccountRevenue(Player player, long logoutTime, Callback<BigDecimal> callback) {
-		getOfflineRevenue(player, logoutTime, tableInterestLog, callback);
+	public void getAccountInterestEarnedOffline(Player player, long logoutTime, Callback<BigDecimal> callback) {
+		getOfflineRevenue(player, logoutTime, tableAccountInterest, callback);
     }
 
 	/**
@@ -1006,34 +992,29 @@ public abstract class Database {
 	 * @param callback   Callback that - if succeeded - returns the revenue the
 	 *                   player made while offline (as {@code double})
 	 */
-	public void getOfflineBankRevenue(Player player, long logoutTime, Callback<BigDecimal> callback) {
-		getOfflineRevenue(player, logoutTime, tableBankProfitLog, callback);
+	public void getBankRevenueEarnedOffline(Player player, long logoutTime, Callback<BigDecimal> callback) {
+		getOfflineRevenue(player, logoutTime, tableBankRevenue, callback);
 	}
 
     private void getOfflineRevenue(Player player, long logoutTime, String table, Callback<BigDecimal> callback) {
 		Utils.bukkitRunnable(() -> {
-			try (Connection con = dataSource.getConnection();
-				 PreparedStatement ps = con.prepareStatement("SELECT * FROM " + table + " WHERE owner_uuid = ?")) {
-				ps.setString(1, player.getUniqueId().toString());
-				ResultSet rs = ps.executeQuery();
+			try (ResultSet rs = dataSource.getConnection().createStatement()
+					.executeQuery("SELECT * FROM " + table + " WHERE PlayerUUID = " + player.getUniqueId().toString())) {
 
-				BigDecimal revenue = BigDecimal.ZERO;
+				BigDecimal total = BigDecimal.ZERO;
 				while (rs.next()) {
-					if (rs.getLong("time") > logoutTime) {
-						BigDecimal interest = BigDecimal.valueOf(Double.parseDouble(rs.getString("amount")));
-						revenue = revenue.add(interest);
+					if (rs.getLong("Time") > logoutTime) {
+						total = total.add(BigDecimal.valueOf(Double.parseDouble(rs.getString("Amount"))));
 					}
 				}
-				if (callback != null) {
-					callback.callSyncResult(revenue.setScale(2, RoundingMode.HALF_EVEN));
-				}
-			} catch (SQLException ex) {
-				if (callback != null) {
-					callback.callSyncError(ex);
-				}
+				if (callback != null)
+					callback.callSyncResult(total.setScale(2, RoundingMode.HALF_EVEN));
 
-				plugin.getLogger().severe("Failed to get revenue from database.");
-				plugin.debug("Failed to get revenue from player \"" + player.getUniqueId().toString() + "\".");
+			} catch (SQLException ex) {
+				if (callback != null)
+					callback.callSyncError(ex);
+				plugin.getLogger().severe("Failed to get earnings since last logout from database.");
+				plugin.debug("Failed to get earnings from player \"" + player.getUniqueId().toString() + "\".");
 				plugin.debug(ex);
 			}
 		}).runTaskAsynchronously(plugin);
@@ -1049,26 +1030,20 @@ public abstract class Database {
 	 */
 	public void getLastLogout(Player player, Callback<Long> callback) {
 		Utils.bukkitRunnable(() -> {
-			try (Connection con = dataSource.getConnection();
-					PreparedStatement ps = con
-							.prepareStatement("SELECT * FROM " + tableLogouts + " WHERE player = ?")) {
-				ps.setString(1, player.getUniqueId().toString());
-				ResultSet rs = ps.executeQuery();
+			try (ResultSet rs = dataSource.getConnection().createStatement()
+					.executeQuery("SELECT * FROM " + tablePlayers + " WHERE PlayerUUID = " + player.getUniqueId().toString())) {
 
-				if (rs.next()) {
-					if (callback != null) {
-						callback.callSyncResult(rs.getLong("time"));
-					}
-				}
+				long lastLogout = -1L;
 
-				if (callback != null) {
-					callback.callSyncResult(-1L);
-				}
+				if (rs.next())
+					lastLogout = rs.getLong("Time");
+
+				if (callback != null)
+					callback.callSyncResult(lastLogout);
+
 			} catch (SQLException e) {
-				if (callback != null) {
+				if (callback != null)
 					callback.callSyncError(e);
-				}
-
 				plugin.getLogger().severe("Failed to get last logout from database.");
 				plugin.debug("Failed to get last logout from player \"" + player.getName() + "\".");
 				plugin.debug(e);
@@ -1084,6 +1059,85 @@ public abstract class Database {
 			return;
 		dataSource.close();
 		dataSource = null;
+	}
+
+	/**
+	 * Helper class to insert values into a {@link PreparedStatement} in sequential order.
+	 */
+	private static class ValueInserter {
+
+		private int index = 1;
+		private final PreparedStatement ps;
+
+		private ValueInserter(PreparedStatement ps) {
+			this.ps = ps;
+		}
+
+		void addNext(String next) throws SQLException {
+			ps.setString(index++, next);
+		}
+
+		void addNext(int next) throws SQLException {
+			ps.setInt(index++, next);
+		}
+
+		void addNext(long next) throws SQLException {
+			ps.setLong(index++, next);
+		}
+
+		void addNext(double next) throws SQLException {
+			ps.setDouble(index++, next);
+		}
+
+		void addNext(boolean next) throws SQLException {
+			ps.setString(index++, Boolean.toString(next));
+		}
+
+		<T> void addNext(Collection<T> next) throws SQLException {
+			if (next != null)
+				ps.setString(index++, next.stream().map(Objects::toString).collect(Collectors.joining(", ")));
+			else
+				ps.setString(index++, null);
+		}
+
+	}
+
+	/**
+	 * Helper class to extract values from a {@link ResultSet} in sequential order.
+	 */
+	private static class ValueGrabber {
+
+		private int index = 1;
+		private final ResultSet rs;
+
+		private ValueGrabber(ResultSet ps) {
+			this.rs = ps;
+		}
+
+		String getNextString() throws SQLException {
+			return rs.getString(index++);
+		}
+
+		int getNextInt() throws SQLException {
+			return rs.getInt(index++);
+		}
+
+		long getNextLong() throws SQLException {
+			return rs.getLong(index++);
+		}
+
+		double getNextDouble() throws SQLException {
+			return rs.getDouble(index++);
+		}
+
+		boolean getNextBoolean() throws SQLException {
+			return Boolean.parseBoolean(getNextString());
+		}
+
+		void skip() {
+			index++;
+		}
+
 	}
 
 }
