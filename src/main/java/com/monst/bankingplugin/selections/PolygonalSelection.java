@@ -109,13 +109,22 @@ public class PolygonalSelection extends Selection {
 
 	@Override
 	public String getCoordinates() {
-		return getVertices().stream().map(vec -> "(" + vec.getBlockX() + ", " + vec.getBlockZ() + ")")
-				.collect(Collectors.joining(", ")) + " at " + minY + " ≤ y ≤ " + maxY;
+		StringBuilder sb = new StringBuilder(64);
+		List<BlockVector2D> vertices = getVertices();
+		sb.append(vertices.stream()
+				.limit(8)
+				.map(vertex -> "(" + vertex.getBlockX() + ", " + vertex.getBlockZ() + ")")
+				.collect(Collectors.joining(", "))
+		);
+		if (vertices.size() > 8)
+			sb.append(", ...");
+		sb.append(" at ").append(minY).append(" ≤ y ≤ ").append(maxY);
+		return sb.toString();
 	}
 
 	@Override
 	public long getVolume() {
-		return (maxY - minY + 1) * getFootprint().size();
+		return (long) (maxY - minY + 1) * getFootprint().size();
 	}
 
 	@Override

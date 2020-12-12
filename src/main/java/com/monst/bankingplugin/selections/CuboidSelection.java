@@ -78,14 +78,14 @@ public class CuboidSelection extends Selection {
 
 	@Override
 	public String getCoordinates() {
-		return "(" + getMinX() + ", " + getMinZ() + ", " + getMinZ()
-				+ ") -> (" 
+		return "(" + getMinX() + ", " + getMinY() + ", " + getMinZ()
+				+ ") -> ("
 				+ getMaxX() + ", " + getMaxY() + ", " + getMaxZ() + ")";
 	}
 
 	@Override
 	public long getVolume() {
-		return (getMaxX() - getMinX() + 1)
+		return (long) (getMaxX() - getMinX() + 1)
 			 * (getMaxY() - getMinY() + 1)
 			 * (getMaxZ() - getMinZ() + 1);
 	}
