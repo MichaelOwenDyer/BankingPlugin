@@ -226,8 +226,9 @@ public enum Message {
             Placeholder.BANK_SIZE, Placeholder.MINIMUM, Placeholder.DIFFERENCE
     ),
     BANK_SELECTION_OVERLAPS_EXISTING (
-            "A player attempts to create a bank that overlaps with an already existing bank.",
-            "&cThat selection overlaps with another bank."
+            "A player attempts to create a bank that overlaps with at least one existing bank.",
+            "&cThat selection overlaps with &b%NUMBER_OF_BANKS% &cexisting bank(s).",
+            Placeholder.NUMBER_OF_BANKS
     ),
     BANK_SELECTION_CUTS_ACCOUNTS (
             "A player attempts to resize a bank to a selection that does not encompass all accounts at the bank.",

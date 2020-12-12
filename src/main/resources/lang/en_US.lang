@@ -205,9 +205,9 @@ message.bank-selection-too-large=&cThat selection is too large. It exceeds the m
 # Available placeholders: %BANK_SIZE%, %MINIMUM%, %DIFFERENCE%
 message.bank-selection-too-small=&cThat selection is too small. It falls short of the minimum bank size by &b%DIFFERENCE% &cblocks.
 
-# Scenario: A player attempts to create a bank that overlaps with an already existing bank.
-# Available placeholders:
-message.bank-selection-overlaps-existing=&cThat selection overlaps with another bank.
+# Scenario: A player attempts to create a bank that overlaps with at least one existing bank.
+# Available placeholders: %NUMBER_OF_BANKS%
+message.bank-selection-overlaps-existing=&cThat selection overlaps with &b%NUMBER_OF_BANKS% &cexisting bank(s).
 
 # Scenario: A player attempts to resize a bank to a selection that does not encompass all accounts at the bank.
 # Available placeholders: %NUMBER_OF_ACCOUNTS%

@@ -100,7 +100,9 @@ public class BankCreate extends BankCommand.SubCommand {
         Set<Selection> overlappingSelections = bankRepo.getOverlappingSelections(selection);
         if (!overlappingSelections.isEmpty()) {
             plugin.debug("Region is not exclusive");
-            p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING));
+            p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING,
+                    new Replacement(Placeholder.NUMBER_OF_BANKS, overlappingSelections::size)
+            ));
             if (plugin.hasGriefPrevention() && Config.enableGriefPreventionIntegration)
                 VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;

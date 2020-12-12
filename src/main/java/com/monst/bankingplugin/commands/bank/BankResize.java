@@ -125,7 +125,9 @@ public class BankResize extends BankCommand.SubCommand {
         Set<Selection> overlappingSelections = bankRepo.getOverlappingSelectionsIgnoring(selection, bank.getSelection());
         if (!overlappingSelections.isEmpty()) {
             plugin.debug("New selection is overlaps with an existing bank selection");
-            p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING));
+            p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING,
+                    new Replacement(Placeholder.NUMBER_OF_BANKS, overlappingSelections::size)
+            ));
             if (plugin.hasGriefPrevention() && Config.enableGriefPreventionIntegration)
                 VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;
