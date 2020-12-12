@@ -86,8 +86,7 @@ public class InterestEventListener implements Listener {
 						feesReceivable.putIfAbsent(account.getBank().getOwner(), new Counter());
 						feesReceivable.get(account.getBank().getOwner()).add(BigDecimal.valueOf((double) bank.get(BankField.LOW_BALANCE_FEE)));
 					}
-					plugin.getDatabase().logAccountInterest(account, BigDecimal.ZERO, 0,
-							BigDecimal.valueOf((double) bank.get(BankField.LOW_BALANCE_FEE) * -1), null);
+					plugin.getDatabase().logAccountInterest(account, bank.get(BankField.LOW_BALANCE_FEE), null);
 
 					if (!(boolean) bank.get(BankField.PAY_ON_LOW_BALANCE))
 						continue;
@@ -120,10 +119,9 @@ public class InterestEventListener implements Listener {
 				}
 
 				accountUtils.addAccount(account, true);
-				plugin.getDatabase().logAccountInterest(account, baseInterest, multiplier, interest, null);
+				plugin.getDatabase().logAccountInterest(account, interest, multiplier, interest, null);
 			}
-			if (accountOwner.isOnline())
-				plugin.getDatabase().logLogout(accountOwner.getPlayer(), null);
+			plugin.getDatabase().logLastSeen(accountOwner.getPlayer(), null);
 		});
 
 		boolean containsX = Config.bankRevenueFunction.contains("x");
@@ -167,7 +165,7 @@ public class InterestEventListener implements Listener {
 						))
 				));
 
-				plugin.getDatabase().logBankCashFlow(bank, revenue, null);
+				plugin.getDatabase().logBankRevenue(bank, revenue, null);
 			}
 		});
 

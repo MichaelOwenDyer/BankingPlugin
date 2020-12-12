@@ -33,7 +33,7 @@ public class Config {
      * The account command of BankingPlugin <i>(default: account)</i>
      **/
     public static String commandNameAccount;
-    
+
     /**
      * The control command of BankingPlugin <i>(default: bankingplugin)</i>
      **/
@@ -43,12 +43,12 @@ public class Config {
      * The real-life times for account interest payouts.
      **/
 	public static ConfigPair<List<LocalTime>> interestPayoutTimes;
-    
+
     /**
      * The default baseline account interest rate.
      **/
 	public static ConfigPair<Double> interestRate;
-    
+
     /**
      * The list of default interest multipliers in sequential order.
      **/
@@ -61,7 +61,7 @@ public class Config {
 	public static ConfigPair<Integer> initialInterestDelay;
 
 	/**
-	 * Whether to decrement the interest delay period while a player is offline. 
+	 * Whether to decrement the interest delay period while a player is offline.
 	 * Set this to false to only decrement the delay period when a player is online for
 	 * an interest payout event, and not while offline.
 	 **/
@@ -82,7 +82,7 @@ public class Config {
 	 * The behavior of an offline player's multiplier.
 	 **/
 	public static ConfigPair<Integer> offlineMultiplierDecrement;
-    
+
     /**
 	 * The behavior of a player's multiplier at a withdrawal event.
 	 **/
@@ -93,7 +93,7 @@ public class Config {
      **/
 	public static double bankCreationPriceAdmin;
 	public static double bankCreationPricePlayer;
-    
+
     /**
      * The price a player has to pay in order to create an account.
      **/
@@ -134,12 +134,12 @@ public class Config {
      * The default bank ownership limit for players whose limit is not set via a permission.
      **/
 	public static int defaultBankLimit;
-    
+
     /**
      * The default account ownership limit for players whose limit is not set via a permission.
      **/
 	public static int defaultAccountLimit;
-	
+
 	/**
 	 * The minimum bank volume.
 	 */
@@ -150,7 +150,7 @@ public class Config {
 	 * permission.
 	 */
 	public static long maximumBankVolume;
-	
+
 	/**
 	 * Whether a bank owner should be allowed to create an account at their own
 	 * bank.
@@ -191,19 +191,24 @@ public class Config {
     public static boolean enableUpdateChecker;
 
     /**
-     * Whether deposits and withdrawals should be logged in the database.
+     * Whether account deposits and withdrawals should be logged in the database.
      **/
-	public static boolean enableTransactionLog;
+	public static boolean enableAccountTransactionLog;
 
 	/**
 	 * Whether interest payouts should be logged in the database.
 	 **/
-	public static boolean enableInterestLog;
+	public static boolean enableAccountInterestLog;
 
 	/**
 	 * Whether bank profits and losses should be logged in the database.
 	 */
-	public static boolean enableProfitLog;
+	public static boolean enableBankRevenueLog;
+
+	/**
+	 * Whether low balance fees should be logged in the database.
+	 */
+	public static boolean enableLowBalanceFeeLog;
 
 	/**
 	 * Whether the debug log file should be created.
@@ -212,7 +217,7 @@ public class Config {
 
     /**
      * <p>Sets the time limit for cleaning up the deposit-withdrawal log in days</p>
-     * 
+     *
      * If this is equal to {@code 0}, the log will not be cleaned.
      **/
 	public static int cleanupLogDays;
@@ -245,7 +250,7 @@ public class Config {
 	 * (e.g. when no chest is found at an account's location)
 	 */
     public static boolean removeAccountOnError;
-    
+
 	/**
 	 * <p>
 	 * List containing items for which a player will earn no interest in their
@@ -281,11 +286,6 @@ public class Config {
 	 * The language file to use.
 	 */
 	public static String languageFile;
-    
-    /**
-     * The prefix to be used for database tables.
-     */
-    public static String databaseTablePrefix;
 
 	/* ----------------------------------------------- */
 
@@ -511,9 +511,9 @@ public class Config {
 		confirmOnTransfer = nonNull(config.getBoolean("confirm-on-transfer"), true);
 		trustOnTransfer = nonNull(config.getBoolean("trust-on-transfer"), false);
         enableUpdateChecker = nonNull(config.getBoolean("enable-update-checker"), true);
-		enableTransactionLog = nonNull(config.getBoolean("enable-transaction-log"), true);
-		enableInterestLog = nonNull(config.getBoolean("enable-interest-log"), true);
-		enableProfitLog = nonNull(config.getBoolean("enable-profit-log"), true);
+		enableAccountTransactionLog = nonNull(config.getBoolean("enable-transaction-log"), true);
+		enableAccountInterestLog = nonNull(config.getBoolean("enable-interest-log"), true);
+		enableBankRevenueLog = nonNull(config.getBoolean("enable-profit-log"), true);
 		enableDebugLog = nonNull(config.getBoolean("enable-debug-log"), true);
 		cleanupLogDays = nonNull(config.getInt("cleanup-log-days"), 30);
         enableWorldGuardIntegration = nonNull(config.getBoolean("enable-worldguard-integration"), true);
@@ -527,7 +527,6 @@ public class Config {
 		enableMail = nonNull(config.getBoolean("enable-mail"), true);
 		languageFile = nonNull(config.getString("language-file"), "en_US");
 		nameRegex = nonNull(config.getString("name-regex"), "");
-		databaseTablePrefix = nonNull(config.getString("database-table-prefix"), "bankingplugin_");
 
 		if (firstLoad || langReload)
 			loadLanguageConfig(showMessages);

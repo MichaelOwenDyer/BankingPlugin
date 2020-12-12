@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class SQLite extends Database {
 
@@ -43,7 +45,7 @@ public class SQLite extends Database {
                 return null;
             }
         }
-        
+
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + dbFile);
         config.setConnectionTestQuery("SELECT 1");
@@ -53,7 +55,7 @@ public class SQLite extends Database {
 
     /**
      * Vacuums the database to reduce file size
-     * 
+     *
      * @param async Whether the call should be executed asynchronously
      */
     public void vacuum(boolean async) {
@@ -74,135 +76,149 @@ public class SQLite extends Database {
     }
 
     @Override
-    String getQueryCreateTableBanks() {
-        return "CREATE TABLE IF NOT EXISTS " + tableBanks + " ("
-            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-			+ "name TEXT NOT NULL," // Bank name
-            + "owner TEXT NOT NULL," // Owner UUID
-            + "co_owners TEXT,"
-			
-            + "selection_type TEXT NOT NULL CHECK (selection_type IN ('CUBOID', 'POLYGONAL')),"
-			+ "world TEXT NOT NULL,"
-			+ "minY INTEGER," // only used if polygonal
-			+ "maxY INTEGER," // only used if polygonal
-        	+ "points TEXT NOT NULL," // Contains min/max points if cuboid, all vertices if polygonal
-        
-        	+ "account_config TEXT NOT NULL)";
-        
-		// id,name,owner,co_owners,selection_type,world,maxY,minY,points,account_config
-		// ?,?,?,?,?,?,?,?,?,?
+    String getQueryCreateTable(String tableName, String... columns) {
+        return "CREATE TABLE IF NOT EXISTS " + tableName +
+                Arrays.stream(columns).collect(Collectors.joining(", ", " (", ")"));
     }
-    
+
+    @Override
+    String getQueryCreateTableBanks() {
+        return getQueryCreateTable(tableBanks,
+                "BankID INTEGER PRIMARY KEY AUTOINCREMENT",
+                "Name TEXT NOT NULL UNIQUE",
+                "OwnerUUID TEXT REFERENCES " + tablePlayers + " (PlayerUUID)",
+
+                "CountInterestDelayOffline TEXT NOT NULL",
+                "ReimburseAccountCreation TEXT NOT NULL",
+                "PayOnLowBalance TEXT NOT NULL",
+                "InterestRate REAL NOT NULL",
+                "AccountCreationPrice REAL NOT NULL",
+                "MinimumBalance REAL NOT NULL",
+                "LowBalanceFee REAL NOT NULL",
+                "InitialInterestDelay INTEGER NOT NULL",
+                "AllowedOfflinePayouts INTEGER NOT NULL",
+                "AllowedOfflinePayoutsBeforeMultiplierReset INTEGER NOT NULL",
+                "OfflineMultiplierDecrement INTEGER NOT NULL",
+                "WithdrawalMultiplierDecrement INTEGER NOT NULL",
+                "PlayerBankAccountLimit INTEGER NOT NULL",
+                "Multipliers TEXT NOT NULL",
+                "InterestPayoutTimes TEXT NOT NULL",
+
+                "World TEXT NOT NULL",
+                "MinX INTEGER NOT NULL",
+                "MaxX INTEGER NOT NULL",
+                "MinY INTEGER NOT NULL",
+                "MaxY INTEGER NOT NULL",
+                "MinZ INTEGER NOT NULL",
+                "MaxZ INTEGER NOT NULL",
+                "PolygonVertices TEXT" // contains list of all vertices if polygonal
+        );
+    }
+
+    @Override
+    String getQueryCreateTableCoOwnsBank() {
+        return getQueryCreateTable(tableCoOwnsBank,
+                "CoOwnerUUID TEXT REFERENCES " + tablePlayers + " (PlayerUUID) ON DELETE CASCADE",
+                "BankID INTEGER REFERENCES " + tableBanks + " (BankID) ON DELETE CASCADE",
+                "PRIMARY KEY (CoOwnerUUID, BankID)"
+        );
+    }
+
     @Override
     String getQueryCreateTableAccounts() {
-    	return "CREATE TABLE IF NOT EXISTS " + tableAccounts + " ("
-    			+ "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-    			+ "bank_id INTEGER NOT NULL," 
-				+ "nickname TEXT,"
-				+ "owner TEXT NOT NULL," // Owner UUID
-				+ "co_owners TEXT,"
-    			+ "size INTEGER NOT NULL," // Single or double chest -> 1, 2
-    			
-				+ "balance TEXT NOT NULL,"
-				+ "prev_balance TEXT NOT NULL,"
-    			
-    			+ "multiplier_stage INTEGER NOT NULL,"
-    			+ "remaining_until_payout INTEGER NOT NULL,"
-    			+ "remaining_offline_payouts INTEGER NOT NULL,"
-    			+ "remaining_offline_until_reset INTEGER NOT NULL,"
-    			
-				+ "world TEXT NOT NULL,"
-    			+ "x INTEGER NOT NULL,"
-    			+ "y INTEGER NOT NULL,"
-    			+ "z INTEGER NOT NULL)";
-    	
-		// id,bank_id,nickname,owner,co_owners,size,balance,prev_balance,multiplier_stage,remaining_until_payout,remaining_offline_payouts,remaining_offline_until_reset,world,x,y,z
-		// ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+    	return getQueryCreateTable(tableAccounts,
+    			"AccountID INTEGER PRIMARY KEY AUTOINCREMENT",
+    			"BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID) ON DELETE CASCADE",
+				"Nickname TEXT NOT NULL",
+				"OwnerUUID TEXT NOT NULL REFERENCES " + tablePlayers + " (PlayerUUID)",
+
+				"Balance REAL NOT NULL",
+				"PreviousBalance REAL NOT NULL",
+
+    			"MultiplierStage INTEGER NOT NULL",
+    			"DelayUntilNextPayout INTEGER NOT NULL",
+    			"RemainingOfflinePayouts INTEGER NOT NULL",
+    			"RemainingOfflinePayoutsUntilReset INTEGER NOT NULL",
+
+				"World TEXT NOT NULL",
+    			"X INTEGER NOT NULL",
+    			"Y INTEGER NOT NULL",
+    			"Z INTEGER NOT NULL"
+        );
     }
 
     @Override
-    String getQueryCreateTableTransactionLog() {
-        return "CREATE TABLE IF NOT EXISTS " + tableTransactionLog + " ("
-        	+ "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            + "account_id INTEGER NOT NULL,"
-            + "bank_id INTEGER NOT NULL,"
-			+ "timestamp TEXT NOT NULL,"
-			+ "time INTEGER NOT NULL,"
-            
-			+ "owner_name TEXT NOT NULL,"
-			+ "owner_uuid TEXT NOT NULL,"
-			+ "executor_name TEXT,"
-			+ "executor_uuid TEXT,"
-            
-			+ "transaction_type TEXT NOT NULL,"
-            + "amount TEXT NOT NULL,"
-            + "new_balance TEXT NOT NULL,"
-            
-			+ "world TEXT NOT NULL,"
-            + "x INTEGER NOT NULL,"
-            + "y INTEGER NOT NULL,"
-            + "z INTEGER NOT NULL)";
-        
-		// id,account_id,bank_id,timestamp,time,owner_name,owner_uuid,executor_name,executor_uuid,transaction_type,amount,new_balance,world,x,y,z
-        // ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
-    }
-    
-    @Override
-    String getQueryCreateTableInterestLog() {
-    	return "CREATE TABLE IF NOT EXISTS " + tableInterestLog + " ("
-    		+ "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-    		+ "account_id INTEGER NOT NULL,"
-    		+ "bank_id INTEGER NOT NULL,"
-    		
-    		+ "owner_name TEXT NOT NULL,"
-			+ "owner_uuid TEXT NOT NULL,"
-
-    		+ "base_amount TEXT NOT NULL,"
-    		+ "multiplier INTEGER NOT NULL,"
-    		+ "amount TEXT NOT NULL,"
-
-			+ "timestamp TEXT NOT NULL,"
-			+ "time INTEGER NOT NULL)";
-    	
-		// id,account_id,bank_id,owner_name,owner_uuid,base_amount,multiplier,amount,timestamp,time
-		// ?,?,?,?,?,?,?,?,?,?
+    String getQueryCreateTableCoOwnsAccount() {
+        return getQueryCreateTable(tableCoOwnsAccount,
+                "CoOwnerUUID TEXT REFERENCES " + tablePlayers + " (PlayerUUID) ON DELETE CASCADE",
+                "AccountID INTEGER REFERENCES " + tableAccounts + " (AccountID) ON DELETE CASCADE",
+                "PRIMARY KEY (CoOwnerUUID, AccountID)"
+        );
     }
 
     @Override
-    String getQueryCreateTableProfitLog() {
-    	return "CREATE TABLE IF NOT EXISTS " + tableBankProfitLog + " ("
-    		+ "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-    		+ "bank_id INTEGER NOT NULL,"
-
-    		+ "owner_name TEXT NOT NULL,"
-			+ "owner_uuid TEXT NOT NULL,"
-
-    		+ "amount TEXT NOT NULL,"
-
-			+ "timestamp TEXT NOT NULL,"
-			+ "time INTEGER NOT NULL)";
-
-		// id,bank_id,owner_name,owner_uuid,amount,timestamp,time
-		// ?,?,?,?,?,?,?
+    String getQueryCreateTableAccountTransactions() {
+        return getQueryCreateTable(tableAccountTransactions,
+                "TransactionID INTEGER PRIMARY KEY AUTOINCREMENT",
+                "AccountID INTEGER NOT NULL REFERENCES " + tableAccounts + " (AccountID) ON DELETE CASCADE",
+                "ExecutorUUID TEXT NOT NULL REFERENCES " + tablePlayers + " (PlayerUUID)",
+                "Amount REAL NOT NULL",
+                "NewBalance REAL NOT NULL",
+                "Timestamp TEXT NOT NULL",
+                "Time INTEGER NOT NULL"
+        );
     }
 
     @Override
-    String getQueryCreateTableLogout() {
-        return "CREATE TABLE IF NOT EXISTS " + tableLogouts + " ("
-				+ "player TEXT PRIMARY KEY NOT NULL,"
-				+ "time INTEGER NOT NULL)";
+    String getQueryCreateTableAccountInterest() {
+    	return getQueryCreateTable(tableAccountInterest,
+                "InterestID INTEGER PRIMARY KEY AUTOINCREMENT",
+                "AccountID INTEGER NOT NULL REFERENCES " + tableAccounts + " (AccountID) ON DELETE CASCADE",
+                "BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID)",
+                "Amount REAL NOT NULL",
+                "Timestamp TEXT NOT NULL",
+                "Time INTEGER NOT NULL"
+        );
+    }
+
+    @Override
+    String getQueryCreateTableBankRevenue() {
+    	return getQueryCreateTable(tableBankRevenue,
+                "RevenueID INTEGER PRIMARY KEY AUTOINCREMENT",
+                "BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID) ON DELETE CASCADE",
+                "Amount REAL NOT NULL",
+                "Timestamp TEXT NOT NULL",
+                "Time INTEGER NOT NULL"
+        );
+    }
+
+    @Override
+    String getQueryCreateTableLowBalanceFees() {
+    	return getQueryCreateTable(tableLowBalanceFees,
+                "FeeID INTEGER PRIMARY KEY AUTOINCREMENT",
+                "AccountID INTEGER NOT NULL REFERENCES " + tableAccounts + " (AccountID) ON DELETE CASCADE",
+                "BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID)",
+                "Amount REAL NOT NULL",
+                "Timestamp TEXT NOT NULL",
+                "Time INTEGER NOT NULL"
+        );
+    }
+
+    @Override
+    String getQueryCreateTablePlayers() {
+        return getQueryCreateTable(tablePlayers,
+                "PlayerUUID TEXT PRIMARY KEY NOT NULL",
+                "Name TEXT NOT NULL",
+                "LastSeen INTEGER NOT NULL"
+        );
     }
 
     @Override
     String getQueryCreateTableFields() {
-        return "CREATE TABLE IF NOT EXISTS " + tableFields + " ("
-			+ "field TEXT PRIMARY KEY NOT NULL,"
-            + "value INTEGER NOT NULL)";
-    }
-
-    @Override
-    String getQueryGetTable() {
-        return "SELECT name FROM sqlite_master WHERE type='table' AND name=?";
+        return getQueryCreateTable(tableFields,
+                "Field TEXT PRIMARY KEY NOT NULL",
+                "Value INTEGER NOT NULL"
+        );
     }
 
 }
