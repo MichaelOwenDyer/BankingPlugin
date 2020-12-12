@@ -97,11 +97,12 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
             return true;
         }
 
-        plugin.debug("Bank #" + bank.getID() + " removed from the database");
+        int accountsRemoved = bank.getAccounts().size();
         bankRepo.remove(bank, true);
+        plugin.debugf("Bank #%d and %d accounts removed from the database.", bank.getID(), accountsRemoved);
         Messenger messenger = new Messenger(LangUtils.getMessage(Message.BANK_REMOVED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
-                new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, () -> bank.getAccounts().size())
+                new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accountsRemoved)
         ));
         messenger.addOfflineRecipient(bank.getTrustedPlayers());
         messenger.addOfflineRecipient(bank.getCustomers());
