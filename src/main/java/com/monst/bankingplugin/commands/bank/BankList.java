@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.gui.BankListGui;
+import com.monst.bankingplugin.gui.BankListGUI;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import org.bukkit.ChatColor;
@@ -42,7 +42,7 @@ public class BankList extends BankCommand.SubCommand {
         }
 
         if (sender instanceof Player) {
-            new BankListGui(getBanks).open(((Player) sender));
+            new BankListGUI(getBanks).open(((Player) sender));
         } else {
             int i = 0;
             for (Bank bank : banks)

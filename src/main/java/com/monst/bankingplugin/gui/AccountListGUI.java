@@ -15,9 +15,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Supplier;
 
-public class AccountListGui extends MultiPageGui<Collection<Account>> {
+public class AccountListGUI extends MultiPageGUI<Collection<Account>> {
 
-    public AccountListGui(Supplier<? extends Collection<Account>> accounts) {
+    public AccountListGUI(Supplier<? extends Collection<Account>> accounts) {
         super(accounts, 18, 26);
     }
 
@@ -32,7 +32,7 @@ public class AccountListGui extends MultiPageGui<Collection<Account>> {
             ItemStack item = createSlotItem(account.getOwner(), account.getChestName(),
                     Collections.singletonList("Owner: " + account.getOwnerDisplayName()));
             ItemStackTemplate template = new StaticItemTemplate(item);
-            Slot.ClickHandler clickHandler = (player, info) -> new AccountGui(account).setPrevGui(this).open(player);
+            Slot.ClickHandler clickHandler = (player, info) -> new AccountGUI(account).setParentGUI(this).open(player);
             builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
         }
     }

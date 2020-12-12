@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui<C> {
+abstract class MultiPageGUI<C extends Collection<? extends Ownable>> extends GUI<C> {
 
     private final int PREV_PAGE_SLOT;
     private final int NEXT_PAGE_SLOT;
@@ -26,7 +26,7 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
     List<Menu> menuPages;
     private int currentPage = 0;
 
-    MultiPageGui(Supplier<? extends C> guiSubjects, int prevPageSlot, int nextPageSlot) {
+    MultiPageGUI(Supplier<? extends C> guiSubjects, int prevPageSlot, int nextPageSlot) {
         this.guiSubjects = guiSubjects;
         this.PREV_PAGE_SLOT = prevPageSlot;
         this.NEXT_PAGE_SLOT = nextPageSlot;
@@ -36,7 +36,7 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
     void open(boolean initialize) {
         subscribe(getSubject());
         if (initialize)
-            shortenGuiChain();
+            shortenGUIChain();
         update();
     }
 
@@ -47,7 +47,7 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
         initializeMenu();
         setClickHandler();
         setCloseHandler((player, info) -> {
-            OPEN_PREVIOUS.close(player, info);
+            OPEN_PARENT.close(player, info);
             unsubscribe(getSubject());
         });
         if (menuPages == null || menuPages.isEmpty())
@@ -58,7 +58,7 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
 
     @Override
     void close(Player player) {
-        prevGui = null;
+        parentGUI = null;
         menuPages.get(currentPage).close(player);
     }
 
@@ -119,7 +119,7 @@ abstract class MultiPageGui<C extends Collection<? extends Ownable>> extends Gui
         if (o == null || getClass() != o.getClass())
             return false;
 
-        MultiPageGui<?> other = (MultiPageGui<?>) o;
+        MultiPageGUI<?> other = (MultiPageGUI<?>) o;
         return inForeground == other.inForeground
                 && currentPage == other.currentPage
                 && getType() == other.getType()

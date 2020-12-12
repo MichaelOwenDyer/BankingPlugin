@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.gui.BankGui;
+import com.monst.bankingplugin.gui.BankGUI;
 import com.monst.bankingplugin.lang.Message;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -31,7 +31,7 @@ public class BankInfo extends BankCommand.SubCommand {
 
         plugin.debug(sender.getName() + " is displaying bank info");
         if (sender instanceof Player)
-            new BankGui(bank).open((Player) sender);
+            new BankGUI(bank).open((Player) sender);
         else
             sender.sendMessage(bank.getInformation());
         return true;

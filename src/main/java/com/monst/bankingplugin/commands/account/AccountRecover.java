@@ -3,7 +3,7 @@ package com.monst.bankingplugin.commands.account;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
-import com.monst.bankingplugin.gui.AccountRecoveryGui;
+import com.monst.bankingplugin.gui.AccountRecoveryGUI;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -42,7 +42,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
         }
 
         if (sender instanceof Player)
-            new AccountRecoveryGui(accountRepo::getInvalidAccounts).open(((Player) sender));
+            new AccountRecoveryGUI(accountRepo::getInvalidAccounts).open(((Player) sender));
         return true;
     }
 

@@ -2,7 +2,7 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.events.account.AccountListEvent;
-import com.monst.bankingplugin.gui.AccountListGui;
+import com.monst.bankingplugin.gui.AccountListGUI;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.Permissions;
@@ -54,7 +54,7 @@ public class AccountList extends AccountCommand.SubCommand {
         }
 
         if (sender instanceof Player) {
-            new AccountListGui(() -> lookupAccounts(sender, args)).open(((Player) sender));
+            new AccountListGUI(() -> lookupAccounts(sender, args)).open(((Player) sender));
         } else {
             int i = 0;
             for (Account account : accounts)

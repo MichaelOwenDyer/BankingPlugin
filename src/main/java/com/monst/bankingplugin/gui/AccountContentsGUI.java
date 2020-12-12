@@ -9,11 +9,11 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.type.ChestMenu;
 
-public class AccountContentsGui extends SinglePageGui<Account> {
+public class AccountContentsGUI extends SinglePageGUI<Account> {
 
     // boolean canEdit; TODO: Implement remote editing
 
-    public AccountContentsGui(Account account) {
+    public AccountContentsGUI(Account account) {
         super(account);
     }
 
@@ -39,7 +39,7 @@ public class AccountContentsGui extends SinglePageGui<Account> {
             BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
             if (im.getBlockState() instanceof ShulkerBox) {
                 ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
-                return (player, info) -> new ShulkerContentsGui(guiSubject, shulkerBox).setPrevGui(this).open(player);
+                return (player, info) -> new ShulkerContentsGUI(guiSubject, shulkerBox).setParentGUI(this).open(player);
             }
         }
         return null;
@@ -69,11 +69,11 @@ public class AccountContentsGui extends SinglePageGui<Account> {
         return GuiType.ACCOUNT_CONTENTS;
     }
 
-    static class ShulkerContentsGui extends AccountContentsGui {
+    static class ShulkerContentsGUI extends AccountContentsGUI {
 
         private final ShulkerBox shulkerBox;
 
-        public ShulkerContentsGui(Account account, ShulkerBox shulkerBox) {
+        public ShulkerContentsGUI(Account account, ShulkerBox shulkerBox) {
             super(account);
             this.shulkerBox = shulkerBox;
         }

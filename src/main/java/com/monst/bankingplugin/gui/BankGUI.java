@@ -21,12 +21,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class BankGui extends SinglePageGui<Bank> {
+public class BankGUI extends SinglePageGUI<Bank> {
 
 	boolean canTP;
 	boolean canListAccounts;
 
-	public BankGui(Bank bank) {
+	public BankGUI(Bank bank) {
 		super(bank);
 	}
 
@@ -100,7 +100,7 @@ public class BankGui extends SinglePageGui<Bank> {
 				} : null;
 			case 8:
 				return canListAccounts && !guiSubject.getAccounts().isEmpty() ?
-						(player, info) -> new AccountListGui(guiSubject::getAccounts).setPrevGui(this).open(player) : null;
+						(player, info) -> new AccountListGUI(guiSubject::getAccounts).setParentGUI(this).open(player) : null;
 			default:
 				return null;
 		}

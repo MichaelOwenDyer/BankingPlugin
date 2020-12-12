@@ -21,12 +21,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class AccountGui extends SinglePageGui<Account> {
+public class AccountGUI extends SinglePageGUI<Account> {
 
 	boolean canTP;
 	boolean isTrusted;
 
-	public AccountGui(Account account) {
+	public AccountGUI(Account account) {
 		super(account);
 	}
 
@@ -83,9 +83,9 @@ public class AccountGui extends SinglePageGui<Account> {
 					this.close(player);
 				} : null;
 			case 1:
-				return (player, info) -> new BankGui(guiSubject.getBank()).setPrevGui(this).open(player);
+				return (player, info) -> new BankGUI(guiSubject.getBank()).setParentGUI(this).open(player);
 			case 8:
-				return isTrusted ? (player, info) -> new AccountContentsGui(guiSubject).setPrevGui(this).open(player) : null;
+				return isTrusted ? (player, info) -> new AccountContentsGUI(guiSubject).setParentGUI(this).open(player) : null;
 			default:
 				return null;
 		}

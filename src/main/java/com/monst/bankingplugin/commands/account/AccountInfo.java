@@ -3,7 +3,7 @@ package com.monst.bankingplugin.commands.account;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
-import com.monst.bankingplugin.gui.AccountGui;
+import com.monst.bankingplugin.gui.AccountGUI;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -47,7 +47,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
                 }
 
                 if (sender instanceof Player)
-                    new AccountGui(account).open((Player) sender);
+                    new AccountGUI(account).open((Player) sender);
                 else
                     sender.sendMessage(account.getInformation());
                 return true;
@@ -90,7 +90,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
             return;
         }
 
-        new AccountGui(account).open(player);
+        new AccountGUI(account).open(player);
     }
 
 }

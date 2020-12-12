@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class Gui<T> {
+public abstract class GUI<T> {
 
 	enum GuiType {
 		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY
@@ -26,15 +26,15 @@ public abstract class Gui<T> {
 
 	static BankingPlugin plugin = BankingPlugin.getInstance();
 
-	Gui<?> prevGui;
+	GUI<?> parentGUI;
 	Player viewer;
 	boolean inForeground = true;
 
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
-	final Menu.CloseHandler OPEN_PREVIOUS = (player, menu) -> Utils.bukkitRunnable(() -> {
+	final Menu.CloseHandler OPEN_PARENT = (player, menu) -> Utils.bukkitRunnable(() -> {
 		if (isLinked() && isInForeground()) {
-			prevGui.inForeground = true;
-			prevGui.open(false);
+			parentGUI.inForeground = true;
+			parentGUI.open(false);
 		}
 	}).runTask(plugin);
 
@@ -63,30 +63,30 @@ public abstract class Gui<T> {
 
 	abstract GuiType getType();
 
-	public Gui<T> setPrevGui(@Nullable Gui<?> prevGui) {
+	public GUI<T> setParentGUI(@Nullable GUI<?> prevGui) {
 		if (prevGui != null)
 			prevGui.inForeground = false;
-		this.prevGui = prevGui;
+		this.parentGUI = prevGui;
 		return this;
 	}
 
-	void shortenGuiChain() {
-		shortenGuiChain(prevGui, EnumSet.of(getType()));
+	void shortenGUIChain() {
+		shortenGUIChain(parentGUI, EnumSet.of(getType()));
 	}
 
 	/**
 	 * Descends down the list of previous open Guis, and severs the link when it
-	 * finds a Gui of a type it has seen before. This prevents the Gui chain
+	 * finds a GUI of a type it has seen before. This prevents the GUI chain
 	 * from becoming too long and unwieldy.
 	 */
-	private void shortenGuiChain(Gui<?> gui, EnumSet<GuiType> types) {
+	private void shortenGUIChain(GUI<?> gui, EnumSet<GuiType> types) {
 		if (gui == null)
 			return;
 		if (!types.contains(gui.getType())) {
 			types.add(gui.getType());
-			shortenGuiChain(gui.prevGui, types);
+			shortenGUIChain(gui.parentGUI, types);
 		} else
-			gui.prevGui = null;
+			gui.parentGUI = null;
 	}
 
 	boolean isInForeground() {
@@ -94,14 +94,14 @@ public abstract class Gui<T> {
 	}
 
 	boolean isLinked() {
-		return prevGui != null;
+		return parentGUI != null;
 	}
 
 	/**
-	 * Create a specialized player head {@link ItemStack} to be placed in the Gui.
+	 * Create a specialized player head {@link ItemStack} to be placed in the GUI.
 	 * @param owner the {@link OfflinePlayer} whose head should be used
-	 * @param displayName the name of the Gui item
-	 * @param lore the description of the Gui item
+	 * @param displayName the name of the GUI item
+	 * @param lore the description of the GUI item
 	 * @return a custom player head {@link ItemStack}
 	 */
 	static ItemStack createSlotItem(OfflinePlayer owner, String displayName, List<String> lore) {
@@ -114,10 +114,10 @@ public abstract class Gui<T> {
 	}
 
 	/**
-	 * Create an {@link ItemStack} to be placed in the Gui.
+	 * Create an {@link ItemStack} to be placed in the GUI.
 	 * @param material the {@link Material} that should be used for the item
-	 * @param displayName the name of the Gui item
-	 * @param lore the description of the Gui item
+	 * @param displayName the name of the GUI item
+	 * @param lore the description of the GUI item
 	 * @return a custom {@link ItemStack}
 	 */
 	static ItemStack createSlotItem(Material material, String displayName, List<String> lore) {

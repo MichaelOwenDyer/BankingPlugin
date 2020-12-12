@@ -19,9 +19,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class AccountRecoveryGui extends MultiPageGui<Collection<Account>> {
+public class AccountRecoveryGUI extends MultiPageGUI<Collection<Account>> {
 
-    public AccountRecoveryGui(Supplier<? extends Collection<Account>> accounts) {
+    public AccountRecoveryGUI(Supplier<? extends Collection<Account>> accounts) {
         super(accounts, 18, 26);
     }
 

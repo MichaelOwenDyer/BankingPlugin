@@ -13,12 +13,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
+public abstract class SinglePageGUI<T extends Ownable> extends GUI<T> {
 
     final T guiSubject;
     Menu menu;
 
-    SinglePageGui(T guiSubject) {
+    SinglePageGUI(T guiSubject) {
         this.guiSubject = guiSubject;
     }
 
@@ -28,10 +28,10 @@ public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
         if (initialize) {
             initializeMenu();
             setCloseHandler((player, info) -> {
-                OPEN_PREVIOUS.close(player, info);
+                OPEN_PARENT.close(player, info);
                 unsubscribe(guiSubject);
             });
-            shortenGuiChain();
+            shortenGUIChain();
         }
         if (menu == null)
             return;
@@ -52,7 +52,7 @@ public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
 
     @Override
     void close(Player player) {
-        prevGui = null;
+        parentGUI = null;
         menu.close(player);
     }
 
@@ -139,7 +139,7 @@ public abstract class SinglePageGui<T extends Ownable> extends Gui<T> {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        SinglePageGui<?> other = (SinglePageGui<?>) o;
+        SinglePageGUI<?> other = (SinglePageGUI<?>) o;
         return inForeground == other.inForeground
                 && getType() == other.getType()
                 && Utils.samePlayer(viewer, other.viewer)
