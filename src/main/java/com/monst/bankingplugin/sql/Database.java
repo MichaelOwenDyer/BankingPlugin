@@ -529,7 +529,7 @@ public abstract class Database {
 
 				Map<Bank, Set<Account>> banksAndAccounts = new HashMap<>();
 
-				while (rs.next()) {
+				while (values.next()) {
 					int bankID = values.getNextInt();
 					plugin.debugf("Getting bank from database... (#%d)", bankID);
 					String name = values.getNextString();
@@ -654,7 +654,7 @@ public abstract class Database {
 
 			ValueGrabber values = new ValueGrabber(rs);
 
-			while (rs.next()) {
+			while (values.next()) {
 
 				int accountID = values.getNextInt();
 				values.getNextInt();
@@ -1113,8 +1113,13 @@ public abstract class Database {
 		private int index = 1;
 		private final ResultSet rs;
 
-		private ValueGrabber(ResultSet ps) {
-			this.rs = ps;
+		private ValueGrabber(ResultSet rs) {
+			this.rs = rs;
+		}
+
+		boolean next() throws SQLException {
+			index = 1;
+			return rs.next();
 		}
 
 		String getNextString() throws SQLException {
