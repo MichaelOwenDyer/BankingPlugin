@@ -119,9 +119,10 @@ public class InterestEventListener implements Listener {
 				}
 
 				accountUtils.addAccount(account, true);
-				plugin.getDatabase().logAccountInterest(account, interest, multiplier, interest, null);
+				plugin.getDatabase().logAccountInterest(account, interest, null);
 			}
-			plugin.getDatabase().logLastSeen(accountOwner.getPlayer(), null);
+			if (accountOwner.isOnline())
+				plugin.getDatabase().logLastSeen(accountOwner.getPlayer(), null);
 		});
 
 		boolean containsX = Config.bankRevenueFunction.contains("x");

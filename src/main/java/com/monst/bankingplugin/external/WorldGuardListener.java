@@ -8,6 +8,7 @@ import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.selections.BlockVector3D;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EClickType;
+import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -40,10 +41,10 @@ public class WorldGuardListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onCreateBank(BankCreateEvent e) {
-		if (!Config.enableWorldGuardIntegration)
+		if (!Config.enableWorldGuardIntegration || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
-		IWrappedFlag<WrappedState> flag = getStateFlag("create-bank");
+		IWrappedFlag<WrappedState> flag = getStateFlag();
 		for (BlockVector3D bv : e.getBank().getSelection().getCorners())
 			if (handleForLocation((Player) e.getExecutor(), bv.toLocation(e.getBank().getSelection().getWorld()), e, flag))
 				return;
@@ -51,10 +52,10 @@ public class WorldGuardListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onResizeBank(BankResizeEvent e) {
-		if (!Config.enableWorldGuardIntegration)
+		if (!Config.enableWorldGuardIntegration || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
-		IWrappedFlag<WrappedState> flag = getStateFlag("create-bank");
+		IWrappedFlag<WrappedState> flag = getStateFlag();
 		for (BlockVector3D bv : e.getNewSelection().getCorners())
 			if (handleForLocation((Player) e.getExecutor(), bv.toLocation(e.getNewSelection().getWorld()), e, flag))
 				return;
@@ -88,7 +89,7 @@ public class WorldGuardListener implements Listener {
 	}
 
 	private boolean isAllowed(Player player, Location location) {
-		ClickType clickType = ClickType.getPlayerClickType(player);
+		ClickType<?> clickType = ClickType.getPlayerClickType(player);
 
 		if (clickType != null && clickType.getType() == EClickType.CREATE) {
 			// If the player is about to create an account, but does not have
@@ -126,12 +127,11 @@ public class WorldGuardListener implements Listener {
         return false;
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private IWrappedFlag<WrappedState> getStateFlag(String flagName) {
-        Optional<IWrappedFlag<WrappedState>> flagOptional = wgWrapper.getFlag(flagName, WrappedState.class);
+    private IWrappedFlag<WrappedState> getStateFlag() {
+        Optional<IWrappedFlag<WrappedState>> flagOptional = wgWrapper.getFlag("create-bank", WrappedState.class);
         if (!flagOptional.isPresent()) {
-            plugin.getLogger().severe("Failed to get WorldGuard state flag '" + flagName + "'.");
-            plugin.debug("WorldGuard state flag '" + flagName + "' is not present!");
+            plugin.getLogger().severe("Failed to get WorldGuard state flag 'create-bank'.");
+            plugin.debug("WorldGuard state flag 'create-bank' is not present!");
             return null;
         }
         return flagOptional.get();

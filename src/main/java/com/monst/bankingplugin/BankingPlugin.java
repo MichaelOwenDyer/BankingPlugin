@@ -384,7 +384,8 @@ public class BankingPlugin extends JavaPlugin {
 		if (reloadConfig)
 			getPluginConfig().reload(false, true, true);
 
-		getDatabase().connect(Callback.of(this, result -> {
+		getDatabase().connect(Callback.of(this,
+				result -> {
 					Collection<Bank> banks = bankUtils.getBanks();
 					Collection<Account> accounts = accountUtils.getAccounts();
 
@@ -392,17 +393,13 @@ public class BankingPlugin extends JavaPlugin {
 					Set<Account> reloadedAccounts = new HashSet<>();
 
 					for (Bank bank : banks) {
-						for (Account account : bank.getAccounts()) {
-							accountUtils.removeAccount(account, false);
-							debugf("Removed account (#%d)", account.getID());
-						}
 						bankUtils.removeBank(bank, false);
 						debugf("Removed bank (#%d)", bank.getID());
 					}
 
-					getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(this, map -> {
-
-								map.forEach((bank, bankAccounts) -> {
+					getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(this,
+							bankAccountsMap -> {
+								bankAccountsMap.forEach((bank, bankAccounts) -> {
 									bankUtils.addBank(bank, false);
 									reloadedBanks.add(bank);
 									for (Account account : bankAccounts) {

@@ -164,20 +164,17 @@ public abstract class Database {
 				try (Statement s = con.createStatement()) {
 					int accounts;
 					ResultSet rsAccounts = s.executeQuery("SELECT COUNT(AccountID) FROM " + tableAccounts);
-					if (rsAccounts.next()) {
+					if (rsAccounts.next())
 						accounts = rsAccounts.getInt(1);
-						plugin.debug("Initialized database with " + accounts + " account entries");
-					} else {
+					else
 						throw new SQLException("Count result set has no account entries");
-					}
 					rsAccounts.close();
 
 					int banks;
 					ResultSet rsBanks = s.executeQuery("SELECT COUNT(BankID) FROM " + tableBanks);
-					if (rsBanks.next()) {
+					if (rsBanks.next())
 						banks = rsBanks.getInt(1);
-						plugin.debug("Initialized database with " + banks + " bank entries");
-					} else
+					else
 						throw new SQLException("Count result set has no bank entries");
 					rsBanks.close();
 
@@ -999,7 +996,7 @@ public abstract class Database {
     private void getOfflineRevenue(Player player, long logoutTime, String table, Callback<BigDecimal> callback) {
 		Utils.bukkitRunnable(() -> {
 			try (ResultSet rs = dataSource.getConnection().createStatement()
-					.executeQuery("SELECT * FROM " + table + " WHERE PlayerUUID = " + player.getUniqueId().toString())) {
+					.executeQuery("SELECT * FROM " + table + " WHERE PlayerUUID = '" + player.getUniqueId().toString() + "'")) {
 
 				BigDecimal total = BigDecimal.ZERO;
 				while (rs.next()) {
@@ -1031,7 +1028,7 @@ public abstract class Database {
 	public void getLastLogout(Player player, Callback<Long> callback) {
 		Utils.bukkitRunnable(() -> {
 			try (ResultSet rs = dataSource.getConnection().createStatement()
-					.executeQuery("SELECT * FROM " + tablePlayers + " WHERE PlayerUUID = " + player.getUniqueId().toString())) {
+					.executeQuery("SELECT * FROM " + tablePlayers + " WHERE PlayerUUID = '" + player.getUniqueId().toString() + "'")) {
 
 				long lastLogout = -1L;
 

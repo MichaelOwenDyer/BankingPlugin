@@ -94,7 +94,7 @@ public class BankUtils extends Observable {
 
     /**
 	 * Adds a bank
-	 * 
+	 *
 	 * @param bank          Bank to add
 	 * @param addToDatabase Whether the bank should also be added to the database
 	 * @param callback      Callback that - if succeeded - returns the ID the bank
@@ -114,7 +114,7 @@ public class BankUtils extends Observable {
     }
 
 	/**
-	 * Remove an bank. May not work properly if double chest doesn't exist!
+	 * Removes a bank.
 	 *
 	 * @param bank               Bank to remove
 	 * @param removeFromDatabase Whether the bank should also be removed from the
@@ -125,8 +125,8 @@ public class BankUtils extends Observable {
 	}
 
 	/**
-	 * Remove a bank. May not work properly if double chest doesn't exist!
-	 * 
+	 * Removes a bank.
+	 *
 	 * @param bank               Bank to remove
 	 * @param removeFromDatabase Whether the bank should also be removed from the
 	 *                           database
