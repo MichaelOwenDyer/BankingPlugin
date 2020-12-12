@@ -10,7 +10,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountInitializedEvent;
 import com.monst.bankingplugin.events.bank.BankInitializedEvent;
 import com.monst.bankingplugin.external.GriefPreventionListener;
-import com.monst.bankingplugin.external.WorldGuardBankingFlag;
 import com.monst.bankingplugin.external.WorldGuardListener;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.listeners.*;
@@ -29,6 +28,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
+import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.ipvp.canvas.MenuFunctionListener;
 
 import java.io.*;
@@ -100,7 +101,11 @@ public class BankingPlugin extends JavaPlugin {
 
         worldGuard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard != null) {
-			WorldGuardBankingFlag.register(this);
+			Optional<IWrappedFlag<WrappedState>> createBankFlag = WorldGuardWrapper.getInstance()
+					.registerFlag("create-bank", WrappedState.class,
+							Config.wgAllowCreateBankDefault ? WrappedState.ALLOW : WrappedState.DENY);
+
+			debug("Flag create-bank: " + createBankFlag.isPresent());
         }
     }
 
