@@ -55,7 +55,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 
     abstract static class SubCommand extends BankingPluginSubCommand {
 
-		static final BankRepository bankRepo = plugin.getBankUtils();
+		static final BankRepository bankRepo = plugin.getBankRepository();
 
 		SubCommand(String name, boolean playerCommand) {
 			super(name, playerCommand);
@@ -66,7 +66,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 			if (args.length == 1) {
 				if (sender instanceof Player) {
 					Player p = (Player) sender;
-					bank = bankRepo.get(p.getLocation());
+					bank = bankRepo.getAt(p.getLocation());
 					if (bank == null) {
 						plugin.debug(p.getName() + " wasn't standing in a bank");
 						p.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
@@ -75,7 +75,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 					sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
 				}
 			} else {
-				bank = bankRepo.get(args[1]);
+				bank = bankRepo.getByIdentifier(args[1]);
 				if (bank == null) {
 					plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
 					sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));

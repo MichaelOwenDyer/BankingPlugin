@@ -41,7 +41,7 @@ public class BankListGui extends MultiPageGui<Collection<Bank>> {
 
     @Override
     Observable getSubject() {
-        return plugin.getBankUtils();
+        return plugin.getBankRepository();
     }
 
     @Override

@@ -177,7 +177,7 @@ public class BankingPlugin extends JavaPlugin {
 
 		ClickType.clear();
 
-		bankRepository.get().forEach(bank -> {
+		bankRepository.getAll().forEach(bank -> {
 			bankRepository.remove(bank, false);
 			debugf("Removed bank \"%s\" (#%d)", bank.getName(), bank.getID());
 		});
@@ -239,7 +239,7 @@ public class BankingPlugin extends JavaPlugin {
 			int playerBanks = 0;
 			int adminBanks = 0;
 
-			for (Bank bank : bankRepository.get())
+			for (Bank bank : bankRepository.getAll())
 				if (bank.isPlayerBank())
 					playerBanks++;
 				else if (bank.isAdminBank())
@@ -386,8 +386,8 @@ public class BankingPlugin extends JavaPlugin {
 
 		getDatabase().connect(Callback.of(this,
 				result -> {
-					Collection<Bank> banks = bankRepository.get();
-					Collection<Account> accounts = accountRepository.get();
+					Collection<Bank> banks = bankRepository.getAll();
+					Collection<Account> accounts = accountRepository.getAll();
 
 					Set<Bank> reloadedBanks = new HashSet<>();
 					Set<Account> reloadedAccounts = new HashSet<>();
@@ -485,17 +485,20 @@ public class BankingPlugin extends JavaPlugin {
 	/**
 	 * @return the instance of {@link AccountRepository}
 	 */
-	public AccountRepository getAccountUtils() {
+	public AccountRepository getAccountRepository() {
 		return accountRepository;
 	}
 
 	/**
 	 * @return the instance of {@link BankRepository}
 	 */
-	public BankRepository getBankUtils() {
+	public BankRepository getBankRepository() {
 		return bankRepository;
 	}
 
+	/**
+	 * @return the instance of {@link InterestEventScheduler}
+	 */
 	public InterestEventScheduler getScheduler() {
 		return scheduler;
 	}

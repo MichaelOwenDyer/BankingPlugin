@@ -25,7 +25,7 @@ public class ChestTamperingListener implements Listener {
 
     public ChestTamperingListener(BankingPlugin plugin) {
 		this.plugin = plugin;
-        this.accountRepo = plugin.getAccountUtils();
+        this.accountRepo = plugin.getAccountRepository();
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -139,7 +139,7 @@ public class ChestTamperingListener implements Listener {
 		ArrayList<Block> bl = new ArrayList<>(e.blockList());
 		for (Block b : bl) {
 			if (b.getType().equals(Material.CHEST) || b.getType().equals(Material.TRAPPED_CHEST)) {
-				if (plugin.getAccountUtils().isAccount(b.getLocation()))
+				if (plugin.getAccountRepository().isAccount(b.getLocation()))
 					e.blockList().remove(b);
 			}
 		}

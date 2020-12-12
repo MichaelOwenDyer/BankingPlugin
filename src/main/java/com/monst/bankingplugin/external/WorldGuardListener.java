@@ -105,7 +105,7 @@ public class WorldGuardListener implements Listener {
 			return state == WrappedState.ALLOW;
 		}
 
-		Account account = plugin.getAccountUtils().get(location);
+		Account account = plugin.getAccountRepository().getAt(location);
         // Don't show 'permission denied' messages for any kind of
         // account interaction even if block interaction is not
         // allowed in the region.

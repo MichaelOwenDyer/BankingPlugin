@@ -36,28 +36,28 @@ public class AccountRepository extends Observable implements Repository<Account>
 	 * @return Whether there is a account at the given location
 	 */
 	public boolean isAccount(Location location) {
-		return get(location) != null;
+		return getAt(location) != null;
 	}
 
 	/**
 	 * Gets all accounts on the server.
 	 *
-	 * @see #get()
+	 * @see #getAll()
 	 * @return Read-only collection of all accounts
 	 */
 	@Override
-	public Set<Account> get() {
+	public Set<Account> getAll() {
 		return new HashSet<>(accountLocationMap.values());
 	}
 
     /**
-     * Get the account at a given location
+     * Gets the account at a given location
      *
      * @param location Location of the account
      * @return Account at the given location or <b>null</b> if no account is found there
      */
     @Override
-	public Account get(Location location) {
+	public Account getAt(Location location) {
 		if (location == null)
 			return null;
 		return accountLocationMap.get(Utils.blockifyLocation(location));

@@ -57,7 +57,7 @@ public class AccountRecoveryGui extends MultiPageGui<Collection<Account>> {
 
     @Override
     Observable getSubject() {
-        return plugin.getAccountUtils();
+        return plugin.getAccountRepository();
     }
 
     @Override

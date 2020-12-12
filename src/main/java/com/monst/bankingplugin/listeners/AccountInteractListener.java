@@ -31,7 +31,7 @@ public class AccountInteractListener implements Listener {
 
 	public AccountInteractListener(BankingPlugin plugin) {
 		this.plugin = plugin;
-		this.accountRepo = plugin.getAccountUtils();
+		this.accountRepo = plugin.getAccountRepository();
 	}
 
 	/**
@@ -46,7 +46,7 @@ public class AccountInteractListener implements Listener {
 		Block b = e.getClickedBlock();
 		if (b == null || b.getType() == Material.AIR)
 			return;
-		Account account = accountRepo.get(b.getLocation());
+		Account account = accountRepo.getAt(b.getLocation());
 		ClickType<?> clickType = ClickType.getPlayerClickType(p);
 
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))

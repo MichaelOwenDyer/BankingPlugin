@@ -131,7 +131,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         }
 
         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
-        plugin.getAccountUtils().remove(account, true);
+        plugin.getAccountRepository().remove(account, true);
         ClickType.removePlayerClickType(p);
         plugin.debug("Removed account (#" + account.getID() + ")");
     }

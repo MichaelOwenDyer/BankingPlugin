@@ -80,10 +80,10 @@ public class AccountMigrate extends AccountCommand.SubCommand {
     }
 
     public static void migratePartTwo(Player p, Block b, Account toMigrate) {
-        AccountRepository accountRepo = plugin.getAccountUtils();
+        AccountRepository accountRepo = plugin.getAccountRepository();
         Location newLocation = b.getLocation();
         if (accountRepo.isAccount(newLocation)) {
-            if (toMigrate.equals(accountRepo.get(newLocation))) {
+            if (toMigrate.equals(accountRepo.getAt(newLocation))) {
                 plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
                 p.sendMessage(LangUtils.getMessage(Message.SAME_CHEST));
                 return;
@@ -97,7 +97,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             plugin.debug("Chest is blocked.");
             return;
         }
-        Bank newBank = plugin.getBankUtils().get(newLocation); // May or may not be the same as previous bank
+        Bank newBank = plugin.getBankRepository().getAt(newLocation); // May or may not be the same as previous bank
         if (newBank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             plugin.debug("Chest is not in a bank.");

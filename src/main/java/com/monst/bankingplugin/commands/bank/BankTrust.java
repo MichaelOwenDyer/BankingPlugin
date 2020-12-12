@@ -42,7 +42,7 @@ public class BankTrust extends BankCommand.SubCommand {
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRUST));
             return true;
         }
-        Bank bank = plugin.getBankUtils().get(args[1]);
+        Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
             sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
@@ -93,7 +93,7 @@ public class BankTrust extends BankCommand.SubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 2) {
-            return bankRepo.get().stream()
+            return bankRepo.getAll().stream()
                     .filter(bank -> bank.isOwner(p)
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRUST_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRUST_ADMIN)))

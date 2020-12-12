@@ -29,7 +29,7 @@ public class AccountBalanceListener implements Listener {
 
 	public AccountBalanceListener(BankingPlugin plugin) {
 		this.plugin = plugin;
-		this.accountRepo = plugin.getAccountUtils();
+		this.accountRepo = plugin.getAccountRepository();
 	}
 
 	@EventHandler
@@ -41,7 +41,7 @@ public class AccountBalanceListener implements Listener {
 		if (!e.getInventory().getType().equals(InventoryType.CHEST))
 			return;
 
-		Account account = accountRepo.get(e.getInventory().getLocation());
+		Account account = accountRepo.getAt(e.getInventory().getLocation());
 		if (account == null)
 			return;
 

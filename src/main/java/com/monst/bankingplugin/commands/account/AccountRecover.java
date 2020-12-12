@@ -47,8 +47,8 @@ public class AccountRecover extends AccountCommand.SubCommand {
     }
 
     public static void recover(Player p, Block b, Account toMigrate) {
-        AccountRepository accountRepo = plugin.getAccountUtils();
-        BankRepository bankRepo = plugin.getBankUtils();
+        AccountRepository accountRepo = plugin.getAccountRepository();
+        BankRepository bankRepo = plugin.getBankRepository();
         Location newLocation = b.getLocation();
         if (accountRepo.isAccount(newLocation)) {
             plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
@@ -60,7 +60,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
             plugin.debug("Chest is blocked.");
             return;
         }
-        Bank newBank = bankRepo.get(newLocation); // May or may not be the same as previous bank
+        Bank newBank = bankRepo.getAt(newLocation); // May or may not be the same as previous bank
         if (newBank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             plugin.debug("Chest is not in a bank.");

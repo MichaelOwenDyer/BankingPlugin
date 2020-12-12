@@ -47,7 +47,7 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 
 	abstract static class SubCommand extends BankingPluginSubCommand {
 
-		static final AccountRepository accountRepo = plugin.getAccountUtils();
+		static final AccountRepository accountRepo = plugin.getAccountRepository();
 
 		SubCommand(String name, boolean playerCommand) {
 			super(name, playerCommand);

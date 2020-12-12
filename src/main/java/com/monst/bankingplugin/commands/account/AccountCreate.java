@@ -76,8 +76,8 @@ public class AccountCreate extends AccountCommand.SubCommand {
      * @param b         Block where the account will be located
      */
     public static void create(Player p, Block b) {
-        AccountRepository accountRepo = plugin.getAccountUtils();
-        BankRepository bankRepo = plugin.getBankUtils();
+        AccountRepository accountRepo = plugin.getAccountRepository();
+        BankRepository bankRepo = plugin.getBankRepository();
         Location location = b.getLocation();
 
         if (accountRepo.isAccount(location)) {
@@ -94,8 +94,8 @@ public class AccountCreate extends AccountCommand.SubCommand {
                 plugin.debug("Chest is blocked.");
                 return;
             }
-            bank = bankRepo.get(b.getLocation());
-            Bank otherBank = bankRepo.get(attachedChestBlock.getLocation());
+            bank = bankRepo.getAt(b.getLocation());
+            Bank otherBank = bankRepo.getAt(attachedChestBlock.getLocation());
             if (bank == null || !bank.equals(otherBank)) {
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
                 plugin.debug("Chest is not in a bank.");
@@ -107,7 +107,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
                 plugin.debug("Chest is blocked.");
                 return;
             }
-            bank = bankRepo.get(location);
+            bank = bankRepo.getAt(location);
             if (bank == null) {
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
                 plugin.debug("Chest is not in a bank.");

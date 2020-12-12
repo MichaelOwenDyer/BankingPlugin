@@ -125,7 +125,7 @@ public class BankCreate extends BankCommand.SubCommand {
             ));
             return true;
         }
-        if (!bankRepo.isUniqueName(name)) {
+        if (bankRepo.getByName(name) != null) {
             plugin.debug("Name is not unique");
             p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, name)));
             return true;

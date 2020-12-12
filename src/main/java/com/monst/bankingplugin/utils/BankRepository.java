@@ -28,7 +28,7 @@ public class BankRepository extends Observable implements Repository<Bank> {
 	 * @return Bank at the given location or <b>null</b> if no bank is found there
 	 */
     @Override
-	public Bank get(Location location) {
+	public Bank getAt(Location location) {
 		for (Map.Entry<Selection, Bank> selectionBankPair : bankSelectionMap.entrySet())
 			if (selectionBankPair.getKey().contains(location))
 				return selectionBankPair.getValue();
@@ -41,16 +41,8 @@ public class BankRepository extends Observable implements Repository<Bank> {
 	 * @param selection {@link Selection} of the bank
 	 * @return Bank in the given region or <b>null</b> if no bank is found there
 	 */
-	public Bank get(Selection selection) {
+	public Bank getAt(Selection selection) {
 		return bankSelectionMap.get(selection);
-	}
-
-	public Bank get(String identifier) {
-		try {
-			return get(Integer.parseInt(identifier));
-		} catch (NumberFormatException e) {
-			return get().stream().filter(b -> b.getName().equalsIgnoreCase(identifier)).findFirst().orElse(null);
-		}
 	}
 
     /**
@@ -59,12 +51,12 @@ public class BankRepository extends Observable implements Repository<Bank> {
 	 * @return A new {@link HashSet} containing all banks
 	 */
     @Override
-	public Set<Bank> get() {
+	public Set<Bank> getAll() {
 		return new HashSet<>(bankSelectionMap.values());
     }
 
     /**
-	 * Adds a bank
+	 * Adds a bank to the repository.
 	 *
 	 * @param bank          Bank to add
 	 * @param addToDatabase Whether the bank should also be added to the database
@@ -86,7 +78,7 @@ public class BankRepository extends Observable implements Repository<Bank> {
     }
 
 	/**
-	 * Removes a bank.
+	 * Removes a bank from the repository.
 	 *
 	 * @param bank               Bank to remove
 	 * @param removeFromDatabase Whether the bank should also be removed from the
@@ -97,10 +89,10 @@ public class BankRepository extends Observable implements Repository<Bank> {
 	public void remove(Bank bank, boolean removeFromDatabase, Callback<Void> callback) {
 		plugin.debug("Removing bank (#" + bank.getID() + ")");
 
-		bank.getAccounts().forEach(account -> plugin.getAccountUtils().remove(account, removeFromDatabase));
+		bank.getAccounts().forEach(account -> plugin.getAccountRepository().remove(account, removeFromDatabase));
 
 		bankSelectionMap.remove(bank.getSelection());
-		plugin.getBankUtils().notifyObservers();
+		plugin.getBankRepository().notifyObservers();
 
 		plugin.getScheduler().unschedulePayouts(bank);
 
@@ -109,16 +101,6 @@ public class BankRepository extends Observable implements Repository<Bank> {
         else if (callback != null)
 			callback.callSyncResult(null);
     }
-
-	public boolean isUniqueName(String name) {
-		return isUniqueNameIgnoring(name, null);
-	}
-
-	public boolean isUniqueNameIgnoring(String name, String without) {
-		if (without != null)
-			return get(b -> !b.getName().contentEquals(without) && b.getName().contentEquals(name)).isEmpty();
-		return get(b -> b.getName().contentEquals(name)).isEmpty();
-	}
 
 	public Set<Selection> getOverlappingSelections(Selection sel) {
 		return getOverlappingSelectionsIgnoring(sel, null);

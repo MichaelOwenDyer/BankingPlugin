@@ -42,7 +42,7 @@ public class AccountProtectListener implements Listener {
 
 	public AccountProtectListener(BankingPlugin plugin) {
         this.plugin = plugin;
-		this.accountRepo = plugin.getAccountUtils();
+		this.accountRepo = plugin.getAccountRepository();
     }
 
 	/**
@@ -54,7 +54,7 @@ public class AccountProtectListener implements Listener {
 		final Block b = e.getBlock();
 
 		if (accountRepo.isAccount(b.getLocation())) {
-			final Account account = accountRepo.get(e.getBlock().getLocation());
+			final Account account = accountRepo.getAt(e.getBlock().getLocation());
 			Player p = e.getPlayer();
 
 			if (p.isSneaking() && Utils.hasAxeInHand(p)) {
@@ -153,11 +153,11 @@ public class AccountProtectListener implements Listener {
 		if (otherChest == null)
 			return;
 
-		final Account account = accountRepo.get(otherChest.getLocation());
+		final Account account = accountRepo.getAt(otherChest.getLocation());
 		if (account == null)
             return;
 
-		Bank bank = plugin.getBankUtils().get(b.getLocation());
+		Bank bank = plugin.getBankRepository().getAt(b.getLocation());
 		if (bank == null || !bank.equals(account.getBank())) {
 			e.setCancelled(true);
 			p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
@@ -279,7 +279,7 @@ public class AccountProtectListener implements Listener {
 			return;
 		if (!(e.getWhoClicked() instanceof Player))
 			return;
-		Account account = accountRepo.get(e.getInventory().getLocation());
+		Account account = accountRepo.getAt(e.getInventory().getLocation());
 		Player executor = (Player) e.getWhoClicked();
 		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
 			executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EDIT_OTHER));

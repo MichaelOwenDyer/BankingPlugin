@@ -39,7 +39,7 @@ public class InterestEventScheduler {
 
     public void scheduleAll() {
         if (plugin.isEnabled())
-            plugin.getBankUtils().get().forEach(this::schedulePayouts);
+            plugin.getBankRepository().getAll().forEach(this::schedulePayouts);
     }
 
     public void unschedulePayouts(Bank bank) {

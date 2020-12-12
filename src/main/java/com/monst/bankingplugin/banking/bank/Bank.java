@@ -142,7 +142,7 @@ public class Bank extends Ownable {
 		plugin.debugf("Adding account #%d to bank #%d", account.getID(), getID());
 		accounts.add(account);
 		notifyObservers();
-		plugin.getAccountUtils().notifyObservers();
+		plugin.getAccountRepository().notifyObservers();
 	}
 
 	/**
@@ -155,7 +155,7 @@ public class Bank extends Ownable {
 		plugin.debugf("Removing account #%d from bank #%d", account.getID(), getID());
 		accounts.remove(account);
 		notifyObservers();
-		plugin.getAccountUtils().notifyObservers();
+		plugin.getAccountRepository().notifyObservers();
 	}
 
 	/**
@@ -296,10 +296,10 @@ public class Bank extends Ownable {
 	@Override
 	public void setName(String name) {
 		this.name = name;
-		plugin.getBankUtils().add(this, true); // Update bank in database
+		plugin.getBankRepository().add(this, true); // Update bank in database
 		notifyObservers();
 		getAccounts().forEach(Account::notifyObservers);
-		plugin.getBankUtils().notifyObservers();
+		plugin.getBankRepository().notifyObservers();
 	}
 
 	@Override

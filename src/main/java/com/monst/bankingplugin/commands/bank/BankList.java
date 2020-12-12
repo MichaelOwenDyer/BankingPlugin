@@ -30,7 +30,7 @@ public class BankList extends BankCommand.SubCommand {
 
         // TODO: Allow for more specific bank searching
 
-        Supplier<List<Bank>> getBanks = () -> bankRepo.get().stream()
+        Supplier<List<Bank>> getBanks = () -> bankRepo.getAll().stream()
                 .sorted(Comparator.comparing(Bank::getTotalValue).reversed())
                 .collect(Collectors.toList());
 

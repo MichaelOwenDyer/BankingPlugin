@@ -44,7 +44,7 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
             return true;
         }
 
-        Set<Bank> banks = bankRepo.get();
+        Set<Bank> banks = bankRepo.getAll();
 
         if (banks.isEmpty()) {
             sender.sendMessage(LangUtils.getMessage(Message.BANKS_NOT_FOUND));

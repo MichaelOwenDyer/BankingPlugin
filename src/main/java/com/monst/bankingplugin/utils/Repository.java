@@ -11,21 +11,33 @@ import java.util.function.Predicate;
 
 public interface Repository<O extends Ownable> {
 
-    Set<O> get();
+    Set<O> getAll();
 
-    O get(Location location);
+    O getAt(Location location);
 
     /**
      * Gets all banks on the server that fulfill a certain {@link Predicate}
      *
      * @return A new {@link HashSet} containing all banks
      */
-    default Set<O> get(Predicate<? super O> filter) {
-        return Utils.filter(get(), filter);
+    default Set<O> getMatching(Predicate<? super O> filter) {
+        return Utils.filter(getAll(), filter);
     }
 
-    default O get(int id) {
-        return get().stream().filter(o -> o.getID() == id).findFirst().orElse(null);
+    default O getByID(int id) {
+        return getAll().stream().filter(o -> o.getID() == id).findFirst().orElse(null);
+    }
+
+    default O getByIdentifier(String identifier) {
+        try {
+            return getByID(Integer.parseInt(identifier));
+        } catch (NumberFormatException e) {
+            return getByName(identifier);
+        }
+    }
+
+    default O getByName(String name) {
+        return getAll().stream().filter(b -> b.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
     }
 
     /**
@@ -35,7 +47,7 @@ public interface Repository<O extends Ownable> {
      * @return The number of ownables owned by the player
      */
     default Set<O> getOwnedBy(OfflinePlayer owner) {
-        return get(o -> o.isOwner(owner));
+        return getMatching(o -> o.isOwner(owner));
     }
 
     default void add(O o, boolean addToDatabase) {

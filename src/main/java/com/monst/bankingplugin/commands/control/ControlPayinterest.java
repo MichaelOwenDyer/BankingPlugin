@@ -42,10 +42,10 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
 
         Set<Bank> banks;
         if (args.length == 1)
-            banks = plugin.getBankUtils().get();
+            banks = plugin.getBankRepository().getAll();
         else
             banks = Arrays.stream(args)
-                    .map(plugin.getBankUtils()::get)
+                    .map(plugin.getBankRepository()::getByIdentifier)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
@@ -65,7 +65,7 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
         if (!sender.hasPermission(Permissions.PAY_INTEREST))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
-        return plugin.getBankUtils().get().stream()
+        return plugin.getBankRepository().getAll().stream()
                 .map(Bank::getName)
                 .filter(name -> !argList.contains(name))
                 .sorted()

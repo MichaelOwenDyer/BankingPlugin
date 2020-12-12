@@ -33,7 +33,7 @@ public class Account extends Ownable {
 	 * @return the new account
 	 */
 	public static Account mint(OfflinePlayer owner, Location loc) {
-		Bank bank = plugin.getBankUtils().get(loc);
+		Bank bank = plugin.getBankRepository().getAt(loc);
 		return new Account(
 				-1,
 				owner,
@@ -144,9 +144,9 @@ public class Account extends Ownable {
 			updateInventory();
 			checkSpaceAbove();
 		} catch (ChestNotFoundException | NotEnoughSpaceException e) {
-			plugin.getAccountUtils().remove(this, Config.removeAccountOnError);
+			plugin.getAccountRepository().remove(this, Config.removeAccountOnError);
 			if (!Config.removeAccountOnError)
-				plugin.getAccountUtils().addInvalidAccount(this);
+				plugin.getAccountRepository().addInvalidAccount(this);
 
 			if (showConsoleMessages)
 				plugin.getLogger().severe(e.getMessage());
@@ -197,7 +197,7 @@ public class Account extends Ownable {
 		getBank().addAccount(this);
 		notifyObservers();
 		getBank().notifyObservers();
-		plugin.getAccountUtils().notifyObservers();
+		plugin.getAccountRepository().notifyObservers();
 	}
 
 	/**
@@ -223,7 +223,7 @@ public class Account extends Ownable {
 		balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
 		notifyObservers();
 		getBank().notifyObservers();
-		plugin.getAccountUtils().notifyObservers();
+		plugin.getAccountRepository().notifyObservers();
 	}
 
 	/**
@@ -391,7 +391,7 @@ public class Account extends Ownable {
 			}
 		}
 		notifyObservers();
-		plugin.getAccountUtils().notifyObservers();
+		plugin.getAccountRepository().notifyObservers();
 	}
 
 	public String getChestName() {
@@ -440,7 +440,7 @@ public class Account extends Ownable {
 	 */
 	public BigDecimal calculateValue() {
 		plugin.debugf("Appraising account... (#%d)", getID());
-		return plugin.getAccountUtils().appraise(getInventory(true).getContents());
+		return plugin.getAccountRepository().appraise(getInventory(true).getContents());
 	}
 
 	@Override
@@ -453,7 +453,7 @@ public class Account extends Ownable {
 			coowners.add(previousOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 		notifyObservers();
-		plugin.getAccountUtils().notifyObservers();
+		plugin.getAccountRepository().notifyObservers();
 	}
 
 	@Override

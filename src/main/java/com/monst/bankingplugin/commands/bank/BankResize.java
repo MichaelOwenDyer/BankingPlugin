@@ -82,7 +82,7 @@ public class BankResize extends BankCommand.SubCommand {
         if (selection == null)
             return false;
 
-        bank = bankRepo.get(args[1]);
+        bank = bankRepo.getByIdentifier(args[1]);
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
             p.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
@@ -163,7 +163,7 @@ public class BankResize extends BankCommand.SubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 2) {
-            return bankRepo.get().stream()
+            return bankRepo.getAll().stream()
                     .map(Bank::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()

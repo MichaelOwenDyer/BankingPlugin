@@ -34,7 +34,7 @@ public class InterestEventListener implements Listener {
 
 	public InterestEventListener(BankingPlugin plugin) {
 		this.plugin = plugin;
-		this.accountRepo = plugin.getAccountUtils();
+		this.accountRepo = plugin.getAccountRepository();
 	}
 
 	@EventHandler(ignoreCancelled = true)

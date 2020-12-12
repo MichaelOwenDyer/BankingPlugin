@@ -140,7 +140,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         account.transferOwnership(newOwner);
         if (hasDefaultNickname)
             account.setName(account.getDefaultName());
-        plugin.getAccountUtils().add(account, true);
+        plugin.getAccountRepository().add(account, true);
         ClickType.removePlayerClickType(p);
     }
 
