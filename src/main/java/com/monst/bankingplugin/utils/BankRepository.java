@@ -14,12 +14,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class BankUtils extends Observable {
+public class BankRepository extends Observable {
 
 	private final BankingPlugin plugin;
 	private final Map<Selection, Bank> bankSelectionMap = new HashMap<>();
 
-    public BankUtils(BankingPlugin plugin) {
+    public BankRepository(BankingPlugin plugin) {
         this.plugin = plugin;
     }
 

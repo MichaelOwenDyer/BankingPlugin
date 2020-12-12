@@ -45,8 +45,8 @@ public class BankingPlugin extends JavaPlugin {
 	private BankCommand bankCommand;
 	private ControlCommand controlCommand;
 
-	private AccountUtils accountUtils;
-	private BankUtils bankUtils;
+	private AccountRepository accountRepository;
+	private BankRepository bankRepository;
 
 	private InterestEventScheduler scheduler;
 
@@ -135,8 +135,8 @@ public class BankingPlugin extends JavaPlugin {
 				getLogger().warning("Plugin may still work, but more errors are expected!");
 		}
 
-        accountUtils = new AccountUtils(this);
-		bankUtils = new BankUtils(this);
+        accountRepository = new AccountRepository(this);
+		bankRepository = new BankRepository(this);
 
 		LangUtils.reload();
 
@@ -161,7 +161,7 @@ public class BankingPlugin extends JavaPlugin {
 	public void onDisable() {
 		debug("Disabling BankingPlugin...");
 
-		if (accountUtils == null) {
+		if (accountRepository == null) {
 			// Plugin has not been fully enabled (probably due to errors),
 			// so only close file writer.
 			if (debugWriter != null && Config.enableDebugLog) {
@@ -177,8 +177,8 @@ public class BankingPlugin extends JavaPlugin {
 
 		ClickType.clear();
 
-		bankUtils.getBanks().forEach(bank -> {
-			bankUtils.removeBank(bank, false);
+		bankRepository.getBanks().forEach(bank -> {
+			bankRepository.removeBank(bank, false);
 			debugf("Removed bank \"%s\" (#%d)", bank.getName(), bank.getID());
 		});
 
@@ -239,7 +239,7 @@ public class BankingPlugin extends JavaPlugin {
 			int playerBanks = 0;
 			int adminBanks = 0;
 
-			for (Bank bank : bankUtils.getBanks())
+			for (Bank bank : bankRepository.getBanks())
 				if (bank.isPlayerBank())
 					playerBanks++;
 				else if (bank.isAdminBank())
@@ -386,25 +386,25 @@ public class BankingPlugin extends JavaPlugin {
 
 		getDatabase().connect(Callback.of(this,
 				result -> {
-					Collection<Bank> banks = bankUtils.getBanks();
-					Collection<Account> accounts = accountUtils.getAccounts();
+					Collection<Bank> banks = bankRepository.getBanks();
+					Collection<Account> accounts = accountRepository.getAccounts();
 
 					Set<Bank> reloadedBanks = new HashSet<>();
 					Set<Account> reloadedAccounts = new HashSet<>();
 
 					for (Bank bank : banks) {
-						bankUtils.removeBank(bank, false);
+						bankRepository.removeBank(bank, false);
 						debugf("Removed bank (#%d)", bank.getID());
 					}
 
 					getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(this,
 							bankAccountsMap -> {
 								bankAccountsMap.forEach((bank, bankAccounts) -> {
-									bankUtils.addBank(bank, false);
+									bankRepository.addBank(bank, false);
 									reloadedBanks.add(bank);
 									for (Account account : bankAccounts) {
 										if (account.create(showConsoleMessages)) {
-											accountUtils.addAccount(account, false, account.callUpdateName());
+											accountRepository.addAccount(account, false, account.callUpdateName());
 											reloadedAccounts.add(account);
 										} else
 											debug("Could not re-create account from database! (#" + account.getID() + ")");
@@ -483,17 +483,17 @@ public class BankingPlugin extends JavaPlugin {
 	}
 
 	/**
-	 * @return the instance of {@link AccountUtils}
+	 * @return the instance of {@link AccountRepository}
 	 */
-	public AccountUtils getAccountUtils() {
-		return accountUtils;
+	public AccountRepository getAccountUtils() {
+		return accountRepository;
 	}
 
 	/**
-	 * @return the instance of {@link BankUtils}
+	 * @return the instance of {@link BankRepository}
 	 */
-	public BankUtils getBankUtils() {
-		return bankUtils;
+	public BankRepository getBankUtils() {
+		return bankRepository;
 	}
 
 	public InterestEventScheduler getScheduler() {

@@ -30,11 +30,11 @@ import java.util.stream.Collectors;
 public class InterestEventListener implements Listener {
 
 	private final BankingPlugin plugin;
-	private final AccountUtils accountUtils;
+	private final AccountRepository accountRepo;
 
 	public InterestEventListener(BankingPlugin plugin) {
 		this.plugin = plugin;
-		this.accountUtils = plugin.getAccountUtils();
+		this.accountRepo = plugin.getAccountUtils();
 	}
 
 	@EventHandler(ignoreCancelled = true)
@@ -66,7 +66,7 @@ public class InterestEventListener implements Listener {
 		playerAccountMap.forEach((accountOwner, accounts) -> {
 			for (Account account : accounts) {
 				if (!account.allowNextPayout()) {
-					accountUtils.addAccount(account, true);
+					accountRepo.addAccount(account, true);
 					continue;
 				}
 
@@ -103,7 +103,7 @@ public class InterestEventListener implements Listener {
 				account.updatePrevBalance();
 
 				if (trustedPlayers.isEmpty()) {
-					accountUtils.addAccount(account, true);
+					accountRepo.addAccount(account, true);
 					continue;
 				}
 
@@ -118,7 +118,7 @@ public class InterestEventListener implements Listener {
 					interestPayable.get(account.getBank().getOwner()).add(interest);
 				}
 
-				accountUtils.addAccount(account, true);
+				accountRepo.addAccount(account, true);
 				plugin.getDatabase().logAccountInterest(account, interest, null);
 			}
 			if (accountOwner.isOnline())

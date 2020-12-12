@@ -25,13 +25,13 @@ import org.bukkit.inventory.ItemStack;
 import java.util.*;
 
 public class AccountInteractListener implements Listener {
-	
+
 	private final BankingPlugin plugin;
-	private final AccountUtils accountUtils;
+	private final AccountRepository accountRepo;
 
 	public AccountInteractListener(BankingPlugin plugin) {
 		this.plugin = plugin;
-		this.accountUtils = plugin.getAccountUtils();
+		this.accountRepo = plugin.getAccountUtils();
 	}
 
 	/**
@@ -41,12 +41,12 @@ public class AccountInteractListener implements Listener {
 	@SuppressWarnings({"deprecation","unused"})
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onAccountInteract(PlayerInteractEvent e) {
-		
+
 		Player p = e.getPlayer();
 		Block b = e.getClickedBlock();
 		if (b == null || b.getType() == Material.AIR)
 			return;
-		Account account = accountUtils.getAccount(b.getLocation());
+		Account account = accountRepo.getAccount(b.getLocation());
 		ClickType<?> clickType = ClickType.getPlayerClickType(p);
 
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))

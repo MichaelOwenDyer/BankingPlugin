@@ -98,7 +98,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
         }
 
         plugin.debug("Bank #" + bank.getID() + " removed from the database");
-        bankUtils.removeBank(bank, true);
+        bankRepo.removeBank(bank, true);
         Messenger messenger = new Messenger(LangUtils.getMessage(Message.BANK_REMOVED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, () -> bank.getAccounts().size())
@@ -113,7 +113,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return bankUtils.getBanks().stream()
+            return bankRepo.getBanks().stream()
                     .filter(bank -> (sender instanceof Player && bank.isOwner((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)))

@@ -11,7 +11,7 @@ import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.selections.BlockVector3D;
 import com.monst.bankingplugin.selections.CuboidSelection;
-import com.monst.bankingplugin.utils.BankUtils;
+import com.monst.bankingplugin.utils.BankRepository;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -55,7 +55,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 
     abstract static class SubCommand extends BankingPluginSubCommand {
 
-		static final BankUtils bankUtils = plugin.getBankUtils();
+		static final BankRepository bankRepo = plugin.getBankUtils();
 
 		SubCommand(String name, boolean playerCommand) {
 			super(name, playerCommand);
@@ -66,7 +66,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 			if (args.length == 1) {
 				if (sender instanceof Player) {
 					Player p = (Player) sender;
-					bank = bankUtils.getBank(p.getLocation());
+					bank = bankRepo.getBank(p.getLocation());
 					if (bank == null) {
 						plugin.debug(p.getName() + " wasn't standing in a bank");
 						p.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
@@ -75,7 +75,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 					sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
 				}
 			} else {
-				bank = bankUtils.getBank(args[1]);
+				bank = bankRepo.getBank(args[1]);
 				if (bank == null) {
 					plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
 					sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));

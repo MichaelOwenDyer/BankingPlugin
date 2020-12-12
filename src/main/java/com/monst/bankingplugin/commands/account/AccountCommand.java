@@ -6,7 +6,7 @@ import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.utils.AccountUtils;
+import com.monst.bankingplugin.utils.AccountRepository;
 
 public class AccountCommand extends BankingPluginCommand<AccountCommand.SubCommand> {
 
@@ -47,7 +47,7 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 
 	abstract static class SubCommand extends BankingPluginSubCommand {
 
-		static final AccountUtils accountUtils = plugin.getAccountUtils();
+		static final AccountRepository accountRepo = plugin.getAccountUtils();
 
 		SubCommand(String name, boolean playerCommand) {
 			super(name, playerCommand);

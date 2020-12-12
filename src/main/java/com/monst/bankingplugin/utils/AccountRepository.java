@@ -22,13 +22,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class AccountUtils extends Observable {
+public class AccountRepository extends Observable {
 
 	private final BankingPlugin plugin;
 	private final Map<Location, Account> accountLocationMap = new HashMap<>();
 	private final Set<Account> invalidAccounts = new HashSet<>();
 
-    public AccountUtils(BankingPlugin plugin) {
+    public AccountRepository(BankingPlugin plugin) {
         this.plugin = plugin;
     }
 

@@ -10,7 +10,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.selections.Selection;
-import com.monst.bankingplugin.utils.BankUtils;
+import com.monst.bankingplugin.utils.BankRepository;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;
@@ -82,7 +82,7 @@ public class BankResize extends BankCommand.SubCommand {
         if (selection == null)
             return false;
 
-        bank = bankUtils.getBank(args[1]);
+        bank = bankRepo.getBank(args[1]);
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
             p.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
@@ -104,7 +104,7 @@ public class BankResize extends BankCommand.SubCommand {
             return true;
         }
         long volume = selection.getVolume();
-        long volumeLimit = BankUtils.getVolumeLimit(p);
+        long volumeLimit = BankRepository.getVolumeLimit(p);
         if (bank.isPlayerBank() && volumeLimit >= 0 && volume > volumeLimit) {
             plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_LARGE,
@@ -123,7 +123,7 @@ public class BankResize extends BankCommand.SubCommand {
             ));
             return true;
         }
-        Set<Selection> overlappingSelections = bankUtils.getOverlappingSelectionsIgnoring(selection, bank.getSelection());
+        Set<Selection> overlappingSelections = bankRepo.getOverlappingSelectionsIgnoring(selection, bank.getSelection());
         if (!overlappingSelections.isEmpty()) {
             plugin.debug("New selection is overlaps with an existing bank selection");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING));
@@ -145,9 +145,9 @@ public class BankResize extends BankCommand.SubCommand {
             return true;
         }
 
-        bankUtils.removeBank(bank, false);
+        bankRepo.removeBank(bank, false);
         bank.setSelection(selection);
-        bankUtils.addBank(bank, true, Callback.of(plugin,
+        bankRepo.addBank(bank, true, Callback.of(plugin,
                 result -> {
                     plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
                     p.sendMessage(LangUtils.getMessage(Message.BANK_RESIZED, new Replacement(Placeholder.BANK_SIZE, selection::getVolume)));
@@ -163,7 +163,7 @@ public class BankResize extends BankCommand.SubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 2) {
-            return bankUtils.getBanks().stream()
+            return bankRepo.getBanks().stream()
                     .map(Bank::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()

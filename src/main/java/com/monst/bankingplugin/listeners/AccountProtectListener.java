@@ -38,11 +38,11 @@ import org.bukkit.inventory.InventoryHolder;
 public class AccountProtectListener implements Listener {
 
 	private final BankingPlugin plugin;
-	private final AccountUtils accountUtils;
+	private final AccountRepository accountRepo;
 
 	public AccountProtectListener(BankingPlugin plugin) {
         this.plugin = plugin;
-		this.accountUtils = plugin.getAccountUtils();
+		this.accountRepo = plugin.getAccountUtils();
     }
 
 	/**
@@ -53,8 +53,8 @@ public class AccountProtectListener implements Listener {
 	public void onAccountChestBreak(BlockBreakEvent e) {
 		final Block b = e.getBlock();
 
-		if (accountUtils.isAccount(b.getLocation())) {
-			final Account account = accountUtils.getAccount(e.getBlock().getLocation());
+		if (accountRepo.isAccount(b.getLocation())) {
+			final Account account = accountRepo.getAccount(e.getBlock().getLocation());
 			Player p = e.getPlayer();
 
 			if (p.isSneaking() && Utils.hasAxeInHand(p)) {
@@ -119,12 +119,12 @@ public class AccountProtectListener implements Listener {
 			Account newAccount = Account.clone(account);
 			newAccount.setLocation(newLocation);
 
-			accountUtils.removeAccount(account, false, Callback.of(plugin, result -> {
+			accountRepo.removeAccount(account, false, Callback.of(plugin, result -> {
 				newAccount.create(true);
-				accountUtils.addAccount(newAccount, true, newAccount.callUpdateName());
+				accountRepo.addAccount(newAccount, true, newAccount.callUpdateName());
 			}));
 		} else {
-			accountUtils.removeAccount(account, true);
+			accountRepo.removeAccount(account, true);
 			plugin.debugf("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
 		}
@@ -153,7 +153,7 @@ public class AccountProtectListener implements Listener {
 		if (otherChest == null)
 			return;
 
-		final Account account = accountUtils.getAccount(otherChest.getLocation());
+		final Account account = accountRepo.getAccount(otherChest.getLocation());
 		if (account == null)
             return;
 
@@ -227,9 +227,9 @@ public class AccountProtectListener implements Listener {
 
 		final Account newAccount = Account.clone(account);
 
-		accountUtils.removeAccount(account, true, Callback.of(plugin, result -> {
+		accountRepo.removeAccount(account, true, Callback.of(plugin, result -> {
 				if (newAccount.create(true)) {
-					accountUtils.addAccount(newAccount, true, newAccount.callUpdateName());
+					accountRepo.addAccount(newAccount, true, newAccount.callUpdateName());
 					plugin.debugf("%s extended %s's account (#%d)",
 							p.getName(), account.getOwner().getName(), account.getID());
 				} else
@@ -254,14 +254,14 @@ public class AccountProtectListener implements Listener {
 					Chest r = (Chest) dc.getRightSide();
 					Chest l = (Chest) dc.getLeftSide();
 
-					if ((r != null && accountUtils.isAccount(r.getLocation()))
-							|| (l != null && accountUtils.isAccount(l.getLocation())))
+					if ((r != null && accountRepo.isAccount(r.getLocation()))
+							|| (l != null && accountRepo.isAccount(l.getLocation())))
 						e.setCancelled(true);
 
 				} else if (inv.getHolder() instanceof Chest) {
 					Chest c = (Chest) inv.getHolder();
 
-					if (accountUtils.isAccount(c.getLocation()))
+					if (accountRepo.isAccount(c.getLocation()))
 						e.setCancelled(true);
 				}
 			}
@@ -275,11 +275,11 @@ public class AccountProtectListener implements Listener {
 	public void onAccountItemClick(InventoryClickEvent e) {
 		if (!(e.getInventory().getHolder() instanceof Chest || e.getInventory().getHolder() instanceof DoubleChest))
 			return;
-		if (!accountUtils.isAccount(e.getInventory().getLocation()))
+		if (!accountRepo.isAccount(e.getInventory().getLocation()))
 			return;
 		if (!(e.getWhoClicked() instanceof Player))
 			return;
-		Account account = accountUtils.getAccount(e.getInventory().getLocation());
+		Account account = accountRepo.getAccount(e.getInventory().getLocation());
 		Player executor = (Player) e.getWhoClicked();
 		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
 			executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EDIT_OTHER));

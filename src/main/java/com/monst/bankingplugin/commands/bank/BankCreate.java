@@ -90,14 +90,14 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
         if (!isAdminBank) {
-            int limit = BankUtils.getBankLimit(p);
-            if (limit != -1 && bankUtils.getNumberOfBanks(p) >= limit) {
+            int limit = BankRepository.getBankLimit(p);
+            if (limit != -1 && bankRepo.getNumberOfBanks(p) >= limit) {
                 p.sendMessage(LangUtils.getMessage(Message.BANK_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
                 plugin.debug(p.getName() + " has reached their bank limit");
                 return true;
             }
         }
-        Set<Selection> overlappingSelections = bankUtils.getOverlappingSelections(selection);
+        Set<Selection> overlappingSelections = bankRepo.getOverlappingSelections(selection);
         if (!overlappingSelections.isEmpty()) {
             plugin.debug("Region is not exclusive");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING));
@@ -106,7 +106,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
         long volume = selection.getVolume();
-        long volumeLimit = BankUtils.getVolumeLimit(p);
+        long volumeLimit = BankRepository.getVolumeLimit(p);
         if (!isAdminBank && volumeLimit >= 0 && volume > volumeLimit) {
             plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_LARGE,
@@ -125,7 +125,7 @@ public class BankCreate extends BankCommand.SubCommand {
             ));
             return true;
         }
-        if (!bankUtils.isUniqueName(name)) {
+        if (!bankRepo.isUniqueName(name)) {
             plugin.debug("Name is not unique");
             p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, name)));
             return true;
@@ -170,7 +170,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
 
-        bankUtils.addBank(bank, true);
+        bankRepo.addBank(bank, true);
         plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
         p.sendMessage(LangUtils.getMessage(Message.BANK_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         return true;

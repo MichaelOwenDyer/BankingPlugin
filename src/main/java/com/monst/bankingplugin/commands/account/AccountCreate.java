@@ -48,8 +48,8 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return true;
         }
 
-        int limit = accountUtils.getAccountLimit(p);
-        if (limit != -1 && accountUtils.getNumberOfAccounts(p) >= limit) {
+        int limit = accountRepo.getAccountLimit(p);
+        if (limit != -1 && accountRepo.getNumberOfAccounts(p) >= limit) {
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
             plugin.debug(p.getName() + " has reached their account limit");
             return true;
@@ -76,11 +76,11 @@ public class AccountCreate extends AccountCommand.SubCommand {
      * @param b         Block where the account will be located
      */
     public static void create(Player p, Block b) {
-        AccountUtils accountUtils = plugin.getAccountUtils();
-        BankUtils bankUtils = plugin.getBankUtils();
+        AccountRepository accountRepo = plugin.getAccountUtils();
+        BankRepository bankRepo = plugin.getBankUtils();
         Location location = b.getLocation();
 
-        if (accountUtils.isAccount(location)) {
+        if (accountRepo.isAccount(location)) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             plugin.debug("Chest is already an account.");
             return;
@@ -94,8 +94,8 @@ public class AccountCreate extends AccountCommand.SubCommand {
                 plugin.debug("Chest is blocked.");
                 return;
             }
-            bank = bankUtils.getBank(b.getLocation());
-            Bank otherBank = bankUtils.getBank(attachedChestBlock.getLocation());
+            bank = bankRepo.getBank(b.getLocation());
+            Bank otherBank = bankRepo.getBank(attachedChestBlock.getLocation());
             if (bank == null || !bank.equals(otherBank)) {
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
                 plugin.debug("Chest is not in a bank.");
@@ -107,7 +107,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
                 plugin.debug("Chest is blocked.");
                 return;
             }
-            bank = bankUtils.getBank(location);
+            bank = bankRepo.getBank(location);
             if (bank == null) {
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
                 plugin.debug("Chest is not in a bank.");
@@ -181,7 +181,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
 
         if (account.create(true)) {
             plugin.debug("Account created");
-            accountUtils.addAccount(account, true, account.callUpdateName());
+            accountRepo.addAccount(account, true, account.callUpdateName());
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         } else {
             plugin.debugf("Could not create account");

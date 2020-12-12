@@ -80,10 +80,10 @@ public class AccountMigrate extends AccountCommand.SubCommand {
     }
 
     public static void migratePartTwo(Player p, Block b, Account toMigrate) {
-        AccountUtils accountUtils = plugin.getAccountUtils();
+        AccountRepository accountRepo = plugin.getAccountUtils();
         Location newLocation = b.getLocation();
-        if (accountUtils.isAccount(newLocation)) {
-            if (toMigrate.equals(accountUtils.getAccount(newLocation))) {
+        if (accountRepo.isAccount(newLocation)) {
+            if (toMigrate.equals(accountRepo.getAccount(newLocation))) {
                 plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
                 p.sendMessage(LangUtils.getMessage(Message.SAME_CHEST));
                 return;
@@ -204,9 +204,9 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         if (newAccount.create(true)) {
             plugin.debugf("Account migrated (#%d)", newAccount.getID());
-            accountUtils.removeAccount(toMigrate, false, Callback.of(plugin,
+            accountRepo.removeAccount(toMigrate, false, Callback.of(plugin,
                     result -> {
-                        accountUtils.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
+                        accountRepo.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
                         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_MIGRATED));
                     },
                     error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,

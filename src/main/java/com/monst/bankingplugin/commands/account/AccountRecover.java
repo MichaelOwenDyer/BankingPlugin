@@ -36,21 +36,21 @@ public class AccountRecover extends AccountCommand.SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to recover invalid accounts");
 
-        if (accountUtils.getInvalidAccounts().isEmpty()) {
+        if (accountRepo.getInvalidAccounts().isEmpty()) {
             sender.sendMessage(LangUtils.getMessage(Message.ACCOUNTS_NOT_FOUND));
             return true;
         }
 
         if (sender instanceof Player)
-            new AccountRecoveryGui(accountUtils::getInvalidAccounts).open(((Player) sender));
+            new AccountRecoveryGui(accountRepo::getInvalidAccounts).open(((Player) sender));
         return true;
     }
 
     public static void recover(Player p, Block b, Account toMigrate) {
-        AccountUtils accountUtils = plugin.getAccountUtils();
-        BankUtils bankUtils = plugin.getBankUtils();
+        AccountRepository accountRepo = plugin.getAccountUtils();
+        BankRepository bankRepo = plugin.getBankUtils();
         Location newLocation = b.getLocation();
-        if (accountUtils.isAccount(newLocation)) {
+        if (accountRepo.isAccount(newLocation)) {
             plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             return;
@@ -60,7 +60,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
             plugin.debug("Chest is blocked.");
             return;
         }
-        Bank newBank = bankUtils.getBank(newLocation); // May or may not be the same as previous bank
+        Bank newBank = bankRepo.getBank(newLocation); // May or may not be the same as previous bank
         if (newBank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             plugin.debug("Chest is not in a bank.");
@@ -81,8 +81,8 @@ public class AccountRecover extends AccountCommand.SubCommand {
 
         if (newAccount.create(true)) {
             plugin.debugf("Account recovered (#%d)", newAccount.getID());
-            accountUtils.removeInvalidAccount(toMigrate);
-            accountUtils.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
+            accountRepo.removeInvalidAccount(toMigrate);
+            accountRepo.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RECOVERED));
         } else {
             plugin.debug("Could not recover account");

@@ -46,7 +46,7 @@ public class BankRename extends BankCommand.SubCommand {
                 sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
                 return true;
             }
-            bank = bankUtils.getBank(((Player) sender).getLocation());
+            bank = bankRepo.getBank(((Player) sender).getLocation());
             if (bank == null) {
                 plugin.debug(sender.getName() + " was not standing in a bank");
                 sender.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
@@ -54,7 +54,7 @@ public class BankRename extends BankCommand.SubCommand {
             }
             newName = args[1];
         } else {
-            bank = bankUtils.getBank(args[1]);
+            bank = bankRepo.getBank(args[1]);
             if (bank == null) {
                 plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
                 sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
@@ -82,7 +82,7 @@ public class BankRename extends BankCommand.SubCommand {
             sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
-        if (!bankUtils.isUniqueNameIgnoring(newName, bank.getName())) {
+        if (!bankRepo.isUniqueNameIgnoring(newName, bank.getName())) {
             plugin.debug("Name is not unique");
             sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
@@ -102,11 +102,11 @@ public class BankRename extends BankCommand.SubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            Bank bank = sender instanceof Player ? bankUtils.getBank(((Player) sender).getLocation()) : null;
+            Bank bank = sender instanceof Player ? bankRepo.getBank(((Player) sender).getLocation()) : null;
             if (args[1].isEmpty() && bank != null)
                 return Collections.singletonList(bank.getName());
 
-            return bankUtils.getBanks().stream()
+            return bankRepo.getBanks().stream()
                     .filter(b -> ((sender instanceof Player && b.isTrusted((Player) sender))
                             || (b.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (b.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))

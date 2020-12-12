@@ -269,7 +269,7 @@ public class Utils {
 				.collect(Collectors.toList());
 	}
 
-	static long getLimit(Player player, String permission, long defaultLimit) {
+	public static long getLimit(Player player, String permission, long defaultLimit) {
 		long limit = 0;
 		boolean useDefault = true;
 

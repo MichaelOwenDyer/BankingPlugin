@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.utils.AccountUtils;
+import com.monst.bankingplugin.utils.AccountRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -21,11 +21,11 @@ import java.util.ArrayList;
 public class ChestTamperingListener implements Listener {
 
 	private final BankingPlugin plugin;
-    private final AccountUtils accountUtils;
+    private final AccountRepository accountRepo;
 
     public ChestTamperingListener(BankingPlugin plugin) {
 		this.plugin = plugin;
-        this.accountUtils = plugin.getAccountUtils();
+        this.accountRepo = plugin.getAccountUtils();
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -36,7 +36,7 @@ public class ChestTamperingListener implements Listener {
 		if (Utils.isTransparent(b))
 			return;
 
-        if (accountUtils.isAccount(below.getLocation())) {
+        if (accountRepo.isAccount(below.getLocation())) {
             e.setCancelled(true);
         }
     }
@@ -45,7 +45,7 @@ public class ChestTamperingListener implements Listener {
     public void onMultiBlockPlace(BlockMultiPlaceEvent e) {
         for (BlockState blockState : e.getReplacedBlockStates()) {
             Block below = blockState.getBlock().getRelative(BlockFace.DOWN);
-            if (accountUtils.isAccount(below.getLocation())) {
+            if (accountRepo.isAccount(below.getLocation())) {
                 e.setCancelled(true);
             }
         }
@@ -56,7 +56,7 @@ public class ChestTamperingListener implements Listener {
 		// If the piston did not push any blocks
         Block airAfterPiston = e.getBlock().getRelative(e.getDirection());
         Block belowAir = airAfterPiston.getRelative(BlockFace.DOWN);
-        if (accountUtils.isAccount(belowAir.getLocation())) {
+        if (accountRepo.isAccount(belowAir.getLocation())) {
             e.setCancelled(true);
             return;
         }
@@ -64,7 +64,7 @@ public class ChestTamperingListener implements Listener {
         for (Block b : e.getBlocks()) {
             Block newBlock = b.getRelative(e.getDirection());
             Block belowNewBlock = newBlock.getRelative(BlockFace.DOWN);
-            if (accountUtils.isAccount(belowNewBlock.getLocation())) e.setCancelled(true);
+            if (accountRepo.isAccount(belowNewBlock.getLocation())) e.setCancelled(true);
         }
     }
 
@@ -73,7 +73,7 @@ public class ChestTamperingListener implements Listener {
         for (Block b : e.getBlocks()) {
             Block newBlock = b.getRelative(e.getDirection());
             Block belowNewBlock = newBlock.getRelative(BlockFace.DOWN);
-            if (accountUtils.isAccount(belowNewBlock.getLocation())) {
+            if (accountRepo.isAccount(belowNewBlock.getLocation())) {
                 e.setCancelled(true);
             }
         }
@@ -84,7 +84,7 @@ public class ChestTamperingListener implements Listener {
         Block b = e.getToBlock();
         Block below = b.getRelative(BlockFace.DOWN);
 
-        if (accountUtils.isAccount(below.getLocation())) 
+        if (accountRepo.isAccount(below.getLocation()))
         	e.setCancelled(true);
     }
 
@@ -93,7 +93,7 @@ public class ChestTamperingListener implements Listener {
         Block clicked = e.getBlockClicked();
         Block underWater = clicked.getRelative(BlockFace.DOWN).getRelative(e.getBlockFace());
 
-        if (accountUtils.isAccount(clicked.getLocation()) || accountUtils.isAccount(underWater.getLocation()))
+        if (accountRepo.isAccount(clicked.getLocation()) || accountRepo.isAccount(underWater.getLocation()))
         	e.setCancelled(true);
     }
 
@@ -101,7 +101,7 @@ public class ChestTamperingListener implements Listener {
     public void onStructureGrow(StructureGrowEvent e) {
         for (BlockState state : e.getBlocks()) {
             Block newBlock = state.getBlock();
-            if (accountUtils.isAccount(newBlock.getLocation()) || accountUtils.isAccount(newBlock.getRelative(BlockFace.DOWN).getLocation())) {
+            if (accountRepo.isAccount(newBlock.getLocation()) || accountRepo.isAccount(newBlock.getRelative(BlockFace.DOWN).getLocation())) {
                 e.setCancelled(true);
             }
         }
@@ -110,7 +110,7 @@ public class ChestTamperingListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockGrow(BlockGrowEvent e) {
         Block newBlock = e.getNewState().getBlock();
-        if (accountUtils.isAccount(newBlock.getLocation()) || accountUtils.isAccount(newBlock.getRelative(BlockFace.DOWN).getLocation())) {
+        if (accountRepo.isAccount(newBlock.getLocation()) || accountRepo.isAccount(newBlock.getRelative(BlockFace.DOWN).getLocation())) {
             e.setCancelled(true);
         }
     }
@@ -118,7 +118,7 @@ public class ChestTamperingListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockSpread(BlockSpreadEvent e) {
         Block newBlock = e.getNewState().getBlock();
-        if (accountUtils.isAccount(newBlock.getLocation()) || accountUtils.isAccount(newBlock.getRelative(BlockFace.DOWN).getLocation())) {
+        if (accountRepo.isAccount(newBlock.getLocation()) || accountRepo.isAccount(newBlock.getRelative(BlockFace.DOWN).getLocation())) {
             e.setCancelled(true);
         }
     }
@@ -128,7 +128,7 @@ public class ChestTamperingListener implements Listener {
 		ArrayList<Block> bl = new ArrayList<>(e.blockList());
 		for (Block b : bl) {
 			if (b.getType().equals(Material.CHEST) || b.getType().equals(Material.TRAPPED_CHEST)) {
-				if (accountUtils.isAccount(b.getLocation()))
+				if (accountRepo.isAccount(b.getLocation()))
 					e.blockList().remove(b);
 			}
 		}

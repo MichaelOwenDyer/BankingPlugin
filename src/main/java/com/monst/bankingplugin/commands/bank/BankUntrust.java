@@ -93,7 +93,7 @@ public class BankUntrust extends BankCommand.SubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 2) {
-            return bankUtils.getBanks().stream()
+            return bankRepo.getBanks().stream()
                     .filter(bank -> bank.isOwner(p)
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRUST_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRUST_ADMIN)))

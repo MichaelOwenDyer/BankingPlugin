@@ -4,7 +4,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.BankUtils;
+import com.monst.bankingplugin.utils.BankRepository;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -28,9 +28,9 @@ public class BankLimits extends BankCommand.SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        int banksUsed = bankUtils.getNumberOfBanks(p);
-        int allowedBanks = BankUtils.getBankLimit(p);
-        long allowedVolume = BankUtils.getVolumeLimit(p);
+        int banksUsed = bankRepo.getNumberOfBanks(p);
+        int allowedBanks = BankRepository.getBankLimit(p);
+        long allowedVolume = BankRepository.getVolumeLimit(p);
         String bankLimit = allowedBanks < 0 ? "∞" : "" + allowedBanks;
         String volumeLimit = allowedVolume < 0 ? "∞" : "" + allowedVolume;
         plugin.debugf("%s is viewing their bank limits: %d / %s, max volume: %d", p.getName(), banksUsed, bankLimit, allowedVolume);

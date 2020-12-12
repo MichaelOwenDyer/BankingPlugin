@@ -7,7 +7,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.AccountUtils;
+import com.monst.bankingplugin.utils.AccountRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -25,11 +25,11 @@ import java.math.BigDecimal;
 public class AccountBalanceListener implements Listener {
 
 	private final BankingPlugin plugin;
-	private final AccountUtils accountUtils;
+	private final AccountRepository accountRepo;
 
 	public AccountBalanceListener(BankingPlugin plugin) {
 		this.plugin = plugin;
-		this.accountUtils = plugin.getAccountUtils();
+		this.accountRepo = plugin.getAccountUtils();
 	}
 
 	@EventHandler
@@ -41,7 +41,7 @@ public class AccountBalanceListener implements Listener {
 		if (!e.getInventory().getType().equals(InventoryType.CHEST))
 			return;
 
-		Account account = accountUtils.getAccount(e.getInventory().getLocation());
+		Account account = accountRepo.getAccount(e.getInventory().getLocation());
 		if (account == null)
 			return;
 
@@ -67,7 +67,7 @@ public class AccountBalanceListener implements Listener {
 				));
 
 		account.setBalance(valueOnClose);
-		accountUtils.addAccount(account, true);
+		accountRepo.addAccount(account, true);
 
 		plugin.debugf("Account #%d has been updated with a new balance (%s)", account.getID(), Utils.format(valueOnClose));
 		Bukkit.getPluginManager().callEvent(new AccountTransactionEvent(executor, account, difference, valueOnClose));

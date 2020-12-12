@@ -44,7 +44,7 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
             return true;
         }
 
-        Set<Bank> banks = bankUtils.getBanks();
+        Set<Bank> banks = bankRepo.getBanks();
 
         if (banks.isEmpty()) {
             sender.sendMessage(LangUtils.getMessage(Message.BANKS_NOT_FOUND));
@@ -80,7 +80,7 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
             messenger.removeRecipient(sender);
             messenger.send();
         }
-        banks.forEach(bank -> bankUtils.removeBank(bank, true));
+        banks.forEach(bank -> bankRepo.removeBank(bank, true));
         plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
         return true;
     }
