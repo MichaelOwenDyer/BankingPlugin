@@ -20,7 +20,7 @@ public class InterestEvent extends ControlEvent implements Cancellable {
 	}
 
 	public InterestEvent(BankingPlugin plugin, CommandSender sender) {
-		this(plugin, sender, plugin.getBankUtils().getBanks());
+		this(plugin, sender, plugin.getBankUtils().get());
 	}
 
 	public InterestEvent(BankingPlugin plugin, Set<Bank> banks) {

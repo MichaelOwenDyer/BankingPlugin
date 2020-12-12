@@ -41,7 +41,7 @@ public class BankSet extends BankCommand.SubCommand {
         if (args.length < 3)
             return false;
 
-        Bank bank = bankRepo.getBank(args[1]);
+        Bank bank = bankRepo.get(args[1]);
         String fieldName = args[2];
         StringBuilder sb = new StringBuilder(32);
         if (args.length > 3)
@@ -103,14 +103,14 @@ public class BankSet extends BankCommand.SubCommand {
         if (field == BankField.INTEREST_PAYOUT_TIMES)
             plugin.getScheduler().schedulePayouts(bank);
 
-        bankRepo.addBank(bank, true);
+        bankRepo.add(bank, true);
         return true;
     }
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2)
-            return bankRepo.getBanks().stream()
+            return bankRepo.get().stream()
                     .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
@@ -118,7 +118,7 @@ public class BankSet extends BankCommand.SubCommand {
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()
                     .collect(Collectors.toList());
-        else if (args.length == 3 && bankRepo.getBank(args[1]) != null)
+        else if (args.length == 3 && bankRepo.get(args[1]) != null)
             return BankField.stream()
                     .filter(BankField::isOverrideAllowed)
                     .map(BankField::getName)
@@ -126,7 +126,7 @@ public class BankSet extends BankCommand.SubCommand {
                     .sorted()
                     .collect(Collectors.toList());
         else if (args.length == 4) {
-            Bank bank = bankRepo.getBank(args[1]);
+            Bank bank = bankRepo.get(args[1]);
             BankField field = BankField.getByName(args[2]);
             if (bank != null && field != null)
                 return Collections.singletonList(bank.getFormatted(field));

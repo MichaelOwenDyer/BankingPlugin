@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
@@ -20,9 +19,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
-public class AccountRepository extends Observable {
+public class AccountRepository extends Observable implements Repository<Account> {
 
 	private final BankingPlugin plugin;
 	private final Map<Location, Account> accountLocationMap = new HashMap<>();
@@ -38,7 +36,18 @@ public class AccountRepository extends Observable {
 	 * @return Whether there is a account at the given location
 	 */
 	public boolean isAccount(Location location) {
-		return getAccount(location) != null;
+		return get(location) != null;
+	}
+
+	/**
+	 * Gets all accounts on the server.
+	 *
+	 * @see #get()
+	 * @return Read-only collection of all accounts
+	 */
+	@Override
+	public Set<Account> get() {
+		return new HashSet<>(accountLocationMap.values());
 	}
 
     /**
@@ -47,55 +56,12 @@ public class AccountRepository extends Observable {
      * @param location Location of the account
      * @return Account at the given location or <b>null</b> if no account is found there
      */
-	public Account getAccount(Location location) {
+    @Override
+	public Account get(Location location) {
 		if (location == null)
 			return null;
 		return accountLocationMap.get(Utils.blockifyLocation(location));
     }
-
-	/**
-	 * Get the account with a given ID
-	 *
-	 * @param id ID of the account
-	 * @return Account with the given ID or <b>null</b> if no account has that ID
-	 */
-    public Account getAccount(int id) {
-		return getAccounts(account -> account.getID() == id).stream().findFirst().orElse(null);
-	}
-
-    /**
-     * Gets all accounts on the server.
-     * Do not use for removing while iterating!
-     *
-     * @see #getAccounts()
-     * @return Read-only collection of all accounts
-     */
-    public Set<Account> getAccounts() {
-		return new HashSet<>(accountLocationMap.values());
-    }
-
-    public Set<Account> getAccounts(Predicate<? super Account> filter) {
-		return Utils.filter(getAccounts(), filter);
-    }
-
-	/**
-	 * Get the number of accounts owned by a certain player
-	 *
-	 * @param player Player whose accounts should be counted
-	 * @return The number of accounts owned by the player
-	 */
-	public int getNumberOfAccounts(OfflinePlayer player) {
-		return getAccounts(account -> account.isOwner(player)).size();
-	}
-
-	/**
-	 * Adds and saves an account in the current session. Can also be used to update an already existing account.
-	 * @param account Account to add
-	 * @param addToDatabase Whether the account should also be added to or updated in the database
-	 */
-	public void addAccount(Account account, boolean addToDatabase) {
-		addAccount(account, addToDatabase, null);
-	}
 
 	/**
 	 * Adds and saves an account in the current session. Can also be used to update an already existing account.
@@ -103,7 +69,8 @@ public class AccountRepository extends Observable {
 	 * @param addToDatabase Whether the account should also be added to or updated in the database
      * @param callback Callback that - if succeeded - returns the ID the account had or was given (as {@code int})
      */
-    public void addAccount(Account account, boolean addToDatabase, Callback<Integer> callback) {
+	@Override
+    public void add(Account account, boolean addToDatabase, Callback<Integer> callback) {
     	Inventory inv = account.getInventory(true);
     	if (inv == null) {
     		plugin.debug("Could not add account! Inventory null (#" + account.getID() + ")");
@@ -139,21 +106,14 @@ public class AccountRepository extends Observable {
         notifyObservers();
     }
 
-	/**
-	 * Remove an account. May not work properly if double chest doesn't exist!
-	 * @param account Account to remove
-	 * @param removeFromDatabase Whether the account should also be removed from the database
-	 */
-	public void removeAccount(Account account, boolean removeFromDatabase) {
-		removeAccount(account, removeFromDatabase, null);
-	}
-
-    /** Remove a account. May not work properly if double chest doesn't exist!
+    /**
+	 * Removes a account. May not work properly if double chest doesn't exist!
      * @param account Account to remove
      * @param removeFromDatabase Whether the account should also be removed from the database
      * @param callback Callback that - if succeeded - returns null
      */
-    public void removeAccount(Account account, boolean removeFromDatabase, Callback<Void> callback) {
+    @Override
+    public void remove(Account account, boolean removeFromDatabase, Callback<Void> callback) {
         plugin.debug("Removing account (#" + account.getID() + ")");
 
 		account.clearChestName();
@@ -201,13 +161,13 @@ public class AccountRepository extends Observable {
 	}
 
     /**
-     * Get the account limits of a player
+     * Gets the account limits of a player
      * @param player Player, whose account limits should be returned
      * @return The account limits of the given player
      */
-    public int getAccountLimit(Player player) {
-    	return (int) Utils.getLimit(player, Permissions.ACCOUNT_NO_LIMIT,
-                Config.defaultAccountLimit);
+    @Override
+    public int getLimit(Player player) {
+    	return (int) Utils.getLimit(player, Permissions.ACCOUNT_NO_LIMIT, Config.defaultAccountLimit);
     }
 
 	public BigDecimal appraise(ItemStack[] contents) {

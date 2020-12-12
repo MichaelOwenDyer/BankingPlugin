@@ -31,7 +31,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
         if (args.length > 1) {
             try {
                 int id = Integer.parseInt(args[1]);
-                Account account = accountRepo.getAccount(id);
+                Account account = accountRepo.get(id);
                 if (account == null) {
                     sender.sendMessage(LangUtils.getMessage(Message.ACCOUNT_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
                     return true;

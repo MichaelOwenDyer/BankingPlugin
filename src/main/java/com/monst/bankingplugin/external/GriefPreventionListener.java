@@ -128,7 +128,7 @@ public class GriefPreventionListener implements Listener {
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.CHEST || clickedBlock.getType() == Material.TRAPPED_CHEST))
             return;
 
-        Bank bank = plugin.getBankUtils().getBank(clickedBlock.getLocation());
+        Bank bank = plugin.getBankUtils().get(clickedBlock.getLocation());
         if (bank == null)
             return;
 

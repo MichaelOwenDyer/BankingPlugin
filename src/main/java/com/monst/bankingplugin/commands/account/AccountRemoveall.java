@@ -49,7 +49,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
         Set<Account> accounts;
 
         if (args.length == 1) {
-            accounts = accountRepo.getAccounts();
+            accounts = accountRepo.get();
         } else {
             Map<String, Player> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
                     Collectors.toMap(
@@ -67,7 +67,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
                         owners.add(player);
                 }
             }
-            accounts = accountRepo.getAccounts(a -> owners.contains(a.getOwner()));
+            accounts = accountRepo.get(a -> owners.contains(a.getOwner()));
         }
 
         if (accounts == null || accounts.isEmpty()) {
@@ -93,7 +93,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
         sender.sendMessage(LangUtils.getMessage(Message.ALL_ACCOUNTS_REMOVED,
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
         ));
-        accounts.forEach(a -> accountRepo.removeAccount(a, true));
+        accounts.forEach(a -> accountRepo.remove(a, true));
         return true;
     }
 

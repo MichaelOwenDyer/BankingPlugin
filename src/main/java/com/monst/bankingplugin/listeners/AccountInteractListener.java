@@ -46,7 +46,7 @@ public class AccountInteractListener implements Listener {
 		Block b = e.getClickedBlock();
 		if (b == null || b.getType() == Material.AIR)
 			return;
-		Account account = accountRepo.getAccount(b.getLocation());
+		Account account = accountRepo.get(b.getLocation());
 		ClickType<?> clickType = ClickType.getPlayerClickType(p);
 
 		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))

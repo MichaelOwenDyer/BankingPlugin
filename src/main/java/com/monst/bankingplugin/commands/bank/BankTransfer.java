@@ -49,7 +49,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
         if (args.length < 2)
             return false;
 
-        Bank bank = bankRepo.getBank(args[1]);
+        Bank bank = bankRepo.get(args[1]);
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
             sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
@@ -129,7 +129,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
         messenger.send();
 
         bank.transferOwnership(newOwner);
-        bankRepo.addBank(bank, true);
+        bankRepo.add(bank, true);
         return true;
     }
 
@@ -137,7 +137,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 2) {
-            return bankRepo.getBanks().stream()
+            return bankRepo.get().stream()
                     .filter(bank -> bank.isOwner(p)
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
@@ -149,7 +149,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
             List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
             if (!p.hasPermission(Permissions.BANK_TRANSFER_OTHER) && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN))
                 onlinePlayers.remove(p.getName());
-            Bank bank = bankRepo.getBank(args[1]);
+            Bank bank = bankRepo.get(args[1]);
             if (bank != null && bank.isPlayerBank())
                 onlinePlayers.remove(bank.getOwner().getName());
             return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[2].toLowerCase()));

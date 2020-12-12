@@ -177,8 +177,8 @@ public class BankingPlugin extends JavaPlugin {
 
 		ClickType.clear();
 
-		bankRepository.getBanks().forEach(bank -> {
-			bankRepository.removeBank(bank, false);
+		bankRepository.get().forEach(bank -> {
+			bankRepository.remove(bank, false);
 			debugf("Removed bank \"%s\" (#%d)", bank.getName(), bank.getID());
 		});
 
@@ -239,7 +239,7 @@ public class BankingPlugin extends JavaPlugin {
 			int playerBanks = 0;
 			int adminBanks = 0;
 
-			for (Bank bank : bankRepository.getBanks())
+			for (Bank bank : bankRepository.get())
 				if (bank.isPlayerBank())
 					playerBanks++;
 				else if (bank.isAdminBank())
@@ -386,25 +386,25 @@ public class BankingPlugin extends JavaPlugin {
 
 		getDatabase().connect(Callback.of(this,
 				result -> {
-					Collection<Bank> banks = bankRepository.getBanks();
-					Collection<Account> accounts = accountRepository.getAccounts();
+					Collection<Bank> banks = bankRepository.get();
+					Collection<Account> accounts = accountRepository.get();
 
 					Set<Bank> reloadedBanks = new HashSet<>();
 					Set<Account> reloadedAccounts = new HashSet<>();
 
 					for (Bank bank : banks) {
-						bankRepository.removeBank(bank, false);
+						bankRepository.remove(bank, false);
 						debugf("Removed bank (#%d)", bank.getID());
 					}
 
 					getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(this,
 							bankAccountsMap -> {
 								bankAccountsMap.forEach((bank, bankAccounts) -> {
-									bankRepository.addBank(bank, false);
+									bankRepository.add(bank, false);
 									reloadedBanks.add(bank);
 									for (Account account : bankAccounts) {
 										if (account.create(showConsoleMessages)) {
-											accountRepository.addAccount(account, false, account.callUpdateName());
+											accountRepository.add(account, false, account.callUpdateName());
 											reloadedAccounts.add(account);
 										} else
 											debug("Could not re-create account from database! (#" + account.getID() + ")");

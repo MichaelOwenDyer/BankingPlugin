@@ -41,7 +41,7 @@ public class AccountBalanceListener implements Listener {
 		if (!e.getInventory().getType().equals(InventoryType.CHEST))
 			return;
 
-		Account account = accountRepo.getAccount(e.getInventory().getLocation());
+		Account account = accountRepo.get(e.getInventory().getLocation());
 		if (account == null)
 			return;
 
@@ -67,7 +67,7 @@ public class AccountBalanceListener implements Listener {
 				));
 
 		account.setBalance(valueOnClose);
-		accountRepo.addAccount(account, true);
+		accountRepo.add(account, true);
 
 		plugin.debugf("Account #%d has been updated with a new balance (%s)", account.getID(), Utils.format(valueOnClose));
 		Bukkit.getPluginManager().callEvent(new AccountTransactionEvent(executor, account, difference, valueOnClose));

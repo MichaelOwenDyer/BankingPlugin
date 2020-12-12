@@ -90,8 +90,8 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
         if (!isAdminBank) {
-            int limit = BankRepository.getBankLimit(p);
-            if (limit != -1 && bankRepo.getNumberOfBanks(p) >= limit) {
+            int limit = bankRepo.getLimit(p);
+            if (limit != -1 && bankRepo.getOwnedBy(p).size() >= limit) {
                 p.sendMessage(LangUtils.getMessage(Message.BANK_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
                 plugin.debug(p.getName() + " has reached their bank limit");
                 return true;
@@ -170,7 +170,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
 
-        bankRepo.addBank(bank, true);
+        bankRepo.add(bank, true);
         plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
         p.sendMessage(LangUtils.getMessage(Message.BANK_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         return true;

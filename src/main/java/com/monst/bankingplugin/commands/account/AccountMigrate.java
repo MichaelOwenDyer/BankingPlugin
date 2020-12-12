@@ -83,7 +83,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         AccountRepository accountRepo = plugin.getAccountUtils();
         Location newLocation = b.getLocation();
         if (accountRepo.isAccount(newLocation)) {
-            if (toMigrate.equals(accountRepo.getAccount(newLocation))) {
+            if (toMigrate.equals(accountRepo.get(newLocation))) {
                 plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
                 p.sendMessage(LangUtils.getMessage(Message.SAME_CHEST));
                 return;
@@ -97,7 +97,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             plugin.debug("Chest is blocked.");
             return;
         }
-        Bank newBank = plugin.getBankUtils().getBank(newLocation); // May or may not be the same as previous bank
+        Bank newBank = plugin.getBankUtils().get(newLocation); // May or may not be the same as previous bank
         if (newBank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             plugin.debug("Chest is not in a bank.");
@@ -204,9 +204,9 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         if (newAccount.create(true)) {
             plugin.debugf("Account migrated (#%d)", newAccount.getID());
-            accountRepo.removeAccount(toMigrate, false, Callback.of(plugin,
+            accountRepo.remove(toMigrate, false, Callback.of(plugin,
                     result -> {
-                        accountRepo.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
+                        accountRepo.add(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
                         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_MIGRATED));
                     },
                     error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,

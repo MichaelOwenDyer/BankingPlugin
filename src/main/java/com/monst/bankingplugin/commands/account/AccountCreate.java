@@ -48,8 +48,8 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return true;
         }
 
-        int limit = accountRepo.getAccountLimit(p);
-        if (limit != -1 && accountRepo.getNumberOfAccounts(p) >= limit) {
+        int limit = accountRepo.getLimit(p);
+        if (limit != -1 && accountRepo.getOwnedBy(p).size() >= limit) {
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
             plugin.debug(p.getName() + " has reached their account limit");
             return true;
@@ -94,8 +94,8 @@ public class AccountCreate extends AccountCommand.SubCommand {
                 plugin.debug("Chest is blocked.");
                 return;
             }
-            bank = bankRepo.getBank(b.getLocation());
-            Bank otherBank = bankRepo.getBank(attachedChestBlock.getLocation());
+            bank = bankRepo.get(b.getLocation());
+            Bank otherBank = bankRepo.get(attachedChestBlock.getLocation());
             if (bank == null || !bank.equals(otherBank)) {
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
                 plugin.debug("Chest is not in a bank.");
@@ -107,7 +107,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
                 plugin.debug("Chest is blocked.");
                 return;
             }
-            bank = bankRepo.getBank(location);
+            bank = bankRepo.get(location);
             if (bank == null) {
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
                 plugin.debug("Chest is not in a bank.");
@@ -181,7 +181,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
 
         if (account.create(true)) {
             plugin.debug("Account created");
-            accountRepo.addAccount(account, true, account.callUpdateName());
+            accountRepo.add(account, true, account.callUpdateName());
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         } else {
             plugin.debugf("Could not create account");

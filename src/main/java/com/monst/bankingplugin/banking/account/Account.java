@@ -33,7 +33,7 @@ public class Account extends Ownable {
 	 * @return the new account
 	 */
 	public static Account mint(OfflinePlayer owner, Location loc) {
-		Bank bank = plugin.getBankUtils().getBank(loc);
+		Bank bank = plugin.getBankUtils().get(loc);
 		return new Account(
 				-1,
 				owner,
@@ -144,7 +144,7 @@ public class Account extends Ownable {
 			updateInventory();
 			checkSpaceAbove();
 		} catch (ChestNotFoundException | NotEnoughSpaceException e) {
-			plugin.getAccountUtils().removeAccount(this, Config.removeAccountOnError);
+			plugin.getAccountUtils().remove(this, Config.removeAccountOnError);
 			if (!Config.removeAccountOnError)
 				plugin.getAccountUtils().addInvalidAccount(this);
 

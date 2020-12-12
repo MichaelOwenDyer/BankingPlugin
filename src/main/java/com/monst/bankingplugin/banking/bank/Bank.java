@@ -296,7 +296,7 @@ public class Bank extends Ownable {
 	@Override
 	public void setName(String name) {
 		this.name = name;
-		plugin.getBankUtils().addBank(this, true); // Update bank in database
+		plugin.getBankUtils().add(this, true); // Update bank in database
 		notifyObservers();
 		getAccounts().forEach(Account::notifyObservers);
 		plugin.getBankUtils().notifyObservers();

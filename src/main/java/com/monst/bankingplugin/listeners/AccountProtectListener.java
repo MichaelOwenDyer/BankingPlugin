@@ -54,7 +54,7 @@ public class AccountProtectListener implements Listener {
 		final Block b = e.getBlock();
 
 		if (accountRepo.isAccount(b.getLocation())) {
-			final Account account = accountRepo.getAccount(e.getBlock().getLocation());
+			final Account account = accountRepo.get(e.getBlock().getLocation());
 			Player p = e.getPlayer();
 
 			if (p.isSneaking() && Utils.hasAxeInHand(p)) {
@@ -119,12 +119,12 @@ public class AccountProtectListener implements Listener {
 			Account newAccount = Account.clone(account);
 			newAccount.setLocation(newLocation);
 
-			accountRepo.removeAccount(account, false, Callback.of(plugin, result -> {
+			accountRepo.remove(account, false, Callback.of(plugin, result -> {
 				newAccount.create(true);
-				accountRepo.addAccount(newAccount, true, newAccount.callUpdateName());
+				accountRepo.add(newAccount, true, newAccount.callUpdateName());
 			}));
 		} else {
-			accountRepo.removeAccount(account, true);
+			accountRepo.remove(account, true);
 			plugin.debugf("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
 		}
@@ -153,11 +153,11 @@ public class AccountProtectListener implements Listener {
 		if (otherChest == null)
 			return;
 
-		final Account account = accountRepo.getAccount(otherChest.getLocation());
+		final Account account = accountRepo.get(otherChest.getLocation());
 		if (account == null)
             return;
 
-		Bank bank = plugin.getBankUtils().getBank(b.getLocation());
+		Bank bank = plugin.getBankUtils().get(b.getLocation());
 		if (bank == null || !bank.equals(account.getBank())) {
 			e.setCancelled(true);
 			p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
@@ -227,9 +227,9 @@ public class AccountProtectListener implements Listener {
 
 		final Account newAccount = Account.clone(account);
 
-		accountRepo.removeAccount(account, true, Callback.of(plugin, result -> {
+		accountRepo.remove(account, true, Callback.of(plugin, result -> {
 				if (newAccount.create(true)) {
-					accountRepo.addAccount(newAccount, true, newAccount.callUpdateName());
+					accountRepo.add(newAccount, true, newAccount.callUpdateName());
 					plugin.debugf("%s extended %s's account (#%d)",
 							p.getName(), account.getOwner().getName(), account.getID());
 				} else
@@ -279,7 +279,7 @@ public class AccountProtectListener implements Listener {
 			return;
 		if (!(e.getWhoClicked() instanceof Player))
 			return;
-		Account account = accountRepo.getAccount(e.getInventory().getLocation());
+		Account account = accountRepo.get(e.getInventory().getLocation());
 		Player executor = (Player) e.getWhoClicked();
 		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
 			executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EDIT_OTHER));

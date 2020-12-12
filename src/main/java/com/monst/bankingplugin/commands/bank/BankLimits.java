@@ -28,8 +28,8 @@ public class BankLimits extends BankCommand.SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        int banksUsed = bankRepo.getNumberOfBanks(p);
-        int allowedBanks = BankRepository.getBankLimit(p);
+        int banksUsed = bankRepo.getOwnedBy(p).size();
+        int allowedBanks = bankRepo.getLimit(p);
         long allowedVolume = BankRepository.getVolumeLimit(p);
         String bankLimit = allowedBanks < 0 ? "∞" : "" + allowedBanks;
         String volumeLimit = allowedVolume < 0 ? "∞" : "" + allowedVolume;

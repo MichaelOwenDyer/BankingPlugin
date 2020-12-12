@@ -391,7 +391,7 @@ public class Config {
 	private void update(String property, String value) {
 		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
 		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
-			plugin.getBankUtils().getBanks().forEach(Bank::notifyObservers);
+			plugin.getBankUtils().get().forEach(Bank::notifyObservers);
 		plugin.saveConfig();
 		reload(false, true, false);
 	}

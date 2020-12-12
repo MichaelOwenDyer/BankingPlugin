@@ -66,7 +66,7 @@ public class InterestEventListener implements Listener {
 		playerAccountMap.forEach((accountOwner, accounts) -> {
 			for (Account account : accounts) {
 				if (!account.allowNextPayout()) {
-					accountRepo.addAccount(account, true);
+					accountRepo.add(account, true);
 					continue;
 				}
 
@@ -103,7 +103,7 @@ public class InterestEventListener implements Listener {
 				account.updatePrevBalance();
 
 				if (trustedPlayers.isEmpty()) {
-					accountRepo.addAccount(account, true);
+					accountRepo.add(account, true);
 					continue;
 				}
 
@@ -118,7 +118,7 @@ public class InterestEventListener implements Listener {
 					interestPayable.get(account.getBank().getOwner()).add(interest);
 				}
 
-				accountRepo.addAccount(account, true);
+				accountRepo.add(account, true);
 				plugin.getDatabase().logAccountInterest(account, interest, null);
 			}
 			if (accountOwner.isOnline())

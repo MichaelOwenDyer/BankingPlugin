@@ -60,7 +60,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
             plugin.debug("Chest is blocked.");
             return;
         }
-        Bank newBank = bankRepo.getBank(newLocation); // May or may not be the same as previous bank
+        Bank newBank = bankRepo.get(newLocation); // May or may not be the same as previous bank
         if (newBank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             plugin.debug("Chest is not in a bank.");
@@ -82,7 +82,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
         if (newAccount.create(true)) {
             plugin.debugf("Account recovered (#%d)", newAccount.getID());
             accountRepo.removeInvalidAccount(toMigrate);
-            accountRepo.addAccount(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
+            accountRepo.add(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RECOVERED));
         } else {
             plugin.debug("Could not recover account");

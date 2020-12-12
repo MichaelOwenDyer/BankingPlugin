@@ -40,7 +40,7 @@ public class BankInfo extends BankCommand.SubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2)
-            return bankRepo.getBanks().stream()
+            return bankRepo.get().stream()
                     .map(Bank::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()

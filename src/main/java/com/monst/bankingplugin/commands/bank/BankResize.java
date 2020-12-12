@@ -82,7 +82,7 @@ public class BankResize extends BankCommand.SubCommand {
         if (selection == null)
             return false;
 
-        bank = bankRepo.getBank(args[1]);
+        bank = bankRepo.get(args[1]);
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
             p.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
@@ -145,9 +145,9 @@ public class BankResize extends BankCommand.SubCommand {
             return true;
         }
 
-        bankRepo.removeBank(bank, false);
+        bankRepo.remove(bank, false);
         bank.setSelection(selection);
-        bankRepo.addBank(bank, true, Callback.of(plugin,
+        bankRepo.add(bank, true, Callback.of(plugin,
                 result -> {
                     plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
                     p.sendMessage(LangUtils.getMessage(Message.BANK_RESIZED, new Replacement(Placeholder.BANK_SIZE, selection::getVolume)));
@@ -163,7 +163,7 @@ public class BankResize extends BankCommand.SubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 2) {
-            return bankRepo.getBanks().stream()
+            return bankRepo.get().stream()
                     .map(Bank::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()
