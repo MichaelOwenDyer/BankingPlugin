@@ -282,6 +282,8 @@ public abstract class Database {
 
 				ps.executeUpdate();
 
+				removeCoowner(account, null, callback, con);
+
 				if (callback != null)
 					callback.callSyncResult(null);
 
@@ -381,7 +383,7 @@ public abstract class Database {
 	 * @param bank     Bank to remove
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
-	public void removeBank(final Bank bank, final Callback<Void> callback) { //TODO: Accounts need not be manually removed after this
+	public void removeBank(final Bank bank, final Callback<Void> callback) {
 		Utils.bukkitRunnable(() -> {
 			try (Connection con = dataSource.getConnection();
 				 PreparedStatement ps = con
@@ -390,6 +392,8 @@ public abstract class Database {
 				ps.setInt(1, bank.getID());
 
 				ps.executeUpdate();
+
+				removeCoowner(bank, null, callback, con);
 
 				if (callback != null)
 					callback.callSyncResult(null);
@@ -467,8 +471,8 @@ public abstract class Database {
 			} catch (SQLException e) {
 				if (callback != null)
 					callback.callSyncError(e);
-				plugin.getLogger().severe(String.format("Failed to remove co-owner from database (#%d, UUID: %s).", ownable.getID(), coowner.getUniqueId().toString()));
-				plugin.debugf("Failed to remove co-owner from database (#%d, UUID: %s). Connection failed.", ownable.getID(), coowner.getUniqueId().toString());
+				plugin.getLogger().severe(String.format("Failed to remove co-owner(s) from database (#%d).", ownable.getID()));
+				plugin.debugf("Failed to remove co-owner(s) from database (#%d). Connection failed.", ownable.getID());
 				plugin.debug(e);
 			}
 		}).runTaskAsynchronously(plugin);
@@ -480,27 +484,29 @@ public abstract class Database {
 	 * @param coowner the co-owner to be removed
 	 */
 	private void removeCoowner(final Ownable ownable, final OfflinePlayer coowner, final Callback<Void> callback, final Connection con) {
-		final String query;
+		StringBuilder query = new StringBuilder("DELETE FROM ");
 		if (ownable instanceof Account)
-			query = "DELETE FROM " + tableCoOwnsAccount + " WHERE CoOwnerUUID = ? AND AccountID = ?";
+			query.append(tableCoOwnsAccount).append(" WHERE AccountID = ");
 		else
-			query = "DELETE FROM " + tableCoOwnsBank + " WHERE CoOwnerUUID = ? AND BankID = ?";
-		try (PreparedStatement ps = con.prepareStatement(query)) {
+			query.append(tableCoOwnsBank).append(" WHERE BankID = ");
+		query.append(ownable.getID());
+		if (coowner != null)
+			query.append(" AND CoOwnerUUID = '").append(coowner.getUniqueId().toString()).append("'");
 
-			ps.setString(1, coowner.getUniqueId().toString());
-			ps.setInt(2, ownable.getID());
+		try (Statement ps = con.createStatement()) {
 
-			ps.executeUpdate();
+			int affectedTables = ps.executeUpdate(query.toString());
 
 			if (callback != null)
 				callback.callSyncResult(null);
 
-			plugin.debugf("Removed co-owner from database (#%d, UUID: %s).", ownable.getID(), coowner.getUniqueId().toString());
+			if (affectedTables != 0)
+				plugin.debugf("Removed co-owner(s) from database (#%d).", ownable.getID());
 		} catch (SQLException e) {
 			if (callback != null)
 				callback.callSyncError(e);
-			plugin.getLogger().severe(String.format("Failed to remove co-owner from database (#%d, UUID: %s).", ownable.getID(), coowner.getUniqueId().toString()));
-			plugin.debugf("Failed to remove co-owner from database (#%d, UUID: %s). PreparedStatement failed.", ownable.getID(), coowner.getUniqueId().toString());
+			plugin.getLogger().severe(String.format("Failed to remove co-owner(s) from database (#%d).", ownable.getID()));
+			plugin.debugf("Failed to remove co-owner(s) from database (#%d). PreparedStatement failed.", ownable.getID());
 			plugin.debug(e);
 		}
 	}
@@ -1033,7 +1039,7 @@ public abstract class Database {
 				long lastLogout = -1L;
 
 				if (rs.next())
-					lastLogout = rs.getLong("Time");
+					lastLogout = rs.getLong(3);
 
 				if (callback != null)
 					callback.callSyncResult(lastLogout);
