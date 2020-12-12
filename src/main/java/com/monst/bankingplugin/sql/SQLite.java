@@ -86,7 +86,7 @@ public class SQLite extends Database {
         return getQueryCreateTable(tableBanks,
                 "BankID INTEGER PRIMARY KEY AUTOINCREMENT",
                 "Name TEXT NOT NULL UNIQUE",
-                "OwnerUUID TEXT REFERENCES " + tablePlayers + " (PlayerUUID)",
+                "OwnerUUID TEXT",
 
                 "CountInterestDelayOffline TEXT NOT NULL",
                 "ReimburseAccountCreation TEXT NOT NULL",
@@ -118,7 +118,7 @@ public class SQLite extends Database {
     @Override
     String getQueryCreateTableCoOwnsBank() {
         return getQueryCreateTable(tableCoOwnsBank,
-                "CoOwnerUUID TEXT REFERENCES " + tablePlayers + " (PlayerUUID) ON DELETE CASCADE",
+                "CoOwnerUUID TEXT",
                 "BankID INTEGER REFERENCES " + tableBanks + " (BankID) ON DELETE CASCADE",
                 "PRIMARY KEY (CoOwnerUUID, BankID)"
         );
@@ -130,7 +130,7 @@ public class SQLite extends Database {
     			"AccountID INTEGER PRIMARY KEY AUTOINCREMENT",
     			"BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID) ON DELETE CASCADE",
 				"Nickname TEXT NOT NULL",
-				"OwnerUUID TEXT NOT NULL REFERENCES " + tablePlayers + " (PlayerUUID)",
+				"OwnerUUID TEXT NOT NULL",
 
 				"Balance REAL NOT NULL",
 				"PreviousBalance REAL NOT NULL",
@@ -150,7 +150,7 @@ public class SQLite extends Database {
     @Override
     String getQueryCreateTableCoOwnsAccount() {
         return getQueryCreateTable(tableCoOwnsAccount,
-                "CoOwnerUUID TEXT REFERENCES " + tablePlayers + " (PlayerUUID) ON DELETE CASCADE",
+                "CoOwnerUUID TEXT",
                 "AccountID INTEGER REFERENCES " + tableAccounts + " (AccountID) ON DELETE CASCADE",
                 "PRIMARY KEY (CoOwnerUUID, AccountID)"
         );
@@ -161,7 +161,7 @@ public class SQLite extends Database {
         return getQueryCreateTable(tableAccountTransactions,
                 "TransactionID INTEGER PRIMARY KEY AUTOINCREMENT",
                 "AccountID INTEGER NOT NULL REFERENCES " + tableAccounts + " (AccountID) ON DELETE CASCADE",
-                "ExecutorUUID TEXT NOT NULL REFERENCES " + tablePlayers + " (PlayerUUID)",
+                "ExecutorUUID TEXT NOT NULL",
                 "Amount REAL NOT NULL",
                 "NewBalance REAL NOT NULL",
                 "Timestamp TEXT NOT NULL",
