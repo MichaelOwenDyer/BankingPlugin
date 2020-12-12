@@ -11,6 +11,7 @@ import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.events.bank.BankSelectEvent;
+import com.monst.bankingplugin.listeners.BankingPluginListener;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -23,20 +24,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 @SuppressWarnings("unused")
-public class GriefPreventionListener implements Listener {
+public class GriefPreventionListener extends BankingPluginListener {
 
-	private final BankingPlugin plugin;
     private final GriefPrevention griefPrevention;
 
 	public GriefPreventionListener(BankingPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
         this.griefPrevention = plugin.getGriefPrevention();
     }
 

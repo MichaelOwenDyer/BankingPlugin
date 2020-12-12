@@ -10,10 +10,12 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.Messenger;
+import com.monst.bankingplugin.utils.Pair;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
 
@@ -27,14 +29,10 @@ import java.util.stream.Collectors;
  * {@link OfflinePlayer} on the server.
  */
 @SuppressWarnings("unused")
-public class InterestEventListener implements Listener {
-
-	private final BankingPlugin plugin;
-	private final AccountRepository accountRepo;
+public class InterestEventListener extends BankingPluginListener {
 
 	public InterestEventListener(BankingPlugin plugin) {
-		this.plugin = plugin;
-		this.accountRepo = plugin.getAccountRepository();
+		super(plugin);
 	}
 
 	@EventHandler(ignoreCancelled = true)

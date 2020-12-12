@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.utils.AccountRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -9,7 +8,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
@@ -18,14 +16,10 @@ import org.bukkit.event.world.StructureGrowEvent;
 import java.util.ArrayList;
 
 @SuppressWarnings("unused")
-public class ChestTamperingListener implements Listener {
-
-	private final BankingPlugin plugin;
-    private final AccountRepository accountRepo;
+public class ChestTamperingListener extends BankingPluginListener {
 
     public ChestTamperingListener(BankingPlugin plugin) {
-		this.plugin = plugin;
-        this.accountRepo = plugin.getAccountRepository();
+        super(plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGH)

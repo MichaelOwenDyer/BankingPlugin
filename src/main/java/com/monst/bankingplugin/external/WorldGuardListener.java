@@ -5,6 +5,7 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
+import com.monst.bankingplugin.listeners.BankingPluginListener;
 import com.monst.bankingplugin.selections.BlockVector3D;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EClickType;
@@ -18,7 +19,6 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
@@ -29,13 +29,12 @@ import org.codemc.worldguardwrapper.flag.WrappedState;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
-public class WorldGuardListener implements Listener {
+public class WorldGuardListener extends BankingPluginListener {
 
-	private final BankingPlugin plugin;
     private final WorldGuardWrapper wgWrapper;
 
 	public WorldGuardListener(BankingPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
         this.wgWrapper = WorldGuardWrapper.getInstance();
     }
 

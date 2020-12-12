@@ -9,17 +9,14 @@ import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.utils.Callback;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 @SuppressWarnings("unused")
-public class NotifyPlayerOnJoinListener implements Listener {
-
-	private final BankingPlugin plugin;
+public class NotifyPlayerOnJoinListener extends BankingPluginListener {
 
 	public NotifyPlayerOnJoinListener(BankingPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @EventHandler

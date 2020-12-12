@@ -9,7 +9,10 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.Messenger;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,7 +24,6 @@ import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -35,14 +37,10 @@ import org.bukkit.inventory.InventoryHolder;
  * as well as to ensure accounts always correspond with the size of the chest they reside in.
  */
 @SuppressWarnings("unused")
-public class AccountProtectListener implements Listener {
-
-	private final BankingPlugin plugin;
-	private final AccountRepository accountRepo;
+public class AccountProtectListener extends BankingPluginListener {
 
 	public AccountProtectListener(BankingPlugin plugin) {
-        this.plugin = plugin;
-		this.accountRepo = plugin.getAccountRepository();
+        super(plugin);
     }
 
 	/**

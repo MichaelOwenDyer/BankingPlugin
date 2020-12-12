@@ -7,12 +7,10 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.AccountRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 
@@ -22,14 +20,10 @@ import java.math.BigDecimal;
  * Continuously updates account balances.
  * @see Account#calculateValue()
  */
-public class AccountBalanceListener implements Listener {
-
-	private final BankingPlugin plugin;
-	private final AccountRepository accountRepo;
+public class AccountBalanceListener extends BankingPluginListener {
 
 	public AccountBalanceListener(BankingPlugin plugin) {
-		this.plugin = plugin;
-		this.accountRepo = plugin.getAccountRepository();
+		super(plugin);
 	}
 
 	@EventHandler

@@ -8,30 +8,27 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EClickType;
 import com.monst.bankingplugin.utils.ClickType.SetPair;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.Objects;
 
-public class AccountInteractListener implements Listener {
-
-	private final BankingPlugin plugin;
-	private final AccountRepository accountRepo;
+public class AccountInteractListener extends BankingPluginListener {
 
 	public AccountInteractListener(BankingPlugin plugin) {
-		this.plugin = plugin;
-		this.accountRepo = plugin.getAccountRepository();
+		super(plugin);
 	}
 
 	/**
