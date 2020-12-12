@@ -10,7 +10,6 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.selections.Selection;
-import com.monst.bankingplugin.utils.BankRepository;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;
@@ -104,7 +103,7 @@ public class BankResize extends BankCommand.SubCommand {
             return true;
         }
         long volume = selection.getVolume();
-        long volumeLimit = BankRepository.getVolumeLimit(p);
+        long volumeLimit = getVolumeLimit(p);
         if (bank.isPlayerBank() && volumeLimit >= 0 && volume > volumeLimit) {
             plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_LARGE,

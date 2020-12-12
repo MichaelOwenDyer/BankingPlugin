@@ -80,7 +80,6 @@ public class AccountMigrate extends AccountCommand.SubCommand {
     }
 
     public static void migratePartTwo(Player p, Block b, Account toMigrate) {
-        AccountRepository accountRepo = plugin.getAccountRepository();
         Location newLocation = b.getLocation();
         if (accountRepo.isAccount(newLocation)) {
             if (toMigrate.equals(accountRepo.getAt(newLocation))) {

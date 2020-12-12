@@ -106,7 +106,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
         long volume = selection.getVolume();
-        long volumeLimit = BankRepository.getVolumeLimit(p);
+        long volumeLimit = getVolumeLimit(p);
         if (!isAdminBank && volumeLimit >= 0 && volume > volumeLimit) {
             plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_LARGE,

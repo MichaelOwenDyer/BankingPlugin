@@ -61,6 +61,10 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 			super(name, playerCommand);
 		}
 
+		static long getVolumeLimit(Player p) {
+			return BankRepository.getVolumeLimit(p);
+		}
+
 		static Bank getBank(CommandSender sender, String[] args) {
 			Bank bank = null;
 			if (args.length == 1) {
