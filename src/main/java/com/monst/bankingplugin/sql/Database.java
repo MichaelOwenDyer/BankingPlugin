@@ -282,7 +282,7 @@ public abstract class Database {
 
 				ps.executeUpdate();
 
-				removeCoowner(account, null, callback, con);
+				removeCoowner(account, null, null, con);
 
 				if (callback != null)
 					callback.callSyncResult(null);
@@ -393,7 +393,7 @@ public abstract class Database {
 
 				ps.executeUpdate();
 
-				removeCoowner(bank, null, callback, con);
+				removeCoowner(bank, null, null, con);
 
 				if (callback != null)
 					callback.callSyncResult(null);
