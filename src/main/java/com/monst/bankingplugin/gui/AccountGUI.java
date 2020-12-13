@@ -97,8 +97,8 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	}
 
 	@Override
-	GuiType getType() {
-		return GuiType.ACCOUNT;
+    GUIType getType() {
+		return GUIType.ACCOUNT;
 	}
 
 	private List<String> getGeneralInfoLore() {

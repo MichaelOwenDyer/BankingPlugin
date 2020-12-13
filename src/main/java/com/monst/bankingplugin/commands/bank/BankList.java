@@ -8,11 +8,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 public class BankList extends BankCommand.SubCommand {
 
     BankList() {
@@ -30,22 +25,16 @@ public class BankList extends BankCommand.SubCommand {
 
         // TODO: Allow for more specific bank searching
 
-        Supplier<List<Bank>> getBanks = () -> bankRepo.getAll().stream()
-                .sorted(Comparator.comparing(Bank::getTotalValue).reversed())
-                .collect(Collectors.toList());
-
-        List<Bank> banks = getBanks.get();
-
-        if (banks.isEmpty()) {
+        if (bankRepo.getAll().isEmpty()) {
             sender.sendMessage(LangUtils.getMessage(Message.BANKS_NOT_FOUND));
             return true;
         }
 
         if (sender instanceof Player) {
-            new BankListGUI(getBanks).open(((Player) sender));
+            new BankListGUI(bankRepo::getAll).open(((Player) sender));
         } else {
             int i = 0;
-            for (Bank bank : banks)
+            for (Bank bank : bankRepo.getAll())
                 sender.sendMessage(ChatColor.AQUA + "" + ++i + ". " + bank.getColorizedName() + " ");
         }
         return true;

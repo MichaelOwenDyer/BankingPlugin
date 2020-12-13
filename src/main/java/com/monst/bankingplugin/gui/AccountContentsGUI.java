@@ -65,8 +65,8 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
     }
 
     @Override
-    GuiType getType() {
-        return GuiType.ACCOUNT_CONTENTS;
+    GUIType getType() {
+        return GUIType.ACCOUNT_CONTENTS;
     }
 
     static class ShulkerContentsGUI extends AccountContentsGUI {
@@ -99,8 +99,8 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
         }
 
         @Override
-        GuiType getType() {
-            return GuiType.ACCOUNT_SHULKER_CONTENTS;
+        GUIType getType() {
+            return GUIType.ACCOUNT_SHULKER_CONTENTS;
         }
     }
 }

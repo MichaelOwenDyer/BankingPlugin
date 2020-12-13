@@ -99,8 +99,10 @@ public class BankGUI extends SinglePageGUI<Bank> {
 					this.close(player);
 				} : null;
 			case 8:
-				return canListAccounts && !guiSubject.getAccounts().isEmpty() ?
-						(player, info) -> new AccountListGUI(guiSubject::getAccounts).setParentGUI(this).open(player) : null;
+				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
+					return (player, info) -> new AccountListGUI(guiSubject::getAccounts).setParentGUI(this).open(player);
+				else
+					return null;
 			default:
 				return null;
 		}
@@ -112,8 +114,8 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	@Override
-	GuiType getType() {
-		return GuiType.BANK;
+	GUIType getType() {
+		return GUIType.BANK;
 	}
 
 	private List<String> getGeneralInfoLore() {

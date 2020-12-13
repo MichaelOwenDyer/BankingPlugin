@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 public abstract class GUI<T> {
 
-	enum GuiType {
+	enum GUIType {
 		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY
 	}
 
@@ -61,12 +61,12 @@ public abstract class GUI<T> {
 
 	abstract void setCloseHandler(Menu.CloseHandler handler);
 
-	abstract GuiType getType();
+	abstract GUIType getType();
 
-	public GUI<T> setParentGUI(@Nullable GUI<?> prevGui) {
-		if (prevGui != null)
-			prevGui.inForeground = false;
-		this.parentGUI = prevGui;
+	public GUI<T> setParentGUI(@Nullable GUI<?> parentGUI) {
+		if (parentGUI != null)
+			parentGUI.inForeground = false;
+		this.parentGUI = parentGUI;
 		return this;
 	}
 
@@ -75,11 +75,11 @@ public abstract class GUI<T> {
 	}
 
 	/**
-	 * Descends down the list of previous open Guis, and severs the link when it
+	 * Descends down the list of previous open GUIs, and severs the link when it
 	 * finds a GUI of a type it has seen before. This prevents the GUI chain
 	 * from becoming too long and unwieldy.
 	 */
-	private void shortenGUIChain(GUI<?> gui, EnumSet<GuiType> types) {
+	private void shortenGUIChain(GUI<?> gui, EnumSet<GUIType> types) {
 		if (gui == null)
 			return;
 		if (!types.contains(gui.getType())) {

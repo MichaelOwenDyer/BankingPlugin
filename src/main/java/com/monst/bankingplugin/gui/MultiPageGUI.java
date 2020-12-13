@@ -1,33 +1,46 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.banking.Ownable;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.mask.BinaryMask;
 import org.ipvp.canvas.mask.Mask;
 import org.ipvp.canvas.paginate.PaginatedMenuBuilder;
 import org.ipvp.canvas.slot.Slot;
+import org.ipvp.canvas.slot.SlotSettings;
+import org.ipvp.canvas.template.StaticItemTemplate;
+import org.ipvp.canvas.type.ChestMenu;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-abstract class MultiPageGUI<C extends Collection<? extends Ownable>> extends GUI<C> {
+abstract class MultiPageGUI<T> extends GUI<T> {
+
+    private static final int FILTER_SLOT = 20;
+    private static final int SORTER_SLOT = 24;
 
     private final int PREV_PAGE_SLOT;
     private final int NEXT_PAGE_SLOT;
 
-    final Supplier<? extends C> guiSubjects;
-    List<Menu> menuPages;
+    private final Supplier<Set<? extends T>> source;
+
+    private final List<MenuItemFilter<T>> filters = new ArrayList<>(Collections.singleton(MenuItemFilter.of("All", t -> true)));
+    private int currentFilter = 0;
+
+    private final List<MenuItemSorter<T>> sorters = new ArrayList<>(Collections.singleton(MenuItemSorter.of("Unsorted", (t1, t2) -> 0)));
+    private int currentSorter = 0;
+
+    private List<Menu> menuPages;
     private int currentPage = 0;
 
-    MultiPageGUI(Supplier<? extends C> guiSubjects, int prevPageSlot, int nextPageSlot) {
-        this.guiSubjects = guiSubjects;
+    MultiPageGUI(Supplier<Set<? extends T>> source, List<MenuItemFilter<T>> filters, List<MenuItemSorter<T>> sorters, int prevPageSlot, int nextPageSlot) {
+        this.source = source;
+        this.filters.addAll(filters);
+        this.sorters.addAll(sorters);
         this.PREV_PAGE_SLOT = prevPageSlot;
         this.NEXT_PAGE_SLOT = nextPageSlot;
     }
@@ -45,7 +58,8 @@ abstract class MultiPageGUI<C extends Collection<? extends Ownable>> extends GUI
         if (!isInForeground())
             return;
         initializeMenu();
-        setClickHandler();
+        addPageTracker();
+        addFilteringSortingOptions();
         setCloseHandler((player, info) -> {
             OPEN_PARENT.close(player, info);
             unsubscribe(getSubject());
@@ -64,7 +78,7 @@ abstract class MultiPageGUI<C extends Collection<? extends Ownable>> extends GUI
 
     @Override
     void initializeMenu() {
-        Menu.Builder<?> pageTemplate = getPageTemplate();
+        Menu.Builder<?> pageTemplate = ChestMenu.builder(3).title(getTitle()).redraw(true);
         Mask itemSlots = BinaryMask.builder(pageTemplate.getDimensions())
                 .pattern("010101010")
                 .pattern("101010101")
@@ -80,7 +94,7 @@ abstract class MultiPageGUI<C extends Collection<? extends Ownable>> extends GUI
     }
 
     @SuppressWarnings("SimplifyOptionalCallChains")
-    void setClickHandler() {
+    void addPageTracker() {
         for (Menu page : menuPages) {
             Slot prevSlot = page.getSlot(PREV_PAGE_SLOT);
             Slot.ClickHandler prevPageHandler = prevSlot.getClickHandler().orElse(null);
@@ -101,14 +115,50 @@ abstract class MultiPageGUI<C extends Collection<? extends Ownable>> extends GUI
         }
     }
 
+    void addFilteringSortingOptions() {
+        ItemStack filterItem = createSlotItem(Material.HOPPER, "Filtering:", Collections.singletonList(filters.get(currentFilter).getName()));
+        ItemStack sorterItem = createSlotItem(Material.POLISHED_ANDESITE_STAIRS, "Sorting:", Collections.singletonList(sorters.get(currentSorter).getName()));
+        Slot.ClickHandler filterHandler = (player, info) -> {
+            if (info.getClickType().isLeftClick()) {
+                currentFilter++;
+                currentFilter %= filters.size();
+                this.update();
+            } else if (info.getClickType().isRightClick()) {
+                currentFilter += filters.size() - 1;
+                currentFilter %= filters.size();
+                this.update();
+            }
+        };
+        Slot.ClickHandler sorterHandler = (player, info) -> {
+            if (info.getClickType().isLeftClick()) {
+                currentSorter++;
+                currentSorter %= sorters.size();
+                this.update();
+            } else if (info.getClickType().isRightClick()) {
+                currentSorter += sorters.size() - 1;
+                currentSorter %= sorters.size();
+                this.update();
+            }
+        };
+
+        for (Menu page : menuPages) {
+            page.getSlot(FILTER_SLOT).setSettings(SlotSettings.builder().itemTemplate(new StaticItemTemplate(filterItem)).clickHandler(filterHandler).build());
+            page.getSlot(SORTER_SLOT).setSettings(SlotSettings.builder().itemTemplate(new StaticItemTemplate(sorterItem)).clickHandler(sorterHandler).build());
+        }
+    }
+
     @Override
     void setCloseHandler(Menu.CloseHandler handler) {
         menuPages.forEach(page -> page.setCloseHandler(handler));
     }
 
-    abstract Menu.Builder<?> getPageTemplate();
+    abstract String getTitle();
 
     abstract void addItems(PaginatedMenuBuilder builder);
+
+    List<T> getMenuItems() {
+        return source.get().stream().filter(filters.get(currentFilter)).sorted(sorters.get(currentSorter)).collect(Collectors.toList());
+    }
 
     abstract Observable getSubject();
 
@@ -124,12 +174,12 @@ abstract class MultiPageGUI<C extends Collection<? extends Ownable>> extends GUI
                 && currentPage == other.currentPage
                 && getType() == other.getType()
                 && Utils.samePlayer(viewer, other.viewer)
-                && guiSubjects.get().equals(other.guiSubjects);
+                && filters.equals(other.filters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(guiSubjects.get(), viewer, inForeground, currentPage, getType());
+        return Objects.hash(filters, sorters, viewer, inForeground, currentPage, getType());
     }
 
 }

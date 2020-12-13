@@ -7,32 +7,30 @@ import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
-import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.paginate.PaginatedMenuBuilder;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.slot.SlotSettings;
 import org.ipvp.canvas.template.ItemStackTemplate;
 import org.ipvp.canvas.template.StaticItemTemplate;
-import org.ipvp.canvas.type.ChestMenu;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
-public class AccountRecoveryGUI extends MultiPageGUI<Collection<Account>> {
+public class AccountRecoveryGUI extends AccountListGUI {
 
-    public AccountRecoveryGUI(Supplier<? extends Collection<Account>> accounts) {
-        super(accounts, 18, 26);
+    public AccountRecoveryGUI(Supplier<Set<? extends Account>> source) {
+        super(source);
     }
 
     @Override
-    Menu.Builder<?> getPageTemplate() {
-        return ChestMenu.builder(3).title("Account Recovery").redraw(true);
+    String getTitle() {
+        return "Account Recovery";
     }
 
     @Override
     void addItems(PaginatedMenuBuilder builder) {
-        for (Account account : guiSubjects.get()) {
+        for(Account account : getMenuItems()) {
             ItemStack item = createSlotItem(account.getOwner(),
                     ChatColor.DARK_RED + "Invalid Account", getRecoveryLore(account));
             ItemStackTemplate template = new StaticItemTemplate(item);
@@ -61,7 +59,7 @@ public class AccountRecoveryGUI extends MultiPageGUI<Collection<Account>> {
     }
 
     @Override
-    GuiType getType() {
-        return GuiType.ACCOUNT_RECOVERY;
+    GUIType getType() {
+        return GUIType.ACCOUNT_RECOVERY;
     }
 }

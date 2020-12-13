@@ -8,7 +8,8 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -41,8 +42,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
             return true;
         }
 
-        if (sender instanceof Player)
-            new AccountRecoveryGUI(accountRepo::getInvalidAccounts).open(((Player) sender));
+        new AccountRecoveryGUI(accountRepo::getInvalidAccounts).open(((Player) sender));
         return true;
     }
 
