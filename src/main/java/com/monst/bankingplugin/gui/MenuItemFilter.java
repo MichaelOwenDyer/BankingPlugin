@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.gui;
 
+import org.bukkit.ChatColor;
+
 import java.util.function.Predicate;
 
 public abstract class MenuItemFilter<T> implements Predicate<T> {
@@ -10,7 +12,7 @@ public abstract class MenuItemFilter<T> implements Predicate<T> {
         return new MenuItemFilter<T>() {
             @Override
             public String getName() {
-                return name;
+                return ChatColor.GOLD + name;
             }
 
             @Override

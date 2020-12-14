@@ -2,6 +2,7 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -28,10 +29,10 @@ abstract class MultiPageGUI<T> extends GUI<T> {
 
     private final Supplier<Set<? extends T>> source;
 
-    private final List<MenuItemFilter<T>> filters = new ArrayList<>(Collections.singleton(MenuItemFilter.of("All", t -> true)));
+    private final List<MenuItemFilter<T>> filters = new ArrayList<>(Collections.singleton(MenuItemFilter.of(ChatColor.GRAY + "All", t -> true)));
     private int currentFilter = 0;
 
-    private final List<MenuItemSorter<T>> sorters = new ArrayList<>(Collections.singleton(MenuItemSorter.of("Unsorted", (t1, t2) -> 0)));
+    private final List<MenuItemSorter<T>> sorters = new ArrayList<>(Collections.singleton(MenuItemSorter.of(ChatColor.GRAY + "Unsorted", (t1, t2) -> 0)));
     private int currentSorter = 0;
 
     private List<Menu> menuPages;
@@ -115,7 +116,6 @@ abstract class MultiPageGUI<T> extends GUI<T> {
 
     void addFilteringSortingOptions() {
         ItemStack filterItem = createSlotItem(Material.HOPPER, "Filtering:", Collections.singletonList(filters.get(currentFilter).getName()));
-        ItemStack sorterItem = createSlotItem(Material.POLISHED_ANDESITE_STAIRS, "Sorting:", Collections.singletonList(sorters.get(currentSorter).getName()));
         Slot.ClickHandler filterHandler = (player, info) -> {
             if (info.getClickType().isLeftClick()) {
                 currentFilter++;
@@ -127,6 +127,7 @@ abstract class MultiPageGUI<T> extends GUI<T> {
                 this.update();
             }
         };
+        ItemStack sorterItem = createSlotItem(Material.POLISHED_ANDESITE_STAIRS, "Sorting:", Collections.singletonList(sorters.get(currentSorter).getName()));
         Slot.ClickHandler sorterHandler = (player, info) -> {
             if (info.getClickType().isLeftClick()) {
                 currentSorter++;
@@ -138,11 +139,13 @@ abstract class MultiPageGUI<T> extends GUI<T> {
                 this.update();
             }
         };
+        if (filters.size() > 1)
+            for (Menu page : menuPages)
+                page.getSlot(FILTER_SLOT).setSettings(SlotSettings.builder().itemTemplate(new StaticItemTemplate(filterItem)).clickHandler(filterHandler).build());
 
-        for (Menu page : menuPages) {
-            page.getSlot(FILTER_SLOT).setSettings(SlotSettings.builder().itemTemplate(new StaticItemTemplate(filterItem)).clickHandler(filterHandler).build());
-            page.getSlot(SORTER_SLOT).setSettings(SlotSettings.builder().itemTemplate(new StaticItemTemplate(sorterItem)).clickHandler(sorterHandler).build());
-        }
+        if (sorters.size() > 1)
+            for (Menu page : menuPages)
+                page.getSlot(SORTER_SLOT).setSettings(SlotSettings.builder().itemTemplate(new StaticItemTemplate(sorterItem)).clickHandler(sorterHandler).build());
     }
 
     @Override

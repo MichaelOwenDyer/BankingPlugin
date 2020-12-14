@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.gui;
 
+import org.bukkit.ChatColor;
+
 import java.util.Comparator;
 
 public abstract class MenuItemSorter<T> implements Comparator<T> {
@@ -10,7 +12,7 @@ public abstract class MenuItemSorter<T> implements Comparator<T> {
         return new MenuItemSorter<T>() {
             @Override
             public String getName() {
-                return name;
+                return ChatColor.GOLD + name;
             }
 
             @Override
