@@ -34,7 +34,7 @@ public class BankListGUI extends MultiPageGUI<Bank> {
     );
 
     public BankListGUI(Supplier<Set<? extends Bank>> source) {
-        super(source, FILTERS, SORTERS, 18, 26);
+        super(source, FILTERS, SORTERS);
     }
 
     @Override

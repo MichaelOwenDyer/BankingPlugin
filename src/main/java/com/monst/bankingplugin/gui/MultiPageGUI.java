@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 
 abstract class MultiPageGUI<T> extends GUI<T> {
 
-    private static final int FILTER_SLOT = 20;
-    private static final int SORTER_SLOT = 24;
+    private static final int FILTER_SLOT = 29;
+    private static final int SORTER_SLOT = 33;
 
-    private final int PREV_PAGE_SLOT;
-    private final int NEXT_PAGE_SLOT;
+    private final int PREV_PAGE_SLOT = 27;
+    private final int NEXT_PAGE_SLOT = 35;
 
     private final Supplier<Set<? extends T>> source;
 
@@ -37,12 +37,10 @@ abstract class MultiPageGUI<T> extends GUI<T> {
     private List<Menu> menuPages;
     private int currentPage = 0;
 
-    MultiPageGUI(Supplier<Set<? extends T>> source, List<MenuItemFilter<T>> filters, List<MenuItemSorter<T>> sorters, int prevPageSlot, int nextPageSlot) {
+    MultiPageGUI(Supplier<Set<? extends T>> source, List<MenuItemFilter<T>> filters, List<MenuItemSorter<T>> sorters) {
         this.source = source;
         this.filters.addAll(filters);
         this.sorters.addAll(sorters);
-        this.PREV_PAGE_SLOT = prevPageSlot;
-        this.NEXT_PAGE_SLOT = nextPageSlot;
     }
 
     @Override
@@ -78,7 +76,7 @@ abstract class MultiPageGUI<T> extends GUI<T> {
 
     @Override
     void initializeMenu() {
-        Menu.Builder<?> pageTemplate = ChestMenu.builder(3).title(getTitle()).redraw(true);
+        Menu.Builder<?> pageTemplate = ChestMenu.builder(4).title(getTitle()).redraw(true);
         Mask itemSlots = BinaryMask.builder(pageTemplate.getDimensions())
                 .pattern("010101010")
                 .pattern("101010101")

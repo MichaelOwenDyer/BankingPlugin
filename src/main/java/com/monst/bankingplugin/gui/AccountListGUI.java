@@ -32,7 +32,7 @@ public class AccountListGUI extends MultiPageGUI<Account> {
     );
 
     public AccountListGUI(Supplier<Set<? extends Account>> source) {
-        super(source, FILTERS, SORTERS, 18, 26);
+        super(source, FILTERS, SORTERS);
     }
 
     @Override
