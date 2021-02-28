@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.utils;
 
-import com.monst.bankingplugin.banking.Ownable;
+import com.monst.bankingplugin.banking.BankingEntity;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public interface Repository<O extends Ownable> {
+public interface Repository<O extends BankingEntity> {
 
     Set<O> getAll();
 

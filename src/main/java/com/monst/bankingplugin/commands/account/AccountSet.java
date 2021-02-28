@@ -89,50 +89,50 @@ public class AccountSet extends AccountCommand.SubCommand {
 
             case MULTIPLIER:
 
-                value += isRelative ? account.getStatus().getMultiplierStage() : 0;
-                account.getStatus().setMultiplierStage(intValue);
+                value += isRelative ? account.getMultiplierStage() : 0;
+                account.setMultiplierStage(intValue);
 
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_MULTIPLIER,
-                        new Replacement(Placeholder.MULTIPLIER, () -> account.getStatus().getRealMultiplier()),
-                        new Replacement(Placeholder.MULTIPLIER_STAGE, () -> account.getStatus().getMultiplierStage())
+                        new Replacement(Placeholder.MULTIPLIER, account::getRealMultiplier),
+                        new Replacement(Placeholder.MULTIPLIER_STAGE, account::getMultiplierStage)
                 ));
                 plugin.debugf("%s has set the multiplier stage of account #%d to %d",
-                        executor.getName(), account.getID(), account.getStatus().getMultiplierStage());
+                        executor.getName(), account.getID(), account.getMultiplierStage());
                 break;
 
             case DELAY_UNTIL_NEXT_PAYOUT:
 
-                value += isRelative ? account.getStatus().getDelayUntilNextPayout() : 0;
-                account.getStatus().setDelayUntilNextPayout(intValue);
+                value += isRelative ? account.getDelayUntilNextPayout() : 0;
+                account.setDelayUntilNextPayout(intValue);
 
                 plugin.debugf("%s has set the interest delay of account #%d to %d.",
-                        executor.getName(), account.getID(), account.getStatus().getDelayUntilNextPayout());
+                        executor.getName(), account.getID(), account.getDelayUntilNextPayout());
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_INTEREST_DELAY,
-                        new Replacement(Placeholder.NUMBER, () -> account.getStatus().getDelayUntilNextPayout())
+                        new Replacement(Placeholder.NUMBER, account::getDelayUntilNextPayout)
                 ));
                 break;
 
             case REMAINING_OFFLINE_PAYOUTS:
 
-                value += isRelative ? account.getStatus().getRemainingOfflinePayouts() : 0;
-                account.getStatus().setRemainingOfflinePayouts(intValue);
+                value += isRelative ? account.getRemainingOfflinePayouts() : 0;
+                account.setRemainingOfflinePayouts(intValue);
 
                 plugin.debugf("%s has set the remaining offline payouts of account #%d to %d.",
-                        executor.getName(), account.getID(), account.getStatus().getRemainingOfflinePayouts());
+                        executor.getName(), account.getID(), account.getRemainingOfflinePayouts());
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE,
-                        new Replacement(Placeholder.NUMBER, () -> account.getStatus().getRemainingOfflinePayouts())
+                        new Replacement(Placeholder.NUMBER, account::getRemainingOfflinePayouts)
                 ));
                 break;
 
             case REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET:
 
-                value += isRelative ? account.getStatus().getRemainingOfflinePayoutsUntilReset() : 0;
-                account.getStatus().setRemainingOfflinePayoutsUntilReset(intValue);
+                value += isRelative ? account.getRemainingOfflinePayoutsUntilReset() : 0;
+                account.setRemainingOfflinePayoutsUntilReset(intValue);
 
                 plugin.debugf("%s has set the remaining offline payouts until reset of account #%d to %d.",
-                        executor.getName(), account.getID(), account.getStatus().getRemainingOfflinePayoutsUntilReset());
+                        executor.getName(), account.getID(), account.getRemainingOfflinePayoutsUntilReset());
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE_RESET,
-                        new Replacement(Placeholder.NUMBER, () -> account.getStatus().getRemainingOfflinePayoutsUntilReset())
+                        new Replacement(Placeholder.NUMBER, account::getRemainingOfflinePayoutsUntilReset)
                 ));
                 break;
 

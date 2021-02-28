@@ -6,7 +6,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.listeners.BankingPluginListener;
-import com.monst.bankingplugin.selections.BlockVector3D;
+import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EClickType;
 import com.monst.bankingplugin.utils.Permissions;

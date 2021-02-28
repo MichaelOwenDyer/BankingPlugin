@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.selections;
+package com.monst.bankingplugin.geo;
 
 import com.monst.bankingplugin.utils.Triple;
 import org.bukkit.Location;
@@ -8,16 +8,16 @@ public class BlockVector3D extends Triple<Integer, Integer, Integer> {
     public BlockVector3D(int x, int y, int z) {
         super(x, y, z);
     }
-    public int getBlockX() { return super.getFirst(); }
-    public int getBlockY() { return super.getSecond(); }
-    public int getBlockZ() { return super.getThird(); }
+    public int getX() { return super.getFirst(); }
+    public int getY() { return super.getSecond(); }
+    public int getZ() { return super.getThird(); }
 
     public BlockVector2D toBlockVector2D() {
-        return new BlockVector2D(getBlockX(), getBlockZ());
+        return new BlockVector2D(getX(), getZ());
     }
 
     public Location toLocation(World world) {
-        return new Location(world, getBlockX(), getBlockY(), getBlockZ());
+        return new Location(world, getX(), getY(), getZ());
     }
 
     public static BlockVector3D fromLocation(Location loc) {

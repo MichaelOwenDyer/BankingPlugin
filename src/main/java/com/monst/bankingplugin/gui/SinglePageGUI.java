@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.banking.Ownable;
+import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class SinglePageGUI<T extends Ownable> extends GUI<T> {
+public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
 
     final T guiSubject;
     Menu menu;

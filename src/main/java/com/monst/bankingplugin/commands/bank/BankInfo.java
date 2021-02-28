@@ -33,7 +33,7 @@ public class BankInfo extends BankCommand.SubCommand {
         if (sender instanceof Player)
             new BankGUI(bank).open((Player) sender);
         else
-            sender.sendMessage(bank.getInformation());
+            sender.sendMessage(bank.toConsolePrintout());
         return true;
     }
 

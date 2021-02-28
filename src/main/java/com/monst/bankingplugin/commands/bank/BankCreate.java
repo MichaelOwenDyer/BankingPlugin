@@ -9,8 +9,10 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.selections.Selection;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -138,9 +140,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
 
-        Bank bank = isAdminBank ?
-                Bank.mint(name, selection) :
-                Bank.mint(name, p, selection);
+        Bank bank = Bank.mint(name, isAdminBank ? null : p, selection);
 
         double creationPrice = isAdminBank ? Config.bankCreationPriceAdmin : Config.bankCreationPricePlayer;
         double balance = plugin.getEconomy().getBalance(p);

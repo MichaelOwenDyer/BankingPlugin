@@ -86,7 +86,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
         }
 
         boolean isSelf = Utils.samePlayer(playerToUntrust, p);
-        if (!account.isCoowner(playerToUntrust)) {
+        if (!account.isCoOwner(playerToUntrust)) {
             plugin.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
                     playerToUntrust.getName(), account.getID());
             p.sendMessage(LangUtils.getMessage(Message.NOT_A_COOWNER,

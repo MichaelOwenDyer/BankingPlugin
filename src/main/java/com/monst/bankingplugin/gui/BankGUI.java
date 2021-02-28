@@ -122,9 +122,9 @@ public class BankGUI extends SinglePageGUI<Bank> {
 		List<String> lore = new ArrayList<>();
 		lore.add("Bank ID: " + guiSubject.getID());
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
-		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty()
+		lore.add("Co-owners: " + (guiSubject.getCoOwners().isEmpty()
 				? ChatColor.RED + "[none]"
-				: ChatColor.AQUA + Utils.map(guiSubject.getCoowners(), OfflinePlayer::getName).toString())
+				: ChatColor.AQUA + Utils.map(guiSubject.getCoOwners(), OfflinePlayer::getName).toString())
 		);
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
 		if (canTP)

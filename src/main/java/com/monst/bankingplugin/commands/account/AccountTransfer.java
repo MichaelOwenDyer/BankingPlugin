@@ -122,8 +122,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
             return;
         }
 
-        boolean hasDefaultNickname = account.getRawName().contentEquals(account.getDefaultName());
-        boolean forSelf = Utils.samePlayer(p, newOwner);
+        boolean hasCustomName = account.hasCustomName();
 
         Messenger messenger = new Messenger(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED,
                 new Replacement(Placeholder.PLAYER, newOwner::getName)
@@ -137,9 +136,9 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         messenger.removeRecipient(p);
         messenger.send();
 
-        account.transferOwnership(newOwner);
-        if (hasDefaultNickname)
-            account.setName(account.getDefaultName());
+        account.setOwner(newOwner);
+        if (!hasCustomName)
+            account.resetName();
         plugin.getAccountRepository().add(account, true);
         ClickType.removePlayerClickType(p);
     }

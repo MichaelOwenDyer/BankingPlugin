@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
  * been omitted from this class in favor of a single method {@link #get(BankField, boolean)} with a dynamic return type. All in all,
  * these generic functions help avoid repetitive boilerplate code and enable easier expansion, with few downsides.
  */
-@SuppressWarnings("all")
 public class BankConfig {
 
 	private static final NumberFormat interestRateFormatter = NumberFormat.getInstance();
@@ -161,8 +160,8 @@ public class BankConfig {
 	/**
 	 * Creates a new BankConfig with the default values from the {@link Config}.
 	 */
-	public static BankConfig mint() {
-		return new BankConfig(
+	public BankConfig() {
+		this(
 				Config.countInterestDelayOffline.getDefault(),
 				Config.reimburseAccountCreation.getDefault(),
 				Config.payOnLowBalance.getDefault(),

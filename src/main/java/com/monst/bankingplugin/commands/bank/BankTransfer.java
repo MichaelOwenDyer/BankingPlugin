@@ -128,7 +128,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
         messenger.removeRecipient(sender);
         messenger.send();
 
-        bank.transferOwnership(newOwner);
+        bank.setOwner(newOwner);
         bankRepo.add(bank, true);
         return true;
     }

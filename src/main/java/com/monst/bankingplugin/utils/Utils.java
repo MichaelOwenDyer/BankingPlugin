@@ -3,6 +3,8 @@ package com.monst.bankingplugin.utils;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.TransactionFailedException;
+import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.BlockVector3D;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -22,8 +24,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -33,13 +35,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class Utils {
-
-	private static final NumberFormat decimalFormatter = NumberFormat.getInstance();
-	static {
-		decimalFormatter.setMinimumIntegerDigits(1);
-		decimalFormatter.setMinimumFractionDigits(2);
-		decimalFormatter.setMaximumFractionDigits(2);
-	}
 
 	public static boolean isAllowedName(String name) {
 		try {
@@ -81,6 +76,43 @@ public class Utils {
 
 	public static Location blockifyLocation(Location loc) {
 		return new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+	}
+
+	public static double vectorMagnitude(int x1, int x2, int... x3) {
+		double squaredSum = Math.pow(x1, 2) + Math.pow(x2, 2);
+		for (int v : x3)
+			squaredSum += Math.pow(v, 2);
+		return Math.sqrt(squaredSum);
+	}
+
+	public static double[] unitVector(BlockVector2D from, BlockVector2D to) {
+		BlockVector2D diff = new BlockVector2D(to.getX() - from.getX(), to.getZ() - from.getZ());
+		double magnitude = vectorMagnitude(diff.getX(), diff.getZ());
+		return new double[] { diff.getX() / magnitude, diff.getZ() / magnitude };
+	}
+
+	public static double[] unitVector(BlockVector3D from, BlockVector3D to) {
+		BlockVector3D diff = new BlockVector3D(to.getX() - from.getX(), to.getY() - from.getY(), to.getZ() - from.getZ());
+		double magnitude = vectorMagnitude(diff.getX(), diff.getY(), diff.getZ());
+		return new double[] { diff.getX() / magnitude, diff.getY() / magnitude, diff.getZ() / magnitude };
+	}
+
+	public static <T extends Comparable<T>> T lesser(T first, T second) {
+		return BinaryOperator.minBy(T::compareTo).apply(first, second);
+	}
+
+	@SafeVarargs
+	public static <T extends Comparable<T>> T least(T... toCompare) {
+		return Arrays.stream(toCompare).min(Comparator.naturalOrder()).orElse(null);
+	}
+
+	public static <T extends Comparable<T>> T greater(T first, T second) {
+		return BinaryOperator.maxBy(T::compareTo).apply(first, second);
+	}
+
+	@SafeVarargs
+	public static <T extends Comparable<T>> T greatest(T... toCompare) {
+		return Arrays.stream(toCompare).max(Comparator.naturalOrder()).orElse(null);
 	}
 
 	/**
@@ -139,6 +171,11 @@ public class Utils {
 	@Nonnull
 	public static <T> T nonNull(@Nullable T ifNotNull, @Nonnull Supplier<T> ifNull) {
 		return ternary(ifNotNull, ifNull, Objects::nonNull);
+	}
+
+	@Nonnull
+	public static <T, K> K nonNull(@Nullable T ifNotNull, @Nonnull Function<T, K> function, @Nonnull Supplier<K> ifNull) {
+		return ifNotNull != null ? function.apply(ifNotNull) : ifNull.get();
 	}
 
 	public static <T> T ternary(@Nullable T ifTrue, @Nonnull Supplier<T> ifFalse, @Nonnull Predicate<? super T> pred) {
@@ -237,14 +274,16 @@ public class Utils {
 	 * @param ih The inventory holder to get the locations of
 	 * @return A set of 1 or 2 locations
 	 */
-    public static Set<Location> getChestLocations(InventoryHolder ih) {
-		Set<Location> chestLocations = new HashSet<>();
+	public static Location[] getChestLocations(InventoryHolder ih) {
+		Location[] chestLocations;
 		if (ih instanceof DoubleChest) {
 			DoubleChest dc = (DoubleChest) ih;
-			chestLocations.add(((Chest) dc.getLeftSide()).getLocation());
-			chestLocations.add(((Chest) dc.getRightSide()).getLocation());
+			chestLocations = new Location[] {
+					((Chest) dc.getLeftSide()).getLocation(),
+					((Chest) dc.getRightSide()).getLocation()
+			};
 		} else
-			chestLocations.add(ih.getInventory().getLocation());
+			chestLocations = new Location[] { ih.getInventory().getLocation() };
 		return chestLocations;
 	}
 
@@ -256,10 +295,21 @@ public class Utils {
 
 	@SuppressWarnings("deprecation")
 	public static OfflinePlayer getPlayer(String name) {
-    	OfflinePlayer player = Bukkit.getPlayerExact(name);
-    	if (player == null)
-    		player = Bukkit.getOfflinePlayer(name);
-    	return player.hasPlayedBefore() ? player : null;
+		OfflinePlayer player = nonNull(Bukkit.getPlayerExact(name), () -> Bukkit.getOfflinePlayer(name));
+		return player.hasPlayedBefore() ? player : null;
+	}
+
+	public static OfflinePlayer getPlayer(UUID uuid) {
+		OfflinePlayer player = nonNull(Bukkit.getPlayer(uuid), () -> Bukkit.getOfflinePlayer(uuid));
+		return player.hasPlayedBefore() ? player : null;
+	}
+
+	public static OfflinePlayer getPlayerFromUUID(String uuid) {
+		return getPlayerFromUUID(UUID.fromString(uuid));
+	}
+
+	public static OfflinePlayer getPlayerFromUUID(UUID uuid) {
+		return Bukkit.getOfflinePlayer(uuid);
 	}
 
 	public static List<String> getOnlinePlayerNames(BankingPlugin plugin) {
@@ -267,6 +317,14 @@ public class Utils {
 				.map(HumanEntity::getName)
 				.sorted()
 				.collect(Collectors.toList());
+	}
+
+	public static int getAccountLimit(Player player) {
+		return (int) getLimit(player, Permissions.ACCOUNT_NO_LIMIT, Config.defaultAccountLimit);
+	}
+
+	public static int getBankLimit(Player player) {
+		return (int) getLimit(player, Permissions.BANK_NO_LIMIT, Config.defaultBankLimit);
 	}
 
 	public static long getLimit(Player player, String permission, long defaultLimit) {
@@ -302,11 +360,6 @@ public class Utils {
 		if (limit < -1)
 			limit = -1;
 		return useDefault ? defaultLimit : limit;
-	}
-
-	@SafeVarargs
-	public static <T> Set<T> mergeCollections(Collection<? extends T>... collections) {
-		return Arrays.stream(collections).flatMap(Collection::stream).collect(Collectors.toCollection(HashSet::new));
 	}
 
 	public static <T> Set<T> filter(Set<? extends T> collection, Predicate<? super T> filter) {

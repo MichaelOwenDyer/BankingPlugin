@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.selections;
+package com.monst.bankingplugin.geo.selections;
 
 import org.bukkit.World;
 import org.junit.jupiter.api.Test;

@@ -94,7 +94,7 @@ public class InterestEventListener extends BankingPluginListener {
 						.multiply(BigDecimal.valueOf((double) bank.get(BankField.INTEREST_RATE)))
 						.setScale(2, RoundingMode.HALF_EVEN);
 
-				int multiplier = account.getStatus().getRealMultiplier();
+				int multiplier = account.getRealMultiplier();
 				BigDecimal interest = baseInterest.multiply(BigDecimal.valueOf(multiplier));
 
 				account.incrementMultiplier();

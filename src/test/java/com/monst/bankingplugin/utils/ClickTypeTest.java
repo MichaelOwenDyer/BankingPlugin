@@ -16,10 +16,13 @@ class ClickTypeTest {
                 new HashSet<>(),
                 null,
                 null,
-                null,
                 "Test",
                 BigDecimal.TEN,
-                BigDecimal.ZERO
+                BigDecimal.ZERO,
+                0,
+                0,
+                0,
+                0
         ));
         Account account = clickType.get();
     }

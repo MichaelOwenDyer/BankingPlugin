@@ -9,7 +9,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;

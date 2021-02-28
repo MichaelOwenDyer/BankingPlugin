@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.account.AccountStatus;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.utils.Permissions;
@@ -105,9 +104,9 @@ public class AccountGUI extends SinglePageGUI<Account> {
 		List<String> lore = new ArrayList<>();
 		lore.add("Account ID: " + guiSubject.getID());
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
-		lore.add("Co-owners: " + (guiSubject.getCoowners().isEmpty() ?
+		lore.add("Co-owners: " + (guiSubject.getCoOwners().isEmpty() ?
 				ChatColor.RED + "[none]" :
-				ChatColor.AQUA + Utils.map(guiSubject.getCoowners(), OfflinePlayer::getName).toString()));
+				ChatColor.AQUA + Utils.map(guiSubject.getCoOwners(), OfflinePlayer::getName).toString()));
 		lore.add("Location: " + ChatColor.AQUA + "(" + guiSubject.getCoordinates() + ")");
 		if (canTP)
 			lore.add("Click to teleport to account.");
@@ -119,9 +118,9 @@ public class AccountGUI extends SinglePageGUI<Account> {
 		return wordWrapAll(55,
 				"Name: \"" + ChatColor.RED + bank.getColorizedName() + ChatColor.GRAY + "\"",
 				"Owner: " + ChatColor.GOLD + bank.getOwnerDisplayName(),
-				"Co-owners: " + (bank.getCoowners().isEmpty() ?
+				"Co-owners: " + (bank.getCoOwners().isEmpty() ?
 						ChatColor.RED + "[none]" :
-						ChatColor.AQUA + Utils.map(bank.getCoowners(), OfflinePlayer::getName).toString()),
+						ChatColor.AQUA + Utils.map(bank.getCoOwners(), OfflinePlayer::getName).toString()),
 				"Click to view more info."
 		);
 	}
@@ -132,7 +131,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 		boolean isLowBalance = guiSubject.getBalance().doubleValue() < minBalance;
 		boolean payOnLowBalance = bank.get(BankField.PAY_ON_LOW_BALANCE);
 		double interestRate = bank.get(BankField.INTEREST_RATE);
-		int multiplier = guiSubject.getStatus().getRealMultiplier();
+		int multiplier = guiSubject.getRealMultiplier();
 		double fullPayout = (isLowBalance && !payOnLowBalance) ?
 				0.0 : guiSubject.getBalance().doubleValue() * interestRate * multiplier;
 		double lowBalanceFee = isLowBalance && (double) bank.get(BankField.LOW_BALANCE_FEE) > 0 ?
@@ -151,14 +150,13 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	}
 
 	List<String> getMultiplierLore() {
-		return getMultiplierLore(guiSubject.getBank().get(BankField.MULTIPLIERS), guiSubject.getStatus().getMultiplierStage());
+		return getMultiplierLore(guiSubject.getBank().get(BankField.MULTIPLIERS), guiSubject.getMultiplierStage());
 	}
 
 	private List<String> getAccountRestrictionsLore() {
-		AccountStatus status = guiSubject.getStatus();
-		int delay = status.getDelayUntilNextPayout();
-		int remainingOffline = status.getRemainingOfflinePayouts();
-		int untilReset = status.getRemainingOfflinePayoutsUntilReset();
+		int delay = guiSubject.getDelayUntilNextPayout();
+		int remainingOffline = guiSubject.getRemainingOfflinePayouts();
+		int untilReset = guiSubject.getRemainingOfflinePayoutsUntilReset();
 		int offlineDecrement = guiSubject.getBank().get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
 		return wordWrapAll(
 				(delay == 0 ?

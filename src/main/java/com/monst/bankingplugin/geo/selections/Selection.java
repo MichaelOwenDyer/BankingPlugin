@@ -1,5 +1,7 @@
-package com.monst.bankingplugin.selections;
+package com.monst.bankingplugin.geo.selections;
 
+import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.BlockVector3D;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -78,23 +80,33 @@ public abstract class Selection {
 
 	/**
 	 * Gets a {@link String} that illustrates the location of this selection.
-	 * 
+	 *
 	 * @return a coordinate string
 	 */
 	public abstract String getCoordinates();
 
 	/**
 	 * Gets the number of blocks in this selection.
-	 * 
+	 *
 	 * @return the number of blocks
 	 */
 	public abstract long getVolume();
-	
+
 	/**
 	 * @param sel The other selection
 	 * @return whether or not this selection overlaps with another one
 	 */
 	public abstract boolean overlaps(Selection sel);
+
+	/**
+	 * @param sel The other selection
+	 * @return whether this selection *cannot* overlap with the other selection
+	 */
+	public final boolean isDisjunct(Selection sel) {
+		return getMinX() > sel.getMaxX() || getMaxX() < sel.getMinX() ||
+				getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY() ||
+				getMinZ() > sel.getMaxZ() || getMaxZ() < sel.getMinZ();
+	}
 
 	/**
 	 * Returns true based on whether this selection contains the {@link Location},
@@ -115,17 +127,17 @@ public abstract class Selection {
 	 * @return a set with every {@link BlockVector2D} in this selection
 	 */
 	public abstract Set<BlockVector2D> getFootprint();
-	
+
 	/**
 	 * Get all corners of this selection.
-	 * 
+	 *
 	 * @return a Collection<Location> representing all vertices.
 	 */
 	public abstract Collection<BlockVector3D> getCorners();
 
 	/**
 	 * Returns what type of selection this is.
-	 * 
+	 *
 	 * @return SelectionType.CUBOID or SelectionType.POLYGONAL
 	 */
 	public abstract SelectionType getType();

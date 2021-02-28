@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 
 /**
  * Continuously updates account balances.
- * @see Account#calculateValue()
+ * @see Account#calculateBalance()
  */
 public class AccountBalanceListener extends BankingPluginListener {
 
@@ -39,7 +39,7 @@ public class AccountBalanceListener extends BankingPluginListener {
 		if (account == null)
 			return;
 
-		BigDecimal valueOnClose = account.calculateValue();
+		BigDecimal valueOnClose = account.calculateBalance();
 		BigDecimal difference = valueOnClose.subtract(account.getBalance());
 
 		if (difference.signum() == 0)
@@ -55,9 +55,9 @@ public class AccountBalanceListener extends BankingPluginListener {
 		));
 
 		if (difference.signum() < 0 && valueOnClose.compareTo(account.getPrevBalance()) < 0)
-			if (account.getStatus().getMultiplierStage() != account.getStatus().processWithdrawal())
+			if (account.getMultiplierStage() != account.processWithdrawal())
 				executor.sendMessage(LangUtils.getMessage(Message.MULTIPLIER_DECREASED,
-						new Replacement(Placeholder.NUMBER, () -> account.getStatus().getRealMultiplier())
+						new Replacement(Placeholder.NUMBER, account::getRealMultiplier)
 				));
 
 		account.setBalance(valueOnClose);

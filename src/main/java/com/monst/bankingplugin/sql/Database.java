@@ -1,16 +1,17 @@
 package com.monst.bankingplugin.sql;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.Ownable;
+import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.account.AccountStatus;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankConfig;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
-import com.monst.bankingplugin.selections.*;
-import com.monst.bankingplugin.selections.Selection.SelectionType;
+import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.selections.*;
+import com.monst.bankingplugin.geo.selections.Selection.SelectionType;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
 import com.zaxxer.hikari.HikariDataSource;
@@ -227,10 +228,10 @@ public abstract class Database {
 				values.addNext(account.getOwner().getUniqueId().toString());
 				values.addNext(account.getBalance().toString());
 				values.addNext(account.getPrevBalance().toString());
-				values.addNext(account.getStatus().getMultiplierStage());
-				values.addNext(account.getStatus().getDelayUntilNextPayout());
-				values.addNext(account.getStatus().getRemainingOfflinePayouts());
-				values.addNext(account.getStatus().getRemainingOfflinePayoutsUntilReset());
+				values.addNext(account.getMultiplierStage());
+				values.addNext(account.getDelayUntilNextPayout());
+				values.addNext(account.getRemainingOfflinePayouts());
+				values.addNext(account.getRemainingOfflinePayoutsUntilReset());
 				values.addNext(account.getLocation().getWorld().getName());
 				values.addNext(account.getLocation().getBlockX());
 				values.addNext(account.getLocation().getBlockY());
@@ -249,7 +250,7 @@ public abstract class Database {
 
 				account.getBank().addAccount(account);
 
-				for (OfflinePlayer coowner : account.getCoowners())
+				for (OfflinePlayer coowner : account.getCoOwners())
 					addCoowner(account, coowner, null, con);
 
 				if (callback != null)
@@ -360,7 +361,7 @@ public abstract class Database {
 					bank.setID(bankId);
 				}
 
-				for (OfflinePlayer coowner : bank.getCoowners())
+				for (OfflinePlayer coowner : bank.getCoOwners())
 					addCoowner(bank, coowner, null, con);
 
 				if (callback != null)
@@ -414,7 +415,7 @@ public abstract class Database {
 	 * @param ownable ownable the player co-owns
 	 * @param coowner the co-owner to be added
 	 */
-	public void addCoowner(final Ownable ownable, final OfflinePlayer coowner, final Callback<Void> callback) {
+	public void addCoowner(final BankingEntity ownable, final OfflinePlayer coowner, final Callback<Void> callback) {
 		Utils.bukkitRunnable(() -> {
 			try (Connection con = dataSource.getConnection()) {
 				addCoowner(ownable, coowner, callback, con);
@@ -433,7 +434,7 @@ public abstract class Database {
 	 * @param ownable ownable the player co-owns
 	 * @param coowner the co-owner to be added
 	 */
-	private void addCoowner(final Ownable ownable, final OfflinePlayer coowner, final Callback<Void> callback, final Connection con) {
+	private void addCoowner(final BankingEntity ownable, final OfflinePlayer coowner, final Callback<Void> callback, final Connection con) {
 		final String query;
 		if (ownable instanceof Account)
 			query = "REPLACE INTO " + tableCoOwnsAccount + " (CoOwnerUUID, AccountID) VALUES(?,?)";
@@ -464,7 +465,7 @@ public abstract class Database {
 	 * @param ownable ownable the player no longer co-owns
 	 * @param coowner the co-owner to be removed
 	 */
-	public void removeCoowner(final Ownable ownable, final OfflinePlayer coowner, final Callback<Void> callback) {
+	public void removeCoowner(final BankingEntity ownable, final OfflinePlayer coowner, final Callback<Void> callback) {
 		Utils.bukkitRunnable(() -> {
 			try (Connection con = dataSource.getConnection()) {
 				removeCoowner(ownable, coowner, callback, con);
@@ -483,7 +484,7 @@ public abstract class Database {
 	 * @param ownable ownable the player no longer co-owns
 	 * @param coowner the co-owner to be removed
 	 */
-	private void removeCoowner(final Ownable ownable, final OfflinePlayer coowner, final Callback<Void> callback, final Connection con) {
+	private void removeCoowner(final BankingEntity ownable, final OfflinePlayer coowner, final Callback<Void> callback, final Connection con) {
 		StringBuilder query = new StringBuilder("DELETE FROM ");
 		if (ownable instanceof Account)
 			query.append(tableCoOwnsAccount).append(" WHERE AccountID = ");
@@ -603,7 +604,7 @@ public abstract class Database {
 						 ResultSet rs2 = s.executeQuery("SELECT CoOwnerUUID FROM " + tableCoOwnsBank + " WHERE BankID = " + bankID)) {
 
 						while (rs2.next())
-							coowners.add(Bukkit.getOfflinePlayer(UUID.fromString(rs2.getString(1))));
+							coowners.add(Utils.getPlayerFromUUID(rs2.getString(1)));
 
 					} catch (SQLException e) {
 						plugin.getLogger().severe(String.format("Failed to get bank co-owners from database (#%d)", bankID));
@@ -613,9 +614,7 @@ public abstract class Database {
 
 					plugin.debugf("Initializing bank \"%s\"... (#%d)", ChatColor.stripColor(name), bankID);
 
-					Bank bank = owner == null ?
-							Bank.recreate(bankID, name, coowners, selection, bankConfig) :
-							Bank.recreate(bankID, name, owner, coowners, selection, bankConfig);
+					Bank bank = Bank.recreate(bankID, name, owner, coowners, selection, bankConfig);
 
 					getAccountsAtBank(bank, showConsoleMessages, Callback.of(plugin,
 							result -> banksAndAccounts.put(bank, result),
@@ -669,8 +668,6 @@ public abstract class Database {
 				int delayUntilNextPayout = values.getNextInt();
 				int remainingOfflinePayouts = values.getNextInt();
 				int remainingOfflinePayoutsUntilReset = values.getNextInt();
-				AccountStatus accountStatus = new AccountStatus(bank, multiplierStage, delayUntilNextPayout,
-						remainingOfflinePayouts, remainingOfflinePayoutsUntilReset);
 
 				String worldName = values.getNextString();
 				World world = Bukkit.getWorld(worldName);
@@ -704,7 +701,8 @@ public abstract class Database {
 
 				plugin.debugf("Initializing account #%d at bank \"%s\"", accountID, bank.getName());
 
-				Account account = Account.reopen(accountID, owner, coowners, bank, location, accountStatus, nickname, balance, prevBalance);
+				Account account = Account.reopen(accountID, owner, coowners, bank, location, nickname, balance, prevBalance,
+						multiplierStage, delayUntilNextPayout, remainingOfflinePayouts, remainingOfflinePayoutsUntilReset);
 				accounts.add(account);
 			}
 

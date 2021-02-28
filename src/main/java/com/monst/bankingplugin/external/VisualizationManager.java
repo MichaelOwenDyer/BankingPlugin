@@ -2,7 +2,9 @@ package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.selections.*;
+import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.selections.*;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Visualization;
@@ -62,9 +64,9 @@ public class VisualizationManager {
             BlockVector3D min = sel.getMinimumPoint();
             BlockVector3D max = sel.getMaximumPoint();
             MinMax[] dimensions = new MinMax[] {
-                    new MinMax(min.getBlockX(), max.getBlockX()),
-                    new MinMax(min.getBlockY(), max.getBlockY()),
-                    new MinMax(min.getBlockZ(), max.getBlockZ())
+                    new MinMax(min.getX(), max.getX()),
+                    new MinMax(min.getY(), max.getY()),
+                    new MinMax(min.getZ(), max.getZ())
             };
 
             // Add blocks that are directly adjacent to corner blocks
@@ -140,18 +142,17 @@ public class VisualizationManager {
 
                 // Get the vertex after the current one; will eventually loop back to the first vertex
                 BlockVector2D next = points.get((i + 1) % points.size());
-                BlockVector2D diff = new BlockVector2D(next.getBlockX() - current.getBlockX(), next.getBlockZ() - current.getBlockZ());
-                double distance = Math.sqrt(Math.pow(diff.getBlockX(), 2) + Math.pow(diff.getBlockZ(), 2));
 
+                double[] unitVector = Utils.unitVector(current, next);
                 // These two doubles store the direction from the current vertex to the next. Through vector addition they form a diagonal of length 1
-                double unitX = (double) diff.getBlockX() / distance;
-                double unitZ = (double) diff.getBlockZ() / distance;
+                double unitX = unitVector[0];
+                double unitZ = unitVector[1];
 
                 // The following blocks are placed at both minY and maxY
                 for (int y : new int[] {sel.getMinY(), sel.getMaxY()}) {
 
                     // Add the block that is immediately adjacent to the current vertex and pointing in the direction of the next vertex
-                    Location unitAway = new Location(world, current.getBlockX() + 0.5 + unitX, y, current.getBlockZ() + 0.5 + unitZ);
+                    Location unitAway = new Location(world, current.getX() + 0.5 + unitX, y, current.getZ() + 0.5 + unitZ);
                     newElements.add(new VisualizationElement(
                             unitAway,
                             type.getAccentBlockData(),
@@ -159,7 +160,7 @@ public class VisualizationManager {
                     ));
 
                     // Add the block that is immediately adjacent to the next vertex and pointing in the direction of the current vertex
-                    Location unitAwayNext = new Location(world, next.getBlockX() + 0.5 - unitX, y, next.getBlockZ() + 0.5 - unitZ);
+                    Location unitAwayNext = new Location(world, next.getX() + 0.5 - unitX, y, next.getZ() + 0.5 - unitZ);
                     newElements.add(new VisualizationElement(
                             unitAwayNext,
                             type.getAccentBlockData(),
@@ -169,8 +170,8 @@ public class VisualizationManager {
                     // Add blocks that form the lines between the vertices in intervals of the integer "step"
                     double increaseX = unitX * step;
                     double increaseZ = unitZ * step;
-                    Location nextAccent = new Location(world, current.getBlockX() + 0.5 + increaseX, y, current.getBlockZ() + 0.5 + increaseZ);
-                    while (Math.sqrt(Math.pow(next.getBlockX() - nextAccent.getX(), 2) + Math.pow(next.getBlockZ() - nextAccent.getZ(), 2)) > step / 2.0) {
+                    Location nextAccent = new Location(world, current.getX() + 0.5 + increaseX, y, current.getZ() + 0.5 + increaseZ);
+                    while (Math.sqrt(Math.pow(next.getX() - nextAccent.getX(), 2) + Math.pow(next.getZ() - nextAccent.getZ(), 2)) > step / 2.0) {
                         newElements.add(new VisualizationElement(
                                 Utils.blockifyLocation(nextAccent),
                                 type.getAccentBlockData(),

@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.selections.*;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -57,21 +56,21 @@ public class WorldEditReader {
 	}
 
 	public static void setSelection(BankingPlugin plugin, Selection sel, Player p) {
-		
+
 		WorldEditPlugin worldEdit = plugin.getWorldEdit();
 		RegionSelector regionSelector;
 		if (sel instanceof CuboidSelection) {
-			BlockVector3 min = BlockVector3.at(sel.getMinimumPoint().getBlockX(), sel.getMinimumPoint().getBlockY(), sel.getMinimumPoint().getBlockZ());
-			BlockVector3 max = BlockVector3.at(sel.getMaximumPoint().getBlockX(), sel.getMaximumPoint().getBlockY(), sel.getMaximumPoint().getBlockZ());
+			BlockVector3 min = BlockVector3.at(sel.getMinimumPoint().getX(), sel.getMinimumPoint().getY(), sel.getMinimumPoint().getZ());
+			BlockVector3 max = BlockVector3.at(sel.getMaximumPoint().getX(), sel.getMaximumPoint().getY(), sel.getMaximumPoint().getZ());
 			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(sel.getWorld()), min, max);
 		} else {
 			List<BlockVector2> points = ((PolygonalSelection) sel).getVertices().stream()
-					.map(point -> BlockVector2.at(point.getBlockX(), point.getBlockZ())).collect(Collectors.toList());
-			int minY = sel.getMinimumPoint().getBlockY();
-			int maxY = sel.getMaximumPoint().getBlockY();
+					.map(point -> BlockVector2.at(point.getX(), point.getZ())).collect(Collectors.toList());
+			int minY = sel.getMinimumPoint().getY();
+			int maxY = sel.getMaximumPoint().getY();
 			regionSelector = new Polygonal2DRegionSelector(BukkitAdapter.adapt(sel.getWorld()), points, minY, maxY);
 		}
-		
+
 		plugin.debug(p.getName() + " has selected the bank at " + sel.getCoordinates());
 		regionSelector.setWorld(BukkitAdapter.adapt(sel.getWorld()));
 		worldEdit.getWorldEdit().getSessionManager().get(BukkitAdapter.adapt(p))

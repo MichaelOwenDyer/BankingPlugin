@@ -68,8 +68,8 @@ public class AccountRename extends AccountCommand.SubCommand {
         if (value.isEmpty()) {
             plugin.debugf("%s has reset %s account nickname%s (#%d)", executor.getName(),
                     (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
-                    (account.isCoowner(executor) ? " (is co-owner)" : ""), account.getID());
-            account.setName(account.getDefaultName());
+                    (account.isCoOwner(executor) ? " (is co-owner)" : ""), account.getID());
+            account.resetName();
         } else {
             plugin.debugf("%s has renamed their account to \"%s\" (#%d)",
                     executor.getName(), value, account.getID());

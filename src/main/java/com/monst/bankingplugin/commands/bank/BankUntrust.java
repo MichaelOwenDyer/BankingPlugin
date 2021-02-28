@@ -74,7 +74,7 @@ public class BankUntrust extends BankCommand.SubCommand {
         }
 
         boolean isSelf = sender instanceof Player && Utils.samePlayer(playerToUntrust, ((Player) sender));
-        if (!bank.isCoowner(playerToUntrust)) {
+        if (!bank.isCoOwner(playerToUntrust)) {
             plugin.debugf("%s was not co-owner at bank %s (#%d)", playerToUntrust.getName(), bank.getName(), bank.getID());
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_COOWNER, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
             return true;
@@ -105,7 +105,7 @@ public class BankUntrust extends BankCommand.SubCommand {
             Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
             if (bank == null)
                 return Collections.emptyList();
-            List<String> coowners = bank.getCoowners().stream().map(OfflinePlayer::getName).collect(Collectors.toList());
+            List<String> coowners = bank.getCoOwners().stream().map(OfflinePlayer::getName).collect(Collectors.toList());
             return Utils.filter(coowners, name -> name.toLowerCase().startsWith(args[2].toLowerCase()));
         }
         return Collections.emptyList();

@@ -192,7 +192,7 @@ public class AccountInteractListener extends BankingPluginListener {
 
 				plugin.debugf("%s is opening %s account%s (#%d)",
 						p.getName(), (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"),
-						(account.isCoowner(p) ? " (is co-owner)" : ""), account.getID());
+						(account.isCoOwner(p) ? " (is co-owner)" : ""), account.getID());
 			}
 		}
 	}

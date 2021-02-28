@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.banking.bank;
 
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.utils.Utils;
 import org.apache.commons.lang.WordUtils;
 
 import java.lang.reflect.Field;
@@ -83,7 +84,7 @@ public enum BankField {
     }
 
     public boolean isOverrideAllowed() {
-        return getConfigPair().isOverridable();
+        return Utils.nonNull(getConfigPair(), Config.ConfigPair::isOverridable, () -> false);
     }
 
     /**

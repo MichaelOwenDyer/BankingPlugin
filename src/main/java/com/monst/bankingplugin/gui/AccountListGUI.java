@@ -27,8 +27,8 @@ public class AccountListGUI extends MultiPageGUI<Account> {
             MenuItemSorter.of("Bank Name Descending", BY_BANK_NAME.reversed())
     );
     static final List<MenuItemFilter<Account>> FILTERS = Arrays.asList(
-            MenuItemFilter.of("Single Chest Accounts", account -> account.getSize() == 1),
-            MenuItemFilter.of("Double Chest Accounts", account -> account.getSize() == 2)
+            MenuItemFilter.of("Single Chest Accounts", Account::isSingleChest),
+            MenuItemFilter.of("Double Chest Accounts", Account::isDoubleChest)
     );
 
     public AccountListGUI(Supplier<Set<? extends Account>> source) {

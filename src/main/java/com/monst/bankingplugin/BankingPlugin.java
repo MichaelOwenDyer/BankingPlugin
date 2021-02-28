@@ -355,7 +355,7 @@ public class BankingPlugin extends JavaPlugin {
 					Bukkit.getServer().getPluginManager().callEvent(new BankInitializedEvent(banks));
 					Bukkit.getServer().getPluginManager().callEvent(new AccountInitializedEvent(accounts));
 
-					String message = String.format("Initialized %s bank%s and %s account%s.",
+					String message = String.format("Initialized %d bank%s and %d account%s.",
 							banks.size(), banks.size() == 1 ? "" : "s",
 							accounts.size(), accounts.size() == 1 ? "" : "s");
 

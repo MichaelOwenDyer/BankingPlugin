@@ -1,9 +1,9 @@
 package com.monst.bankingplugin.banking.bank;
 
-import com.monst.bankingplugin.banking.Ownable;
+import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.utils.Utils;
@@ -15,26 +15,12 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class Bank extends Ownable {
-
-	/**
-	 * Creates a new admin bank.
-	 */
-	public static Bank mint(String name, Selection selection) {
-		return new Bank(
-				-1,
-				name,
-				null,
-				new HashSet<>(),
-				selection,
-				BankConfig.mint(),
-				BankType.ADMIN
-		);
-	}
+public class Bank extends BankingEntity {
 
 	/**
-	 * Creates a new player bank.
+	 * Creates a new bank.
 	 */
 	public static Bank mint(String name, OfflinePlayer owner, Selection selection) {
 		return new Bank(
@@ -43,29 +29,12 @@ public class Bank extends Ownable {
 				owner,
 				new HashSet<>(),
 				selection,
-				BankConfig.mint(),
-				BankType.PLAYER
+				new BankConfig()
 		);
 	}
 
 	/**
-	 * Re-creates an admin bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
-	 */
-	public static Bank recreate(int id, String name, Set<OfflinePlayer> coowners,
-								Selection selection, BankConfig bankConfig) {
-		return new Bank(
-				id,
-				name,
-				null,
-				coowners,
-				selection,
-				bankConfig,
-				BankType.ADMIN
-		);
-	}
-
-	/**
-	 * Re-creates a player bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 * Re-creates a bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
 	 */
 	public static Bank recreate(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 								Selection selection, BankConfig bankConfig) {
@@ -75,44 +44,32 @@ public class Bank extends Ownable {
 				owner,
 				coowners,
 				selection,
-				bankConfig,
-				BankType.PLAYER
+				bankConfig
 		);
 	}
 
-	/**
-	 * Banks are either owned and operated by players or by the admins.
-	 * Admin banks cannot run out of money, whereas a player bank relies on its owner to pay interest to the customers.
-	 */
-	public enum BankType {
-		PLAYER, ADMIN
-	}
-
-	private Selection selection;
-	private final BankConfig bankConfig;
 	private final Set<Account> accounts;
-	private BankType type;
+	private final BankConfig bankConfig;
+	private Selection selection;
 
 	/**
-	 * @param id the bank ID {@link Ownable}
+	 * @param id the bank ID {@link BankingEntity}
 	 * @param name the name of the bank {@link Nameable}
-	 * @param owner the owner of the bank {@link Ownable}
-	 * @param coowners the co-owners of the bank {@link Ownable}
+	 * @param owner the owner of the bank {@link BankingEntity}
+	 * @param coowners the co-owners of the bank {@link BankingEntity}
 	 * @param selection the {@link Selection} representing the bounds of the bank
 	 * @param bankConfig the {@link BankConfig} of the bank
-	 * @param type the {@link BankType} of the bank
 	 */
 	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-				 Selection selection, BankConfig bankConfig, BankType type) {
+				 Selection selection, BankConfig bankConfig) {
 
 		this.id = id;
 		this.owner = owner;
 		this.coowners = coowners;
 		this.name = name;
 		this.selection = selection;
-		this.accounts = new HashSet<>();
 		this.bankConfig = bankConfig;
-		this.type = type;
+		this.accounts = new HashSet<>();
 
 	}
 
@@ -236,28 +193,18 @@ public class Bank extends Ownable {
 		return bankConfig.get(field, ignoreConfig);
 	}
 
-	public void updateType() {
-		this.type = getOwner() == null ? BankType.ADMIN : BankType.PLAYER;
-	}
-
-	public BankType getType() {
-		return type;
-	}
-
 	/**
 	 * @return whether the bank is an admin bank
-	 * @see BankType
 	 */
 	public boolean isAdminBank() {
-		return type == BankType.ADMIN;
+		return getOwner() == null;
 	}
 
 	/**
 	 * @return whether the bank is a player bank
-	 * @see BankType
 	 */
 	public boolean isPlayerBank() {
-		return type == BankType.PLAYER;
+		return !isAdminBank();
 	}
 
 	/**
@@ -303,10 +250,9 @@ public class Bank extends Ownable {
 	}
 
 	@Override
-	public void transferOwnership(OfflinePlayer newOwner) {
+	public void setOwner(OfflinePlayer newOwner) {
 		OfflinePlayer prevOwner = getOwner();
 		owner = newOwner;
-		updateType();
 		if (Config.trustOnTransfer)
 			coowners.add(prevOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
@@ -314,31 +260,28 @@ public class Bank extends Ownable {
 	}
 
 	@Override
-	public String getInformation() {
+	public String toConsolePrintout() {
 
-		StringBuilder info = new StringBuilder(196);
-
-		info.append("\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")");
-		info.append(ChatColor.GRAY + "Owner: " + getOwnerDisplayName());
-		info.append(ChatColor.GRAY + "Co-owners: " + (!getCoowners().isEmpty() ?
-				Utils.map(getCoowners(), OfflinePlayer::getName).toString() : "[none]"));
-		info.append(ChatColor.GRAY + "Interest rate: " + ChatColor.GREEN + getFormatted(BankField.INTEREST_RATE));
-		info.append(ChatColor.GRAY + "Multipliers: ");
-		info.append(Utils.map(Utils.stackList(get(BankField.MULTIPLIERS)),
-				list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString());
-		info.append(ChatColor.GRAY + "Account creation price: " + ChatColor.GREEN + getFormatted(BankField.ACCOUNT_CREATION_PRICE));
-		info.append(ChatColor.GRAY + "Offline payouts: " + ChatColor.AQUA + getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS));
-		info.append(ChatColor.GRAY + " (" + ChatColor.AQUA + getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)");
-		info.append(ChatColor.GRAY + "Initial payout delay: " + ChatColor.AQUA + getFormatted(BankField.INITIAL_INTEREST_DELAY));
-		info.append(ChatColor.GRAY + "Minimum balance: " + ChatColor.GREEN + getFormatted(BankField.MINIMUM_BALANCE));
-		info.append(ChatColor.GRAY + " (" + ChatColor.RED + getFormatted(BankField.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)");
-		info.append(ChatColor.GRAY + "Accounts: " + ChatColor.AQUA + getAccounts().size());
-		info.append(ChatColor.GRAY + "Total value: " + ChatColor.GREEN + Utils.format(getTotalValue()));
-		info.append(ChatColor.GRAY + "Average account value: " + ChatColor.GREEN + Utils.format(getTotalValue().divide(BigDecimal.valueOf(getAccounts().size()), BigDecimal.ROUND_HALF_EVEN)));
-		info.append(ChatColor.GRAY + "Equality score: " + getGiniCoefficient());
-		info.append(ChatColor.GRAY + "Location: " + ChatColor.AQUA + getSelection().getCoordinates());
-
-		return info.toString();
+		return Stream.of(
+				"\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")",
+				"Owner: " + getOwnerDisplayName(),
+				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName).toString(),
+				"Interest rate: " + ChatColor.GREEN + getFormatted(BankField.INTEREST_RATE),
+				"Multipliers: " + Utils.map(Utils.stackList(get(BankField.MULTIPLIERS)),
+						list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString(),
+				"Account creation price: " + ChatColor.GREEN + getFormatted(BankField.ACCOUNT_CREATION_PRICE),
+				"Offline payouts: " + ChatColor.AQUA + getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS),
+						" (" + ChatColor.AQUA + getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)",
+				"Initial payout delay: " + ChatColor.AQUA + getFormatted(BankField.INITIAL_INTEREST_DELAY),
+				"Minimum balance: " + ChatColor.GREEN + getFormatted(BankField.MINIMUM_BALANCE),
+						" (" + ChatColor.RED + getFormatted(BankField.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)",
+						" (" + ChatColor.RED + getFormatted(BankField.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)",
+				"Accounts: " + ChatColor.AQUA + getAccounts().size(),
+				"Total value: " + ChatColor.GREEN + Utils.format(getTotalValue()),
+				"Average account value: " + ChatColor.GREEN + Utils.format(getTotalValue().divide(BigDecimal.valueOf(getAccounts().size()), BigDecimal.ROUND_HALF_EVEN)),
+				"Equality score: " + getGiniCoefficient(),
+				"Location: " + ChatColor.AQUA + getSelection().getCoordinates()
+		).collect(Collectors.joining(", ", "" + ChatColor.GRAY, ""));
 	}
 
 	@Override
@@ -361,7 +304,7 @@ public class Bank extends Ownable {
 			return false;
 
 		Bank otherBank = (Bank) o;
-		return getID() != -1 && getID() == otherBank.getID();
+		return getID() != -1 && getID().equals(otherBank.getID());
 	}
 
 	@Override

@@ -49,7 +49,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
                 if (sender instanceof Player)
                     new AccountGUI(account).open((Player) sender);
                 else
-                    sender.sendMessage(account.getInformation());
+                    sender.sendMessage(account.toConsolePrintout());
                 return true;
             } catch (NumberFormatException ignored) {}
         }
@@ -81,7 +81,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
     public static void info(Player player, Account account) {
         plugin.debugf("%s is retrieving %s account info%s (#%d)",
                 player.getName(), (account.isOwner(player) ? "their" : account.getOwner().getName() + "'s"),
-                (account.isCoowner(player) ? " (is co-owner)" : ""), account.getID());
+                (account.isCoOwner(player) ? " (is co-owner)" : ""), account.getID());
 
         AccountInfoEvent event = new AccountInfoEvent(player, account);
         Bukkit.getPluginManager().callEvent(event);

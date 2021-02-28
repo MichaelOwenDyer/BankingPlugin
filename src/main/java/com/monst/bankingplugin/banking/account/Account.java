@@ -1,13 +1,13 @@
 package com.monst.bankingplugin.banking.account;
 
-import com.monst.bankingplugin.banking.Ownable;
+import com.monst.bankingplugin.banking.BankingEntity;
+import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -22,10 +22,16 @@ import org.bukkit.inventory.Inventory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class Account extends Ownable {
+public class Account extends BankingEntity {
+
+	private static final String DEFAULT_NAME = ChatColor.DARK_GREEN + "%s's Account";
+	private static final String DEFAULT_CHEST_NAME = DEFAULT_NAME + ChatColor.GRAY + " (#%d)";
 
 	/**
 	 * Creates a new account.
@@ -40,10 +46,13 @@ public class Account extends Ownable {
 				new HashSet<>(),
 				bank,
 				loc,
-				AccountStatus.mint(bank),
-				ChatColor.DARK_GREEN + owner.getName() + "'s Account",
+				String.format(DEFAULT_NAME, owner.getName()),
 				BigDecimal.ZERO,
-				BigDecimal.ZERO
+				BigDecimal.ZERO,
+				0,
+				bank.get(BankField.INITIAL_INTEREST_DELAY),
+				bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS),
+				bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET)
 		);
 	}
 
@@ -57,70 +66,88 @@ public class Account extends Ownable {
 		return new Account(
 				account.getID(),
 				account.getOwner(),
-				new HashSet<>(account.getCoowners()),
+				new HashSet<>(account.getCoOwners()),
 				account.getBank(),
 				account.getLocation(),
-				account.getStatus(),
 				account.getRawName(),
 				account.getBalance(),
-				account.getPrevBalance()
+				account.getPrevBalance(),
+				account.getMultiplierStage(),
+				account.getDelayUntilNextPayout(),
+				account.getRemainingOfflinePayouts(),
+				account.getRemainingOfflinePayoutsUntilReset()
 		);
 	}
 
 	/**
 	 * Re-creates an account that was stored in the {@link com.monst.bankingplugin.sql.Database}.
 	 *
-	 * @param id the account ID {@link Ownable}
-	 * @param owner the owner of the account {@link Ownable}
-	 * @param coowners the co-owners of the account {@link Ownable}
+	 * @param id the account ID {@link BankingEntity}
+	 * @param owner the owner of the account {@link BankingEntity}
+	 * @param coowners the co-owners of the account {@link BankingEntity}
 	 * @param bank the {@link Bank} the account is registered at
 	 * @param loc the {@link Location} of the account chest
-	 * @param status the {@link AccountStatus} of the account
 	 * @param name the account name {@link Nameable}
 	 * @param balance the current account balance {@link #getBalance()}
 	 * @param prevBalance the previous account balance {@link #getPrevBalance()}
+	 * @param multiplierStage the multiplier stage of this account
+	 * @param delayUntilNextPayout the number of payments this account will wait before generating interest
+	 * @param remainingOfflinePayouts the number of remaining offline interest payments this account will generate
+	 * @param remainingOfflineUntilReset the number of remaining offline interest payments before the multiplier stage is reset
 	 */
 	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, Location loc,
-								 AccountStatus status, String name, BigDecimal balance, BigDecimal prevBalance) {
+								 String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
+								 int delayUntilNextPayout, int remainingOfflinePayouts, int remainingOfflineUntilReset) {
 		return new Account(
 				id,
 				owner,
 				coowners,
 				bank,
 				loc,
-				status,
 				name,
 				balance.setScale(2, RoundingMode.HALF_EVEN),
-				prevBalance.setScale(2, RoundingMode.HALF_EVEN)
+				prevBalance.setScale(2, RoundingMode.HALF_EVEN),
+				multiplierStage,
+				delayUntilNextPayout,
+				remainingOfflinePayouts,
+				remainingOfflineUntilReset
 		);
-	}
-
-	public enum AccountSize {
-		SINGLE, DOUBLE
 	}
 
 	private boolean created;
 
+	private boolean hasCustomName;
+
 	private Bank bank;
 	private Location location;
-	private final AccountStatus status;
 	private Inventory inventory;
+
 	private BigDecimal balance;
 	private BigDecimal prevBalance;
-	private AccountSize size;
+	private boolean isDoubleChest;
+
+	int multiplierStage;
+	int delayUntilNextPayout;
+	int remainingOfflinePayouts;
+	int remainingOfflineUntilReset;
 
 	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, Location loc,
-					AccountStatus status, String name, BigDecimal balance, BigDecimal prevBalance) {
+					String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
+					int delayUntilNextPayout, int remainingOfflinePayouts, int remainingOfflineUntilReset) {
 
 		this.id = id;
 		this.owner = owner;
 		this.coowners = coowners;
 		this.bank = bank;
 		this.location = loc;
-		this.status = status;
 		this.name = name;
+		this.hasCustomName = getRawName().equals(getDefaultName());
 		this.balance = balance;
 		this.prevBalance = prevBalance;
+		this.multiplierStage = multiplierStage;
+		this.delayUntilNextPayout = delayUntilNextPayout;
+		this.remainingOfflinePayouts = remainingOfflinePayouts;
+		this.remainingOfflineUntilReset = remainingOfflineUntilReset;
 
 	}
 
@@ -155,7 +182,7 @@ public class Account extends Ownable {
 			return false;
 		}
 
-		final BigDecimal checkedBalance = calculateValue();
+		final BigDecimal checkedBalance = calculateBalance();
 		final int diff = checkedBalance.compareTo(getBalance());
 		if (diff > 0) {
 			if (getBalance().signum() == 0)
@@ -190,10 +217,7 @@ public class Account extends Ownable {
 	public void setBank(Bank bank) {
 		getBank().removeAccount(this);
 		getBank().notifyObservers();
-
 		this.bank = bank;
-		this.getStatus().setBank(bank);
-
 		getBank().addAccount(this);
 		notifyObservers();
 		getBank().notifyObservers();
@@ -205,7 +229,7 @@ public class Account extends Ownable {
 	 * The balance will always be positive.
 	 *
 	 * @return the current account balance
-	 * @see #calculateValue()
+	 * @see #calculateBalance()
 	 */
 	public BigDecimal getBalance() {
 		return balance;
@@ -239,39 +263,11 @@ public class Account extends Ownable {
 	 * Saves the current balance of this account into the previous balance.
 	 * Used only at interest payout events.
 	 *
-	 * @see #calculateValue()
+	 * @see #calculateBalance()
 	 * @see com.monst.bankingplugin.listeners.InterestEventListener
 	 */
 	public void updatePrevBalance() {
 		prevBalance = balance;
-	}
-
-	/**
-	 * Gets the status of this account.
-	 * This includes information about the current multiplier and interest delay, among other things.
-	 *
-	 * @return the {@link AccountStatus} object associated with this account
-	 */
-	public AccountStatus getStatus() {
-		return status;
-	}
-
-	/**
-	 * Determines whether to allow the next interest payout or not.
-	 *
-	 * @see AccountStatus#allowNextPayout(boolean)
-	 */
-	public boolean allowNextPayout() {
-		return getStatus().allowNextPayout(isTrustedPlayerOnline());
-	}
-
-	/**
-	 * Increments this account's multiplier stage.
-	 *
-	 * @see AccountStatus#incrementMultiplier(boolean)
-	 */
-	public void incrementMultiplier() {
-		getStatus().incrementMultiplier(isTrustedPlayerOnline());
 	}
 
 	/**
@@ -339,9 +335,8 @@ public class Account extends Ownable {
 			return inventory;
 		Block b = getLocation().getBlock();
 		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
-			Chest chest = (Chest) b.getState();
-			inventory = chest.getInventory();
-			this.size = inventory.getHolder() instanceof DoubleChest ? AccountSize.DOUBLE : AccountSize.SINGLE;
+			inventory = ((Chest) b.getState()).getInventory();
+			isDoubleChest = inventory.getHolder() instanceof DoubleChest;
 			return inventory;
 		}
 		return null;
@@ -350,8 +345,20 @@ public class Account extends Ownable {
 	/**
 	 * @return 1 if single chest, 2 if double.
 	 */
-	public short getSize() {
-		return (short) (size == AccountSize.DOUBLE ? 2 : 1);
+	public byte getSize() {
+		return (byte) (isDoubleChest ? 2 : 1);
+	}
+
+	public boolean isSingleChest() {
+		return !isDoubleChest;
+	}
+
+	public boolean isDoubleChest() {
+		return isDoubleChest;
+	}
+
+	public boolean hasCustomName() {
+		return hasCustomName;
 	}
 
 	/**
@@ -362,6 +369,13 @@ public class Account extends Ownable {
 	@Override
 	public void setName(String name) {
 		this.name = name;
+		hasCustomName = true;
+		setChestName(getChestName());
+	}
+
+	public void resetName() {
+		this.name = getDefaultName();
+		hasCustomName = false;
 		setChestName(getChestName());
 	}
 
@@ -369,7 +383,7 @@ public class Account extends Ownable {
 		Inventory inv = getInventory(true);
 		if (inv == null)
 			return;
-		if (size == AccountSize.DOUBLE) {
+		if (isDoubleChest) {
 			DoubleChest dc = (DoubleChest) inv.getHolder();
 			if (dc == null)
 				return;
@@ -395,7 +409,7 @@ public class Account extends Ownable {
 	}
 
 	public String getChestName() {
-		return getRawName().contentEquals(getDefaultName()) ? getDefaultChestName() : getColorizedName();
+		return hasCustomName ? getColorizedName() : getDefaultChestName();
 	}
 
 	public String getDefaultChestName() {
@@ -413,7 +427,7 @@ public class Account extends Ownable {
 
 	public void updateName() {
 		if (getRawName() == null || getRawName().isEmpty())
-			setName(getDefaultName());
+			resetName();
 		else
 			setName(getRawName());
 	}
@@ -438,13 +452,151 @@ public class Account extends Ownable {
 	 * Calculates the value of the inventory contents of this account. This does not update the balance.
 	 * @return the current value of the items inside this account's inventory
 	 */
-	public BigDecimal calculateValue() {
+	public BigDecimal calculateBalance() {
 		plugin.debugf("Appraising account... (#%d)", getID());
 		return plugin.getAccountRepository().appraise(getInventory(true).getContents());
 	}
 
+	/**
+	 * Gets the current multiplier stage of this account. This is an index on the list of multipliers specified by the bank.
+	 * @return the current multiplier stage
+	 */
+	public int getMultiplierStage() {
+		return multiplierStage;
+	}
+
+	/**
+	 * Gets the interest delay at this account. This specifies how many interest cycles this account will skip before
+	 * starting to generate interest (again).
+	 *
+	 * @return the current delay, in cycles
+	 */
+	public int getDelayUntilNextPayout() {
+		return delayUntilNextPayout;
+	}
+
+	/**
+	 * Gets the current number of remaining offline payouts at this account. This specifies how many (more) consecutive
+	 * times this account will generate interest for offline account holders.
+	 *
+	 * @return the current number of remaining offline payouts
+	 */
+	public int getRemainingOfflinePayouts() {
+		return remainingOfflinePayouts;
+	}
+
+	/**
+	 * Gets the current number of remaining offline payouts until the multiplier resets at this account. This specifies
+	 * how many (more) consecutive times this account will generate interest for offline account holders before the
+	 * multiplier stage is reset to 0.
+	 *
+	 * @return the current number of remaining offline payouts until the multiplier is reset
+	 */
+	public int getRemainingOfflinePayoutsUntilReset() {
+		return remainingOfflineUntilReset;
+	}
+
+	/**
+	 * Determines whether to allow the next interest payout or not.
+	 */
+	public boolean allowNextPayout() {
+		boolean online = isTrustedPlayerOnline();
+		if (delayUntilNextPayout > 0) {
+			if (online || (boolean) bank.get(BankField.COUNT_INTEREST_DELAY_OFFLINE))
+				delayUntilNextPayout--;
+			return false;
+		} if (online) {
+			remainingOfflinePayouts = Math.max(remainingOfflinePayouts, bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS));
+			remainingOfflineUntilReset = Math.max(remainingOfflineUntilReset, bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET));
+			return true;
+		}
+		return remainingOfflinePayouts-- > 0;
+	}
+
+	/**
+	 * Processes a withdrawal at this account. This is only triggered when the balance of the account drops below
+	 * the balance at the previous interest payout. The account multiplier is reduced by the amount specified
+	 * at the bank.
+	 *
+	 * @return the new multiplier stage of this account
+	 * @see BankField#WITHDRAWAL_MULTIPLIER_DECREMENT
+	 */
+	public int processWithdrawal() {
+		int decrement = bank.get(BankField.WITHDRAWAL_MULTIPLIER_DECREMENT);
+		if (decrement < 0) {
+			return setMultiplierStage(0);
+		}
+		return setMultiplierStage(multiplierStage - decrement);
+	}
+
+	/**
+	 * Increments this account's multiplier stage.
+	 *
+	 * @see BankField#OFFLINE_MULTIPLIER_DECREMENT
+	 */
+	public void incrementMultiplier() {
+		if (isTrustedPlayerOnline())
+			setMultiplierStage(++multiplierStage);
+		else if (remainingOfflineUntilReset-- <= 0)
+			setMultiplierStage(0);
+		else
+			setMultiplierStage(multiplierStage - (int) bank.get(BankField.OFFLINE_MULTIPLIER_DECREMENT));
+	}
+
+	/**
+	 * Gets the multiplier from Config:interestMultipliers corresponding to this account's current multiplier stage.
+	 *
+	 * @return the corresponding multiplier, or 1x by default in case of an error.
+	 * @see BankField#MULTIPLIERS
+	 */
+	public int getRealMultiplier() {
+		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
+		if (multipliers == null || multipliers.isEmpty())
+			return 1;
+		return multipliers.get(setMultiplierStage(multiplierStage));
+	}
+
+	/**
+	 * Sets the multiplier stage. This will ensure that the provided stage is no less than 0 and no greater than multipliers.size() - 1.
+	 *
+	 * @param stage the stage to set the multiplier to
+	 */
+	public int setMultiplierStage(int stage) {
+		if (stage == 0)
+			return multiplierStage = 0;
+		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
+		return multiplierStage = Math.max(0, Math.min(stage, multipliers.size() - 1));
+	}
+
+	/**
+	 * Sets the interest delay. This determines how long an account must wait before generating interest.
+	 *
+	 * @param delay the delay to set
+	 */
+	public void setDelayUntilNextPayout(int delay) {
+		delayUntilNextPayout = Math.max(0, delay);
+	}
+
+	/**
+	 * Sets the remaining offline payouts. This determines how many more times an account will be able to generate
+	 * interest offline.
+	 * @param remaining the number of payouts to allow
+	 */
+	public void setRemainingOfflinePayouts(int remaining) {
+		remainingOfflinePayouts = Math.max(0, remaining);
+	}
+
+	/**
+	 * Sets the remaining offline payouts until reset. This determines how many more times an account will be able to
+	 * generate interest offline before the account multiplier resets.
+	 * @param remaining the number of payouts to allow before the multiplier is reset
+	 */
+	public void setRemainingOfflinePayoutsUntilReset(int remaining) {
+		remainingOfflineUntilReset = Math.max(0, remaining);
+	}
+
 	@Override
-	public void transferOwnership(OfflinePlayer newOwner) {
+	public void setOwner(OfflinePlayer newOwner) {
 		if (newOwner == null)
 			return;
 		OfflinePlayer previousOwner = getOwner();
@@ -457,45 +609,33 @@ public class Account extends Ownable {
 	}
 
 	@Override
-	public String getInformation() {
-
-		StringBuilder info = new StringBuilder(196);
-
-		info.append("" + ChatColor.GRAY);
-		info.append("\"" + Utils.colorize(getRawName()) + ChatColor.GRAY + "\"");
-		info.append(ChatColor.GRAY + "Bank: " + ChatColor.RED + getBank().getColorizedName());
-		info.append(ChatColor.GRAY + "Owner: " + ChatColor.GOLD + getOwnerDisplayName());
-		if (!getCoowners().isEmpty())
-			info.append(ChatColor.GRAY + "Co-owners: " + Utils.map(getCoowners(), OfflinePlayer::getName).toString());
-		info.append(ChatColor.GRAY + "Balance: " + ChatColor.GREEN + Utils.format(getBalance()));
-		info.append(ChatColor.GRAY + "Multiplier: " + ChatColor.AQUA + getStatus().getRealMultiplier()
-				+ ChatColor.GRAY + " (Stage " + getStatus().getMultiplierStage() + ")");
-		StringBuilder interestRate = new StringBuilder(ChatColor.GRAY + "Interest rate: ");
+	public String toConsolePrintout() {
 		double interestR = getBank().get(BankField.INTEREST_RATE);
-		interestRate.append(ChatColor.GREEN + "" + BigDecimal.valueOf(interestR * getStatus().getRealMultiplier() * 100)
-				.setScale(1, BigDecimal.ROUND_HALF_EVEN)
-				+ "% " + ChatColor.GRAY + "(" + interestR + " x " + getStatus().getRealMultiplier() + ")");
-		if (getStatus().getDelayUntilNextPayout() != 0)
-			interestRate.append(ChatColor.RED + " (" + getStatus().getDelayUntilNextPayout() + " payouts to go)");
-		info.append(interestRate.toString());
-		info.append(ChatColor.GRAY + "Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")");
-
-		return info.toString();
+		return Stream.of(
+				"\"" + Utils.colorize(getRawName()) + ChatColor.GRAY + "\"",
+				"Bank: " + ChatColor.RED + getBank().getColorizedName(),
+				"Owner: " + ChatColor.GOLD + getOwnerDisplayName(),
+				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName).toString(),
+				"Balance: " + ChatColor.GREEN + Utils.format(getBalance()),
+				"Multiplier: " + ChatColor.AQUA + getRealMultiplier() + ChatColor.GRAY + " (Stage " + getMultiplierStage() + ")",
+				"Interest rate: " + BigDecimal.valueOf(interestR * getRealMultiplier() * 100).setScale(1, BigDecimal.ROUND_HALF_EVEN) + "% " +
+						ChatColor.GRAY + "(" + interestR + " x " + getRealMultiplier() + ")",
+				"Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")"
+		).collect(Collectors.joining(", ", "" + ChatColor.GRAY, ""));
 	}
 
 	@Override
 	public String toString() {
-		   return "Account ID: " + getID() + ", "
+		return "Account ID: " + getID() + ", "
 				+ "Owner: " + getOwner().getName() + ", "
 				+ "Bank: " + getBank().getName() + ", "
 				+ "Balance: " + Utils.format(getBalance()) + ", "
 				+ "Previous balance: " + Utils.format(getPrevBalance()) + ", "
-				+ "Multiplier: " + getStatus().getRealMultiplier() + ", "
-					+ " (stage " + getStatus().getMultiplierStage() + "), "
-				+ "Delay until next payout: " + getStatus().getDelayUntilNextPayout() + ", "
+				+ "Multiplier: " + getRealMultiplier() + ", "
+				+ " (stage " + getMultiplierStage() + "), "
+				+ "Delay until next payout: " + getDelayUntilNextPayout() + ", "
 				+ "Next payout amount: " + Utils.format(getBalance().doubleValue()
-						* (double) getBank().get(BankField.INTEREST_RATE)
-						* getStatus().getRealMultiplier()) + ", "
+				* (double) getBank().get(BankField.INTEREST_RATE) * getRealMultiplier()) + ", "
 				+ "Location: " + getCoordinates();
 	}
 
@@ -507,7 +647,7 @@ public class Account extends Ownable {
 			return false;
 
 		Account otherAccount = (Account) o;
-		return getID() != -1 && getID() == otherAccount.getID();
+		return getID() != -1 && getID().equals(otherAccount.getID());
 	}
 
 	@Override

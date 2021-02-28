@@ -1,5 +1,7 @@
-package com.monst.bankingplugin.selections;
+package com.monst.bankingplugin.geo.selections;
 
+import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.BlockVector3D;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -27,14 +29,14 @@ public class CuboidSelection extends Selection {
 	 */
 	public static CuboidSelection of(World world, BlockVector3D loc1, BlockVector3D loc2) {
 		BlockVector3D min = new BlockVector3D(
-				Math.min(loc1.getBlockX(), loc2.getBlockX()),
-				Math.min(loc1.getBlockY(), loc2.getBlockY()),
-				Math.min(loc1.getBlockZ(), loc2.getBlockZ())
+				Math.min(loc1.getX(), loc2.getX()),
+				Math.min(loc1.getY(), loc2.getY()),
+				Math.min(loc1.getZ(), loc2.getZ())
 		);
 		BlockVector3D max = new BlockVector3D(
-				Math.max(loc1.getBlockX(), loc2.getBlockX()),
-				Math.max(loc1.getBlockY(), loc2.getBlockY()),
-				Math.max(loc1.getBlockZ(), loc2.getBlockZ())
+				Math.max(loc1.getX(), loc2.getX()),
+				Math.max(loc1.getY(), loc2.getY()),
+				Math.max(loc1.getZ(), loc2.getZ())
 		);
 		return new CuboidSelection(world, min, max);
 	}
@@ -64,17 +66,17 @@ public class CuboidSelection extends Selection {
 	}
 
 	@Override
-	public int getMinX() { return min.getBlockX(); }
+	public int getMinX() { return min.getX(); }
 	@Override
-	public int getMaxX() { return max.getBlockX(); }
+	public int getMaxX() { return max.getX(); }
 	@Override
-	public int getMinY() { return min.getBlockY(); }
+	public int getMinY() { return min.getY(); }
 	@Override
-	public int getMaxY() { return max.getBlockY(); }
+	public int getMaxY() { return max.getY(); }
 	@Override
-	public int getMinZ() { return min.getBlockZ(); }
+	public int getMinZ() { return min.getZ(); }
 	@Override
-	public int getMaxZ() { return max.getBlockZ(); }
+	public int getMaxZ() { return max.getZ(); }
 
 	@Override
 	public String getCoordinates() {
@@ -92,7 +94,7 @@ public class CuboidSelection extends Selection {
 
 	@Override
 	public boolean overlaps(Selection sel) {
-		if (getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY())
+		if (isDisjunct(sel))
 			return false;
 		Set<BlockVector2D> blocks = getFootprint();
 		return sel.getFootprint().stream().anyMatch(blocks::contains);
@@ -126,9 +128,9 @@ public class CuboidSelection extends Selection {
 
 	@Override
 	public boolean contains(BlockVector3D bv) {
-		int x = bv.getBlockX();
-		int y = bv.getBlockY();
-		int z = bv.getBlockZ();
+		int x = bv.getX();
+		int y = bv.getY();
+		int z = bv.getZ();
 		return x <= getMaxX() && x >= getMinX()
 				&& y <= getMaxY() && y >= getMinY()
 				&& z <= getMaxZ() && z >= getMinZ();
@@ -136,10 +138,10 @@ public class CuboidSelection extends Selection {
 
 	@Override
 	public boolean contains(BlockVector2D bv) {
-		return bv.getBlockX() <= getMaxX()
-			&& bv.getBlockX() >= getMinX()
-			&& bv.getBlockZ() <= getMaxZ()
-			&& bv.getBlockZ() >= getMinZ();
+		return bv.getX() <= getMaxX()
+			&& bv.getX() >= getMinX()
+			&& bv.getZ() <= getMaxZ()
+			&& bv.getZ() >= getMinZ();
 	}
 
 	@Override

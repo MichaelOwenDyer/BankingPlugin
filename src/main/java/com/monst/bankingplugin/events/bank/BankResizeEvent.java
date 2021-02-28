@@ -1,12 +1,12 @@
 package com.monst.bankingplugin.events.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.selections.Selection;
+import com.monst.bankingplugin.geo.selections.Selection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
 public class BankResizeEvent extends SingleBankEvent implements Cancellable {
-	
+
 	private boolean cancelled;
 	private final Selection newSelection;
 
@@ -14,7 +14,7 @@ public class BankResizeEvent extends SingleBankEvent implements Cancellable {
 		super(player, bank);
 		this.newSelection = newSelection;
 	}
-	
+
 	public Selection getOldSelection() {
 		return getBank().getSelection();
 	}
@@ -32,5 +32,5 @@ public class BankResizeEvent extends SingleBankEvent implements Cancellable {
 	public void setCancelled(boolean cancel) {
 		cancelled = cancel;
 	}
-	
+
 }

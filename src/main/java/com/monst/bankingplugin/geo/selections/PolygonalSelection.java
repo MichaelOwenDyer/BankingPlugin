@@ -1,5 +1,7 @@
-package com.monst.bankingplugin.selections;
+package com.monst.bankingplugin.geo.selections;
 
+import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.polylabel.PolyLabel;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -63,7 +65,7 @@ public class PolygonalSelection extends Selection {
 		Integer[][][] polygon = new Integer[1][vertices.size()][2];
 		for (int i = 0; i < vertices.size(); i++) {
 			BlockVector2D point = vertices.get(i);
-			polygon[0][i] = new Integer[] {point.getBlockX(), point.getBlockZ()};
+			polygon[0][i] = new Integer[] {point.getX(), point.getZ()};
 		}
 		PolyLabel.Result result = PolyLabel.polyLabel(polygon);
 		return new BlockVector3D((int) result.getX(), (maxY + minY) / 2, (int) result.getY());
@@ -73,14 +75,14 @@ public class PolygonalSelection extends Selection {
 	public int getMinX() {
 		if (vertices.isEmpty())
 			throw new IllegalStateException("No vertices in PolygonalSelection!");
-		return vertices.stream().mapToInt(BlockVector2D::getBlockX).min().getAsInt();
+		return vertices.stream().mapToInt(BlockVector2D::getX).min().getAsInt();
 	}
 
 	@Override
 	public int getMaxX() {
 		if (vertices.isEmpty())
 			throw new IllegalStateException("No vertices in PolygonalSelection!");
-		return vertices.stream().mapToInt(BlockVector2D::getBlockX).max().getAsInt();
+		return vertices.stream().mapToInt(BlockVector2D::getX).max().getAsInt();
 	}
 
 	@Override
@@ -97,14 +99,14 @@ public class PolygonalSelection extends Selection {
 	public int getMinZ() {
 		if (vertices.isEmpty())
 			throw new IllegalStateException("No vertices in PolygonalSelection!");
-		return vertices.stream().mapToInt(BlockVector2D::getBlockZ).min().getAsInt();
+		return vertices.stream().mapToInt(BlockVector2D::getZ).min().getAsInt();
 	}
 
 	@Override
 	public int getMaxZ() {
 		if (vertices.isEmpty())
 			throw new IllegalStateException("No vertices in PolygonalSelection!");
-		return vertices.stream().mapToInt(BlockVector2D::getBlockZ).max().getAsInt();
+		return vertices.stream().mapToInt(BlockVector2D::getZ).max().getAsInt();
 	}
 
 	@Override
@@ -113,7 +115,7 @@ public class PolygonalSelection extends Selection {
 		List<BlockVector2D> vertices = getVertices();
 		sb.append(vertices.stream()
 				.limit(8)
-				.map(vertex -> "(" + vertex.getBlockX() + ", " + vertex.getBlockZ() + ")")
+				.map(vertex -> "(" + vertex.getX() + ", " + vertex.getZ() + ")")
 				.collect(Collectors.joining(", "))
 		);
 		if (vertices.size() > 8)
@@ -139,7 +141,7 @@ public class PolygonalSelection extends Selection {
 
 	@Override
 	public boolean overlaps(Selection sel) {
-		if (getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY())
+		if (isDisjunct(sel))
 			return false;
 		Set<BlockVector2D> blocks = sel.getFootprint();
 		return getFootprint().stream().anyMatch(blocks::contains);
@@ -151,8 +153,8 @@ public class PolygonalSelection extends Selection {
 		Set<BlockVector2D> blocks = new HashSet<>();
 		BlockVector3D min = getMinimumPoint();
 		BlockVector3D max = getMaximumPoint();
-		for (int x = min.getBlockX(); x <= max.getBlockX(); x++)
-			for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
+		for (int x = min.getX(); x <= max.getX(); x++)
+			for (int z = min.getZ(); z <= max.getZ(); z++) {
 				BlockVector2D bv = new BlockVector2D(x, z);
 				if (contains(bv))
 					blocks.add(bv);
@@ -171,24 +173,24 @@ public class PolygonalSelection extends Selection {
 
 	@Override
 	public boolean contains(BlockVector3D bv) {
-		int y = bv.getBlockY();
+		int y = bv.getY();
 		return y <= maxY && y >= minY && contains(bv.toBlockVector2D());
 	}
 
 	@Override
 	public boolean contains(BlockVector2D bv) {
-		int pointX = bv.getBlockX(); //width
-		int pointZ = bv.getBlockZ(); //depth
+		int pointX = bv.getX(); //width
+		int pointZ = bv.getZ(); //depth
 
 		int nextX, nextZ, x1, z1, x2, z2;
-		int prevX = vertices.get(vertices.size() - 1).getBlockX();
-		int prevZ = vertices.get(vertices.size() - 1).getBlockZ();
+		int prevX = vertices.get(vertices.size() - 1).getX();
+		int prevZ = vertices.get(vertices.size() - 1).getZ();
 
 		long crossProduct;
 		boolean inside = false;
 		for (BlockVector2D point : vertices) {
-			nextX = point.getBlockX();
-			nextZ = point.getBlockZ();
+			nextX = point.getX();
+			nextZ = point.getZ();
 			if (nextX == pointX && nextZ == pointZ) // Location is on a vertex
 				return true;
 			if (nextX > prevX) {
@@ -203,7 +205,7 @@ public class PolygonalSelection extends Selection {
 				z2 = prevZ;
 			}
 			if (x1 <= pointX && pointX <= x2) {
-				crossProduct = ((pointZ - z1) * (x2 - x1)) - ((z2 - z1) * (pointX - x1));
+				crossProduct = ((long) (pointZ - z1) * (x2 - x1)) - ((long) (z2 - z1) * (pointX - x1));
 				if (crossProduct == 0) {
 					if ((z1 <= pointZ) == (pointZ <= z2))
 						return true; //Location is on edge between vertices
@@ -235,12 +237,6 @@ public class PolygonalSelection extends Selection {
 
 	@Override
 	public int hashCode() {
-		Object[] attributes = new Object[vertices.size() + 3];
-		attributes[0] = getWorld();
-		attributes[1] = getMinY();
-		attributes[2] = getMaxY();
-		for (int i = 0; i < vertices.size(); i++)
-			attributes[i + 3] = vertices.get(i);
-		return Objects.hash(attributes);
+		return Objects.hash(getWorld(), getMinY(), getMaxY(), vertices);
 	}
 }
