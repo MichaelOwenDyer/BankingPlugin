@@ -4,7 +4,7 @@ import com.monst.bankingplugin.utils.Pair;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-public class BlockVector2D extends Pair<Integer, Integer> {
+public class BlockVector2D extends Pair<Integer, Integer> implements Comparable<BlockVector2D> {
     public BlockVector2D(int x, int z) {
         super(x, z);
     }
@@ -21,5 +21,20 @@ public class BlockVector2D extends Pair<Integer, Integer> {
 
     public static BlockVector2D fromLocation(Location loc) {
         return new BlockVector2D(loc.getBlockX(), loc.getBlockZ());
+    }
+
+    public boolean isAdjacent(BlockVector2D other) {
+        int distanceX = Math.abs(getX() - other.getX());
+        int distanceZ = Math.abs(getZ() - other.getZ());
+        return !(distanceX > 1 || distanceZ > 1) && distanceX + distanceZ == 1;
+    }
+
+    @Override
+    public int compareTo(BlockVector2D other) {
+        if (getX() != other.getX())
+            return Integer.compare(getX(), other.getX());
+        if (getZ() != other.getZ())
+            return Integer.compare(getZ(), other.getZ());
+        return 0;
     }
 }

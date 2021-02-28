@@ -1,6 +1,12 @@
 package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.selections.CuboidSelection;
+import com.monst.bankingplugin.geo.selections.PolygonalSelection;
+import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.utils.Utils;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -16,11 +22,9 @@ import com.sk89q.worldedit.regions.selector.Polygonal2DRegionSelector;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("all")
 public class WorldEditReader {
 
 	public static Selection getSelection(BankingPlugin plugin, Player p) {
@@ -38,20 +42,17 @@ public class WorldEditReader {
 				BlockVector3 vector2 = cuboid.getPos2();
 				BlockVector3D loc1 = new BlockVector3D(vector1.getBlockX(), vector1.getBlockY(), vector1.getBlockZ());
 				BlockVector3D loc2 = new BlockVector3D(vector2.getBlockX(), vector2.getBlockY(), vector2.getBlockZ());
-				return CuboidSelection.of(BukkitAdapter.adapt(cuboid.getWorld()), loc1, loc2);
+				return CuboidSelection.of(Utils.nonNull(cuboid.getWorld(), BukkitAdapter::adapt, () -> null), loc1, loc2);
 			} else if (region instanceof Polygonal2DRegion) {
 				Polygonal2DRegion polygon = (Polygonal2DRegion) region;
 				int minY = polygon.getMinimumY();
 				int maxY = polygon.getMaximumY();
-				World world = BukkitAdapter.adapt(polygon.getWorld());
-				List<BlockVector2D> points = new ArrayList<>();
-				polygon.getPoints().stream()
-						.forEach(point -> points.add(new BlockVector2D(point.getBlockX(), point.getBlockZ())));
+				World world = Utils.nonNull(polygon.getWorld(), BukkitAdapter::adapt, () -> null);
+				List<BlockVector2D> points = polygon.getPoints().stream()
+						.map(point -> new BlockVector2D(point.getBlockX(), point.getBlockZ())).collect(Collectors.toList());
 				return PolygonalSelection.of(world, points, minY, maxY);
 			}
-
 		} catch (IncompleteRegionException ignored) {}
-
 		return null;
 	}
 
