@@ -2,6 +2,7 @@ package com.monst.bankingplugin.geo.selections;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -107,6 +108,8 @@ public abstract class Selection {
 				getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY() ||
 				getMinZ() > sel.getMaxZ() || getMaxZ() < sel.getMinZ();
 	}
+
+	public abstract boolean contains(ChestLocation loc);
 
 	/**
 	 * Returns true based on whether this selection contains the {@link Location},

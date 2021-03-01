@@ -6,18 +6,15 @@ import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -73,42 +70,28 @@ public class AccountCreate extends AccountCommand.SubCommand {
      *
      * @param p  Player who executed the command will receive the message
      *                          and become the owner of the account
-     * @param b         Block where the account will be located
+     * @param b  Block where the account will be located
      */
     public static void create(Player p, Block b) {
 
-        Location location = b.getLocation();
-        if (plugin.getAccountRepository().isAccount(location)) {
+        if (plugin.getAccountRepository().isAccount(b.getLocation())) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             plugin.debug("Chest is already an account.");
             return;
         }
 
-        Bank bank = plugin.getBankRepository().getAt(location);
-        Block attachedChestBlock = Utils.getAttachedChestBlock(b);
-        if (attachedChestBlock != null) {
-            if (!Utils.isTransparent(b.getRelative(BlockFace.UP)) || !Utils.isTransparent(attachedChestBlock.getRelative(BlockFace.UP))) {
-                p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
-                plugin.debug("Chest is blocked.");
-                return;
-            }
-            Bank otherBank = plugin.getBankRepository().getAt(attachedChestBlock.getLocation());
-            if (bank == null || !bank.equals(otherBank)) {
-                p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
-                plugin.debug("Chest is not in a bank.");
-                return;
-            }
-        } else {
-            if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
-                p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
-                plugin.debug("Chest is blocked.");
-                return;
-            }
-            if (bank == null) {
-                p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
-                plugin.debug("Chest is not in a bank.");
-                return;
-            }
+        ChestLocation accountLocation = ChestLocation.from(b);
+        if (accountLocation.isBlocked()) {
+            p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
+            plugin.debug("Chest is blocked.");
+            return;
+        }
+
+        Bank bank = plugin.getBankRepository().getAt(accountLocation);
+        if (bank == null) {
+            p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
+            plugin.debug("Chest is not in a bank.");
+            return;
         }
 
         if (!Config.allowSelfBanking && bank.isOwner(p)) {
@@ -126,7 +109,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return;
         }
 
-        Account account = Account.mint(p, location);
+        Account account = Account.mint(p, accountLocation);
 
         AccountCreateEvent event = new AccountCreateEvent(p, account);
         Bukkit.getPluginManager().callEvent(event);
@@ -137,7 +120,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         }
 
         double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
-        creationPrice *= ((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1;
+        creationPrice *= accountLocation.getSize();
         creationPrice *= bank.isOwner(p) ? 0 : 1;
 
         double balance = plugin.getEconomy().getBalance(p);

@@ -5,6 +5,7 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.events.account.AccountPreMigrateEvent;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -14,9 +15,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -91,12 +89,13 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             return;
         }
-        if (!Utils.isTransparent(b.getRelative(BlockFace.UP))) {
+        ChestLocation accountLocation = ChestLocation.from(b);
+        if (accountLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             plugin.debug("Chest is blocked.");
             return;
         }
-        Bank newBank = plugin.getBankRepository().getAt(newLocation); // May or may not be the same as previous bank
+        Bank newBank = plugin.getBankRepository().getAt(accountLocation); // May or may not be the same as previous bank
         if (newBank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             plugin.debug("Chest is not in a bank.");
@@ -110,7 +109,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         Account newAccount = Account.clone(toMigrate);
         newAccount.setBank(newBank);
-        newAccount.setLocation(newLocation);
+        newAccount.setChestLocation(accountLocation);
 
         AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, newLocation);
         Bukkit.getPluginManager().callEvent(event);
@@ -123,14 +122,14 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         Bank oldBank = toMigrate.getBank();
 
         double creationPrice = newBank.get(BankField.ACCOUNT_CREATION_PRICE);
-        creationPrice *= (((Chest) b.getState()).getInventory().getHolder() instanceof DoubleChest ? 2 : 1);
         creationPrice *= (newBank.isOwner(p) ? 0 : 1);
+        creationPrice *= accountLocation.getSize();
 
         double reimbursement = oldBank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ?
                 oldBank.get(BankField.ACCOUNT_CREATION_PRICE) :
                 0.0d;
-        reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
         reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
+        reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
 
         double net = reimbursement - creationPrice;
         double balance = plugin.getEconomy().getBalance(p);

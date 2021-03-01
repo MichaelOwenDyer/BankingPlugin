@@ -2,6 +2,7 @@ package com.monst.bankingplugin.geo.selections;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -120,8 +121,18 @@ public class CuboidSelection extends Selection {
 	}
 
 	@Override
+	public boolean contains(ChestLocation loc) {
+		if (!getWorld().equals(loc.getWorld()))
+			return false;
+		for (Location chest : loc)
+			if (!contains(BlockVector3D.fromLocation(chest)))
+				return false;
+		return true;
+	}
+
+	@Override
 	public boolean contains(Location loc) {
-		if (loc.getWorld() != null && !loc.getWorld().equals(getWorld()))
+		if (!getWorld().equals(loc.getWorld()))
 			return false;
 		return contains(BlockVector3D.fromLocation(loc));
 	}

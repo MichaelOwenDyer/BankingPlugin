@@ -232,10 +232,10 @@ public abstract class Database {
 				values.addNext(account.getDelayUntilNextPayout());
 				values.addNext(account.getRemainingOfflinePayouts());
 				values.addNext(account.getRemainingOfflinePayoutsUntilReset());
-				values.addNext(account.getLocation().getWorld().getName());
-				values.addNext(account.getLocation().getBlockX());
-				values.addNext(account.getLocation().getBlockY());
-				values.addNext(account.getLocation().getBlockZ());
+				values.addNext(account.getChestLocation().getWorld().getName());
+				values.addNext(account.getChestLocation().getBlockX());
+				values.addNext(account.getChestLocation().getBlockY());
+				values.addNext(account.getChestLocation().getBlockZ());
 
 				ps.executeUpdate();
 

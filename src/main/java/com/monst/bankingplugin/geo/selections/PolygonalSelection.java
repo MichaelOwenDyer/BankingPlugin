@@ -166,7 +166,7 @@ public class PolygonalSelection extends Selection {
 	public boolean contains(Location loc) {
 		if (vertices.size() < 3)
 			return false;
-		if (loc.getWorld() != null && !loc.getWorld().equals(getWorld()))
+		if (!getWorld().equals(loc.getWorld()))
 			return false;
 		return contains(BlockVector3D.fromLocation(loc));
 	}

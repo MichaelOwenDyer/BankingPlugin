@@ -3,13 +3,11 @@ package com.monst.bankingplugin.utils;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import org.bukkit.Location;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
@@ -23,20 +21,27 @@ import java.util.Set;
 public class AccountRepository extends Observable implements Repository<Account> {
 
 	private final BankingPlugin plugin;
-	private final Map<Location, Account> accountLocationMap = new HashMap<>();
+	private final Map<ChestLocation, Account> accountLocationMap = new HashMap<>();
 	private final Set<Account> invalidAccounts = new HashSet<>();
 
     public AccountRepository(BankingPlugin plugin) {
         this.plugin = plugin;
     }
 
+    public boolean isAccount(Location location) {
+    	for (ChestLocation chest : accountLocationMap.keySet())
+    		if (chest.isAt(location))
+    			return true;
+		return false;
+	}
+
 	/**
 	 * Checks whether there is a account at a given location
-	 * @param location Location to check
+	 * @param chest Location to check
 	 * @return Whether there is a account at the given location
 	 */
-	public boolean isAccount(Location location) {
-		return getAt(location) != null;
+	public boolean isAccount(ChestLocation chest) {
+		return getAt(chest) != null;
 	}
 
 	/**
@@ -57,10 +62,10 @@ public class AccountRepository extends Observable implements Repository<Account>
      * @return Account at the given location or <b>null</b> if no account is found there
      */
     @Override
-	public Account getAt(Location location) {
-		if (location == null)
+	public Account getAt(ChestLocation location) {
+		if (location == null || location.getWorld() == null)
 			return null;
-		return accountLocationMap.get(Utils.blockifyLocation(location));
+		return accountLocationMap.get(location);
     }
 
 	/**
@@ -77,23 +82,8 @@ public class AccountRepository extends Observable implements Repository<Account>
 			return;
 		}
 
-		InventoryHolder ih = inv.getHolder();
         plugin.debug("Adding account to session... (#" + account.getID() + ")");
-
-        if (ih instanceof DoubleChest) {
-			DoubleChest dc = (DoubleChest) ih;
-			Chest l = (Chest) dc.getLeftSide();
-			Chest r = (Chest) dc.getRightSide();
-
-			plugin.debug("Added account to session as double chest. (#" + account.getID() + ")");
-
-			accountLocationMap.put(Utils.blockifyLocation(r.getLocation()), account);
-			accountLocationMap.put(Utils.blockifyLocation(l.getLocation()), account);
-        } else {
-            plugin.debug("Added account to session as single chest. (#" + account.getID() + ")");
-
-			accountLocationMap.put(Utils.blockifyLocation(account.getLocation()), account);
-        }
+		accountLocationMap.put(account.getChestLocation(), account);
 
         if (addToDatabase) {
 			plugin.getDatabase().addAccount(account, callback);
@@ -119,21 +109,7 @@ public class AccountRepository extends Observable implements Repository<Account>
 		account.clearChestName();
 		account.getBank().removeAccount(account);
 
-		Inventory inv = account.getInventory(true);
-		if (inv != null) {
-			InventoryHolder ih = inv.getHolder();
-			if (ih instanceof DoubleChest) {
-				DoubleChest dc = (DoubleChest) ih;
-				Chest r = (Chest) dc.getRightSide();
-				Chest l = (Chest) dc.getLeftSide();
-
-				accountLocationMap.remove(Utils.blockifyLocation(r.getLocation()));
-				accountLocationMap.remove(Utils.blockifyLocation(l.getLocation()));
-			} else {
-				accountLocationMap.remove(Utils.blockifyLocation(account.getLocation()));
-			}
-		} else
-			plugin.debug("Could not remove account. Inventory null (#" + account.getID() + ")");
+		accountLocationMap.remove(account.getChestLocation());
 
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);

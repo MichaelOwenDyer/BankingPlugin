@@ -132,7 +132,7 @@ public class BankResize extends BankCommand.SubCommand {
                 VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;
         }
-        long cutAccounts = bank.getAccounts().stream().filter(account -> !selection.contains(account.getLocation())).count();
+        long cutAccounts = bank.getAccounts().stream().filter(account -> !selection.contains(account.getChestLocation())).count();
         if (cutAccounts > 0) {
             plugin.debug("New selection does not contain all accounts");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_CUTS_ACCOUNTS, new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, cutAccounts)));

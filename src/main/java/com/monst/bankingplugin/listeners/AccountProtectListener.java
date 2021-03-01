@@ -84,7 +84,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			double finalCreationPrice = creationPrice;
-			String worldName = account.getLocation().getWorld() != null ? account.getLocation().getWorld().getName() : "world";
+			String worldName = account.getChestLocation().getWorld() != null ? account.getChestLocation().getWorld().getName() : "world";
 			// Account owner is reimbursed for the part of the chest that was broken
 			Utils.depositPlayer(p, finalCreationPrice, Callback.of(plugin,
 					result -> p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
@@ -115,7 +115,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 			Location newLocation = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
 			Account newAccount = Account.clone(account);
-			newAccount.setLocation(newLocation);
+			newAccount.setChestLocation(newLocation);
 
 			accountRepo.remove(account, false, Callback.of(plugin, result -> {
 				newAccount.create(true);

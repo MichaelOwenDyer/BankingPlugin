@@ -6,7 +6,8 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
-import com.monst.bankingplugin.exceptions.NotEnoughSpaceException;
+import com.monst.bankingplugin.exceptions.ChestBlockedException;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -38,7 +39,7 @@ public class Account extends BankingEntity {
 	 *
 	 * @return the new account
 	 */
-	public static Account mint(OfflinePlayer owner, Location loc) {
+	public static Account mint(OfflinePlayer owner, ChestLocation loc) {
 		Bank bank = plugin.getBankRepository().getAt(loc);
 		return new Account(
 				-1,
@@ -68,7 +69,7 @@ public class Account extends BankingEntity {
 				account.getOwner(),
 				new HashSet<>(account.getCoOwners()),
 				account.getBank(),
-				account.getLocation(),
+				account.getChestLocation(),
 				account.getRawName(),
 				account.getBalance(),
 				account.getPrevBalance(),
@@ -86,7 +87,7 @@ public class Account extends BankingEntity {
 	 * @param owner the owner of the account {@link BankingEntity}
 	 * @param coowners the co-owners of the account {@link BankingEntity}
 	 * @param bank the {@link Bank} the account is registered at
-	 * @param loc the {@link Location} of the account chest
+	 * @param loc the {@link ChestLocation} of the account chest
 	 * @param name the account name {@link Nameable}
 	 * @param balance the current account balance {@link #getBalance()}
 	 * @param prevBalance the previous account balance {@link #getPrevBalance()}
@@ -95,7 +96,7 @@ public class Account extends BankingEntity {
 	 * @param remainingOfflinePayouts the number of remaining offline interest payments this account will generate
 	 * @param remainingOfflineUntilReset the number of remaining offline interest payments before the multiplier stage is reset
 	 */
-	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, Location loc,
+	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, ChestLocation loc,
 								 String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
 								 int delayUntilNextPayout, int remainingOfflinePayouts, int remainingOfflineUntilReset) {
 		return new Account(
@@ -119,19 +120,18 @@ public class Account extends BankingEntity {
 	private boolean hasCustomName;
 
 	private Bank bank;
-	private Location location;
+	private ChestLocation chestLocation;
 	private Inventory inventory;
 
 	private BigDecimal balance;
 	private BigDecimal prevBalance;
-	private boolean isDoubleChest;
 
 	int multiplierStage;
 	int delayUntilNextPayout;
 	int remainingOfflinePayouts;
 	int remainingOfflineUntilReset;
 
-	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, Location loc,
+	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, ChestLocation loc,
 					String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
 					int delayUntilNextPayout, int remainingOfflinePayouts, int remainingOfflineUntilReset) {
 
@@ -139,7 +139,7 @@ public class Account extends BankingEntity {
 		this.owner = owner;
 		this.coowners = coowners;
 		this.bank = bank;
-		this.location = loc;
+		this.chestLocation = loc;
 		this.name = name;
 		this.hasCustomName = getRawName().equals(getDefaultName());
 		this.balance = balance;
@@ -170,7 +170,7 @@ public class Account extends BankingEntity {
 		try {
 			updateInventory();
 			checkSpaceAbove();
-		} catch (ChestNotFoundException | NotEnoughSpaceException e) {
+		} catch (ChestNotFoundException | ChestBlockedException e) {
 			plugin.getAccountRepository().remove(this, Config.removeAccountOnError);
 			if (!Config.removeAccountOnError)
 				plugin.getAccountRepository().addInvalidAccount(this);
@@ -275,17 +275,17 @@ public class Account extends BankingEntity {
 	 *
 	 * @return the {@link Location} of the account chest.
 	 */
-	public Location getLocation() {
-		return location;
+	public ChestLocation getChestLocation() {
+		return chestLocation;
 	}
 
 	/**
 	 * Sets the location of this account.
 	 *
-	 * @param location the new location
+	 * @param chestLocation the new location
 	 */
-	public void setLocation(Location location) {
-		this.location = location;
+	public void setChestLocation(ChestLocation chestLocation) {
+		this.chestLocation = chestLocation;
 		notifyObservers();
 	}
 
@@ -295,21 +295,25 @@ public class Account extends BankingEntity {
 	 * @return a {@link String} describing the location of the account chest.
 	 */
 	public String getCoordinates() {
-		return location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
+		Location loc = chestLocation.getMinimumLocation();
+		return loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ();
 	}
 
 	/**
 	 * Ensures that the account chest is able to be opened.
 	 *
-	 * @throws NotEnoughSpaceException if the chest cannot be opened.
+	 * @throws ChestBlockedException if the chest cannot be opened.
 	 * @see Utils#isTransparent(Block)
 	 */
-	private void checkSpaceAbove() throws NotEnoughSpaceException {
-		Block b = getLocation().getBlock();
-		if (!Utils.isTransparent(b.getRelative(BlockFace.UP)))
-			throw new NotEnoughSpaceException(
-					String.format("No space above chest in world '%s' at location: %d; %d; %d", b.getWorld().getName(),
-					b.getX(), b.getY(), b.getZ()));
+	private void checkSpaceAbove() throws ChestBlockedException {
+		for (Location loc : getChestLocation()) {
+			Block b = loc.getBlock();
+			if (!Utils.isTransparent(b.getRelative(BlockFace.UP)))
+				throw new ChestBlockedException(
+						String.format("No space above chest in world '%s' at location: %d; %d; %d", b.getWorld().getName(),
+								b.getX(), b.getY(), b.getZ())
+				);
+		}
 	}
 
 	/**
@@ -318,10 +322,13 @@ public class Account extends BankingEntity {
 	 * @throws ChestNotFoundException If the chest cannot be located.
 	 */
 	public void updateInventory() throws ChestNotFoundException {
-		Block b = getLocation().getBlock();
-		if (getInventory(true) == null)
-			throw new ChestNotFoundException(String.format("No chest found in world '%s' at location: %d; %d; %d",
-					b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
+		for (Location loc : getChestLocation()) {
+			Block b = loc.getBlock();
+			if (getInventory(true) == null)
+				throw new ChestNotFoundException(String.format("No chest found in world '%s' at location: %d; %d; %d",
+						b.getWorld().getName(), b.getX(), b.getY(), b.getZ())
+				);
+		}
 	}
 
 	/**
@@ -333,12 +340,9 @@ public class Account extends BankingEntity {
 	public Inventory getInventory(boolean update) {
 		if (!update)
 			return inventory;
-		Block b = getLocation().getBlock();
-		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
-			inventory = ((Chest) b.getState()).getInventory();
-			isDoubleChest = inventory.getHolder() instanceof DoubleChest;
-			return inventory;
-		}
+		Block b = getChestLocation().getMinimumLocation().getBlock();
+		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST)
+			return inventory = ((Chest) b.getState()).getInventory();
 		return null;
 	}
 
@@ -346,15 +350,15 @@ public class Account extends BankingEntity {
 	 * @return 1 if single chest, 2 if double.
 	 */
 	public byte getSize() {
-		return (byte) (isDoubleChest ? 2 : 1);
+		return chestLocation.getSize();
 	}
 
 	public boolean isSingleChest() {
-		return !isDoubleChest;
+		return getSize() == 1;
 	}
 
 	public boolean isDoubleChest() {
-		return isDoubleChest;
+		return getSize() == 2;
 	}
 
 	public boolean hasCustomName() {
@@ -383,7 +387,7 @@ public class Account extends BankingEntity {
 		Inventory inv = getInventory(true);
 		if (inv == null)
 			return;
-		if (isDoubleChest) {
+		if (isDoubleChest()) {
 			DoubleChest dc = (DoubleChest) inv.getHolder();
 			if (dc == null)
 				return;
@@ -413,7 +417,7 @@ public class Account extends BankingEntity {
 	}
 
 	public String getDefaultChestName() {
-		return Utils.colorize(getDefaultName() + ChatColor.GRAY + " (#" + getID() + ")");
+		return String.format(DEFAULT_CHEST_NAME, getOwner().getName(), getID());
 	}
 
 	/**
@@ -422,7 +426,7 @@ public class Account extends BankingEntity {
 	 * @return the default name of this account.
 	 */
 	public String getDefaultName() {
-		return ChatColor.DARK_GREEN + getOwner().getName() + "'s Account";
+		return String.format(DEFAULT_NAME, getOwner().getName());
 	}
 
 	public void updateName() {
@@ -652,6 +656,6 @@ public class Account extends BankingEntity {
 
 	@Override
 	public int hashCode() {
-		return getID() != -1 ? getID() : Objects.hash(owner, coowners, bank, location, name);
+		return getID() != -1 ? getID() : Objects.hash(owner, coowners, bank, chestLocation, name);
 	}
 }

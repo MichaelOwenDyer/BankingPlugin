@@ -3,6 +3,7 @@ package com.monst.bankingplugin.utils;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.geo.selections.Selection;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -21,13 +22,20 @@ public class BankRepository extends Observable implements Repository<Bank> {
         this.plugin = plugin;
     }
 
+    @Override
+    public Bank getAt(ChestLocation chestLocation) {
+		for (Map.Entry<Selection, Bank> selectionBankPair : bankSelectionMap.entrySet())
+			if (selectionBankPair.getKey().contains(chestLocation))
+				return selectionBankPair.getValue();
+		return null;
+	}
+
     /**
 	 * Gets the {@link Bank} at a given location
 	 *
 	 * @param location {@link Location} of the bank
 	 * @return Bank at the given location or <b>null</b> if no bank is found there
 	 */
-    @Override
 	public Bank getAt(Location location) {
 		for (Map.Entry<Selection, Bank> selectionBankPair : bankSelectionMap.entrySet())
 			if (selectionBankPair.getKey().contains(location))

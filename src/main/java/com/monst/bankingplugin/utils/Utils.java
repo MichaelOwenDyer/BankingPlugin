@@ -244,9 +244,8 @@ public class Utils {
 
 		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) b.getState().getBlockData();
 
-		if (data.getType() == Type.SINGLE) {
+		if (data.getType() == Type.SINGLE)
 			return null;
-		}
 
 		BlockFace neighborFacing;
 		switch (data.getFacing()) {

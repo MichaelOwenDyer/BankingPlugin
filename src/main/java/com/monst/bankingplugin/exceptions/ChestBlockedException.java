@@ -1,9 +1,9 @@
 package com.monst.bankingplugin.exceptions;
 
-public class NotEnoughSpaceException extends Exception {
+public class ChestBlockedException extends Exception {
     private static final long serialVersionUID = 3718475607700458355L;
 
-    public NotEnoughSpaceException(String message) {
+    public ChestBlockedException(String message) {
         super(message);
     }
 }

@@ -44,7 +44,7 @@ public class AccountRecoveryGUI extends AccountListGUI {
     }
 
     private List<String> getRecoveryLore(Account account) {
-        String worldName = account.getLocation().getWorld() == null ? "" : " in \"" + account.getLocation().getWorld().getName() + "\"";
+        String worldName = account.getChestLocation().getWorld() == null ? "" : " in \"" + account.getChestLocation().getWorld().getName() + "\"";
         return wordWrapAll(40,
                 "Account ID: " + ChatColor.DARK_GRAY + account.getID(),
                 "Owner: " + account.getOwnerDisplayName(),

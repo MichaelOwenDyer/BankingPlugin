@@ -3,6 +3,7 @@ package com.monst.bankingplugin.commands.account;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.gui.AccountRecoveryGUI;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -67,7 +68,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
 
         Account newAccount = Account.clone(toMigrate);
         newAccount.setBank(newBank);
-        newAccount.setLocation(newLocation);
+        newAccount.setChestLocation(ChestLocation.from(b));
 
         AccountRecoverEvent event = new AccountRecoverEvent(p, newAccount, newLocation);
         Bukkit.getPluginManager().callEvent(event);

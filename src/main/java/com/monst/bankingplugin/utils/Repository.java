@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.banking.BankingEntity;
-import org.bukkit.Location;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -13,7 +13,7 @@ public interface Repository<O extends BankingEntity> {
 
     Set<O> getAll();
 
-    O getAt(Location location);
+    O getAt(ChestLocation location);
 
     /**
      * Gets all banks on the server that fulfill a certain {@link Predicate}
