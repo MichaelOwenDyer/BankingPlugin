@@ -1,45 +1,51 @@
 package com.monst.bankingplugin.geo.locations;
 
-import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.exceptions.AccountNotFoundException;
+import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.ChestBlockedException;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector3D;
-import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.utils.AccountRepository;
+import com.monst.bankingplugin.utils.BankRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
+import org.bukkit.inventory.Inventory;
+
+import java.util.Arrays;
+import java.util.Iterator;
 
 public abstract class ChestLocation implements Iterable<Location> {
 
-    public static ChestLocation from(Block b) {
-        Location[] locations = Utils.getChestLocations(((Chest) b.getState()).getInventory().getHolder());
-        if (locations.length > 1)
-            return from(locations[0], locations[1]);
-        return from(locations[0]);
-    }
+    private static final BankRepository BANK_REPO = BankingPlugin.getInstance().getBankRepository();
+    private static final AccountRepository ACCOUNT_REPO = BankingPlugin.getInstance().getAccountRepository();
 
-    public static ChestLocation from(Location loc1, Location loc2) {
-        World world = loc1.getWorld();
+    public static ChestLocation from(Chest c) {
+        World world = c.getWorld();
         if (world == null)
             throw new IllegalArgumentException("World must not be null!");
-        BlockVector3D v1 = BlockVector3D.fromLocation(loc1);
-        BlockVector3D v2 = BlockVector2D.fromLocation(loc2).toBlockVector3D(v1.getY());
-        if (!v1.isAdjacent(v2))
-            throw new IllegalArgumentException("Blocks must be adjacent to one another!");
-        if (v1.equals(v2))
-            return new SingleChestLocation(world, v1);
-        return new DoubleChestLocation(world, Utils.lesser(v1, v2), Utils.greater(v1, v2).toBlockVector2D());
+        BlockVector3D[] locations = Utils.getChestCoordinates(c);
+        if (locations.length == 1)
+            return new SingleChestLocation(world, locations[0]);
+        Arrays.sort(locations);
+        return new DoubleChestLocation(world, locations[0], locations[1]);
     }
 
-    public static ChestLocation from(Location loc) {
-        if (loc.getWorld() == null)
+    public static SingleChestLocation single(Chest c) {
+        World world = c.getWorld();
+        if (world == null)
             throw new IllegalArgumentException("World must not be null!");
-        return new SingleChestLocation(loc.getWorld(), BlockVector3D.fromLocation(loc));
+        return new SingleChestLocation(world, BlockVector3D.fromLocation(c.getLocation()));
     }
 
-    World world;
-    BlockVector3D v1;
+    final World world;
+    final BlockVector3D v1;
 
     ChestLocation(World world, BlockVector3D v1) {
         this.world = world;
@@ -58,14 +64,42 @@ public abstract class ChestLocation implements Iterable<Location> {
         return world;
     }
 
-    public boolean isBlocked() {
-        for (Location chest : this)
-            if (!Utils.isTransparent(chest.getBlock().getRelative(BlockFace.UP)))
-                return false;
-        return true;
+    public Bank getBank() throws BankNotFoundException {
+        return BANK_REPO.getAt(this);
     }
 
-    public boolean isAt(Location loc) {
+    public Account getAccount() throws AccountNotFoundException {
+        return ACCOUNT_REPO.getAt(this);
+    }
+
+    /**
+     * Checks to see if the chest is blocked
+     *
+     * @return true if the chest is blocked and cannot be opened.
+     * @see Utils#isTransparent(Block)
+     */
+    public boolean isBlocked() {
+        try {
+            checkSpaceAbove();
+        } catch (ChestBlockedException e) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Ensures that the account chest is able to be opened.
+     *
+     * @throws ChestBlockedException if the chest cannot be opened.
+     * @see Utils#isTransparent(Block)
+     */
+    public void checkSpaceAbove() throws ChestBlockedException {
+        for (Location chest : this)
+            if (!Utils.isTransparent(chest.getBlock().getRelative(BlockFace.UP)))
+                throw new ChestBlockedException(chest.getBlock());
+    }
+
+    public boolean contains(Location loc) {
         if (!world.equals(loc.getWorld()))
             return false;
         BlockVector3D bv = BlockVector3D.fromLocation(loc);
@@ -75,16 +109,23 @@ public abstract class ChestLocation implements Iterable<Location> {
         return false;
     }
 
-    public boolean isIn(Selection sel) {
-        if (!world.equals(sel.getWorld()))
-            return false;
-        for (Location chest : this)
-            if (!sel.contains(BlockVector3D.fromLocation(chest)))
-                return false;
-        return true;
+    public Iterator<Location> iterator() {
+        return Arrays.asList(getLocations()).iterator();
+    }
+
+    public boolean isSingle() {
+        return getSize() == 1;
+    }
+
+    public boolean isDouble() {
+        return getSize() == 2;
     }
 
     public abstract Location getTeleportLocation();
+
+    public abstract Inventory findInventory() throws ChestNotFoundException;
+
+    public abstract Location[] getLocations();
 
     public abstract byte getSize();
 

@@ -2,11 +2,9 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.geo.selections.Selection;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,9 +22,9 @@ public class BankRepository extends Observable implements Repository<Bank> {
 
     @Override
     public Bank getAt(ChestLocation chestLocation) {
-		for (Map.Entry<Selection, Bank> selectionBankPair : bankSelectionMap.entrySet())
-			if (selectionBankPair.getKey().contains(chestLocation))
-				return selectionBankPair.getValue();
+		for (Map.Entry<Selection, Bank> entry : bankSelectionMap.entrySet())
+			if (entry.getKey().contains(chestLocation))
+				return entry.getValue();
 		return null;
 	}
 
@@ -37,9 +35,9 @@ public class BankRepository extends Observable implements Repository<Bank> {
 	 * @return Bank at the given location or <b>null</b> if no bank is found there
 	 */
 	public Bank getAt(Location location) {
-		for (Map.Entry<Selection, Bank> selectionBankPair : bankSelectionMap.entrySet())
-			if (selectionBankPair.getKey().contains(location))
-				return selectionBankPair.getValue();
+		for (Map.Entry<Selection, Bank> entry : bankSelectionMap.entrySet())
+			if (entry.getKey().contains(location))
+				return entry.getValue();
 		return null;
     }
 
@@ -121,18 +119,4 @@ public class BankRepository extends Observable implements Repository<Bank> {
 		return overlappingSelections;
 	}
 
-	/**
-	 * Gets the bank limits of a certain player, to see if the player is allowed to create another bank.
-	 */
-	@Override
-	public int getLimit(Player player) {
-		return (int) Utils.getLimit(player, Permissions.BANK_NO_LIMIT, Config.defaultBankLimit);
-	}
-
-	/**
-	 * Gets the bank volume limit of a certain player, to see if the player is allowed to create a bank of a certain size.
-	 */
-	public static long getVolumeLimit(Player player) {
-		return Utils.getLimit(player, Permissions.BANK_NO_SIZE_LIMIT, Config.maximumBankVolume);
-	}
 }

@@ -109,7 +109,14 @@ public abstract class Selection {
 				getMinZ() > sel.getMaxZ() || getMaxZ() < sel.getMinZ();
 	}
 
-	public abstract boolean contains(ChestLocation loc);
+	public boolean contains(ChestLocation loc) {
+		if (!getWorld().equals(loc.getWorld()))
+			return false;
+		for (Location chest : loc)
+			if (!contains(BlockVector3D.fromLocation(chest)))
+				return false;
+		return true;
+	}
 
 	/**
 	 * Returns true based on whether this selection contains the {@link Location},

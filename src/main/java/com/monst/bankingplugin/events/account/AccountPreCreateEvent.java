@@ -10,7 +10,7 @@ import java.util.Arrays;
  * {@link com.monst.bankingplugin.commands.account.AccountCreate} command.
  */
 public class AccountPreCreateEvent extends SingleAccountEvent implements Cancellable {
-	
+
 	private boolean cancelled;
 	private final String[] args;
 

@@ -5,17 +5,15 @@ import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.Inventory;
@@ -141,7 +139,7 @@ public class Account extends BankingEntity {
 		this.bank = bank;
 		this.chestLocation = loc;
 		this.name = name;
-		this.hasCustomName = getRawName().equals(getDefaultName());
+		this.hasCustomName = Objects.equals(getRawName(), getDefaultName());
 		this.balance = balance;
 		this.prevBalance = prevBalance;
 		this.multiplierStage = multiplierStage;
@@ -168,8 +166,8 @@ public class Account extends BankingEntity {
 		plugin.debugf("Creating account (#%d)", getID());
 
 		try {
-			updateInventory();
-			checkSpaceAbove();
+			inventory = getChestLocation().findInventory();
+			getChestLocation().checkSpaceAbove();
 		} catch (ChestNotFoundException | ChestBlockedException e) {
 			plugin.getAccountRepository().remove(this, Config.removeAccountOnError);
 			if (!Config.removeAccountOnError)
@@ -300,65 +298,33 @@ public class Account extends BankingEntity {
 	}
 
 	/**
-	 * Ensures that the account chest is able to be opened.
-	 *
-	 * @throws ChestBlockedException if the chest cannot be opened.
-	 * @see Utils#isTransparent(Block)
-	 */
-	private void checkSpaceAbove() throws ChestBlockedException {
-		for (Location loc : getChestLocation()) {
-			Block b = loc.getBlock();
-			if (!Utils.isTransparent(b.getRelative(BlockFace.UP)))
-				throw new ChestBlockedException(
-						String.format("No space above chest in world '%s' at location: %d; %d; %d", b.getWorld().getName(),
-								b.getX(), b.getY(), b.getZ())
-				);
-		}
-	}
-
-	/**
-	 * Ensures that the account chest is able to be located and the inventory saved.
-	 *
-	 * @throws ChestNotFoundException If the chest cannot be located.
-	 */
-	public void updateInventory() throws ChestNotFoundException {
-		for (Location loc : getChestLocation()) {
-			Block b = loc.getBlock();
-			if (getInventory(true) == null)
-				throw new ChestNotFoundException(String.format("No chest found in world '%s' at location: %d; %d; %d",
-						b.getWorld().getName(), b.getX(), b.getY(), b.getZ())
-				);
-		}
-	}
-
-	/**
 	 * Gets the {@link Inventory} of this account chest.
 	 *
 	 * @return the account inventory.
-	 * @see #updateInventory()
 	 */
 	public Inventory getInventory(boolean update) {
 		if (!update)
 			return inventory;
-		Block b = getChestLocation().getMinimumLocation().getBlock();
-		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST)
-			return inventory = ((Chest) b.getState()).getInventory();
-		return null;
+		try {
+			return inventory = getChestLocation().findInventory();
+		} catch (ChestNotFoundException e) {
+			return null;
+		}
 	}
 
 	/**
 	 * @return 1 if single chest, 2 if double.
 	 */
 	public byte getSize() {
-		return chestLocation.getSize();
+		return getChestLocation().getSize();
 	}
 
 	public boolean isSingleChest() {
-		return getSize() == 1;
+		return getChestLocation().isSingle();
 	}
 
 	public boolean isDoubleChest() {
-		return getSize() == 2;
+		return getChestLocation().isDouble();
 	}
 
 	public boolean hasCustomName() {

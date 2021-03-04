@@ -2,6 +2,7 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.TransactionFailedException;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
@@ -237,10 +238,13 @@ public class Utils {
 		return stackedList;
 	}
 
-	public static Block getAttachedChestBlock(Block b) {
+	public static <T> boolean assertAllEqual(Collection<T> c) {
+		return c.stream().distinct().count() <= 1;
+	}
 
-		if (!(b.getState() instanceof Chest))
-			return null;
+	public static Block getAttachedChestBlock(Block b) throws ChestNotFoundException {
+
+		getChestAt(b);
 
 		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) b.getState().getBlockData();
 
@@ -268,22 +272,27 @@ public class Utils {
 		return b.getRelative(neighborFacing);
 	}
 
+	public static Chest getChestAt(Block b) throws ChestNotFoundException {
+		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST)
+			return ((Chest) b.getState());
+		throw new ChestNotFoundException(b);
+	}
+
 	/**
 	 * Get a set of locations of the inventory
-	 * @param ih The inventory holder to get the locations of
+	 * @param chest the single or double chest to get the locations of
 	 * @return A set of 1 or 2 locations
 	 */
-	public static Location[] getChestLocations(InventoryHolder ih) {
-		Location[] chestLocations;
+	public static BlockVector3D[] getChestCoordinates(Chest chest) {
+		InventoryHolder ih = chest.getInventory().getHolder();
 		if (ih instanceof DoubleChest) {
 			DoubleChest dc = (DoubleChest) ih;
-			chestLocations = new Location[] {
-					((Chest) dc.getLeftSide()).getLocation(),
-					((Chest) dc.getRightSide()).getLocation()
+			return new BlockVector3D[] {
+					BlockVector3D.fromLocation(((Chest) dc.getLeftSide()).getLocation()),
+					BlockVector3D.fromLocation(((Chest) dc.getRightSide()).getLocation())
 			};
 		} else
-			chestLocations = new Location[] { ih.getInventory().getLocation() };
-		return chestLocations;
+			return new BlockVector3D[] { BlockVector3D.fromLocation(ih.getInventory().getLocation()) };
 	}
 
 	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {
@@ -326,7 +335,14 @@ public class Utils {
 		return (int) getLimit(player, Permissions.BANK_NO_LIMIT, Config.defaultBankLimit);
 	}
 
-	public static long getLimit(Player player, String permission, long defaultLimit) {
+	/**
+	 * Gets the bank volume limit of a certain player, to see if the player is allowed to create a bank of a certain size.
+	 */
+	public static long getBankVolumeLimit(Player player) {
+		return getLimit(player, Permissions.BANK_NO_SIZE_LIMIT, Config.maximumBankVolume);
+	}
+
+	private static long getLimit(Player player, String permission, long defaultLimit) {
 		long limit = 0;
 		boolean useDefault = true;
 

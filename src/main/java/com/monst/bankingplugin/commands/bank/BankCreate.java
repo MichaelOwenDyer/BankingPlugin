@@ -92,7 +92,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
         if (!isAdminBank) {
-            int limit = bankRepo.getLimit(p);
+            int limit = Utils.getBankLimit(p);
             if (limit != -1 && bankRepo.getOwnedBy(p).size() >= limit) {
                 p.sendMessage(LangUtils.getMessage(Message.BANK_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
                 plugin.debug(p.getName() + " has reached their bank limit");

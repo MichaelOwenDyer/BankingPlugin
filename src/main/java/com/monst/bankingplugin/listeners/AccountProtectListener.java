@@ -5,6 +5,9 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
+import com.monst.bankingplugin.exceptions.AccountNotFoundException;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -14,7 +17,6 @@ import com.monst.bankingplugin.utils.Messenger;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -30,7 +32,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 
 /**
  * This listener is intended to prevent all physical damage to {@link Account} chests,
@@ -49,23 +50,31 @@ public class AccountProtectListener extends BankingPluginListener {
 	 */
 	@EventHandler(ignoreCancelled = true)
 	public void onAccountChestBreak(BlockBreakEvent e) {
-		final Block b = e.getBlock();
-
-		if (accountRepo.isAccount(b.getLocation())) {
-			final Account account = accountRepo.getAt(e.getBlock().getLocation());
-			Player p = e.getPlayer();
-
-			if (p.isSneaking() && Utils.hasAxeInHand(p)) {
-				plugin.debugf("%s tries to break %s's account (#%d)",
-						p.getName(), account.getOwner().getName(), account.getID());
-				if (account.isOwner(p) || p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
-					removeAndCreateSmaller(account, b, p);
-					return;
-				}
-			}
-			e.setCancelled(true);
-			e.getPlayer().sendMessage(LangUtils.getMessage(Message.CANNOT_BREAK_ACCOUNT));
+		Chest c;
+		try {
+			c = Utils.getChestAt(e.getBlock());
+		} catch (ChestNotFoundException ex) {
+			return;
 		}
+		ChestLocation chestLocation = ChestLocation.from(c);
+		Account account = null;
+		try {
+			account = accountRepo.getAt(chestLocation);
+		} catch (AccountNotFoundException ex) {
+			return;
+		}
+
+		Player p = e.getPlayer();
+		if (p.isSneaking() && Utils.hasAxeInHand(p)) {
+			plugin.debugf("%s tries to break %s's account (#%d)",
+					p.getName(), account.getOwner().getName(), account.getID());
+			if (account.isOwner(p) || p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
+				removeAndCreateSmaller(account, e.getBlock(), p);
+				return;
+			}
+		}
+		e.setCancelled(true);
+		e.getPlayer().sendMessage(LangUtils.getMessage(Message.CANNOT_BREAK_ACCOUNT));
 	}
 
 	/**
@@ -77,7 +86,7 @@ public class AccountProtectListener extends BankingPluginListener {
 	 * @param p the player who broke the account chest
 	 */
 	@SuppressWarnings("ConstantConditions")
-	private void removeAndCreateSmaller(final Account account, final Block b, final Player p) {
+	private void removeAndCreateSmaller(Account account, Block b, Player p) {
 		Bank bank = account.getBank();
 		double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
 		creationPrice *= bank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
@@ -108,14 +117,17 @@ public class AccountProtectListener extends BankingPluginListener {
 			}
 		}
 
-		if (account.getInventory(true).getHolder() instanceof DoubleChest) {
-			DoubleChest dc = (DoubleChest) account.getInventory(false).getHolder();
-			final Chest l = (Chest) dc.getLeftSide();
-			final Chest r = (Chest) dc.getRightSide();
+		if (account.isDoubleChest()) {
 
-			Location newLocation = b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation();
+			Chest chest;
+			try {
+				chest = Utils.getChestAt(Utils.getAttachedChestBlock(b));
+			} catch (ChestNotFoundException e) {
+				throw new IllegalStateException("Chest could not be found!");
+			}
+
 			Account newAccount = Account.clone(account);
-			newAccount.setChestLocation(newLocation);
+			newAccount.setChestLocation(ChestLocation.single(chest));
 
 			accountRepo.remove(account, false, Callback.of(plugin, result -> {
 				newAccount.create(true);
@@ -131,7 +143,7 @@ public class AccountProtectListener extends BankingPluginListener {
 	/**
 	 * Listens for block place events, and handles the expansion of a small account chest into a large
 	 * account chest.
-	 * {@link Utils#getChestLocations(InventoryHolder)} performs largely the same task as a good portion of this {@link EventHandler},
+	 * {@link Utils#getChestCoordinates(Chest)} performs largely the same task as a good portion of this {@link EventHandler},
 	 * but cannot be used since {@link BlockPlaceEvent}s are fired before the {@link org.bukkit.inventory.InventoryHolder}
 	 * of the new chest has been updated.
 	 * This means that when an account chest is extended and this handler is executed,
@@ -146,10 +158,12 @@ public class AccountProtectListener extends BankingPluginListener {
             return;
         }
 
-		Block otherChest = Utils.getAttachedChestBlock(b);
-
-		if (otherChest == null)
+		Block otherChest;
+		try {
+			otherChest = Utils.getAttachedChestBlock(b);
+		} catch (ChestNotFoundException ex) {
 			return;
+		}
 
 		final Account account = accountRepo.getAt(otherChest.getLocation());
 		if (account == null)

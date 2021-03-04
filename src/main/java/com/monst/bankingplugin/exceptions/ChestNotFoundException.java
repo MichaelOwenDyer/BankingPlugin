@@ -1,9 +1,14 @@
 package com.monst.bankingplugin.exceptions;
 
-public class ChestNotFoundException extends Exception {
-    private static final long serialVersionUID = -6446875473671870708L;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
+import org.bukkit.block.Block;
 
-    public ChestNotFoundException(String message) {
-        super(message);
+public class ChestNotFoundException extends NotFoundException {
+    private static final long serialVersionUID = -6446875473671870708L;
+    public ChestNotFoundException(Block b) {
+        super("chest", b);
+    }
+    public ChestNotFoundException(ChestLocation loc) {
+        super("chest", loc);
     }
 }

@@ -6,6 +6,8 @@ import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
+import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -14,7 +16,7 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -45,7 +47,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return true;
         }
 
-        int limit = accountRepo.getLimit(p);
+        int limit = Utils.getAccountLimit(p);
         if (limit != -1 && accountRepo.getOwnedBy(p).size() >= limit) {
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
             plugin.debug(p.getName() + " has reached their account limit");
@@ -72,23 +74,27 @@ public class AccountCreate extends AccountCommand.SubCommand {
      *                          and become the owner of the account
      * @param b  Block where the account will be located
      */
-    public static void create(Player p, Block b) {
+    public static void create(Player p, Chest c) {
 
-        if (plugin.getAccountRepository().isAccount(b.getLocation())) {
+        if (plugin.getAccountRepository().isAccount(c.getLocation())) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             plugin.debug("Chest is already an account.");
             return;
         }
 
-        ChestLocation accountLocation = ChestLocation.from(b);
-        if (accountLocation.isBlocked()) {
+        ChestLocation chestLocation = null;
+        try {
+            chestLocation = ChestLocation.from(c);
+        } catch (ChestBlockedException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             plugin.debug("Chest is blocked.");
             return;
         }
 
-        Bank bank = plugin.getBankRepository().getAt(accountLocation);
-        if (bank == null) {
+        Bank bank;
+        try {
+            bank = chestLocation.getBank();
+        } catch (BankNotFoundException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             plugin.debug("Chest is not in a bank.");
             return;
@@ -109,7 +115,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return;
         }
 
-        Account account = Account.mint(p, accountLocation);
+        Account account = Account.mint(p, chestLocation);
 
         AccountCreateEvent event = new AccountCreateEvent(p, account);
         Bukkit.getPluginManager().callEvent(event);
@@ -120,7 +126,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         }
 
         double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
-        creationPrice *= accountLocation.getSize();
+        creationPrice *= chestLocation.getSize();
         creationPrice *= bank.isOwner(p) ? 0 : 1;
 
         double balance = plugin.getEconomy().getBalance(p);

@@ -5,13 +5,14 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
 import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.selections.CuboidSelection;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.geo.BlockVector3D;
-import com.monst.bankingplugin.geo.selections.CuboidSelection;
 import com.monst.bankingplugin.utils.BankRepository;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -62,7 +63,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		}
 
 		static long getVolumeLimit(Player p) {
-			return BankRepository.getVolumeLimit(p);
+			return Utils.getBankVolumeLimit(p);
 		}
 
 		static Bank getBank(CommandSender sender, String[] args) {

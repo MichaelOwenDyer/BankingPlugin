@@ -78,7 +78,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 		switch (i) {
 			case 0:
 				return canTP ? (player, info) -> {
-					player.teleport(guiSubject.getChestLocation().setDirection(player.getLocation().getDirection()));
+					player.teleport(guiSubject.getChestLocation().getTeleportLocation().setDirection(player.getLocation().getDirection()));
 					this.close(player);
 				} : null;
 			case 1:

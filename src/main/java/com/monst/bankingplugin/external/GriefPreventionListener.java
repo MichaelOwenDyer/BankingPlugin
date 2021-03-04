@@ -18,7 +18,6 @@ import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -44,7 +43,7 @@ public class GriefPreventionListener extends BankingPluginListener {
         if (!Config.enableGriefPreventionIntegration)
             return;
 
-        for (Location loc : Utils.getChestLocations(e.getAccount().getInventory(true).getHolder()))
+        for (Location loc : e.getAccount().getChestLocation())
 			if (handleForLocation(e.getPlayer(), loc, e)) {
 				e.setCancelled(true);
 				plugin.debug("Account create event cancelled by GriefPrevention");
@@ -68,9 +67,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
 
-	    Block b = e.getNewAccountLocation().getBlock();
-	    Chest chest = (Chest) b.getState();
-	    for (Location loc : Utils.getChestLocations(chest.getInventory().getHolder()))
+	    for (Location loc : e.getNewAccountLocation())
             if (handleForLocation(e.getPlayer(), loc, e)) {
                 e.setCancelled(true);
                 plugin.debug("Account migrate event cancelled by GriefPrevention");
@@ -83,9 +80,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 	    if (!Config.enableGriefPreventionIntegration)
 	        return;
 
-	    Block b = e.getNewAccountLocation().getBlock();
-	    Chest chest = (Chest) b.getState();
-	    for (Location loc : Utils.getChestLocations(chest.getInventory().getHolder()))
+	    for (Location loc : e.getNewAccountLocation())
             if (handleForLocation(e.getPlayer(), loc, e)) {
                 e.setCancelled(true);
                 plugin.debug("Account recover event cancelled by GriefPrevention");

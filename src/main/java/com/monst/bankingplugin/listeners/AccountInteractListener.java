@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.commands.account.*;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -13,9 +14,9 @@ import com.monst.bankingplugin.utils.ClickType.EClickType;
 import com.monst.bankingplugin.utils.ClickType.SetPair;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -39,16 +40,20 @@ public class AccountInteractListener extends BankingPluginListener {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onAccountInteract(PlayerInteractEvent e) {
 
-		Player p = e.getPlayer();
 		Block b = e.getClickedBlock();
-		if (b == null || b.getType() == Material.AIR)
+		if (b == null)
 			return;
+		Chest chest;
+		try {
+			chest = Utils.getChestAt(b);
+		} catch (ChestNotFoundException ex) {
+			return;
+		}
+
+		Player p = e.getPlayer();
 		Account account = accountRepo.getAt(b.getLocation());
 		ClickType<?> clickType = ClickType.getPlayerClickType(p);
-
-		if (!(b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST))
-			return;
-		if (clickType == null && account == null)
+		if (account == null && clickType == null)
 			return;
 
 		if (clickType != null) {
@@ -70,7 +75,7 @@ public class AccountInteractListener extends BankingPluginListener {
 						p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
 						plugin.debug(p.getName() + " does not have permission to create an account on a protected chest.");
 					} else
-						AccountCreate.create(p, b);
+						AccountCreate.create(p, chest);
 					ClickType.removePlayerClickType(p);
 					break;
 
@@ -83,16 +88,15 @@ public class AccountInteractListener extends BankingPluginListener {
 
 				case MIGRATE:
 
-					if (clickType.get() == null)
-						AccountMigrate.migratePartOne(p, Objects.requireNonNull(account));
-					else {
+					if (clickType.get() == null) {
+						Objects.requireNonNull(account);
+						AccountMigrate.migratePartOne(p, account);
+					} else {
 						if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
 							p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED));
 							plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
-						} else {
-							Account toMigrate = Objects.requireNonNull(clickType.get());
-							AccountMigrate.migratePartTwo(p, b, toMigrate);
-						}
+						} else
+							AccountMigrate.migratePartTwo(p, chest, clickType.get());
 						ClickType.removePlayerClickType(p);
 					}
 					break;
@@ -100,7 +104,7 @@ public class AccountInteractListener extends BankingPluginListener {
 				case RECOVER:
 
 					Account toRecover = Objects.requireNonNull(clickType.get());
-					AccountRecover.recover(p, b, toRecover);
+					AccountRecover.recover(p, chest, toRecover);
 					ClickType.removePlayerClickType(p);
 					break;
 
@@ -149,6 +153,7 @@ public class AccountInteractListener extends BankingPluginListener {
 					break;
 			}
 			e.setCancelled(true);
+
 		} else {
 
 			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK))
@@ -183,11 +188,10 @@ public class AccountInteractListener extends BankingPluginListener {
 					return;
 				}
 
-				if (e.isCancelled())
-					e.setCancelled(false);
+				e.setCancelled(false);
 				if (!account.isTrusted(p))
 					p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_OPENED,
-							new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName())
+							new Replacement(Placeholder.PLAYER, account.getOwner().getName())
 					));
 
 				plugin.debugf("%s is opening %s account%s (#%d)",

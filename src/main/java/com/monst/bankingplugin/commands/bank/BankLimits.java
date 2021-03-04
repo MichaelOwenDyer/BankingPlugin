@@ -5,6 +5,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -28,7 +29,7 @@ public class BankLimits extends BankCommand.SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         int banksUsed = bankRepo.getOwnedBy(p).size();
-        int allowedBanks = bankRepo.getLimit(p);
+        int allowedBanks = Utils.getBankLimit(p);
         long allowedVolume = getVolumeLimit(p);
         String bankLimit = allowedBanks < 0 ? "∞" : "" + allowedBanks;
         String volumeLimit = allowedVolume < 0 ? "∞" : "" + allowedVolume;

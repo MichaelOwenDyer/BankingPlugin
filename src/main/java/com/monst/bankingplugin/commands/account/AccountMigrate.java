@@ -5,6 +5,9 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.events.account.AccountPreMigrateEvent;
+import com.monst.bankingplugin.exceptions.AccountNotFoundException;
+import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -12,9 +15,8 @@ import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -77,30 +79,36 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
     }
 
-    public static void migratePartTwo(Player p, Block b, Account toMigrate) {
-        Location newLocation = b.getLocation();
-        if (accountRepo.isAccount(newLocation)) {
-            if (toMigrate.equals(accountRepo.getAt(newLocation))) {
+    public static void migratePartTwo(Player p, Chest c, Account toMigrate) {
+        ChestLocation chestLocation = ChestLocation.from(c);
+        try {
+            if (toMigrate.equals(accountRepo.getAt(chestLocation))) {
                 plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
                 p.sendMessage(LangUtils.getMessage(Message.SAME_CHEST));
-                return;
+            } else {
+                plugin.debugf("%s clicked an already existing account chest to migrate to", p.getName());
+                p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             }
-            plugin.debugf("%s clicked an already existing account chest to migrate to", p.getName());
-            p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             return;
-        }
-        ChestLocation accountLocation = ChestLocation.from(b);
-        if (accountLocation.isBlocked()) {
+        } catch (AccountNotFoundException ignored) {}
+
+        try {
+            chestLocation.checkSpaceAbove();
+        } catch (ChestBlockedException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             plugin.debug("Chest is blocked.");
             return;
         }
-        Bank newBank = plugin.getBankRepository().getAt(accountLocation); // May or may not be the same as previous bank
-        if (newBank == null) {
+
+        Bank newBank;
+        try {
+            newBank = chestLocation.getBank();
+        } catch (BankNotFoundException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             plugin.debug("Chest is not in a bank.");
             return;
         }
+
         if (!toMigrate.getBank().equals(newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_BANK));
             plugin.debugf("%s does not have permission to migrate their account to another bank.", p.getName());
@@ -109,9 +117,9 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         Account newAccount = Account.clone(toMigrate);
         newAccount.setBank(newBank);
-        newAccount.setChestLocation(accountLocation);
+        newAccount.setChestLocation(chestLocation);
 
-        AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, newLocation);
+        AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, chestLocation);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             plugin.debug("No permission to create account on a protected chest.");
@@ -123,7 +131,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         double creationPrice = newBank.get(BankField.ACCOUNT_CREATION_PRICE);
         creationPrice *= (newBank.isOwner(p) ? 0 : 1);
-        creationPrice *= accountLocation.getSize();
+        creationPrice *= chestLocation.getSize();
 
         double reimbursement = oldBank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ?
                 oldBank.get(BankField.ACCOUNT_CREATION_PRICE) :

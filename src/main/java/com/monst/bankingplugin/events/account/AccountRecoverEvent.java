@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.banking.account.Account;
-import org.bukkit.Location;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
@@ -12,14 +12,14 @@ import org.bukkit.event.Cancellable;
 public class AccountRecoverEvent extends SingleAccountEvent implements Cancellable {
 
     private boolean cancelled;
-    private final Location newAccountLocation;
+    private final ChestLocation newAccountLocation;
 
-    public AccountRecoverEvent(Player player, Account account, Location newAccountLocation) {
+    public AccountRecoverEvent(Player player, Account account, ChestLocation newAccountLocation) {
         super(player, account);
         this.newAccountLocation = newAccountLocation;
     }
 
-    public Location getNewAccountLocation() {
+    public ChestLocation getNewAccountLocation() {
         return newAccountLocation;
     }
 
