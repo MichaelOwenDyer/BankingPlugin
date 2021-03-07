@@ -77,8 +77,9 @@ public class BankConfig {
 		BankField.stream(Double.class).forEach(field -> { // Setters and formatters for the rest of the fields of type Double
 			SETTERS.putIfAbsent(field, (instance, value) -> {
 				try {
-					field.getLocalVariable().set(instance, BigDecimal.valueOf(Double.parseDouble(Utils.removePunctuation(value, '.')))
-							.abs().setScale(2, RoundingMode.HALF_UP).doubleValue());
+					field.getLocalVariable().set(instance,
+							Utils.scale(BigDecimal.valueOf(Double.parseDouble(Utils.removePunctuation(value, '.')))
+							.abs()).doubleValue());
 				} catch (IllegalAccessException ignored) {}
 			});
 			FORMATTERS.putIfAbsent(field, instance -> {
@@ -240,9 +241,9 @@ public class BankConfig {
 			else
 				SETTERS.get(field).accept(this, value);
 
-			callback.callSyncResult(getFormatted(field));
+			Callback.yield(callback, getFormatted(field));
 		} catch (NumberFormatException | DateTimeParseException e) {
-			callback.callSyncError(new ArgumentParseException(field.getDataType(), value));
+			Callback.error(callback, new ArgumentParseException(field.getDataType(), value));
 		} catch (IllegalAccessException ignored) {}
 		return true;
 	}

@@ -20,6 +20,7 @@ import org.bukkit.inventory.Inventory;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 
 public abstract class ChestLocation implements Iterable<Location> {
 
@@ -27,29 +28,43 @@ public abstract class ChestLocation implements Iterable<Location> {
     private static final AccountRepository ACCOUNT_REPO = BankingPlugin.getInstance().getAccountRepository();
 
     public static ChestLocation from(Chest c) {
-        World world = c.getWorld();
-        if (world == null)
-            throw new IllegalArgumentException("World must not be null!");
         BlockVector3D[] locations = Utils.getChestCoordinates(c);
         if (locations.length == 1)
-            return new SingleChestLocation(world, locations[0]);
+            return new SingleChestLocation(c.getWorld(), locations[0]);
         Arrays.sort(locations);
-        return new DoubleChestLocation(world, locations[0], locations[1]);
+        return new DoubleChestLocation(c.getWorld(), locations[0], locations[1]);
     }
 
     public static SingleChestLocation single(Chest c) {
-        World world = c.getWorld();
-        if (world == null)
-            throw new IllegalArgumentException("World must not be null!");
-        return new SingleChestLocation(world, BlockVector3D.fromLocation(c.getLocation()));
+        return new SingleChestLocation(c.getWorld(), BlockVector3D.fromLocation(c.getLocation()));
+    }
+
+    public static ChestLocation from(World world, BlockVector3D v1) {
+        return new SingleChestLocation(world, v1);
+    }
+
+    public static ChestLocation from(World world, BlockVector3D v1, BlockVector3D v2) {
+        if (Objects.equals(v1, v2))
+            return from(world, v2);
+        return new DoubleChestLocation(world, v1, v2);
     }
 
     final World world;
     final BlockVector3D v1;
 
     ChestLocation(World world, BlockVector3D v1) {
+        if (world == null)
+            throw new IllegalArgumentException("World must not be null!");
         this.world = world;
         this.v1 = v1;
+    }
+
+    public BlockVector3D getMinimumBlock() {
+        return v1;
+    }
+
+    public BlockVector3D getMaximumBlock() {
+        return getMinimumBlock();
     }
 
     public Location getMinimumLocation() {

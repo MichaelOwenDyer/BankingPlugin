@@ -41,7 +41,7 @@
 		<junit.version>5.7.0</junit.version>
 		<worldguardwrapper.version>1.1.9-SNAPSHOT</worldguardwrapper.version>
 		<canvas.version>1.6.0-SNAPSHOT</canvas.version>
-		<hikaricp.version>3.4.5</hikaricp.version>
+		<hikaricp.version>4.0.3</hikaricp.version>
 		<slf4j-jdk14.version>2.0.0-alpha1</slf4j-jdk14.version>
 		<bstats.version>1.7</bstats.version>
 		<polylabel.version>1.2.1</polylabel.version>
@@ -120,19 +120,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
-		<dependency>
-			<groupId>com.querydsl</groupId>
-			<artifactId>querydsl-apt</artifactId>
-			<version>${querydsl.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.querydsl</groupId>
-			<artifactId>querydsl-jpa</artifactId>
-			<version>${querydsl.version}</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -189,6 +176,12 @@
 			<version>${mxparser.version}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.codejargon</groupId>
+			<artifactId>fluentjdbc</artifactId>
+			<version>1.8.5</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -232,6 +225,7 @@
 							<include>org.bstats</include>
 							<include>com.monst:polylabel-java</include>
 							<include>org.mariuszgromada.math:MathParser.org-mXparser</include>
+							<include>org.codejargon:fluentjdbc</include>
 						</includes>
 					</artifactSet>
 					<relocations>
@@ -262,6 +256,10 @@
 						<relocation>
 							<pattern>org.mariuszgromada.math.mxparser</pattern>
 							<shadedPattern>com.monst.bankingplugin.dependencies.mxparser</shadedPattern>
+						</relocation>
+						<relocation>
+							<pattern>org.codejargon.fluentjdbc</pattern>
+							<shadedPattern>com.monst.bankingplugin.dependencies.fluentjdbc</shadedPattern>
 						</relocation>
 					</relocations>
 					<filters>

@@ -12,7 +12,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -105,8 +104,7 @@ public class AccountRepository extends Observable implements Repository<Account>
         } else {
 			account.getBank().addAccount(account); // Account is otherwise added to the bank in Database
 			account.getBank().notifyObservers();
-			if (callback != null)
-				callback.callSyncResult(account.getID());
+			Callback.yield(callback, account.getID());
         }
         notifyObservers();
     }
@@ -128,8 +126,8 @@ public class AccountRepository extends Observable implements Repository<Account>
 
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);
-        } else if (callback != null)
-        	callback.callSyncResult(null);
+        } else
+        	Callback.yield(callback);
         notifyObservers();
     }
 
@@ -179,7 +177,7 @@ public class AccountRepository extends Observable implements Repository<Account>
 				itemValue = itemValue.multiply(BigDecimal.valueOf(item.getAmount()));
 			sum = sum.add(itemValue);
 		}
-		return sum.setScale(2, RoundingMode.HALF_EVEN);
+		return Utils.scale(sum);
 	}
 
 	private BigDecimal getWorth(ItemStack item) {

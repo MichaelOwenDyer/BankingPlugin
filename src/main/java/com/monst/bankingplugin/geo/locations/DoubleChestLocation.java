@@ -19,6 +19,10 @@ class DoubleChestLocation extends ChestLocation {
         this.v2 = v2;
     }
 
+    public BlockVector3D getMaximumBlock() {
+        return v2;
+    }
+
     public Location getMaximumLocation() {
         return v2.toLocation(world);
     }

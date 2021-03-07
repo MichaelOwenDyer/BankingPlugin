@@ -41,11 +41,25 @@ public abstract class Callback<T> {
         plugin.debug(throwable);
     }
 
-    public final void callSyncResult(final T result) {
+    public static void yield(Callback<?> callback) {
+        Callback.yield(callback, null);
+    }
+
+    public static <T> void yield(Callback<T> callback, T result) {
+        if (callback != null)
+            callback.yield(result);
+    }
+
+    public static void error(Callback<?> callback, Throwable error) {
+        if (callback != null)
+            callback.error(error);
+    }
+
+    protected final void yield(final T result) {
         Utils.bukkitRunnable(() -> onResult(result)).runTask(plugin);
     }
 
-    public final void callSyncError(final Throwable throwable) {
+    public final void error(final Throwable throwable) {
         Utils.bukkitRunnable(() -> onError(throwable)).runTask(plugin);
     }
 

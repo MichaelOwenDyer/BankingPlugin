@@ -3,12 +3,14 @@ package com.monst.bankingplugin.banking;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.utils.Observable;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * This class represents either a {@link Bank} or an {@link Account}.
@@ -33,14 +35,12 @@ public abstract class BankingEntity extends Observable implements Ownable, Namea
 		if (p != null)
 			coowners.add(p);
 		notifyObservers();
-		plugin.getDatabase().addCoowner(this, p, null);
 	}
 
 	public void untrustPlayer(OfflinePlayer p) {
 		if (p != null)
 			coowners.remove(p);
 		notifyObservers();
-		plugin.getDatabase().removeCoowner(this, p, null);
 	}
 
 	/**
@@ -53,6 +53,10 @@ public abstract class BankingEntity extends Observable implements Ownable, Namea
 		if (!owner.hasPlayedBefore())
 			return ChatColor.DARK_GRAY + owner.getUniqueId().toString();
 		return owner.isOnline() ? owner.getPlayer().getDisplayName() : owner.getName();
+	}
+
+	public UUID getOwnerUUID() {
+		return Utils.nonNull(owner, OfflinePlayer::getUniqueId, () -> null);
 	}
 
 	@Override
@@ -72,7 +76,7 @@ public abstract class BankingEntity extends Observable implements Ownable, Namea
 
 	@Override
 	public void setID(Integer id) {
-		if (this.id == -1)
+		if (!hasID())
 			this.id = id;
 	}
 

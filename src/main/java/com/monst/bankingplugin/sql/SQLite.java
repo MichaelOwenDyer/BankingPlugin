@@ -1,24 +1,15 @@
 package com.monst.bankingplugin.sql;
 
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.utils.Utils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class SQLite extends Database {
-
-    public SQLite(BankingPlugin plugin) {
-        super(plugin);
-    }
 
     @Override
     HikariDataSource getDataSource() {
@@ -32,12 +23,11 @@ public class SQLite extends Database {
             return null;
         }
 
-        File folder = plugin.getDataFolder();
-        File dbFile = new File(folder, "banking.db");
+        Path dbFile = plugin.getDataFolder().toPath().resolve("banking.db");
 
-        if (!dbFile.exists()) {
+        if (!Files.exists(dbFile)) {
             try {
-                dbFile.createNewFile();
+                Files.createFile(dbFile);
             } catch (IOException ex) {
                 plugin.getLogger().severe("Failed to create database file.");
                 plugin.debug("Failed to create database file.");
@@ -55,30 +45,16 @@ public class SQLite extends Database {
 
     /**
      * Vacuums the database to reduce file size
-     *
-     * @param async Whether the call should be executed asynchronously
      */
-    public void vacuum(boolean async) {
-        BukkitRunnable runnable = Utils.bukkitRunnable(() -> {
-            try (Connection con = dataSource.getConnection(); Statement s = con.createStatement()) {
-                s.executeUpdate("VACUUM");
-                plugin.debug("Vacuumed SQLite database.");
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Failed to vacuum database.");
-                plugin.debug("Failed to vacuum database.");
-                plugin.debug(e);
-            }
-        });
-        if (async)
-            runnable.runTaskAsynchronously(plugin);
-        else
-            runnable.run();
+    public void vacuum() {
+        query.update("VACUUM").run();
+        plugin.debug("Vacuumed SQLite database.");
     }
 
     @Override
-    String getQueryCreateTable(String tableName, String... columns) {
+    String getQueryCreateTable(String tableName, String... attributes) {
         return "CREATE TABLE IF NOT EXISTS " + tableName +
-                Arrays.stream(columns).collect(Collectors.joining(", ", " (", ")"));
+                Arrays.stream(attributes).collect(Collectors.joining(", ", " (", ")"));
     }
 
     @Override
@@ -141,9 +117,11 @@ public class SQLite extends Database {
     			"RemainingOfflinePayoutsUntilReset INTEGER NOT NULL",
 
 				"World TEXT NOT NULL",
-    			"X INTEGER NOT NULL",
-    			"Y INTEGER NOT NULL",
-    			"Z INTEGER NOT NULL"
+                "Y INTEGER NOT NULL",
+    			"X1 INTEGER NOT NULL",
+    			"Z1 INTEGER NOT NULL",
+                "X2 INTEGER",
+                "Z2 INTEGER"
         );
     }
 

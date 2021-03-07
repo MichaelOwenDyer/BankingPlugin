@@ -17,6 +17,7 @@ import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -25,6 +26,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -73,6 +75,10 @@ public class Utils {
 
 	public static String format(BigDecimal bd) {
 		return format(bd.doubleValue());
+	}
+
+	public static BigDecimal scale(BigDecimal bd) {
+		return bd.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
 	public static Location blockifyLocation(Location loc) {
@@ -191,10 +197,10 @@ public class Utils {
 
 		EconomyResponse response = BankingPlugin.getInstance().getEconomy().depositPlayer(recipient, amount);
 		if (response.transactionSuccess()) {
-			callback.callSyncResult(null);
+			Callback.yield(callback);
 			return;
 		}
-		callback.callSyncError(new TransactionFailedException(response.errorMessage));
+		Callback.error(callback, new TransactionFailedException(response.errorMessage));
 	}
 
 	public static boolean withdrawPlayer(OfflinePlayer payer, double amount, Callback<Void> callback) {
@@ -205,10 +211,10 @@ public class Utils {
 
 		EconomyResponse response = BankingPlugin.getInstance().getEconomy().withdrawPlayer(payer, amount);
 		if (response.transactionSuccess()) {
-			callback.callSyncResult(null);
+			Callback.yield(callback);
 			return true;
 		}
-		callback.callSyncError(new TransactionFailedException(response.errorMessage));
+		Callback.error(callback, new TransactionFailedException(response.errorMessage));
 		return false;
 	}
 
@@ -278,6 +284,10 @@ public class Utils {
 		throw new ChestNotFoundException(b);
 	}
 
+	public static Chest getChestHolding(Inventory inv) throws ChestNotFoundException {
+		return getChestAt(inv.getLocation().getBlock());
+	}
+
 	/**
 	 * Get a set of locations of the inventory
 	 * @param chest the single or double chest to get the locations of
@@ -292,7 +302,7 @@ public class Utils {
 					BlockVector3D.fromLocation(((Chest) dc.getRightSide()).getLocation())
 			};
 		} else
-			return new BlockVector3D[] { BlockVector3D.fromLocation(ih.getInventory().getLocation()) };
+			return new BlockVector3D[] { BlockVector3D.fromLocation(chest.getLocation()) };
 	}
 
 	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {

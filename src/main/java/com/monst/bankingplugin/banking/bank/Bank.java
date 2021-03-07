@@ -233,7 +233,7 @@ public class Bank extends BankingEntity {
 			return 0;
 		BigDecimal leftSide = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
 		BigDecimal rightSide = BigDecimal.valueOf((orderedBalances.size() + 1) / orderedBalances.size());
-		return leftSide.subtract(rightSide).setScale(2, RoundingMode.HALF_EVEN).doubleValue();
+		return Utils.scale(leftSide.subtract(rightSide)).doubleValue();
 	}
 
 	/**
@@ -257,6 +257,18 @@ public class Bank extends BankingEntity {
 			coowners.add(prevOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 		notifyObservers();
+	}
+
+	@Override
+	public void trustPlayer(OfflinePlayer p) {
+		super.trustPlayer(p);
+		plugin.getDatabase().addCoOwner(this, p, null, true);
+	}
+
+	@Override
+	public void untrustPlayer(OfflinePlayer p) {
+		super.trustPlayer(p);
+		plugin.getDatabase().removeCoOwner(this, p, null, true);
 	}
 
 	@Override
@@ -292,7 +304,6 @@ public class Bank extends BankingEntity {
 				+ "Number of accounts: " + getAccounts().size() + ", "
 				+ "Total value: " + Utils.format(getTotalValue()) + ", "
 				+ "Equality score: " + getGiniCoefficient() + ", "
-				+ "Selection type: " + getSelection().getType() + ", "
 				+ "Location: " + getSelection().getCoordinates();
 	}
 

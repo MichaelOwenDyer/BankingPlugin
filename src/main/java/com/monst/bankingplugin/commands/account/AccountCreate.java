@@ -72,19 +72,19 @@ public class AccountCreate extends AccountCommand.SubCommand {
      *
      * @param p  Player who executed the command will receive the message
      *                          and become the owner of the account
-     * @param b  Block where the account will be located
+     * @param c  Chest where the account will be located
      */
     public static void create(Player p, Chest c) {
+        ChestLocation chestLocation = ChestLocation.from(c);
 
-        if (plugin.getAccountRepository().isAccount(c.getLocation())) {
+        if (plugin.getAccountRepository().isAccount(chestLocation)) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             plugin.debug("Chest is already an account.");
             return;
         }
 
-        ChestLocation chestLocation = null;
         try {
-            chestLocation = ChestLocation.from(c);
+            chestLocation.checkSpaceAbove();
         } catch (ChestBlockedException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             plugin.debug("Chest is blocked.");

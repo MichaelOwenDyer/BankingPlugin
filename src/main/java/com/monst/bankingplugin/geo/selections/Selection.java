@@ -17,10 +17,6 @@ public abstract class Selection {
 		this.world = world;
 	}
 
-	public enum SelectionType {
-		CUBOID, POLYGONAL
-	}
-
 	/**
 	 * @return the point on the bounding box of this {@link Selection} with the lowest x, y, and z values.
 	 */
@@ -145,11 +141,12 @@ public abstract class Selection {
 	 */
 	public abstract Collection<BlockVector3D> getCorners();
 
-	/**
-	 * Returns what type of selection this is.
-	 *
-	 * @return SelectionType.CUBOID or SelectionType.POLYGONAL
-	 */
-	public abstract SelectionType getType();
+	public boolean isCuboid() {
+		return false;
+	}
+
+	public boolean isPolygonal() {
+		return false;
+	}
 
 }

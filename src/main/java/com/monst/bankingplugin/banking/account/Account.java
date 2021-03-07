@@ -19,7 +19,6 @@ import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.Inventory;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -104,8 +103,8 @@ public class Account extends BankingEntity {
 				bank,
 				loc,
 				name,
-				balance.setScale(2, RoundingMode.HALF_EVEN),
-				prevBalance.setScale(2, RoundingMode.HALF_EVEN),
+				Utils.scale(balance),
+				Utils.scale(balance),
 				multiplierStage,
 				delayUntilNextPayout,
 				remainingOfflinePayouts,
@@ -242,7 +241,7 @@ public class Account extends BankingEntity {
 	public void setBalance(BigDecimal newBalance) {
 		if (newBalance == null || newBalance.signum() < 0)
 			return;
-		balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
+		balance = Utils.scale(newBalance);
 		notifyObservers();
 		getBank().notifyObservers();
 		plugin.getAccountRepository().notifyObservers();
@@ -576,6 +575,18 @@ public class Account extends BankingEntity {
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 		notifyObservers();
 		plugin.getAccountRepository().notifyObservers();
+	}
+
+	@Override
+	public void trustPlayer(OfflinePlayer p) {
+		super.trustPlayer(p);
+		plugin.getDatabase().addCoOwner(this, p, null, true);
+	}
+
+	@Override
+	public void untrustPlayer(OfflinePlayer p) {
+		super.trustPlayer(p);
+		plugin.getDatabase().removeCoOwner(this, p, null, true);
 	}
 
 	@Override

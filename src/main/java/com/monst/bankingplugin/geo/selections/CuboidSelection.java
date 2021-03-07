@@ -145,8 +145,8 @@ public class CuboidSelection extends Selection {
 	}
 
 	@Override
-	public SelectionType getType() {
-		return SelectionType.CUBOID;
+	public boolean isCuboid() {
+		return true;
 	}
 
 	@Override

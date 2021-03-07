@@ -31,7 +31,7 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
                 return;
             }
 
-            database.getBankRevenueEarnedOffline(p, logoutTime, Callback.of(plugin, profit -> {
+            database.getTotalBankRevenueSinceLogout(p, logoutTime, Callback.of(plugin, profit -> {
                 if (profit.signum() == 0)
                     return;
                 p.sendMessage(LangUtils.getMessage(profit.signum() > 0 ? Message.BANK_REVENUE_EARNED_OFFLINE : Message.BANK_LOSS_OFFLINE,
@@ -39,7 +39,7 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
                 ));
             }));
 
-            database.getAccountInterestEarnedOffline(p, logoutTime, Callback.of(plugin, bigDecimal -> {
+            database.getTotalAccountInterestSinceLogout(p, logoutTime, Callback.of(plugin, bigDecimal -> {
                 if (bigDecimal.signum() > 0)
                     p.sendMessage(LangUtils.getMessage(Message.OFFLINE_ACCOUNT_INTEREST,
                             new Replacement(Placeholder.AMOUNT, bigDecimal)

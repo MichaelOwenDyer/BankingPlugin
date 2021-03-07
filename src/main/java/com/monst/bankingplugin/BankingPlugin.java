@@ -188,7 +188,7 @@ public class BankingPlugin extends JavaPlugin {
 		});
 
 		if (database != null) {
-			((SQLite) database).vacuum(false);
+			((SQLite) database).vacuum();
 			database.disconnect();
 		}
 
@@ -268,7 +268,7 @@ public class BankingPlugin extends JavaPlugin {
 	 * @see SQLite
 	 */
 	private void initDatabase() {
-		database = new SQLite(this);
+		database = new SQLite();
 		debug("Database initialized.");
 	}
 
@@ -416,20 +416,19 @@ public class BankingPlugin extends JavaPlugin {
 									}
 								});
 
-								if (banks.size() != reloadedBanks.size())
+								if (banks.size() != 0 && banks.size() != reloadedBanks.size())
 									debugf("Number of banks before load was %d and is now %d.",
 											banks.size(), reloadedBanks.size());
-								if (accounts.size() != reloadedAccounts.size())
-									debugf("Number of accounts before load was %d and is now %d",
+								if (accounts.size() != 0 && accounts.size() != reloadedAccounts.size())
+									debugf("Number of accounts before load was %d and is now %d.",
 											accounts.size(), reloadedAccounts.size());
 
-								if (callback != null)
-									callback.callSyncResult(new ReloadResult(reloadedBanks, reloadedAccounts));
+								Callback.yield(callback, new ReloadResult(reloadedBanks, reloadedAccounts));
 							},
-							callback::callSyncError
+							callback::error
 					));
 				},
-				callback::callSyncError
+				callback::error
 		));
 	}
 
@@ -586,7 +585,7 @@ public class BankingPlugin extends JavaPlugin {
 	}
 
 	public Reader getTextResourceMirror(String file) {
-		return getTextResource(file);
+		return super.getTextResource(file);
 	}
 
 }

@@ -17,12 +17,10 @@ import com.monst.bankingplugin.utils.Messenger;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -154,10 +152,6 @@ public class AccountProtectListener extends BankingPluginListener {
         final Player p = e.getPlayer();
         final Block b = e.getBlockPlaced();
 
-		if (!(b.getType().equals(Material.CHEST) || b.getType().equals(Material.TRAPPED_CHEST))) {
-            return;
-        }
-
 		Block otherChest;
 		try {
 			otherChest = Utils.getAttachedChestBlock(b);
@@ -257,25 +251,17 @@ public class AccountProtectListener extends BankingPluginListener {
 	 */
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onAccountItemMove(InventoryMoveItemEvent e) {
-        if ((e.getSource().getType().equals(InventoryType.CHEST)) && (!e.getInitiator().getType().equals(InventoryType.PLAYER))) {
+        if (!e.getInitiator().getType().equals(InventoryType.PLAYER)) {
 
-        	for (Inventory inv : new Inventory[] {e.getSource(), e.getDestination()}) {
-
-				if (inv.getHolder() instanceof DoubleChest) {
-					DoubleChest dc = (DoubleChest) inv.getHolder();
-					Chest r = (Chest) dc.getRightSide();
-					Chest l = (Chest) dc.getLeftSide();
-
-					if ((r != null && accountRepo.isAccount(r.getLocation()))
-							|| (l != null && accountRepo.isAccount(l.getLocation())))
-						e.setCancelled(true);
-
-				} else if (inv.getHolder() instanceof Chest) {
-					Chest c = (Chest) inv.getHolder();
-
-					if (accountRepo.isAccount(c.getLocation()))
-						e.setCancelled(true);
+        	for (Inventory inv : new Inventory[] { e.getSource(), e.getDestination() }) {
+        		Chest chest;
+				try {
+					chest = Utils.getChestHolding(inv);
+				} catch (ChestNotFoundException ex) {
+					return;
 				}
+				if (accountRepo.isAccount(ChestLocation.from(chest)))
+					e.setCancelled(true);
 			}
         }
     }
@@ -285,13 +271,21 @@ public class AccountProtectListener extends BankingPluginListener {
 	 */
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onAccountItemClick(InventoryClickEvent e) {
-		if (!(e.getInventory().getHolder() instanceof Chest || e.getInventory().getHolder() instanceof DoubleChest))
-			return;
-		if (!accountRepo.isAccount(e.getInventory().getLocation()))
-			return;
 		if (!(e.getWhoClicked() instanceof Player))
 			return;
-		Account account = accountRepo.getAt(e.getInventory().getLocation());
+		Chest chest;
+		try {
+			chest = Utils.getChestHolding(e.getInventory());
+		} catch (ChestNotFoundException ex) {
+			return;
+		}
+		ChestLocation chestLocation = ChestLocation.from(chest);
+		Account account;
+		try {
+			account = accountRepo.getAt(chestLocation);
+		} catch (AccountNotFoundException ex) {
+			return;
+		}
 		Player executor = (Player) e.getWhoClicked();
 		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
 			executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EDIT_OTHER));

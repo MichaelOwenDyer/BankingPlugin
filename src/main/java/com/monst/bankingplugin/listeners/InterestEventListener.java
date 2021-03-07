@@ -90,9 +90,9 @@ public class InterestEventListener extends BankingPluginListener {
 						continue;
 				}
 
-				BigDecimal baseInterest = account.getBalance()
-						.multiply(BigDecimal.valueOf((double) bank.get(BankField.INTEREST_RATE)))
-						.setScale(2, RoundingMode.HALF_EVEN);
+				BigDecimal baseInterest = Utils.scale(
+						account.getBalance().multiply(BigDecimal.valueOf((double) bank.get(BankField.INTEREST_RATE)))
+				);
 
 				int multiplier = account.getRealMultiplier();
 				BigDecimal interest = baseInterest.multiply(BigDecimal.valueOf(multiplier));
@@ -145,7 +145,7 @@ public class InterestEventListener extends BankingPluginListener {
 				Expression revenueExpression = new Expression(Config.bankRevenueFunction, args.toArray(new Argument[0]));
 				BigDecimal revenue;
 				try {
-					revenue = BigDecimal.valueOf(revenueExpression.calculate()).setScale(2, RoundingMode.HALF_EVEN);
+					revenue = Utils.scale(BigDecimal.valueOf(revenueExpression.calculate()));
 				} catch (NumberFormatException ex) {
 					continue;
 				}

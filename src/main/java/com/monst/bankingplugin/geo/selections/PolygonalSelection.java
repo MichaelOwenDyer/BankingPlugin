@@ -219,8 +219,8 @@ public class PolygonalSelection extends Selection {
 	}
 
 	@Override
-	public SelectionType getType() {
-		return SelectionType.POLYGONAL;
+	public boolean isPolygonal() {
+		return true;
 	}
 
 	@Override

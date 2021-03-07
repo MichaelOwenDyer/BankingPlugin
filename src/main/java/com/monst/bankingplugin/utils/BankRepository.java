@@ -78,8 +78,8 @@ public class BankRepository extends Observable implements Repository<Bank> {
 
         if (addToDatabase)
 			plugin.getDatabase().addBank(bank, callback);
-        else if (callback != null)
-				callback.callSyncResult(bank.getID());
+        else
+			Callback.yield(callback, bank.getID());
 
     }
 
@@ -104,8 +104,8 @@ public class BankRepository extends Observable implements Repository<Bank> {
 
         if (removeFromDatabase)
 			plugin.getDatabase().removeBank(bank, callback);
-        else if (callback != null)
-			callback.callSyncResult(null);
+        else
+			Callback.yield(callback);
     }
 
 	public Set<Selection> getOverlappingSelections(Selection sel) {
