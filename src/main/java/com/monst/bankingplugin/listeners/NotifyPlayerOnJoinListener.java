@@ -30,7 +30,7 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
                 return;
             }
 
-            database.getTotalBankRevenueSinceLogout(p, logoutTime, Callback.of(plugin, profit -> {
+            database.getTotalBankProfitSinceLogout(p, logoutTime, Callback.of(plugin, profit -> {
                 if (profit.signum() == 0)
                     return;
                 p.sendMessage(LangUtils.getMessage(profit.signum() > 0 ? Message.BANK_REVENUE_EARNED_OFFLINE : Message.BANK_LOSS_OFFLINE,
@@ -38,10 +38,17 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
                 ));
             }));
 
-            database.getTotalAccountInterestSinceLogout(p, logoutTime, Callback.of(plugin, bigDecimal -> {
-                if (bigDecimal.signum() > 0)
+            database.getTotalAccountInterestSinceLogout(p, logoutTime, Callback.of(plugin, interest -> {
+                if (interest.signum() > 0)
                     p.sendMessage(LangUtils.getMessage(Message.OFFLINE_ACCOUNT_INTEREST,
-                            new Replacement(Placeholder.AMOUNT, bigDecimal)
+                            new Replacement(Placeholder.AMOUNT, interest)
+                    ));
+            }));
+
+            database.getTotalLowBalanceFeesPaidSinceLogout(p, logoutTime, Callback.of(plugin, fees -> {
+                if (fees.signum() > 0)
+                    p.sendMessage(LangUtils.getMessage(Message.OFFLINE_LOW_BALANCE_FEES_PAID,
+                            new Replacement(Placeholder.AMOUNT, fees)
                     ));
             }));
 

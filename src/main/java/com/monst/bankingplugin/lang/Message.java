@@ -162,6 +162,11 @@ public enum Message {
             "&6You earned &a%AMOUNT% &6in interest while you were offline.",
             Placeholder.AMOUNT
     ),
+    OFFLINE_LOW_BALANCE_FEES_PAID (
+            "A player logs into the server after having paid low balance fees offline.",
+            "&cYou paid &a%AMOUNT% &cin low balance fees while you were offline.",
+            Placeholder.AMOUNT
+    ),
     LOW_BALANCE_FEE_PAID (
             "A player must pay low balance fees on at least one account.",
             "&cYou paid &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccount(s).",

@@ -23,7 +23,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.codejargon.fluentjdbc.api.FluentJdbc;
 import org.codejargon.fluentjdbc.api.FluentJdbcBuilder;
 import org.codejargon.fluentjdbc.api.query.*;
@@ -36,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -118,7 +118,7 @@ public abstract class Database {
 	 */
 	public void connect(Callback<int[]> callback) {
 
-		Utils.bukkitRunnable(() -> {
+		async(() -> {
 			disconnect();
 
 			dataSource = getDataSource();
@@ -197,7 +197,7 @@ public abstract class Database {
 
 			Callback.yield(callback, new int[] { banks, accounts });
 
-		}).runTaskAsynchronously(plugin);
+		});
 	}
 
 	/**
@@ -216,7 +216,7 @@ public abstract class Database {
 	 *                 given (as {@code int})
 	 */
 	public void addAccount(Account account, Callback<Integer> callback) {
-		Utils.bukkitRunnable(() -> {
+		async(() -> {
 
 			final String replaceQuery = constructReplaceQuery(tableAccounts, account.hasID(), "AccountID", "BankID",
 					"Nickname", "OwnerUUID", "Balance", "PreviousBalance", "MultiplierStage", "DelayUntilNextPayout",
@@ -250,7 +250,7 @@ public abstract class Database {
 
 			Callback.yield(callback, account.getID());
 			plugin.debugf("Added account to database (#%d).", account.getID());
-		}).runTaskAsynchronously(plugin);
+		});
 	}
 
 	/**
@@ -260,7 +260,7 @@ public abstract class Database {
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
 	public void removeAccount(Account account, Callback<Void> callback) {
-		Utils.bukkitRunnable(() -> {
+		async(() -> {
 			query.transaction().inNoResult(() -> {
 				query
 						.update("DELETE FROM " + tableAccounts + " WHERE AccountID = ?")
@@ -276,7 +276,7 @@ public abstract class Database {
 
 			Callback.yield(callback);
 			plugin.debugf("Removing account from database (#%d)", account.getID());
-		}).runTaskAsynchronously(plugin);
+		});
 	}
 
 	/**
@@ -287,7 +287,7 @@ public abstract class Database {
 	 *                 given (as {@code int})
 	 */
 	public void addBank(Bank bank, Callback<Integer> callback) {
-		Utils.bukkitRunnable(() -> {
+		async(() -> {
 
 			final String replaceQuery = constructReplaceQuery(tableBanks, bank.hasID(), "BankID", "Name", "OwnerUUID",
 					"CountInterestDelayOffline", "ReimburseAccountCreation", "PayOnLowBalance", "InterestRate",
@@ -319,7 +319,7 @@ public abstract class Database {
 
 			Callback.yield(callback, bank.getID());
 			plugin.debugf("Adding bank to database (#%d)", bank.getID());
-		}).runTaskAsynchronously(plugin);
+		});
 	}
 
 	/**
@@ -329,7 +329,7 @@ public abstract class Database {
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
 	public void removeBank(Bank bank, Callback<Void> callback) {
-		Utils.bukkitRunnable(() -> {
+		async(() -> {
 			query.transaction().inNoResult(
 					() -> {
 						query
@@ -347,7 +347,7 @@ public abstract class Database {
 
 			Callback.yield(callback);
 			plugin.debugf("Removing bank from database (#%d)", bank.getID());
-		}).runTaskAsynchronously(plugin);
+		});
 	}
 
 	/**
@@ -360,25 +360,32 @@ public abstract class Database {
 	 *                            {@code Map<Bank, Set<Account>>})
 	 */
 	public void getBanksAndAccounts(boolean showConsoleMessages, Callback<Map<Bank, Set<Account>>> callback) {
-		Utils.bukkitRunnable(() -> {
-			Map<Bank, Set<Account>> banksAndAccounts = new HashMap<>();
-			getBanks(showConsoleMessages, Callback.of(plugin, banks ->
-					banks.forEach(bank -> getBankAccounts(bank, showConsoleMessages, Callback.of(plugin,
-							accounts -> banksAndAccounts.put(bank, accounts)
-					)))
-			));
+		async(() -> {
+			Map<Bank, Set<Account>> banksAndAccounts = getBanks(showConsoleMessages, callback).stream()
+					.collect(Collectors.toMap(
+							Function.identity(),
+							bank -> getAccounts(bank, showConsoleMessages, callback)
+					));
 			Callback.yield(callback, Collections.unmodifiableMap(banksAndAccounts));
-		}).runTaskAsynchronously(plugin);
+		});
 	}
 
-	private void getBanks(boolean showConsoleMessages, Callback<Set<Bank>> callback) {
+	/**
+	 * Gets all banks from the database.
+	 *
+	 * @param showConsoleMessages Whether console messages (errors or warnings)
+	 *                            should be shown
+	 */
+	private Set<Bank> getBanks(boolean showConsoleMessages, Callback<?> callback) {
+		plugin.debug("Fetching banks from the database.");
 		Set<Bank> banks = new HashSet<>(
 				query
 						.select("SELECT * FROM " + tableBanks)
 						.errorHandler(forwardError(callback))
 						.listResult(reconstructBank(showConsoleMessages))
 		);
-		Callback.yield(callback, Collections.unmodifiableSet(banks));
+		plugin.debugf("Found %d.", banks.size());
+		return Collections.unmodifiableSet(banks);
 	}
 
 	/**
@@ -387,11 +394,9 @@ public abstract class Database {
 	 * @param bank                The bank to get the accounts of
 	 * @param showConsoleMessages Whether console messages (errors or warnings)
 	 *                            should be shown
-	 * @param callback            Callback that - if succeeded - returns a read-only
-	 *                            collection of all accounts (as
-	 *                            {@code Collection<Account>})
 	 */
-	private void getBankAccounts(Bank bank, boolean showConsoleMessages, Callback<Set<Account>> callback) {
+	private Set<Account> getAccounts(Bank bank, boolean showConsoleMessages, Callback<?> callback) {
+		plugin.debugf("Fetching accounts at bank #%d from the database.", bank.getID());
 		Set<Account> accounts = new HashSet<>(
 				query
 						.select("SELECT * FROM " + tableAccounts + " WHERE BankID = ?")
@@ -399,7 +404,8 @@ public abstract class Database {
 						.errorHandler(forwardError(callback))
 						.listResult(reconstructAccount(bank, showConsoleMessages))
 		);
-		Callback.yield(callback, Collections.unmodifiableSet(accounts));
+		plugin.debugf("Found %d.");
+		return Collections.unmodifiableSet(accounts);
 	}
 
 	/**
@@ -408,7 +414,7 @@ public abstract class Database {
 	 * @param coowner the co-owner to be added
 	 */
 	public void addCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
-		BukkitRunnable runnable = Utils.bukkitRunnable(() -> {
+		run(() -> {
 			query
 					.update("REPLACE INTO " + tableCoOwnsBank + " (CoOwnerUUID, BankID) VALUES(?,?)")
 					.params(coowner.getUniqueId().toString(), bank.getID())
@@ -416,11 +422,7 @@ public abstract class Database {
 					.run();
 
 			Callback.yield(callback);
-		});
-		if (async)
-			runnable.runTaskAsynchronously(plugin);
-		else
-			runnable.runTask(plugin);
+		}, async);
 	}
 
 
@@ -430,7 +432,7 @@ public abstract class Database {
 	 * @param coowner the co-owner to be added
 	 */
 	public void addCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
-		BukkitRunnable runnable = Utils.bukkitRunnable(() -> {
+		run(() -> {
 			query
 					.update("REPLACE INTO " + tableCoOwnsAccount + " (CoOwnerUUID, AccountID) VALUES(?,?)")
 					.params(coowner.getUniqueId().toString(), account.getID())
@@ -438,11 +440,7 @@ public abstract class Database {
 					.run();
 
 			Callback.yield(callback);
-		});
-		if (async)
-			runnable.runTaskAsynchronously(plugin);
-		else
-			runnable.runTask(plugin);
+		}, async);
 	}
 
 	/**
@@ -452,7 +450,7 @@ public abstract class Database {
 	 * @param async whether to run this method asynchronously
 	 */
 	public void removeCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
-		BukkitRunnable runnable = Utils.bukkitRunnable(() -> {
+		run(() -> {
 			UpdateResult result = query
 					.update("DELETE FROM " + tableCoOwnsBank + " WHERE BankID = ? AND CoOwnerUUID = ?")
 					.params(bank.getID(), coowner.getUniqueId())
@@ -463,11 +461,7 @@ public abstract class Database {
 
 			if (result.affectedRows() != 0)
 				plugin.debugf("Removed co-owner from database (#%d).", bank.getID());
-		});
-		if (async)
-			runnable.runTaskAsynchronously(plugin);
-		else
-			runnable.runTask(plugin);
+		}, async);
 	}
 
 	/**
@@ -477,7 +471,7 @@ public abstract class Database {
 	 * @param async whether to run this method asynchronously
 	 */
 	public void removeCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
-		BukkitRunnable runnable = Utils.bukkitRunnable(() -> {
+		run(() -> {
 			UpdateResult result = query
 					.update("DELETE FROM " + tableCoOwnsAccount + " WHERE AccountID = ? AND CoOwnerUUID = ?")
 					.params(account.getID(), coowner.getUniqueId())
@@ -488,11 +482,7 @@ public abstract class Database {
 
 			if (result.affectedRows() != 0)
 				plugin.debugf("Removed co-owner from database (#%d).", account.getID());
-		});
-		if (async)
-			runnable.runTaskAsynchronously(plugin);
-		else
-			runnable.runTask(plugin);
+		}, async);
 	}
 
 	public void log(boolean configEnabled, String queryString, List<Object> params, Callback<Integer> callback) {
@@ -500,7 +490,7 @@ public abstract class Database {
 			Callback.yield(callback);
 			return;
 		}
-		Utils.bukkitRunnable(() -> {
+		async(() -> {
 			int transactionID = query
 					.update(queryString)
 					.params(params)
@@ -508,7 +498,7 @@ public abstract class Database {
 					.runFetchGenKeys(rs -> rs.getInt(1))
 					.firstKey().orElse(-1);
 			Callback.yield(callback, transactionID);
-		}).runTaskAsynchronously(plugin);
+		});
 	}
 
 	/**
@@ -521,8 +511,7 @@ public abstract class Database {
 	 */
 	public void logAccountTransaction(Player executor, Account account, BigDecimal amount, Callback<Integer> callback) {
 		final String query = "INSERT INTO " + tableAccountTransactions +
-				" (AccountID, ExecutorUUID, Amount, NewBalance, Timestamp, Time) " +
-				"VALUES(?,?,?,?,?,?)";
+				" (AccountID, ExecutorUUID, Amount, NewBalance, Timestamp, Time) VALUES(?,?,?,?,?,?)";
 		long millis = System.currentTimeMillis();
 		final List<Object> params = Arrays.asList(
 				account.getID(),
@@ -544,8 +533,7 @@ public abstract class Database {
 	 */
 	public void logAccountInterest(Account account, BigDecimal amount, Callback<Integer> callback) {
 		final String query = "INSERT INTO " + tableAccountInterest +
-				"(AccountID, BankID, Amount, Timestamp, Time) " +
-				"VALUES(?,?,?,?,?)";
+				"(AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?,?)";
 		long millis = System.currentTimeMillis();
 		final List<Object> params = Arrays.asList(
 				account.getID(),
@@ -558,9 +546,7 @@ public abstract class Database {
 	}
 
 	public void logBankRevenue(Bank bank, BigDecimal amount, Callback<Integer> callback) {
-		final String query = "INSERT INTO " + tableBankRevenue +
-				"(BankID, Amount, Timestamp, Time) " +
-				"VALUES(?,?,?,?)";
+		final String query = "INSERT INTO " + tableBankRevenue + " (BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)";
 		long millis = System.currentTimeMillis();
 		List<Object> params = Arrays.asList(
 				bank.getID(),
@@ -573,8 +559,7 @@ public abstract class Database {
 
 	public void logLowBalanceFee(Account account, BigDecimal amount, Callback<Integer> callback) {
 		final String query = "INSERT INTO " + tableLowBalanceFees +
-				"(AccountID, BankID, Amount, Timestamp, Time) " +
-				"VALUES(?,?,?,?)";
+				" (AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)";
 		long millis = System.currentTimeMillis();
 		List<Object> params = Arrays.asList(
 				account.getID(),
@@ -592,7 +577,7 @@ public abstract class Database {
 	public void cleanUpLogs() {
 		if (Config.cleanupLogDays < 0)
 			return;
-		Utils.bukkitRunnable(() -> {
+		run(() -> {
 
 			final long time = System.currentTimeMillis() - Config.cleanupLogDays * 86400000L;
 
@@ -605,7 +590,7 @@ public abstract class Database {
 			plugin.getLogger().info("Cleaned up banking logs.");
 			plugin.debugf("Cleaned up banking logs (%d transactions, %d interests, %d revenues, %d low balance fees, %d players).",
 					transactions, interest, revenue, lowBalanceFees, players);
-		}).runTaskAsynchronously(plugin);
+		}, false); // TODO: Make async?
 	}
 
 	/**
@@ -633,7 +618,35 @@ public abstract class Database {
 	 *                   player made while offline (as {@code double})
 	 */
 	public void getTotalAccountInterestSinceLogout(Player player, long logoutTime, Callback<BigDecimal> callback) {
-		getTotalSinceLogout(player, logoutTime, tableAccountInterest, callback);
+		async(() -> {
+			plugin.debugf("Fetching account interest for %s since last logout at %d.", player.getName(), logoutTime);
+			BigDecimal interest = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableAccountInterest + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), logoutTime)
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getBigDecimal(1))
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in account interest for %s.", Utils.format(interest), player.getName());
+			Callback.yield(callback, Utils.scale(interest));
+		});
+	}
+
+	public void getTotalLowBalanceFeesPaidSinceLogout(Player player, long logoutTime, Callback<BigDecimal> callback) {
+		async(() -> {
+			plugin.debugf("Fetching low balance fees paid by %s since last logout at %d.", player.getName(), logoutTime);
+			BigDecimal fees = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableLowBalanceFees + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), logoutTime)
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getBigDecimal(1))
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in low balance fees paid by %s.", Utils.format(fees), player.getName());
+			Callback.yield(callback, Utils.scale(fees));
+		});
 	}
 
 	/**
@@ -644,22 +657,40 @@ public abstract class Database {
 	 * @param callback   Callback that - if succeeded - returns the revenue the
 	 *                   player made while offline (as {@code double})
 	 */
-	public void getTotalBankRevenueSinceLogout(Player player, long logoutTime, Callback<BigDecimal> callback) {
-		getTotalSinceLogout(player, logoutTime, tableBankRevenue, callback);
-	}
-
-	private void getTotalSinceLogout(Player player, long logoutTime, String table, Callback<BigDecimal> callback) {
-		Utils.bukkitRunnable(() -> {
-			BigDecimal sum = query
-					.select("SELECT Amount FROM " + table + " WHERE PlayerUUID = ? AND Time > ?")
-					.params(player.getUniqueId().toString(), logoutTime)
+	public void getTotalBankProfitSinceLogout(Player player, long logoutTime, Callback<BigDecimal> callback) {
+		async(() -> {
+			plugin.debugf("Fetching bank revenue for %s since last logout at %d.", player.getName(), logoutTime);
+			BigDecimal revenue = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableBankRevenue + " NATURAL JOIN " + tableBanks + " " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), logoutTime)
 					.errorHandler(forwardError(callback))
-					.listResult(rs -> rs.getLong(1))
-					.stream()
-					.map(BigDecimal::valueOf)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			Callback.yield(callback, Utils.scale(sum));
-		}).runTaskAsynchronously(plugin);
+					.firstResult(rs -> rs.getBigDecimal(1))
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in bank revenue for %s.", Utils.format(revenue), player.getName());
+			plugin.debugf("Fetching low balance fees received by %s since last logout at %d.", player.getName(), logoutTime);
+			BigDecimal fees = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableLowBalanceFees + " NATURAL JOIN " + tableBanks + " USING(BankID) " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), logoutTime)
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getBigDecimal(1))
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in low balance fees received by %s.", Utils.format(fees), player.getName());
+			plugin.debugf("Fetching bank interest paid by %s since last logout at %d.", player.getName(), logoutTime);
+			BigDecimal interest = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableAccountInterest + " NATURAL JOIN " + tableBanks + " USING(BankID) " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), logoutTime)
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getBigDecimal(1))
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in interest payments paid by %s.", Utils.format(interest), player.getName());
+			Callback.yield(callback, Utils.scale(revenue.add(fees).subtract(interest)));
+		});
 	}
 
 	/**
@@ -671,7 +702,7 @@ public abstract class Database {
 	 *                 {@code -1} if the player has not logged out yet.
 	 */
 	public void getLastLogout(Player player, Callback<Long> callback) {
-		Utils.bukkitRunnable(() -> {
+		async(() -> {
 			long lastLogout = query
 					.select("SELECT LastSeen FROM " + tablePlayers + " WHERE PlayerUUID = ?")
 					.params(player.getUniqueId().toString())
@@ -679,7 +710,7 @@ public abstract class Database {
 					.firstResult(rs -> rs.getLong(1))
 					.orElse(-1L);
 			Callback.yield(callback, lastLogout);
-		}).runTaskAsynchronously(plugin);
+		});
 	}
 
 	/**
@@ -787,9 +818,9 @@ public abstract class Database {
 							.params(accountID)
 							.listResult(rs2 -> Bukkit.getOfflinePlayer(UUID.fromString(rs2.getString(1))))
 			);
+			plugin.debugf("Found %d account coowners.", coowners.size());
 
 			plugin.debugf("Initializing account #%d at bank \"%s\"", accountID, bank.getName());
-
 			return Account.reopen(accountID, owner, coowners, bank, chestLocation, nickname, balance, prevBalance,
 					multiplierStage, delayUntilNextPayout, remainingOfflinePayouts, remainingOfflinePayoutsUntilReset);
 		};
@@ -884,9 +915,9 @@ public abstract class Database {
 							.params(bankID)
 							.listResult(rs2 -> Bukkit.getOfflinePlayer(UUID.fromString(rs2.getString(1))))
 			);
+			plugin.debugf("Found %d bank coowners.", coowners.size());
 
 			plugin.debugf("Initializing bank \"%s\"... (#%d)", ChatColor.stripColor(name), bankID);
-
 			return Bank.recreate(bankID, name, owner, coowners, selection, bankConfig);
 		};
 	}
@@ -956,6 +987,21 @@ public abstract class Database {
 		sb.append("VALUES");
 		sb.append(list.stream().map(s -> "?").collect(Collectors.joining(",", "(", ")")));
 		return sb.toString();
+	}
+
+	private void async(Runnable runnable) {
+		run(runnable, true);
+	}
+
+	private void run(Runnable runnable) {
+		run(runnable, false);
+	}
+
+	private void run(Runnable runnable, boolean async) {
+		if (async)
+			Utils.bukkitRunnable(runnable).runTaskAsynchronously(plugin);
+		else
+			runnable.run();
 	}
 
 }

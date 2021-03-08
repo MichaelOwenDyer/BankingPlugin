@@ -243,7 +243,7 @@ public class BankingPlugin extends JavaPlugin {
 	}
 
     private void enableMetrics() {
-		debug("Initializing Metrics...");
+		debug("Initializing metrics...");
 
 		Metrics metrics = new Metrics(this, 8474);
 		metrics.addCustomChart(new Metrics.AdvancedPie("bank-types", () -> {
@@ -397,13 +397,13 @@ public class BankingPlugin extends JavaPlugin {
 
 		getDatabase().connect(Callback.of(this,
 				result -> {
-					Collection<Bank> banks = bankRepository.getAll();
-					Collection<Account> accounts = accountRepository.getAll();
+					Collection<Bank> banksBeforeReload = bankRepository.getAll();
+					Collection<Account> accountsBeforeReload = accountRepository.getAll();
 
 					Set<Bank> reloadedBanks = new HashSet<>();
 					Set<Account> reloadedAccounts = new HashSet<>();
 
-					for (Bank bank : banks) {
+					for (Bank bank : banksBeforeReload) {
 						bankRepository.remove(bank, false);
 						debugf("Removed bank (#%d)", bank.getID());
 					}
@@ -422,12 +422,12 @@ public class BankingPlugin extends JavaPlugin {
 									}
 								});
 
-								if (banks.size() != 0 && banks.size() != reloadedBanks.size())
+								if (banksBeforeReload.size() != 0 && banksBeforeReload.size() != reloadedBanks.size())
 									debugf("Number of banks before load was %d and is now %d.",
-											banks.size(), reloadedBanks.size());
-								if (accounts.size() != 0 && accounts.size() != reloadedAccounts.size())
+											banksBeforeReload.size(), reloadedBanks.size());
+								if (accountsBeforeReload.size() != 0 && accountsBeforeReload.size() != reloadedAccounts.size())
 									debugf("Number of accounts before load was %d and is now %d.",
-											accounts.size(), reloadedAccounts.size());
+											accountsBeforeReload.size(), reloadedAccounts.size());
 
 								Callback.yield(callback, new ReloadResult(reloadedBanks, reloadedAccounts));
 							},
