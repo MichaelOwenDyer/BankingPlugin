@@ -4,12 +4,9 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountPreRemoveEvent;
+import com.monst.bankingplugin.events.account.AccountRemoveCommandEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
-import com.monst.bankingplugin.lang.LangUtils;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -43,7 +40,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to remove an account");
 
-        AccountPreRemoveEvent event = new AccountPreRemoveEvent(((Player) sender));
+        AccountRemoveCommandEvent event = new AccountRemoveCommandEvent(((Player) sender));
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             plugin.debug("Account pre-remove event cancelled");
@@ -119,11 +116,11 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
             if (bank.isPlayerBank()) {
                 OfflinePlayer bankOwner = bank.getOwner();
                 Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
-                        result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+                        result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
                                 new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName()),
                                 new Replacement(Placeholder.AMOUNT, finalCreationPrice)
                         )),
-                        error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+                        error -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
                                 new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
                         ))
                 ));

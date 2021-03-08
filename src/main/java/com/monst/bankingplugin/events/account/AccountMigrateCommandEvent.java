@@ -10,11 +10,11 @@ import javax.annotation.Nonnull;
  * This account is fired when a player uses the
  * {@link com.monst.bankingplugin.commands.account.AccountMigrate} command.
  */
-public class AccountPreMigrateEvent extends SingleAccountEvent implements Cancellable {
+public class AccountMigrateCommandEvent extends SingleAccountEvent implements Cancellable {
 
     private boolean cancelled;
 
-    public AccountPreMigrateEvent(@Nonnull Player player, @Nonnull Account account) {
+    public AccountMigrateCommandEvent(@Nonnull Player player, @Nonnull Account account) {
         super(player, account);
     }
 

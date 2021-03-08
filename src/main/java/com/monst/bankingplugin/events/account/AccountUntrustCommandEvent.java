@@ -7,14 +7,14 @@ import java.util.Arrays;
 
 /**
  * This event is fired when a player uses the
- * {@link com.monst.bankingplugin.commands.account.AccountTransfer} command.
+ * {@link com.monst.bankingplugin.commands.account.AccountTrust} command.
  */
-public class AccountPreTransferEvent extends SingleAccountEvent implements Cancellable {
+public class AccountUntrustCommandEvent extends SingleAccountEvent implements Cancellable {
 
 	private boolean cancelled;
 	private final String[] args;
 
-	public AccountPreTransferEvent(Player player, String[] args) {
+	public AccountUntrustCommandEvent(Player player, String[] args) {
 		super(player, null);
 		this.args = Arrays.copyOf(args, args.length);
 	}

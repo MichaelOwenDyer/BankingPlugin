@@ -5,14 +5,11 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.events.account.AccountPreCreateEvent;
+import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.exceptions.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
-import com.monst.bankingplugin.lang.LangUtils;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -54,7 +51,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return true;
         }
 
-        AccountPreCreateEvent event = new AccountPreCreateEvent(p, args);
+        AccountCreateCommandEvent event = new AccountCreateCommandEvent(p, args);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             plugin.debug("Account pre-create event cancelled");
@@ -155,12 +152,12 @@ public class AccountCreate extends AccountCommand.SubCommand {
         if (creationPrice > 0 && bank.isPlayerBank()) {
             OfflinePlayer bankOwner = account.getBank().getOwner();
             Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
-                    result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
+                    result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, finalCreationPrice),
                             new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
                     )),
-                    error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
+                    error -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
             ));
         }
 

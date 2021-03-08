@@ -20,7 +20,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
@@ -28,7 +27,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
-@SuppressWarnings("unused")
 public class GriefPreventionListener extends BankingPluginListener {
 
     private final GriefPrevention griefPrevention;
@@ -44,7 +42,7 @@ public class GriefPreventionListener extends BankingPluginListener {
             return;
 
         for (Location loc : e.getAccount().getChestLocation())
-			if (handleForLocation(e.getPlayer(), loc, e)) {
+			if (isBlockedByGriefPrevention(e.getPlayer(), loc)) {
 				e.setCancelled(true);
 				plugin.debug("Account create event cancelled by GriefPrevention");
                 return;
@@ -56,10 +54,12 @@ public class GriefPreventionListener extends BankingPluginListener {
 		if (!Config.enableGriefPreventionIntegration)
             return;
 
-		if (handleForLocation(e.getPlayer(), e.getNewChestLocation(), e)) {
-			e.setCancelled(true);
-			plugin.debug("Account extend event cancelled by GriefPrevention");
-		}
+		for (Location loc : e.getNewChestLocation())
+            if (isBlockedByGriefPrevention(e.getPlayer(), loc)) {
+                e.setCancelled(true);
+                plugin.debug("Account extend event cancelled by GriefPrevention");
+                return;
+            }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -68,7 +68,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 	        return;
 
 	    for (Location loc : e.getNewAccountLocation())
-            if (handleForLocation(e.getPlayer(), loc, e)) {
+            if (isBlockedByGriefPrevention(e.getPlayer(), loc)) {
                 e.setCancelled(true);
                 plugin.debug("Account migrate event cancelled by GriefPrevention");
                 return;
@@ -81,14 +81,14 @@ public class GriefPreventionListener extends BankingPluginListener {
 	        return;
 
 	    for (Location loc : e.getNewAccountLocation())
-            if (handleForLocation(e.getPlayer(), loc, e)) {
+            if (isBlockedByGriefPrevention(e.getPlayer(), loc)) {
                 e.setCancelled(true);
                 plugin.debug("Account recover event cancelled by GriefPrevention");
                 return;
             }
     }
 
-    private boolean handleForLocation(Player player, Location loc, Cancellable e) {
+    private boolean isBlockedByGriefPrevention(Player player, Location loc) {
         Claim claim = griefPrevention.dataStore.getClaimAt(loc, false, null);
         if (claim == null)
             return false;

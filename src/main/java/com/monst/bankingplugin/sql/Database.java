@@ -10,6 +10,8 @@ import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.DoubleChestLocation;
+import com.monst.bankingplugin.geo.locations.SingleChestLocation;
 import com.monst.bankingplugin.geo.selections.CuboidSelection;
 import com.monst.bankingplugin.geo.selections.PolygonalSelection;
 import com.monst.bankingplugin.geo.selections.Selection;
@@ -96,6 +98,13 @@ public abstract class Database {
 				.run();
 	}
 
+	SqlErrorHandler forwardError(Callback<?> callback) {
+		return (e, msg) -> {
+			Callback.error(callback, e);
+			throw e;
+		};
+	}
+
 	/**
 	 * <p>
 	 * (Re-)Connects to the the database and initializes it.
@@ -128,7 +137,7 @@ public abstract class Database {
 			SqlErrorHandler handler = (e, msg) -> {
 				plugin.debugf("Encountered a database error while executing query '%s'", msg.orElse("null"));
 				plugin.debug(e);
-				throw(e);
+				throw e;
 			};
 
 			try {
@@ -169,6 +178,7 @@ public abstract class Database {
 					getQueryCreateTableFields() // Create fields table
 			)
 					.map(query::update)
+					.map(q -> q.errorHandler(forwardError(callback)))
 					.forEach(UpdateQuery::run);
 
 			// Clean up economy log
@@ -220,6 +230,7 @@ public abstract class Database {
 			int id = query
 					.update(replaceQuery)
 					.params(params)
+					.errorHandler(forwardError(callback))
 					.runFetchGenKeys(rs -> rs.getInt(1))
 					.firstKey().orElse(-1);
 
@@ -233,6 +244,7 @@ public abstract class Database {
 				query
 						.batch("INSERT INTO " + tableCoOwnsAccount + "(CoOwnerUUID, AccountID) VALUES(?,?)")
 						.params(coOwnerEntries)
+						.errorHandler(forwardError(callback))
 						.run();
 			}
 
@@ -253,10 +265,12 @@ public abstract class Database {
 				query
 						.update("DELETE FROM " + tableAccounts + " WHERE AccountID = ?")
 						.params(account.getID())
+						.errorHandler(forwardError(callback))
 						.run();
 				query
 						.update("DELETE FROM " + tableCoOwnsAccount + " WHERE AccountID = ?")
 						.params(account.getID())
+						.errorHandler(forwardError(callback))
 						.run();
 			});
 
@@ -287,7 +301,7 @@ public abstract class Database {
 				params.removeFirst();
 
 			int id = query
-					.update(replaceQuery).params(params)
+					.update(replaceQuery).params(params).errorHandler(forwardError(callback))
 					.runFetchGenKeys(rs -> rs.getInt(1)).firstKey().orElse(-1);
 
 			bank.setID(id);
@@ -299,6 +313,7 @@ public abstract class Database {
 				query
 						.batch("INSERT INTO " + tableCoOwnsBank + "(CoOwnerUUID, BankID) VALUES(?,?)")
 						.params(coOwnerEntries)
+						.errorHandler(forwardError(callback))
 						.run();
 			}
 
@@ -320,10 +335,12 @@ public abstract class Database {
 						query
 								.update("DELETE FROM " + tableBanks + " WHERE BankID = ?")
 								.params(bank.getID())
+								.errorHandler(forwardError(callback))
 								.run();
 						query
 								.update("DELETE FROM " + tableCoOwnsBank + " WHERE BankID = ?")
 								.params(bank.getID())
+								.errorHandler(forwardError(callback))
 								.run();
 					}
 			);
@@ -334,13 +351,13 @@ public abstract class Database {
 	}
 
 	/**
-	 * Get all banks and accounts from the database
+	 * Gets all banks and accounts from the database
 	 *
 	 * @param showConsoleMessages Whether console messages (errors or warnings)
 	 *                            should be shown
 	 * @param callback            Callback that - if succeeded - returns a read-only
-	 *                            collection of all banks (as
-	 *                            {@code Collection<Account>})
+	 *                            collection of all banks and accounts (as
+	 *                            {@code Map<Bank, Set<Account>>})
 	 */
 	public void getBanksAndAccounts(boolean showConsoleMessages, Callback<Map<Bank, Set<Account>>> callback) {
 		Utils.bukkitRunnable(() -> {
@@ -358,6 +375,7 @@ public abstract class Database {
 		Set<Bank> banks = new HashSet<>(
 				query
 						.select("SELECT * FROM " + tableBanks)
+						.errorHandler(forwardError(callback))
 						.listResult(reconstructBank(showConsoleMessages))
 		);
 		Callback.yield(callback, Collections.unmodifiableSet(banks));
@@ -378,6 +396,7 @@ public abstract class Database {
 				query
 						.select("SELECT * FROM " + tableAccounts + " WHERE BankID = ?")
 						.params(bank.getID())
+						.errorHandler(forwardError(callback))
 						.listResult(reconstructAccount(bank, showConsoleMessages))
 		);
 		Callback.yield(callback, Collections.unmodifiableSet(accounts));
@@ -393,6 +412,7 @@ public abstract class Database {
 			query
 					.update("REPLACE INTO " + tableCoOwnsBank + " (CoOwnerUUID, BankID) VALUES(?,?)")
 					.params(coowner.getUniqueId().toString(), bank.getID())
+					.errorHandler(forwardError(callback))
 					.run();
 
 			Callback.yield(callback);
@@ -414,6 +434,7 @@ public abstract class Database {
 			query
 					.update("REPLACE INTO " + tableCoOwnsAccount + " (CoOwnerUUID, AccountID) VALUES(?,?)")
 					.params(coowner.getUniqueId().toString(), account.getID())
+					.errorHandler(forwardError(callback))
 					.run();
 
 			Callback.yield(callback);
@@ -435,6 +456,7 @@ public abstract class Database {
 			UpdateResult result = query
 					.update("DELETE FROM " + tableCoOwnsBank + " WHERE BankID = ? AND CoOwnerUUID = ?")
 					.params(bank.getID(), coowner.getUniqueId())
+					.errorHandler(forwardError(callback))
 					.run();
 
 			Callback.yield(callback);
@@ -459,6 +481,7 @@ public abstract class Database {
 			UpdateResult result = query
 					.update("DELETE FROM " + tableCoOwnsAccount + " WHERE AccountID = ? AND CoOwnerUUID = ?")
 					.params(account.getID(), coowner.getUniqueId())
+					.errorHandler(forwardError(callback))
 					.run();
 
 			Callback.yield(callback);
@@ -481,6 +504,7 @@ public abstract class Database {
 			int transactionID = query
 					.update(queryString)
 					.params(params)
+					.errorHandler(forwardError(callback))
 					.runFetchGenKeys(rs -> rs.getInt(1))
 					.firstKey().orElse(-1);
 			Callback.yield(callback, transactionID);
@@ -629,6 +653,7 @@ public abstract class Database {
 			BigDecimal sum = query
 					.select("SELECT Amount FROM " + table + " WHERE PlayerUUID = ? AND Time > ?")
 					.params(player.getUniqueId().toString(), logoutTime)
+					.errorHandler(forwardError(callback))
 					.listResult(rs -> rs.getLong(1))
 					.stream()
 					.map(BigDecimal::valueOf)
@@ -650,6 +675,7 @@ public abstract class Database {
 			long lastLogout = query
 					.select("SELECT LastSeen FROM " + tablePlayers + " WHERE PlayerUUID = ?")
 					.params(player.getUniqueId().toString())
+					.errorHandler(forwardError(callback))
 					.firstResult(rs -> rs.getLong(1))
 					.orElse(-1L);
 			Callback.yield(callback, lastLogout);
@@ -751,9 +777,9 @@ public abstract class Database {
 			BlockVector3D v1 = new BlockVector3D(x1, y, z1);
 			ChestLocation chestLocation;
 			if (x1 == x2 && z1 == z2)
-				chestLocation = ChestLocation.from(world, v1);
+				chestLocation = SingleChestLocation.from(world, v1);
 			else
-				chestLocation = ChestLocation.from(world, v1, new BlockVector3D(x2, y, z2));
+				chestLocation = DoubleChestLocation.from(world, v1, new BlockVector3D(x2, y, z2));
 
 			Set<OfflinePlayer> coowners = new HashSet<>(
 					query
@@ -869,6 +895,7 @@ public abstract class Database {
 		BlockVector3D v1 = account.getChestLocation().getMinimumBlock();
 		BlockVector3D v2 = account.getChestLocation().getMaximumBlock();
 		return new LinkedList<>(Arrays.asList(
+				account.getID(),
 				account.getBank().getID(),
 				account.getRawName(),
 				account.getOwner().getUniqueId().toString(),

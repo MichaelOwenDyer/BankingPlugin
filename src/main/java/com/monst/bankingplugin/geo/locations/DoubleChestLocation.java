@@ -10,13 +10,19 @@ import org.bukkit.inventory.Inventory;
 
 import java.util.Objects;
 
-class DoubleChestLocation extends ChestLocation {
+public class DoubleChestLocation extends ChestLocation {
+
+    public static DoubleChestLocation from(World world, BlockVector3D v1, BlockVector3D v2) {
+        if (!v1.isAdjacent(v2))
+            throw new IllegalArgumentException("Blocks must be adjacent!");
+        return new DoubleChestLocation(world, v1, v2);
+    }
 
     final BlockVector3D v2;
 
     DoubleChestLocation(World world, BlockVector3D v1, BlockVector3D v2) {
-        super(world, v1);
-        this.v2 = v2;
+        super(world, Utils.lesser(v1, v2));
+        this.v2 = Utils.greater(v1, v2);
     }
 
     public BlockVector3D getMaximumBlock() {
@@ -50,6 +56,10 @@ class DoubleChestLocation extends ChestLocation {
     @Override
     public Location[] getLocations() {
         return new Location[] { v1.toLocation(world), v2.toLocation(world) };
+    }
+
+    public SingleChestLocation contract(BlockVector3D v1) {
+        return new SingleChestLocation(world, v1);
     }
 
     @Override

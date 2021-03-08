@@ -1,8 +1,5 @@
-package com.monst.bankingplugin.utils;
+package com.monst.bankingplugin.lang;
 
-import com.earth2me.essentials.User;
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
@@ -10,15 +7,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Messenger {
-
-    private static final BankingPlugin plugin = BankingPlugin.getInstance();
+/**
+ * Ideal for sending messages en masse to both online and offline players at once
+ */
+public class MailingRoom {
 
     private String message;
     private final Set<CommandSender> recipients;
     private final Set<OfflinePlayer> offlineRecipients;
 
-    public Messenger(String message) {
+    public MailingRoom(String message) {
         this.message = message;
         this.recipients = new HashSet<>();
         this.offlineRecipients = new HashSet<>();
@@ -30,38 +28,14 @@ public class Messenger {
 
     public void send(boolean mailIfOffline) {
         if (message == null) {
-            plugin.debug(new NullPointerException("Message undefined!"));
+            Mailman.plugin.debug(new NullPointerException("Message undefined!"));
             return;
         }
         recipients.forEach(p -> p.sendMessage(message));
-        offlineRecipients.forEach(p -> notify(p, message, mailIfOffline));
+        offlineRecipients.forEach(p -> Mailman.notify(p, message, mailIfOffline));
     }
 
-    public static void notify(OfflinePlayer player, String message) {
-        notify(player, message, false);
-    }
-
-    public static void notify(OfflinePlayer player, String message, boolean mailIfOffline) {
-        if (player.isOnline())
-            message(player.getPlayer(), message);
-        else if (mailIfOffline)
-            mail(player, message);
-    }
-
-    public static void message(CommandSender sender, String message) {
-        if (sender != null && message != null)
-            sender.sendMessage(message);
-    }
-
-    public static void mail(OfflinePlayer player, String message) {
-        if (!Config.enableMail || player == null || message == null)
-            return;
-        User user = plugin.getEssentials().getUserMap().getUser(player.getUniqueId());
-        if (user != null)
-            user.addMail(message);
-    }
-
-    public void setMessage(String message) {
+    public void newMessage(String message) {
         this.message = message;
     }
 
@@ -78,7 +52,7 @@ public class Messenger {
         if (player == null)
             return;
         if (player.isOnline())
-            addRecipient(player.getPlayer());
+            recipients.add(player.getPlayer());
         else
             offlineRecipients.add(player);
     }

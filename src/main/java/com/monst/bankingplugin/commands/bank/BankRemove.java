@@ -9,7 +9,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messenger;
+import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -100,14 +100,14 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
         int accountsRemoved = bank.getAccounts().size();
         bankRepo.remove(bank, true);
         plugin.debugf("Bank #%d and %d accounts removed from the database.", bank.getID(), accountsRemoved);
-        Messenger messenger = new Messenger(LangUtils.getMessage(Message.BANK_REMOVED,
+        MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_REMOVED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accountsRemoved)
         ));
-        messenger.addOfflineRecipient(bank.getTrustedPlayers());
-        messenger.addOfflineRecipient(bank.getCustomers());
-        messenger.addRecipient(sender);
-        messenger.send();
+        mailingRoom.addOfflineRecipient(bank.getTrustedPlayers());
+        mailingRoom.addOfflineRecipient(bank.getCustomers());
+        mailingRoom.addRecipient(sender);
+        mailingRoom.send();
         return true;
     }
 

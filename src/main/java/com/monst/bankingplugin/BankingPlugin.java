@@ -140,25 +140,17 @@ public class BankingPlugin extends JavaPlugin {
 				getLogger().warning("Plugin may still work, but more errors are expected!");
 		}
 
-        accountRepository = new AccountRepository(this);
-		bankRepository = new BankRepository(this);
-
+		initializeRepositories();
 		LangUtils.reload();
-
 		loadExternalPlugins();
-
-		scheduler = new InterestEventScheduler(this);
-
-		accountCommand = new AccountCommand(this);
-		bankCommand = new BankCommand(this);
-		controlCommand = new ControlCommand(this);
-
+		initializeScheduler();
+		initializeCommands();
 		// checkForUpdates();
-		enableMetrics();
-		initDatabase();
+		initializeDatabase();
         registerListeners();
         registerExternalListeners();
-		initializeBanking();
+		loadBanksAndAccounts();
+		enableMetrics();
 
 	}
 
@@ -214,6 +206,17 @@ public class BankingPlugin extends JavaPlugin {
 		return true;
     }
 
+    private void initializeRepositories() {
+		accountRepository = new AccountRepository(this);
+		bankRepository = new BankRepository(this);
+	}
+
+    private void initializeCommands() {
+		accountCommand = new AccountCommand(this);
+		bankCommand = new BankCommand(this);
+		controlCommand = new ControlCommand(this);
+	}
+
 	/**
 	 * Find other plugins running on the server that BankingPlugin can integrate with.
 	 */
@@ -235,6 +238,10 @@ public class BankingPlugin extends JavaPlugin {
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
 
+    private void initializeScheduler() {
+		scheduler = new InterestEventScheduler(this);
+	}
+
     private void enableMetrics() {
 		debug("Initializing Metrics...");
 
@@ -247,7 +254,7 @@ public class BankingPlugin extends JavaPlugin {
 			for (Bank bank : bankRepository.getAll())
 				if (bank.isPlayerBank())
 					playerBanks++;
-				else if (bank.isAdminBank())
+				else
 					adminBanks++;
 
 			typeFrequency.put("Admin", adminBanks);
@@ -267,7 +274,7 @@ public class BankingPlugin extends JavaPlugin {
 	 * Initialize the {@link Database}
 	 * @see SQLite
 	 */
-	private void initDatabase() {
+	private void initializeDatabase() {
 		database = new SQLite();
 		debug("Database initialized.");
 	}
@@ -327,7 +334,6 @@ public class BankingPlugin extends JavaPlugin {
     	getServer().getPluginManager().registerEvents(new ChestTamperingListener(this), this);
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
 		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
-
 		getServer().getPluginManager().registerEvents(new MenuFunctionListener(), this); // Third-party GUI listener
 	}
 
@@ -346,7 +352,7 @@ public class BankingPlugin extends JavaPlugin {
 	/**
 	 * Initializes all banks and accounts stored in the {@link Database}.
 	 */
-	private void initializeBanking() {
+	private void loadBanksAndAccounts() {
 		reload(false, true,
                 Callback.of(this, result -> {
                 	Collection<Bank> banks = result.getBanks();

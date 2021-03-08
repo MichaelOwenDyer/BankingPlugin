@@ -2,7 +2,7 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.events.account.AccountInfoEvent;
-import com.monst.bankingplugin.events.account.AccountPreInfoEvent;
+import com.monst.bankingplugin.events.account.AccountInfoCommandEvent;
 import com.monst.bankingplugin.gui.AccountGUI;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -60,7 +60,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
             return true;
         }
 
-        AccountPreInfoEvent event = new AccountPreInfoEvent((Player) sender);
+        AccountInfoCommandEvent event = new AccountInfoCommandEvent((Player) sender);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             plugin.debug("Account pre-info event cancelled");

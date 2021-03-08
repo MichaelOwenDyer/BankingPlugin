@@ -12,7 +12,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-@SuppressWarnings("unused")
 public class NotifyPlayerOnJoinListener extends BankingPluginListener {
 
 	public NotifyPlayerOnJoinListener(BankingPlugin plugin) {

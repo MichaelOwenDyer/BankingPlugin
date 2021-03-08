@@ -20,7 +20,7 @@ import org.bukkit.inventory.Inventory;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Objects;
+import java.util.Optional;
 
 public abstract class ChestLocation implements Iterable<Location> {
 
@@ -31,22 +31,7 @@ public abstract class ChestLocation implements Iterable<Location> {
         BlockVector3D[] locations = Utils.getChestCoordinates(c);
         if (locations.length == 1)
             return new SingleChestLocation(c.getWorld(), locations[0]);
-        Arrays.sort(locations);
         return new DoubleChestLocation(c.getWorld(), locations[0], locations[1]);
-    }
-
-    public static SingleChestLocation single(Chest c) {
-        return new SingleChestLocation(c.getWorld(), BlockVector3D.fromLocation(c.getLocation()));
-    }
-
-    public static ChestLocation from(World world, BlockVector3D v1) {
-        return new SingleChestLocation(world, v1);
-    }
-
-    public static ChestLocation from(World world, BlockVector3D v1, BlockVector3D v2) {
-        if (Objects.equals(v1, v2))
-            return from(world, v2);
-        return new DoubleChestLocation(world, v1, v2);
     }
 
     final World world;
@@ -80,7 +65,7 @@ public abstract class ChestLocation implements Iterable<Location> {
     }
 
     public Bank getBank() throws BankNotFoundException {
-        return BANK_REPO.getAt(this);
+        return Optional.ofNullable(BANK_REPO.getAt(this)).orElseThrow(() -> new BankNotFoundException(this));
     }
 
     public Account getAccount() throws AccountNotFoundException {

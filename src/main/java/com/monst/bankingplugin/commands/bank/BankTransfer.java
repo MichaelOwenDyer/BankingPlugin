@@ -8,7 +8,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.Messenger;
+import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -114,19 +114,19 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
             return true;
         }
 
-        Messenger messenger = new Messenger(LangUtils.getMessage(Message.BANK_TRANSFERRED,
+        MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_TRANSFERRED,
                 new Replacement(Placeholder.PLAYER, newOwner != null ? newOwner.getName() : "ADMIN"),
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
         ));
-        messenger.addRecipient(sender);
-        messenger.send();
-        messenger.setMessage(LangUtils.getMessage(Message.BANK_TRANSFERRED_TO_YOU,
+        mailingRoom.addRecipient(sender);
+        mailingRoom.send();
+        mailingRoom.newMessage(LangUtils.getMessage(Message.BANK_TRANSFERRED_TO_YOU,
                 new Replacement(Placeholder.PLAYER, sender::getName),
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
         ));
-        messenger.addOfflineRecipient(newOwner);
-        messenger.removeRecipient(sender);
-        messenger.send();
+        mailingRoom.addOfflineRecipient(newOwner);
+        mailingRoom.removeRecipient(sender);
+        mailingRoom.send();
 
         bank.setOwner(newOwner);
         bankRepo.add(bank, true);

@@ -4,15 +4,12 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
-import com.monst.bankingplugin.events.account.AccountPreMigrateEvent;
+import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.exceptions.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
-import com.monst.bankingplugin.lang.LangUtils;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -66,7 +63,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             return;
         }
 
-        AccountPreMigrateEvent event = new AccountPreMigrateEvent(p, toMigrate);
+        AccountMigrateCommandEvent event = new AccountMigrateCommandEvent(p, toMigrate);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             plugin.debug("Account pre-migrate event cancelled");
@@ -169,12 +166,12 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         if (finalCreationPrice > 0 && newBank.isPlayerBank() && !newBank.isOwner(p)) {
             OfflinePlayer bankOwner = newBank.getOwner();
             Utils.depositPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
-                    result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
+                    result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, finalCreationPrice),
                             new Replacement(Placeholder.BANK_NAME, newBank::getColorizedName)
                     )),
-                    error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+                    error -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
                             new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
                     ))
             ));
@@ -198,11 +195,11 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         if (reimbursement > 0 && oldBank.isPlayerBank() && !oldBank.isOwner(p)) {
             OfflinePlayer bankOwner = oldBank.getOwner();
             Utils.withdrawPlayer(bankOwner, finalReimbursement, Callback.of(plugin,
-                    result -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+                    result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, finalReimbursement)
                     )),
-                    error -> Messenger.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
+                    error -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
                             new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
                     ))
             ));

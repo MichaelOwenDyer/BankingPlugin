@@ -8,7 +8,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Messenger;
+import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -78,16 +78,16 @@ public class BankSet extends BankCommand.SubCommand {
         Callback<String> callback = Callback.of(plugin,
             result -> {
                 plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + bank.getName() + " from " + previousValue + " to " + result);
-                Messenger messenger = new Messenger(LangUtils.getMessage(Message.BANK_PROPERTY_SET,
+                MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_PROPERTY_SET,
                         new Replacement(Placeholder.PROPERTY, field::getName),
                         new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                         new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
                         new Replacement(Placeholder.VALUE, result)
                 ));
-                messenger.addOfflineRecipient(bank.getTrustedPlayers());
-                messenger.addOfflineRecipient(bank.getCustomers());
-                messenger.addRecipient(sender);
-                messenger.send(); // TODO: Mail as well?
+                mailingRoom.addOfflineRecipient(bank.getTrustedPlayers());
+                mailingRoom.addOfflineRecipient(bank.getCustomers());
+                mailingRoom.addRecipient(sender);
+                mailingRoom.send(); // TODO: Mail as well?
             },
             error -> sender.sendMessage(error.getLocalizedMessage())
         );

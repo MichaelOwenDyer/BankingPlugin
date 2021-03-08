@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.events.account.AccountPreUntrustEvent;
+import com.monst.bankingplugin.events.account.AccountUntrustCommandEvent;
 import com.monst.bankingplugin.events.account.AccountUntrustEvent;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -54,7 +54,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
         }
 
         Player p = ((Player) sender);
-        AccountPreUntrustEvent event = new AccountPreUntrustEvent(p, args);
+        AccountUntrustCommandEvent event = new AccountUntrustCommandEvent(p, args);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             plugin.debug("Account pre-untrust event cancelled");

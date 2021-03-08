@@ -291,7 +291,7 @@ public class Config {
 
 	private final BankingPlugin plugin;
 
-	private LangConfig langConfig;
+	private LanguageConfig languageConfig;
 
 	public Config(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -301,8 +301,8 @@ public class Config {
 		reload(true, true, true);
     }
 
-    public LangConfig getLanguageConfig() {
-		return langConfig;
+    public LanguageConfig getLanguageConfig() {
+		return languageConfig;
 	}
 
     /**
@@ -567,7 +567,7 @@ public class Config {
 	}
 
 	private void loadLanguageConfig(boolean showMessages) {
-		langConfig = new LangConfig(plugin, showMessages);
+		languageConfig = new LanguageConfig(plugin, showMessages);
 		File langFolder = new File(plugin.getDataFolder(), "lang");
 
 		if (!(new File(langFolder, "en_US.lang")).exists())
@@ -581,7 +581,7 @@ public class Config {
 			try {
 				if (showMessages)
 					plugin.getLogger().info("Using locale \"" + specifiedLangFile.getName().substring(0, specifiedLangFile.getName().length() - 5) + "\"");
-				langConfig.load(specifiedLangFile);
+				languageConfig.load(specifiedLangFile);
 			} catch (IOException e) {
 				if (showMessages)
 					plugin.getLogger().warning("Using default language values.");
@@ -592,7 +592,7 @@ public class Config {
 			File defaultLangFile = new File(langFolder, "en_US.lang");
 			if (defaultLangFile.exists()) {
 				try {
-					langConfig.load(defaultLangFile);
+					languageConfig.load(defaultLangFile);
 					if (showMessages)
 						plugin.getLogger().info("Using locale \"en_US\"");
 				} catch (IOException e) {
@@ -608,7 +608,7 @@ public class Config {
 
 				if (reader != null) {
 					try (BufferedReader br = new BufferedReader(reader)) {
-						langConfig.loadFromString(br.lines().collect(Collectors.joining("\n")));
+						languageConfig.loadFromStream(br.lines());
 						if (showMessages)
 							plugin.getLogger().info("Using locale \"" + specifiedLangFile.getName()
 									.substring(0, specifiedLangFile.getName().length() - 5) + "\" (Streamed from jar file)");

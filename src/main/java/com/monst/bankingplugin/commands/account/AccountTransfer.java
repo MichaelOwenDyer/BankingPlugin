@@ -2,14 +2,14 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountPreTransferEvent;
+import com.monst.bankingplugin.events.account.AccountTransferCommandEvent;
 import com.monst.bankingplugin.events.account.AccountTransferEvent;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Messenger;
+import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -63,7 +63,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
             return false;
         }
 
-        AccountPreTransferEvent event = new AccountPreTransferEvent(p, args);
+        AccountTransferCommandEvent event = new AccountTransferCommandEvent(p, args);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             plugin.debug("Account pre-transfer event cancelled");
@@ -124,17 +124,17 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
         boolean hasCustomName = account.hasCustomName();
 
-        Messenger messenger = new Messenger(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED,
+        MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED,
                 new Replacement(Placeholder.PLAYER, newOwner::getName)
         ));
-        messenger.addRecipient(p);
-        messenger.send();
-        messenger.setMessage(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED_TO_YOU,
+        mailingRoom.addRecipient(p);
+        mailingRoom.send();
+        mailingRoom.newMessage(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED_TO_YOU,
                 new Replacement(Placeholder.PLAYER, p::getName)
         ));
-        messenger.addOfflineRecipient(newOwner);
-        messenger.removeRecipient(p);
-        messenger.send();
+        mailingRoom.addOfflineRecipient(newOwner);
+        mailingRoom.removeRecipient(p);
+        mailingRoom.send();
 
         account.setOwner(newOwner);
         if (!hasCustomName)

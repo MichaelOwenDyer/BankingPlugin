@@ -17,7 +17,7 @@
 # %PROPERTY% = A property in a configration context.
 # %VALUE% = The value of a property in a configuration context.
 # %PREVIOUS_VALUE% = The previous value of a property in a configuration context, before it was changed.
-# %COMMAND% = The custom name of one of the three BankingPlugin command.
+# %COMMAND% = The custom name of one of the three BankingPlugin commands.
 # %VERSION% = The plugin version.
 #
 

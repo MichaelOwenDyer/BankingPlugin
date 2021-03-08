@@ -3,6 +3,11 @@ package com.monst.bankingplugin.lang;
 import java.util.Arrays;
 import java.util.EnumSet;
 
+/**
+ * Contains every message that this plugin can send to players.
+ * Every message is accompanied by a sample scenario in which it would be sent, a default english message text,
+ * and a list of placeholder variables that are available for use within the text.
+ */
 public enum Message {
 
     ACCOUNT_CREATED (
