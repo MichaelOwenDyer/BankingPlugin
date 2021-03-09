@@ -93,7 +93,7 @@ public class BankRepository extends Observable implements Repository<Bank> {
 	 */
 	@Override
 	public void remove(Bank bank, boolean removeFromDatabase, Callback<Void> callback) {
-		plugin.debug("Removing bank (#" + bank.getID() + ")");
+		plugin.debugf("Removing bank #%d", bank.getID());
 
 		bank.getAccounts().forEach(account -> plugin.getAccountRepository().remove(account, removeFromDatabase));
 

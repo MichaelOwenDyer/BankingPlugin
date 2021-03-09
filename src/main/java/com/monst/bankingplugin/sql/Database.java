@@ -41,8 +41,9 @@ import java.util.stream.Stream;
 
 public abstract class Database {
 
-	private final Set<String> notFoundWorlds = new HashSet<>();
+	final BankingPlugin plugin = BankingPlugin.getInstance();
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final Set<String> unknownWorldNames = new HashSet<>();
 
 	String tableBanks = "Banks";
 	String tableCoOwnsBank = "co_owns_bank";
@@ -55,9 +56,6 @@ public abstract class Database {
 	String tablePlayers = "Players";
 	String tableFields = "Fields";
 
-	final BankingPlugin plugin = BankingPlugin.getInstance();
-	HikariDataSource dataSource;
-	FluentJdbc fluentJdbc;
 	Query query;
 
 	abstract HikariDataSource getDataSource();
@@ -84,6 +82,30 @@ public abstract class Database {
 
 	abstract String getQueryCreateTableFields();
 
+	SqlErrorHandler forwardError(Callback<?> callback) {
+		return (e, msg) -> {
+			Callback.error(callback, e);
+			throw e;
+		};
+	}
+
+	final AfterQueryListener queryLogger = execution -> {
+		if(execution.success()) {
+			plugin.debugf(
+					"Query took %s ms to execute: '%s'",
+					execution.executionTimeMs(),
+					execution.sql()
+			);
+		} else
+			plugin.debug(execution.sqlException().orElseThrow(IllegalStateException::new));
+	};
+
+	final SqlErrorHandler handler = (e, msg) -> {
+		plugin.debugf("Encountered a database error while executing query '%s'", msg.orElse("null"));
+		plugin.debug(e);
+		throw e;
+	};
+
 	private int getDatabaseVersion() {
 		return query
 				.select("SELECT Value FROM " + tableFields + " WHERE Field = 'Version'")
@@ -96,13 +118,6 @@ public abstract class Database {
 				.update("REPLACE INTO " + tableFields + " VALUES ('Version', ?)")
 				.params(version)
 				.run();
-	}
-
-	SqlErrorHandler forwardError(Callback<?> callback) {
-		return (e, msg) -> {
-			Callback.error(callback, e);
-			throw e;
-		};
 	}
 
 	/**
@@ -121,51 +136,36 @@ public abstract class Database {
 		async(() -> {
 			disconnect();
 
-			dataSource = getDataSource();
-
-			AfterQueryListener queryLogger = execution -> {
-				if(execution.success()) {
-					plugin.debugf(
-							"Query took %s ms to execute: '%s'",
-							execution.executionTimeMs(),
-							execution.sql()
-					);
-				} else
-					plugin.debug(execution.sqlException().orElseThrow(IllegalStateException::new));
-			};
-
-			SqlErrorHandler handler = (e, msg) -> {
-				plugin.debugf("Encountered a database error while executing query '%s'", msg.orElse("null"));
-				plugin.debug(e);
-				throw e;
-			};
-
+			FluentJdbc fluentJdbc;
 			try {
+				dataSource = getDataSource();
 				fluentJdbc = new FluentJdbcBuilder()
 						.connectionProvider(dataSource)
 						.afterQueryListener(queryLogger)
 						.defaultSqlHandler(() -> handler)
+						.defaultTransactionIsolation(Transaction.Isolation.SERIALIZABLE)
 						.build();
-				query = fluentJdbc.query();
-			} catch (Exception e) {
+			} catch (RuntimeException e) {
 				callback.onError(e);
 				plugin.debug(e);
 				return;
 			}
 
 			if (dataSource == null || fluentJdbc == null) {
-				IllegalStateException e = new IllegalStateException("Data source/fluent jdbc is null");
+				IllegalStateException e = new IllegalStateException("Data source / fluentJdbc is null");
 				callback.onError(e);
 				plugin.debug(e);
 				return;
 			}
 
+			query = fluentJdbc.query();
+
 			if (update())
 				plugin.getLogger().info("Updating database finished.");
 
-			plugin.debug("Starting table creation");
+			plugin.debug("Starting table creation.");
 
-			Stream.of(
+			long createdTables = Stream.of(
 					getQueryCreateTableBanks(), // Create banks table
 					getQueryCreateTableCoOwnsBank(), // Create co_owns_bank table
 					getQueryCreateTableAccounts(), // Create accounts table
@@ -179,7 +179,11 @@ public abstract class Database {
 			)
 					.map(query::update)
 					.map(q -> q.errorHandler(forwardError(callback)))
-					.forEach(UpdateQuery::run);
+					.map(UpdateQuery::run)
+					.mapToLong(UpdateResult::affectedRows)
+					.sum();
+
+			plugin.debugf("Created %d missing tables.", createdTables);
 
 			// Clean up economy log
 			if (Config.cleanupLogDays > 0)
@@ -189,15 +193,23 @@ public abstract class Database {
 					.select("SELECT COUNT(AccountID) FROM " + tableAccounts)
 					.firstResult(rs -> rs.getInt(1))
 					.orElseThrow(IllegalStateException::new);
-
 			int banks = query
 					.select("SELECT COUNT(BankID) FROM " + tableBanks)
 					.firstResult(rs -> rs.getInt(1))
 					.orElseThrow(IllegalStateException::new);
-
 			Callback.yield(callback, new int[] { banks, accounts });
-
 		});
+	}
+
+	private HikariDataSource dataSource;
+	/**
+	 * Closes the data source
+	 */
+	public void disconnect() {
+		if (dataSource == null)
+			return;
+		dataSource.close();
+		dataSource = null;
 	}
 
 	/**
@@ -209,21 +221,20 @@ public abstract class Database {
 	}
 
 	/**
-	 * Adds an account to the database
+	 * Adds an account to the database.
 	 *
 	 * @param account  Account to add
-	 * @param callback Callback that - if succeeded - returns the ID the account was
-	 *                 given (as {@code int})
+	 * @param callback Callback that returns the new account ID
 	 */
 	public void addAccount(Account account, Callback<Integer> callback) {
 		async(() -> {
+			plugin.debugf("Adding account to the database.");
+			final String replaceQuery = "REPLACE INTO " + tableAccounts + "(" + (account.hasID() ? "AccountID, " : "") +
+					"BankID, Nickname, OwnerUUID, Balance, PreviousBalance, MultiplierStage, DelayUntilNextPayout, " +
+					"RemainingOfflinePayouts, RemainingOfflinePayoutsUntilReset, World, Y, X1, Z1, X2, Z2) " +
+					"VALUES(" + (account.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-			final String replaceQuery = constructReplaceQuery(tableAccounts, account.hasID(), "AccountID", "BankID",
-					"Nickname", "OwnerUUID", "Balance", "PreviousBalance", "MultiplierStage", "DelayUntilNextPayout",
-					"RemainingOfflinePayouts", "RemainingOfflinePayoutsUntilReset", "World", "Y", "X1", "Z1", "X2", "Z2"
-			);
-
-			final LinkedList<Object> params = accountAttributes(account);
+			final LinkedList<Object> params = getAttributes(account);
 			if (!account.hasID())
 				params.removeFirst();
 
@@ -237,19 +248,19 @@ public abstract class Database {
 			account.setID(id);
 			account.getBank().addAccount(account);
 
-			if(!account.getCoOwners().isEmpty()) {
-				Stream<List<?>> coOwnerEntries = account.getCoOwners().stream()
-						.map(OfflinePlayer::getUniqueId)
-						.map(uuid -> Arrays.asList(uuid, account.getID()));
-				query
-						.batch("INSERT INTO " + tableCoOwnsAccount + "(CoOwnerUUID, AccountID) VALUES(?,?)")
-						.params(coOwnerEntries)
-						.errorHandler(forwardError(callback))
-						.run();
-			}
-
+			plugin.debugf("Added account #%d to the database.", account.getID());
 			Callback.yield(callback, account.getID());
-			plugin.debugf("Added account to database (#%d).", account.getID());
+		});
+	}
+
+	private void updateAccount(Account account, String attribute, Object value, Callback<Void> callback) {
+		async(() -> {
+			plugin.debugf("Setting '" + attribute + "' to '" + value + "' at account #%d in the database.");
+			query.update("UPDATE " + tableAccounts + " SET " + attribute + " = " + value + " WHERE AccountID = ?")
+					.params(account.getID())
+					.errorHandler(forwardError(callback))
+					.run();
+			Callback.yield(callback);
 		});
 	}
 
@@ -261,21 +272,24 @@ public abstract class Database {
 	 */
 	public void removeAccount(Account account, Callback<Void> callback) {
 		async(() -> {
-			query.transaction().inNoResult(() -> {
+			plugin.debugf("Removing account #%d from the database.", account.getID());
+
+			long removedCoowners = query.transaction().in(() -> {
 				query
 						.update("DELETE FROM " + tableAccounts + " WHERE AccountID = ?")
 						.params(account.getID())
 						.errorHandler(forwardError(callback))
 						.run();
-				query
+				return query
 						.update("DELETE FROM " + tableCoOwnsAccount + " WHERE AccountID = ?")
 						.params(account.getID())
 						.errorHandler(forwardError(callback))
-						.run();
+						.run()
+						.affectedRows();
 			});
 
+			plugin.debugf("Removed account #%d and %d coowners from the database.", account.getID(), removedCoowners);
 			Callback.yield(callback);
-			plugin.debugf("Removing account from database (#%d)", account.getID());
 		});
 	}
 
@@ -288,37 +302,31 @@ public abstract class Database {
 	 */
 	public void addBank(Bank bank, Callback<Integer> callback) {
 		async(() -> {
+			plugin.debugf("Adding bank to the database.", bank.getID());
+			final String replaceQuery = "REPLACE INTO " + tableBanks + "(" + (bank.hasID() ? "BankID, " : "") +
+					"Name, OwnerUUID, CountInterestDelayOffline, ReimburseAccountCreation, PayOnLowBalance, " +
+					"InterestRate, AccountCreationPrice, MinimumBalance, LowBalanceFee, InitialInterestDelay, " +
+					"AllowedOfflinePayouts, AllowedOfflinePayoutsBeforeMultiplierReset, OfflineMultiplierDecrement, " +
+					"WithdrawalMultiplierDecrement, PlayerBankAccountLimit, Multipliers, InterestPayoutTimes, " +
+					"World, MinX, MaxX, MinY, MaxY, MinZ, MaxZ, PolygonVertices) " +
+					"VALUES(" + (bank.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-			final String replaceQuery = constructReplaceQuery(tableBanks, bank.hasID(), "BankID", "Name", "OwnerUUID",
-					"CountInterestDelayOffline", "ReimburseAccountCreation", "PayOnLowBalance", "InterestRate",
-					"AccountCreationPrice", "MinimumBalance", "LowBalanceFee", "InitialInterestDelay",
-					"AllowedOfflinePayouts", "AllowedOfflinePayoutsBeforeMultiplierReset", "OfflineMultiplierDecrement",
-					"WithdrawalMultiplierDecrement", "PlayerBankAccountLimit", "Multipliers", "InterestPayoutTimes",
-					"World", "MinX", "MaxX", "MinY", "MaxY", "MinZ", "MaxZ", "PolygonVertices");
-
-			final LinkedList<Object> params = bankAttributes(bank);
+			final LinkedList<Object> params = getAttributes(bank);
 			if (!bank.hasID())
 				params.removeFirst();
 
 			int id = query
-					.update(replaceQuery).params(params).errorHandler(forwardError(callback))
-					.runFetchGenKeys(rs -> rs.getInt(1)).firstKey().orElse(-1);
+					.update(replaceQuery)
+					.params(params)
+					.errorHandler(forwardError(callback))
+					.runFetchGenKeys(rs -> rs.getInt(1))
+					.firstKey()
+					.orElse(-1);
 
 			bank.setID(id);
 
-			if(!bank.getCoOwners().isEmpty()) {
-				Stream<List<?>> coOwnerEntries = bank.getCoOwners().stream()
-						.map(OfflinePlayer::getUniqueId)
-						.map(uuid -> Arrays.asList(uuid, bank.getID()));
-				query
-						.batch("INSERT INTO " + tableCoOwnsBank + "(CoOwnerUUID, BankID) VALUES(?,?)")
-						.params(coOwnerEntries)
-						.errorHandler(forwardError(callback))
-						.run();
-			}
-
+			plugin.debugf("Added bank #%d to the database.", bank.getID());
 			Callback.yield(callback, bank.getID());
-			plugin.debugf("Adding bank to database (#%d)", bank.getID());
 		});
 	}
 
@@ -330,23 +338,25 @@ public abstract class Database {
 	 */
 	public void removeBank(Bank bank, Callback<Void> callback) {
 		async(() -> {
-			query.transaction().inNoResult(
+			plugin.debugf("Removing bank #%d from the database.", bank.getID());
+			long removedCoowners = query.transaction().in(
 					() -> {
 						query
 								.update("DELETE FROM " + tableBanks + " WHERE BankID = ?")
 								.params(bank.getID())
 								.errorHandler(forwardError(callback))
 								.run();
-						query
+						return query
 								.update("DELETE FROM " + tableCoOwnsBank + " WHERE BankID = ?")
 								.params(bank.getID())
 								.errorHandler(forwardError(callback))
-								.run();
+								.run()
+								.affectedRows();
 					}
 			);
 
+			plugin.debugf("Removed bank #%d and %d coowners from the database.", bank.getID(), removedCoowners);
 			Callback.yield(callback);
-			plugin.debugf("Removing bank from database (#%d)", bank.getID());
 		});
 	}
 
@@ -378,18 +388,16 @@ public abstract class Database {
 	 */
 	private Set<Bank> getBanks(boolean showConsoleMessages, Callback<?> callback) {
 		plugin.debug("Fetching banks from the database.");
-		Set<Bank> banks = new HashSet<>(
-				query
+		Set<Bank> banks = query
 						.select("SELECT * FROM " + tableBanks)
 						.errorHandler(forwardError(callback))
-						.listResult(reconstructBank(showConsoleMessages))
-		);
-		plugin.debugf("Found %d.", banks.size());
+						.setResult(reconstructBank(showConsoleMessages));
+		plugin.debugf("Found %d bank%s.", banks.size(), banks.size() == 1 ? "" : "s");
 		return Collections.unmodifiableSet(banks);
 	}
 
 	/**
-	 * Gets all accounts registered at a certain bank from the database
+	 * Gets all accounts registered at a certain bank from the database.
 	 *
 	 * @param bank                The bank to get the accounts of
 	 * @param showConsoleMessages Whether console messages (errors or warnings)
@@ -397,433 +405,13 @@ public abstract class Database {
 	 */
 	private Set<Account> getAccounts(Bank bank, boolean showConsoleMessages, Callback<?> callback) {
 		plugin.debugf("Fetching accounts at bank #%d from the database.", bank.getID());
-		Set<Account> accounts = new HashSet<>(
-				query
+		Set<Account> accounts = query
 						.select("SELECT * FROM " + tableAccounts + " WHERE BankID = ?")
 						.params(bank.getID())
 						.errorHandler(forwardError(callback))
-						.listResult(reconstructAccount(bank, showConsoleMessages))
-		);
-		plugin.debugf("Found %d.");
+						.setResult(reconstructAccount(bank, showConsoleMessages));
+		plugin.debugf("Found %d account%s.", accounts.size(), accounts.size() == 1 ? "" : "s");
 		return Collections.unmodifiableSet(accounts);
-	}
-
-	/**
-	 * Adds a bank co-owner to the database.
-	 * @param bank bank the player co-owns
-	 * @param coowner the co-owner to be added
-	 */
-	public void addCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
-		run(() -> {
-			query
-					.update("REPLACE INTO " + tableCoOwnsBank + " (CoOwnerUUID, BankID) VALUES(?,?)")
-					.params(coowner.getUniqueId().toString(), bank.getID())
-					.errorHandler(forwardError(callback))
-					.run();
-
-			Callback.yield(callback);
-		}, async);
-	}
-
-
-	/**
-	 * Adds an account co-owner to the database.
-	 * @param account account the player co-owns
-	 * @param coowner the co-owner to be added
-	 */
-	public void addCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
-		run(() -> {
-			query
-					.update("REPLACE INTO " + tableCoOwnsAccount + " (CoOwnerUUID, AccountID) VALUES(?,?)")
-					.params(coowner.getUniqueId().toString(), account.getID())
-					.errorHandler(forwardError(callback))
-					.run();
-
-			Callback.yield(callback);
-		}, async);
-	}
-
-	/**
-	 * Removes a bank co-owner from the database.
-	 * @param bank bank the player no longer co-owns
-	 * @param coowner the co-owner to be removed
-	 * @param async whether to run this method asynchronously
-	 */
-	public void removeCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
-		run(() -> {
-			UpdateResult result = query
-					.update("DELETE FROM " + tableCoOwnsBank + " WHERE BankID = ? AND CoOwnerUUID = ?")
-					.params(bank.getID(), coowner.getUniqueId())
-					.errorHandler(forwardError(callback))
-					.run();
-
-			Callback.yield(callback);
-
-			if (result.affectedRows() != 0)
-				plugin.debugf("Removed co-owner from database (#%d).", bank.getID());
-		}, async);
-	}
-
-	/**
-	 * Removes an account co-owner from the database.
-	 * @param account account the player no longer co-owns
-	 * @param coowner the co-owner to be removed
-	 * @param async whether to run this method asynchronously
-	 */
-	public void removeCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
-		run(() -> {
-			UpdateResult result = query
-					.update("DELETE FROM " + tableCoOwnsAccount + " WHERE AccountID = ? AND CoOwnerUUID = ?")
-					.params(account.getID(), coowner.getUniqueId())
-					.errorHandler(forwardError(callback))
-					.run();
-
-			Callback.yield(callback);
-
-			if (result.affectedRows() != 0)
-				plugin.debugf("Removed co-owner from database (#%d).", account.getID());
-		}, async);
-	}
-
-	public void log(boolean configEnabled, String queryString, List<Object> params, Callback<Integer> callback) {
-		if (!configEnabled) {
-			Callback.yield(callback);
-			return;
-		}
-		async(() -> {
-			int transactionID = query
-					.update(queryString)
-					.params(params)
-					.errorHandler(forwardError(callback))
-					.runFetchGenKeys(rs -> rs.getInt(1))
-					.firstKey().orElse(-1);
-			Callback.yield(callback, transactionID);
-		});
-	}
-
-	/**
-	 * Log an account transaction to the database
-	 *
-	 * @param executor Player who performed a transaction
-	 * @param account  The {@link Account} the player performed the transaction on
-	 * @param amount   The {@link BigDecimal} transaction amount
-	 * @param callback Callback that - if succeeded - returns {@code null}
-	 */
-	public void logAccountTransaction(Player executor, Account account, BigDecimal amount, Callback<Integer> callback) {
-		final String query = "INSERT INTO " + tableAccountTransactions +
-				" (AccountID, ExecutorUUID, Amount, NewBalance, Timestamp, Time) VALUES(?,?,?,?,?,?)";
-		long millis = System.currentTimeMillis();
-		final List<Object> params = Arrays.asList(
-				account.getID(),
-				executor.getUniqueId().toString(),
-				amount,
-				account.getBalance(),
-				dateFormat.format(millis),
-				millis
-		);
-		log(Config.enableAccountTransactionLog, query, params, callback);
-	}
-
-	/**
-	 * Log an interest payout to the database
-	 *
-	 * @param account  The {@link Account} the interest was derived from
-	 * @param amount   The {@link BigDecimal} final transaction amount
-	 * @param callback Callback that - if succeeded - returns {@code null}
-	 */
-	public void logAccountInterest(Account account, BigDecimal amount, Callback<Integer> callback) {
-		final String query = "INSERT INTO " + tableAccountInterest +
-				"(AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?,?)";
-		long millis = System.currentTimeMillis();
-		final List<Object> params = Arrays.asList(
-				account.getID(),
-				account.getBank().getID(),
-				amount,
-				dateFormat.format(millis),
-				millis
-		);
-		log(Config.enableAccountInterestLog, query, params, callback);
-	}
-
-	public void logBankRevenue(Bank bank, BigDecimal amount, Callback<Integer> callback) {
-		final String query = "INSERT INTO " + tableBankRevenue + " (BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)";
-		long millis = System.currentTimeMillis();
-		List<Object> params = Arrays.asList(
-				bank.getID(),
-				amount,
-				dateFormat.format(millis),
-				millis
-		);
-		log(Config.enableBankRevenueLog, query, params, callback);
-	}
-
-	public void logLowBalanceFee(Account account, BigDecimal amount, Callback<Integer> callback) {
-		final String query = "INSERT INTO " + tableLowBalanceFees +
-				" (AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)";
-		long millis = System.currentTimeMillis();
-		List<Object> params = Arrays.asList(
-				account.getID(),
-				account.getBank().getID(),
-				amount,
-				dateFormat.format(millis),
-				millis
-		);
-		log(Config.enableLowBalanceFeeLog, query, params, callback);
-	}
-
-	/**
-	 * Cleans up the economy log to reduce file size
-	 */
-	public void cleanUpLogs() {
-		if (Config.cleanupLogDays < 0)
-			return;
-		run(() -> {
-
-			final long time = System.currentTimeMillis() - Config.cleanupLogDays * 86400000L;
-
-			long transactions = query.update("DELETE FROM " + tableAccountTransactions + " WHERE Time < " + time).run().affectedRows();
-			long interest = query.update("DELETE FROM " + tableAccountInterest + " WHERE Time < " + time).run().affectedRows();
-			long revenue = query.update("DELETE FROM " + tableBankRevenue + " WHERE Time < " + time).run().affectedRows();
-			long lowBalanceFees = query.update("DELETE FROM " + tableLowBalanceFees + " WHERE Time < " + time).run().affectedRows();
-			long players = query.update("DELETE FROM " + tablePlayers + " WHERE LastSeen < " + time).run().affectedRows();
-
-			plugin.getLogger().info("Cleaned up banking logs.");
-			plugin.debugf("Cleaned up banking logs (%d transactions, %d interests, %d revenues, %d low balance fees, %d players).",
-					transactions, interest, revenue, lowBalanceFees, players);
-		}, false); // TODO: Make async?
-	}
-
-	/**
-	 * Logs player's last seen time to the database
-	 *
-	 * @param player    Player who logged out
-	 * @param callback  Callback that - if succeeded - returns {@code null}
-	 */
-	public void logLastSeen(Player player, Callback<Integer> callback) {
-		final String query = "REPLACE INTO " + tablePlayers + " (PlayerUUID,Name,LastSeen) VALUES(?,?,?)";
-		final List<Object> params = Arrays.asList(
-				player.getUniqueId().toString(),
-				player.getName(),
-				System.currentTimeMillis()
-		);
-		log(true, query, params, callback);
-	}
-
-	/**
-	 * Gets the revenue a player received in account interest while they were offline
-	 *
-	 * @param player     Player whose revenue to get
-	 * @param logoutTime Time in milliseconds when he logged out the last time
-	 * @param callback   Callback that - if succeeded - returns the revenue the
-	 *                   player made while offline (as {@code double})
-	 */
-	public void getTotalAccountInterestSinceLogout(Player player, long logoutTime, Callback<BigDecimal> callback) {
-		async(() -> {
-			plugin.debugf("Fetching account interest for %s since last logout at %d.", player.getName(), logoutTime);
-			BigDecimal interest = query
-					.select("SELECT SUM(Amount) " +
-							"FROM " + tableAccountInterest + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
-							"WHERE OwnerUUID = ? AND Time > ?")
-					.params(player.getUniqueId(), logoutTime)
-					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getBigDecimal(1))
-					.orElse(BigDecimal.ZERO);
-			plugin.debugf("Found %s in account interest for %s.", Utils.format(interest), player.getName());
-			Callback.yield(callback, Utils.scale(interest));
-		});
-	}
-
-	public void getTotalLowBalanceFeesPaidSinceLogout(Player player, long logoutTime, Callback<BigDecimal> callback) {
-		async(() -> {
-			plugin.debugf("Fetching low balance fees paid by %s since last logout at %d.", player.getName(), logoutTime);
-			BigDecimal fees = query
-					.select("SELECT SUM(Amount) " +
-							"FROM " + tableLowBalanceFees + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
-							"WHERE OwnerUUID = ? AND Time > ?")
-					.params(player.getUniqueId(), logoutTime)
-					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getBigDecimal(1))
-					.orElse(BigDecimal.ZERO);
-			plugin.debugf("Found %s in low balance fees paid by %s.", Utils.format(fees), player.getName());
-			Callback.yield(callback, Utils.scale(fees));
-		});
-	}
-
-	/**
-	 * Gets the revenue a player earned in bank profit while they were offline
-	 *
-	 * @param player     Player whose revenue to get
-	 * @param logoutTime Time in milliseconds when he logged out the last time
-	 * @param callback   Callback that - if succeeded - returns the revenue the
-	 *                   player made while offline (as {@code double})
-	 */
-	public void getTotalBankProfitSinceLogout(Player player, long logoutTime, Callback<BigDecimal> callback) {
-		async(() -> {
-			plugin.debugf("Fetching bank revenue for %s since last logout at %d.", player.getName(), logoutTime);
-			BigDecimal revenue = query
-					.select("SELECT SUM(Amount) " +
-							"FROM " + tableBankRevenue + " NATURAL JOIN " + tableBanks + " " +
-							"WHERE OwnerUUID = ? AND Time > ?")
-					.params(player.getUniqueId(), logoutTime)
-					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getBigDecimal(1))
-					.orElse(BigDecimal.ZERO);
-			plugin.debugf("Found %s in bank revenue for %s.", Utils.format(revenue), player.getName());
-			plugin.debugf("Fetching low balance fees received by %s since last logout at %d.", player.getName(), logoutTime);
-			BigDecimal fees = query
-					.select("SELECT SUM(Amount) " +
-							"FROM " + tableLowBalanceFees + " NATURAL JOIN " + tableBanks + " USING(BankID) " +
-							"WHERE OwnerUUID = ? AND Time > ?")
-					.params(player.getUniqueId(), logoutTime)
-					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getBigDecimal(1))
-					.orElse(BigDecimal.ZERO);
-			plugin.debugf("Found %s in low balance fees received by %s.", Utils.format(fees), player.getName());
-			plugin.debugf("Fetching bank interest paid by %s since last logout at %d.", player.getName(), logoutTime);
-			BigDecimal interest = query
-					.select("SELECT SUM(Amount) " +
-							"FROM " + tableAccountInterest + " NATURAL JOIN " + tableBanks + " USING(BankID) " +
-							"WHERE OwnerUUID = ? AND Time > ?")
-					.params(player.getUniqueId(), logoutTime)
-					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getBigDecimal(1))
-					.orElse(BigDecimal.ZERO);
-			plugin.debugf("Found %s in interest payments paid by %s.", Utils.format(interest), player.getName());
-			Callback.yield(callback, Utils.scale(revenue.add(fees).subtract(interest)));
-		});
-	}
-
-	/**
-	 * Gets the last logout of a player
-	 *
-	 * @param player   Player who logged out
-	 * @param callback Callback that - if succeeded - returns the time in
-	 *                 milliseconds the player logged out (as {@code long}) or
-	 *                 {@code -1} if the player has not logged out yet.
-	 */
-	public void getLastLogout(Player player, Callback<Long> callback) {
-		async(() -> {
-			long lastLogout = query
-					.select("SELECT LastSeen FROM " + tablePlayers + " WHERE PlayerUUID = ?")
-					.params(player.getUniqueId().toString())
-					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getLong(1))
-					.orElse(-1L);
-			Callback.yield(callback, lastLogout);
-		});
-	}
-
-	/**
-	 * Closes the data source
-	 */
-	public void disconnect() {
-		if (dataSource == null)
-			return;
-		dataSource.close();
-		dataSource = null;
-	}
-
-	/**
-	 * Helper class to extract values from a {@link ResultSet} in sequential order.
-	 */
-	private static class ValueGrabber {
-
-		private int index = 1;
-		private final ResultSet rs;
-
-		private ValueGrabber(ResultSet rs) {
-			this.rs = rs;
-		}
-
-		boolean next() throws SQLException {
-			index = 1;
-			return rs.next();
-		}
-
-		String getNextString() throws SQLException {
-			return rs.getString(index++);
-		}
-
-		int getNextInt() throws SQLException {
-			return rs.getInt(index++);
-		}
-
-		long getNextLong() throws SQLException {
-			return rs.getLong(index++);
-		}
-
-		double getNextDouble() throws SQLException {
-			return rs.getDouble(index++);
-		}
-
-		boolean getNextBoolean() throws SQLException {
-			return Boolean.parseBoolean(getNextString());
-		}
-
-		BigDecimal getNextBigDecimal() throws SQLException {
-			return rs.getBigDecimal(index++);
-		}
-
-		void skip() {
-			index++;
-		}
-
-	}
-
-	private Mapper<Account> reconstructAccount(Bank bank, boolean showConsoleMessages) {
-		return rs -> {
-
-			ValueGrabber values = new ValueGrabber(rs);
-
-			int accountID = values.getNextInt();
-			values.skip(); // Skip BankID
-			String nickname = values.getNextString();
-			OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(values.getNextString()));
-
-			BigDecimal balance = values.getNextBigDecimal();
-			BigDecimal prevBalance = values.getNextBigDecimal();
-
-			int multiplierStage = values.getNextInt();
-			int delayUntilNextPayout = values.getNextInt();
-			int remainingOfflinePayouts = values.getNextInt();
-			int remainingOfflinePayoutsUntilReset = values.getNextInt();
-
-			String worldName = values.getNextString();
-			World world = Bukkit.getWorld(worldName);
-			if (world == null) {
-				WorldNotFoundException e = new WorldNotFoundException(worldName);
-				if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
-					plugin.getLogger().warning(e.getMessage());
-					notFoundWorlds.add(worldName);
-				}
-				plugin.debugf("Failed to get account (#%d)", accountID);
-				plugin.debug(e);
-				return null;
-			}
-			int y = values.getNextInt();
-			int x1 = values.getNextInt();
-			int z1 = values.getNextInt();
-			int x2 = values.getNextInt();
-			int z2 = values.getNextInt();
-			BlockVector3D v1 = new BlockVector3D(x1, y, z1);
-			ChestLocation chestLocation;
-			if (x1 == x2 && z1 == z2)
-				chestLocation = SingleChestLocation.from(world, v1);
-			else
-				chestLocation = DoubleChestLocation.from(world, v1, new BlockVector3D(x2, y, z2));
-
-			Set<OfflinePlayer> coowners = new HashSet<>(
-					query
-							.select("SELECT CoOwnerUUID FROM " + tableCoOwnsAccount + " WHERE AccountID = ?")
-							.params(accountID)
-							.listResult(rs2 -> Bukkit.getOfflinePlayer(UUID.fromString(rs2.getString(1))))
-			);
-			plugin.debugf("Found %d account coowners.", coowners.size());
-
-			plugin.debugf("Initializing account #%d at bank \"%s\"", accountID, bank.getName());
-			return Account.reopen(accountID, owner, coowners, bank, chestLocation, nickname, balance, prevBalance,
-					multiplierStage, delayUntilNextPayout, remainingOfflinePayouts, remainingOfflinePayoutsUntilReset);
-		};
 	}
 
 	private Mapper<Bank> reconstructBank(boolean showConsoleMessages) {
@@ -831,7 +419,7 @@ public abstract class Database {
 			ValueGrabber values = new ValueGrabber(rs);
 
 			int bankID = values.getNextInt();
-			plugin.debugf("Getting bank from database... (#%d)", bankID);
+			plugin.debugf("Fetching bank #%d from the database.", bankID);
 
 			String name = values.getNextString();
 			String ownerUUID = values.getNextString();
@@ -884,11 +472,11 @@ public abstract class Database {
 			World world = Bukkit.getWorld(worldName);
 			if (world == null) {
 				WorldNotFoundException e = new WorldNotFoundException(worldName);
-				if (showConsoleMessages && !notFoundWorlds.contains(worldName)) {
+				if (showConsoleMessages && !unknownWorldNames.contains(worldName)) {
 					plugin.getLogger().warning(e.getMessage());
-					notFoundWorlds.add(worldName);
+					unknownWorldNames.add(worldName);
 				}
-				plugin.debugf("Failed to get bank (#%d)", bankID);
+				plugin.debugf("Failed to identify world '%s' while fetching bank #%d from the database.", worldName, bankID);
 				plugin.debug(e);
 				return null;
 			}
@@ -909,34 +497,452 @@ public abstract class Database {
 					}, () -> CuboidSelection.of(world, new BlockVector3D(minX, minY, minZ), new BlockVector3D(maxX, maxY, maxZ))
 			);
 
-			Set<OfflinePlayer> coowners = new HashSet<>(
-					query
-							.select("SELECT CoOwnerUUID FROM " + tableCoOwnsBank + " WHERE BankID = ?")
-							.params(bankID)
-							.listResult(rs2 -> Bukkit.getOfflinePlayer(UUID.fromString(rs2.getString(1))))
-			);
-			plugin.debugf("Found %d bank coowners.", coowners.size());
+			Set<OfflinePlayer> coowners = query
+					.select("SELECT CoOwnerUUID FROM " + tableCoOwnsBank + " WHERE BankID = ?")
+					.params(bankID)
+					.setResult(rs2 -> Bukkit.getOfflinePlayer(UUID.fromString(rs2.getString(1))));
 
-			plugin.debugf("Initializing bank \"%s\"... (#%d)", ChatColor.stripColor(name), bankID);
+			plugin.debugf("Found %d bank coowner%s.", coowners.size(), coowners.size() == 1 ? "" : "s");
+
+			plugin.debugf("Initializing bank #%d (\"%s\")...", bankID, ChatColor.stripColor(name));
 			return Bank.recreate(bankID, name, owner, coowners, selection, bankConfig);
 		};
 	}
 
-	private LinkedList<Object> accountAttributes(Account account) {
-		BlockVector3D v1 = account.getChestLocation().getMinimumBlock();
-		BlockVector3D v2 = account.getChestLocation().getMaximumBlock();
+	private Mapper<Account> reconstructAccount(Bank bank, boolean showConsoleMessages) {
+		return rs -> {
+			ValueGrabber values = new ValueGrabber(rs);
+
+			int accountID = values.getNextInt();
+			values.skip(); // Skip BankID
+			String nickname = values.getNextString();
+			OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(values.getNextString()));
+
+			BigDecimal balance = values.getNextBigDecimal();
+			BigDecimal prevBalance = values.getNextBigDecimal();
+
+			int multiplierStage = values.getNextInt();
+			int delayUntilNextPayout = values.getNextInt();
+			int remainingOfflinePayouts = values.getNextInt();
+			int remainingOfflinePayoutsUntilReset = values.getNextInt();
+
+			String worldName = values.getNextString();
+			World world = Bukkit.getWorld(worldName);
+			if (world == null) {
+				WorldNotFoundException e = new WorldNotFoundException(worldName);
+				if (showConsoleMessages && !unknownWorldNames.contains(worldName)) {
+					plugin.getLogger().warning(e.getMessage());
+					unknownWorldNames.add(worldName);
+				}
+				plugin.debugf("Failed to identify world '%s' while fetching account #%d from the database.", worldName, accountID);
+				plugin.debug(e);
+				return null;
+			}
+			int y = values.getNextInt();
+			int x1 = values.getNextInt();
+			int z1 = values.getNextInt();
+			int x2 = values.getNextInt();
+			int z2 = values.getNextInt();
+			BlockVector3D v1 = new BlockVector3D(x1, y, z1);
+			ChestLocation chestLocation;
+			if (x1 == x2 && z1 == z2)
+				chestLocation = SingleChestLocation.from(world, v1);
+			else
+				chestLocation = DoubleChestLocation.from(world, v1, new BlockVector3D(x2, y, z2));
+
+			Set<OfflinePlayer> coowners = query
+					.select("SELECT CoOwnerUUID FROM " + tableCoOwnsAccount + " WHERE AccountID = ?")
+					.params(accountID)
+					.setResult(rs2 -> Bukkit.getOfflinePlayer(UUID.fromString(rs2.getString(1))));
+			plugin.debugf("Found %d account coowner%s.", coowners.size(), coowners.size() == 1 ? "" : "s");
+
+			plugin.debugf("Initializing account #%d at bank #%d (\"%s\")", accountID, bank.getID(), bank.getName());
+			return Account.reopen(accountID, owner, coowners, bank, chestLocation, nickname, balance, prevBalance,
+					multiplierStage, delayUntilNextPayout, remainingOfflinePayouts, remainingOfflinePayoutsUntilReset);
+		};
+	}
+
+	/**
+	 * Adds a bank co-owner to the database.
+	 * @param bank bank the player co-owns
+	 * @param coowner the co-owner to be added
+	 */
+	public void addCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
+		plugin.debugf("Adding co-owner %s to bank #%d.", coowner.getName(), bank.getID());
+		addCoOwner(tableCoOwnsBank, "BankID", coowner.getUniqueId(), bank.getID(), callback, async);
+	}
+
+
+	/**
+	 * Adds an account co-owner to the database.
+	 * @param account account the player co-owns
+	 * @param coowner the co-owner to be added
+	 */
+	public void addCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
+		plugin.debugf("Adding co-owner %s to account #%d.", coowner.getName(), account.getID());
+		addCoOwner(tableCoOwnsAccount, "AccountID", coowner.getUniqueId(), account.getID(), callback, async);
+	}
+
+	private void addCoOwner(String table, String idAttribute, UUID coownerUUID, int entityID, Callback<Void> callback, boolean async) {
+		run(() -> {
+			query
+					.update("REPLACE INTO " + table + "(CoOwnerUUID, " + idAttribute + ") VALUES(?,?)")
+					.params(coownerUUID, entityID)
+					.errorHandler(forwardError(callback))
+					.run();
+			Callback.yield(callback);
+		}, async);
+	}
+
+	/**
+	 * Removes a bank co-owner from the database.
+	 * @param bank bank the player no longer co-owns
+	 * @param coowner the co-owner to be removed
+	 * @param async whether to run this method asynchronously
+	 */
+	public void removeCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
+		plugin.debugf("Removing co-owner %s from bank #%d.", coowner.getName(), bank.getID());
+		removeCoOwner(tableCoOwnsBank, "BankID", bank.getID(), coowner.getUniqueId(), callback, async);
+	}
+
+	/**
+	 * Removes an account co-owner from the database.
+	 * @param account account the player no longer co-owns
+	 * @param coowner the co-owner to be removed
+	 * @param async whether to run this method asynchronously
+	 */
+	public void removeCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
+		plugin.debugf("Removing co-owner %s from account #%d.", coowner.getName(), account.getID());
+		removeCoOwner(tableCoOwnsAccount, "AccountID", account.getID(), coowner.getUniqueId(), callback, async);
+	}
+
+	private void removeCoOwner(String table, String idAttribute, int entityID, UUID coownerUUID, Callback<Void> callback, boolean async) {
+		run(() -> {
+			long affectedRows = query
+					.update("DELETE FROM " + table + " WHERE " + idAttribute + " = ? AND CoOwnerUUID = ?")
+					.params(entityID, coownerUUID)
+					.errorHandler(forwardError(callback))
+					.run()
+					.affectedRows();
+			if (affectedRows == 0)
+				plugin.debugf("Found no co-owner to remove.");
+			Callback.yield(callback);
+		}, async);
+	}
+
+	/**
+	 * Logs an account transaction to the database.
+	 *
+	 * @param executor Player who performed a transaction
+	 * @param account  The {@link Account} the player performed the transaction on
+	 * @param amount   The {@link BigDecimal} transaction amount
+	 * @param callback Callback that - if succeeded - returns {@code null}
+	 */
+	public void logAccountTransaction(Player executor, Account account, BigDecimal amount, Callback<Integer> callback) {
+		final String query = "INSERT INTO " + tableAccountTransactions +
+				" (AccountID, ExecutorUUID, Amount, NewBalance, Timestamp, Time) VALUES(?,?,?,?,?,?)";
+		long millis = System.currentTimeMillis();
+		final List<Object> params = Arrays.asList(
+				account.getID(),
+				executor.getUniqueId(),
+				amount,
+				account.getBalance(),
+				dateFormat.format(millis),
+				millis
+		);
+		log(Config.enableAccountTransactionLog, query, params, callback);
+	}
+
+	/**
+	 * Logs an interest payout to the database.
+	 *
+	 * @param account  The {@link Account} the interest was derived from
+	 * @param amount   The {@link BigDecimal} final transaction amount
+	 * @param callback Callback that - if succeeded - returns {@code null}
+	 */
+	public void logAccountInterest(Account account, BigDecimal amount, Callback<Integer> callback) {
+		final String query = "INSERT INTO " + tableAccountInterest +
+				" (AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?,?)";
+		long millis = System.currentTimeMillis();
+		final List<Object> params = Arrays.asList(
+				account.getID(),
+				account.getBank().getID(),
+				amount,
+				dateFormat.format(millis),
+				millis
+		);
+		log(Config.enableAccountInterestLog, query, params, callback);
+	}
+
+	public void logBankRevenue(Bank bank, BigDecimal amount, Callback<Integer> callback) {
+		final String query = "INSERT INTO " + tableBankRevenue + " (BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)";
+		long millis = System.currentTimeMillis();
+		List<Object> params = Arrays.asList(
+				bank.getID(),
+				amount,
+				dateFormat.format(millis),
+				millis
+		);
+		log(Config.enableBankRevenueLog, query, params, callback);
+	}
+
+	public void logLowBalanceFee(Account account, BigDecimal amount, Callback<Integer> callback) {
+		final String query = "INSERT INTO " + tableLowBalanceFees +
+				" (AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)";
+		long millis = System.currentTimeMillis();
+		List<Object> params = Arrays.asList(
+				account.getID(),
+				account.getBank().getID(),
+				amount,
+				dateFormat.format(millis),
+				millis
+		);
+		log(Config.enableLowBalanceFeeLog, query, params, callback);
+	}
+
+	/**
+	 * Logs a player's last seen time to the database.
+	 *
+	 * @param player    Player who logged out
+	 * @param callback  Callback that - if succeeded - returns {@code null}
+	 */
+	public void logLastSeen(Player player, Callback<Integer> callback) {
+		final String query = "REPLACE INTO " + tablePlayers + " (PlayerUUID,Name,LastSeen) VALUES(?,?,?)";
+		final List<Object> params = Arrays.asList(
+				player.getUniqueId(),
+				player.getName(),
+				System.currentTimeMillis()
+		);
+		log(true, query, params, callback);
+	}
+
+	private void log(boolean configEnabled, String queryString, List<Object> params, Callback<Integer> callback) {
+		if (!configEnabled)
+			return;
+		async(() -> {
+			int id = query
+					.update(queryString)
+					.params(params)
+					.errorHandler(forwardError(callback))
+					.runFetchGenKeys(rs -> rs.getInt(1))
+					.firstKey().orElse(-1);
+			Callback.yield(callback, id);
+		});
+	}
+
+	/**
+	 * Cleans up the economy log to reduce file size
+	 */
+	public void cleanUpLogs() {
+		if (Config.cleanupLogDays < 0)
+			return;
+
+		run(() -> {
+			final long time = System.currentTimeMillis() - Config.cleanupLogDays * 86400000L;
+
+			long transactions = query.update("DELETE FROM " + tableAccountTransactions +
+					" WHERE Time < " + time).run().affectedRows();
+			long interest = query.update("DELETE FROM " + tableAccountInterest +
+					" WHERE Time < " + time).run().affectedRows();
+			long revenue = query.update("DELETE FROM " + tableBankRevenue +
+					" WHERE Time < " + time).run().affectedRows();
+			long lowBalanceFees = query.update("DELETE FROM " + tableLowBalanceFees +
+					" WHERE Time < " + time).run().affectedRows();
+			long players = query.update("DELETE FROM " + tablePlayers +
+					" WHERE LastSeen < " + time).run().affectedRows();
+
+			plugin.getLogger().info("Cleaned up banking logs.");
+			plugin.debugf("Cleaned up banking logs (%d transactions, %d interests, %d revenues, %d low balance fees, %d players).",
+					transactions, interest, revenue, lowBalanceFees, players);
+		}, false); // TODO: Make async?
+	}
+
+	/**
+	 * Gets the total interest a player has earned on their accounts between a particular time and now
+	 *
+	 * @param player     Player whose account interest is to be looked up
+	 * @param time 		 Time in milliseconds
+	 * @param callback   Callback that returns the player's total account interest between then and now
+	 */
+	public void getTotalInterestEarnedSince(Player player, long time, Callback<BigDecimal> callback) {
+		String playerName = player.getName();
+		String timeFormatted = dateFormat.format(time);
+		async(() -> {
+			plugin.debugf("Fetching account interest for %s since last logout at %s.", playerName, timeFormatted);
+			BigDecimal interest = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableAccountInterest + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), time)
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getDouble(1))
+					.map(BigDecimal::new)
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in account interest for %s.", Utils.format(interest), playerName);
+			Callback.yield(callback, Utils.scale(interest));
+		});
+	}
+
+	/**
+	 * Gets the total low balance fees a player has paid on their accounts between a particular time and now
+	 *
+	 * @param player     Player whose low balance fees are to be looked up
+	 * @param time 		 Time in milliseconds
+	 * @param callback   Callback that returns the total low balance fees paid by the player between then and now
+	 */
+	public void getTotalLowBalanceFeesPaidSince(Player player, long time, Callback<BigDecimal> callback) {
+		String playerName = player.getName();
+		String timeFormatted = dateFormat.format(time);
+		async(() -> {
+			plugin.debugf("Fetching low balance fees paid by %s since last logout at %s.", playerName, timeFormatted);
+			BigDecimal fees = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableLowBalanceFees + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), time)
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getDouble(1))
+					.map(BigDecimal::new)
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in low balance fees paid by %s.", Utils.format(fees), playerName);
+			Callback.yield(callback, Utils.scale(fees));
+		});
+	}
+
+	/**
+	 * Gets the bank profit a player earned between a particular time and now
+	 *
+	 * @param player     Player whose bank profits should be looked up
+	 * @param time 		 Time in milliseconds
+	 * @param callback   Callback that returns the total bank profit between then and now
+	 */
+	public void getTotalBankProfitSinceLogout(Player player, long time, Callback<BigDecimal> callback) {
+		String playerName = player.getName();
+		String timeFormatted = dateFormat.format(time);
+		async(() -> {
+			plugin.debugf("Fetching bank revenue earned by %s since last logout at %s.", playerName, timeFormatted);
+			BigDecimal revenue = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableBankRevenue + " NATURAL JOIN " + tableBanks + " " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), time)
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getDouble(1))
+					.map(BigDecimal::new)
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in bank revenue earned by %s.", Utils.format(revenue), playerName);
+			plugin.debugf("Fetching low balance fees received by %s since last logout at %s.", playerName, timeFormatted);
+			BigDecimal fees = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableLowBalanceFees + " NATURAL JOIN " + tableBanks + " " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), time)
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getDouble(1))
+					.map(BigDecimal::new)
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in low balance fees received by %s.", Utils.format(fees), playerName);
+			plugin.debugf("Fetching bank interest paid by %s since last logout at %s.", playerName, timeFormatted);
+			BigDecimal interest = query
+					.select("SELECT SUM(Amount) " +
+							"FROM " + tableAccountInterest + " NATURAL JOIN " + tableBanks + " " +
+							"WHERE OwnerUUID = ? AND Time > ?")
+					.params(player.getUniqueId(), time)
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getDouble(1))
+					.map(BigDecimal::new)
+					.orElse(BigDecimal.ZERO);
+			plugin.debugf("Found %s in interest payments paid by %s.", Utils.format(interest), playerName);
+			Callback.yield(callback, Utils.scale(revenue.add(fees).subtract(interest)));
+		});
+	}
+
+	/**
+	 * Gets the last logout of a player
+	 *
+	 * @param player   Player who logged out
+	 * @param callback Callback that - if succeeded - returns the time in
+	 *                 milliseconds the player logged out (as {@code long}) or
+	 *                 {@code -1} if the player has not logged out yet.
+	 */
+	public void getLastLogout(Player player, Callback<Long> callback) {
+		String playerName = player.getName();
+		async(() -> {
+			plugin.debugf("Fetching last logout for %s.", playerName);
+			long lastLogout = query
+					.select("SELECT LastSeen FROM " + tablePlayers + " WHERE PlayerUUID = ?")
+					.params(player.getUniqueId())
+					.errorHandler(forwardError(callback))
+					.firstResult(rs -> rs.getLong(1))
+					.orElse(-1L);
+			plugin.debugf("Found last logout for %s at %d.", playerName, lastLogout);
+			Callback.yield(callback, lastLogout);
+		});
+	}
+
+	/**
+	 * Helper class to extract values from a {@link ResultSet} in sequential order.
+	 */
+	private static class ValueGrabber {
+
+		private int index = 1;
+		private final ResultSet rs;
+
+		private ValueGrabber(ResultSet rs) {
+			this.rs = rs;
+		}
+
+		boolean next() throws SQLException {
+			index = 1;
+			return rs.next();
+		}
+
+		String getNextString() throws SQLException {
+			return rs.getString(index++);
+		}
+
+		int getNextInt() throws SQLException {
+			return rs.getInt(index++);
+		}
+
+		long getNextLong() throws SQLException {
+			return rs.getLong(index++);
+		}
+
+		double getNextDouble() throws SQLException {
+			return rs.getDouble(index++);
+		}
+
+		boolean getNextBoolean() throws SQLException {
+			return Boolean.parseBoolean(getNextString());
+		}
+
+		BigDecimal getNextBigDecimal() throws SQLException {
+			return rs.getBigDecimal(index++);
+		}
+
+		void skip() {
+			index++;
+		}
+
+	}
+
+	private LinkedList<Object> getAttributes(Account account) {
+		ChestLocation loc = account.getChestLocation();
+		BlockVector3D v1 = loc.getMinimumBlock();
+		BlockVector3D v2 = loc.getMaximumBlock();
 		return new LinkedList<>(Arrays.asList(
 				account.getID(),
 				account.getBank().getID(),
 				account.getRawName(),
-				account.getOwner().getUniqueId().toString(),
+				account.getOwner().getUniqueId(),
 				account.getBalance(),
 				account.getPrevBalance(),
 				account.getMultiplierStage(),
 				account.getDelayUntilNextPayout(),
 				account.getRemainingOfflinePayouts(),
 				account.getRemainingOfflinePayoutsUntilReset(),
-				account.getChestLocation().getWorld().getName(),
+				loc.getWorld().getName(),
 				v1.getY(),
 				v1.getX(),
 				v1.getZ(),
@@ -945,7 +951,8 @@ public abstract class Database {
 		));
 	}
 
-	private LinkedList<Object> bankAttributes(Bank bank) {
+	private LinkedList<Object> getAttributes(Bank bank) {
+		Selection sel = bank.getSelection();
 		return new LinkedList<>(Arrays.asList(
 				bank.getID(),
 				bank.getRawName(),
@@ -965,28 +972,15 @@ public abstract class Database {
 				bank.get(BankField.PLAYER_BANK_ACCOUNT_LIMIT),
 				bank.get(BankField.MULTIPLIERS),
 				bank.get(BankField.INTEREST_PAYOUT_TIMES),
-				bank.getSelection().getWorld().getName(),
-				bank.getSelection().getMinX(),
-				bank.getSelection().getMaxX(),
-				bank.getSelection().getMinY(),
-				bank.getSelection().getMaxY(),
-				bank.getSelection().getMinZ(),
-				bank.getSelection().getMaxZ(),
-				bank.getSelection().isPolygonal() ?
-						((PolygonalSelection) bank.getSelection()).getVertices() : null
+				sel.getWorld().getName(),
+				sel.getMinX(),
+				sel.getMaxX(),
+				sel.getMinY(),
+				sel.getMaxY(),
+				sel.getMinZ(),
+				sel.getMaxZ(),
+				sel.isPolygonal() ? ((PolygonalSelection) bank.getSelection()).getVertices() : null
 		));
-	}
-
-	private static String constructReplaceQuery(String tableName, boolean hasID, String... attributes) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("REPLACE INTO ").append(tableName);
-		LinkedList<String> list = new LinkedList<>(Arrays.asList(attributes));
-		if (!hasID)
-			list.removeFirst();
-		sb.append(list.stream().collect(Collectors.joining(",", " (", ") ")));
-		sb.append("VALUES");
-		sb.append(list.stream().map(s -> "?").collect(Collectors.joining(",", "(", ")")));
-		return sb.toString();
 	}
 
 	private void async(Runnable runnable) {

@@ -46,12 +46,9 @@ public class AccountProtectListener extends BankingPluginListener {
 	 */
 	@EventHandler(ignoreCancelled = true)
 	public void onAccountChestBreak(BlockBreakEvent e) {
-		Chest c;
-		try {
-			c = Utils.getChestAt(e.getBlock());
-		} catch (ChestNotFoundException ex) {
+		Chest c = Utils.getChestAt(e.getBlock());
+		if (c == null)
 			return;
-		}
 		ChestLocation chestLocation = ChestLocation.from(c);
 		Account account = null;
 		try {
@@ -127,7 +124,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 			accountRepo.remove(account, false, Callback.of(plugin, result -> {
 				newAccount.create(true);
-				accountRepo.add(newAccount, true, newAccount.callUpdateName());
+				accountRepo.add(newAccount, true, newAccount.callUpdateChestName());
 			}));
 		} else {
 			accountRepo.remove(account, true);
@@ -242,7 +239,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 		accountRepo.remove(account, true, Callback.of(plugin, result -> {
 				if (newAccount.create(true)) {
-					accountRepo.add(newAccount, true, newAccount.callUpdateName());
+					accountRepo.add(newAccount, true, newAccount.callUpdateChestName());
 					plugin.debugf("%s extended %s's account (#%d)",
 							p.getName(), account.getOwner().getName(), account.getID());
 				} else
@@ -261,13 +258,8 @@ public class AccountProtectListener extends BankingPluginListener {
         if (!e.getInitiator().getType().equals(InventoryType.PLAYER)) {
 
         	for (Inventory inv : new Inventory[] { e.getSource(), e.getDestination() }) {
-        		Chest chest;
-				try {
-					chest = Utils.getChestHolding(inv);
-				} catch (ChestNotFoundException ex) {
-					return;
-				}
-				if (accountRepo.isAccount(ChestLocation.from(chest)))
+        		Chest chest = Utils.getChestHolding(inv);
+				if (chest != null && accountRepo.isAccount(ChestLocation.from(chest)))
 					e.setCancelled(true);
 			}
         }
@@ -280,12 +272,9 @@ public class AccountProtectListener extends BankingPluginListener {
 	public void onAccountItemClick(InventoryClickEvent e) {
 		if (!(e.getWhoClicked() instanceof Player))
 			return;
-		Chest chest;
-		try {
-			chest = Utils.getChestHolding(e.getInventory());
-		} catch (ChestNotFoundException ex) {
+		Chest chest = Utils.getChestHolding(e.getInventory());
+		if (chest == null)
 			return;
-		}
 		ChestLocation chestLocation = ChestLocation.from(chest);
 		Account account;
 		try {

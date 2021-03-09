@@ -17,6 +17,7 @@ import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -278,14 +279,19 @@ public class Utils {
 		return b.getRelative(neighborFacing);
 	}
 
-	public static Chest getChestAt(Block b) throws ChestNotFoundException {
+	public static Chest getChestAt(Block b) {
 		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST)
 			return ((Chest) b.getState());
-		throw new ChestNotFoundException(b);
+		return null;
 	}
 
-	public static Chest getChestHolding(Inventory inv) throws ChestNotFoundException {
-		return getChestAt(inv.getLocation().getBlock());
+	public static Chest getChestHolding(Inventory inv) {
+		if (inv.getType() != InventoryType.CHEST)
+			return null;
+		InventoryHolder ih = inv.getHolder();
+		if (ih instanceof DoubleChest)
+			return (Chest) ((DoubleChest) ih).getLeftSide();
+		return (Chest) ih;
 	}
 
 	/**

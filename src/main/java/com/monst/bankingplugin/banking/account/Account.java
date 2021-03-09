@@ -64,7 +64,7 @@ public class Account extends BankingEntity {
 		return new Account(
 				account.getID(),
 				account.getOwner(),
-				new HashSet<>(account.getCoOwners()),
+				account.getCoOwners(),
 				account.getBank(),
 				account.getChestLocation(),
 				account.getRawName(),
@@ -99,12 +99,12 @@ public class Account extends BankingEntity {
 		return new Account(
 				id,
 				owner,
-				coowners,
+				new HashSet<>(coowners),
 				bank,
 				loc,
 				name,
 				Utils.scale(balance),
-				Utils.scale(balance),
+				Utils.scale(prevBalance),
 				multiplierStage,
 				delayUntilNextPayout,
 				remainingOfflinePayouts,
@@ -113,7 +113,6 @@ public class Account extends BankingEntity {
 	}
 
 	private boolean created;
-
 	private boolean hasCustomName;
 
 	private Bank bank;
@@ -138,7 +137,7 @@ public class Account extends BankingEntity {
 		this.bank = bank;
 		this.chestLocation = loc;
 		this.name = name;
-		this.hasCustomName = Objects.equals(getRawName(), getDefaultName());
+		this.hasCustomName = !Objects.equals(getRawName(), getDefaultName());
 		this.balance = balance;
 		this.prevBalance = prevBalance;
 		this.multiplierStage = multiplierStage;
@@ -394,20 +393,13 @@ public class Account extends BankingEntity {
 		return String.format(DEFAULT_NAME, getOwner().getName());
 	}
 
-	public void updateName() {
-		if (getRawName() == null || getRawName().isEmpty())
-			resetName();
-		else
-			setName(getRawName());
-	}
-
 	/**
 	 * Create a {@link Callback} that guarantees current name of this account is valid and currently being reflected
 	 * everywhere it should be.
 	 * If the current name is null or empty it will be set to the default name.
 	 */
-	public <T> Callback<T> callUpdateName() {
-		return Callback.of(plugin, result -> this.updateName());
+	public <T> Callback<T> callUpdateChestName() {
+		return Callback.of(plugin, result -> setChestName(getChestName()));
 	}
 
 	/**

@@ -42,7 +42,7 @@ public class Bank extends BankingEntity {
 				id,
 				name,
 				owner,
-				coowners,
+				new HashSet<>(coowners),
 				selection,
 				bankConfig
 		);
@@ -96,7 +96,6 @@ public class Bank extends BankingEntity {
 	public void addAccount(Account account) {
 		if (account == null)
 			return;
-		plugin.debugf("Adding account #%d to bank #%d", account.getID(), getID());
 		accounts.add(account);
 		notifyObservers();
 		plugin.getAccountRepository().notifyObservers();
@@ -109,7 +108,6 @@ public class Bank extends BankingEntity {
 	public void removeAccount(Account account) {
 		if (account == null)
 			return;
-		plugin.debugf("Removing account #%d from bank #%d", account.getID(), getID());
 		accounts.remove(account);
 		notifyObservers();
 		plugin.getAccountRepository().notifyObservers();
@@ -253,7 +251,7 @@ public class Bank extends BankingEntity {
 	public void setOwner(OfflinePlayer newOwner) {
 		OfflinePlayer prevOwner = getOwner();
 		owner = newOwner;
-		if (Config.trustOnTransfer)
+		if (Config.trustOnTransfer && prevOwner != null)
 			coowners.add(prevOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 		notifyObservers();

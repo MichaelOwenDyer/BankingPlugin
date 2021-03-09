@@ -163,7 +163,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
 
         if (account.create(true)) {
             plugin.debug("Account created");
-            accountRepo.add(account, true, account.callUpdateName());
+            accountRepo.add(account, true, account.callUpdateChestName());
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         } else {
             plugin.debugf("Could not create account");

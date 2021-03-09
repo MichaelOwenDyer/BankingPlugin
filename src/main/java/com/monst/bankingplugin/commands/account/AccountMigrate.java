@@ -209,7 +209,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             plugin.debugf("Account migrated (#%d)", newAccount.getID());
             accountRepo.remove(toMigrate, false, Callback.of(plugin,
                     result -> {
-                        accountRepo.add(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
+                        accountRepo.add(newAccount, true, newAccount.callUpdateChestName()); // Database entry is replaced
                         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_MIGRATED));
                     },
                     error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,

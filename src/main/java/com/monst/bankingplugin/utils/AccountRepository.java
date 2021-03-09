@@ -117,7 +117,7 @@ public class AccountRepository extends Observable implements Repository<Account>
      */
     @Override
     public void remove(Account account, boolean removeFromDatabase, Callback<Void> callback) {
-        plugin.debug("Removing account (#" + account.getID() + ")");
+        plugin.debugf("Removing account #%d.", account.getID());
 
 		account.clearChestName();
 		account.getBank().removeAccount(account);

@@ -99,6 +99,11 @@ public abstract class ChestLocation implements Iterable<Location> {
                 throw new ChestBlockedException(chest.getBlock());
     }
 
+    public Inventory findInventory() throws ChestNotFoundException {
+        return Optional.ofNullable(Utils.getChestAt(getMinimumLocation().getBlock()).getInventory())
+                .orElseThrow(() -> new ChestNotFoundException(this));
+    }
+
     public boolean contains(Location loc) {
         if (!world.equals(loc.getWorld()))
             return false;
@@ -122,8 +127,6 @@ public abstract class ChestLocation implements Iterable<Location> {
     }
 
     public abstract Location getTeleportLocation();
-
-    public abstract Inventory findInventory() throws ChestNotFoundException;
 
     public abstract Location[] getLocations();
 

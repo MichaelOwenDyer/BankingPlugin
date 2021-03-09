@@ -3,12 +3,15 @@ package com.monst.bankingplugin.listeners;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
+import com.monst.bankingplugin.exceptions.AccountNotFoundException;
+import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -32,12 +35,20 @@ public class AccountBalanceListener extends BankingPluginListener {
 
 		if (!(e.getPlayer() instanceof Player))
 			return;
-		if (!e.getInventory().getType().equals(InventoryType.CHEST))
+		if (e.getInventory().getType() != InventoryType.CHEST)
 			return;
 
-		Account account = accountRepo.getAt(e.getInventory().getLocation());
-		if (account == null)
+		Chest chest = Utils.getChestHolding(e.getInventory());
+		if (chest == null)
 			return;
+		ChestLocation loc = ChestLocation.from(chest);
+
+		Account account;
+		try {
+			account = accountRepo.getAt(loc);
+		} catch (AccountNotFoundException ex) {
+			return;
+		}
 
 		BigDecimal valueOnClose = account.calculateBalance();
 		BigDecimal difference = valueOnClose.subtract(account.getBalance());

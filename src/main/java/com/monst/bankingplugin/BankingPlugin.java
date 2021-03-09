@@ -369,13 +369,6 @@ public class BankingPlugin extends JavaPlugin {
 					debug(message);
 
 					scheduler.scheduleAll();
-				}, error -> {
-					// Database connection probably failed => disable plugin to prevent more errors
-					getLogger().severe("No database access! Disabling BankingPlugin.");
-					if (error != null)
-						getLogger().severe(error.getMessage());
-
-					getServer().getPluginManager().disablePlugin(BankingPlugin.this);
 				})
 		);
 	}
@@ -415,7 +408,7 @@ public class BankingPlugin extends JavaPlugin {
 									reloadedBanks.add(bank);
 									for (Account account : bankAccounts) {
 										if (account.create(showConsoleMessages)) {
-											accountRepository.add(account, false, account.callUpdateName());
+											accountRepository.add(account, false, account.callUpdateChestName());
 											reloadedAccounts.add(account);
 										} else
 											debug("Could not re-create account from database! (#" + account.getID() + ")");
@@ -434,7 +427,14 @@ public class BankingPlugin extends JavaPlugin {
 							callback::error
 					));
 				},
-				callback::error
+				error -> {
+					Callback.error(callback, error);
+					// Database connection probably failed => disable plugin to prevent more errors
+					getLogger().severe("No database access! Disabling BankingPlugin.");
+					if (error != null)
+						getLogger().severe(error.getMessage());
+					getServer().getPluginManager().disablePlugin(BankingPlugin.this);
+				}
 		));
 	}
 

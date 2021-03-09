@@ -38,23 +38,23 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
                 ));
             }));
 
-            database.getTotalAccountInterestSinceLogout(p, logoutTime, Callback.of(plugin, interest -> {
+            database.getTotalInterestEarnedSince(p, logoutTime, Callback.of(plugin, interest -> {
                 if (interest.signum() > 0)
                     p.sendMessage(LangUtils.getMessage(Message.OFFLINE_ACCOUNT_INTEREST,
                             new Replacement(Placeholder.AMOUNT, interest)
                     ));
             }));
 
-            database.getTotalLowBalanceFeesPaidSinceLogout(p, logoutTime, Callback.of(plugin, fees -> {
+            database.getTotalLowBalanceFeesPaidSince(p, logoutTime, Callback.of(plugin, fees -> {
                 if (fees.signum() > 0)
                     p.sendMessage(LangUtils.getMessage(Message.OFFLINE_LOW_BALANCE_FEES_PAID,
                             new Replacement(Placeholder.AMOUNT, fees)
                     ));
             }));
 
-            // Player does not actually log off here, this saves the last time the player was notified about changes
-            database.logLastSeen(p, null);
 		}));
+        // Player does not actually log off here, this saves the last time the player was notified about changes
+        database.logLastSeen(p, null);
     }
 
     @EventHandler

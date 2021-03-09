@@ -57,14 +57,9 @@ public class ControlReload extends ControlCommand.SubCommand {
                             new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
                     ));
                     plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
-                }, error -> {
-                    // Database connection probably failed => disable plugin to prevent more errors
-                    sender.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, "No database access! Disabling BankingPlugin.")));
-                    plugin.getLogger().severe("No database access! Disabling BankingPlugin.");
-                    if (error != null)
-                        plugin.getLogger().severe(error.getMessage());
-                    plugin.getServer().getPluginManager().disablePlugin(plugin);
-                })
+                }, error -> sender.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
+                        new Replacement(Placeholder.ERROR, "No database access! Disabling BankingPlugin.")
+                )))
         );
         return true;
     }

@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.listeners.BankingPluginListener;
@@ -13,7 +12,7 @@ import com.monst.bankingplugin.utils.ClickType.EClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
-import org.bukkit.block.Chest;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
@@ -73,27 +72,20 @@ public class WorldGuardListener extends BankingPluginListener {
 		if (!Config.enableWorldGuardIntegration)
 			return;
 
-		Chest chest;
+		Block block;
 		if (event.getOriginalEvent() instanceof PlayerInteractEvent) {
-			try {
-				chest = Utils.getChestAt(((PlayerInteractEvent) event.getOriginalEvent()).getClickedBlock());
-			} catch (ChestNotFoundException e) {
-				return;
-			}
+			block = ((PlayerInteractEvent) event.getOriginalEvent()).getClickedBlock();
 		} else if (event.getOriginalEvent() instanceof InventoryOpenEvent) {
-			try {
-				chest = Utils.getChestHolding(((InventoryOpenEvent) event.getOriginalEvent()).getInventory());
-			} catch (ChestNotFoundException e) {
-				return;
-			}
+			block = ((InventoryOpenEvent) event.getOriginalEvent()).getInventory().getLocation().getBlock();
 		} else
 			return;
-		if (isChestInteractAllowed(event.getPlayer(), chest)) {
+		if (block == null)
+			return;
+		if (isChestInteractAllowed(event.getPlayer(), block))
 			event.setResult(Result.ALLOW);
-		}
 	}
 
-	private boolean isChestInteractAllowed(Player player, Chest chest) {
+	private boolean isChestInteractAllowed(Player player, Block block) {
 		ClickType<?> clickType = ClickType.getPlayerClickType(player);
 		if (clickType != null && clickType.getType() == EClickType.CREATE) {
 			// If the player is about to create an account, but does not have
@@ -103,13 +95,13 @@ public class WorldGuardListener extends BankingPluginListener {
 			Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag("chest-access", WrappedState.class);
 			if (!flag.isPresent())
 				plugin.debug("WorldGuard flag 'chest-access' is not present!");
-			return flag.map(f -> wgWrapper.queryFlag(player, chest.getLocation(), f).orElse(WrappedState.DENY))
+			return flag.map(f -> wgWrapper.queryFlag(player, block.getLocation(), f).orElse(WrappedState.DENY))
 					.orElse(WrappedState.DENY) == WrappedState.ALLOW;
 		}
 		// Don't show 'permission denied' messages for any kind of
 		// account interaction even if block interaction is not
 		// allowed in the region.
-		return plugin.getAccountRepository().isAccount(ChestLocation.from(chest));
+		return plugin.getAccountRepository().isAccount(ChestLocation.from(Utils.getChestAt(block)));
     }
 
     private boolean isBankCreationBlockedByWorldGuard(Player player, Location loc) {

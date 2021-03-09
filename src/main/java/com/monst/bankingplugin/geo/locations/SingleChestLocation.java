@@ -1,12 +1,9 @@
 package com.monst.bankingplugin.geo.locations;
 
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector3D;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Chest;
-import org.bukkit.inventory.Inventory;
 
 import java.util.Objects;
 
@@ -25,11 +22,6 @@ public class SingleChestLocation extends ChestLocation {
     }
 
     @Override
-    public Inventory findInventory() throws ChestNotFoundException {
-        return Utils.getChestAt(getMinimumLocation().getBlock()).getInventory();
-    }
-
-    @Override
     public Location getTeleportLocation() {
         return getMinimumLocation().add(0.5, 0.0, 0.5);
     }
@@ -40,7 +32,7 @@ public class SingleChestLocation extends ChestLocation {
     }
 
     public DoubleChestLocation extend(BlockVector3D v2) {
-        return new DoubleChestLocation(world, v1, v2);
+        return DoubleChestLocation.from(world, v1, v2);
     }
 
     @Override

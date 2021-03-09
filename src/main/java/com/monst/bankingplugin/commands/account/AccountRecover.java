@@ -87,7 +87,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
         if (newAccount.create(true)) {
             plugin.debugf("Account recovered (#%d)", newAccount.getID());
             accountRepo.removeInvalidAccount(toRecover);
-            accountRepo.add(newAccount, true, newAccount.callUpdateName()); // Database entry is replaced
+            accountRepo.add(newAccount, true, newAccount.callUpdateChestName()); // Database entry is replaced
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RECOVERED));
         } else {
             plugin.debug("Could not recover account");

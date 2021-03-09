@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.commands.account.*;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -43,12 +42,9 @@ public class AccountInteractListener extends BankingPluginListener {
 		Block b = e.getClickedBlock();
 		if (b == null)
 			return;
-		Chest chest;
-		try {
-			chest = Utils.getChestAt(b);
-		} catch (ChestNotFoundException ex) {
+		Chest chest = Utils.getChestAt(b);
+		if (chest == null)
 			return;
-		}
 
 		Player p = e.getPlayer();
 		Account account = accountRepo.getAt(b.getLocation());
