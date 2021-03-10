@@ -2,6 +2,7 @@ package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
@@ -124,7 +125,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 			accountRepo.remove(account, false, Callback.of(plugin, result -> {
 				newAccount.create(true);
-				accountRepo.add(newAccount, true, newAccount.callUpdateChestName());
+				accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.LOCATION);
 			}));
 		} else {
 			accountRepo.remove(account, true);
@@ -239,7 +240,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 		accountRepo.remove(account, true, Callback.of(plugin, result -> {
 				if (newAccount.create(true)) {
-					accountRepo.add(newAccount, true, newAccount.callUpdateChestName());
+					accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.LOCATION);
 					plugin.debugf("%s extended %s's account (#%d)",
 							p.getName(), account.getOwner().getName(), account.getID());
 				} else

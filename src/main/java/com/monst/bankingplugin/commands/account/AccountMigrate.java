@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
@@ -209,7 +210,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             plugin.debugf("Account migrated (#%d)", newAccount.getID());
             accountRepo.remove(toMigrate, false, Callback.of(plugin,
                     result -> {
-                        accountRepo.add(newAccount, true, newAccount.callUpdateChestName()); // Database entry is replaced
+                        accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION); // Database entry is replaced
                         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_MIGRATED));
                     },
                     error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,

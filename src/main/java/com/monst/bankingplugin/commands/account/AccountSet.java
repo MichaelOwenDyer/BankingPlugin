@@ -138,7 +138,7 @@ public class AccountSet extends AccountCommand.SubCommand {
 
         }
 
-        plugin.getAccountRepository().add(account, true);
+        plugin.getAccountRepository().update(account, null, field);
         AccountConfigureEvent e = new AccountConfigureEvent(executor, account, field, value);
         Bukkit.getPluginManager().callEvent(e);
     }

@@ -394,9 +394,8 @@ public class Account extends BankingEntity {
 	}
 
 	/**
-	 * Create a {@link Callback} that guarantees current name of this account is valid and currently being reflected
-	 * everywhere it should be.
-	 * If the current name is null or empty it will be set to the default name.
+	 * Create a {@link Callback} that guarantees the current name of this account is
+	 * correctly being reflected inside the chest inventory.
 	 */
 	public <T> Callback<T> callUpdateChestName() {
 		return Callback.of(plugin, result -> setChestName(getChestName()));
@@ -466,7 +465,8 @@ public class Account extends BankingEntity {
 			if (online || (boolean) bank.get(BankField.COUNT_INTEREST_DELAY_OFFLINE))
 				delayUntilNextPayout--;
 			return false;
-		} if (online) {
+		}
+		if (online) {
 			remainingOfflinePayouts = Math.max(remainingOfflinePayouts, bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS));
 			remainingOfflineUntilReset = Math.max(remainingOfflineUntilReset, bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET));
 			return true;

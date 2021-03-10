@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
 import com.monst.bankingplugin.exceptions.BankNotFoundException;
@@ -37,12 +38,12 @@ public class AccountRecover extends AccountCommand.SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to recover invalid accounts");
 
-        if (accountRepo.getInvalidAccounts().isEmpty()) {
+        if (accountRepo.getNotFoundAccounts().isEmpty()) {
             sender.sendMessage(LangUtils.getMessage(Message.ACCOUNTS_NOT_FOUND));
             return true;
         }
 
-        new AccountRecoveryGUI(accountRepo::getInvalidAccounts).open(((Player) sender));
+        new AccountRecoveryGUI(accountRepo::getNotFoundAccounts).open(((Player) sender));
         return true;
     }
 
@@ -87,7 +88,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
         if (newAccount.create(true)) {
             plugin.debugf("Account recovered (#%d)", newAccount.getID());
             accountRepo.removeInvalidAccount(toRecover);
-            accountRepo.add(newAccount, true, newAccount.callUpdateChestName()); // Database entry is replaced
+            accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RECOVERED));
         } else {
             plugin.debug("Could not recover account");

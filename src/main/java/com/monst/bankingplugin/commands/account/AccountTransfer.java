@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountTransferCommandEvent;
 import com.monst.bankingplugin.events.account.AccountTransferEvent;
@@ -139,7 +140,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         account.setOwner(newOwner);
         if (!hasCustomName)
             account.resetName();
-        plugin.getAccountRepository().add(account, true);
+        plugin.getAccountRepository().update(account, null, AccountField.OWNER);
         ClickType.removePlayerClickType(p);
     }
 

@@ -2,6 +2,7 @@ package com.monst.bankingplugin.sql;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankConfig;
 import com.monst.bankingplugin.banking.bank.BankField;
@@ -253,10 +254,18 @@ public abstract class Database {
 		});
 	}
 
-	private void updateAccount(Account account, String attribute, Object value, Callback<Void> callback) {
+	public void updateAccount(Account account, EnumSet<AccountField> fields, Callback<Void> callback) {
 		async(() -> {
-			plugin.debugf("Setting '" + attribute + "' to '" + value + "' at account #%d in the database.");
-			query.update("UPDATE " + tableAccounts + " SET " + attribute + " = " + value + " WHERE AccountID = ?")
+			String attributes = fields.stream()
+					.map(a -> a.getAttribute() + " = ?")
+					.collect(Collectors.joining(", "));
+			List<Object> params = fields.stream()
+					.map(a -> a.getFrom(account))
+					.collect(Collectors.toList());
+			query.update("UPDATE " + tableAccounts + " " +
+					"SET " + attributes + " " +
+					"WHERE AccountID = ?")
+					.params(params)
 					.params(account.getID())
 					.errorHandler(forwardError(callback))
 					.run();

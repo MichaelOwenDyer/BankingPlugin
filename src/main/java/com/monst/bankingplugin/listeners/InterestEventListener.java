@@ -2,6 +2,7 @@ package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
@@ -60,7 +61,11 @@ public class InterestEventListener extends BankingPluginListener {
 		playerAccountMap.forEach((accountOwner, accounts) -> {
 			for (Account account : accounts) {
 				if (!account.allowNextPayout()) {
-					accountRepo.add(account, true);
+					accountRepo.update(account, null,
+							AccountField.DELAY_UNTIL_NEXT_PAYOUT,
+							AccountField.REMAINING_OFFLINE_PAYOUTS,
+							AccountField.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET
+					);
 					continue;
 				}
 
@@ -74,19 +79,19 @@ public class InterestEventListener extends BankingPluginListener {
 				if (!trustedPlayers.isEmpty() && (double) bank.get(BankField.MINIMUM_BALANCE) > 0
 						&& account.getBalance().doubleValue() < (double) bank.get(BankField.MINIMUM_BALANCE)) {
 
-					feesPayable.get(accountOwner).add(BigDecimal.valueOf((double) bank.get(BankField.LOW_BALANCE_FEE)));
+					feesPayable.get(accountOwner).add(BigDecimal.valueOf(bank.get(BankField.LOW_BALANCE_FEE)));
 
 					if (bank.isPlayerBank())
-						feesReceivable.get(bank.getOwner()).add(BigDecimal.valueOf((double) bank.get(BankField.LOW_BALANCE_FEE)));
+						feesReceivable.get(bank.getOwner()).add(BigDecimal.valueOf(bank.get(BankField.LOW_BALANCE_FEE)));
 
-					plugin.getDatabase().logLowBalanceFee(account, bank.get(BankField.LOW_BALANCE_FEE), null);
+					plugin.getDatabase().logLowBalanceFee(account, BigDecimal.valueOf(bank.get(BankField.LOW_BALANCE_FEE)), null);
 
 					if (!(boolean) bank.get(BankField.PAY_ON_LOW_BALANCE))
 						continue;
 				}
 
 				BigDecimal baseInterest = Utils.scale(
-						account.getBalance().multiply(BigDecimal.valueOf((double) bank.get(BankField.INTEREST_RATE)))
+						account.getBalance().multiply(BigDecimal.valueOf(bank.get(BankField.INTEREST_RATE)))
 				);
 
 				int multiplier = account.getRealMultiplier();
@@ -95,20 +100,24 @@ public class InterestEventListener extends BankingPluginListener {
 				account.incrementMultiplier();
 				account.updatePrevBalance();
 
-				if (trustedPlayers.isEmpty()) {
-					accountRepo.add(account, true);
-					continue;
+				if (!trustedPlayers.isEmpty()) {
+					BigDecimal cut = interest.divide(BigDecimal.valueOf(numberOfTrustedPlayers), RoundingMode.HALF_EVEN);
+					for (OfflinePlayer recipient : trustedPlayers)
+						interestReceivable.get(recipient).add(cut);
+
+					if (account.getBank().isPlayerBank())
+						interestPayable.get(account.getBank().getOwner()).add(interest);
+
+					plugin.getDatabase().logAccountInterest(account, interest, null);
 				}
 
-				BigDecimal cut = interest.divide(BigDecimal.valueOf(numberOfTrustedPlayers), RoundingMode.HALF_EVEN);
-				for (OfflinePlayer recipient : trustedPlayers)
-					interestReceivable.get(recipient).add(cut);
-
-				if (account.getBank().isPlayerBank())
-					interestPayable.get(account.getBank().getOwner()).add(interest);
-
-				accountRepo.add(account, true);
-				plugin.getDatabase().logAccountInterest(account, interest, null);
+				accountRepo.update(account, null,
+						AccountField.MULTIPLIER,
+						AccountField.DELAY_UNTIL_NEXT_PAYOUT,
+						AccountField.REMAINING_OFFLINE_PAYOUTS,
+						AccountField.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET,
+						AccountField.PREVIOUS_BALANCE
+				);
 			}
 
 			if (accountOwner.isOnline())

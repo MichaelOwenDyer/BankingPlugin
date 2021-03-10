@@ -2,6 +2,7 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
@@ -12,16 +13,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AccountRepository extends Observable implements Repository<Account> {
 
 	private final BankingPlugin plugin;
 	private final Map<ChestLocation, Account> accountLocationMap = new HashMap<>();
-	private final Set<Account> invalidAccounts = new HashSet<>();
+	private final Set<Account> notFoundAccounts = new HashSet<>();
 
     public AccountRepository(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -92,11 +90,11 @@ public class AccountRepository extends Observable implements Repository<Account>
     public void add(Account account, boolean addToDatabase, Callback<Integer> callback) {
     	Inventory inv = account.getInventory(true);
     	if (inv == null) {
-    		plugin.debug("Could not add account! Inventory null (#" + account.getID() + ")");
+    		plugin.debugf("Could not add account #%d because its inventory could not be found!", account.getID());
 			return;
 		}
 
-        plugin.debug("Adding account to session... (#" + account.getID() + ")");
+        plugin.debugf("Adding account #%d to the session...", account.getID());
 		accountLocationMap.put(account.getChestLocation(), account);
 
         if (addToDatabase) {
@@ -108,6 +106,29 @@ public class AccountRepository extends Observable implements Repository<Account>
         }
         notifyObservers();
     }
+
+    public void update(Account account, Callback<Void> callback, AccountField... fieldArray) {
+		if (fieldArray.length == 0)
+			return;
+		EnumSet<AccountField> fields = EnumSet.noneOf(AccountField.class);
+		fields.addAll(Arrays.asList(fieldArray));
+
+		if (fields.remove(AccountField.LOCATION)) {
+			fields.add(AccountField.Y);
+			fields.add(AccountField.X1);
+			fields.add(AccountField.Z1);
+			fields.add(AccountField.X2);
+			fields.add(AccountField.Z2);
+			accountLocationMap.put(account.getChestLocation(), account);
+		}
+		plugin.debugf("Updating the following fields of account #%d in the database: " + fields, account.getID());
+
+		plugin.getDatabase().updateAccount(account, fields, callback);
+
+		notifyObservers();
+		account.notifyObservers();
+		account.getBank().notifyObservers();
+	}
 
     /**
 	 * Removes a account. May not work properly if double chest doesn't exist!
@@ -131,21 +152,22 @@ public class AccountRepository extends Observable implements Repository<Account>
         notifyObservers();
     }
 
-	public Set<Account> getInvalidAccounts() {
-		return new HashSet<>(invalidAccounts);
+	public Set<Account> getNotFoundAccounts() {
+		return new HashSet<>(notFoundAccounts);
 	}
 
 	public void addInvalidAccount(Account account) {
     	if (account == null)
     		return;
-		invalidAccounts.add(account);
+		notFoundAccounts.add(account);
     	notifyObservers();
 	}
 
 	public void removeInvalidAccount(Account account) {
 		if (account == null)
 			return;
-		invalidAccounts.remove(account);
+		notFoundAccounts.remove(account);
+		accountLocationMap.put(account.getChestLocation(), account);
 		notifyObservers();
 	}
 
