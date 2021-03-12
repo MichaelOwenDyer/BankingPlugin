@@ -75,7 +75,7 @@ public class BankSet extends BankCommand.SubCommand {
             return true;
         }
 
-        String previousValue = bank.get(field).getFormatted();
+        String previousValue = bank.get(field).getFormatted(true);
 
         try {
             if (!bank.set(field, value))
@@ -85,8 +85,10 @@ public class BankSet extends BankCommand.SubCommand {
             return true;
         }
 
-        String newValue = bank.get(field).getFormatted();
-        plugin.debug(sender.getName() + " has changed " + field.getConfigName() + " at " + bank.getName() + " from " + previousValue + " to " + newValue);
+        String newValue = bank.get(field).getFormatted(true);
+
+        plugin.debugf( "%s has changed %s at %s from %s to %s.",
+                sender.getName(), field.getConfigName(), bank.getName(), previousValue, newValue);
         MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_PROPERTY_SET,
                 new Replacement(Placeholder.PROPERTY, field::getConfigName),
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),

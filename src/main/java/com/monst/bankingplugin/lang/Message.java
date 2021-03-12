@@ -314,8 +314,8 @@ public enum Message {
             Placeholder.PROPERTY, Placeholder.BANK_NAME, Placeholder.PREVIOUS_VALUE, Placeholder.VALUE
     ),
     BANK_PROPERTY_NOT_OVERRIDABLE (
-            "A player attempts to set a property at a bank, but that property is configured as not overridable.",
-            "&cThat property is not overridable.",
+            "A player attempts to set a bank property that is configured as not overridable.",
+            "&cThat property is not currently overridable. Your changes will be saved, but will not take effect.",
             Placeholder.PROPERTY
     ),
     BANK_SELECTED (

@@ -262,6 +262,12 @@ public abstract class Database {
 		});
 	}
 
+	/**
+	 * Updates an account in the database.
+	 * @param account the account to update
+	 * @param fields the attributes to update
+	 * @param callback callback which return returns null on success
+	 */
 	public void updateAccount(Account account, EnumSet<AccountField> fields, Callback<Void> callback) {
 		async(() -> {
 			String attributes = fields.stream()
@@ -346,6 +352,31 @@ public abstract class Database {
 			Callback.yield(callback, bank.getID());
 		});
 	}
+
+//	/**
+//	 * Updates a bank in the database.
+//	 * @param bank the bank to update
+//	 * @param fields the attributes to update
+//	 * @param callback callback which return returns null on success
+//	 */
+//	public void updateBank(Bank bank, EnumSet<BankField> fields, Callback<Void> callback) {
+//		async(() -> {
+//			String attributes = fields.stream()
+//					.map(a -> a.getAttribute() + " = ?")
+//					.collect(Collectors.joining(", "));
+//			List<Object> params = fields.stream()
+//					.map(a -> a.getFrom(bank))
+//					.collect(Collectors.toList());
+//			query.update("UPDATE " + tableBanks + " " +
+//					"SET " + attributes + " " +
+//					"WHERE BankID = ?")
+//					.params(params)
+//					.params(bank.getID())
+//					.errorHandler(forwardError(callback))
+//					.run();
+//			Callback.yield(callback);
+//		});
+//	}
 
 	/**
 	 * Removes a bank from the database. All accounts associated with this bank will automatically be removed from the database as well.

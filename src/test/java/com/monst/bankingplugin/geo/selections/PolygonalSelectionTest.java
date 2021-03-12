@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.geo.selections;
 
+import com.monst.bankingplugin.geo.BlockVector2D;
 import org.bukkit.World;
 import org.junit.jupiter.api.Test;
 

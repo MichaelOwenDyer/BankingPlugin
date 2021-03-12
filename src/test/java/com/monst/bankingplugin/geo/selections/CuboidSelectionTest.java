@@ -1,6 +1,10 @@
 package com.monst.bankingplugin.geo.selections;
 
+import com.monst.bankingplugin.geo.BlockVector3D;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CuboidSelectionTest {
 

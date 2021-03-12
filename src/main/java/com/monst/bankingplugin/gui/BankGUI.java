@@ -231,9 +231,8 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getInterestRateLore() {
-		double interestRate = guiSubject.getInterestRate().get();
 		return wordWrapAll(
-			"" + ChatColor.GREEN + String.format("%,.1f", interestRate * 100) + "%"
+			ChatColor.GREEN + guiSubject.getInterestRate().getFormatted()
 		);
 	}
 

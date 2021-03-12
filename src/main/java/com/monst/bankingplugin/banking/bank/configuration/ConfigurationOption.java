@@ -9,16 +9,13 @@ import javax.annotation.Nullable;
 public abstract class ConfigurationOption<T> {
 
     T value;
-    private boolean customValue;
 
     ConfigurationOption() {
         this.value = null;
-        this.customValue = false;
     }
 
     ConfigurationOption(T value) {
         this.value = value;
-        this.customValue = value != null;
     }
 
     abstract Config.ConfigPair<T> getConfigPair();
@@ -28,24 +25,31 @@ public abstract class ConfigurationOption<T> {
     }
 
     public T get() {
-        if (!customValue)
+        return get(false);
+    }
+
+    public T get(boolean ignoreConfig) {
+        if (value == null)
             return getConfigPair().getDefault();
+        if (ignoreConfig)
+            return value;
         return getConfigPair().isOverridable() ? value : getConfigPair().getDefault();
     }
 
     public String getFormatted() {
-        return String.valueOf(get());
+        return getFormatted(false);
+    }
+
+    public String getFormatted(boolean ignoreConfig) {
+        return String.valueOf(get(ignoreConfig));
     }
 
     public boolean set(@Nullable String input) throws ArgumentParseException {
         if (input == null || input.isEmpty()) {
-            customValue = false;
             value = null;
             return true;
         }
-        T newValue = parse(input);
-        customValue = true;
-        value = newValue;
+        value = parse(input);
         return getConfigPair().isOverridable();
     }
 
