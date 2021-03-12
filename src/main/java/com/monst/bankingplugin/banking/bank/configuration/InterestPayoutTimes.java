@@ -24,7 +24,7 @@ public class InterestPayoutTimes extends ListConfigurationOption<LocalTime> {
 
     @Override
     Stream<LocalTime> parseToStream(String input) {
-        return Arrays.stream(input.replace(",", " ").split("\\s\\s*"))
+        return Arrays.stream(input.replaceAll("\\p{Punct}", " ").split("\\s\\s*"))
                 .filter(s -> !s.isEmpty())
                 .map(LocalTime::parse)
                 .distinct()

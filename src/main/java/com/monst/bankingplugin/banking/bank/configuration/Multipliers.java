@@ -23,7 +23,7 @@ public class Multipliers extends ListConfigurationOption<Integer> {
 
     @Override
     Stream<Integer> parseToStream(String input) {
-        return Arrays.stream(input.replace(",", " ").split("\\s\\s*"))
+        return Arrays.stream(input.replaceAll("\\p{Punct}", " ").split("\\s\\s*"))
                 .filter(s -> !s.isEmpty())
                 .map(Integer::parseInt)
                 .map(Math::abs);

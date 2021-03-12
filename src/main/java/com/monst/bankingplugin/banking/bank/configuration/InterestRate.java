@@ -31,7 +31,7 @@ public class InterestRate extends DoubleConfigurationOption {
 
     @Override
     public String getFormatted() {
-        return formatter.format(value);
+        return formatter.format(get());
     }
 
     @Override

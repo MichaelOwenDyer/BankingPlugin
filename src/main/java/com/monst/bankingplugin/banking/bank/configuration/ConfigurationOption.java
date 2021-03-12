@@ -38,7 +38,7 @@ public abstract class ConfigurationOption<T> {
     }
 
     public boolean set(@Nullable String input) throws ArgumentParseException {
-        if (input == null) {
+        if (input == null || input.isEmpty()) {
             customValue = false;
             value = null;
             return true;

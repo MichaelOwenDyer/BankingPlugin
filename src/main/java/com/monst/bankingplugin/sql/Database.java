@@ -129,8 +129,10 @@ public abstract class Database {
 		if (version == DATABASE_VERSION)
 			return false;
 		Runnable[] updates = new Runnable[] { () -> {} }; // Updates can be added here in the future
-		while (version < DATABASE_VERSION && version++ < updates.length)
+		while (version < DATABASE_VERSION && version < updates.length) {
 			updates[version].run();
+			version++;
+		}
 		setDatabaseVersion(DATABASE_VERSION);
 		return true;
 	}
@@ -175,9 +177,6 @@ public abstract class Database {
 
 			query = fluentJdbc.query();
 
-			if (update())
-				plugin.getLogger().info("Updating database finished.");
-
 			plugin.debug("Starting table creation.");
 
 			long createdTables = Stream.of(
@@ -199,6 +198,9 @@ public abstract class Database {
 					.sum();
 
 			plugin.debugf("Created %d missing tables.", createdTables);
+
+			if (update())
+				plugin.getLogger().info("Updating database finished.");
 
 			// Clean up economy log
 			if (Config.cleanupLogDays > 0)
@@ -455,13 +457,15 @@ public abstract class Database {
 			Integer playerBankAccountLimit = values.getNextInteger();
 			List<Integer> multipliers;
 			try {
-				multipliers = Arrays.stream(values.getNextString().split("\\s*,\\s*")).map(Integer::parseInt).collect(Collectors.toList());
+				String multiplierList = Optional.ofNullable(values.getNextString()).orElse("");
+				multipliers = Arrays.stream(multiplierList.split("\\s*,\\s*")).map(Integer::parseInt).collect(Collectors.toList());
 			} catch (NumberFormatException e) {
 				multipliers = Config.multipliers.getDefault();
 			}
 			List<LocalTime> interestPayoutTimes;
 			try {
-				interestPayoutTimes = Arrays.stream(values.getNextString().split("\\s*,\\s*")).map(LocalTime::parse).collect(Collectors.toList());
+				String payoutTimesList = Optional.ofNullable(values.getNextString()).orElse("");
+				interestPayoutTimes = Arrays.stream(payoutTimesList.split("\\s*,\\s*")).map(LocalTime::parse).collect(Collectors.toList());
 			} catch (DateTimeParseException e) {
 				interestPayoutTimes = Config.interestPayoutTimes.getDefault();
 			}
@@ -956,7 +960,7 @@ public abstract class Database {
 		}
 
 		boolean getNextBoolean() throws SQLException {
-			return rs.getBoolean(index++);
+			return Boolean.parseBoolean(rs.getString(index++));
 		}
 
 		Boolean getNextBooleanNullable() throws SQLException {
