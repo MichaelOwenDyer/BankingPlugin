@@ -301,9 +301,11 @@ public class Utils {
 		if (inv.getType() != InventoryType.CHEST)
 			return null;
 		InventoryHolder ih = inv.getHolder();
-		if (ih instanceof DoubleChest)
+		if (ih instanceof Chest)
+			return (Chest) ih;
+		else if (ih instanceof DoubleChest)
 			return (Chest) ((DoubleChest) ih).getLeftSide();
-		return (Chest) ih;
+		return null;
 	}
 
 	/**

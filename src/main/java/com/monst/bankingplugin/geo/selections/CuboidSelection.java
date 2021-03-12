@@ -60,7 +60,7 @@ public class CuboidSelection extends Selection {
 	@Override
 	public BlockVector3D getCenterPoint() {
 		int centerX = (getMaxX() + getMinX()) / 2;
-		int centerY = (getMaxY() + getMinZ()) / 2;
+		int centerY = (getMaxY() + getMinY()) / 2;
 		int centerZ = (getMaxZ() + getMinZ()) / 2;
 		return new BlockVector3D(centerX, centerY, centerZ);
 	}

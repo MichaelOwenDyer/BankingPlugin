@@ -150,28 +150,31 @@ public class AccountProtectListener extends BankingPluginListener {
 		Block otherChest;
 		try {
 			otherChest = Utils.getAttachedChestBlock(b);
+			if (otherChest == null)
+				return;
 		} catch (ChestNotFoundException ex) {
 			return;
 		}
 
-		SingleChestLocation chestLocation = SingleChestLocation.from(b.getWorld(), BlockVector3D.fromLocation(otherChest.getLocation()));
+		SingleChestLocation chest = SingleChestLocation.from(b.getWorld(), BlockVector3D.fromLocation(otherChest.getLocation()));
 		final Account account;
 		try {
-			account = accountRepo.getAt(chestLocation);
+			account = accountRepo.getAt(chest);
 		} catch (AccountNotFoundException ex) {
 			return;
 		}
 
+		ChestLocation newChestLocation = chest.extend(BlockVector3D.fromLocation(b.getLocation()));
 		Bank bank;
 		try {
-			bank = chestLocation.getBank();
+			bank = newChestLocation.getBank();
 		} catch (BankNotFoundException ex) {
-			e.setCancelled(true);
+			plugin.debugf("%s tried to extend %s's account (#%d), but new chest was not in a bank.",
+					p.getName(), account.getOwner().getName(), account.getID());
 			p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
+			e.setCancelled(true);
 			return;
 		}
-
-		ChestLocation newChestLocation = chestLocation.extend(BlockVector3D.fromLocation(b.getLocation()));
 
 		plugin.debugf("%s tries to extend %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 
