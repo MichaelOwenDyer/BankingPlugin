@@ -17,7 +17,7 @@ public class Multipliers extends ListConfigurationOption<Integer> {
     }
 
     @Override
-    protected Config.ConfigPair<List<Integer>> getConfigPair() {
+    Config.ConfigPair<List<Integer>> getConfigPair() {
         return Config.getMultipliers();
     }
 

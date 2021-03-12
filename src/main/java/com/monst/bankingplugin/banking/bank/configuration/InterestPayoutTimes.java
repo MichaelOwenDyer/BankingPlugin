@@ -18,7 +18,7 @@ public class InterestPayoutTimes extends ListConfigurationOption<LocalTime> {
     }
 
     @Override
-    protected Config.ConfigPair<List<LocalTime>> getConfigPair() {
+    Config.ConfigPair<List<LocalTime>> getConfigPair() {
         return Config.getInterestPayoutTimes();
     }
 

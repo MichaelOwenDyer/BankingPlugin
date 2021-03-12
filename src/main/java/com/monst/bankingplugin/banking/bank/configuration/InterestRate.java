@@ -25,7 +25,7 @@ public class InterestRate extends DoubleConfigurationOption {
     }
 
     @Override
-    protected Config.ConfigPair<Double> getConfigPair() {
+    Config.ConfigPair<Double> getConfigPair() {
         return Config.getInterestRate();
     }
 
@@ -35,7 +35,7 @@ public class InterestRate extends DoubleConfigurationOption {
     }
 
     @Override
-    protected Double parse(@Nonnull String input) throws DoubleParseException {
+    Double parse(@Nonnull String input) throws DoubleParseException {
         try {
             return Utils.scale(parseDouble(input), 3);
         } catch (NumberFormatException e) {

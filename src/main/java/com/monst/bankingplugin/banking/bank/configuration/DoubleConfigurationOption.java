@@ -7,11 +7,11 @@ import javax.annotation.Nonnull;
 
 abstract class DoubleConfigurationOption extends ConfigurationOption<Double> {
 
-    protected DoubleConfigurationOption() {
+    DoubleConfigurationOption() {
         super();
     }
 
-    protected DoubleConfigurationOption(Double value) {
+    DoubleConfigurationOption(Double value) {
         super(value);
     }
 
@@ -21,7 +21,7 @@ abstract class DoubleConfigurationOption extends ConfigurationOption<Double> {
     }
 
     @Override
-    protected Double parse(@Nonnull String input) throws DoubleParseException {
+    Double parse(@Nonnull String input) throws DoubleParseException {
         try {
             return Utils.scale(parseDouble(input));
         } catch (NumberFormatException e) {

@@ -13,7 +13,7 @@ public class MinimumBalance extends DoubleConfigurationOption {
     }
 
     @Override
-    protected Config.ConfigPair<Double> getConfigPair() {
+    Config.ConfigPair<Double> getConfigPair() {
         return Config.getMinimumBalance();
     }
 

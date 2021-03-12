@@ -13,7 +13,7 @@ public class OfflineMultiplierDecrement extends IntegerConfigurationOption {
     }
 
     @Override
-    protected Config.ConfigPair<Integer> getConfigPair() {
+    Config.ConfigPair<Integer> getConfigPair() {
         return Config.getOfflineMultiplierDecrement();
     }
 

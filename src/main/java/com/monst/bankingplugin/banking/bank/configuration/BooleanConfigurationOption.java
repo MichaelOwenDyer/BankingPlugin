@@ -4,16 +4,16 @@ import javax.annotation.Nonnull;
 
 abstract class BooleanConfigurationOption extends ConfigurationOption<Boolean> {
 
-    protected BooleanConfigurationOption() {
+    BooleanConfigurationOption() {
         super();
     }
 
-    protected BooleanConfigurationOption(Boolean value) {
+    BooleanConfigurationOption(Boolean value) {
         super(value);
     }
 
     @Override
-    protected Boolean parse(@Nonnull String input) {
+    Boolean parse(@Nonnull String input) {
         return Boolean.parseBoolean(input);
     }
 

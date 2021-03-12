@@ -13,7 +13,7 @@ public class AllowedOfflinePayouts extends IntegerConfigurationOption {
     }
 
     @Override
-    protected Config.ConfigPair<Integer> getConfigPair() {
+    Config.ConfigPair<Integer> getConfigPair() {
         return Config.getAllowedOfflinePayouts();
     }
 

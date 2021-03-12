@@ -13,7 +13,7 @@ public class WithdrawalMultiplierDecrement extends IntegerConfigurationOption {
     }
 
     @Override
-    protected Config.ConfigPair<Integer> getConfigPair() {
+    Config.ConfigPair<Integer> getConfigPair() {
         return Config.getWithdrawalMultiplierDecrement();
     }
 

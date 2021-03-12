@@ -6,16 +6,16 @@ import javax.annotation.Nonnull;
 
 abstract class IntegerConfigurationOption extends ConfigurationOption<Integer> {
 
-    protected IntegerConfigurationOption() {
+    IntegerConfigurationOption() {
         super();
     }
 
-    protected IntegerConfigurationOption(Integer value) {
+    IntegerConfigurationOption(Integer value) {
         super(value);
     }
 
     @Override
-    protected Integer parse(@Nonnull String input) throws IntegerParseException {
+    Integer parse(@Nonnull String input) throws IntegerParseException {
         try {
             return Math.abs(Integer.parseInt(input));
         } catch (NumberFormatException e) {

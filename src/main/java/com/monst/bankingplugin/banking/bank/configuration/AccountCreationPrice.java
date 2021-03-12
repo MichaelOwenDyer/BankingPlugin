@@ -13,7 +13,7 @@ public class AccountCreationPrice extends DoubleConfigurationOption {
     }
 
     @Override
-    protected Config.ConfigPair<Double> getConfigPair() {
+    Config.ConfigPair<Double> getConfigPair() {
         return Config.getAccountCreationPrice();
     }
 

@@ -8,20 +8,20 @@ import javax.annotation.Nullable;
 
 public abstract class ConfigurationOption<T> {
 
+    T value;
     private boolean customValue;
-    protected T value;
 
-    protected ConfigurationOption() {
-        this.customValue = false;
+    ConfigurationOption() {
         this.value = null;
+        this.customValue = false;
     }
 
-    protected ConfigurationOption(T value) {
-        this.customValue = value != null;
+    ConfigurationOption(T value) {
         this.value = value;
+        this.customValue = value != null;
     }
 
-    protected abstract Config.ConfigPair<T> getConfigPair();
+    abstract Config.ConfigPair<T> getConfigPair();
 
     public T getNullable() {
         return value;
@@ -49,6 +49,6 @@ public abstract class ConfigurationOption<T> {
         return getConfigPair().isOverridable();
     }
 
-    protected abstract T parse(@Nonnull String input) throws ArgumentParseException;
+    abstract T parse(@Nonnull String input) throws ArgumentParseException;
 
 }

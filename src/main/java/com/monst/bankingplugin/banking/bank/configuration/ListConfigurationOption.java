@@ -10,16 +10,16 @@ import java.util.stream.Stream;
 
 abstract class ListConfigurationOption<T> extends ConfigurationOption<List<T>> {
 
-    protected ListConfigurationOption() {
+    ListConfigurationOption() {
         super();
     }
 
-    protected ListConfigurationOption(List<T> value) {
+    ListConfigurationOption(List<T> value) {
         super(value);
     }
 
     @Override
-    protected List<T> parse(@Nonnull String input) throws ListParseException {
+    List<T> parse(@Nonnull String input) throws ListParseException {
         try {
             return parseToStream(input).collect(Collectors.toList());
         } catch (NumberFormatException | DateTimeParseException e) {

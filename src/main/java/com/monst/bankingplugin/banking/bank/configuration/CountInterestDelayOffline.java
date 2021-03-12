@@ -13,7 +13,7 @@ public class CountInterestDelayOffline extends BooleanConfigurationOption {
     }
 
     @Override
-    protected Config.ConfigPair<Boolean> getConfigPair() {
+    Config.ConfigPair<Boolean> getConfigPair() {
         return Config.getCountInterestDelayOffline();
     }
 
