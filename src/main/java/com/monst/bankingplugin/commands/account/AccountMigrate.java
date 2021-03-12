@@ -3,15 +3,17 @@ package com.monst.bankingplugin.commands.account;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
-import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
+import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.exceptions.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
@@ -127,12 +129,12 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         Bank oldBank = toMigrate.getBank();
 
-        double creationPrice = newBank.get(BankField.ACCOUNT_CREATION_PRICE);
+        double creationPrice = newBank.getAccountCreationPrice().get();
         creationPrice *= (newBank.isOwner(p) ? 0 : 1);
         creationPrice *= chestLocation.getSize();
 
-        double reimbursement = oldBank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ?
-                oldBank.get(BankField.ACCOUNT_CREATION_PRICE) :
+        double reimbursement = oldBank.getReimburseAccountCreation().get() ?
+                oldBank.getAccountCreationPrice().get() :
                 0.0d;
         reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
         reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much

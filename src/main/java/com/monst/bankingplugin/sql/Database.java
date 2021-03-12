@@ -4,8 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankConfig;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector2D;
@@ -45,6 +43,7 @@ public abstract class Database {
 	final BankingPlugin plugin = BankingPlugin.getInstance();
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final Set<String> unknownWorldNames = new HashSet<>();
+	private final int DATABASE_VERSION = 1;
 
 	String tableBanks = "Banks";
 	String tableCoOwnsBank = "co_owns_bank";
@@ -119,6 +118,21 @@ public abstract class Database {
 				.update("REPLACE INTO " + tableFields + " VALUES ('Version', ?)")
 				.params(version)
 				.run();
+	}
+
+	/**
+	 * Carry out any potential updates on the database structure if necessary.
+	 * @return whether the database was updated or not
+	 */
+	private boolean update() {
+		int version = getDatabaseVersion();
+		if (version == DATABASE_VERSION)
+			return false;
+		Runnable[] updates = new Runnable[] { () -> {} }; // Updates can be added here in the future
+		while (version < DATABASE_VERSION && version++ < updates.length)
+			updates[version].run();
+		setDatabaseVersion(DATABASE_VERSION);
+		return true;
 	}
 
 	/**
@@ -214,14 +228,6 @@ public abstract class Database {
 	}
 
 	/**
-	 * Carry out any potential updates on the database structure if necessary.
-	 * @return whether the database was updated or not
-	 */
-	private boolean update() {
-		return false;
-	}
-
-	/**
 	 * Adds an account to the database.
 	 *
 	 * @param account  Account to add
@@ -257,7 +263,7 @@ public abstract class Database {
 	public void updateAccount(Account account, EnumSet<AccountField> fields, Callback<Void> callback) {
 		async(() -> {
 			String attributes = fields.stream()
-					.map(a -> a.getAttribute() + " = ?")
+					.map(a -> a.getName() + " = ?")
 					.collect(Collectors.joining(", "));
 			List<Object> params = fields.stream()
 					.map(a -> a.getFrom(account))
@@ -434,48 +440,31 @@ public abstract class Database {
 			String ownerUUID = values.getNextString();
 			OfflinePlayer owner = Utils.nonNull(ownerUUID, id -> Bukkit.getOfflinePlayer(UUID.fromString(id)), () -> null);
 
-			boolean countInterestDelayOffline = values.getNextBoolean();
-			boolean reimburseAccountCreation = values.getNextBoolean();
-			boolean payOnLowBalance = values.getNextBoolean();
-			double interestRate = values.getNextDouble();
-			double accountCreationPrice = values.getNextDouble();
-			double minimumBalance = values.getNextDouble();
-			double lowBalanceFee = values.getNextDouble();
-			int initialInterestDelay = values.getNextInt();
-			int allowedOfflinePayouts = values.getNextInt();
-			int allowedOfflinePayoutsBeforeMultiplierReset = values.getNextInt();
-			int offlineMultiplierDecrement = values.getNextInt();
-			int withdrawalMultiplierDecrement = values.getNextInt();
-			int playerBankAccountLimit = values.getNextInt();
+			Boolean countInterestDelayOffline = values.getNextBooleanNullable();
+			Boolean reimburseAccountCreation = values.getNextBooleanNullable();
+			Boolean payOnLowBalance = values.getNextBooleanNullable();
+			Double interestRate = values.getNextDoubleNullable();
+			Double accountCreationPrice = values.getNextDoubleNullable();
+			Double minimumBalance = values.getNextDoubleNullable();
+			Double lowBalanceFee = values.getNextDoubleNullable();
+			Integer initialInterestDelay = values.getNextInteger();
+			Integer allowedOfflinePayouts = values.getNextInteger();
+			Integer allowedOfflinePayoutsBeforeMultiplierReset = values.getNextInteger();
+			Integer offlineMultiplierDecrement = values.getNextInteger();
+			Integer withdrawalMultiplierDecrement = values.getNextInteger();
+			Integer playerBankAccountLimit = values.getNextInteger();
 			List<Integer> multipliers;
 			try {
-				multipliers = Arrays.stream(values.getNextString().split(", ")).map(Integer::parseInt).collect(Collectors.toList());
+				multipliers = Arrays.stream(values.getNextString().split("\\s*,\\s*")).map(Integer::parseInt).collect(Collectors.toList());
 			} catch (NumberFormatException e) {
 				multipliers = Config.multipliers.getDefault();
 			}
 			List<LocalTime> interestPayoutTimes;
 			try {
-				interestPayoutTimes = Arrays.stream(values.getNextString().split(", ")).map(LocalTime::parse).collect(Collectors.toList());
+				interestPayoutTimes = Arrays.stream(values.getNextString().split("\\s*,\\s*")).map(LocalTime::parse).collect(Collectors.toList());
 			} catch (DateTimeParseException e) {
 				interestPayoutTimes = Config.interestPayoutTimes.getDefault();
 			}
-			BankConfig bankConfig = new BankConfig(
-					countInterestDelayOffline,
-					reimburseAccountCreation,
-					payOnLowBalance,
-					interestRate,
-					accountCreationPrice,
-					minimumBalance,
-					lowBalanceFee,
-					initialInterestDelay,
-					allowedOfflinePayouts,
-					allowedOfflinePayoutsBeforeMultiplierReset,
-					offlineMultiplierDecrement,
-					withdrawalMultiplierDecrement,
-					playerBankAccountLimit,
-					multipliers,
-					interestPayoutTimes
-			);
 
 			String worldName = values.getNextString();
 			World world = Bukkit.getWorld(worldName);
@@ -497,14 +486,16 @@ public abstract class Database {
 			int minZ = values.getNextInt();
 			int maxZ = values.getNextInt();
 			String vertices = values.getNextString();
-			Selection selection = Utils.nonNull(vertices, v -> {
-						List<BlockVector2D> points = Arrays.stream(vertices.substring(1, vertices.length() - 1).split("\\), \\(")).map(string -> {
-							String[] xAndZ = string.split(", ");
-							return new BlockVector2D(Integer.parseInt(xAndZ[0]), Integer.parseInt(xAndZ[1]));
-						}).collect(Collectors.toList());
-						return PolygonalSelection.of(world, points, minY, maxY);
-					}, () -> CuboidSelection.of(world, new BlockVector3D(minX, minY, minZ), new BlockVector3D(maxX, maxY, maxZ))
-			);
+			Selection selection;
+			if (vertices != null) {
+				List<BlockVector2D> points = Arrays.stream(vertices.substring(1, vertices.length() - 1).split("\\), \\(")).map(string -> {
+					String[] xAndZ = string.split("\\s*,\\s");
+					return new BlockVector2D(Integer.parseInt(xAndZ[0]), Integer.parseInt(xAndZ[1]));
+				}).collect(Collectors.toList());
+				selection = PolygonalSelection.of(world, points, minY, maxY);
+			} else {
+				selection = CuboidSelection.of(world, new BlockVector3D(minX, minY, minZ), new BlockVector3D(maxX, maxY, maxZ));
+			}
 
 			Set<OfflinePlayer> coowners = query
 					.select("SELECT CoOwnerUUID FROM " + tableCoOwnsBank + " WHERE BankID = ?")
@@ -514,7 +505,28 @@ public abstract class Database {
 			plugin.debugf("Found %d bank coowner%s.", coowners.size(), coowners.size() == 1 ? "" : "s");
 
 			plugin.debugf("Initializing bank #%d (\"%s\")...", bankID, ChatColor.stripColor(name));
-			return Bank.recreate(bankID, name, owner, coowners, selection, bankConfig);
+			return Bank.recreate(
+					bankID,
+					name,
+					owner,
+					coowners,
+					selection,
+					countInterestDelayOffline,
+					reimburseAccountCreation,
+					payOnLowBalance,
+					interestRate,
+					accountCreationPrice,
+					minimumBalance,
+					lowBalanceFee,
+					initialInterestDelay,
+					allowedOfflinePayouts,
+					allowedOfflinePayoutsBeforeMultiplierReset,
+					offlineMultiplierDecrement,
+					withdrawalMultiplierDecrement,
+					playerBankAccountLimit,
+					multipliers,
+					interestPayoutTimes
+			);
 		};
 	}
 
@@ -914,16 +926,44 @@ public abstract class Database {
 			return rs.getInt(index++);
 		}
 
+		Integer getNextInteger() throws SQLException {
+			int result = getNextInt();
+			if (result == 0 && rs.wasNull())
+				return null;
+			return result;
+		}
+
 		long getNextLong() throws SQLException {
 			return rs.getLong(index++);
+		}
+
+		Long getNextLongNullable() throws SQLException {
+			long result = getNextLong();
+			if (result == 0 && rs.wasNull())
+				return null;
+			return result;
 		}
 
 		double getNextDouble() throws SQLException {
 			return rs.getDouble(index++);
 		}
 
+		Double getNextDoubleNullable() throws SQLException {
+			double result = getNextDouble();
+			if (result == 0 && rs.wasNull())
+				return null;
+			return result;
+		}
+
 		boolean getNextBoolean() throws SQLException {
-			return Boolean.parseBoolean(getNextString());
+			return rs.getBoolean(index++);
+		}
+
+		Boolean getNextBooleanNullable() throws SQLException {
+			boolean result = getNextBoolean();
+			if (!result && rs.wasNull())
+				return null;
+			return result;
 		}
 
 		BigDecimal getNextBigDecimal() throws SQLException {
@@ -966,21 +1006,21 @@ public abstract class Database {
 				bank.getID(),
 				bank.getRawName(),
 				bank.getOwnerUUID(),
-				bank.get(BankField.COUNT_INTEREST_DELAY_OFFLINE),
-				bank.get(BankField.REIMBURSE_ACCOUNT_CREATION),
-				bank.get(BankField.PAY_ON_LOW_BALANCE),
-				bank.get(BankField.INTEREST_RATE),
-				bank.get(BankField.ACCOUNT_CREATION_PRICE),
-				bank.get(BankField.MINIMUM_BALANCE),
-				bank.get(BankField.LOW_BALANCE_FEE),
-				bank.get(BankField.INITIAL_INTEREST_DELAY),
-				bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS),
-				bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET),
-				bank.get(BankField.OFFLINE_MULTIPLIER_DECREMENT),
-				bank.get(BankField.WITHDRAWAL_MULTIPLIER_DECREMENT),
-				bank.get(BankField.PLAYER_BANK_ACCOUNT_LIMIT),
-				bank.get(BankField.MULTIPLIERS),
-				bank.get(BankField.INTEREST_PAYOUT_TIMES),
+				bank.getCountInterestDelayOffline().getNullable(),
+				bank.getReimburseAccountCreation().getNullable(),
+				bank.getPayOnLowBalance().getNullable(),
+				bank.getInterestRate().getNullable(),
+				bank.getAccountCreationPrice().getNullable(),
+				bank.getMinimumBalance().getNullable(),
+				bank.getLowBalanceFee().getNullable(),
+				bank.getInitialInterestDelay().getNullable(),
+				bank.getAllowedOfflinePayouts().getNullable(),
+				bank.getAllowedOfflinePayoutsBeforeReset().getNullable(),
+				bank.getOfflineMultiplierDecrement().getNullable(),
+				bank.getWithdrawalMultiplierDecrement().getNullable(),
+				bank.getPlayerBankAccountLimit().getNullable(),
+				bank.getMultipliers().getNullable(),
+				bank.getInterestPayoutTimes().getNullable(),
 				sel.getWorld().getName(),
 				sel.getMinX(),
 				sel.getMaxX(),

@@ -2,7 +2,6 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.listeners.InterestEventListener;
@@ -64,7 +63,7 @@ public class InterestEventScheduler {
 
         BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>());
 
-        List<LocalTime> bankPayoutTimes = bank.get(BankField.INTEREST_PAYOUT_TIMES);
+        List<LocalTime> bankPayoutTimes = bank.getInterestPayoutTimes().get();
         for (LocalTime time : bankPayoutTimes) {
             if (TIME_BANK_MAP.putIfAbsent(time, new HashSet<>()) == null) // If no other bank already has a payout scheduled at this time
                 PAYOUT_TASK_IDS.put(time, scheduleRepeatAtTime(time)); // Schedule the payout task

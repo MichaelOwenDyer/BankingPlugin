@@ -1,17 +1,21 @@
 package com.monst.bankingplugin.banking.bank;
 
 import com.monst.bankingplugin.banking.BankingEntity;
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.geo.selections.Selection;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.banking.Nameable;
+import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.bank.configuration.*;
+import com.monst.bankingplugin.banking.bank.configuration.InterestPayoutTimes;
+import com.monst.bankingplugin.banking.bank.configuration.Multipliers;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.ArgumentParseException;
+import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,7 +33,21 @@ public class Bank extends BankingEntity {
 				owner,
 				new HashSet<>(),
 				selection,
-				new BankConfig()
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null
 		);
 	}
 
@@ -37,20 +55,53 @@ public class Bank extends BankingEntity {
 	 * Re-creates a bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
 	 */
 	public static Bank recreate(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-								Selection selection, BankConfig bankConfig) {
+								Selection selection, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
+								Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
+								Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer allowedOfflinePayoutsUntilReset,
+								Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
+								List<Integer> multipliers, List<LocalTime> interestPayoutTimes) {
 		return new Bank(
 				id,
 				name,
 				owner,
 				new HashSet<>(coowners),
 				selection,
-				bankConfig
+				countInterestDelayOffline,
+				reimburseAccountCreation,
+				payOnLowBalance,
+				interestRate,
+				accountCreationPrice,
+				minimumBalance,
+				lowBalanceFee,
+				initialInterestDelay,
+				allowedOfflinePayouts,
+				allowedOfflinePayoutsUntilReset,
+				offlineMultiplierDecrement,
+				withdrawalMultiplierDecrement,
+				playerBankAccountLimit,
+				multipliers,
+				interestPayoutTimes
 		);
 	}
 
 	private final Set<Account> accounts;
-	private final BankConfig bankConfig;
 	private Selection selection;
+
+	private final CountInterestDelayOffline countInterestDelayOffline;
+	private final ReimburseAccountCreation reimburseAccountCreation;
+	private final PayOnLowBalance payOnLowBalance;
+	private final InterestRate interestRate;
+	private final AccountCreationPrice accountCreationPrice;
+	private final MinimumBalance minimumBalance;
+	private final LowBalanceFee lowBalanceFee;
+	private final InitialInterestDelay initialInterestDelay;
+	private final AllowedOfflinePayouts allowedOfflinePayouts;
+	private final AllowedOfflinePayoutsBeforeReset allowedOfflinePayoutsBeforeReset;
+	private final OfflineMultiplierDecrement offlineMultiplierDecrement;
+	private final WithdrawalMultiplierDecrement withdrawalMultiplierDecrement;
+	private final PlayerBankAccountLimit playerBankAccountLimit;
+	private final Multipliers multipliers;
+	private final InterestPayoutTimes interestPayoutTimes;
 
 	/**
 	 * @param id the bank ID {@link BankingEntity}
@@ -58,18 +109,36 @@ public class Bank extends BankingEntity {
 	 * @param owner the owner of the bank {@link BankingEntity}
 	 * @param coowners the co-owners of the bank {@link BankingEntity}
 	 * @param selection the {@link Selection} representing the bounds of the bank
-	 * @param bankConfig the {@link BankConfig} of the bank
+	 *
 	 */
 	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-				 Selection selection, BankConfig bankConfig) {
+				 Selection selection, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
+				 Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
+				 Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer allowedOfflinePayoutsUntilReset,
+				 Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
+				 List<Integer> multipliers, List<LocalTime> interestPayoutTimes) {
 
 		this.id = id;
 		this.owner = owner;
 		this.coowners = coowners;
 		this.name = name;
 		this.selection = selection;
-		this.bankConfig = bankConfig;
 		this.accounts = new HashSet<>();
+		this.countInterestDelayOffline = new CountInterestDelayOffline(countInterestDelayOffline);
+		this.reimburseAccountCreation = new ReimburseAccountCreation(reimburseAccountCreation);
+		this.payOnLowBalance = new PayOnLowBalance(payOnLowBalance);
+		this.interestRate = new InterestRate(interestRate);
+		this.accountCreationPrice = new AccountCreationPrice(accountCreationPrice);
+		this.minimumBalance = new MinimumBalance(minimumBalance);
+		this.lowBalanceFee = new LowBalanceFee(lowBalanceFee);
+		this.initialInterestDelay = new InitialInterestDelay(initialInterestDelay);
+		this.allowedOfflinePayouts = new AllowedOfflinePayouts(allowedOfflinePayouts);
+		this.allowedOfflinePayoutsBeforeReset = new AllowedOfflinePayoutsBeforeReset(allowedOfflinePayoutsUntilReset);
+		this.offlineMultiplierDecrement = new OfflineMultiplierDecrement(offlineMultiplierDecrement);
+		this.withdrawalMultiplierDecrement = new WithdrawalMultiplierDecrement(withdrawalMultiplierDecrement);
+		this.playerBankAccountLimit = new PlayerBankAccountLimit(playerBankAccountLimit);
+		this.multipliers = new Multipliers(multipliers);
+		this.interestPayoutTimes = new InterestPayoutTimes(interestPayoutTimes);
 
 	}
 
@@ -172,23 +241,108 @@ public class Bank extends BankingEntity {
 		notifyObservers();
 	}
 
-	public boolean set(BankField field, String value, Callback<String> callback) {
-		return bankConfig.set(field, value, callback.andThen(result -> {
-			notifyObservers();
-			getAccounts().forEach(Account::notifyObservers);
-		}));
+	public CountInterestDelayOffline getCountInterestDelayOffline() {
+		return countInterestDelayOffline;
 	}
 
-	public String getFormatted(BankField field) {
-		return bankConfig.getFormatted(field);
+	public ReimburseAccountCreation getReimburseAccountCreation() {
+		return reimburseAccountCreation;
 	}
 
-	public <T> T get(BankField field) {
-		return get(field, false);
+	public PayOnLowBalance getPayOnLowBalance() {
+		return payOnLowBalance;
 	}
 
-	public <T> T get(BankField field, boolean ignoreConfig) {
-		return bankConfig.get(field, ignoreConfig);
+	public InterestRate getInterestRate() {
+		return interestRate;
+	}
+
+	public AccountCreationPrice getAccountCreationPrice() {
+		return accountCreationPrice;
+	}
+
+	public MinimumBalance getMinimumBalance() {
+		return minimumBalance;
+	}
+
+	public LowBalanceFee getLowBalanceFee() {
+		return lowBalanceFee;
+	}
+
+	public InitialInterestDelay getInitialInterestDelay() {
+		return initialInterestDelay;
+	}
+
+	public AllowedOfflinePayouts getAllowedOfflinePayouts() {
+		return allowedOfflinePayouts;
+	}
+
+	public AllowedOfflinePayoutsBeforeReset getAllowedOfflinePayoutsBeforeReset() {
+		return allowedOfflinePayoutsBeforeReset;
+	}
+
+	public OfflineMultiplierDecrement getOfflineMultiplierDecrement() {
+		return offlineMultiplierDecrement;
+	}
+
+	public WithdrawalMultiplierDecrement getWithdrawalMultiplierDecrement() {
+		return withdrawalMultiplierDecrement;
+	}
+
+	public PlayerBankAccountLimit getPlayerBankAccountLimit() {
+		return playerBankAccountLimit;
+	}
+
+	public Multipliers getMultipliers() {
+		return multipliers;
+	}
+
+	public InterestPayoutTimes getInterestPayoutTimes() {
+		return interestPayoutTimes;
+	}
+
+	public ConfigurationOption<?> get(BankField field) {
+		switch (field) {
+			case COUNT_INTEREST_DELAY_OFFLINE:
+				return getCountInterestDelayOffline();
+			case REIMBURSE_ACCOUNT_CREATION:
+				return getReimburseAccountCreation();
+			case PAY_ON_LOW_BALANCE:
+				return getPayOnLowBalance();
+			case INTEREST_RATE:
+				return getInterestRate();
+			case ACCOUNT_CREATION_PRICE:
+				return getAccountCreationPrice();
+			case MINIMUM_BALANCE:
+				return getMinimumBalance();
+			case LOW_BALANCE_FEE:
+				return getLowBalanceFee();
+			case INITIAL_INTEREST_DELAY:
+				return getInitialInterestDelay();
+			case ALLOWED_OFFLINE_PAYOUTS:
+				return getAllowedOfflinePayouts();
+			case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
+				return getAllowedOfflinePayoutsBeforeReset();
+			case OFFLINE_MULTIPLIER_DECREMENT:
+				return getOfflineMultiplierDecrement();
+			case WITHDRAWAL_MULTIPLIER_DECREMENT:
+				return getWithdrawalMultiplierDecrement();
+			case PLAYER_BANK_ACCOUNT_LIMIT:
+				return getPlayerBankAccountLimit();
+			case MULTIPLIERS:
+				return getMultipliers();
+			case INTEREST_PAYOUT_TIMES:
+				return getInterestPayoutTimes();
+			default:
+				return null;
+		}
+	}
+
+	public boolean set(BankField field, String input) throws ArgumentParseException {
+		boolean overrideCompliant = get(field).set(input);
+		notifyObservers();
+		getAccounts().forEach(Account::notifyObservers);
+		return overrideCompliant;
 	}
 
 	/**
@@ -276,16 +430,15 @@ public class Bank extends BankingEntity {
 				"\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")",
 				"Owner: " + getOwnerDisplayName(),
 				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName).toString(),
-				"Interest rate: " + ChatColor.GREEN + getFormatted(BankField.INTEREST_RATE),
-				"Multipliers: " + Utils.map(Utils.stackList(get(BankField.MULTIPLIERS)),
+				"Interest rate: " + ChatColor.GREEN + getInterestRate().getFormatted(),
+				"Multipliers: " + Utils.map(Utils.stackList(getMultipliers().get()),
 						list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString(),
-				"Account creation price: " + ChatColor.GREEN + getFormatted(BankField.ACCOUNT_CREATION_PRICE),
-				"Offline payouts: " + ChatColor.AQUA + getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS),
-						" (" + ChatColor.AQUA + getFormatted(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET) + ChatColor.GRAY + " before multiplier reset)",
-				"Initial payout delay: " + ChatColor.AQUA + getFormatted(BankField.INITIAL_INTEREST_DELAY),
-				"Minimum balance: " + ChatColor.GREEN + getFormatted(BankField.MINIMUM_BALANCE),
-						" (" + ChatColor.RED + getFormatted(BankField.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)",
-						" (" + ChatColor.RED + getFormatted(BankField.LOW_BALANCE_FEE) + ChatColor.GRAY + " fee)",
+				"Account creation price: " + ChatColor.GREEN + getAccountCreationPrice().getFormatted(),
+				"Offline payouts: " + ChatColor.AQUA + getAllowedOfflinePayouts().getFormatted(),
+						" (" + ChatColor.AQUA + getAllowedOfflinePayoutsBeforeReset().getFormatted() + ChatColor.GRAY + " before multiplier reset)",
+				"Initial payout delay: " + ChatColor.AQUA + getInitialInterestDelay().getFormatted(),
+				"Minimum balance: " + ChatColor.GREEN + getMinimumBalance().getFormatted(),
+						" (" + ChatColor.RED + getLowBalanceFee().getFormatted() + ChatColor.GRAY + " fee)",
 				"Accounts: " + ChatColor.AQUA + getAccounts().size(),
 				"Total value: " + ChatColor.GREEN + Utils.format(getTotalValue()),
 				"Average account value: " + ChatColor.GREEN + Utils.format(getTotalValue().divide(BigDecimal.valueOf(getAccounts().size()), BigDecimal.ROUND_HALF_EVEN)),

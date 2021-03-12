@@ -2,15 +2,17 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
+import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.exceptions.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
@@ -102,7 +104,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
             return;
         }
-        int playerAccountLimit = bank.get(BankField.PLAYER_BANK_ACCOUNT_LIMIT);
+        int playerAccountLimit = bank.getPlayerBankAccountLimit().get();
         if (playerAccountLimit > 0 && bank.getAccounts(account -> account.isOwner(p)).size() >= playerAccountLimit) {
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_AT_BANK_REACHED,
                     new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
@@ -122,7 +124,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return;
         }
 
-        double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
+        double creationPrice = bank.getAccountCreationPrice().get();
         creationPrice *= chestLocation.getSize();
         creationPrice *= bank.isOwner(p) ? 0 : 1;
 

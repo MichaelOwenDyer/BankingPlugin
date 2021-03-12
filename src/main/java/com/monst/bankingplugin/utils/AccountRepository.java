@@ -114,6 +114,7 @@ public class AccountRepository extends Observable implements Repository<Account>
 		fields.addAll(Arrays.asList(fieldArray));
 
 		if (fields.remove(AccountField.LOCATION)) {
+			fields.add(AccountField.WORLD);
 			fields.add(AccountField.Y);
 			fields.add(AccountField.X1);
 			fields.add(AccountField.Z1);

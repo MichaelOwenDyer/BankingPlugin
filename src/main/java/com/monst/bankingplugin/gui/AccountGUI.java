@@ -2,7 +2,6 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -127,15 +126,15 @@ public class AccountGUI extends SinglePageGUI<Account> {
 
 	private List<String> getBalanceLore() {
 		Bank bank = guiSubject.getBank();
-		double minBalance = bank.get(BankField.MINIMUM_BALANCE);
+		double minBalance = bank.getMinimumBalance().get();
 		boolean isLowBalance = guiSubject.getBalance().doubleValue() < minBalance;
-		boolean payOnLowBalance = bank.get(BankField.PAY_ON_LOW_BALANCE);
-		double interestRate = bank.get(BankField.INTEREST_RATE);
+		boolean payOnLowBalance = bank.getPayOnLowBalance().get();
+		double interestRate = bank.getInterestRate().get();
 		int multiplier = guiSubject.getRealMultiplier();
 		double fullPayout = (isLowBalance && !payOnLowBalance) ?
 				0.0 : guiSubject.getBalance().doubleValue() * interestRate * multiplier;
-		double lowBalanceFee = isLowBalance && (double) bank.get(BankField.LOW_BALANCE_FEE) > 0 ?
-				bank.get(BankField.LOW_BALANCE_FEE) : 0.0;
+		double lowBalanceFee = isLowBalance && bank.getLowBalanceFee().get() > 0 ?
+				bank.getLowBalanceFee().get() : 0.0;
 		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
 				"Balance: " + ChatColor.GREEN + Utils.format(guiSubject.getBalance()) + (isLowBalance ?
@@ -150,14 +149,14 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	}
 
 	List<String> getMultiplierLore() {
-		return getMultiplierLore(guiSubject.getBank().get(BankField.MULTIPLIERS), guiSubject.getMultiplierStage());
+		return getMultiplierLore(guiSubject.getBank().getMultipliers().get(), guiSubject.getMultiplierStage());
 	}
 
 	private List<String> getAccountRestrictionsLore() {
 		int delay = guiSubject.getDelayUntilNextPayout();
 		int remainingOffline = guiSubject.getRemainingOfflinePayouts();
 		int untilReset = guiSubject.getRemainingOfflinePayoutsUntilReset();
-		int offlineDecrement = guiSubject.getBank().get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
+		int offlineDecrement = guiSubject.getBank().getOfflineMultiplierDecrement().get();
 		return wordWrapAll(
 				(delay == 0 ?
 						"This account will generate interest in the next payout cycle." :

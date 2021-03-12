@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -177,22 +176,22 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getCreationLore() {
-		boolean reimburse = guiSubject.get(BankField.REIMBURSE_ACCOUNT_CREATION);
+		boolean reimburse = guiSubject.getReimburseAccountCreation().get();
 		return Arrays.asList(
-				"Fee per chest: " + ChatColor.GREEN + guiSubject.getFormatted(BankField.ACCOUNT_CREATION_PRICE),
+				"Fee per chest: " + ChatColor.GREEN + guiSubject.getAccountCreationPrice().getFormatted(),
 				"Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}
 
 	private List<String> getMultiplierLore() {
-		return getMultiplierLore(guiSubject.get(BankField.MULTIPLIERS), -1);
+		return getMultiplierLore(guiSubject.getMultipliers().get(), -1);
 	}
 
 	private List<String> getBalanceRestrictionLore() {
-		double minBalance = guiSubject.get(BankField.MINIMUM_BALANCE);
-		double lowBalanceFee = guiSubject.get(BankField.LOW_BALANCE_FEE);
+		double minBalance = guiSubject.getMinimumBalance().get();
+		double lowBalanceFee = guiSubject.getLowBalanceFee().get();
 		boolean strikethrough = minBalance == 0;
-		boolean payOnLowBalance = guiSubject.get(BankField.PAY_ON_LOW_BALANCE);
+		boolean payOnLowBalance = guiSubject.getPayOnLowBalance().get();
 		List<String> lore = new ArrayList<>();
 		lore.add("Minimum balance: " + ChatColor.GREEN + Utils.format(minBalance));
 		lore.add("Low balance fee: " + ChatColor.RED + (strikethrough ? ChatColor.STRIKETHROUGH : "") + Utils.format(lowBalanceFee));
@@ -205,9 +204,9 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getOfflinePayoutsLore() {
-		int offlinePayouts = guiSubject.get(BankField.ALLOWED_OFFLINE_PAYOUTS);
-		int offlineDecrement = guiSubject.get(BankField.OFFLINE_MULTIPLIER_DECREMENT);
-		int beforeReset = guiSubject.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET);
+		int offlinePayouts = guiSubject.getAllowedOfflinePayouts().get();
+		int offlineDecrement = guiSubject.getOfflineMultiplierDecrement().get();
+		int beforeReset = guiSubject.getAllowedOfflinePayoutsBeforeReset().get();
 		List<String> lore = new ArrayList<>();
 		lore.add("While account holders are offline...");
 		lore.add("");
@@ -232,15 +231,15 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getInterestRateLore() {
-		double interestRate = guiSubject.get(BankField.INTEREST_RATE);
+		double interestRate = guiSubject.getInterestRate().get();
 		return wordWrapAll(
 			"" + ChatColor.GREEN + String.format("%,.1f", interestRate * 100) + "%"
 		);
 	}
 
 	private List<String> getInterestDelayLore() {
-		int interestDelay = guiSubject.get(BankField.INITIAL_INTEREST_DELAY);
-		boolean countOffline = guiSubject.get(BankField.COUNT_INTEREST_DELAY_OFFLINE);
+		int interestDelay = guiSubject.getInitialInterestDelay().get();
+		boolean countOffline = guiSubject.getCountInterestDelayOffline().get();
 		List<String> lore = new ArrayList<>();
 		lore.add("New accounts will begin to generate interest " + (interestDelay == 0
 				? ChatColor.GREEN + "immediately" + ChatColor.GRAY + " after creation."
@@ -257,7 +256,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getWithdrawalPolicyLore() {
-		int withdrawalDecrement = guiSubject.get(BankField.WITHDRAWAL_MULTIPLIER_DECREMENT);
+		int withdrawalDecrement = guiSubject.getWithdrawalMultiplierDecrement().get();
 		return wordWrapAll(
 				"Account multipliers will " + (withdrawalDecrement == 0
 						? ChatColor.GREEN + "not be affected on" + ChatColor.GRAY
@@ -267,7 +266,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getAccountLimitLore() {
-		int accountLimit = guiSubject.get(BankField.PLAYER_BANK_ACCOUNT_LIMIT);
+		int accountLimit = guiSubject.getPlayerBankAccountLimit().get();
 		return wordWrapAll(
 				(accountLimit == 0
 						? "Account creation is currently " + ChatColor.RED + "disabled" + ChatColor.GRAY
@@ -279,7 +278,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getPayoutTimeLore() {
-		List<LocalTime> times = guiSubject.get(BankField.INTEREST_PAYOUT_TIMES);
+		List<LocalTime> times = guiSubject.getInterestPayoutTimes().get();
 		List<String> lore = new ArrayList<>();
 		if (!times.isEmpty()) {
 			lore.add("Accounts will generate interest every day at: ");

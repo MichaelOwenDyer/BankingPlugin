@@ -70,7 +70,7 @@ public class Utils {
 		return ChatColor.stripColor(colorize(s));
 	}
 
-	public static String format(Double d) {
+	public static String format(double d) {
 		return BankingPlugin.getInstance().getEconomy().format(d);
 	}
 
@@ -78,8 +78,20 @@ public class Utils {
 		return format(bd.doubleValue());
 	}
 
+	public static double scale(double d) {
+		return scale(BigDecimal.valueOf(d)).doubleValue();
+	}
+
+	public static double scale(double d, int scale) {
+		return scale(BigDecimal.valueOf(d), scale).doubleValue();
+	}
+
 	public static BigDecimal scale(BigDecimal bd) {
-		return bd.setScale(2, RoundingMode.HALF_EVEN);
+		return scale(bd, 2);
+	}
+
+	public static BigDecimal scale(BigDecimal bd, int scale) {
+		return bd.setScale(scale, RoundingMode.HALF_EVEN);
 	}
 
 	public static Location blockifyLocation(Location loc) {

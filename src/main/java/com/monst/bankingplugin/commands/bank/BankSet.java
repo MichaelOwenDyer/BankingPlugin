@@ -1,13 +1,13 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
+import com.monst.bankingplugin.banking.bank.configuration.BankField;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
+import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;
@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BankSet extends BankCommand.SubCommand {
 
@@ -74,28 +75,28 @@ public class BankSet extends BankCommand.SubCommand {
             return true;
         }
 
-        String previousValue = bank.getFormatted(field);
-        Callback<String> callback = Callback.of(plugin,
-            result -> {
-                plugin.debug(sender.getName() + " has changed " + field.getName() + " at " + bank.getName() + " from " + previousValue + " to " + result);
-                MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_PROPERTY_SET,
-                        new Replacement(Placeholder.PROPERTY, field::getName),
-                        new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
-                        new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
-                        new Replacement(Placeholder.VALUE, result)
-                ));
-                mailingRoom.addOfflineRecipient(bank.getTrustedPlayers());
-                mailingRoom.addOfflineRecipient(bank.getCustomers());
-                mailingRoom.addRecipient(sender);
-                mailingRoom.send(); // TODO: Mail as well?
-            },
-            error -> sender.sendMessage(error.getLocalizedMessage())
-        );
+        String previousValue = bank.get(field).getFormatted();
 
-        if (!bank.set(field, value, callback)) {
-            sender.sendMessage(LangUtils.getMessage(Message.BANK_PROPERTY_NOT_OVERRIDABLE, new Replacement(Placeholder.PROPERTY, field::getName)));
+        try {
+            if (!bank.set(field, value))
+                sender.sendMessage(LangUtils.getMessage(Message.BANK_PROPERTY_NOT_OVERRIDABLE, new Replacement(Placeholder.PROPERTY, field::getConfigName)));
+        } catch (ArgumentParseException e) {
+            sender.sendMessage(e.getMessage());
             return true;
         }
+
+        String newValue = bank.get(field).getFormatted();
+        plugin.debug(sender.getName() + " has changed " + field.getConfigName() + " at " + bank.getName() + " from " + previousValue + " to " + newValue);
+        MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_PROPERTY_SET,
+                new Replacement(Placeholder.PROPERTY, field::getConfigName),
+                new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
+                new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
+                new Replacement(Placeholder.VALUE, newValue)
+        ));
+        mailingRoom.addOfflineRecipient(bank.getTrustedPlayers());
+        mailingRoom.addOfflineRecipient(bank.getCustomers());
+        mailingRoom.addRecipient(sender);
+        mailingRoom.send(); // TODO: Mail as well?
 
         BankConfigureEvent e = new BankConfigureEvent(sender, bank, field, previousValue, value);
         Bukkit.getPluginManager().callEvent(e);
@@ -118,18 +119,20 @@ public class BankSet extends BankCommand.SubCommand {
                     .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                     .sorted()
                     .collect(Collectors.toList());
-        else if (args.length == 3 && bankRepo.getByIdentifier(args[1]) != null)
-            return BankField.stream()
-                    .filter(BankField::isOverrideAllowed)
-                    .map(BankField::getName)
+        else if (args.length == 3 && bankRepo.getByIdentifier(args[1]) != null) {
+            Stream<BankField> fields = Stream.of(BankField.values());
+            if (args[2].isEmpty())
+                fields = fields.filter(BankField::isOverridable);
+            return fields
+                    .map(BankField::getConfigName)
                     .filter(name -> name.contains(args[2].toLowerCase()))
                     .sorted()
                     .collect(Collectors.toList());
-        else if (args.length == 4) {
+        } else if (args.length == 4) {
             Bank bank = bankRepo.getByIdentifier(args[1]);
             BankField field = BankField.getByName(args[2]);
             if (bank != null && field != null)
-                return Collections.singletonList(bank.getFormatted(field));
+                return Collections.singletonList(bank.get(field).getFormatted());
         }
         return Collections.emptyList();
     }

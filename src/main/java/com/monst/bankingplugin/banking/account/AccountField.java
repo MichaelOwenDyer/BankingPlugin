@@ -12,7 +12,7 @@ public enum AccountField {
     Z1 ("Z1", a -> a.getChestLocation().getMinimumBlock().getZ()),
     X2 ("X2", a -> a.getChestLocation().getMaximumBlock().getX()),
     Z2 ("Z2", a -> a.getChestLocation().getMaximumBlock().getZ()),
-    LOCATION ("", null), // Meant as a placeholder for the previous 5
+    LOCATION ("", null), // Meant as a placeholder for the previous 6
     NICKNAME ("Nickname", Account::getRawName),
     BALANCE ("Balance", Account::getBalance),
     PREVIOUS_BALANCE ("PreviousBalance", Account::getPrevBalance),
@@ -29,7 +29,7 @@ public enum AccountField {
         this.getter = getter;
     }
 
-    public String getAttribute() {
+    public String getName() {
         return attribute;
     }
 

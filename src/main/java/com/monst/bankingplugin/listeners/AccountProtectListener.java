@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.exceptions.BankNotFoundException;
@@ -82,8 +81,8 @@ public class AccountProtectListener extends BankingPluginListener {
 	@SuppressWarnings("ConstantConditions")
 	private void removeAndCreateSmaller(Account account, Block b, Player p) {
 		Bank bank = account.getBank();
-		double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
-		creationPrice *= bank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
+		double creationPrice = bank.getAccountCreationPrice().get();
+		creationPrice *= bank.getReimburseAccountCreation().get() ? 1 : 0;
 
 		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
 			double finalCreationPrice = creationPrice;
@@ -196,7 +195,7 @@ public class AccountProtectListener extends BankingPluginListener {
             return;
 		}
 
-		double creationPrice = account.getBank().get(BankField.ACCOUNT_CREATION_PRICE);
+		double creationPrice = account.getBank().getAccountCreationPrice().get();
 		double balance = plugin.getEconomy().getBalance(p);
 		if (creationPrice > 0 && creationPrice > balance) {
 			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_INSUFFICIENT_FUNDS,

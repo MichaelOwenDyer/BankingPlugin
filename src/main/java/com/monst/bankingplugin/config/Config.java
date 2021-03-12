@@ -43,22 +43,26 @@ public class Config {
      * The real-life times for account interest payouts.
      **/
 	public static ConfigPair<List<LocalTime>> interestPayoutTimes;
+	public static ConfigPair<List<LocalTime>> getInterestPayoutTimes() { return interestPayoutTimes; }
 
     /**
      * The default baseline account interest rate.
      **/
 	public static ConfigPair<Double> interestRate;
+	public static ConfigPair<Double> getInterestRate() { return interestRate; }
 
     /**
      * The list of default interest multipliers in sequential order.
      **/
 	public static ConfigPair<List<Integer>> multipliers;
+	public static ConfigPair<List<Integer>> getMultipliers() { return multipliers; }
 
     /**
 	 * The default number of interest payout events a player has to own their account for
 	 * before they start collecting interest
 	 **/
 	public static ConfigPair<Integer> initialInterestDelay;
+	public static ConfigPair<Integer> getInitialInterestDelay() { return initialInterestDelay; }
 
 	/**
 	 * Whether to decrement the interest delay period while a player is offline.
@@ -66,43 +70,51 @@ public class Config {
 	 * an interest payout event, and not while offline.
 	 **/
 	public static ConfigPair<Boolean> countInterestDelayOffline;
+	public static ConfigPair<Boolean> getCountInterestDelayOffline() { return countInterestDelayOffline; }
 
 	/**
 	 * The number of payouts a player is allowed to collect offline.
 	 **/
 	public static ConfigPair<Integer> allowedOfflinePayouts;
+	public static ConfigPair<Integer> getAllowedOfflinePayouts() { return allowedOfflinePayouts; }
 
     /**
 	 * The number of payouts a player is allowed to be offline for (but not
 	 * necessarily collect) before their multiplier is reset.
 	 **/
 	public static ConfigPair<Integer> allowedOfflinePayoutsBeforeReset;
+	public static ConfigPair<Integer> getAllowedOfflinePayoutsBeforeReset() { return allowedOfflinePayoutsBeforeReset; }
 
     /**
 	 * The behavior of an offline player's multiplier.
 	 **/
 	public static ConfigPair<Integer> offlineMultiplierDecrement;
+	public static ConfigPair<Integer> getOfflineMultiplierDecrement() { return offlineMultiplierDecrement; }
 
     /**
 	 * The behavior of a player's multiplier at a withdrawal event.
 	 **/
 	public static ConfigPair<Integer> withdrawalMultiplierDecrement;
+	public static ConfigPair<Integer> getWithdrawalMultiplierDecrement() { return withdrawalMultiplierDecrement; }
 
     /**
      * The price a player has to pay in order to create a bank.
      **/
 	public static double bankCreationPriceAdmin;
 	public static double bankCreationPricePlayer;
+	public static double getBankCreationPricePlayer() { return bankCreationPricePlayer; }
 
     /**
      * The price a player has to pay in order to create an account.
      **/
 	public static ConfigPair<Double> accountCreationPrice;
+	public static ConfigPair<Double> getAccountCreationPrice() { return accountCreationPrice; }
 
 	/**
 	 * Whether the account creation price should be refunded at removal.
 	 */
 	public static ConfigPair<Boolean> reimburseAccountCreation;
+	public static ConfigPair<Boolean> getReimburseAccountCreation() { return reimburseAccountCreation; }
 
 	/**
 	 * Whether the bank creation price should be refunded at removal.
@@ -114,21 +126,25 @@ public class Config {
 	 * The default minimum balance.
 	 */
 	public static ConfigPair<Double> minimumBalance;
+	public static ConfigPair<Double> getMinimumBalance() { return minimumBalance; }
 
 	/**
 	 * The fee that must be paid for a balance lower than the minimum.
 	 */
 	public static ConfigPair<Double> lowBalanceFee;
+	public static ConfigPair<Double> getLowBalanceFee() { return lowBalanceFee; }
 
 	/**
 	 * Whether or not accounts still earn interest on a balance lower than the minimum.
 	 */
 	public static ConfigPair<Boolean> payOnLowBalance;
+	public static ConfigPair<Boolean> getPayOnLowBalance() { return payOnLowBalance; }
 
 	/**
 	 * The default account limit per player per bank.
 	 */
 	public static ConfigPair<Integer> playerBankAccountLimit;
+	public static ConfigPair<Integer> getPlayerBankAccountLimit() { return playerBankAccountLimit; }
 
     /**
      * The default bank ownership limit for players whose limit is not set via a permission.

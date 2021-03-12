@@ -2,12 +2,14 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveCommandEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -97,9 +99,9 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         }
 
         Bank bank = account.getBank();
-        double creationPrice = bank.get(BankField.ACCOUNT_CREATION_PRICE);
+        double creationPrice = bank.getAccountCreationPrice().get();
         creationPrice *= account.getSize();
-        creationPrice *= bank.get(BankField.REIMBURSE_ACCOUNT_CREATION) ? 1 : 0;
+        creationPrice *= bank.getReimburseAccountCreation().get() ? 1 : 0;
 
         if (creationPrice > 0 && account.isOwner(p) && !bank.isOwner(p)) {
 

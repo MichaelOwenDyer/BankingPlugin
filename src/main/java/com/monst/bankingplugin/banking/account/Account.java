@@ -3,7 +3,6 @@ package com.monst.bankingplugin.banking.account;
 import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
@@ -48,9 +47,9 @@ public class Account extends BankingEntity {
 				BigDecimal.ZERO,
 				BigDecimal.ZERO,
 				0,
-				bank.get(BankField.INITIAL_INTEREST_DELAY),
-				bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS),
-				bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET)
+				bank.getInitialInterestDelay().get(),
+				bank.getAllowedOfflinePayouts().get(),
+				bank.getAllowedOfflinePayoutsBeforeReset().get()
 		);
 	}
 
@@ -462,13 +461,13 @@ public class Account extends BankingEntity {
 	public boolean allowNextPayout() {
 		boolean online = isTrustedPlayerOnline();
 		if (delayUntilNextPayout > 0) {
-			if (online || (boolean) bank.get(BankField.COUNT_INTEREST_DELAY_OFFLINE))
+			if (online || bank.getCountInterestDelayOffline().get())
 				delayUntilNextPayout--;
 			return false;
 		}
 		if (online) {
-			remainingOfflinePayouts = Math.max(remainingOfflinePayouts, bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS));
-			remainingOfflineUntilReset = Math.max(remainingOfflineUntilReset, bank.get(BankField.ALLOWED_OFFLINE_PAYOUTS_BEFORE_RESET));
+			remainingOfflinePayouts = Math.max(remainingOfflinePayouts, bank.getAllowedOfflinePayouts().get());
+			remainingOfflineUntilReset = Math.max(remainingOfflineUntilReset, bank.getAllowedOfflinePayoutsBeforeReset().get());
 			return true;
 		}
 		return remainingOfflinePayouts-- > 0;
@@ -480,10 +479,9 @@ public class Account extends BankingEntity {
 	 * at the bank.
 	 *
 	 * @return the new multiplier stage of this account
-	 * @see BankField#WITHDRAWAL_MULTIPLIER_DECREMENT
 	 */
 	public int processWithdrawal() {
-		int decrement = bank.get(BankField.WITHDRAWAL_MULTIPLIER_DECREMENT);
+		int decrement = bank.getWithdrawalMultiplierDecrement().get();
 		if (decrement < 0) {
 			return setMultiplierStage(0);
 		}
@@ -492,8 +490,6 @@ public class Account extends BankingEntity {
 
 	/**
 	 * Increments this account's multiplier stage.
-	 *
-	 * @see BankField#OFFLINE_MULTIPLIER_DECREMENT
 	 */
 	public void incrementMultiplier() {
 		if (isTrustedPlayerOnline())
@@ -501,17 +497,16 @@ public class Account extends BankingEntity {
 		else if (remainingOfflineUntilReset-- <= 0)
 			setMultiplierStage(0);
 		else
-			setMultiplierStage(multiplierStage - (int) bank.get(BankField.OFFLINE_MULTIPLIER_DECREMENT));
+			setMultiplierStage(multiplierStage - bank.getOfflineMultiplierDecrement().get());
 	}
 
 	/**
 	 * Gets the multiplier from Config:interestMultipliers corresponding to this account's current multiplier stage.
 	 *
 	 * @return the corresponding multiplier, or 1x by default in case of an error.
-	 * @see BankField#MULTIPLIERS
 	 */
 	public int getRealMultiplier() {
-		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
+		List<Integer> multipliers = bank.getMultipliers().get();
 		if (multipliers == null || multipliers.isEmpty())
 			return 1;
 		return multipliers.get(setMultiplierStage(multiplierStage));
@@ -525,8 +520,7 @@ public class Account extends BankingEntity {
 	public int setMultiplierStage(int stage) {
 		if (stage == 0)
 			return multiplierStage = 0;
-		List<Integer> multipliers = bank.get(BankField.MULTIPLIERS);
-		return multiplierStage = Math.max(0, Math.min(stage, multipliers.size() - 1));
+		return multiplierStage = Math.max(0, Math.min(stage, bank.getMultipliers().get().size() - 1));
 	}
 
 	/**
@@ -583,7 +577,7 @@ public class Account extends BankingEntity {
 
 	@Override
 	public String toConsolePrintout() {
-		double interestR = getBank().get(BankField.INTEREST_RATE);
+		double interestR = getBank().getInterestRate().get();
 		return Stream.of(
 				"\"" + Utils.colorize(getRawName()) + ChatColor.GRAY + "\"",
 				"Bank: " + ChatColor.RED + getBank().getColorizedName(),
@@ -608,7 +602,7 @@ public class Account extends BankingEntity {
 				+ " (stage " + getMultiplierStage() + "), "
 				+ "Delay until next payout: " + getDelayUntilNextPayout() + ", "
 				+ "Next payout amount: " + Utils.format(getBalance().doubleValue()
-				* (double) getBank().get(BankField.INTEREST_RATE) * getRealMultiplier()) + ", "
+						* getBank().getInterestRate().get() * getRealMultiplier()) + ", "
 				+ "Location: " + getCoordinates();
 	}
 

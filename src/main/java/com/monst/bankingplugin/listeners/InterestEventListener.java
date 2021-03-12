@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.lang.*;
@@ -76,22 +75,22 @@ public class InterestEventListener extends BankingPluginListener {
 					trustedPlayers.remove(bank.getOwner()); // Bank owner should not be considered, since he would be paying himself
 
 				// trustedPlayers would be empty if the bank owner was the only trusted player
-				if (!trustedPlayers.isEmpty() && (double) bank.get(BankField.MINIMUM_BALANCE) > 0
-						&& account.getBalance().doubleValue() < (double) bank.get(BankField.MINIMUM_BALANCE)) {
+				if (!trustedPlayers.isEmpty() && bank.getMinimumBalance().get() > 0
+						&& account.getBalance().doubleValue() < bank.getMinimumBalance().get()) {
 
-					feesPayable.get(accountOwner).add(BigDecimal.valueOf(bank.get(BankField.LOW_BALANCE_FEE)));
+					feesPayable.get(accountOwner).add(BigDecimal.valueOf(bank.getLowBalanceFee().get()));
 
 					if (bank.isPlayerBank())
-						feesReceivable.get(bank.getOwner()).add(BigDecimal.valueOf(bank.get(BankField.LOW_BALANCE_FEE)));
+						feesReceivable.get(bank.getOwner()).add(BigDecimal.valueOf(bank.getLowBalanceFee().get()));
 
-					plugin.getDatabase().logLowBalanceFee(account, BigDecimal.valueOf(bank.get(BankField.LOW_BALANCE_FEE)), null);
+					plugin.getDatabase().logLowBalanceFee(account, BigDecimal.valueOf(bank.getLowBalanceFee().get()), null);
 
-					if (!(boolean) bank.get(BankField.PAY_ON_LOW_BALANCE))
+					if (!bank.getPayOnLowBalance().get())
 						continue;
 				}
 
 				BigDecimal baseInterest = Utils.scale(
-						account.getBalance().multiply(BigDecimal.valueOf(bank.get(BankField.INTEREST_RATE)))
+						account.getBalance().multiply(BigDecimal.valueOf(bank.getInterestRate().get()))
 				);
 
 				int multiplier = account.getRealMultiplier();
