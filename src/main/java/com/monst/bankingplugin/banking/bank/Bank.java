@@ -4,11 +4,10 @@ import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.configuration.*;
-import com.monst.bankingplugin.banking.bank.configuration.InterestPayoutTimes;
-import com.monst.bankingplugin.banking.bank.configuration.Multipliers;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -377,15 +376,15 @@ public class Bank extends BankingEntity {
 		BigDecimal weightedValueSum = BigDecimal.ZERO;
 		for (int i = 0; i < orderedBalances.size(); i++) {
 			valueSum = valueSum.add(orderedBalances.get(i));
-			weightedValueSum = weightedValueSum.add(orderedBalances.get(i).multiply(BigDecimal.valueOf(i + 1)));
+			weightedValueSum = weightedValueSum.add(QuickMath.multiply(orderedBalances.get(i), i + 1));
 		}
-		valueSum = valueSum.multiply(BigDecimal.valueOf(orderedBalances.size()));
-		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
+		valueSum = QuickMath.multiply(valueSum, orderedBalances.size());
+		weightedValueSum = QuickMath.multiply(weightedValueSum, 2);
 		if (valueSum.signum() == 0)
 			return 0;
 		BigDecimal leftSide = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
 		BigDecimal rightSide = BigDecimal.valueOf((orderedBalances.size() + 1) / orderedBalances.size());
-		return Utils.scale(leftSide.subtract(rightSide)).doubleValue();
+		return QuickMath.scale(leftSide.subtract(rightSide)).doubleValue();
 	}
 
 	/**
@@ -441,7 +440,7 @@ public class Bank extends BankingEntity {
 						" (" + ChatColor.RED + getLowBalanceFee().getFormatted() + ChatColor.GRAY + " fee)",
 				"Accounts: " + ChatColor.AQUA + getAccounts().size(),
 				"Total value: " + ChatColor.GREEN + Utils.format(getTotalValue()),
-				"Average account value: " + ChatColor.GREEN + Utils.format(getTotalValue().divide(BigDecimal.valueOf(getAccounts().size()), BigDecimal.ROUND_HALF_EVEN)),
+				"Average account value: " + ChatColor.GREEN + Utils.format(QuickMath.divide(getTotalValue(), getAccounts().size())),
 				"Equality score: " + getGiniCoefficient(),
 				"Location: " + ChatColor.AQUA + getSelection().getCoordinates()
 		).collect(Collectors.joining(", ", "" + ChatColor.GRAY, ""));

@@ -8,6 +8,7 @@ import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -102,8 +103,8 @@ public class Account extends BankingEntity {
 				bank,
 				loc,
 				name,
-				Utils.scale(balance),
-				Utils.scale(prevBalance),
+				QuickMath.scale(balance),
+				QuickMath.scale(prevBalance),
 				multiplierStage,
 				delayUntilNextPayout,
 				remainingOfflinePayouts,
@@ -239,7 +240,7 @@ public class Account extends BankingEntity {
 	public void setBalance(BigDecimal newBalance) {
 		if (newBalance == null || newBalance.signum() < 0)
 			return;
-		balance = Utils.scale(newBalance);
+		balance = QuickMath.scale(newBalance);
 		notifyObservers();
 		getBank().notifyObservers();
 		plugin.getAccountRepository().notifyObservers();

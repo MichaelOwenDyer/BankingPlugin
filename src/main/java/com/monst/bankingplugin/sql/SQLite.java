@@ -139,9 +139,12 @@ public class SQLite extends Database {
         return getQueryCreateTable(tableAccountTransactions,
                 "TransactionID INTEGER PRIMARY KEY AUTOINCREMENT",
                 "AccountID INTEGER NOT NULL REFERENCES " + tableAccounts + " (AccountID) ON DELETE CASCADE",
+                "BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID)",
                 "ExecutorUUID TEXT NOT NULL",
-                "Amount REAL NOT NULL",
+                "ExecutorName TEXT NOT NULL",
                 "NewBalance REAL NOT NULL",
+                "PreviousBalance REAL NOT NULL",
+                "Amount REAL NOT NULL",
                 "Timestamp TEXT NOT NULL",
                 "Time INTEGER NOT NULL"
         );

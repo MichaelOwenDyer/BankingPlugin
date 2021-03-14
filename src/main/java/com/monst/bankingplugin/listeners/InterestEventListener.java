@@ -7,8 +7,12 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.lang.*;
+import com.monst.bankingplugin.sql.logging.AccountInterestReceipt;
+import com.monst.bankingplugin.sql.logging.BankRevenueReceipt;
+import com.monst.bankingplugin.sql.logging.LowBalanceFeeReceipt;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Pair;
+import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
@@ -16,7 +20,6 @@ import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,7 +40,7 @@ public class InterestEventListener extends BankingPluginListener {
 		if (e.getBanks().isEmpty())
 			return;
 
-		plugin.debug("Interest payout event occurring now at bank(s) " +
+		plugin.debugf("Interest payout event occurring now at bank(s) %s.",
 				Utils.map(e.getBanks(), b -> "#" + b.getID()).toString());
 
 		Map<OfflinePlayer, List<Bank>> playerBankMap = e.getBanks().stream()
@@ -78,40 +81,46 @@ public class InterestEventListener extends BankingPluginListener {
 				if (!trustedPlayers.isEmpty() && bank.getMinimumBalance().get() > 0
 						&& account.getBalance().doubleValue() < bank.getMinimumBalance().get()) {
 
-					feesPayable.get(accountOwner).add(BigDecimal.valueOf(bank.getLowBalanceFee().get()));
+					feesPayable.get(accountOwner).add(bank.getLowBalanceFee().get());
 
 					if (bank.isPlayerBank())
-						feesReceivable.get(bank.getOwner()).add(BigDecimal.valueOf(bank.getLowBalanceFee().get()));
+						feesReceivable.get(bank.getOwner()).add(bank.getLowBalanceFee().get());
 
-					plugin.getDatabase().logLowBalanceFee(account, BigDecimal.valueOf(bank.getLowBalanceFee().get()), null);
+					plugin.getDatabase().logLowBalanceFee(new LowBalanceFeeReceipt(account.getID(), bank.getID(),
+							BigDecimal.valueOf(bank.getLowBalanceFee().get()), System.currentTimeMillis()));
 
 					if (!bank.getPayOnLowBalance().get())
 						continue;
 				}
 
-				BigDecimal baseInterest = Utils.scale(
-						account.getBalance().multiply(BigDecimal.valueOf(bank.getInterestRate().get()))
+				BigDecimal baseInterest = QuickMath.scale(
+						QuickMath.multiply(account.getBalance(), bank.getInterestRate().get())
 				);
 
 				int multiplier = account.getRealMultiplier();
-				BigDecimal interest = baseInterest.multiply(BigDecimal.valueOf(multiplier));
+				BigDecimal interest = QuickMath.multiply(baseInterest, multiplier);
 
 				account.incrementMultiplier();
 				account.updatePrevBalance();
 
 				if (!trustedPlayers.isEmpty()) {
-					BigDecimal cut = interest.divide(BigDecimal.valueOf(numberOfTrustedPlayers), RoundingMode.HALF_EVEN);
+					BigDecimal cut = QuickMath.divide(interest, numberOfTrustedPlayers);
 					for (OfflinePlayer recipient : trustedPlayers)
 						interestReceivable.get(recipient).add(cut);
 
 					if (account.getBank().isPlayerBank())
 						interestPayable.get(account.getBank().getOwner()).add(interest);
 
-					plugin.getDatabase().logAccountInterest(account, interest, null);
+					plugin.getDatabase().logAccountInterest(new AccountInterestReceipt(
+							account.getID(),
+							bank.getID(),
+							interest,
+							System.currentTimeMillis()
+					));
 				}
 
 				accountRepo.update(account, null,
-						AccountField.MULTIPLIER,
+						AccountField.MULTIPLIER_STAGE,
 						AccountField.DELAY_UNTIL_NEXT_PAYOUT,
 						AccountField.REMAINING_OFFLINE_PAYOUTS,
 						AccountField.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET,
@@ -120,7 +129,7 @@ public class InterestEventListener extends BankingPluginListener {
 			}
 
 			if (accountOwner.isOnline())
-				plugin.getDatabase().logLastSeen(accountOwner.getPlayer(), null);
+				plugin.getDatabase().logLastSeen(accountOwner.getPlayer());
 		});
 
 		boolean containsX = Config.bankRevenueFunction.contains("x");
@@ -143,7 +152,7 @@ public class InterestEventListener extends BankingPluginListener {
 					args.add(new Argument("g", bank.getGiniCoefficient()));
 
 				Expression revenueExpression = new Expression(Config.bankRevenueFunction, args.toArray(new Argument[0]));
-				BigDecimal revenue = Utils.scale(BigDecimal.valueOf(revenueExpression.calculate()));
+				BigDecimal revenue = QuickMath.scale(BigDecimal.valueOf(revenueExpression.calculate()));
 
 				if (revenue.signum() == 0)
 					continue;
@@ -159,7 +168,11 @@ public class InterestEventListener extends BankingPluginListener {
 						))
 				));
 
-				plugin.getDatabase().logBankRevenue(bank, revenue, null);
+				plugin.getDatabase().logBankRevenue(new BankRevenueReceipt(
+						bank.getID(),
+						revenue,
+						System.currentTimeMillis()
+				));
 			}
 		});
 
@@ -176,7 +189,7 @@ public class InterestEventListener extends BankingPluginListener {
 		for (Map.Entry<OfflinePlayer, Counter> entry : tracker.entrySet()) {
 			OfflinePlayer customer = entry.getKey();
 			Counter counter = entry.getValue();
-			if (counter.getTotalMoney().signum() == 0)
+			if (counter.getTotalMoney().signum() <= 0)
 				continue;
 
 			transactor.transact(customer, counter.getTotalMoney().doubleValue(), Callback.of(plugin,
@@ -197,7 +210,7 @@ public class InterestEventListener extends BankingPluginListener {
 	}
 
 	private static class MoneyTracker extends HashMap<OfflinePlayer, Counter> {
-		public Counter get(OfflinePlayer key) {
+		private Counter get(OfflinePlayer key) {
 			super.putIfAbsent(key, new Counter());
 			return super.get(key);
 		}
@@ -206,6 +219,9 @@ public class InterestEventListener extends BankingPluginListener {
 	private static class Counter extends Pair<BigDecimal, Integer> {
 		private Counter() {
 			super(BigDecimal.ZERO, 0);
+		}
+		private void add(double value) {
+			add(BigDecimal.valueOf(value));
 		}
 		private void add(BigDecimal value) {
 			super.setFirst(getTotalMoney().add(value));

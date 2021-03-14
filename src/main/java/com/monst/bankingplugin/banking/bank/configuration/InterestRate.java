@@ -2,11 +2,11 @@ package com.monst.bankingplugin.banking.bank.configuration;
 
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.DoubleParseException;
+import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.NumberFormat;
 
 public class InterestRate extends DoubleConfigurationOption {
@@ -44,9 +44,9 @@ public class InterestRate extends DoubleConfigurationOption {
         } catch (NumberFormatException e) {
             throw new DoubleParseException(input);
         }
-        bd = Utils.scale(bd, 4);
+        bd = QuickMath.scale(bd, 4);
         if (input.charAt(input.length() - 1) == '%')
-            bd = bd.divide(BigDecimal.valueOf(100), RoundingMode.HALF_EVEN);
+            bd = QuickMath.divide(bd, 100);
         return bd.doubleValue();
     }
 

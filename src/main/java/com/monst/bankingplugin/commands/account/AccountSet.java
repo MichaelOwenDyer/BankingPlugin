@@ -58,7 +58,7 @@ public class AccountSet extends AccountCommand.SubCommand {
         String property = args[1].toLowerCase();
         switch (property) {
             case "multiplier":
-                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.MULTIPLIER, value));
+                ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.MULTIPLIER_STAGE, value));
                 break;
             case "delay-until-next-payout":
                 ClickType.setPlayerClickType(((Player) sender), ClickType.set(AccountField.DELAY_UNTIL_NEXT_PAYOUT, value));
@@ -87,7 +87,7 @@ public class AccountSet extends AccountCommand.SubCommand {
 
         switch (field) {
 
-            case MULTIPLIER:
+            case MULTIPLIER_STAGE:
 
                 value += isRelative ? account.getMultiplierStage() : 0;
                 account.setMultiplierStage(intValue);

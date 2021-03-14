@@ -13,6 +13,8 @@ import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardListener;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.listeners.*;
+import com.monst.bankingplugin.repository.AccountRepository;
+import com.monst.bankingplugin.repository.BankRepository;
 import com.monst.bankingplugin.sql.Database;
 import com.monst.bankingplugin.sql.SQLite;
 import com.monst.bankingplugin.utils.*;

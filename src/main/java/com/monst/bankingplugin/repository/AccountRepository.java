@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.utils;
+package com.monst.bankingplugin.repository;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
@@ -6,6 +6,10 @@ import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.Observable;
+import com.monst.bankingplugin.utils.QuickMath;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.inventory.Inventory;
@@ -191,16 +195,16 @@ public class AccountRepository extends Observable implements Repository<Account>
 							continue;
 						BigDecimal innerItemValue = getWorth(innerItem);
 						if (innerItemValue.signum() != 0)
-            				innerItemValue = innerItemValue.multiply(BigDecimal.valueOf(innerItem.getAmount()));
+            				innerItemValue = QuickMath.multiply(innerItemValue, innerItem.getAmount());
 						itemValue = itemValue.add(innerItemValue);
                 	}
                 }
 			}
 			if (itemValue.signum() != 0)
-				itemValue = itemValue.multiply(BigDecimal.valueOf(item.getAmount()));
+				itemValue = QuickMath.multiply(itemValue, item.getAmount());
 			sum = sum.add(itemValue);
 		}
-		return Utils.scale(sum);
+		return QuickMath.scale(sum);
 	}
 
 	private BigDecimal getWorth(ItemStack item) {

@@ -24,13 +24,13 @@ public abstract class GUI<T> {
 		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY
 	}
 
-	static BankingPlugin plugin = BankingPlugin.getInstance();
+	static final BankingPlugin plugin = BankingPlugin.getInstance();
+	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
 
 	GUI<?> parentGUI;
 	Player viewer;
 	boolean inForeground = true;
 
-	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
 	final Menu.CloseHandler OPEN_PARENT = (player, menu) -> Utils.bukkitRunnable(() -> {
 		if (isLinked() && isInForeground()) {
 			parentGUI.inForeground = true;
@@ -44,11 +44,13 @@ public abstract class GUI<T> {
 	}
 
 	void subscribe(Observable observable) {
-		observable.addObserver(this);
+		if (observable != null)
+			observable.addObserver(this);
 	}
 
 	void unsubscribe(Observable observable) {
-		observable.removeObserver(this);
+		if (observable != null)
+			observable.removeObserver(this);
 	}
 
 	abstract void open(boolean initialize);

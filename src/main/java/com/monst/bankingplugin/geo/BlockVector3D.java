@@ -20,6 +20,10 @@ public class BlockVector3D extends Triple<Integer, Integer, Integer> implements 
         return new Location(world, getX(), getY(), getZ());
     }
 
+    public BlockVector3D vectorTo(BlockVector3D to) {
+        return new BlockVector3D(to.getX() - getX(), to.getY() - getY(), to.getZ() - getZ());
+    }
+
     public static BlockVector3D fromLocation(Location loc) {
         return new BlockVector3D(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
     }
@@ -41,4 +45,5 @@ public class BlockVector3D extends Triple<Integer, Integer, Integer> implements 
             return Integer.compare(getZ(), other.getZ());
         return 0;
     }
+
 }

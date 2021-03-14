@@ -16,7 +16,7 @@ public enum AccountField {
     NICKNAME ("Nickname", Account::getRawName),
     BALANCE ("Balance", Account::getBalance),
     PREVIOUS_BALANCE ("PreviousBalance", Account::getPrevBalance),
-    MULTIPLIER ("MultiplierStage", Account::getMultiplierStage),
+    MULTIPLIER_STAGE ("MultiplierStage", Account::getMultiplierStage),
     DELAY_UNTIL_NEXT_PAYOUT ("DelayUntilNextPayout", Account::getDelayUntilNextPayout),
     REMAINING_OFFLINE_PAYOUTS ("RemainingOfflinePayouts", Account::getRemainingOfflinePayouts),
     REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET ("RemainingOfflinePayoutsUntilReset", Account::getRemainingOfflinePayoutsUntilReset);

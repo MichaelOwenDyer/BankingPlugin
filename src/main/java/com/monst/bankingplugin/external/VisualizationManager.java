@@ -6,6 +6,7 @@ import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.selections.*;
 import com.monst.bankingplugin.utils.Pair;
+import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Visualization;
 import me.ryanhamshire.GriefPrevention.VisualizationElement;
@@ -143,7 +144,7 @@ public class VisualizationManager {
                 // Get the vertex after the current one; will eventually loop back to the first vertex
                 BlockVector2D next = points.get((i + 1) % points.size());
 
-                double[] unitVector = Utils.unitVector(current, next);
+                double[] unitVector = QuickMath.unitVector(current, next);
                 // These two doubles store the direction from the current vertex to the next. Through vector addition they form a diagonal of length 1
                 double unitX = unitVector[0];
                 double unitZ = unitVector[1];

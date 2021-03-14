@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.TransactionFailedException;
-import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
@@ -27,7 +26,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -78,43 +76,8 @@ public class Utils {
 		return format(bd.doubleValue());
 	}
 
-	public static double scale(double d) {
-		return scale(BigDecimal.valueOf(d)).doubleValue();
-	}
-
-	public static double scale(double d, int scale) {
-		return scale(BigDecimal.valueOf(d), scale).doubleValue();
-	}
-
-	public static BigDecimal scale(BigDecimal bd) {
-		return scale(bd, 2);
-	}
-
-	public static BigDecimal scale(BigDecimal bd, int scale) {
-		return bd.setScale(scale, RoundingMode.HALF_EVEN);
-	}
-
 	public static Location blockifyLocation(Location loc) {
 		return new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-	}
-
-	public static double vectorMagnitude(int x1, int x2, int... x3) {
-		double squaredSum = Math.pow(x1, 2) + Math.pow(x2, 2);
-		for (int v : x3)
-			squaredSum += Math.pow(v, 2);
-		return Math.sqrt(squaredSum);
-	}
-
-	public static double[] unitVector(BlockVector2D from, BlockVector2D to) {
-		BlockVector2D diff = new BlockVector2D(to.getX() - from.getX(), to.getZ() - from.getZ());
-		double magnitude = vectorMagnitude(diff.getX(), diff.getZ());
-		return new double[] { diff.getX() / magnitude, diff.getZ() / magnitude };
-	}
-
-	public static double[] unitVector(BlockVector3D from, BlockVector3D to) {
-		BlockVector3D diff = new BlockVector3D(to.getX() - from.getX(), to.getY() - from.getY(), to.getZ() - from.getZ());
-		double magnitude = vectorMagnitude(diff.getX(), diff.getY(), diff.getZ());
-		return new double[] { diff.getX() / magnitude, diff.getY() / magnitude, diff.getZ() / magnitude };
 	}
 
 	public static <T extends Comparable<T>> T lesser(T first, T second) {
@@ -255,10 +218,6 @@ public class Utils {
 			}
 		}
 		return stackedList;
-	}
-
-	public static <T> boolean assertAllEqual(Collection<T> c) {
-		return c.stream().distinct().count() <= 1;
 	}
 
 	public static Block getAttachedChestBlock(Block b) throws ChestNotFoundException {

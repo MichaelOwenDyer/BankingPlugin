@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.banking.bank.configuration;
 
 import com.monst.bankingplugin.exceptions.DoubleParseException;
+import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 
 import javax.annotation.Nonnull;
@@ -23,7 +24,7 @@ abstract class DoubleConfigurationOption extends ConfigurationOption<Double> {
     @Override
     Double parse(@Nonnull String input) throws DoubleParseException {
         try {
-            return Utils.scale(parseDouble(input));
+            return QuickMath.scale(parseDouble(input));
         } catch (NumberFormatException e) {
             throw new DoubleParseException(input);
         }

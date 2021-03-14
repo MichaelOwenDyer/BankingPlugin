@@ -6,7 +6,7 @@ import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.utils.AccountRepository;
+import com.monst.bankingplugin.repository.AccountRepository;
 
 public class AccountCommand extends BankingPluginCommand<AccountCommand.SubCommand> {
 

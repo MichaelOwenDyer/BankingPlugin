@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.configuration.BankField;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.LangUtils;

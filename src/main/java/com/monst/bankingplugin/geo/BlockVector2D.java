@@ -19,6 +19,10 @@ public class BlockVector2D extends Pair<Integer, Integer> implements Comparable<
         return new Location(world, getX(), y, getZ());
     }
 
+    public BlockVector2D vectorTo(BlockVector2D to) {
+        return new BlockVector2D(to.getX() - getX(), to.getZ() - getZ());
+    }
+
     public static BlockVector2D fromLocation(Location loc) {
         return new BlockVector2D(loc.getBlockX(), loc.getBlockZ());
     }
@@ -37,4 +41,5 @@ public class BlockVector2D extends Pair<Integer, Integer> implements Comparable<
             return Integer.compare(getZ(), other.getZ());
         return 0;
     }
+
 }

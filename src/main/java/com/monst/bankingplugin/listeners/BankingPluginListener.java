@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.utils.AccountRepository;
+import com.monst.bankingplugin.repository.AccountRepository;
 import org.bukkit.event.Listener;
 
 public class BankingPluginListener implements Listener {

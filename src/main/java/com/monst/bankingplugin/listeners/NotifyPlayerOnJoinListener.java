@@ -30,7 +30,7 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
                 return;
             }
 
-            database.getTotalBankProfitSinceLogout(p, logoutTime, Callback.of(plugin, profit -> {
+            database.getBankProfitEarnedByPlayerSince(p, logoutTime, Callback.of(plugin, profit -> {
                 if (profit.signum() == 0)
                     return;
                 p.sendMessage(LangUtils.getMessage(profit.signum() > 0 ? Message.BANK_REVENUE_EARNED_OFFLINE : Message.BANK_LOSS_OFFLINE,
@@ -38,14 +38,14 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
                 ));
             }));
 
-            database.getTotalInterestEarnedSince(p, logoutTime, Callback.of(plugin, interest -> {
+            database.getInterestEarnedByPlayerSince(p, logoutTime, Callback.of(plugin, interest -> {
                 if (interest.signum() > 0)
                     p.sendMessage(LangUtils.getMessage(Message.OFFLINE_ACCOUNT_INTEREST,
                             new Replacement(Placeholder.AMOUNT, interest)
                     ));
             }));
 
-            database.getTotalLowBalanceFeesPaidSince(p, logoutTime, Callback.of(plugin, fees -> {
+            database.getLowBalanceFeesPaidByPlayerSince(p, logoutTime, Callback.of(plugin, fees -> {
                 if (fees.signum() > 0)
                     p.sendMessage(LangUtils.getMessage(Message.OFFLINE_LOW_BALANCE_FEES_PAID,
                             new Replacement(Placeholder.AMOUNT, fees)
@@ -54,12 +54,12 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
 
 		}));
         // Player does not actually log off here, this saves the last time the player was notified about changes
-        database.logLastSeen(p, null);
+        database.logLastSeen(p);
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
-		plugin.getDatabase().logLastSeen(e.getPlayer(), null);
+		plugin.getDatabase().logLastSeen(e.getPlayer());
     }
 
 }

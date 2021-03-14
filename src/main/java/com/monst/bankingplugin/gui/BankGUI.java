@@ -2,6 +2,7 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -13,7 +14,6 @@ import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,7 +139,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 				"Average account value: " + ChatColor.GREEN +
 						Utils.format(guiSubject.getAccounts().isEmpty()
 								? BigDecimal.ZERO
-								: guiSubject.getTotalValue().divide(BigDecimal.valueOf(guiSubject.getAccounts().size()), RoundingMode.HALF_EVEN)),
+								: QuickMath.divide(guiSubject.getTotalValue(), guiSubject.getAccounts().size())),
 				"Equality score: " + getEqualityLore(guiSubject)
 		);
 	}

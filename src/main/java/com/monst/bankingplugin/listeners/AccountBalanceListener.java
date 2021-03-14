@@ -3,6 +3,7 @@ package com.monst.bankingplugin.listeners;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
+import com.monst.bankingplugin.sql.logging.AccountTransactionReceipt;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
 import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
@@ -52,7 +53,8 @@ public class AccountBalanceListener extends BankingPluginListener {
 		}
 
 		BigDecimal valueOnClose = account.calculateBalance();
-		BigDecimal difference = valueOnClose.subtract(account.getBalance());
+		BigDecimal balance = account.getBalance();
+		BigDecimal difference = valueOnClose.subtract(balance);
 
 		if (difference.signum() == 0)
 			return;
@@ -79,9 +81,12 @@ public class AccountBalanceListener extends BankingPluginListener {
 		Bukkit.getPluginManager().callEvent(new AccountTransactionEvent(executor, account, difference, valueOnClose));
 
 		if (account.getOwner().isOnline())
-			plugin.getDatabase().logLastSeen(account.getOwner().getPlayer(), null);
+			plugin.getDatabase().logLastSeen(account.getOwner().getPlayer());
 
-		plugin.getDatabase().logAccountTransaction(executor, account, difference, null);
+		plugin.getDatabase().logAccountTransaction(new AccountTransactionReceipt(
+				account.getID(), account.getBank().getID(), executor.getUniqueId(), executor.getName(),
+				account.getBalance(), balance, difference, System.currentTimeMillis()
+		));
 	}
 }
 

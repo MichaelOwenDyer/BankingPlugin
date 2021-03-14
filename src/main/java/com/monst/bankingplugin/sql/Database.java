@@ -14,7 +14,12 @@ import com.monst.bankingplugin.geo.locations.SingleChestLocation;
 import com.monst.bankingplugin.geo.selections.CuboidSelection;
 import com.monst.bankingplugin.geo.selections.PolygonalSelection;
 import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.sql.logging.AccountInterestReceipt;
+import com.monst.bankingplugin.sql.logging.AccountTransactionReceipt;
+import com.monst.bankingplugin.sql.logging.BankRevenueReceipt;
+import com.monst.bankingplugin.sql.logging.LowBalanceFeeReceipt;
 import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.Bukkit;
@@ -24,6 +29,8 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.codejargon.fluentjdbc.api.FluentJdbc;
 import org.codejargon.fluentjdbc.api.FluentJdbcBuilder;
+import org.codejargon.fluentjdbc.api.mapper.Mappers;
+import org.codejargon.fluentjdbc.api.mapper.ObjectMappers;
 import org.codejargon.fluentjdbc.api.query.*;
 import org.codejargon.fluentjdbc.api.query.listen.AfterQueryListener;
 
@@ -44,6 +51,7 @@ public abstract class Database {
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final Set<String> unknownWorldNames = new HashSet<>();
 	private final int DATABASE_VERSION = 1;
+	private final ObjectMappers objectMappers = ObjectMappers.builder().build();
 
 	String tableBanks = "Banks";
 	String tableCoOwnsBank = "co_owns_bank";
@@ -113,10 +121,10 @@ public abstract class Database {
 				.orElse(0);
 	}
 
-	private void setDatabaseVersion(int version) {
+	private void setDatabaseVersion() {
 		query
 				.update("REPLACE INTO " + tableFields + " VALUES ('Version', ?)")
-				.params(version)
+				.params(DATABASE_VERSION)
 				.run();
 	}
 
@@ -133,7 +141,7 @@ public abstract class Database {
 			updates[version].run();
 			version++;
 		}
-		setDatabaseVersion(DATABASE_VERSION);
+		setDatabaseVersion();
 		return true;
 	}
 
@@ -208,11 +216,11 @@ public abstract class Database {
 
 			int accounts = query
 					.select("SELECT COUNT(AccountID) FROM " + tableAccounts)
-					.firstResult(rs -> rs.getInt(1))
+					.firstResult(Mappers.singleInteger())
 					.orElseThrow(IllegalStateException::new);
 			int banks = query
 					.select("SELECT COUNT(BankID) FROM " + tableBanks)
-					.firstResult(rs -> rs.getInt(1))
+					.firstResult(Mappers.singleInteger())
 					.orElseThrow(IllegalStateException::new);
 			Callback.yield(callback, new int[] { banks, accounts });
 		});
@@ -251,7 +259,7 @@ public abstract class Database {
 					.update(replaceQuery)
 					.params(params)
 					.errorHandler(forwardError(callback))
-					.runFetchGenKeys(rs -> rs.getInt(1))
+					.runFetchGenKeys(Mappers.singleInteger())
 					.firstKey().orElse(-1);
 
 			account.setID(id);
@@ -342,7 +350,7 @@ public abstract class Database {
 					.update(replaceQuery)
 					.params(params)
 					.errorHandler(forwardError(callback))
-					.runFetchGenKeys(rs -> rs.getInt(1))
+					.runFetchGenKeys(Mappers.singleInteger())
 					.firstKey()
 					.orElse(-1);
 
@@ -689,105 +697,124 @@ public abstract class Database {
 	/**
 	 * Logs an account transaction to the database.
 	 *
-	 * @param executor Player who performed a transaction
-	 * @param account  The {@link Account} the player performed the transaction on
-	 * @param amount   The {@link BigDecimal} transaction amount
-	 * @param callback Callback that - if succeeded - returns {@code null}
+	 * @param transaction The {@link AccountTransactionReceipt} to log
 	 */
-	public void logAccountTransaction(Player executor, Account account, BigDecimal amount, Callback<Integer> callback) {
-		final String query = "INSERT INTO " + tableAccountTransactions +
-				" (AccountID, ExecutorUUID, Amount, NewBalance, Timestamp, Time) VALUES(?,?,?,?,?,?)";
-		long millis = System.currentTimeMillis();
-		final List<Object> params = Arrays.asList(
-				account.getID(),
-				executor.getUniqueId(),
-				amount,
-				account.getBalance(),
-				dateFormat.format(millis),
-				millis
-		);
-		log(Config.enableAccountTransactionLog, query, params, callback);
+	public void logAccountTransaction(AccountTransactionReceipt transaction) {
+		if (!Config.enableAccountTransactionLog)
+			return;
+		async(() -> {
+			List<Object> params = Arrays.asList(
+					transaction.getAccountID(),
+					transaction.getBankID(),
+					transaction.getExecutorUUID(),
+					transaction.getExecutorName(),
+					transaction.getNewBalance(),
+					transaction.getPreviousBalance(),
+					transaction.getAmount(),
+					dateFormat.format(transaction.getTime()),
+					transaction.getTime()
+			);
+			query
+					.update("INSERT INTO " + tableAccountTransactions + " (AccountID, BankID, ExecutorUUID, " +
+							"ExecutorName, NewBalance, PreviousBalance, Amount, Timestamp, Time) VALUES(?,?,?,?,?,?,?,?,?)")
+					.params(params)
+					.run();
+		});
 	}
 
 	/**
 	 * Logs an interest payout to the database.
 	 *
-	 * @param account  The {@link Account} the interest was derived from
-	 * @param amount   The {@link BigDecimal} final transaction amount
-	 * @param callback Callback that - if succeeded - returns {@code null}
+	 * @param interest  The {@link AccountInterestReceipt} to log
 	 */
-	public void logAccountInterest(Account account, BigDecimal amount, Callback<Integer> callback) {
-		final String query = "INSERT INTO " + tableAccountInterest +
-				" (AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?,?)";
-		long millis = System.currentTimeMillis();
-		final List<Object> params = Arrays.asList(
-				account.getID(),
-				account.getBank().getID(),
-				amount,
-				dateFormat.format(millis),
-				millis
-		);
-		log(Config.enableAccountInterestLog, query, params, callback);
+	public void logAccountInterest(AccountInterestReceipt interest) {
+		if (!Config.enableAccountInterestLog)
+			return;
+		async(() -> {
+			List<Object> params = Arrays.asList(
+					interest.getAccountID(),
+					interest.getBankID(),
+					interest.getAmount(),
+					dateFormat.format(interest.getTime()),
+					interest.getTime()
+			);
+			query
+					.update("INSERT INTO " + tableAccountInterest +
+							" (AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?,?)")
+					.params(params)
+					.run();
+		});
 	}
 
-	public void logBankRevenue(Bank bank, BigDecimal amount, Callback<Integer> callback) {
-		final String query = "INSERT INTO " + tableBankRevenue + " (BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)";
-		long millis = System.currentTimeMillis();
-		List<Object> params = Arrays.asList(
-				bank.getID(),
-				amount,
-				dateFormat.format(millis),
-				millis
-		);
-		log(Config.enableBankRevenueLog, query, params, callback);
+	/**
+	 * Logs bank revenue to the database.
+	 *
+	 * @param revenue  The {@link AccountInterestReceipt} to log
+	 */
+	public void logBankRevenue(BankRevenueReceipt revenue) {
+		if (!Config.enableBankRevenueLog)
+			return;
+		async(() -> {
+			List<Object> params = Arrays.asList(
+					revenue.getBankID(),
+					revenue.getAmount(),
+					dateFormat.format(revenue.getTime()),
+					revenue.getTime()
+			);
+			query
+					.update("INSERT INTO " + tableBankRevenue + " " +
+							"(BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)")
+					.params(params)
+					.run();
+		});
 	}
 
-	public void logLowBalanceFee(Account account, BigDecimal amount, Callback<Integer> callback) {
-		final String query = "INSERT INTO " + tableLowBalanceFees +
-				" (AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)";
-		long millis = System.currentTimeMillis();
-		List<Object> params = Arrays.asList(
-				account.getID(),
-				account.getBank().getID(),
-				amount,
-				dateFormat.format(millis),
-				millis
-		);
-		log(Config.enableLowBalanceFeeLog, query, params, callback);
+
+	/**
+	 * Logs a low balance fee to the database.
+	 *
+	 * @param lowBalanceFee  The {@link LowBalanceFeeReceipt} to log
+	 */
+	public void logLowBalanceFee(LowBalanceFeeReceipt lowBalanceFee) {
+		if (!Config.enableLowBalanceFeeLog)
+			return;
+		async(() -> {
+			List<Object> params = Arrays.asList(
+					lowBalanceFee.getAccountID(),
+					lowBalanceFee.getBankID(),
+					lowBalanceFee.getAmount(),
+					dateFormat.format(lowBalanceFee.getTime()),
+					lowBalanceFee.getTime()
+			);
+			query
+					.update("INSERT INTO " + tableLowBalanceFees + " " +
+							"(AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?,?)")
+					.params(params)
+					.run();
+		});
 	}
 
 	/**
 	 * Logs a player's last seen time to the database.
 	 *
 	 * @param player    Player who logged out
-	 * @param callback  Callback that - if succeeded - returns {@code null}
 	 */
-	public void logLastSeen(Player player, Callback<Integer> callback) {
-		final String query = "REPLACE INTO " + tablePlayers + " (PlayerUUID,Name,LastSeen) VALUES(?,?,?)";
-		final List<Object> params = Arrays.asList(
-				player.getUniqueId(),
-				player.getName(),
-				System.currentTimeMillis()
-		);
-		log(true, query, params, callback);
-	}
-
-	private void log(boolean configEnabled, String queryString, List<Object> params, Callback<Integer> callback) {
-		if (!configEnabled)
-			return;
+	public void logLastSeen(Player player) {
 		async(() -> {
-			int id = query
-					.update(queryString)
+			List<Object> params = Arrays.asList(
+					player.getUniqueId(),
+					player.getName(),
+					System.currentTimeMillis()
+			);
+			query
+					.update("REPLACE INTO " + tablePlayers + " (PlayerUUID,Name,LastSeen) VALUES(?,?,?)")
 					.params(params)
-					.errorHandler(forwardError(callback))
-					.runFetchGenKeys(rs -> rs.getInt(1))
-					.firstKey().orElse(-1);
-			Callback.yield(callback, id);
+					.run();
 		});
 	}
 
 	/**
-	 * Cleans up the economy log to reduce file size
+	 * Cleans up the log to reduce file size
 	 */
 	public void cleanUpLogs() {
 		if (Config.cleanupLogDays < 0)
@@ -813,6 +840,128 @@ public abstract class Database {
 		}, false); // TODO: Make async?
 	}
 
+	private static final int LOG_FETCH_SIZE = 50;
+
+	Mapper<AccountTransactionReceipt> transactionMapper = objectMappers.forClass(AccountTransactionReceipt.class);
+
+	public void getTransactionsAtAccount(Account account, Callback<List<AccountTransactionReceipt>> callback) {
+		async(() -> {
+			plugin.debugf("Fetching transactions at account #%d.", account.getID());
+			List<AccountTransactionReceipt> result = query
+					.select("SELECT * " +
+							"FROM " + tableAccountTransactions + " " +
+							"WHERE AccountID = ?")
+					.params(account.getID())
+					.errorHandler(forwardError(callback))
+					.fetchSize(LOG_FETCH_SIZE)
+					.listResult(transactionMapper);
+			plugin.debugf("Found %d transactions at account #%d.", result.size(), account.getID());
+			Callback.yield(callback, result);
+		});
+	}
+
+	public void getTransactionsAtBank(Bank bank, Callback<List<AccountTransactionReceipt>> callback) {
+		async(() -> {
+			plugin.debugf("Fetching transactions at bank #%d.", bank.getID());
+			List<AccountTransactionReceipt> result = query
+					.select("SELECT * " +
+							"FROM " + tableAccountTransactions + " " +
+							"WHERE BankID = ?")
+					.params(bank.getID())
+					.errorHandler(forwardError(callback))
+					.fetchSize(LOG_FETCH_SIZE)
+					.listResult(transactionMapper);
+			plugin.debugf("Found %d transactions at bank #%d.", result.size(), bank.getID());
+			Callback.yield(callback, result);
+		});
+	}
+
+	Mapper<AccountInterestReceipt> interestMapper = objectMappers.forClass(AccountInterestReceipt.class);
+
+	public void getInterestPaymentsAtAccount(Account account, Callback<List<AccountInterestReceipt>> callback) {
+		async(() -> {
+			plugin.debugf("Fetching account interest payments at account #%d.", account.getID());
+			List<AccountInterestReceipt> result = query
+					.select("SELECT * " +
+							"FROM " + tableAccountInterest + " " +
+							"WHERE AccountID = ?")
+					.params(account.getID())
+					.errorHandler(forwardError(callback))
+					.fetchSize(LOG_FETCH_SIZE)
+					.listResult(interestMapper);
+			plugin.debugf("Found %d interest payments at account #%d.", result.size(), account.getID());
+			Callback.yield(callback, result);
+		});
+	}
+
+	public void getInterestPaymentsAtBank(Bank bank, Callback<List<AccountInterestReceipt>> callback) {
+		async(() -> {
+			plugin.debugf("Fetching account interest payments at bank #%d.", bank.getID());
+			List<AccountInterestReceipt> result = query
+					.select("SELECT * " +
+							"FROM " + tableAccountInterest + " " +
+							"WHERE BankID = ?")
+					.params(bank.getID())
+					.errorHandler(forwardError(callback))
+					.fetchSize(LOG_FETCH_SIZE)
+					.listResult(interestMapper);
+			plugin.debugf("Found %d interest payments at bank #%d.", result.size(), bank.getID());
+			Callback.yield(callback, result);
+		});
+	}
+
+	Mapper<LowBalanceFeeReceipt> feeMapper = objectMappers.forClass(LowBalanceFeeReceipt.class);
+
+	public void getLowBalanceFeesAtAccount(Account account, Callback<List<LowBalanceFeeReceipt>> callback) {
+		async(() -> {
+			plugin.debugf("Fetching low balance fees at account #%d.", account.getID());
+			List<LowBalanceFeeReceipt> result = query
+					.select("SELECT * " +
+							"FROM " + tableLowBalanceFees + " " +
+							"WHERE AccountID = ?")
+					.params(account.getID())
+					.errorHandler(forwardError(callback))
+					.fetchSize(LOG_FETCH_SIZE)
+					.listResult(feeMapper);
+			plugin.debugf("Found %d low balance fee entries at account #%d.", result.size(), account.getID());
+			Callback.yield(callback, result);
+		});
+	}
+
+	public void getLowBalanceFeesAtBank(Bank bank, Callback<List<LowBalanceFeeReceipt>> callback) {
+		async(() -> {
+			plugin.debugf("Fetching low balance fees at bank #%d.", bank.getID());
+			List<LowBalanceFeeReceipt> result = query
+					.select("SELECT * " +
+							"FROM " + tableLowBalanceFees + " " +
+							"WHERE BankID = ?")
+					.params(bank.getID())
+					.errorHandler(forwardError(callback))
+					.fetchSize(LOG_FETCH_SIZE)
+					.listResult(feeMapper);
+			plugin.debugf("Found %d low balance fee entries at bank #%d.", result.size(), bank.getID());
+			Callback.yield(callback, result);
+		});
+	}
+
+	Mapper<BankRevenueReceipt> revenueMapper = objectMappers.forClass(BankRevenueReceipt.class);
+
+	public void getRevenueAtBank(Bank bank, Callback<List<BankRevenueReceipt>> callback) {
+		async(() -> {
+			plugin.debugf("Fetching revenue at bank #%d.", bank.getID());
+			List<BankRevenueReceipt> result = query
+					.select("SELECT * " +
+							"FROM " + tableBankRevenue + " " +
+							"WHERE BankID = ?")
+					.params(bank.getID())
+					.errorHandler(forwardError(callback))
+					.fetchSize(LOG_FETCH_SIZE)
+					.listResult(revenueMapper);
+			plugin.debugf("Found %d revenue entries at bank #%d.", result.size(), bank.getID());
+			Callback.yield(callback, result);
+		});
+	}
+
 	/**
 	 * Gets the total interest a player has earned on their accounts between a particular time and now
 	 *
@@ -820,7 +969,7 @@ public abstract class Database {
 	 * @param time 		 Time in milliseconds
 	 * @param callback   Callback that returns the player's total account interest between then and now
 	 */
-	public void getTotalInterestEarnedSince(Player player, long time, Callback<BigDecimal> callback) {
+	public void getInterestEarnedByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
 		String timeFormatted = dateFormat.format(time);
 		async(() -> {
@@ -835,7 +984,7 @@ public abstract class Database {
 					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in account interest for %s.", Utils.format(interest), playerName);
-			Callback.yield(callback, Utils.scale(interest));
+			Callback.yield(callback, QuickMath.scale(interest));
 		});
 	}
 
@@ -846,7 +995,7 @@ public abstract class Database {
 	 * @param time 		 Time in milliseconds
 	 * @param callback   Callback that returns the total low balance fees paid by the player between then and now
 	 */
-	public void getTotalLowBalanceFeesPaidSince(Player player, long time, Callback<BigDecimal> callback) {
+	public void getLowBalanceFeesPaidByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
 		String timeFormatted = dateFormat.format(time);
 		async(() -> {
@@ -861,7 +1010,7 @@ public abstract class Database {
 					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in low balance fees paid by %s.", Utils.format(fees), playerName);
-			Callback.yield(callback, Utils.scale(fees));
+			Callback.yield(callback, QuickMath.scale(fees));
 		});
 	}
 
@@ -872,7 +1021,7 @@ public abstract class Database {
 	 * @param time 		 Time in milliseconds
 	 * @param callback   Callback that returns the total bank profit between then and now
 	 */
-	public void getTotalBankProfitSinceLogout(Player player, long time, Callback<BigDecimal> callback) {
+	public void getBankProfitEarnedByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
 		String timeFormatted = dateFormat.format(time);
 		async(() -> {
@@ -909,7 +1058,7 @@ public abstract class Database {
 					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in interest payments paid by %s.", Utils.format(interest), playerName);
-			Callback.yield(callback, Utils.scale(revenue.add(fees).subtract(interest)));
+			Callback.yield(callback, QuickMath.scale(revenue.add(fees).subtract(interest)));
 		});
 	}
 
@@ -1069,10 +1218,6 @@ public abstract class Database {
 
 	private void async(Runnable runnable) {
 		run(runnable, true);
-	}
-
-	private void run(Runnable runnable) {
-		run(runnable, false);
 	}
 
 	private void run(Runnable runnable, boolean async) {

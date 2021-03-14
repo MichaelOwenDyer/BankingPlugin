@@ -1,6 +1,5 @@
-package com.monst.bankingplugin.banking.bank.configuration;
+package com.monst.bankingplugin.banking.bank;
 
-import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import org.apache.commons.lang.WordUtils;
 
