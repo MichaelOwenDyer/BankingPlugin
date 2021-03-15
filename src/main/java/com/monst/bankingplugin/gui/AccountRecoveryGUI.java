@@ -4,10 +4,8 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
-import org.ipvp.canvas.paginate.PaginatedMenuBuilder;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.slot.SlotSettings;
 import org.ipvp.canvas.template.ItemStackTemplate;
@@ -29,18 +27,16 @@ public class AccountRecoveryGUI extends AccountListGUI {
     }
 
     @Override
-    void addItems(PaginatedMenuBuilder builder) {
-        for(Account account : getMenuItems()) {
-            ItemStack item = createSlotItem(account.getOwner(),
-                    ChatColor.DARK_RED + "Invalid Account", getRecoveryLore(account));
-            ItemStackTemplate template = new StaticItemTemplate(item);
-            Slot.ClickHandler clickHandler = (player, info) -> {
-                player.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_RECOVER));
-                ClickType.setPlayerClickType(player, ClickType.recover(account));
-                close(player);
-            };
-            builder.addItem(SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build());
-        }
+    SlotSettings createSlotSettings(Account account) {
+        ItemStack item = createSlotItem(account.getOwner(),
+                ChatColor.DARK_RED + "Invalid Account", getRecoveryLore(account));
+        ItemStackTemplate template = new StaticItemTemplate(item);
+        Slot.ClickHandler clickHandler = (player, info) -> {
+            player.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_RECOVER));
+            ClickType.setPlayerClickType(player, ClickType.recover(account));
+            close(player);
+        };
+        return SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build();
     }
 
     private List<String> getRecoveryLore(Account account) {
@@ -51,11 +47,6 @@ public class AccountRecoveryGUI extends AccountListGUI {
                 "Location: " + ChatColor.AQUA + account.getCoordinates() + worldName,
                 "Click to recover account."
         );
-    }
-
-    @Override
-    Observable getSubject() {
-        return plugin.getAccountRepository();
     }
 
     @Override

@@ -30,8 +30,8 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	@Override
-	void initializeMenu() {
-		menu = ChestMenu.builder(2).title(guiSubject.getColorizedName()).build();
+	Menu createMenu() {
+		return ChestMenu.builder(2).title(guiSubject.getColorizedName()).build();
 	}
 
 	@Override
@@ -44,8 +44,8 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	@Override
-	ItemStack createSlotItem(int i) {
-		switch (i) {
+	ItemStack createSlotItem(int slot) {
+		switch (slot) {
 			case 0:
 				if (guiSubject.isPlayerBank())
 					return createSlotItem(guiSubject.getOwner(), "General Information", getGeneralInfoLore());
@@ -82,8 +82,8 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	@Override
-	ClickHandler createClickHandler(int i) {
-		switch (i) {
+	ClickHandler createClickHandler(int slot) {
+		switch (slot) {
 			case 0:
 				return canTP ? (player, info) -> {
 					if (info.getClickType().isLeftClick())
@@ -105,11 +105,6 @@ public class BankGUI extends SinglePageGUI<Bank> {
 			default:
 				return null;
 		}
-	}
-
-	@Override
-	void setCloseHandler(Menu.CloseHandler handler) {
-		menu.setCloseHandler(handler);
 	}
 
 	@Override

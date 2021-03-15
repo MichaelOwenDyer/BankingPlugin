@@ -18,6 +18,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * An inventory-based GUI.
+ * @param <T> the subject matter of this GUI
+ */
 public abstract class GUI<T> {
 
 	enum GUIType {
@@ -31,17 +35,29 @@ public abstract class GUI<T> {
 	Player viewer;
 	boolean inForeground = true;
 
-	final Menu.CloseHandler OPEN_PARENT = (player, menu) -> Utils.bukkitRunnable(() -> {
+	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) -> Utils.bukkitRunnable(() -> {
 		if (isLinked() && isInForeground()) {
 			parentGUI.inForeground = true;
 			parentGUI.open(false);
 		}
+		unsubscribe(getSubject());
 	}).runTask(plugin);
 
+	/**
+	 * Opens this GUI for the specified player.
+	 * @param player player to open this GUI for
+	 */
 	public void open(Player player) {
 		this.viewer = player;
 		open(true);
 	}
+
+	/**
+	 * Gets the {@link Observable} this GUI is observing for updates, or {@code null}
+	 * if this GUI will not be automatically updated.
+	 * @return the subject of this GUI, or null
+	 */
+	abstract Observable getSubject();
 
 	void subscribe(Observable observable) {
 		if (observable != null)
@@ -53,18 +69,28 @@ public abstract class GUI<T> {
 			observable.removeObserver(this);
 	}
 
-	abstract void open(boolean initialize);
+	/**
+	 * Opens this GUI.
+	 * @param firstTime whether this is the first time opening the GUI.
+	 */
+	abstract void open(boolean firstTime);
 
 	public abstract void update();
 
+	/**
+	 * Exits the GUI for the player, ignoring any parent GUIs.
+	 * @param player the player to close this GUI for
+	 */
 	abstract void close(Player player);
-
-	abstract void initializeMenu();
-
-	abstract void setCloseHandler(Menu.CloseHandler handler);
 
 	abstract GUIType getType();
 
+	/**
+	 * Sets the parent, or the "source GUI", of this GUI.
+	 * The parent will be reopened after this GUI is closed.
+	 * @param parentGUI the parent GUI
+	 * @return this GUI, to be opened
+	 */
 	public GUI<T> setParentGUI(@Nullable GUI<?> parentGUI) {
 		if (parentGUI != null)
 			parentGUI.inForeground = false;
@@ -72,15 +98,15 @@ public abstract class GUI<T> {
 		return this;
 	}
 
-	void shortenGUIChain() {
-		shortenGUIChain(parentGUI, EnumSet.of(getType()));
-	}
-
 	/**
 	 * Descends down the list of previous open GUIs, and severs the link when it
 	 * finds a GUI of a type it has seen before. This prevents the GUI chain
 	 * from becoming too long and unwieldy.
 	 */
+	void shortenGUIChain() {
+		shortenGUIChain(parentGUI, EnumSet.of(getType()));
+	}
+
 	private void shortenGUIChain(GUI<?> gui, EnumSet<GUIType> types) {
 		if (gui == null)
 			return;
@@ -91,10 +117,18 @@ public abstract class GUI<T> {
 			gui.parentGUI = null;
 	}
 
+	/**
+	 * Returns whether or not this GUI is in the foreground (as opposed to hidden by another GUI)
+	 * @return true if this GUI is in the foreground
+	 */
 	boolean isInForeground() {
 		return inForeground;
 	}
 
+	/**
+	 * Returns whether or not this GUI has a parent GUI.
+	 * @return true if this GUI has a parent
+	 */
 	boolean isLinked() {
 		return parentGUI != null;
 	}

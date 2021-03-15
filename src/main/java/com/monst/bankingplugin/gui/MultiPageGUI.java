@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -19,7 +18,11 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-abstract class MultiPageGUI<T> extends GUI<T> {
+/**
+ * A GUI with multiple pages.
+ * @param <T> the type of the many objects represented in this GUI.
+ */
+abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
 
     private static final int PREV_PAGE_SLOT = 27;
     private static final int NEXT_PAGE_SLOT = 35;
@@ -28,25 +31,25 @@ abstract class MultiPageGUI<T> extends GUI<T> {
 
     private final Supplier<? extends Collection<? extends T>> source;
 
-    private final List<MenuItemFilter<T>> filters = new ArrayList<>(Collections.singleton(MenuItemFilter.of(ChatColor.GRAY + "All", t -> true)));
+    private final List<MenuItemFilter<? super T>> filters = new ArrayList<>(Collections.singleton(MenuItemFilter.of(ChatColor.GRAY + "All", t -> true)));
     private int currentFilter = 0;
 
-    private final List<MenuItemSorter<T>> sorters = new ArrayList<>(Collections.singleton(MenuItemSorter.of(ChatColor.GRAY + "Unsorted", (t1, t2) -> 0)));
+    private final List<MenuItemSorter<? super T>> sorters = new ArrayList<>(Collections.singleton(MenuItemSorter.of(ChatColor.GRAY + "Unsorted", (t1, t2) -> 0)));
     private int currentSorter = 0;
 
     private List<Menu> menuPages;
     private int currentPage = 0;
 
-    MultiPageGUI(Supplier<? extends Collection<? extends T>> source, List<MenuItemFilter<T>> filters, List<MenuItemSorter<T>> sorters) {
+    MultiPageGUI(Supplier<? extends Collection<? extends T>> source, List<MenuItemFilter<? super T>> filters, List<MenuItemSorter<? super T>> sorters) {
         this.source = source;
         this.filters.addAll(filters);
         this.sorters.addAll(sorters);
     }
 
     @Override
-    void open(boolean initialize) {
+    void open(boolean firstTime) {
         subscribe(getSubject());
-        if (initialize)
+        if (firstTime)
             shortenGUIChain();
         update();
     }
@@ -55,16 +58,17 @@ abstract class MultiPageGUI<T> extends GUI<T> {
     public void update() {
         if (!isInForeground())
             return;
-        initializeMenu();
-        addPageTracker();
-        addFilteringSortingOptions();
-        setCloseHandler((player, info) -> {
-            OPEN_PARENT.close(player, info);
-            unsubscribe(getSubject());
-        });
-        if (menuPages == null || menuPages.isEmpty())
+        this.menuPages = createMenuPages();
+        if (menuPages.isEmpty())
             return;
-        currentPage = Math.min(menuPages.size() - 1, currentPage);
+        addPageTracker();
+        if (filters.size() > 1)
+            setFilteringSettings();
+        if (sorters.size() > 1)
+            setSortingSettings();
+        for (Menu page : menuPages)
+            page.setCloseHandler(CLOSE_HANDLER);
+        currentPage = Math.max(0, Math.min(currentPage, menuPages.size() - 1));
         menuPages.get(currentPage).open(viewer);
     }
 
@@ -74,8 +78,7 @@ abstract class MultiPageGUI<T> extends GUI<T> {
         menuPages.get(currentPage).close(player);
     }
 
-    @Override
-    void initializeMenu() {
+    List<Menu> createMenuPages() {
         Menu.Builder<?> pageTemplate = ChestMenu.builder(4).title(getTitle()).redraw(true);
         Mask itemSlots = BinaryMask.builder(pageTemplate.getDimensions())
                 .pattern("010101010")
@@ -87,8 +90,8 @@ abstract class MultiPageGUI<T> extends GUI<T> {
                 .previousButtonSlot(PREV_PAGE_SLOT)
                 .nextButton(createSlotItem(Material.ARROW, "Next Page", Collections.emptyList()))
                 .nextButtonSlot(NEXT_PAGE_SLOT);
-        addItems(builder);
-        menuPages = builder.build();
+        builder.addSlotSettings(getMenuItems());
+        return builder.build();
     }
 
     @SuppressWarnings("SimplifyOptionalCallChains")
@@ -113,8 +116,12 @@ abstract class MultiPageGUI<T> extends GUI<T> {
         }
     }
 
-    void addFilteringSortingOptions() {
-        ItemStack filterItem = createSlotItem(Material.HOPPER, "Filtering:", Collections.singletonList(filters.get(currentFilter).getName()));
+    void setFilteringSettings() {
+        ItemStack filterItem = createSlotItem(
+                Material.HOPPER,
+                "Filtering:",
+                Collections.singletonList(filters.get(currentFilter).getName())
+        );
         Slot.ClickHandler filterHandler = (player, info) -> {
             if (info.getClickType().isLeftClick()) {
                 currentFilter++;
@@ -126,6 +133,15 @@ abstract class MultiPageGUI<T> extends GUI<T> {
                 this.update();
             }
         };
+        SlotSettings filterSlotSettings = SlotSettings.builder()
+                .itemTemplate(new StaticItemTemplate(filterItem))
+                .clickHandler(filterHandler)
+                .build();
+        for (Menu page : menuPages)
+            page.getSlot(FILTER_SLOT).setSettings(filterSlotSettings);
+    }
+
+    void setSortingSettings() {
         ItemStack sorterItem = createSlotItem(Material.POLISHED_ANDESITE_STAIRS, "Sorting:", Collections.singletonList(sorters.get(currentSorter).getName()));
         Slot.ClickHandler sorterHandler = (player, info) -> {
             if (info.getClickType().isLeftClick()) {
@@ -138,29 +154,29 @@ abstract class MultiPageGUI<T> extends GUI<T> {
                 this.update();
             }
         };
-        if (filters.size() > 1)
-            for (Menu page : menuPages)
-                page.getSlot(FILTER_SLOT).setSettings(SlotSettings.builder().itemTemplate(new StaticItemTemplate(filterItem)).clickHandler(filterHandler).build());
-
-        if (sorters.size() > 1)
-            for (Menu page : menuPages)
-                page.getSlot(SORTER_SLOT).setSettings(SlotSettings.builder().itemTemplate(new StaticItemTemplate(sorterItem)).clickHandler(sorterHandler).build());
+        SlotSettings sorterSlotSettings =  SlotSettings.builder()
+                .itemTemplate(new StaticItemTemplate(sorterItem))
+                .clickHandler(sorterHandler)
+                .build();
+        for (Menu page : menuPages)
+            page.getSlot(SORTER_SLOT).setSettings(sorterSlotSettings);
     }
 
-    @Override
-    void setCloseHandler(Menu.CloseHandler handler) {
-        menuPages.forEach(page -> page.setCloseHandler(handler));
-    }
-
+    /**
+     * Gets the name of this GUI, which is displayed in the title bar.
+     * @return the GUI title
+     */
     abstract String getTitle();
 
-    abstract void addItems(PaginatedMenuBuilder builder);
-
-    List<T> getMenuItems() {
-        return source.get().stream().filter(filters.get(currentFilter)).sorted(sorters.get(currentSorter)).collect(Collectors.toList());
+    List<SlotSettings> getMenuItems() {
+        return source.get().stream()
+                .filter(filters.get(currentFilter))
+                .sorted(sorters.get(currentSorter))
+                .map(this::createSlotSettings)
+                .collect(Collectors.toList());
     }
 
-    abstract Observable getSubject();
+    abstract SlotSettings createSlotSettings(T t);
 
     @Override
     public boolean equals(Object o) {

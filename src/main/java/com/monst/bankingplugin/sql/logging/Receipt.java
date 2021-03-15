@@ -1,8 +1,11 @@
 package com.monst.bankingplugin.sql.logging;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 
 public abstract class Receipt {
+
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     BigDecimal amount;
     long time;
@@ -22,6 +25,10 @@ public abstract class Receipt {
 
     public long getTime() {
         return time;
+    }
+
+    public String getTimeFormatted() {
+        return dateFormat.format(getTime());
     }
 
     public abstract int getBankID();

@@ -18,8 +18,8 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
     }
 
     @Override
-    void initializeMenu() {
-        menu = ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getChestName()).redraw(true).build();
+    Menu createMenu() {
+        return ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getChestName()).redraw(true).build();
     }
 
     @Override
@@ -28,13 +28,13 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
     }
 
     @Override
-    ItemStack createSlotItem(int i) {
-        return guiSubject.getInventory(false).getItem(i);
+    ItemStack createSlotItem(int slot) {
+        return guiSubject.getInventory(false).getItem(slot);
     }
 
     @Override
-    Slot.ClickHandler createClickHandler(int i) {
-        ItemStack item = guiSubject.getInventory(false).getItem(i);
+    Slot.ClickHandler createClickHandler(int slot) {
+        ItemStack item = guiSubject.getInventory(false).getItem(slot);
         if (item != null && item.getItemMeta() instanceof BlockStateMeta) {
             BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
             if (im.getBlockState() instanceof ShulkerBox) {
@@ -60,11 +60,6 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
     }
 
     @Override
-    void setCloseHandler(Menu.CloseHandler handler) {
-        menu.setCloseHandler(handler);
-    }
-
-    @Override
     GUIType getType() {
         return GUIType.ACCOUNT_CONTENTS;
     }
@@ -79,8 +74,8 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
         }
 
         @Override
-        void initializeMenu() {
-            menu = ChestMenu.builder(3).title("Shulker Box").redraw(true).build();
+        Menu createMenu() {
+            return ChestMenu.builder(3).title("Shulker Box").redraw(true).build();
 //                    shulkerBox.getCustomName() != null ?
 //                            shulkerBox.getCustomName() : // TODO: Figure out why always null
 //                            WordUtils.capitalizeFully(shulkerBox.getColor().toString())
@@ -89,12 +84,12 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
         }
 
         @Override
-        ItemStack createSlotItem(int i) {
-            return shulkerBox.getInventory().getItem(i);
+        ItemStack createSlotItem(int slot) {
+            return shulkerBox.getInventory().getItem(slot);
         }
 
         @Override
-        Slot.ClickHandler createClickHandler(int i) {
+        Slot.ClickHandler createClickHandler(int slot) {
             return null;
         }
 

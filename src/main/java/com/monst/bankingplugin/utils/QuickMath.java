@@ -63,4 +63,8 @@ public class QuickMath {
         return new double[] { diff.getX() / magnitude, diff.getY() / magnitude, diff.getZ() / magnitude };
     }
 
+    public static int between(int i, int lower, int upper) {
+        return Math.max(lower, Math.min(i, upper));
+    }
+
 }

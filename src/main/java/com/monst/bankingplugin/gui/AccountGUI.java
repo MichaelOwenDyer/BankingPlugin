@@ -29,8 +29,8 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	}
 
 	@Override
-	void initializeMenu() {
-		menu = ChestMenu.builder(1).title(guiSubject.getChestName()).build();
+	Menu createMenu() {
+		return ChestMenu.builder(1).title(guiSubject.getChestName()).build();
 	}
 
 	@Override
@@ -43,8 +43,8 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	}
 
 	@Override
-	ItemStack createSlotItem(int i) {
-		switch (i) {
+	ItemStack createSlotItem(int slot) {
+		switch (slot) {
 			case 0:
 				return createSlotItem(guiSubject.getOwner(), "Account Information", getGeneralInfoLore());
 			case 1:
@@ -73,8 +73,8 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	}
 
 	@Override
-	ClickHandler createClickHandler(int i) {
-		switch (i) {
+	ClickHandler createClickHandler(int slot) {
+		switch (slot) {
 			case 0:
 				return canTP ? (player, info) -> {
 					player.teleport(guiSubject.getChestLocation().getTeleportLocation().setDirection(player.getLocation().getDirection()));
@@ -87,11 +87,6 @@ public class AccountGUI extends SinglePageGUI<Account> {
 			default:
 				return null;
 		}
-	}
-
-	@Override
-	void setCloseHandler(Menu.CloseHandler handler) {
-		menu.setCloseHandler(handler);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.BankingEntity;
+import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -23,14 +24,11 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
     }
 
     @Override
-    void open(boolean initialize) {
-        subscribe(guiSubject);
-        if (initialize) {
-            initializeMenu();
-            setCloseHandler((player, info) -> {
-                OPEN_PARENT.close(player, info);
-                unsubscribe(guiSubject);
-            });
+    void open(boolean firstTime) {
+        subscribe(getSubject());
+        if (firstTime) {
+            menu = createMenu();
+            menu.setCloseHandler(CLOSE_HANDLER);
             shortenGUIChain();
         }
         if (menu == null)
@@ -56,11 +54,18 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
         menu.close(player);
     }
 
+    @Override
+    Observable getSubject() {
+        return guiSubject;
+    }
+
+    abstract Menu createMenu();
+
     abstract void evaluateClearance(Player player);
 
-    abstract ItemStack createSlotItem(int i);
+    abstract ItemStack createSlotItem(int slot);
 
-    abstract Slot.ClickHandler createClickHandler(int i);
+    abstract Slot.ClickHandler createClickHandler(int slot);
 
     static List<String> getMultiplierLore(List<Integer> multipliers, int highlightStage) {
 
@@ -143,12 +148,12 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
         return inForeground == other.inForeground
                 && getType() == other.getType()
                 && Utils.samePlayer(viewer, other.viewer)
-                && guiSubject.equals(other.guiSubject);
+                && getSubject().equals(other.getSubject());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(guiSubject, viewer, inForeground, getType());
+        return Objects.hash(getSubject(), viewer, inForeground, getType());
     }
 
 }
