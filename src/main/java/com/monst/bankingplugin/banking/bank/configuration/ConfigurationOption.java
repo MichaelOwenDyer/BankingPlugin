@@ -41,7 +41,11 @@ public abstract class ConfigurationOption<T> {
     }
 
     public String getFormatted(boolean ignoreConfig) {
-        return String.valueOf(get(ignoreConfig));
+        return format(get(ignoreConfig));
+    }
+
+    String format(T value) {
+        return String.valueOf(value);
     }
 
     public boolean set(@Nullable String input) throws ArgumentParseException {

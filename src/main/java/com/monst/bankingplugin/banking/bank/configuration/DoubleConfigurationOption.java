@@ -17,8 +17,8 @@ abstract class DoubleConfigurationOption extends ConfigurationOption<Double> {
     }
 
     @Override
-    public String getFormatted() {
-        return Utils.format(get());
+    public String format(Double value) {
+        return Utils.format(value);
     }
 
     @Override

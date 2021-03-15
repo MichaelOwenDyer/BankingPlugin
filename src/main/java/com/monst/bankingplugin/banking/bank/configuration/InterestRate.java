@@ -32,8 +32,8 @@ public class InterestRate extends DoubleConfigurationOption {
     }
 
     @Override
-    public String getFormatted() {
-        return formatter.format(get() * 100) + "%";
+    public String format(Double value) {
+        return formatter.format(value * 100) + "%";
     }
 
     @Override
