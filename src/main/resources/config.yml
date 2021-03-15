@@ -187,6 +187,14 @@ bank-size-limits:
   minimum: 125
   maximum: 100000
 
+# Determines how bank configurations should behave when the server defaults change.
+# This concerns only non-custom configuration values which are inherited from this config on bank creation.
+# This has no effect on the ability of bank owners to configure their banks with custom values.
+# Set this value to true to make banks remember their default settings even when the server defaults change.
+# Set this value to false to make banks follow along with the server when the server defaults change
+# (e.g. configuration values which have not been explicitly set are inherited dynamically from the server).
+stubborn-banks: false
+
 # Whether a bank owner should be able to create an account at their own bank.
 # Type: boolean
 # Default: false

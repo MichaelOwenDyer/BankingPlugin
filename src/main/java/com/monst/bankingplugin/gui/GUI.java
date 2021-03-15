@@ -36,7 +36,7 @@ public abstract class GUI<T> {
 	boolean inForeground = true;
 
 	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) -> Utils.bukkitRunnable(() -> {
-		if (isLinked() && isInForeground()) {
+		if (isInForeground() && hasParent()) {
 			parentGUI.inForeground = true;
 			parentGUI.open(false);
 		}
@@ -129,7 +129,7 @@ public abstract class GUI<T> {
 	 * Returns whether or not this GUI has a parent GUI.
 	 * @return true if this GUI has a parent
 	 */
-	boolean isLinked() {
+	boolean hasParent() {
 		return parentGUI != null;
 	}
 

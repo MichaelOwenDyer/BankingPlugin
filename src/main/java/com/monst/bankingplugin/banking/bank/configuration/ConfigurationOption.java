@@ -11,7 +11,7 @@ public abstract class ConfigurationOption<T> {
     T value;
 
     ConfigurationOption() {
-        this.value = null;
+        this.value = Config.stubbornBanks ? getConfigPair().getDefault() : null;
     }
 
     ConfigurationOption(T value) {

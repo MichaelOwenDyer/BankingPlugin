@@ -19,7 +19,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Config {
@@ -102,7 +101,6 @@ public class Config {
      **/
 	public static double bankCreationPriceAdmin;
 	public static double bankCreationPricePlayer;
-	public static double getBankCreationPricePlayer() { return bankCreationPricePlayer; }
 
     /**
      * The price a player has to pay in order to create an account.
@@ -166,6 +164,11 @@ public class Config {
 	 * permission.
 	 */
 	public static long maximumBankVolume;
+
+	/**
+	 * Determines how default bank configuration values should behave on server default change.
+	 */
+	public static boolean stubbornBanks;
 
 	/**
 	 * Whether a bank owner should be allowed to create an account at their own
@@ -351,7 +354,7 @@ public class Config {
      */
     @SuppressWarnings("all")
 	public void add(String property, String value) {
-		List list = nonNull(plugin.getConfig().getList(property), ArrayList::new);
+		List list = Utils.nonNull(plugin.getConfig().getList(property), ArrayList::new);
 		boolean added = attemptParse(value, v -> list.add(v));
 		if (!added)
 			if (property.equalsIgnoreCase("interest-payout-times.default"))
@@ -367,7 +370,7 @@ public class Config {
 
 	@SuppressWarnings("all")
     public void remove(String property, String value) {
-		List list = nonNull(plugin.getConfig().getList(property), ArrayList::new);
+		List list = Utils.nonNull(plugin.getConfig().getList(property), ArrayList::new);
 		boolean removed = attemptParse(value, v -> list.remove(v));
 		if (!removed)
 			if (property.equalsIgnoreCase("interest-payout-times.default"))
@@ -420,129 +423,133 @@ public class Config {
 
         FileConfiguration config = plugin.getConfig();
 
-        commandNameBank = nonNull(config.getString("command-names.bank"), "bank");
-        commandNameAccount = nonNull(config.getString("command-names.account"), "account");
-		commandNameControl = nonNull(config.getString("command-names.control"), "bp");
+        commandNameBank = config.getString("command-names.bank", "bank");
+        commandNameAccount = config.getString("command-names.account", "account");
+		commandNameControl = config.getString("command-names.control", "bp");
 		interestPayoutTimes = new ConfigPair<>(
 				config.getBoolean("interest-payout-times.allow-override"),
-				nonNull(config.getStringList("interest-payout-times.default").stream()
-						.map(Config::convertToLocalTime)
+				config.getStringList("interest-payout-times.default").stream()
+						.map(Config::parseLocalTime)
 						.filter(Objects::nonNull)
 						.distinct()
 						.sorted()
-						.collect(Collectors.toList()), Collections::emptyList)
+						.collect(Collectors.toList())
 		);
 		if (plugin.isEnabled())
 			plugin.getScheduler().scheduleAll();
 
 		interestRate = new ConfigPair<>(
 				config.getBoolean("interest-rate.allow-override"),
-				nonNull(Math.abs(config.getDouble("interest-rate.default")), 0.01)
+				Math.abs(config.getDouble("interest-rate.default", 0.01))
 		);
 
 		multipliers = new ConfigPair<>(
 				config.getBoolean("interest-multipliers.allow-override"),
-				config.getIntegerList("interest-multipliers.default").isEmpty() ?
-						Collections.singletonList(1) : config.getIntegerList("interest-multipliers.default")
+				Utils.ternary(
+						config.getIntegerList("interest-multipliers.default"),
+						() -> Collections.singletonList(1),
+						List::isEmpty
+				)
 		);
 
 		initialInterestDelay = new ConfigPair<>(
 				config.getBoolean("initial-interest-delay.allow-override"),
-				nonNull(Math.abs(config.getInt("initial-interest-delay.default")), 0)
+				Math.abs(config.getInt("initial-interest-delay.default", 0))
 		);
 
 		countInterestDelayOffline = new ConfigPair<>(
-				nonNull(config.getBoolean("count-interest-delay-offline.allow-override"), false),
-				nonNull(config.getBoolean("count-interest-delay-offline.default"), false)
+				config.getBoolean("count-interest-delay-offline.allow-override", false),
+				config.getBoolean("count-interest-delay-offline.default", false)
 		);
 
 		allowedOfflinePayouts = new ConfigPair<>(
 				config.getBoolean("allowed-offline-payouts.allow-override"),
-				nonNull(Math.abs(config.getInt("allowed-offline-payouts.default")), 1)
+				Math.abs(config.getInt("allowed-offline-payouts.default", 1))
 		);
 
 		allowedOfflinePayoutsBeforeReset = new ConfigPair<>(
 				config.getBoolean("allowed-offline-payouts-before-multiplier-reset.allow-override"),
-				nonNull(Math.abs(config.getInt("allowed-offline-payouts-before-multiplier-reset.default")), 1)
+				Math.abs(config.getInt("allowed-offline-payouts-before-multiplier-reset.default", 1))
 		);
 
 		offlineMultiplierDecrement = new ConfigPair<>(
 				config.getBoolean("offline-multiplier-decrement.allow-override"),
-				nonNull(Math.abs(config.getInt("offline-multiplier-decrement.default")), 0)
+				Math.abs(config.getInt("offline-multiplier-decrement.default", 0))
 		);
 
 		withdrawalMultiplierDecrement = new ConfigPair<>(
 				config.getBoolean("withdrawal-multiplier-decrement.allow-override"),
-				nonNull(Math.abs(config.getInt("withdrawal-multiplier-decrement.default")), 1)
+				Math.abs(config.getInt("withdrawal-multiplier-decrement.default", 1))
 		);
 
-		accountInfoItem = nonNull(
-				convertToItemStack(config.getString("account-info-item")),
+		accountInfoItem = Utils.nonNull(
+				parseItemStack(config.getString("account-info-item")),
 				() -> new ItemStack(Material.STICK)
 		);
 
-		bankCreationPricePlayer = nonNull(Math.abs(config.getDouble("creation-prices.bank.player")), 100000.0);
-		bankCreationPriceAdmin = nonNull(Math.abs(config.getDouble("creation-prices.bank.admin")), 0.0);
+		bankCreationPricePlayer = Math.abs(config.getDouble("creation-prices.bank.player", 100000.0));
+		bankCreationPriceAdmin = Math.abs(config.getDouble("creation-prices.bank.admin", 0.0));
 
 		accountCreationPrice = new ConfigPair<>(
 				config.getBoolean("creation-prices.account.allow-override"),
-				nonNull(Math.abs(config.getDouble("creation-prices.account.default")), 2500.0)
+				Math.abs(config.getDouble("creation-prices.account.default", 2500.0))
 		);
 
-		reimburseBankCreationPlayer = nonNull(config.getBoolean("reimburse-creation.bank.player"), false);
-		reimburseBankCreationAdmin = nonNull(config.getBoolean("reimburse-creation.bank.admin"), false);
+		reimburseBankCreationPlayer = config.getBoolean("reimburse-creation.bank.player", false);
+		reimburseBankCreationAdmin = config.getBoolean("reimburse-creation.bank.admin", false);
 
 		reimburseAccountCreation = new ConfigPair<>(
 				config.getBoolean("reimburse-creation.account.allow-override"),
-				nonNull(config.getBoolean("reimburse-creation.account.default"), false)
+				config.getBoolean("reimburse-creation.account.default", false)
 		);
 
 		minimumBalance = new ConfigPair<>(
 				config.getBoolean("minimum-account-balance.allow-override"),
-				nonNull(Math.abs(config.getDouble("minimum-account-balance.default")), 1000.0)
+				Math.abs(config.getDouble("minimum-account-balance.default", 1000.0))
 		);
 
 		lowBalanceFee = new ConfigPair<>(
 				config.getBoolean("low-balance-fee.allow-override"),
-				nonNull(Math.abs(config.getDouble("low-balance-fee.default")), 2000.0)
+				Math.abs(config.getDouble("low-balance-fee.default", 2000.0))
 		);
 
 		payOnLowBalance = new ConfigPair<>(
 				config.getBoolean("pay-interest-on-low-balance.allow-override"),
-				nonNull(config.getBoolean("pay-interest-on-low-balance.default"), false)
+				config.getBoolean("pay-interest-on-low-balance.default", false)
 		);
 
 		playerBankAccountLimit = new ConfigPair<>(
 				config.getBoolean("player-bank-account-limit.allow-override"),
-				nonNull(config.getInt("player-bank-account-limit.default"), 1)
+				config.getInt("player-bank-account-limit.default", 1)
 		);
 
-		defaultBankLimit = nonNull(config.getInt("default-limits.bank"), 1);
-		defaultAccountLimit = nonNull(config.getInt("default-limits.account"), 1);
-		minimumBankVolume = Math.max(nonNull(config.getInt("bank-size-limits.minimum"), 125), 0);
-		maximumBankVolume = Math.max(nonNull(config.getLong("bank-size-limits.maximum"), 100000L), 0);
-		allowSelfBanking = nonNull(config.getBoolean("allow-self-banking"), false);
-		confirmOnRemove = nonNull(config.getBoolean("confirm-on-remove"), true);
-		confirmOnRemoveAll = nonNull(config.getBoolean("confirm-on-removeall"), true);
-		confirmOnTransfer = nonNull(config.getBoolean("confirm-on-transfer"), true);
-		trustOnTransfer = nonNull(config.getBoolean("trust-on-transfer"), false);
-        enableUpdateChecker = nonNull(config.getBoolean("enable-update-checker"), true);
-		enableAccountTransactionLog = nonNull(config.getBoolean("enable-transaction-log"), true);
-		enableAccountInterestLog = nonNull(config.getBoolean("enable-interest-log"), true);
-		enableBankRevenueLog = nonNull(config.getBoolean("enable-profit-log"), true);
-		enableDebugLog = nonNull(config.getBoolean("enable-debug-log"), true);
-		cleanupLogDays = nonNull(config.getInt("cleanup-log-days"), 30);
-        enableWorldGuardIntegration = nonNull(config.getBoolean("enable-worldguard-integration"), true);
-        enableGriefPreventionIntegration = nonNull(config.getBoolean("enable-griefprevention-integration"), true);
-		enableWorldEditIntegration = nonNull(config.getBoolean("enable-worldedit-integration"), true);
-        removeAccountOnError = nonNull(config.getBoolean("remove-account-on-error"), true);
-        blacklist = nonNull(config.getStringList("blacklist"), Collections::emptyList);
-		bankRevenueFunction = nonNull(config.getString("bank-revenue-function"), "(0.10 * x) * (1 - g) * ln(n)");
-		wgAllowCreateBankDefault = nonNull(config.getBoolean("worldguard-default-flag-value"), false);
-		disabledWorlds = nonNull(config.getStringList("disabled-worlds"), Collections::emptyList);
-		enableMail = nonNull(config.getBoolean("enable-mail"), true);
-		languageFile = nonNull(config.getString("language-file"), "en_US");
-		nameRegex = nonNull(config.getString("name-regex"), "");
+		defaultBankLimit = config.getInt("default-limits.bank", 1);
+		defaultAccountLimit = config.getInt("default-limits.account", 1);
+		minimumBankVolume = Math.max(config.getInt("bank-size-limits.minimum", 125), 0);
+		maximumBankVolume = Math.max(config.getLong("bank-size-limits.maximum", 100000L), 0);
+		stubbornBanks = config.getBoolean("stubborn-banks", false);
+		allowSelfBanking = config.getBoolean("allow-self-banking", false);
+		confirmOnRemove = config.getBoolean("confirm-on-remove", true);
+		confirmOnRemoveAll = config.getBoolean("confirm-on-removeall", true);
+		confirmOnTransfer = config.getBoolean("confirm-on-transfer", true);
+		trustOnTransfer = config.getBoolean("trust-on-transfer", false);
+        enableUpdateChecker = config.getBoolean("enable-update-checker", true);
+		enableAccountTransactionLog = config.getBoolean("enable-transaction-log", true);
+		enableAccountInterestLog = config.getBoolean("enable-interest-log", true);
+		enableBankRevenueLog = config.getBoolean("enable-profit-log", true);
+		enableDebugLog = config.getBoolean("enable-debug-log", true);
+		cleanupLogDays = config.getInt("cleanup-log-days", 30);
+        enableWorldGuardIntegration = config.getBoolean("enable-worldguard-integration", true);
+        enableGriefPreventionIntegration = config.getBoolean("enable-griefprevention-integration", true);
+		enableWorldEditIntegration = config.getBoolean("enable-worldedit-integration", true);
+        removeAccountOnError = config.getBoolean("remove-account-on-error", true);
+        blacklist = config.getStringList("blacklist");
+		bankRevenueFunction = config.getString("bank-revenue-function", "(0.10 * x) * (1 - g) * ln(n)");
+		wgAllowCreateBankDefault = config.getBoolean("worldguard-default-flag-value", false);
+		disabledWorlds = config.getStringList("disabled-worlds");
+		enableMail = config.getBoolean("enable-mail", true);
+		languageFile = config.getString("language-file", "en_US");
+		nameRegex = config.getString("name-regex", "");
 
 		if (firstLoad || langReload)
 			loadLanguageConfig(showMessages);
@@ -552,21 +559,13 @@ public class Config {
 
     public static class ConfigPair<K> extends Pair<Boolean, K> {
 		private ConfigPair(Boolean b, K k) {
-			super(nonNull(b, true), k);
+			super(b, k);
 		}
 		public boolean isOverridable() { return super.getFirst(); }
 		public K getDefault() { return super.getSecond(); }
 	}
 
-	private static <T> T nonNull(T ifNotNull, T ifNull) {
-		return nonNull(ifNotNull, () -> ifNull);
-	}
-
-	private static <T> T nonNull(T ifNotNull, Supplier<T> ifNull) {
-		return Utils.nonNull(ifNotNull, ifNull);
-	}
-
-	private static LocalTime convertToLocalTime(String string) {
+	private static LocalTime parseLocalTime(String string) {
 		try {
 			return LocalTime.parse(string);
 		} catch (DateTimeParseException e) {
@@ -574,7 +573,7 @@ public class Config {
 		}
 	}
 
-	private static ItemStack convertToItemStack(String string) {
+	private static ItemStack parseItemStack(String string) {
 		try {
 			return new ItemStack(Objects.requireNonNull(Material.getMaterial(string)));
 		} catch (NullPointerException e) {
