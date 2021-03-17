@@ -23,7 +23,7 @@ public class ControlVersion extends ControlCommand.SubCommand {
                     + ChatColor.AQUA + " v" + plugin.getDescription().getVersion()
                     + ChatColor.DARK_GRAY + "\n         by monst");
         } else
-            sender.sendMessage(plugin.VERSION_MSG);
+            sender.sendMessage(plugin.STARTUP_MESSAGE);
         return true;
     }
 

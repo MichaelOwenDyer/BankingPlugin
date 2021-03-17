@@ -38,7 +38,7 @@ public abstract class BankingPluginSubCommand {
      * Execute the sub command
      * @param sender Sender of the command
      * @param args Arguments of the command ({@code args[0]} is the sub command's name)
-     * @return Whether the sender should be sent the help message
+     * @return Whether the command syntax was correct
      */
     protected abstract boolean execute(CommandSender sender, String[] args);
 

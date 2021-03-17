@@ -9,6 +9,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.utils.Permissions;
@@ -140,7 +141,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         account.setOwner(newOwner);
         if (!hasCustomName)
             account.resetName();
-        plugin.getAccountRepository().update(account, null, AccountField.OWNER);
+        plugin.getAccountRepository().update(account, Callback.blank(), AccountField.OWNER);
         ClickType.removePlayerClickType(p);
     }
 

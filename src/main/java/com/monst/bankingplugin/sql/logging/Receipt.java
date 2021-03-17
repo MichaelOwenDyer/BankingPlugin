@@ -3,9 +3,9 @@ package com.monst.bankingplugin.sql.logging;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 
-public abstract class Receipt {
+public abstract class Receipt implements Loggable {
 
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yy hh:mm a");
 
     BigDecimal amount;
     long time;
@@ -18,6 +18,8 @@ public abstract class Receipt {
         this.amount = amount;
         this.time = time;
     }
+
+    public abstract int getID();
 
     public BigDecimal getAmount() {
         return amount;

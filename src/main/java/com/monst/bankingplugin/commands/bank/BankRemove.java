@@ -79,7 +79,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
             Player executor = (Player) sender;
             if (creationPrice > 0 && (bank.isAdminBank() || bank.isOwner(executor))) {
                 double finalCreationPrice = creationPrice;
-                Utils.depositPlayer(executor.getPlayer(), finalCreationPrice, Callback.of(plugin,
+                Utils.depositPlayer(executor.getPlayer(), finalCreationPrice, Callback.of(
                         result -> executor.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
                                 new Replacement(Placeholder.AMOUNT, finalCreationPrice)
                         )),

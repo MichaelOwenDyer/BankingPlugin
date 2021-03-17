@@ -53,13 +53,13 @@ public interface Repository<Entity extends BankingEntity> {
     }
 
     default void add(Entity entity, boolean addToDatabase) {
-        add(entity, addToDatabase, null);
+        add(entity, addToDatabase, Callback.blank());
     }
 
     void add(Entity entity, boolean addToDatabase, Callback<Integer> callback);
 
     default void remove(Entity entity, boolean removeFromDatabase) {
-        remove(entity, removeFromDatabase, null);
+        remove(entity, removeFromDatabase, Callback.blank());
     }
 
     void remove(Entity entity, boolean removeFromDatabase, Callback<Void> callback);

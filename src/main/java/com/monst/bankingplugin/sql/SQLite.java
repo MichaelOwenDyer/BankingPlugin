@@ -157,6 +157,7 @@ public class SQLite extends Database {
                 "AccountID INTEGER NOT NULL REFERENCES " + tableAccounts + " (AccountID) ON DELETE CASCADE",
                 "BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID)",
                 "Amount REAL NOT NULL",
+                "LowBalanceFee REAL NOT NULL",
                 "Timestamp TEXT NOT NULL",
                 "Time INTEGER NOT NULL"
         );
@@ -167,18 +168,6 @@ public class SQLite extends Database {
     	return getQueryCreateTable(tableBankRevenue,
                 "RevenueID INTEGER PRIMARY KEY AUTOINCREMENT",
                 "BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID) ON DELETE CASCADE",
-                "Amount REAL NOT NULL",
-                "Timestamp TEXT NOT NULL",
-                "Time INTEGER NOT NULL"
-        );
-    }
-
-    @Override
-    String getQueryCreateTableLowBalanceFees() {
-    	return getQueryCreateTable(tableLowBalanceFees,
-                "FeeID INTEGER PRIMARY KEY AUTOINCREMENT",
-                "AccountID INTEGER NOT NULL REFERENCES " + tableAccounts + " (AccountID) ON DELETE CASCADE",
-                "BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID)",
                 "Amount REAL NOT NULL",
                 "Timestamp TEXT NOT NULL",
                 "Time INTEGER NOT NULL"

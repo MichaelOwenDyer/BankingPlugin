@@ -48,7 +48,7 @@ public class ControlReload extends ControlCommand.SubCommand {
         }
 
         plugin.reload(true, true,
-                Callback.of(plugin, result -> {
+                Callback.of(result -> {
                     Collection<Bank> banks = result.getBanks();
                     Collection<Account> accounts = result.getAccounts();
                     plugin.getScheduler().scheduleAll();

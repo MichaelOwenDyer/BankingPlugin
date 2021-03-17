@@ -9,7 +9,6 @@ import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.sql.logging.AccountInterestReceipt;
 import com.monst.bankingplugin.sql.logging.BankRevenueReceipt;
-import com.monst.bankingplugin.sql.logging.LowBalanceFeeReceipt;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.QuickMath;
@@ -63,7 +62,7 @@ public class InterestEventListener extends BankingPluginListener {
 		playerAccountMap.forEach((accountOwner, accounts) -> {
 			for (Account account : accounts) {
 				if (!account.allowNextPayout()) {
-					accountRepo.update(account, null,
+					accountRepo.update(account, Callback.blank(),
 							AccountField.DELAY_UNTIL_NEXT_PAYOUT,
 							AccountField.REMAINING_OFFLINE_PAYOUTS,
 							AccountField.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET
@@ -71,6 +70,8 @@ public class InterestEventListener extends BankingPluginListener {
 					continue;
 				}
 
+				BigDecimal lowBalanceFee = BigDecimal.ZERO;
+				BigDecimal interest = BigDecimal.ZERO;
 				Set<OfflinePlayer> trustedPlayers = account.getTrustedPlayers();
 				int numberOfTrustedPlayers = trustedPlayers.size();
 				Bank bank = account.getBank();
@@ -81,16 +82,21 @@ public class InterestEventListener extends BankingPluginListener {
 				if (!trustedPlayers.isEmpty() && bank.getMinimumBalance().get() > 0
 						&& account.getBalance().doubleValue() < bank.getMinimumBalance().get()) {
 
-					feesPayable.get(accountOwner).add(bank.getLowBalanceFee().get());
-
+					lowBalanceFee = BigDecimal.valueOf(bank.getLowBalanceFee().get());
+					feesPayable.get(accountOwner).add(lowBalanceFee);
 					if (bank.isPlayerBank())
-						feesReceivable.get(bank.getOwner()).add(bank.getLowBalanceFee().get());
+						feesReceivable.get(bank.getOwner()).add(lowBalanceFee);
 
-					plugin.getDatabase().logLowBalanceFee(new LowBalanceFeeReceipt(account.getID(), bank.getID(),
-							BigDecimal.valueOf(bank.getLowBalanceFee().get()), System.currentTimeMillis()));
-
-					if (!bank.getPayOnLowBalance().get())
+					if (!bank.getPayOnLowBalance().get()) {
+						plugin.getDatabase().logAccountInterest(new AccountInterestReceipt(
+								account.getID(),
+								bank.getID(),
+								interest.subtract(lowBalanceFee),
+								lowBalanceFee,
+								System.currentTimeMillis()
+						));
 						continue;
+					}
 				}
 
 				BigDecimal baseInterest = QuickMath.scale(
@@ -98,7 +104,7 @@ public class InterestEventListener extends BankingPluginListener {
 				);
 
 				int multiplier = account.getRealMultiplier();
-				BigDecimal interest = QuickMath.multiply(baseInterest, multiplier);
+				interest = QuickMath.multiply(baseInterest, multiplier);
 
 				account.incrementMultiplier();
 				account.updatePrevBalance();
@@ -114,12 +120,13 @@ public class InterestEventListener extends BankingPluginListener {
 					plugin.getDatabase().logAccountInterest(new AccountInterestReceipt(
 							account.getID(),
 							bank.getID(),
-							interest,
+							interest.subtract(lowBalanceFee),
+							lowBalanceFee,
 							System.currentTimeMillis()
 					));
 				}
 
-				accountRepo.update(account, null,
+				accountRepo.update(account, Callback.blank(),
 						AccountField.MULTIPLIER_STAGE,
 						AccountField.DELAY_UNTIL_NEXT_PAYOUT,
 						AccountField.REMAINING_OFFLINE_PAYOUTS,
@@ -158,8 +165,8 @@ public class InterestEventListener extends BankingPluginListener {
 					continue;
 
 				boolean online = bankOwner.isOnline();
-				Utils.depositPlayer(bankOwner, revenue.doubleValue(), Callback.of(plugin,
-						result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.BANK_REVENUE_EARNED,
+				Utils.depositPlayer(bankOwner, revenue.doubleValue(), Callback.of(
+                        result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.BANK_REVENUE_EARNED,
 								new Replacement(Placeholder.AMOUNT, revenue),
 								new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
 						)),
@@ -192,8 +199,8 @@ public class InterestEventListener extends BankingPluginListener {
 			if (counter.getTotalMoney().signum() <= 0)
 				continue;
 
-			transactor.transact(customer, counter.getTotalMoney().doubleValue(), Callback.of(plugin,
-					result -> Mailman.notify(customer, LangUtils.getMessage(message,
+			transactor.transact(customer, counter.getTotalMoney().doubleValue(), Callback.of(
+                    result -> Mailman.notify(customer, LangUtils.getMessage(message,
 							new Replacement(Placeholder.AMOUNT, counter::getTotalMoney),
 							new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, counter::getNumberOfPayments)
 					)),

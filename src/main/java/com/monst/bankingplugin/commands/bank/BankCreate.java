@@ -154,7 +154,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
 
-        if (!Utils.withdrawPlayer(p.getPlayer(), creationPrice, Callback.of(plugin,
+        if (!Utils.withdrawPlayer(p.getPlayer(), creationPrice, Callback.of(
                 result -> p.sendMessage(LangUtils.getMessage(Message.BANK_CREATE_FEE_PAID,
                         new Replacement(Placeholder.PRICE, creationPrice)
                 )),

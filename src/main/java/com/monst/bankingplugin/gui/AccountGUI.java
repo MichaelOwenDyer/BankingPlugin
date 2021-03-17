@@ -1,7 +1,9 @@
 package com.monst.bankingplugin.gui;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -63,6 +65,10 @@ public class AccountGUI extends SinglePageGUI<Account> {
 				if (isTrusted)
 					return createSlotItem(Material.IRON_BARS, "Account Restrictions", getAccountRestrictionsLore());
 				return createSlotItem(Material.IRON_BARS, "Account Restrictions", NO_PERMISSION);
+			case 7:
+				if (isTrusted)
+					return createSlotItem(Material.BOOK, "Transaction Log", Collections.singletonList("Click to view transaction log."));
+				return createSlotItem(Material.BOOK, "Transaction Log", NO_PERMISSION);
 			case 8:
 				if (isTrusted)
 					return createSlotItem(Material.CHEST, "Account Contents", Collections.singletonList("Click to view account contents."));
@@ -82,6 +88,11 @@ public class AccountGUI extends SinglePageGUI<Account> {
 				} : null;
 			case 1:
 				return (player, info) -> new BankGUI(guiSubject.getBank()).setParentGUI(this).open(player);
+			case 7:
+				return isTrusted ? (player, info) ->
+						BankingPlugin.getInstance().getDatabase().getTransactionsAtAccount(guiSubject,
+								Callback.of(list -> new AccountTransactionGUI(() -> list).setParentGUI(this).open(player))
+						) : null;
 			case 8:
 				return isTrusted ? (player, info) -> new AccountContentsGUI(guiSubject).setParentGUI(this).open(player) : null;
 			default:

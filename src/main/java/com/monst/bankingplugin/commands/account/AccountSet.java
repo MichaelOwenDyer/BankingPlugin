@@ -7,6 +7,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;
@@ -138,7 +139,7 @@ public class AccountSet extends AccountCommand.SubCommand {
 
         }
 
-        plugin.getAccountRepository().update(account, null, field);
+        plugin.getAccountRepository().update(account, Callback.blank(), field);
         AccountConfigureEvent e = new AccountConfigureEvent(executor, account, field, value);
         Bukkit.getPluginManager().callEvent(e);
     }

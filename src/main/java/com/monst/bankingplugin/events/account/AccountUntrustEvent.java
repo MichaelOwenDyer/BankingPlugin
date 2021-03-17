@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 public class AccountUntrustEvent extends SingleAccountEvent implements Cancellable {
 
     private boolean cancelled;
-    private OfflinePlayer playerToUntrust;
+    private final OfflinePlayer playerToUntrust;
 
     public AccountUntrustEvent(@Nonnull CommandSender sender, @Nonnull Account account, @Nonnull OfflinePlayer playerToUntrust) {
         super(sender, account);

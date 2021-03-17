@@ -17,6 +17,8 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.stream.Stream;
+
 public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 
 	private static boolean commandCreated = false;
@@ -35,19 +37,21 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
         this.desc = LangUtils.getMessage(Message.BANK_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
 
-		addSubCommand(new BankCreate());
-		addSubCommand(new BankInfo());
-		addSubCommand(new BankLimits());
-		addSubCommand(new BankList());
-		addSubCommand(new BankRemove());
-		addSubCommand(new BankRemoveall());
-		addSubCommand(new BankRename());
-		addSubCommand(new BankResize());
-		addSubCommand(new BankSelect());
-		addSubCommand(new BankSet());
-		addSubCommand(new BankTransfer());
-		addSubCommand(new BankTrust());
-		addSubCommand(new BankUntrust());
+		Stream.of(
+				new BankCreate(),
+				new BankInfo(),
+				new BankLimits(),
+				new BankList(),
+				new BankRemove(),
+				new BankRemoveall(),
+				new BankRename(),
+				new BankResize(),
+				new BankSelect(),
+				new BankSet(),
+				new BankTransfer(),
+				new BankTrust(),
+				new BankUntrust()
+		).forEach(this::addSubCommand);
 
         register();
         commandCreated = true;
@@ -133,4 +137,5 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		}
 
 	}
+
 }

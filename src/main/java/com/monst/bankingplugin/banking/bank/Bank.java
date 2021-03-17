@@ -7,6 +7,7 @@ import com.monst.bankingplugin.banking.bank.configuration.*;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -117,10 +118,7 @@ public class Bank extends BankingEntity {
 				 Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
 				 List<Integer> multipliers, List<LocalTime> interestPayoutTimes) {
 
-		this.id = id;
-		this.owner = owner;
-		this.coowners = coowners;
-		this.name = name;
+		super(id, name, owner, coowners);
 		this.selection = selection;
 		this.accounts = new HashSet<>();
 		this.countInterestDelayOffline = new CountInterestDelayOffline(countInterestDelayOffline);
@@ -413,13 +411,13 @@ public class Bank extends BankingEntity {
 	@Override
 	public void trustPlayer(OfflinePlayer p) {
 		super.trustPlayer(p);
-		plugin.getDatabase().addCoOwner(this, p, null, true);
+		plugin.getDatabase().addCoOwner(this, p, Callback.blank());
 	}
 
 	@Override
 	public void untrustPlayer(OfflinePlayer p) {
-		super.trustPlayer(p);
-		plugin.getDatabase().removeCoOwner(this, p, null, true);
+		super.untrustPlayer(p);
+		plugin.getDatabase().removeCoOwner(this, p, Callback.blank());
 	}
 
 	@Override

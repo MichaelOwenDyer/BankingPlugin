@@ -106,7 +106,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         if (creationPrice > 0 && account.isOwner(p) && !bank.isOwner(p)) {
 
             double finalCreationPrice = creationPrice;
-            Utils.depositPlayer(p.getPlayer(), finalCreationPrice, Callback.of(plugin,
+            Utils.depositPlayer(p.getPlayer(), finalCreationPrice, Callback.of(
                     result -> p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
                             new Replacement(Placeholder.AMOUNT, finalCreationPrice)
                     )),
@@ -117,7 +117,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
 
             if (bank.isPlayerBank()) {
                 OfflinePlayer bankOwner = bank.getOwner();
-                Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
+                Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(
                         result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
                                 new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName()),
                                 new Replacement(Placeholder.AMOUNT, finalCreationPrice)

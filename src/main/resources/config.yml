@@ -231,9 +231,9 @@ enable-update-checker: true
 # Set whether deposits/withdrawals, interest payouts, and bank profits/losses should be saved in the database.
 # Debug log is stored in the file system and may become quite large!
 # Type: boolean
-enable-transaction-log: true
-enable-interest-log: true
-enable-profit-log: true
+enable-account-transaction-log: true
+enable-account-interest-log: true
+enable-bank-revenue-log: true
 enable-debug-log: true
 
 # Set the maximum age for log entries in days.
@@ -248,6 +248,10 @@ cleanup-log-days: 30
 # Type: boolean
 enable-worldguard-integration: true
 enable-griefprevention-integration: true
+
+# Set whether WorldEdit should be hooked into (if installed).
+# WorldEdit integration offers easier bank creation, banks with polygonal regions,
+# and the /bank select command.
 enable-worldedit-integration: true
 
 # Set whether the WorldGuard flag create-bank should be allowed by default.

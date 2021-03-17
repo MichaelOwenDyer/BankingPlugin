@@ -131,12 +131,9 @@ public class Account extends BankingEntity {
 					String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
 					int delayUntilNextPayout, int remainingOfflinePayouts, int remainingOfflineUntilReset) {
 
-		this.id = id;
-		this.owner = owner;
-		this.coowners = coowners;
+		super(id, name, owner, coowners);
 		this.bank = bank;
 		this.chestLocation = loc;
-		this.name = name;
 		this.hasCustomName = !Objects.equals(getRawName(), getDefaultName());
 		this.balance = balance;
 		this.prevBalance = prevBalance;
@@ -398,7 +395,7 @@ public class Account extends BankingEntity {
 	 * correctly being reflected inside the chest inventory.
 	 */
 	public <T> Callback<T> callUpdateChestName() {
-		return Callback.of(plugin, result -> setChestName(getChestName()));
+		return Callback.of(result -> setChestName(getChestName()));
 	}
 
 	/**
@@ -567,13 +564,13 @@ public class Account extends BankingEntity {
 	@Override
 	public void trustPlayer(OfflinePlayer p) {
 		super.trustPlayer(p);
-		plugin.getDatabase().addCoOwner(this, p, null, true);
+		plugin.getDatabase().addCoOwner(this, p, null);
 	}
 
 	@Override
 	public void untrustPlayer(OfflinePlayer p) {
-		super.trustPlayer(p);
-		plugin.getDatabase().removeCoOwner(this, p, null, true);
+		super.untrustPlayer(p);
+		plugin.getDatabase().removeCoOwner(this, p, null);
 	}
 
 	@Override

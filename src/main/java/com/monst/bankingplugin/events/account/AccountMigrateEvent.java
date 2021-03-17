@@ -14,15 +14,15 @@ import javax.annotation.Nonnull;
 public class AccountMigrateEvent extends SingleAccountEvent implements Cancellable {
 
     private boolean cancelled;
-    private final ChestLocation newAccountLocation;
+    private final ChestLocation newChestLocation;
 
-    public AccountMigrateEvent(@Nonnull Player player, @Nonnull Account account, @Nonnull ChestLocation newAccountLocation) {
+    public AccountMigrateEvent(@Nonnull Player player, @Nonnull Account account, @Nonnull ChestLocation newChestLocation) {
         super(player, account);
-        this.newAccountLocation = newAccountLocation;
+        this.newChestLocation = newChestLocation;
     }
 
-    public ChestLocation getNewAccountLocation() {
-        return newAccountLocation;
+    public ChestLocation getNewChestLocation() {
+        return newChestLocation;
     }
 
     @Override

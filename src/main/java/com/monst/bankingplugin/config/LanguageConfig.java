@@ -105,4 +105,5 @@ public class LanguageConfig extends FileConfiguration {
     protected String buildHeader() {
         return "";
     }
+
 }

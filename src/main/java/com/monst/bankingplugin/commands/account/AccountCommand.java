@@ -8,6 +8,8 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.repository.AccountRepository;
 
+import java.util.stream.Stream;
+
 public class AccountCommand extends BankingPluginCommand<AccountCommand.SubCommand> {
 
 	private static boolean commandCreated = false;
@@ -26,19 +28,21 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 		this.desc = LangUtils.getMessage(Message.ACCOUNT_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
 
-		addSubCommand(new AccountCreate());
-		addSubCommand(new AccountInfo());
-		addSubCommand(new AccountLimits());
-		addSubCommand(new AccountList());
-		addSubCommand(new AccountMigrate());
-		addSubCommand(new AccountRecover());
-		addSubCommand(new AccountRemove());
-		addSubCommand(new AccountRemoveall());
-		addSubCommand(new AccountRename());
-		addSubCommand(new AccountSet());
-		addSubCommand(new AccountTransfer());
-		addSubCommand(new AccountTrust());
-		addSubCommand(new AccountUntrust());
+		Stream.of(
+				new AccountCreate(),
+				new AccountInfo(),
+				new AccountLimits(),
+				new AccountList(),
+				new AccountMigrate(),
+				new AccountRecover(),
+				new AccountRemove(),
+				new AccountRemoveall(),
+				new AccountRename(),
+				new AccountSet(),
+				new AccountTransfer(),
+				new AccountTrust(),
+				new AccountUntrust()
+		).forEach(this::addSubCommand);
 
 		register();
 		commandCreated = true;
@@ -54,4 +58,5 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 		}
 
 	}
+
 }

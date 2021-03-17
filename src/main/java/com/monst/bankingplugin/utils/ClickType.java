@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-// Credit for this code goes to EpicEricEE
-
 public abstract class ClickType<T> {
 
 	private static final Map<UUID, ClickType<?>> playerClickTypes = new HashMap<>();
@@ -56,13 +54,13 @@ public abstract class ClickType<T> {
 
     /**
      * Removes the click type from a player and cancels the 15 second timer.
-     * 
+     *
      * @param player Player to remove the click type from
      */
 	public static void removePlayerClickType(OfflinePlayer player) {
         UUID uuid = player.getUniqueId();
         playerClickTypes.remove(uuid);
-        
+
         // If a timer is still running, cancel it
 		Optional.ofNullable(playerTimers.get(uuid)).ifPresent(BukkitTask::cancel);
 		playerTimers.remove(uuid);
@@ -83,8 +81,7 @@ public abstract class ClickType<T> {
         Optional.ofNullable(playerTimers.get(uuid)).ifPresent(BukkitTask::cancel);
 
         // Remove ClickType after 15 seconds if player has not clicked a chest
-        playerTimers.put(uuid, Utils.bukkitRunnable(() -> playerClickTypes.remove(uuid))
-				.runTaskLater(BankingPlugin.getInstance(), 300));
+        playerTimers.put(uuid, BankingPlugin.runTaskLater(() -> playerClickTypes.remove(uuid), 300));
 
     }
 

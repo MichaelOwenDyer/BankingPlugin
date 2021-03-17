@@ -261,7 +261,7 @@ public enum Message {
             Placeholder.STRING
     ),
     BANKS_NOT_FOUND (
-            "A player attempts to list banks, but there are none to list.",
+            "A player attempts to list all banks, but there are no banks on the server.",
             "&cNo banks found."
     ),
     BANK_CONFIRM_REMOVE (

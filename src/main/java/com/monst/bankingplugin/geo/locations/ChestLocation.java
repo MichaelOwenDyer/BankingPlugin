@@ -117,7 +117,7 @@ public abstract class ChestLocation implements Iterable<Location> {
     }
 
     public Iterator<Location> iterator() {
-        return Arrays.asList(getLocations()).iterator();
+        return Arrays.stream(getLocations()).iterator();
     }
 
     public boolean isSingle() {

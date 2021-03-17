@@ -12,15 +12,15 @@ import org.bukkit.event.Cancellable;
 public class AccountRecoverEvent extends SingleAccountEvent implements Cancellable {
 
     private boolean cancelled;
-    private final ChestLocation newAccountLocation;
+    private final ChestLocation newChestLocation;
 
-    public AccountRecoverEvent(Player player, Account account, ChestLocation newAccountLocation) {
+    public AccountRecoverEvent(Player player, Account account, ChestLocation newChestLocation) {
         super(player, account);
-        this.newAccountLocation = newAccountLocation;
+        this.newChestLocation = newChestLocation;
     }
 
-    public ChestLocation getNewAccountLocation() {
-        return newAccountLocation;
+    public ChestLocation getNewChestLocation() {
+        return newChestLocation;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.banking;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.utils.Observable;
@@ -17,10 +18,19 @@ import java.util.UUID;
  */
 public abstract class BankingEntity extends Observable implements Ownable, Nameable, Persistable<Integer> {
 
+	protected static final BankingPlugin plugin = BankingPlugin.getInstance();
+
 	protected int id;
 	protected String name;
 	protected OfflinePlayer owner;
 	protected Set<OfflinePlayer> coowners;
+
+	protected BankingEntity(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners) {
+		this.id = id;
+		this.name = name;
+		this.owner = owner;
+		this.coowners = coowners;
+	}
 
 	public OfflinePlayer getOwner() {
 		return owner;

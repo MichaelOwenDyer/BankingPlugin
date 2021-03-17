@@ -5,8 +5,9 @@ import com.monst.bankingplugin.exceptions.ArgumentParseException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
-public abstract class ConfigurationOption<T> {
+public abstract class ConfigurationOption<T> implements Supplier<T> {
 
     T value;
 

@@ -11,6 +11,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Chest;
@@ -75,7 +76,7 @@ public class AccountBalanceListener extends BankingPluginListener {
 				));
 
 		account.setBalance(valueOnClose);
-		accountRepo.update(account, null, AccountField.BALANCE);
+		accountRepo.update(account, Callback.blank(), AccountField.BALANCE);
 
 		plugin.debugf("Account #%d has been updated with a new balance (%s)", account.getID(), Utils.format(valueOnClose));
 		Bukkit.getPluginManager().callEvent(new AccountTransactionEvent(executor, account, difference, valueOnClose));

@@ -17,7 +17,6 @@ import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.sql.logging.AccountInterestReceipt;
 import com.monst.bankingplugin.sql.logging.AccountTransactionReceipt;
 import com.monst.bankingplugin.sql.logging.BankRevenueReceipt;
-import com.monst.bankingplugin.sql.logging.LowBalanceFeeReceipt;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -29,6 +28,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.codejargon.fluentjdbc.api.FluentJdbc;
 import org.codejargon.fluentjdbc.api.FluentJdbcBuilder;
+import org.codejargon.fluentjdbc.api.ParamSetter;
 import org.codejargon.fluentjdbc.api.mapper.Mappers;
 import org.codejargon.fluentjdbc.api.mapper.ObjectMappers;
 import org.codejargon.fluentjdbc.api.query.*;
@@ -53,16 +53,16 @@ public abstract class Database {
 	private final int DATABASE_VERSION = 1;
 	private final ObjectMappers objectMappers = ObjectMappers.builder().build();
 
-	String tableBanks = "Banks";
-	String tableCoOwnsBank = "co_owns_bank";
-	String tableAccounts = "Accounts";
-	String tableCoOwnsAccount = "co_owns_account";
-	String tableAccountTransactions = "AccountTransactions";
-	String tableAccountInterest = "AccountInterest";
-	String tableBankRevenue = "BankRevenue";
-	String tableLowBalanceFees = "LowBalanceFees";
-	String tablePlayers = "Players";
-	String tableFields = "Fields";
+	final String tableBanks = "Banks";
+	final String tableCoOwnsBank = "co_owns_bank";
+	final String tableAccounts = "Accounts";
+	final String tableCoOwnsAccount = "co_owns_account";
+	final String tableAccountTransactions = "AccountTransactions";
+	final String tableAccountInterest = "AccountInterest";
+	final String tableBankRevenue = "BankRevenue";
+	final String tableLowBalanceFees = "LowBalanceFees";
+	final String tablePlayers = "Players";
+	final String tableFields = "Fields";
 
 	Query query;
 
@@ -83,8 +83,6 @@ public abstract class Database {
 	abstract String getQueryCreateTableAccountInterest();
 
 	abstract String getQueryCreateTableBankRevenue();
-
-	abstract String getQueryCreateTableLowBalanceFees();
 
 	abstract String getQueryCreateTablePlayers();
 
@@ -161,6 +159,10 @@ public abstract class Database {
 		async(() -> {
 			disconnect();
 
+			ParamSetter<UUID> uuidParamSetter = (uuid, ps, i) -> ps.setString(i, uuid.toString());
+			Map<Class, ParamSetter> paramSetters = new HashMap<>();
+			paramSetters.put(UUID.class, uuidParamSetter);
+
 			FluentJdbc fluentJdbc;
 			try {
 				dataSource = getDataSource();
@@ -168,6 +170,7 @@ public abstract class Database {
 						.connectionProvider(dataSource)
 						.afterQueryListener(queryLogger)
 						.defaultSqlHandler(() -> handler)
+						.paramSetters(paramSetters)
 						.defaultTransactionIsolation(Transaction.Isolation.SERIALIZABLE)
 						.build();
 			} catch (RuntimeException e) {
@@ -195,7 +198,6 @@ public abstract class Database {
 					getQueryCreateTableAccountTransactions(), // Create account transaction log table
 					getQueryCreateTableAccountInterest(), // Create account interest log table
 					getQueryCreateTableBankRevenue(), // Create bank revenue log table
-					getQueryCreateTableLowBalanceFees(), // Create low balance fee log table
 					getQueryCreateTablePlayers(), // Create players table
 					getQueryCreateTableFields() // Create fields table
 			)
@@ -227,6 +229,7 @@ public abstract class Database {
 	}
 
 	private HikariDataSource dataSource;
+
 	/**
 	 * Closes the data source
 	 */
@@ -631,9 +634,9 @@ public abstract class Database {
 	 * @param bank bank the player co-owns
 	 * @param coowner the co-owner to be added
 	 */
-	public void addCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
+	public void addCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback) {
 		plugin.debugf("Adding co-owner %s to bank #%d.", coowner.getName(), bank.getID());
-		addCoOwner(tableCoOwnsBank, "BankID", coowner.getUniqueId(), bank.getID(), callback, async);
+		addCoOwner(tableCoOwnsBank, "BankID", coowner.getUniqueId(), bank.getID(), callback);
 	}
 
 
@@ -642,46 +645,44 @@ public abstract class Database {
 	 * @param account account the player co-owns
 	 * @param coowner the co-owner to be added
 	 */
-	public void addCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
+	public void addCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback) {
 		plugin.debugf("Adding co-owner %s to account #%d.", coowner.getName(), account.getID());
-		addCoOwner(tableCoOwnsAccount, "AccountID", coowner.getUniqueId(), account.getID(), callback, async);
+		addCoOwner(tableCoOwnsAccount, "AccountID", coowner.getUniqueId(), account.getID(), callback);
 	}
 
-	private void addCoOwner(String table, String idAttribute, UUID coownerUUID, int entityID, Callback<Void> callback, boolean async) {
-		run(() -> {
+	private void addCoOwner(String table, String idAttribute, UUID coownerUUID, int entityID, Callback<Void> callback) {
+		async(() -> {
 			query
 					.update("REPLACE INTO " + table + "(CoOwnerUUID, " + idAttribute + ") VALUES(?,?)")
 					.params(coownerUUID, entityID)
 					.errorHandler(forwardError(callback))
 					.run();
 			Callback.yield(callback);
-		}, async);
+		});
 	}
 
 	/**
 	 * Removes a bank co-owner from the database.
 	 * @param bank bank the player no longer co-owns
 	 * @param coowner the co-owner to be removed
-	 * @param async whether to run this method asynchronously
 	 */
-	public void removeCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
+	public void removeCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback) {
 		plugin.debugf("Removing co-owner %s from bank #%d.", coowner.getName(), bank.getID());
-		removeCoOwner(tableCoOwnsBank, "BankID", bank.getID(), coowner.getUniqueId(), callback, async);
+		removeCoOwner(tableCoOwnsBank, "BankID", bank.getID(), coowner.getUniqueId(), callback);
 	}
 
 	/**
 	 * Removes an account co-owner from the database.
 	 * @param account account the player no longer co-owns
 	 * @param coowner the co-owner to be removed
-	 * @param async whether to run this method asynchronously
 	 */
-	public void removeCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback, boolean async) {
+	public void removeCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback) {
 		plugin.debugf("Removing co-owner %s from account #%d.", coowner.getName(), account.getID());
-		removeCoOwner(tableCoOwnsAccount, "AccountID", account.getID(), coowner.getUniqueId(), callback, async);
+		removeCoOwner(tableCoOwnsAccount, "AccountID", account.getID(), coowner.getUniqueId(), callback);
 	}
 
-	private void removeCoOwner(String table, String idAttribute, int entityID, UUID coownerUUID, Callback<Void> callback, boolean async) {
-		run(() -> {
+	private void removeCoOwner(String table, String idAttribute, int entityID, UUID coownerUUID, Callback<Void> callback) {
+		async(() -> {
 			long affectedRows = query
 					.update("DELETE FROM " + table + " WHERE " + idAttribute + " = ? AND CoOwnerUUID = ?")
 					.params(entityID, coownerUUID)
@@ -691,7 +692,7 @@ public abstract class Database {
 			if (affectedRows == 0)
 				plugin.debugf("Found no co-owner to remove.");
 			Callback.yield(callback);
-		}, async);
+		});
 	}
 
 	/**
@@ -735,12 +736,13 @@ public abstract class Database {
 					interest.getAccountID(),
 					interest.getBankID(),
 					interest.getAmount(),
+					interest.getLowBalanceFee(),
 					dateFormat.format(interest.getTime()),
 					interest.getTime()
 			);
 			query
 					.update("INSERT INTO " + tableAccountInterest +
-							" (AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?,?)")
+							" (AccountID, BankID, Amount, LowBalanceFee, Timestamp, Time) VALUES(?,?,?,?,?,?)")
 					.params(params)
 					.run();
 		});
@@ -769,30 +771,6 @@ public abstract class Database {
 		});
 	}
 
-
-	/**
-	 * Logs a low balance fee to the database.
-	 *
-	 * @param lowBalanceFee  The {@link LowBalanceFeeReceipt} to log
-	 */
-	public void logLowBalanceFee(LowBalanceFeeReceipt lowBalanceFee) {
-		if (!Config.enableLowBalanceFeeLog)
-			return;
-		async(() -> {
-			List<Object> params = Arrays.asList(
-					lowBalanceFee.getAccountID(),
-					lowBalanceFee.getBankID(),
-					lowBalanceFee.getAmount(),
-					dateFormat.format(lowBalanceFee.getTime()),
-					lowBalanceFee.getTime()
-			);
-			query
-					.update("INSERT INTO " + tableLowBalanceFees + " " +
-							"(AccountID, BankID, Amount, Timestamp, Time) VALUES(?,?,?,?,?)")
-					.params(params)
-					.run();
-		});
-	}
 
 	/**
 	 * Logs a player's last seen time to the database.
@@ -842,7 +820,7 @@ public abstract class Database {
 
 	private static final int LOG_FETCH_SIZE = 50;
 
-	Mapper<AccountTransactionReceipt> transactionMapper = objectMappers.forClass(AccountTransactionReceipt.class);
+	final Mapper<AccountTransactionReceipt> transactionMapper = objectMappers.forClass(AccountTransactionReceipt.class);
 
 	public void getTransactionsAtAccount(Account account, Callback<List<AccountTransactionReceipt>> callback) {
 		async(() -> {
@@ -850,7 +828,8 @@ public abstract class Database {
 			List<AccountTransactionReceipt> result = query
 					.select("SELECT * " +
 							"FROM " + tableAccountTransactions + " " +
-							"WHERE AccountID = ?")
+							"WHERE AccountID = ? " +
+							"ORDER BY TransactionID DESC")
 					.params(account.getID())
 					.errorHandler(forwardError(callback))
 					.fetchSize(LOG_FETCH_SIZE)
@@ -866,7 +845,8 @@ public abstract class Database {
 			List<AccountTransactionReceipt> result = query
 					.select("SELECT * " +
 							"FROM " + tableAccountTransactions + " " +
-							"WHERE BankID = ?")
+							"WHERE BankID = ? " +
+							"ORDER BY TransactionID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
 					.fetchSize(LOG_FETCH_SIZE)
@@ -876,7 +856,7 @@ public abstract class Database {
 		});
 	}
 
-	Mapper<AccountInterestReceipt> interestMapper = objectMappers.forClass(AccountInterestReceipt.class);
+	final Mapper<AccountInterestReceipt> interestMapper = objectMappers.forClass(AccountInterestReceipt.class);
 
 	public void getInterestPaymentsAtAccount(Account account, Callback<List<AccountInterestReceipt>> callback) {
 		async(() -> {
@@ -884,7 +864,8 @@ public abstract class Database {
 			List<AccountInterestReceipt> result = query
 					.select("SELECT * " +
 							"FROM " + tableAccountInterest + " " +
-							"WHERE AccountID = ?")
+							"WHERE AccountID = ? " +
+							"ORDER BY InterestID DESC")
 					.params(account.getID())
 					.errorHandler(forwardError(callback))
 					.fetchSize(LOG_FETCH_SIZE)
@@ -900,7 +881,8 @@ public abstract class Database {
 			List<AccountInterestReceipt> result = query
 					.select("SELECT * " +
 							"FROM " + tableAccountInterest + " " +
-							"WHERE BankID = ?")
+							"WHERE BankID = ? " +
+							"ORDER BY InterestID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
 					.fetchSize(LOG_FETCH_SIZE)
@@ -910,41 +892,7 @@ public abstract class Database {
 		});
 	}
 
-	Mapper<LowBalanceFeeReceipt> feeMapper = objectMappers.forClass(LowBalanceFeeReceipt.class);
-
-	public void getLowBalanceFeesAtAccount(Account account, Callback<List<LowBalanceFeeReceipt>> callback) {
-		async(() -> {
-			plugin.debugf("Fetching low balance fees at account #%d.", account.getID());
-			List<LowBalanceFeeReceipt> result = query
-					.select("SELECT * " +
-							"FROM " + tableLowBalanceFees + " " +
-							"WHERE AccountID = ?")
-					.params(account.getID())
-					.errorHandler(forwardError(callback))
-					.fetchSize(LOG_FETCH_SIZE)
-					.listResult(feeMapper);
-			plugin.debugf("Found %d low balance fee entries at account #%d.", result.size(), account.getID());
-			Callback.yield(callback, result);
-		});
-	}
-
-	public void getLowBalanceFeesAtBank(Bank bank, Callback<List<LowBalanceFeeReceipt>> callback) {
-		async(() -> {
-			plugin.debugf("Fetching low balance fees at bank #%d.", bank.getID());
-			List<LowBalanceFeeReceipt> result = query
-					.select("SELECT * " +
-							"FROM " + tableLowBalanceFees + " " +
-							"WHERE BankID = ?")
-					.params(bank.getID())
-					.errorHandler(forwardError(callback))
-					.fetchSize(LOG_FETCH_SIZE)
-					.listResult(feeMapper);
-			plugin.debugf("Found %d low balance fee entries at bank #%d.", result.size(), bank.getID());
-			Callback.yield(callback, result);
-		});
-	}
-
-	Mapper<BankRevenueReceipt> revenueMapper = objectMappers.forClass(BankRevenueReceipt.class);
+	final Mapper<BankRevenueReceipt> revenueMapper = objectMappers.forClass(BankRevenueReceipt.class);
 
 	public void getRevenueAtBank(Bank bank, Callback<List<BankRevenueReceipt>> callback) {
 		async(() -> {
@@ -952,7 +900,8 @@ public abstract class Database {
 			List<BankRevenueReceipt> result = query
 					.select("SELECT * " +
 							"FROM " + tableBankRevenue + " " +
-							"WHERE BankID = ?")
+							"WHERE BankID = ? " +
+							"ORDER BY RevenueID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
 					.fetchSize(LOG_FETCH_SIZE)

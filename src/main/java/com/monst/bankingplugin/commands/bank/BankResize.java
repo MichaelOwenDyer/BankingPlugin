@@ -148,7 +148,7 @@ public class BankResize extends BankCommand.SubCommand {
 
         bankRepo.remove(bank, false);
         bank.setSelection(selection);
-        bankRepo.add(bank, true, Callback.of(plugin,
+        bankRepo.add(bank, true, Callback.of(
                 result -> {
                     plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
                     p.sendMessage(LangUtils.getMessage(Message.BANK_RESIZED, new Replacement(Placeholder.BANK_SIZE, selection::getVolume)));

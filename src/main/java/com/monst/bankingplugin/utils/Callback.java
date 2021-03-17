@@ -6,8 +6,16 @@ import java.util.function.Consumer;
 
 public abstract class Callback<T> {
 
-    public static <T> Callback<T> of(BankingPlugin plugin, Consumer<T> onResult) {
-        return new Callback<T>(plugin) {
+    public static <T> Callback<T> blank() {
+        return of(t -> {});
+    }
+
+    public static <T> Callback<T> blankNoLog() {
+        return of(t -> {}, e -> {});
+    }
+
+    public static <T> Callback<T> of(Consumer<T> onResult) {
+        return new Callback<T>() {
             @Override
             public void onResult(T result) {
                 onResult.accept(result);
@@ -15,30 +23,28 @@ public abstract class Callback<T> {
         };
     }
 
-    public static <T> Callback<T> of(BankingPlugin plugin, Consumer<T> onResult, Consumer<Throwable> onError) {
-        return new Callback<T>(plugin) {
+    public static <T> Callback<T> of(Consumer<T> onResult, Consumer<Throwable> onError) {
+        return new Callback<T>() {
             @Override
             public void onResult(T result) {
                 onResult.accept(result);
             }
             @Override
             public void onError(Throwable throwable) {
-                plugin.debug(throwable);
+                PLUGIN.debug(throwable);
                 onError.accept(throwable);
             }
         };
     }
 
-	private final BankingPlugin plugin;
+	private static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
 
-    private Callback(BankingPlugin plugin) {
-        this.plugin = plugin;
-    }
+    private Callback() {}
 
     public void onResult(T result) {}
 
     public void onError(Throwable throwable) {
-        plugin.debug(throwable);
+        PLUGIN.debug(throwable);
     }
 
     public static void yield(Callback<?> callback) {
@@ -55,23 +61,23 @@ public abstract class Callback<T> {
             callback.error(error);
     }
 
-    protected final void yield(final T result) {
-        Utils.bukkitRunnable(() -> onResult(result)).runTask(plugin);
+    final void yield(final T result) {
+        BankingPlugin.runTask(() -> onResult(result));
     }
 
     public final void error(final Throwable throwable) {
-        Utils.bukkitRunnable(() -> onError(throwable)).runTask(plugin);
+        BankingPlugin.runTask(() -> onError(throwable));
     }
 
     public Callback<T> andThen(Consumer<T> nextAction) {
-        return of(plugin, result -> {
+        return of(result -> {
             onResult(result);
             nextAction.accept(result);
         }, this::onError);
     }
 
     public Callback<T> andThen(Consumer<T> nextAction, Consumer<Throwable> nextOnError) {
-        return of(plugin, result -> {
+        return of(result -> {
             onResult(result);
             nextAction.accept(result);
         }, throwable -> {

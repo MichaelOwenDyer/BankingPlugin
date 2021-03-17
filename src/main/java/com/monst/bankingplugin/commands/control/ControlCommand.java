@@ -7,6 +7,8 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 
+import java.util.stream.Stream;
+
 public class ControlCommand extends BankingPluginCommand<ControlCommand.SubCommand> {
 
 	private static boolean commandCreated = false;
@@ -25,11 +27,13 @@ public class ControlCommand extends BankingPluginCommand<ControlCommand.SubComma
         this.desc = LangUtils.getMessage(Message.CONTROL_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
 
-        addSubCommand(new ControlConfig());
-        addSubCommand(new ControlPayinterest());
-		addSubCommand(new ControlReload());
-		addSubCommand(new ControlUpdate());
-        addSubCommand(new ControlVersion());
+        Stream.of(
+                new ControlConfig(),
+                new ControlPayinterest(),
+                new ControlReload(),
+                new ControlUpdate(),
+                new ControlVersion()
+        ).forEach(this::addSubCommand);
 
         register();
         commandCreated = true;
@@ -43,4 +47,5 @@ public class ControlCommand extends BankingPluginCommand<ControlCommand.SubComma
         }
 
     }
+
 }

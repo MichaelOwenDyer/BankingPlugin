@@ -10,8 +10,6 @@ import org.bukkit.OfflinePlayer;
  */
 public abstract class Mailman {
 
-    static final BankingPlugin plugin = BankingPlugin.getInstance();
-
     public static void notify(OfflinePlayer player, String message) {
         notify(player, message, false);
     }
@@ -28,7 +26,7 @@ public abstract class Mailman {
     public static void mail(OfflinePlayer player, String message) {
         if (!Config.enableMail || player == null || message == null)
             return;
-        User user = plugin.getEssentials().getUserMap().getUser(player.getUniqueId());
+        User user = BankingPlugin.getInstance().getEssentials().getUserMap().getUser(player.getUniqueId());
         if (user != null)
             user.addMail(message);
     }

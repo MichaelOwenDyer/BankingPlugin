@@ -24,14 +24,10 @@ abstract class DoubleConfigurationOption extends ConfigurationOption<Double> {
     @Override
     Double parse(@Nonnull String input) throws DoubleParseException {
         try {
-            return QuickMath.scale(parseDouble(input));
+            return QuickMath.scale(Math.abs(Double.parseDouble(Utils.removePunctuation(input, '.'))));
         } catch (NumberFormatException e) {
             throw new DoubleParseException(input);
         }
-    }
-
-    static double parseDouble(@Nonnull String input) {
-        return Math.abs(Double.parseDouble(Utils.removePunctuation(input, '.')));
     }
 
 }

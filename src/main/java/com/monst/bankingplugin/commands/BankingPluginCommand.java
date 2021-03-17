@@ -100,7 +100,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 			if (args.length > 0) {
 				for (SubCommand subCommand : subCommands) {
 					if (subCommand.getName().equalsIgnoreCase(args[0])) {
-						if (!(sender instanceof Player) && subCommand.isPlayerCommand()) {
+						if (subCommand.isPlayerCommand() && !(sender instanceof Player)) {
 							sender.sendMessage(ChatColor.RED + "Only players can use this command.");
 							return true;
 						}

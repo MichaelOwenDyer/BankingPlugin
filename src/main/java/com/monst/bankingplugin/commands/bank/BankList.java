@@ -30,9 +30,9 @@ public class BankList extends BankCommand.SubCommand {
             return true;
         }
 
-        if (sender instanceof Player) {
-            new BankListGUI(bankRepo::getAll).open(((Player) sender));
-        } else {
+        if (sender instanceof Player)
+            new BankListGUI(bankRepo::getAll).open((Player) sender);
+        else {
             int i = 0;
             for (Bank bank : bankRepo.getAll())
                 sender.sendMessage(ChatColor.AQUA + "" + ++i + ". " + bank.getColorizedName() + " ");

@@ -448,7 +448,7 @@ public class Config {
 				Utils.ternary(
 						config.getIntegerList("interest-multipliers.default"),
 						() -> Collections.singletonList(1),
-						List::isEmpty
+						list -> !list.isEmpty()
 				)
 		);
 
@@ -534,9 +534,9 @@ public class Config {
 		confirmOnTransfer = config.getBoolean("confirm-on-transfer", true);
 		trustOnTransfer = config.getBoolean("trust-on-transfer", false);
         enableUpdateChecker = config.getBoolean("enable-update-checker", true);
-		enableAccountTransactionLog = config.getBoolean("enable-transaction-log", true);
-		enableAccountInterestLog = config.getBoolean("enable-interest-log", true);
-		enableBankRevenueLog = config.getBoolean("enable-profit-log", true);
+		enableAccountTransactionLog = config.getBoolean("enable-account-transaction-log", true);
+		enableAccountInterestLog = config.getBoolean("enable-account-interest-log", true);
+		enableBankRevenueLog = config.getBoolean("enable-bank-revenue-log", true);
 		enableDebugLog = config.getBoolean("enable-debug-log", true);
 		cleanupLogDays = config.getInt("cleanup-log-days", 30);
         enableWorldGuardIntegration = config.getBoolean("enable-worldguard-integration", true);

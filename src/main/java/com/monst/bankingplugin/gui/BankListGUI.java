@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.gui;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.Material;
@@ -19,12 +20,12 @@ public class BankListGUI extends MultiPageGUI<Bank> {
     private static final Comparator<Bank> BY_ACCOUNTS = Comparator.comparing(bank -> bank.getAccounts().size());
 
     static final List<MenuItemSorter<? super Bank>> SORTERS = Arrays.asList(
-            MenuItemSorter.of("Total Value Ascending", BY_VALUE),
-            MenuItemSorter.of("Total Value Descending", BY_VALUE.reversed()),
-            MenuItemSorter.of("Owner Name Ascending", BY_OWNER_NAME),
-            MenuItemSorter.of("Owner Name Descending", BY_OWNER_NAME.reversed()),
-            MenuItemSorter.of("Accounts Ascending", BY_ACCOUNTS),
-            MenuItemSorter.of("Accounts Descending", BY_ACCOUNTS.reversed())
+            MenuItemSorter.of("Smallest Value", BY_VALUE),
+            MenuItemSorter.of("Largest Value", BY_VALUE.reversed()),
+            MenuItemSorter.of("Owner Name A-Z", BY_OWNER_NAME),
+            MenuItemSorter.of("Owner Name Z-A", BY_OWNER_NAME.reversed()),
+            MenuItemSorter.of("Fewest Accounts", BY_ACCOUNTS),
+            MenuItemSorter.of("Most Accounts", BY_ACCOUNTS.reversed())
     );
 
     static final List<MenuItemFilter<? super Bank>> FILTERS = Arrays.asList(
@@ -53,7 +54,7 @@ public class BankListGUI extends MultiPageGUI<Bank> {
 
     @Override
     Observable getSubject() {
-        return plugin.getBankRepository();
+        return BankingPlugin.getInstance().getBankRepository();
     }
 
     @Override

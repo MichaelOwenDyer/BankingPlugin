@@ -20,8 +20,6 @@ import java.util.*;
 
 public class VisualizationManager {
 
-    private static final BankingPlugin plugin = BankingPlugin.getInstance();
-
     public static void revertVisualization(Player p) {
         Visualization.Revert(p);
     }
@@ -31,20 +29,20 @@ public class VisualizationManager {
     }
 
     public static void visualizeSelection(Player p, Selection sel, boolean isAdmin) {
-        visualize(Collections.singleton(sel), isAdmin ? VisualizationType.ADMIN : VisualizationType.NORMAL, p);
+        visualize(p, Collections.singleton(sel), isAdmin ? VisualizationType.ADMIN : VisualizationType.NORMAL);
     }
 
     public static void visualizeOverlap(Player p, Collection<Selection> selections) {
-        visualize(selections, VisualizationType.OVERLAP, p);
+        visualize(p, selections, VisualizationType.OVERLAP);
     }
 
-    private static void visualize(Collection<Selection> selections, VisualizationType type, Player p) {
-        Utils.bukkitRunnable(() -> {
+    private static void visualize(Player p, Collection<Selection> selections, VisualizationType type) {
+        BankingPlugin.runTaskAsynchronously(() -> {
             Visualization visualization = new Visualization();
             for (Selection sel : selections)
                 visualization.elements.addAll(getSelectionElements(sel, p.getLocation(), type));
             Visualization.Apply(p, visualization);
-        }).runTaskAsynchronously(plugin);
+        });
     }
 
     private static List<VisualizationElement> getSelectionElements(Selection sel, Location playerLoc, VisualizationType type) {

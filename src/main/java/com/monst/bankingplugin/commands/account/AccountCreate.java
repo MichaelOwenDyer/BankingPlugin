@@ -141,7 +141,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         double finalCreationPrice = creationPrice;
         if (creationPrice > 0)
         // Account owner pays the bank owner the creation fee
-        if (!Utils.withdrawPlayer(p, creationPrice, Callback.of(plugin,
+        if (!Utils.withdrawPlayer(p, creationPrice, Callback.of(
                 result -> p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_PAID,
                         new Replacement(Placeholder.PRICE, finalCreationPrice),
                         new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
@@ -153,7 +153,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         // Bank owner receives the payment from the customer
         if (creationPrice > 0 && bank.isPlayerBank()) {
             OfflinePlayer bankOwner = account.getBank().getOwner();
-            Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
+            Utils.depositPlayer(bankOwner, creationPrice, Callback.of(
                     result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, finalCreationPrice),

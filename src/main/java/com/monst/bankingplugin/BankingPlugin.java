@@ -29,13 +29,17 @@ import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.ipvp.canvas.MenuFunctionListener;
 
-import java.io.*;
-import java.text.SimpleDateFormat;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public class BankingPlugin extends JavaPlugin {
@@ -56,7 +60,7 @@ public class BankingPlugin extends JavaPlugin {
 	private boolean isUpdateNeeded = false;
 	private String latestVersion = "";
 	private String downloadLink = "";
-	private FileWriter debugWriter;
+	private PrintWriter debugWriter;
 
 	private Economy economy;
 	private Essentials essentials;
@@ -66,7 +70,7 @@ public class BankingPlugin extends JavaPlugin {
 	private GriefPrevention griefPrevention;
 	private WorldEditPlugin worldEdit;
 
-	public final String[] VERSION_MSG = new String[] {
+	public final String[] STARTUP_MESSAGE = new String[] {
 			ChatColor.GREEN + "   __ " + ChatColor.DARK_GREEN + "  __",
 			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |__)   " + ChatColor.DARK_GREEN + "BankingPlugin" + ChatColor.AQUA + " v" + getDescription().getVersion(),
 			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY + "        by monst",
@@ -88,12 +92,9 @@ public class BankingPlugin extends JavaPlugin {
 
         if (Config.enableDebugLog) {
             try {
-				File debugLogFile = new File(getDataFolder(), "debug.txt");
-				if (!debugLogFile.exists())
-					debugLogFile.createNewFile();
-                new PrintWriter(debugLogFile).close();
-                debugWriter = new FileWriter(debugLogFile, true);
-            } catch (IOException e) {
+				Path debugLogFile = getDataFolder().toPath().resolve("debug.txt");
+                debugWriter = new PrintWriter(Files.newOutputStream(debugLogFile), true);
+			} catch (IOException e) {
                 getLogger().info("Failed to instantiate FileWriter.");
                 e.printStackTrace();
             }
@@ -113,7 +114,7 @@ public class BankingPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		getServer().getConsoleSender().sendMessage(VERSION_MSG);
+		getServer().getConsoleSender().sendMessage(STARTUP_MESSAGE);
 
 		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
 			debug("Could not find plugin \"Vault\".");
@@ -160,40 +161,20 @@ public class BankingPlugin extends JavaPlugin {
 	public void onDisable() {
 		debug("Disabling BankingPlugin...");
 
-		if (accountRepository == null) {
-			// Plugin has not been fully enabled (probably due to errors),
-			// so only close file writer.
-			if (debugWriter != null && Config.enableDebugLog) {
-				try {
-					debugWriter.close();
-				} catch (IOException e) {
-					getLogger().severe("Failed to close FileWriter.");
-					e.printStackTrace();
-				}
-			}
-			return;
-		}
-
 		ClickType.clear();
 
-		bankRepository.getAll().forEach(bank -> {
-			bankRepository.remove(bank, false);
-			debugf("Removed bank \"%s\" (#%d)", bank.getName(), bank.getID());
-		});
+		if (bankRepository != null)
+			for (Bank bank : bankRepository.getAll())
+				bankRepository.remove(bank, false);
 
 		if (database != null) {
-			((SQLite) database).vacuum();
+			if (database instanceof SQLite)
+				((SQLite) database).vacuum();
 			database.disconnect();
 		}
 
-		if (debugWriter != null && Config.enableDebugLog) {
-			try {
-				debugWriter.close();
-			} catch (IOException e) {
-				getLogger().severe("Failed to close FileWriter.");
-				e.printStackTrace();
-			}
-		}
+		if (debugWriter != null)
+			debugWriter.close();
 	}
 
 	/**
@@ -289,7 +270,7 @@ public class BankingPlugin extends JavaPlugin {
             return;
         }
 
-        Utils.bukkitRunnable(() -> {
+        runTaskAsynchronously(() -> {
 			UpdateChecker uc = new UpdateChecker(BankingPlugin.this);
 			Result result = uc.check();
 
@@ -316,7 +297,7 @@ public class BankingPlugin extends JavaPlugin {
 					getLogger().severe("An error occurred while checking for updates.");
 					break;
 			}
-        }).runTaskAsynchronously(this);
+        });
     }
 
 	/**
@@ -356,7 +337,7 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	private void loadBanksAndAccounts() {
 		reload(false, true,
-                Callback.of(this, result -> {
+                Callback.of(result -> {
                 	Collection<Bank> banks = result.getBanks();
 					Collection<Account> accounts = result.getAccounts();
 
@@ -390,7 +371,7 @@ public class BankingPlugin extends JavaPlugin {
 		if (reloadConfig)
 			getPluginConfig().reload(false, true, true);
 
-		getDatabase().connect(Callback.of(this,
+		getDatabase().connect(Callback.of(
 				result -> {
 					Collection<Bank> banksBeforeReload = bankRepository.getAll();
 					Collection<Account> accountsBeforeReload = accountRepository.getAll();
@@ -403,7 +384,7 @@ public class BankingPlugin extends JavaPlugin {
 						debugf("Removed bank (#%d)", bank.getID());
 					}
 
-					getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(this,
+					getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(
 							bankAccountsMap -> {
 								bankAccountsMap.forEach((bank, bankAccounts) -> {
 									bankRepository.add(bank, false);
@@ -453,17 +434,14 @@ public class BankingPlugin extends JavaPlugin {
 	 * @param message the message to be printed
 	 */
 	public void debug(String message) {
-		if (Config.enableDebugLog && debugWriter != null) {
-			try {
-				Calendar c = Calendar.getInstance();
-				String timestamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(c.getTime());
-				debugWriter.write(String.format("[%s] %s%n", timestamp, message));
-				debugWriter.flush();
-			} catch (IOException e) {
-				getLogger().severe("Failed to print debug message.");
-				e.printStackTrace();
-			}
-		}
+		if (!Config.enableDebugLog || debugWriter == null)
+			return;
+
+		String timestamp = Utils.formatTime(Calendar.getInstance().getTime());
+		debugWriter.printf("[%s] %s%n", timestamp, message);
+
+		if (debugWriter.checkError())
+			getLogger().severe("Failed to print debug message.");
 	}
 
 	/**
@@ -480,11 +458,10 @@ public class BankingPlugin extends JavaPlugin {
 	 * @param throwable the {@link Throwable} of which the stacktrace will be printed
 	 */
 	public void debug(Throwable throwable) {
-		if (Config.enableDebugLog && debugWriter != null) {
-			PrintWriter pw = new PrintWriter(debugWriter);
-			throwable.printStackTrace(pw);
-			pw.flush();
-		}
+		if (!Config.enableDebugLog || debugWriter == null)
+			return;
+		throwable.printStackTrace(debugWriter);
+		debugWriter.flush();
 	}
 
 	/**
@@ -594,6 +571,18 @@ public class BankingPlugin extends JavaPlugin {
 
 	public Reader getTextResourceMirror(String file) {
 		return super.getTextResource(file);
+	}
+
+	public static BukkitTask runTask(Runnable runnable) {
+		return Utils.bukkitRunnable(runnable).runTask(getInstance());
+	}
+
+	public static BukkitTask runTaskLater(Runnable runnable, long delay) {
+		return Utils.bukkitRunnable(runnable).runTaskLater(getInstance(), delay);
+	}
+
+	public static BukkitTask runTaskAsynchronously(Runnable runnable) {
+		return Utils.bukkitRunnable(runnable).runTaskAsynchronously(getInstance());
 	}
 
 }

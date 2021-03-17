@@ -27,10 +27,8 @@ public class MailingRoom {
     }
 
     public void send(boolean mailIfOffline) {
-        if (message == null) {
-            Mailman.plugin.debug(new NullPointerException("Message undefined!"));
+        if (message == null)
             return;
-        }
         recipients.forEach(p -> p.sendMessage(message));
         offlineRecipients.forEach(p -> Mailman.notify(p, message, mailIfOffline));
     }

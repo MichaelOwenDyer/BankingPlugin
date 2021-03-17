@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.gui;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.inventory.ItemStack;
@@ -18,12 +19,12 @@ public class AccountListGUI extends MultiPageGUI<Account> {
     private static final Comparator<Account> BY_BANK_NAME = Comparator.comparing(account -> account.getBank().getName());
 
     static final List<MenuItemSorter<? super Account>> SORTERS = Arrays.asList(
-            MenuItemSorter.of("Balance Ascending", BY_BALANCE),
-            MenuItemSorter.of("Balance Descending", BY_BALANCE.reversed()),
-            MenuItemSorter.of("Owner Name Ascending", BY_OWNER_NAME),
-            MenuItemSorter.of("Owner Name Descending", BY_OWNER_NAME.reversed()),
-            MenuItemSorter.of("Bank Name Ascending", BY_BANK_NAME),
-            MenuItemSorter.of("Bank Name Descending", BY_BANK_NAME.reversed())
+            MenuItemSorter.of("Smallest Balance", BY_BALANCE),
+            MenuItemSorter.of("Largest Balance", BY_BALANCE.reversed()),
+            MenuItemSorter.of("Owner Name A-Z", BY_OWNER_NAME),
+            MenuItemSorter.of("Owner Name Z-A", BY_OWNER_NAME.reversed()),
+            MenuItemSorter.of("Bank Name A-Z", BY_BANK_NAME),
+            MenuItemSorter.of("Bank Name Z-A", BY_BANK_NAME.reversed())
     );
     static final List<MenuItemFilter<? super Account>> FILTERS = Arrays.asList(
             MenuItemFilter.of("Single Chest Accounts", Account::isSingleChest),
@@ -50,7 +51,7 @@ public class AccountListGUI extends MultiPageGUI<Account> {
 
     @Override
     Observable getSubject() {
-        return plugin.getAccountRepository();
+        return BankingPlugin.getInstance().getAccountRepository();
     }
 
     @Override

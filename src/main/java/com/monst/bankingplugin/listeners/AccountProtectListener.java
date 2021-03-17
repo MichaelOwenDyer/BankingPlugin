@@ -7,7 +7,6 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.exceptions.BankNotFoundException;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.geo.locations.SingleChestLocation;
@@ -88,7 +87,7 @@ public class AccountProtectListener extends BankingPluginListener {
 			double finalCreationPrice = creationPrice;
 			String worldName = account.getChestLocation().getWorld() != null ? account.getChestLocation().getWorld().getName() : "world";
 			// Account owner is reimbursed for the part of the chest that was broken
-			Utils.depositPlayer(p, finalCreationPrice, Callback.of(plugin,
+			Utils.depositPlayer(p, finalCreationPrice, Callback.of(
 					result -> p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
 							new Replacement(Placeholder.AMOUNT, finalCreationPrice)
 					)),
@@ -98,7 +97,7 @@ public class AccountProtectListener extends BankingPluginListener {
 			// Bank owner reimburses the customer
 			if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
 				OfflinePlayer bankOwner = bank.getOwner();
-				Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
+				Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(
 						result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
 								new Replacement(Placeholder.PLAYER, p::getName),
 								new Replacement(Placeholder.AMOUNT, finalCreationPrice)
@@ -113,16 +112,12 @@ public class AccountProtectListener extends BankingPluginListener {
 		if (account.isDoubleChest()) {
 
 			Chest chest;
-			try {
-				chest = Utils.getChestAt(Utils.getAttachedChestBlock(b));
-			} catch (ChestNotFoundException e) {
-				throw new IllegalStateException("Chest could not be found!");
-			}
+            chest = Utils.getChestAt(Utils.getAttachedChestBlock(b));
 
-			Account newAccount = Account.clone(account);
+            Account newAccount = Account.clone(account);
 			newAccount.setChestLocation(SingleChestLocation.from(chest));
 
-			accountRepo.remove(account, false, Callback.of(plugin, result -> {
+			accountRepo.remove(account, false, Callback.of(result -> {
 				newAccount.create(true);
 				accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.LOCATION);
 			}));
@@ -148,15 +143,11 @@ public class AccountProtectListener extends BankingPluginListener {
         final Block b = e.getBlockPlaced();
 
 		Block otherChest;
-		try {
-			otherChest = Utils.getAttachedChestBlock(b);
-			if (otherChest == null)
-				return;
-		} catch (ChestNotFoundException ex) {
-			return;
-		}
+        otherChest = Utils.getAttachedChestBlock(b);
+        if (otherChest == null)
+            return;
 
-		SingleChestLocation chest = SingleChestLocation.from(b.getWorld(), BlockVector3D.fromLocation(otherChest.getLocation()));
+        SingleChestLocation chest = SingleChestLocation.from(b.getWorld(), BlockVector3D.fromLocation(otherChest.getLocation()));
 		final Account account;
 		try {
 			account = accountRepo.getAt(chest);
@@ -211,7 +202,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		}
 		if (creationPrice > 0 && !account.getBank().isOwner(p)) {
 			OfflinePlayer owner = p.getPlayer();
-			if (!Utils.withdrawPlayer(owner, creationPrice, Callback.of(plugin,
+			if (!Utils.withdrawPlayer(owner, creationPrice, Callback.of(
 					result -> p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_PAID,
 							new Replacement(Placeholder.PRICE, creationPrice),
 							new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
@@ -224,7 +215,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 			if (creationPrice > 0 && !account.getBank().isOwner(p)) {
 				OfflinePlayer bankOwner = account.getBank().getOwner();
-				Utils.depositPlayer(bankOwner, creationPrice, Callback.of(plugin,
+				Utils.depositPlayer(bankOwner, creationPrice, Callback.of(
 						result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_RECEIVED,
 								new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName()),
 								new Replacement(Placeholder.AMOUNT, creationPrice),
@@ -237,10 +228,10 @@ public class AccountProtectListener extends BankingPluginListener {
 			}
 		}
 
-		final Account newAccount = Account.clone(account);
+		Account newAccount = Account.clone(account);
 		newAccount.setChestLocation(newChestLocation);
 
-		accountRepo.remove(account, true, Callback.of(plugin, result -> {
+		accountRepo.remove(account, true, Callback.of(result -> {
 				if (newAccount.create(true)) {
 					accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.LOCATION);
 					plugin.debugf("%s extended %s's account (#%d)",

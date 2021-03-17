@@ -25,23 +25,24 @@ import java.util.stream.Stream;
 public abstract class GUI<T> {
 
 	enum GUIType {
-		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY
+		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY,
+        ACCOUNT_LOG
 	}
 
-	static final BankingPlugin plugin = BankingPlugin.getInstance();
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
 
 	GUI<?> parentGUI;
 	Player viewer;
 	boolean inForeground = true;
 
-	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) -> Utils.bukkitRunnable(() -> {
-		if (isInForeground() && hasParent()) {
-			parentGUI.inForeground = true;
-			parentGUI.open(false);
-		}
-		unsubscribe(getSubject());
-	}).runTask(plugin);
+	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) ->
+			BankingPlugin.runTask(() -> {
+				if (isInForeground() && hasParent()) {
+					parentGUI.inForeground = true;
+					parentGUI.open(false);
+				}
+				unsubscribe(getSubject());
+			});
 
 	/**
 	 * Opens this GUI for the specified player.

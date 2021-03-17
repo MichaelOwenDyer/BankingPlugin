@@ -155,7 +155,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         // Customer receives reimbursement for old account
         if (finalReimbursement > 0 && !oldBank.isOwner(p)) {
-            Utils.depositPlayer(p.getPlayer(), finalReimbursement, Callback.of(plugin,
+            Utils.depositPlayer(p.getPlayer(), finalReimbursement, Callback.of(
                     result -> p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
                             new Replacement(Placeholder.AMOUNT, finalReimbursement)
                     )),
@@ -168,7 +168,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         // Bank owner of new account receives account creation fee
         if (finalCreationPrice > 0 && newBank.isPlayerBank() && !newBank.isOwner(p)) {
             OfflinePlayer bankOwner = newBank.getOwner();
-            Utils.depositPlayer(bankOwner, finalCreationPrice, Callback.of(plugin,
+            Utils.depositPlayer(bankOwner, finalCreationPrice, Callback.of(
                     result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, finalCreationPrice),
@@ -182,7 +182,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         // Account owner pays creation fee for new account
         if (creationPrice > 0 && !newBank.isOwner(p)) {
-            if (!Utils.withdrawPlayer(p, finalCreationPrice, Callback.of(plugin,
+            if (!Utils.withdrawPlayer(p, finalCreationPrice, Callback.of(
                     result -> p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_PAID,
                             new Replacement(Placeholder.PRICE, finalCreationPrice),
                             new Replacement(Placeholder.BANK_NAME, newBank::getColorizedName)
@@ -197,7 +197,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         // Bank owner of old account pays reimbursement
         if (reimbursement > 0 && oldBank.isPlayerBank() && !oldBank.isOwner(p)) {
             OfflinePlayer bankOwner = oldBank.getOwner();
-            Utils.withdrawPlayer(bankOwner, finalReimbursement, Callback.of(plugin,
+            Utils.withdrawPlayer(bankOwner, finalReimbursement, Callback.of(
                     result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, finalReimbursement)
@@ -210,7 +210,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         if (newAccount.create(true)) {
             plugin.debugf("Account migrated (#%d)", newAccount.getID());
-            accountRepo.remove(toMigrate, false, Callback.of(plugin,
+            accountRepo.remove(toMigrate, false, Callback.of(
                     result -> {
                         accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION); // Database entry is replaced
                         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_MIGRATED));

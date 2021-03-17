@@ -2,7 +2,6 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.exceptions.TransactionFailedException;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -26,6 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -37,6 +37,11 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class Utils {
+
+	private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+	public static String formatTime(Object toFormat) {
+		return FORMATTER.format(toFormat);
+	}
 
 	public static boolean isAllowedName(String name) {
 		try {
@@ -220,7 +225,7 @@ public class Utils {
 		return stackedList;
 	}
 
-	public static Block getAttachedChestBlock(Block b) throws ChestNotFoundException {
+	public static Block getAttachedChestBlock(Block b) {
 
 		getChestAt(b);
 
