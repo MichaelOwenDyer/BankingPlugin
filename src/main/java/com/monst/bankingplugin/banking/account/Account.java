@@ -581,27 +581,23 @@ public class Account extends BankingEntity {
 				"Bank: " + ChatColor.RED + getBank().getColorizedName(),
 				"Owner: " + ChatColor.GOLD + getOwnerDisplayName(),
 				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName).toString(),
-				"Balance: " + ChatColor.GREEN + Utils.format(getBalance()),
+				"Balance: " + Utils.formatAndColorize(getBalance()),
 				"Multiplier: " + ChatColor.AQUA + getRealMultiplier() + ChatColor.GRAY + " (Stage " + getMultiplierStage() + ")",
 				"Interest rate: " + BigDecimal.valueOf(interestR * getRealMultiplier() * 100).setScale(1, BigDecimal.ROUND_HALF_EVEN) + "% " +
 						ChatColor.GRAY + "(" + interestR + " x " + getRealMultiplier() + ")",
 				"Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")"
-		).collect(Collectors.joining(", ", "" + ChatColor.GRAY, ""));
+		).map(s -> ChatColor.GRAY + s).collect(Collectors.joining(", ", "", ""));
 	}
 
 	@Override
 	public String toString() {
-		return "Account ID: " + getID() + ", "
-				+ "Owner: " + getOwner().getName() + ", "
-				+ "Bank: " + getBank().getName() + ", "
-				+ "Balance: " + Utils.format(getBalance()) + ", "
-				+ "Previous balance: " + Utils.format(getPrevBalance()) + ", "
-				+ "Multiplier: " + getRealMultiplier() + ", "
-				+ " (stage " + getMultiplierStage() + "), "
-				+ "Delay until next payout: " + getDelayUntilNextPayout() + ", "
-				+ "Next payout amount: " + Utils.format(getBalance().doubleValue()
-						* getBank().getInterestRate().get() * getRealMultiplier()) + ", "
-				+ "Location: " + getCoordinates();
+		return String.join(", ",
+				"Account ID: " + getID(),
+				"Owner: " + getOwner().getName(),
+				"Bank: " + getBank().getName(),
+				"Balance: " + Utils.format(getBalance()),
+				"Location: " + getCoordinates()
+		);
 	}
 
 	@Override

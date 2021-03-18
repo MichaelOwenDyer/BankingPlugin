@@ -130,9 +130,9 @@ public class BankGUI extends SinglePageGUI<Bank> {
 		return Arrays.asList(
 				"Number of accounts: " + ChatColor.AQUA + guiSubject.getAccounts().size(),
 				"Number of account holders: " + ChatColor.AQUA + guiSubject.getAccountsByOwner().keySet().size(),
-				"Total value: " + ChatColor.GREEN + Utils.format(guiSubject.getTotalValue()),
-				"Average account value: " + ChatColor.GREEN +
-						Utils.format(guiSubject.getAccounts().isEmpty()
+				"Total value: " + Utils.formatAndColorize(guiSubject.getTotalValue()),
+				"Average account value: " +
+						Utils.formatAndColorize(guiSubject.getAccounts().isEmpty()
 								? BigDecimal.ZERO
 								: QuickMath.divide(guiSubject.getTotalValue(), guiSubject.getAccounts().size())),
 				"Equality score: " + getEqualityLore(guiSubject)

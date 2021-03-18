@@ -81,6 +81,11 @@ public class Utils {
 		return format(bd.doubleValue());
 	}
 
+	public static String formatAndColorize(BigDecimal bd) {
+		ChatColor color = bd.signum() >= 1 ? ChatColor.GREEN : ChatColor.RED;
+		return color + format(bd);
+	}
+
 	public static Location blockifyLocation(Location loc) {
 		return new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 	}

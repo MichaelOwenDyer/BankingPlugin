@@ -365,22 +365,20 @@ public class Bank extends BankingEntity {
 	public double getGiniCoefficient() {
 		if (getAccounts().isEmpty())
 			return 0;
+		BigDecimal totalValue = getTotalValue();
+		if (totalValue.signum() == 0)
+			return 0;
 		List<BigDecimal> orderedBalances = getBalancesByOwner()
 				.values()
 				.stream()
-				.sorted(BigDecimal::compareTo)
-				.collect(Collectors.toList());
-		BigDecimal valueSum = BigDecimal.ZERO;
+				.sorted()
+				.collect(Collectors.toCollection(ArrayList::new));
+		totalValue = QuickMath.multiply(totalValue, orderedBalances.size());
 		BigDecimal weightedValueSum = BigDecimal.ZERO;
-		for (int i = 0; i < orderedBalances.size(); i++) {
-			valueSum = valueSum.add(orderedBalances.get(i));
+		for (int i = 0; i < orderedBalances.size(); i++)
 			weightedValueSum = weightedValueSum.add(QuickMath.multiply(orderedBalances.get(i), i + 1));
-		}
-		valueSum = QuickMath.multiply(valueSum, orderedBalances.size());
 		weightedValueSum = QuickMath.multiply(weightedValueSum, 2);
-		if (valueSum.signum() == 0)
-			return 0;
-		BigDecimal leftSide = weightedValueSum.divide(valueSum, 10, RoundingMode.HALF_EVEN);
+		BigDecimal leftSide = weightedValueSum.divide(totalValue, 10, RoundingMode.HALF_EVEN);
 		BigDecimal rightSide = BigDecimal.valueOf((orderedBalances.size() + 1) / orderedBalances.size());
 		return QuickMath.scale(leftSide.subtract(rightSide)).doubleValue();
 	}
@@ -437,22 +435,23 @@ public class Bank extends BankingEntity {
 				"Minimum balance: " + ChatColor.GREEN + getMinimumBalance().getFormatted(),
 						" (" + ChatColor.RED + getLowBalanceFee().getFormatted() + ChatColor.GRAY + " fee)",
 				"Accounts: " + ChatColor.AQUA + getAccounts().size(),
-				"Total value: " + ChatColor.GREEN + Utils.format(getTotalValue()),
-				"Average account value: " + ChatColor.GREEN + Utils.format(QuickMath.divide(getTotalValue(), getAccounts().size())),
+				"Total value: " + Utils.formatAndColorize(getTotalValue()),
+				"Average account value: " + Utils.formatAndColorize(QuickMath.divide(getTotalValue(), getAccounts().size())),
 				"Equality score: " + getGiniCoefficient(),
 				"Location: " + ChatColor.AQUA + getSelection().getCoordinates()
-		).collect(Collectors.joining(", ", "" + ChatColor.GRAY, ""));
+		).map(s -> ChatColor.GRAY + s).collect(Collectors.joining(", ", "", ""));
 	}
 
 	@Override
 	public String toString() {
-		   return "Bank ID: " + getID() + ", "
-				+ "Name: " + getName() + " (Raw: " + getRawName() + "), "
-				+ "Owner: " + (isPlayerBank() ? getOwner().getName() : "ADMIN") + ", "
-				+ "Number of accounts: " + getAccounts().size() + ", "
-				+ "Total value: " + Utils.format(getTotalValue()) + ", "
-				+ "Equality score: " + getGiniCoefficient() + ", "
-				+ "Location: " + getSelection().getCoordinates();
+		return String.join(", ",
+				"Bank ID: " + getID(),
+				"Name: " + getRawName(),
+				"Owner: " + getOwnerName(),
+				"Number of accounts: " + getAccounts().size(),
+				"Total value: " + Utils.format(getTotalValue()),
+				"Location: " + getSelection().getCoordinates()
+		);
 	}
 
 	@Override

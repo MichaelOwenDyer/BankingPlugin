@@ -67,8 +67,8 @@ public class AccountGUI extends SinglePageGUI<Account> {
 				return createSlotItem(Material.IRON_BARS, "Account Restrictions", NO_PERMISSION);
 			case 7:
 				if (isTrusted)
-					return createSlotItem(Material.BOOK, "Transaction Log", Collections.singletonList("Click to view transaction log."));
-				return createSlotItem(Material.BOOK, "Transaction Log", NO_PERMISSION);
+					return createSlotItem(Material.BOOK, "Account History", getAccountHistoryLore());
+				return createSlotItem(Material.BOOK, "Account History", NO_PERMISSION);
 			case 8:
 				if (isTrusted)
 					return createSlotItem(Material.CHEST, "Account Contents", Collections.singletonList("Click to view account contents."));
@@ -82,19 +82,31 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	ClickHandler createClickHandler(int slot) {
 		switch (slot) {
 			case 0:
-				return canTP ? (player, info) -> {
+				if (!canTP)
+					return null;
+				return (player, info) -> {
 					player.teleport(guiSubject.getChestLocation().getTeleportLocation().setDirection(player.getLocation().getDirection()));
 					this.close(player);
-				} : null;
+				};
 			case 1:
 				return (player, info) -> new BankGUI(guiSubject.getBank()).setParentGUI(this).open(player);
 			case 7:
-				return isTrusted ? (player, info) ->
+				if (!isTrusted)
+					return null;
+				return (player, info) -> {
+					if (info.getClickType().isLeftClick())
 						BankingPlugin.getInstance().getDatabase().getTransactionsAtAccount(guiSubject,
-								Callback.of(list -> new AccountTransactionGUI(() -> list).setParentGUI(this).open(player))
-						) : null;
+								Callback.of(list -> new AccountTransactionGUI(guiSubject, () -> list).setParentGUI(this).open(player))
+						);
+					else if (info.getClickType().isRightClick())
+						BankingPlugin.getInstance().getDatabase().getInterestPaymentsAtAccount(guiSubject,
+								Callback.of(list -> new AccountInterestGUI(guiSubject, () -> list).setParentGUI(this).open(player))
+						);
+				};
 			case 8:
-				return isTrusted ? (player, info) -> new AccountContentsGUI(guiSubject).setParentGUI(this).open(player) : null;
+				if (!isTrusted)
+					return null;
+				return (player, info) -> new AccountContentsGUI(guiSubject).setParentGUI(this).open(player);
 			default:
 				return null;
 		}
@@ -143,7 +155,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 				bank.getLowBalanceFee().get() : 0.0;
 		double nextPayout = fullPayout - lowBalanceFee;
 		return Arrays.asList(
-				"Balance: " + ChatColor.GREEN + Utils.format(guiSubject.getBalance()) + (isLowBalance ?
+				"Balance: " + Utils.formatAndColorize(guiSubject.getBalance()) + (isLowBalance ?
 						ChatColor.RED + " (" + Utils.format(minBalance - guiSubject.getBalance().doubleValue()) + " below minimum)" :
 						""),
 				"Interest rate: " + ChatColor.GREEN + BigDecimal.valueOf(interestRate * multiplier * 100).setScale(1, BigDecimal.ROUND_HALF_EVEN)
@@ -184,5 +196,14 @@ public class AccountGUI extends SinglePageGUI<Account> {
 						(offlineDecrement == 0 ?
 								" freeze while offline." : " reset"))
 		);
+
 	}
+
+	private List<String> getAccountHistoryLore() {
+		return wordWrapAll(
+				"Left click to view the transaction log.",
+				"Right click to view the interest log."
+		);
+	}
+
 }

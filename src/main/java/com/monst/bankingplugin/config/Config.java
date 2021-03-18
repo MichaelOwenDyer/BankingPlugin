@@ -222,7 +222,7 @@ public class Config {
 	/**
 	 * Whether bank profits and losses should be logged in the database.
 	 */
-	public static boolean enableBankRevenueLog;
+	public static boolean enableBankProfitLog;
 
 	/**
 	 * Whether low balance fees should be logged in the database.
@@ -352,7 +352,6 @@ public class Config {
      * @param property Location of the list
      * @param value    Value to add
      */
-    @SuppressWarnings("all")
 	public void add(String property, String value) {
 		List list = Utils.nonNull(plugin.getConfig().getList(property), ArrayList::new);
 		boolean added = attemptParse(value, v -> list.add(v));
@@ -368,7 +367,6 @@ public class Config {
 		update(property, value);
     }
 
-	@SuppressWarnings("all")
     public void remove(String property, String value) {
 		List list = Utils.nonNull(plugin.getConfig().getList(property), ArrayList::new);
 		boolean removed = attemptParse(value, v -> list.remove(v));
@@ -386,25 +384,22 @@ public class Config {
 
     private boolean attemptParse(String value, Consumer<Object> listModifier) {
 
-		boolean success = false;
 		try {
 			listModifier.accept(Integer.parseInt(value));
-			success = true;
+			return true;
 		} catch (NumberFormatException ignored) { /* Value not an integer */ }
 
-		if (!success)
-			try {
-				listModifier.accept(Double.parseDouble(value));
-				success = true;
-			} catch (NumberFormatException ignored) { /* Value not a double */ }
+		try {
+			listModifier.accept(Double.parseDouble(value));
+			return true;
+		} catch (NumberFormatException ignored) { /* Value not a double */ }
 
-		if (!success)
-			if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-				listModifier.accept(Boolean.parseBoolean(value));
-				success = true;
-			}
+		if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+			listModifier.accept(Boolean.parseBoolean(value));
+			return true;
+		}
 
-		return success;
+		return false;
 	}
 
 	private void update(String property, String value) {
@@ -536,7 +531,7 @@ public class Config {
         enableUpdateChecker = config.getBoolean("enable-update-checker", true);
 		enableAccountTransactionLog = config.getBoolean("enable-account-transaction-log", true);
 		enableAccountInterestLog = config.getBoolean("enable-account-interest-log", true);
-		enableBankRevenueLog = config.getBoolean("enable-bank-revenue-log", true);
+		enableBankProfitLog = config.getBoolean("enable-bank-profit-log", true);
 		enableDebugLog = config.getBoolean("enable-debug-log", true);
 		cleanupLogDays = config.getInt("cleanup-log-days", 30);
         enableWorldGuardIntegration = config.getBoolean("enable-worldguard-integration", true);

@@ -368,19 +368,19 @@ public enum Message {
             "&6You paid account holders &a%AMOUNT% &6in interest.",
             Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
-    BANK_REVENUE_EARNED (
-            "A bank owner earns revenue on their bank.",
-            "&6You earned &a%AMOUNT% &6in revenue at bank &7%BANK_NAME%&6.",
+    BANK_PROFIT (
+            "A bank owner makes a profit from their bank.",
+            "&6You made a profit of &a%AMOUNT% &6at bank &7%BANK_NAME%&6.",
             Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
-    BANK_REVENUE_EARNED_OFFLINE (
-            "A bank owner logs onto the server after having earned bank revenue while offline.",
-            "&6You earned &a%AMOUNT% &6in bank revenue while you were offline.",
+    BANK_PROFIT_OFFLINE (
+            "A bank owner logs onto the server after having made a profit while offline.",
+            "&6You made &a%AMOUNT% &6in bank profit while you were offline.",
             Placeholder.AMOUNT
     ),
     BANK_LOSS_OFFLINE (
-            "A bank owner logs onto the server after having lost bank revenue while offline.",
-            "&cYou lost &a%AMOUNT% &cin bank revenue while you were offline.",
+            "A bank owner logs onto the server after having made a loss while offline.",
+            "&cYou made &a%AMOUNT% &cin bank losses while you were offline.",
             Placeholder.AMOUNT
     ),
     LOW_BALANCE_FEE_RECEIVED (

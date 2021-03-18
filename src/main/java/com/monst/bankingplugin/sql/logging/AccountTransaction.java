@@ -3,28 +3,30 @@ package com.monst.bankingplugin.sql.logging;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public class AccountTransactionReceipt extends Receipt {
+public class AccountTransaction extends Receipt {
 
     private int transactionID;
     private int accountID;
     private int bankID;
     private String executorUUID;
     private String executorName;
+    private BigDecimal transactionAmount;
     private BigDecimal newBalance;
     private BigDecimal previousBalance;
 
-    public AccountTransactionReceipt() {
+    public AccountTransaction() {
         super();
     }
 
-    public AccountTransactionReceipt(int accountID, int bankID, UUID executorUUID, String executorName, BigDecimal newBalance,
-                                     BigDecimal previousBalance, BigDecimal amount, long time) {
-        super(amount, time);
+    public AccountTransaction(int accountID, int bankID, UUID executorUUID, String executorName,
+                              BigDecimal transactionAmount, BigDecimal newBalance, BigDecimal previousBalance, long time) {
+        super(time);
         this.transactionID = -1;
         this.accountID = accountID;
         this.bankID = bankID;
         this.executorUUID = executorUUID.toString();
         this.executorName = executorName;
+        this.transactionAmount = transactionAmount;
         this.newBalance = newBalance;
         this.previousBalance = previousBalance;
     }
@@ -48,6 +50,14 @@ public class AccountTransactionReceipt extends Receipt {
 
     public String getExecutorName() {
         return executorName;
+    }
+
+    /**
+     * Gets the amount by which the account balance changed, positive or negative.
+     * @return the change in account balance.
+     */
+    public BigDecimal getAmount() {
+        return transactionAmount;
     }
 
     public BigDecimal getNewBalance() {

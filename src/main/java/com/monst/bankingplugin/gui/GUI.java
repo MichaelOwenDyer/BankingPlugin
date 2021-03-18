@@ -26,7 +26,7 @@ public abstract class GUI<T> {
 
 	enum GUIType {
 		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY,
-        ACCOUNT_LOG
+        ACCOUNT_TRANSACTION_LOG, ACCOUNT_INTEREST_LOG, BANK_PROFIT_LOG
 	}
 
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
@@ -97,6 +97,10 @@ public abstract class GUI<T> {
 			parentGUI.inForeground = false;
 		this.parentGUI = parentGUI;
 		return this;
+	}
+
+	GUI<?> getParentGUI() {
+		return parentGUI;
 	}
 
 	/**

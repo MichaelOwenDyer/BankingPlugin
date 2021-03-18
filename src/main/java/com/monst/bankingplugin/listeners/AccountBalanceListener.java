@@ -3,7 +3,7 @@ package com.monst.bankingplugin.listeners;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
-import com.monst.bankingplugin.sql.logging.AccountTransactionReceipt;
+import com.monst.bankingplugin.sql.logging.AccountTransaction;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
 import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
@@ -84,9 +84,9 @@ public class AccountBalanceListener extends BankingPluginListener {
 		if (account.getOwner().isOnline())
 			plugin.getDatabase().logLastSeen(account.getOwner().getPlayer());
 
-		plugin.getDatabase().logAccountTransaction(new AccountTransactionReceipt(
+		plugin.getDatabase().logAccountTransaction(new AccountTransaction(
 				account.getID(), account.getBank().getID(), executor.getUniqueId(), executor.getName(),
-				account.getBalance(), balance, difference, System.currentTimeMillis()
+                difference, account.getBalance(), balance, System.currentTimeMillis()
 		));
 	}
 }

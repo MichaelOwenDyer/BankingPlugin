@@ -7,8 +7,8 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.sql.logging.AccountInterestReceipt;
-import com.monst.bankingplugin.sql.logging.BankRevenueReceipt;
+import com.monst.bankingplugin.sql.logging.AccountInterest;
+import com.monst.bankingplugin.sql.logging.BankProfit;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.QuickMath;
@@ -88,10 +88,10 @@ public class InterestEventListener extends BankingPluginListener {
 						feesReceivable.get(bank.getOwner()).add(lowBalanceFee);
 
 					if (!bank.getPayOnLowBalance().get()) {
-						plugin.getDatabase().logAccountInterest(new AccountInterestReceipt(
+						plugin.getDatabase().logAccountInterest(new AccountInterest(
 								account.getID(),
 								bank.getID(),
-								interest.subtract(lowBalanceFee),
+								interest,
 								lowBalanceFee,
 								System.currentTimeMillis()
 						));
@@ -117,10 +117,10 @@ public class InterestEventListener extends BankingPluginListener {
 					if (account.getBank().isPlayerBank())
 						interestPayable.get(account.getBank().getOwner()).add(interest);
 
-					plugin.getDatabase().logAccountInterest(new AccountInterestReceipt(
+					plugin.getDatabase().logAccountInterest(new AccountInterest(
 							account.getID(),
 							bank.getID(),
-							interest.subtract(lowBalanceFee),
+							interest,
 							lowBalanceFee,
 							System.currentTimeMillis()
 					));
@@ -139,26 +139,18 @@ public class InterestEventListener extends BankingPluginListener {
 				plugin.getDatabase().logLastSeen(accountOwner.getPlayer());
 		});
 
-		boolean containsX = Config.bankRevenueFunction.contains("x");
-		boolean containsN = Config.bankRevenueFunction.contains("n");
-		boolean containsA = Config.bankRevenueFunction.contains("a");
-		boolean containsG = Config.bankRevenueFunction.contains("g");
-
 		// Bank owners earn revenue on their banks
 		playerBankMap.forEach((bankOwner, banks) -> {
 			for (Bank bank : banks) {
 
-				List<Argument> args = new ArrayList<>();
-				if (containsX)
-					args.add(new Argument("x", bank.getTotalValue().doubleValue()));
-				if (containsN)
-					args.add(new Argument("n", bank.getAccountsByOwner().size()));
-				if (containsA)
-					args.add(new Argument("a", bank.getAccounts().size()));
-				if (containsG)
-					args.add(new Argument("g", bank.getGiniCoefficient()));
+				Argument[] args = new Argument[] {
+						new Argument("x", bank.getTotalValue().doubleValue()),
+						new Argument("n", bank.getAccountsByOwner().size()),
+						new Argument("a", bank.getAccounts().size()),
+						new Argument("g", bank.getGiniCoefficient())
+				};
 
-				Expression revenueExpression = new Expression(Config.bankRevenueFunction, args.toArray(new Argument[0]));
+				Expression revenueExpression = new Expression(Config.bankRevenueFunction, args);
 				BigDecimal revenue = QuickMath.scale(BigDecimal.valueOf(revenueExpression.calculate()));
 
 				if (revenue.signum() == 0)
@@ -166,7 +158,7 @@ public class InterestEventListener extends BankingPluginListener {
 
 				boolean online = bankOwner.isOnline();
 				Utils.depositPlayer(bankOwner, revenue.doubleValue(), Callback.of(
-                        result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.BANK_REVENUE_EARNED,
+                        result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.BANK_PROFIT,
 								new Replacement(Placeholder.AMOUNT, revenue),
 								new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
 						)),
@@ -175,7 +167,7 @@ public class InterestEventListener extends BankingPluginListener {
 						))
 				));
 
-				plugin.getDatabase().logBankRevenue(new BankRevenueReceipt(
+				plugin.getDatabase().logBankProfit(new BankProfit(
 						bank.getID(),
 						revenue,
 						System.currentTimeMillis()

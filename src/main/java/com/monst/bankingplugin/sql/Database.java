@@ -14,9 +14,9 @@ import com.monst.bankingplugin.geo.locations.SingleChestLocation;
 import com.monst.bankingplugin.geo.selections.CuboidSelection;
 import com.monst.bankingplugin.geo.selections.PolygonalSelection;
 import com.monst.bankingplugin.geo.selections.Selection;
-import com.monst.bankingplugin.sql.logging.AccountInterestReceipt;
-import com.monst.bankingplugin.sql.logging.AccountTransactionReceipt;
-import com.monst.bankingplugin.sql.logging.BankRevenueReceipt;
+import com.monst.bankingplugin.sql.logging.AccountInterest;
+import com.monst.bankingplugin.sql.logging.AccountTransaction;
+import com.monst.bankingplugin.sql.logging.BankProfit;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -59,8 +59,7 @@ public abstract class Database {
 	final String tableCoOwnsAccount = "co_owns_account";
 	final String tableAccountTransactions = "AccountTransactions";
 	final String tableAccountInterest = "AccountInterest";
-	final String tableBankRevenue = "BankRevenue";
-	final String tableLowBalanceFees = "LowBalanceFees";
+	final String tableBankProfit = "BankRevenue";
 	final String tablePlayers = "Players";
 	final String tableFields = "Fields";
 
@@ -82,7 +81,7 @@ public abstract class Database {
 
 	abstract String getQueryCreateTableAccountInterest();
 
-	abstract String getQueryCreateTableBankRevenue();
+	abstract String getQueryCreateTableBankProfit();
 
 	abstract String getQueryCreateTablePlayers();
 
@@ -197,7 +196,7 @@ public abstract class Database {
 					getQueryCreateTableCoOwnsAccount(), // Create co_owns_account table
 					getQueryCreateTableAccountTransactions(), // Create account transaction log table
 					getQueryCreateTableAccountInterest(), // Create account interest log table
-					getQueryCreateTableBankRevenue(), // Create bank revenue log table
+					getQueryCreateTableBankProfit(), // Create bank revenue log table
 					getQueryCreateTablePlayers(), // Create players table
 					getQueryCreateTableFields() // Create fields table
 			)
@@ -698,9 +697,9 @@ public abstract class Database {
 	/**
 	 * Logs an account transaction to the database.
 	 *
-	 * @param transaction The {@link AccountTransactionReceipt} to log
+	 * @param transaction The {@link AccountTransaction} to log
 	 */
-	public void logAccountTransaction(AccountTransactionReceipt transaction) {
+	public void logAccountTransaction(AccountTransaction transaction) {
 		if (!Config.enableAccountTransactionLog)
 			return;
 		async(() -> {
@@ -709,9 +708,9 @@ public abstract class Database {
 					transaction.getBankID(),
 					transaction.getExecutorUUID(),
 					transaction.getExecutorName(),
+					transaction.getAmount(),
 					transaction.getNewBalance(),
 					transaction.getPreviousBalance(),
-					transaction.getAmount(),
 					dateFormat.format(transaction.getTime()),
 					transaction.getTime()
 			);
@@ -726,46 +725,50 @@ public abstract class Database {
 	/**
 	 * Logs an interest payout to the database.
 	 *
-	 * @param interest  The {@link AccountInterestReceipt} to log
+	 * @param interest  The {@link AccountInterest} to log
 	 */
-	public void logAccountInterest(AccountInterestReceipt interest) {
+	public void logAccountInterest(AccountInterest interest) {
 		if (!Config.enableAccountInterestLog)
 			return;
 		async(() -> {
 			List<Object> params = Arrays.asList(
 					interest.getAccountID(),
 					interest.getBankID(),
-					interest.getAmount(),
+					interest.getInterest(),
 					interest.getLowBalanceFee(),
+					interest.getFinalPayment(),
 					dateFormat.format(interest.getTime()),
 					interest.getTime()
 			);
 			query
 					.update("INSERT INTO " + tableAccountInterest +
-							" (AccountID, BankID, Amount, LowBalanceFee, Timestamp, Time) VALUES(?,?,?,?,?,?)")
+							" (AccountID, BankID, Interest, LowBalanceFee, FinalPayment, Timestamp, Time) VALUES(?,?,?,?,?,?,?)")
 					.params(params)
 					.run();
 		});
 	}
 
 	/**
-	 * Logs bank revenue to the database.
+	 * Logs bank profit to the database.
 	 *
-	 * @param revenue  The {@link AccountInterestReceipt} to log
+	 * @param profit  The {@link BankProfit} to log
 	 */
-	public void logBankRevenue(BankRevenueReceipt revenue) {
-		if (!Config.enableBankRevenueLog)
+	public void logBankProfit(BankProfit profit) {
+		if (!Config.enableBankProfitLog)
 			return;
 		async(() -> {
 			List<Object> params = Arrays.asList(
-					revenue.getBankID(),
-					revenue.getAmount(),
-					dateFormat.format(revenue.getTime()),
-					revenue.getTime()
+					profit.getBankID(),
+					profit.getRevenue(),
+					profit.getInterest(),
+					profit.getLowBalanceFees(),
+					profit.getProfit(),
+					dateFormat.format(profit.getTime()),
+					profit.getTime()
 			);
 			query
-					.update("INSERT INTO " + tableBankRevenue + " " +
-							"(BankID, Amount, Timestamp, Time) VALUES(?,?,?,?)")
+					.update("INSERT INTO " + tableBankProfit + " " +
+							"(BankID, Revenue, Interest, LowBalanceFees, Profit, Timestamp, Time) VALUES(?,?,?,?,?,?,?)")
 					.params(params)
 					.run();
 		});
@@ -805,27 +808,25 @@ public abstract class Database {
 					" WHERE Time < " + time).run().affectedRows();
 			long interest = query.update("DELETE FROM " + tableAccountInterest +
 					" WHERE Time < " + time).run().affectedRows();
-			long revenue = query.update("DELETE FROM " + tableBankRevenue +
-					" WHERE Time < " + time).run().affectedRows();
-			long lowBalanceFees = query.update("DELETE FROM " + tableLowBalanceFees +
+			long revenue = query.update("DELETE FROM " + tableBankProfit +
 					" WHERE Time < " + time).run().affectedRows();
 			long players = query.update("DELETE FROM " + tablePlayers +
 					" WHERE LastSeen < " + time).run().affectedRows();
 
 			plugin.getLogger().info("Cleaned up banking logs.");
-			plugin.debugf("Cleaned up banking logs (%d transactions, %d interests, %d revenues, %d low balance fees, %d players).",
-					transactions, interest, revenue, lowBalanceFees, players);
+			plugin.debugf("Cleaned up banking logs (%d transactions, %d interests, %d revenues, %d players).",
+					transactions, interest, revenue, players);
 		}, false); // TODO: Make async?
 	}
 
 	private static final int LOG_FETCH_SIZE = 50;
 
-	final Mapper<AccountTransactionReceipt> transactionMapper = objectMappers.forClass(AccountTransactionReceipt.class);
+	final Mapper<AccountTransaction> transactionMapper = objectMappers.forClass(AccountTransaction.class);
 
-	public void getTransactionsAtAccount(Account account, Callback<List<AccountTransactionReceipt>> callback) {
+	public void getTransactionsAtAccount(Account account, Callback<List<AccountTransaction>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching transactions at account #%d.", account.getID());
-			List<AccountTransactionReceipt> result = query
+			List<AccountTransaction> result = query
 					.select("SELECT * " +
 							"FROM " + tableAccountTransactions + " " +
 							"WHERE AccountID = ? " +
@@ -839,10 +840,10 @@ public abstract class Database {
 		});
 	}
 
-	public void getTransactionsAtBank(Bank bank, Callback<List<AccountTransactionReceipt>> callback) {
+	public void getTransactionsAtBank(Bank bank, Callback<List<AccountTransaction>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching transactions at bank #%d.", bank.getID());
-			List<AccountTransactionReceipt> result = query
+			List<AccountTransaction> result = query
 					.select("SELECT * " +
 							"FROM " + tableAccountTransactions + " " +
 							"WHERE BankID = ? " +
@@ -856,12 +857,12 @@ public abstract class Database {
 		});
 	}
 
-	final Mapper<AccountInterestReceipt> interestMapper = objectMappers.forClass(AccountInterestReceipt.class);
+	final Mapper<AccountInterest> interestMapper = objectMappers.forClass(AccountInterest.class);
 
-	public void getInterestPaymentsAtAccount(Account account, Callback<List<AccountInterestReceipt>> callback) {
+	public void getInterestPaymentsAtAccount(Account account, Callback<List<AccountInterest>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching account interest payments at account #%d.", account.getID());
-			List<AccountInterestReceipt> result = query
+			List<AccountInterest> result = query
 					.select("SELECT * " +
 							"FROM " + tableAccountInterest + " " +
 							"WHERE AccountID = ? " +
@@ -875,10 +876,10 @@ public abstract class Database {
 		});
 	}
 
-	public void getInterestPaymentsAtBank(Bank bank, Callback<List<AccountInterestReceipt>> callback) {
+	public void getInterestPaymentsAtBank(Bank bank, Callback<List<AccountInterest>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching account interest payments at bank #%d.", bank.getID());
-			List<AccountInterestReceipt> result = query
+			List<AccountInterest> result = query
 					.select("SELECT * " +
 							"FROM " + tableAccountInterest + " " +
 							"WHERE BankID = ? " +
@@ -892,14 +893,14 @@ public abstract class Database {
 		});
 	}
 
-	final Mapper<BankRevenueReceipt> revenueMapper = objectMappers.forClass(BankRevenueReceipt.class);
+	final Mapper<BankProfit> revenueMapper = objectMappers.forClass(BankProfit.class);
 
-	public void getRevenueAtBank(Bank bank, Callback<List<BankRevenueReceipt>> callback) {
+	public void getRevenueAtBank(Bank bank, Callback<List<BankProfit>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching revenue at bank #%d.", bank.getID());
-			List<BankRevenueReceipt> result = query
+			List<BankProfit> result = query
 					.select("SELECT * " +
-							"FROM " + tableBankRevenue + " " +
+							"FROM " + tableBankProfit + " " +
 							"WHERE BankID = ? " +
 							"ORDER BY RevenueID DESC")
 					.params(bank.getID())
@@ -950,8 +951,8 @@ public abstract class Database {
 		async(() -> {
 			plugin.debugf("Fetching low balance fees paid by %s since last logout at %s.", playerName, timeFormatted);
 			BigDecimal fees = query
-					.select("SELECT SUM(Amount) " +
-							"FROM " + tableLowBalanceFees + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
+					.select("SELECT SUM(LowBalanceFee) " +
+							"FROM " + tableAccountInterest + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
@@ -974,40 +975,18 @@ public abstract class Database {
 		String playerName = player.getName();
 		String timeFormatted = dateFormat.format(time);
 		async(() -> {
-			plugin.debugf("Fetching bank revenue earned by %s since last logout at %s.", playerName, timeFormatted);
+			plugin.debugf("Fetching bank profit earned by %s since last logout at %s.", playerName, timeFormatted);
 			BigDecimal revenue = query
-					.select("SELECT SUM(Amount) " +
-							"FROM " + tableBankRevenue + " NATURAL JOIN " + tableBanks + " " +
+					.select("SELECT SUM(Profit) " +
+							"FROM " + tableBankProfit + " NATURAL JOIN " + tableBanks + " " +
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
 					.firstResult(rs -> rs.getDouble(1))
 					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
-			plugin.debugf("Found %s in bank revenue earned by %s.", Utils.format(revenue), playerName);
-			plugin.debugf("Fetching low balance fees received by %s since last logout at %s.", playerName, timeFormatted);
-			BigDecimal fees = query
-					.select("SELECT SUM(Amount) " +
-							"FROM " + tableLowBalanceFees + " NATURAL JOIN " + tableBanks + " " +
-							"WHERE OwnerUUID = ? AND Time > ?")
-					.params(player.getUniqueId(), time)
-					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getDouble(1))
-					.map(BigDecimal::new)
-					.orElse(BigDecimal.ZERO);
-			plugin.debugf("Found %s in low balance fees received by %s.", Utils.format(fees), playerName);
-			plugin.debugf("Fetching bank interest paid by %s since last logout at %s.", playerName, timeFormatted);
-			BigDecimal interest = query
-					.select("SELECT SUM(Amount) " +
-							"FROM " + tableAccountInterest + " NATURAL JOIN " + tableBanks + " " +
-							"WHERE OwnerUUID = ? AND Time > ?")
-					.params(player.getUniqueId(), time)
-					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getDouble(1))
-					.map(BigDecimal::new)
-					.orElse(BigDecimal.ZERO);
-			plugin.debugf("Found %s in interest payments paid by %s.", Utils.format(interest), playerName);
-			Callback.yield(callback, QuickMath.scale(revenue.add(fees).subtract(interest)));
+			plugin.debugf("Found %s in bank profit earned by %s.", Utils.format(revenue), playerName);
+			Callback.yield(callback, QuickMath.scale(revenue));
 		});
 	}
 

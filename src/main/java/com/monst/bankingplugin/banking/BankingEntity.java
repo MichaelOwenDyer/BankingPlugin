@@ -53,6 +53,10 @@ public abstract class BankingEntity extends Observable implements Ownable, Namea
 		notifyObservers();
 	}
 
+	public String getOwnerName() {
+		return owner == null ? "ADMIN" : owner.getName();
+	}
+
 	/**
 	 * Gets the (possibly colorized) name of the owner of this ownable.
 	 * @return a {@link String} with the owner's name, if it can be found.
@@ -60,8 +64,6 @@ public abstract class BankingEntity extends Observable implements Ownable, Namea
 	public String getOwnerDisplayName() {
 		if (owner == null)
 			return ChatColor.RED + "ADMIN";
-		if (!owner.hasPlayedBefore())
-			return ChatColor.DARK_GRAY + owner.getUniqueId().toString();
 		return owner.isOnline() ? owner.getPlayer().getDisplayName() : owner.getName();
 	}
 

@@ -33,7 +33,7 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
             database.getBankProfitEarnedByPlayerSince(p, logoutTime, Callback.of(profit -> {
                 if (profit.signum() == 0)
                     return;
-                p.sendMessage(LangUtils.getMessage(profit.signum() > 0 ? Message.BANK_REVENUE_EARNED_OFFLINE : Message.BANK_LOSS_OFFLINE,
+                p.sendMessage(LangUtils.getMessage(profit.signum() > 0 ? Message.BANK_PROFIT_OFFLINE : Message.BANK_LOSS_OFFLINE,
                         new Replacement(Placeholder.AMOUNT, profit)
                 ));
             }));
