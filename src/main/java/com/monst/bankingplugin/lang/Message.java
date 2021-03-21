@@ -368,6 +368,16 @@ public enum Message {
             "&6You paid account holders &a%AMOUNT% &6in interest.",
             Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
+    LOW_BALANCE_FEE_RECEIVED (
+            "A bank owner receives low balance fee payments from account holders.",
+            "&6You received &a%AMOUNT% &cin low balance fees from &b%NUMBER_OF_ACCOUNTS% &caccount(s).",
+            Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
+    ),
+    BANK_REVENUE (
+            "A bank owner receives some bank revenue.",
+            "&6You received &a%AMOUNT% &6in bank revenue from &a%NUMBER_OF_BANKS% &6bank(s).",
+            Placeholder.AMOUNT, Placeholder.NUMBER_OF_BANKS
+    ),
     BANK_PROFIT (
             "A bank owner makes a profit from their bank.",
             "&6You made a profit of &a%AMOUNT% &6at bank &7%BANK_NAME%&6.",
@@ -383,11 +393,6 @@ public enum Message {
             "&cYou made &a%AMOUNT% &cin bank losses while you were offline.",
             Placeholder.AMOUNT
     ),
-    LOW_BALANCE_FEE_RECEIVED (
-            "A bank owner receives low balance fee payments from account holders.",
-            "&6You received &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccount(s).",
-            Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
-    ),
     REIMBURSEMENT_RECEIVED (
             "A player is reimbursed by the bank owner after removing an account.",
             "&6You have been reimbursed &a%AMOUNT%&6.",
@@ -398,7 +403,6 @@ public enum Message {
             "&6You reimbursed %PLAYER% &a%AMOUNT%&6.",
             Placeholder.PLAYER, Placeholder.AMOUNT
     ),
-
     ADDED_COOWNER (
             "A player adds another player as a co-owner of an account or a bank.",
             "&6Added %PLAYER% as a co-owner.",

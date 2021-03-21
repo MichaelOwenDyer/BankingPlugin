@@ -703,6 +703,8 @@ public abstract class Database {
 		if (!Config.enableAccountTransactionLog)
 			return;
 		async(() -> {
+			plugin.debugf("Logging account transaction of %s at account #%d.",
+					Utils.format(transaction.getAmount()), transaction.getAccountID());
 			List<Object> params = Arrays.asList(
 					transaction.getAccountID(),
 					transaction.getBankID(),
@@ -731,6 +733,8 @@ public abstract class Database {
 		if (!Config.enableAccountInterestLog)
 			return;
 		async(() -> {
+			plugin.debugf("Logging %s in interest, %s in fees to account #%d.",
+					Utils.format(interest.getInterest()), Utils.format(interest.getLowBalanceFee()), interest.getAccountID());
 			List<Object> params = Arrays.asList(
 					interest.getAccountID(),
 					interest.getBankID(),
@@ -757,6 +761,9 @@ public abstract class Database {
 		if (!Config.enableBankProfitLog)
 			return;
 		async(() -> {
+			plugin.debugf("Logging %s in revenue, %s in interest, %s in fees to bank #%d.",
+					Utils.format(profit.getRevenue()), Utils.format(profit.getInterest()),
+					Utils.format(profit.getLowBalanceFees()), profit.getBankID());
 			List<Object> params = Arrays.asList(
 					profit.getBankID(),
 					profit.getRevenue(),
@@ -788,7 +795,22 @@ public abstract class Database {
 					System.currentTimeMillis()
 			);
 			query
-					.update("REPLACE INTO " + tablePlayers + " (PlayerUUID,Name,LastSeen) VALUES(?,?,?)")
+					.update("REPLACE INTO " + tablePlayers + " (PlayerUUID, Name, LastSeen) VALUES(?,?,?)")
+					.params(params)
+					.run();
+		});
+	}
+
+	public void logLastSeen(Collection<Player> players) {
+		async(() -> {
+			Stream<List<?>> params = players.stream()
+					.map(p -> Arrays.asList(
+							p.getUniqueId(),
+							p.getName(),
+							System.currentTimeMillis())
+					);
+			query
+					.batch("REPLACE INTO " + tablePlayers + " (PlayerUUID, Name, LastSeen) VALUES (?,?,?)")
 					.params(params)
 					.run();
 		});

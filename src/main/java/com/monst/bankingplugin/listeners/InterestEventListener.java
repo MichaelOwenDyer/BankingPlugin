@@ -9,17 +9,17 @@ import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.sql.logging.AccountInterest;
 import com.monst.bankingplugin.sql.logging.BankProfit;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Pair;
-import com.monst.bankingplugin.utils.QuickMath;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.utils.*;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -42,26 +42,22 @@ public class InterestEventListener extends BankingPluginListener {
 		plugin.debugf("Interest payout event occurring now at bank(s) %s.",
 				Utils.map(e.getBanks(), b -> "#" + b.getID()).toString());
 
-		Map<OfflinePlayer, List<Bank>> playerBankMap = e.getBanks().stream()
-				.filter(Bank::isPlayerBank)
-				.collect(Collectors.groupingBy(Bank::getOwner));
-		Map<OfflinePlayer, List<Account>> playerAccountMap = e.getBanks().stream()
+		Map<Bank, Set<Account>> banksAndAccounts = e.getBanks().stream()
 				.map(Bank::getAccounts)
 				.flatMap(Collection::stream)
-				.collect(Collectors.groupingBy(Account::getOwner));
+				.collect(Collectors.groupingBy(Account::getBank, Collectors.toSet()));
 
-		if (playerAccountMap.isEmpty())
+		if (banksAndAccounts.isEmpty())
 			return;
 
-		MoneyTracker interestReceivable = new MoneyTracker(); // The amount of interest each account owner earns on how many accounts
-		MoneyTracker feesPayable = new MoneyTracker(); // The amount of fees each account owner must pay for how many accounts
+		PaymentCounter<Bank> interestPayable = new PaymentCounter<>(); // Total account interest by bank
+		PaymentCounter<Bank> feesReceivable = new PaymentCounter<>(); // Total low balance fees by bank
+		HashMap<Account, BigDecimal> interestReceivable = new HashMap<>(); // Interest by account
+		HashMap<Account, BigDecimal> feesPayable = new HashMap<>(); // Low balance fees by account
 
-		MoneyTracker interestPayable = new MoneyTracker(); // The amount of interest each bank owner must pay for how many banks
-		MoneyTracker feesReceivable = new MoneyTracker(); // The amount of fees each bank owner receives as income on how many banks
-
-		playerAccountMap.forEach((accountOwner, accounts) -> {
+		banksAndAccounts.forEach((bank, accounts) -> {
 			for (Account account : accounts) {
-				if (!account.allowNextPayout()) {
+				if (!account.allowNextPayout()) { // Account is frozen, pays no interest
 					accountRepo.update(account, Callback.blank(),
 							AccountField.DELAY_UNTIL_NEXT_PAYOUT,
 							AccountField.REMAINING_OFFLINE_PAYOUTS,
@@ -72,22 +68,17 @@ public class InterestEventListener extends BankingPluginListener {
 
 				BigDecimal lowBalanceFee = BigDecimal.ZERO;
 				BigDecimal interest = BigDecimal.ZERO;
-				Set<OfflinePlayer> trustedPlayers = account.getTrustedPlayers();
-				int numberOfTrustedPlayers = trustedPlayers.size();
-				Bank bank = account.getBank();
-				if (bank.isPlayerBank())
-					trustedPlayers.remove(bank.getOwner()); // Bank owner should not be considered, since he would be paying himself
 
-				// trustedPlayers would be empty if the bank owner was the only trusted player
-				if (!trustedPlayers.isEmpty() && bank.getMinimumBalance().get() > 0
-						&& account.getBalance().doubleValue() < bank.getMinimumBalance().get()) {
+				// See if account balance is below the bank minimum
+				if (account.getBalance().doubleValue() < bank.getMinimumBalance().get()) {
 
 					lowBalanceFee = BigDecimal.valueOf(bank.getLowBalanceFee().get());
-					feesPayable.get(accountOwner).add(lowBalanceFee);
-					if (bank.isPlayerBank())
-						feesReceivable.get(bank.getOwner()).add(lowBalanceFee);
+					if (lowBalanceFee.signum() != 0) {
+						feesPayable.put(account, lowBalanceFee); // Account must pay fee
+						feesReceivable.add(account.getBank(), lowBalanceFee); // Bank receives fee
+					}
 
-					if (!bank.getPayOnLowBalance().get()) {
+					if (!bank.getPayOnLowBalance().get()) { // Bank will not pay interest since balance low
 						plugin.getDatabase().logAccountInterest(new AccountInterest(
 								account.getID(),
 								bank.getID(),
@@ -99,32 +90,24 @@ public class InterestEventListener extends BankingPluginListener {
 					}
 				}
 
-				BigDecimal baseInterest = QuickMath.scale(
-						QuickMath.multiply(account.getBalance(), bank.getInterestRate().get())
-				);
+				BigDecimal baseInterest = QuickMath.scale(QuickMath.multiply(account.getBalance(), bank.getInterestRate().get()));
+				interest = QuickMath.multiply(baseInterest, account.getRealMultiplier());
 
-				int multiplier = account.getRealMultiplier();
-				interest = QuickMath.multiply(baseInterest, multiplier);
+				if (interest.signum() != 0) {
+					interestReceivable.put(account, interest); // Account receives interest
+					interestPayable.add(account.getBank(), interest); // Bank must pay interest
+				}
 
 				account.incrementMultiplier();
 				account.updatePrevBalance();
 
-				if (!trustedPlayers.isEmpty()) {
-					BigDecimal cut = QuickMath.divide(interest, numberOfTrustedPlayers);
-					for (OfflinePlayer recipient : trustedPlayers)
-						interestReceivable.get(recipient).add(cut);
-
-					if (account.getBank().isPlayerBank())
-						interestPayable.get(account.getBank().getOwner()).add(interest);
-
-					plugin.getDatabase().logAccountInterest(new AccountInterest(
-							account.getID(),
-							bank.getID(),
-							interest,
-							lowBalanceFee,
-							System.currentTimeMillis()
-					));
-				}
+				plugin.getDatabase().logAccountInterest(new AccountInterest(
+						account.getID(),
+						bank.getID(),
+						interest,
+						lowBalanceFee,
+						System.currentTimeMillis()
+				));
 
 				accountRepo.update(account, Callback.blank(),
 						AccountField.MULTIPLIER_STAGE,
@@ -134,84 +117,131 @@ public class InterestEventListener extends BankingPluginListener {
 						AccountField.PREVIOUS_BALANCE
 				);
 			}
-
-			if (accountOwner.isOnline())
-				plugin.getDatabase().logLastSeen(accountOwner.getPlayer());
 		});
 
-		// Bank owners earn revenue on their banks
-		playerBankMap.forEach((bankOwner, banks) -> {
-			for (Bank bank : banks) {
+		Map<Bank, BigDecimal> revenueTracker = new HashMap<>(); // Revenues by bank
 
-				Argument[] args = new Argument[] {
-						new Argument("x", bank.getTotalValue().doubleValue()),
-						new Argument("n", bank.getAccountsByOwner().size()),
-						new Argument("a", bank.getAccounts().size()),
-						new Argument("g", bank.getGiniCoefficient())
-				};
+		banksAndAccounts.forEach((bank, accounts) -> {
 
-				Expression revenueExpression = new Expression(Config.bankRevenueFunction, args);
-				BigDecimal revenue = QuickMath.scale(BigDecimal.valueOf(revenueExpression.calculate()));
+			Argument[] args = new Argument[]{
+					new Argument("x", bank.getTotalValue().doubleValue()),
+					new Argument("n", bank.getAccountsByOwner().size()),
+					new Argument("a", bank.getAccounts().size()),
+					new Argument("g", bank.getGiniCoefficient())
+			};
 
-				if (revenue.signum() == 0)
-					continue;
+			Expression revenueExpression = new Expression(Config.bankRevenueFunction, args);
+			BigDecimal revenue = QuickMath.scale(BigDecimal.valueOf(revenueExpression.calculate()));
 
-				boolean online = bankOwner.isOnline();
-				Utils.depositPlayer(bankOwner, revenue.doubleValue(), Callback.of(
-                        result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.BANK_PROFIT,
-								new Replacement(Placeholder.AMOUNT, revenue),
-								new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
-						)),
-						error -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
-								new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-						))
-				));
+			if (revenue.signum() != 0)
+				revenueTracker.put(bank, revenue); // Bank will receive revenue
 
-				plugin.getDatabase().logBankProfit(new BankProfit(
-						bank.getID(),
-						revenue,
-						System.currentTimeMillis()
-				));
-			}
+			BigDecimal interest = interestPayable.get(bank).getTotalMoney();
+			BigDecimal lowBalanceFees = feesReceivable.get(bank).getTotalMoney();
+
+			plugin.getDatabase().logBankProfit(new BankProfit(
+					bank.getID(),
+					revenue,
+					interest,
+					lowBalanceFees,
+					System.currentTimeMillis()
+			));
+
 		});
 
-		transactAll(feesReceivable, Utils::depositPlayer, Message.LOW_BALANCE_FEE_RECEIVED); // Bank owners receive low balance fees
+		// Sum of all profits/losses, grouped by player
+		PaymentMap<OfflinePlayer> finalPayments = new PaymentMap<>();
 
-		transactAll(interestPayable, Utils::withdrawPlayer, Message.INTEREST_PAID); // Bank owners pay interest
+		// Total account interest + number of accounts, grouped by player
+		PaymentCounter<OfflinePlayer> totalInterestReceivableByPlayer = new PaymentCounter<>();
+		// TODO: Change payment recipient to also include account co-owners
+		interestReceivable.forEach((account, interest) -> {
+			finalPayments.add(account.getOwner(), interest);
+			totalInterestReceivableByPlayer.add(account.getOwner(), interest);
+		});
 
-		transactAll(interestReceivable, Utils::depositPlayer, Message.INTEREST_EARNED); // Account owners receive interest payments
+		// Total account fees + number of accounts, grouped by player
+		PaymentCounter<OfflinePlayer> totalFeesPayableByPlayer = new PaymentCounter<>();
+		feesPayable.forEach((account, fee) -> {
+			finalPayments.subtract(account.getOwner(), fee); // Subtract because payable
+			totalFeesPayableByPlayer.add(account.getOwner(), fee);
+		});
 
-		transactAll(feesPayable, Utils::withdrawPlayer, Message.LOW_BALANCE_FEE_PAID); // Account owners pay low balance fees
+		// Total bank revenue + number of banks, grouped by player
+		PaymentCounter<OfflinePlayer> totalRevenueReceivableByPlayer = new PaymentCounter<>();
+		revenueTracker.forEach((bank, revenue) -> {
+			finalPayments.add(bank.getOwner(), revenue);
+			totalRevenueReceivableByPlayer.add(bank.getOwner(), revenue);
+		}); // Admin banks are ignored
+
+		// Total account interest to pay + number of accounts, grouped by player
+		PaymentCounter<OfflinePlayer> totalInterestPayableByPlayer = new PaymentCounter<>();
+		interestPayable.forEach((bank, interest) -> {
+			finalPayments.subtract(bank.getOwner(), interest.getTotalMoney()); // Subtract because payable
+			totalInterestPayableByPlayer.add(bank.getOwner(), interest);
+		}); // Admin banks are ignored
+
+		// Total account fees to receive + number of accounts, grouped by player
+		PaymentCounter<OfflinePlayer> totalFeesReceivableByPlayer = new PaymentCounter<>();
+		feesReceivable.forEach((bank, fees) -> {
+			finalPayments.add(bank.getOwner(), fees.getTotalMoney());
+			totalFeesReceivableByPlayer.add(bank.getOwner(), fees);
+		}); // Admin banks are ignored
+
+		notifyAll(totalInterestReceivableByPlayer, Message.INTEREST_PAID);
+		notifyAll(totalFeesPayableByPlayer, Message.LOW_BALANCE_FEE_PAID);
+		notifyAll(totalRevenueReceivableByPlayer, Message.BANK_REVENUE);
+		notifyAll(totalInterestPayableByPlayer, Message.INTEREST_PAID);
+		notifyAll(totalFeesReceivableByPlayer, Message.LOW_BALANCE_FEE_RECEIVED);
+
+		// Log last seen time for all players receiving a message
+		plugin.getDatabase().logLastSeen(
+				finalPayments.keySet().stream()
+						.filter(OfflinePlayer::isOnline)
+						.map(OfflinePlayer::getPlayer)
+						.collect(Collectors.toSet())
+		);
+
+		finalPayments.forEach((player, payment) -> {
+			if (PayrollOffice.allowPayment(player, payment))
+				PayrollOffice.submit(player, payment);
+			// TODO: if payment cannot be made, ...
+		});
 	}
 
-	private void transactAll(MoneyTracker tracker, Transactor transactor, Message message) {
-		for (Map.Entry<OfflinePlayer, Counter> entry : tracker.entrySet()) {
-			OfflinePlayer customer = entry.getKey();
-			Counter counter = entry.getValue();
-			if (counter.getTotalMoney().signum() <= 0)
-				continue;
+	private void notifyAll(PaymentCounter<OfflinePlayer> map, Message message) {
+		map.forEach((player, counter) ->
+				Mailman.notify(player, LangUtils.getMessage(message,
+						new Replacement(Placeholder.AMOUNT, counter.getTotalMoney()),
+						new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, counter.getNumberOfPayments()),
+						new Replacement(Placeholder.NUMBER_OF_BANKS, counter.getNumberOfPayments())
+				))
+		);
+	}
 
-			transactor.transact(customer, counter.getTotalMoney().doubleValue(), Callback.of(
-                    result -> Mailman.notify(customer, LangUtils.getMessage(message,
-							new Replacement(Placeholder.AMOUNT, counter::getTotalMoney),
-							new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, counter::getNumberOfPayments)
-					)),
-					error -> Mailman.notify(customer, LangUtils.getMessage(Message.ERROR_OCCURRED,
-							new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-					))
-			));
+	private static class PaymentMap<T> extends HashMap<T, BigDecimal> {
+		private void add(T key, BigDecimal amount) {
+			if (key == null)
+				return;
+			merge(key, amount, BigDecimal::add);
+		}
+		private void subtract(T key, BigDecimal amount) {
+			if (key == null)
+				return;
+			merge(key, amount, BigDecimal::subtract);
 		}
 	}
 
-	@FunctionalInterface
-	private interface Transactor {
-		void transact(OfflinePlayer player, double amount, Callback<Void> callback);
-	}
-
-	private static class MoneyTracker extends HashMap<OfflinePlayer, Counter> {
-		private Counter get(OfflinePlayer key) {
-			super.putIfAbsent(key, new Counter());
-			return super.get(key);
+	private static class PaymentCounter<T> extends HashMap<T, Counter> {
+		private void add(T key, BigDecimal amount) {
+			if (key == null)
+				return;
+			merge(key, new Counter(amount), Counter::add);
+		}
+		private void add(T key, Counter counter) {
+			if (key == null)
+				return;
+			merge(key, counter, Counter::add);
 		}
 	}
 
@@ -219,12 +249,21 @@ public class InterestEventListener extends BankingPluginListener {
 		private Counter() {
 			super(BigDecimal.ZERO, 0);
 		}
-		private void add(double value) {
-			add(BigDecimal.valueOf(value));
+		private Counter(BigDecimal value) {
+			super(value, 1);
 		}
-		private void add(BigDecimal value) {
+		private Counter add(double value) {
+			return add(BigDecimal.valueOf(value));
+		}
+		private Counter add(BigDecimal value) {
 			super.setFirst(getTotalMoney().add(value));
 			super.setSecond(getNumberOfPayments() + 1);
+			return this;
+		}
+		private Counter add(Counter counter) {
+			super.setFirst(getTotalMoney().add(counter.getTotalMoney()));
+			super.setSecond(getNumberOfPayments() + counter.getNumberOfPayments());
+			return this;
 		}
 		private BigDecimal getTotalMoney() { return super.getFirst(); }
 		private int getNumberOfPayments() { return super.getSecond(); }
