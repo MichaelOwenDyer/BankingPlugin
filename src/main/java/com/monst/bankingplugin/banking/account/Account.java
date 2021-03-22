@@ -563,12 +563,16 @@ public class Account extends BankingEntity {
 
 	@Override
 	public void trustPlayer(OfflinePlayer p) {
+		if (p == null)
+			return;
 		super.trustPlayer(p);
 		plugin.getDatabase().addCoOwner(this, p, null);
 	}
 
 	@Override
 	public void untrustPlayer(OfflinePlayer p) {
+		if (p == null)
+			return;
 		super.untrustPlayer(p);
 		plugin.getDatabase().removeCoOwner(this, p, null);
 	}

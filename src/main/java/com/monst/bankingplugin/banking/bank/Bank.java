@@ -400,20 +400,24 @@ public class Bank extends BankingEntity {
 	public void setOwner(OfflinePlayer newOwner) {
 		OfflinePlayer prevOwner = getOwner();
 		owner = newOwner;
-		if (Config.trustOnTransfer && prevOwner != null)
-			coowners.add(prevOwner);
+		if (Config.trustOnTransfer)
+			trustPlayer(prevOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 		notifyObservers();
 	}
 
 	@Override
 	public void trustPlayer(OfflinePlayer p) {
+		if (p == null)
+			return;
 		super.trustPlayer(p);
 		plugin.getDatabase().addCoOwner(this, p, Callback.blank());
 	}
 
 	@Override
 	public void untrustPlayer(OfflinePlayer p) {
+		if (p == null)
+			return;
 		super.untrustPlayer(p);
 		plugin.getDatabase().removeCoOwner(this, p, Callback.blank());
 	}

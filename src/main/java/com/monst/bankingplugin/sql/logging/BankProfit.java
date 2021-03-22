@@ -4,11 +4,12 @@ import java.math.BigDecimal;
 
 public class BankProfit extends Receipt {
 
-    private int revenueID;
+    private int profitID;
     private int bankID;
     private BigDecimal revenue;
     private BigDecimal interest;
     private BigDecimal lowBalanceFees;
+    private BigDecimal profit;
 
     public BankProfit() {
         super();
@@ -16,16 +17,17 @@ public class BankProfit extends Receipt {
 
     public BankProfit(int bankID, BigDecimal revenue, BigDecimal interest, BigDecimal lowBalanceFees, long time) {
         super(time);
-        this.revenueID = -1;
+        this.profitID = -1;
         this.bankID = bankID;
         this.revenue = revenue;
         this.interest = interest;
         this.lowBalanceFees = lowBalanceFees;
+        this.profit = revenue.subtract(interest).add(lowBalanceFees);
     }
 
     @Override
     public int getID() {
-        return revenueID;
+        return profitID;
     }
 
     public int getBankID() {
@@ -62,7 +64,7 @@ public class BankProfit extends Receipt {
      * @return the profit earned by the bank owner
      */
     public BigDecimal getProfit() {
-        return getRevenue().subtract(getInterest()).add(getLowBalanceFees());
+        return profit;
     }
 
 }

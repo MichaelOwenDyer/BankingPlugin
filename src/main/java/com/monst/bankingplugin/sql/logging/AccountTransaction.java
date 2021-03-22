@@ -10,23 +10,23 @@ public class AccountTransaction extends Receipt {
     private int bankID;
     private String executorUUID;
     private String executorName;
-    private BigDecimal transactionAmount;
     private BigDecimal newBalance;
     private BigDecimal previousBalance;
+    private BigDecimal amount;
 
     public AccountTransaction() {
         super();
     }
 
     public AccountTransaction(int accountID, int bankID, UUID executorUUID, String executorName,
-                              BigDecimal transactionAmount, BigDecimal newBalance, BigDecimal previousBalance, long time) {
+                              BigDecimal amount, BigDecimal newBalance, BigDecimal previousBalance, long time) {
         super(time);
         this.transactionID = -1;
         this.accountID = accountID;
         this.bankID = bankID;
         this.executorUUID = executorUUID.toString();
         this.executorName = executorName;
-        this.transactionAmount = transactionAmount;
+        this.amount = amount;
         this.newBalance = newBalance;
         this.previousBalance = previousBalance;
     }
@@ -52,20 +52,20 @@ public class AccountTransaction extends Receipt {
         return executorName;
     }
 
-    /**
-     * Gets the amount by which the account balance changed, positive or negative.
-     * @return the change in account balance.
-     */
-    public BigDecimal getAmount() {
-        return transactionAmount;
-    }
-
     public BigDecimal getNewBalance() {
         return newBalance;
     }
 
     public BigDecimal getPreviousBalance() {
         return previousBalance;
+    }
+
+    /**
+     * Gets the amount by which the account balance changed, positive or negative.
+     * @return the change in account balance.
+     */
+    public BigDecimal getAmount() {
+        return amount;
     }
 
 }

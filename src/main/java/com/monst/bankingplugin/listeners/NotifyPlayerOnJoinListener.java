@@ -34,7 +34,7 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
                 if (profit.signum() == 0)
                     return;
                 p.sendMessage(LangUtils.getMessage(profit.signum() > 0 ? Message.BANK_PROFIT_OFFLINE : Message.BANK_LOSS_OFFLINE,
-                        new Replacement(Placeholder.AMOUNT, profit)
+                        new Replacement(Placeholder.AMOUNT, profit.abs())
                 ));
             }));
 

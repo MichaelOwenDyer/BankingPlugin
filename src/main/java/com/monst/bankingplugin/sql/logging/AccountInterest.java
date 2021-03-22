@@ -9,6 +9,7 @@ public class AccountInterest extends Receipt {
     private int bankID;
     private BigDecimal interest;
     private BigDecimal lowBalanceFee;
+    private BigDecimal finalPayment;
 
     public AccountInterest() {
         super();
@@ -21,6 +22,7 @@ public class AccountInterest extends Receipt {
         this.bankID = bankID;
         this.interest = interest;
         this.lowBalanceFee = lowBalanceFee;
+        this.finalPayment = interest.subtract(lowBalanceFee);
     }
 
     @Override
@@ -50,7 +52,7 @@ public class AccountInterest extends Receipt {
      * @return the final value of this interest payment
      */
     public BigDecimal getFinalPayment() {
-        return getInterest().subtract(getLowBalanceFee());
+        return finalPayment;
     }
 
 }

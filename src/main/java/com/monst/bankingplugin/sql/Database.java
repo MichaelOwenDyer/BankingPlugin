@@ -59,7 +59,7 @@ public abstract class Database {
 	final String tableCoOwnsAccount = "co_owns_account";
 	final String tableAccountTransactions = "AccountTransactions";
 	final String tableAccountInterest = "AccountInterest";
-	final String tableBankProfit = "BankRevenue";
+	final String tableBankProfit = "BankProfit";
 	final String tablePlayers = "Players";
 	final String tableFields = "Fields";
 
@@ -105,8 +105,8 @@ public abstract class Database {
 			plugin.debug(execution.sqlException().orElseThrow(IllegalStateException::new));
 	};
 
-	final SqlErrorHandler handler = (e, msg) -> {
-		plugin.debugf("Encountered a database error while executing query '%s'", msg.orElse("null"));
+	final SqlErrorHandler handler = (e, query) -> {
+		plugin.debugf("Encountered a database error while executing query '%s'", query.orElse("null"));
 		plugin.debug(e);
 		throw e;
 	};
@@ -947,7 +947,7 @@ public abstract class Database {
 		async(() -> {
 			plugin.debugf("Fetching account interest for %s since last logout at %s.", playerName, timeFormatted);
 			BigDecimal interest = query
-					.select("SELECT SUM(Amount) " +
+					.select("SELECT SUM(FinalPayment) " +
 							"FROM " + tableAccountInterest + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
