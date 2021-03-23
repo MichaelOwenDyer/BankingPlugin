@@ -113,26 +113,28 @@ withdrawal-multiplier-decrement:
 # Default: "STICK"
 account-info-item: "STICK"
 
-# Set the price a player has to pay in order to create...
+# Set the price a player has to pay in order to create an account.
 # Set this to 0 to disable creation fees.
 # Type: double
-creation-prices:
-    bank:
-        player: 100000
-        admin: 0
-    account:
-        default: 2500
-        allow-override: true
+account-creation-price:
+    default: 2500
+    allow-override: true
 
 # Set whether the (current) creation price should be refunded when the bank or account is removed.
 # Type: boolean
-reimburse-creation:
-  bank:
-    player: false
-    admin: false
-  account:
+reimburse-account-creation:
     default: false
     allow-override: true
+
+# Set the price a player has to pay to create a bank.
+# Set this to 0 to disable creation fees.
+# Type: double
+bank-creation-price: 100000
+
+# Set whether or not the (current) bank creation price should be reimbursed when a bank is removed.
+# This only applies to player banks.
+# Type: boolean
+reimburse-bank-creation: false
 
 # Set the lowest account balance a player must have to earn interest on their account.
 # Set this to 0 to disable this feature (also disables low-balance-fee).

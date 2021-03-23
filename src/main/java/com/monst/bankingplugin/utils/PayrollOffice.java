@@ -13,21 +13,43 @@ public class PayrollOffice {
     private static final Economy ECONOMY = BankingPlugin.getInstance().getEconomy();
 
     public static boolean allowPayment(OfflinePlayer player, BigDecimal amount) {
-        if (player == null || amount == null)
+        if (amount == null)
             throw new IllegalArgumentException();
-        if (amount.signum() >= 0)
-            return true;
-        // Return false if withdrawal would bring balance below 0, true if not
-        return BigDecimal.valueOf(ECONOMY.getBalance(player)).add(amount).signum() >= 0;
+        return allowPayment(player, amount.doubleValue());
     }
 
-    public static boolean submit(OfflinePlayer player, BigDecimal amount) {
-        if (player == null || amount == null)
+    public static boolean allowPayment(OfflinePlayer player, double amount) {
+        if (player == null)
             throw new IllegalArgumentException();
-        if (amount.signum() == 0)
+        if (amount >= 0)
             return true;
-        Transactor transactor = amount.signum() > 0 ? Economy::depositPlayer : Economy::withdrawPlayer;
-        EconomyResponse result = transactor.transact(ECONOMY, player, amount.abs().doubleValue());
+        // Return false if withdrawal would bring balance below 0, true if not
+        return ECONOMY.getBalance(player) + amount >= 0;
+    }
+
+    public static boolean withdraw(OfflinePlayer player, BigDecimal amount) {
+        if (amount == null)
+            throw new IllegalArgumentException();
+        return deposit(player, amount.negate().doubleValue());
+    }
+
+    public static boolean withdraw(OfflinePlayer player, double amount) {
+        return deposit(player, amount * -1);
+    }
+
+    public static boolean deposit(OfflinePlayer player, BigDecimal amount) {
+        if (amount == null)
+            throw new IllegalArgumentException();
+        return deposit(player, amount.doubleValue());
+    }
+
+    public static boolean deposit(OfflinePlayer player, double amount) {
+        if (player == null)
+            throw new IllegalArgumentException();
+        if (amount == 0)
+            return true;
+        Transactor transactor = amount > 0 ? Economy::depositPlayer : Economy::withdrawPlayer;
+        EconomyResponse result = transactor.transact(ECONOMY, player, Math.abs(amount));
         if (result.transactionSuccess())
             return true;
         Mailman.notify(player, LangUtils.getMessage(Message.ERROR_OCCURRED,

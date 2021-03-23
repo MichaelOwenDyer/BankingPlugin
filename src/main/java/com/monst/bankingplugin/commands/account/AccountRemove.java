@@ -6,12 +6,10 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveCommandEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -99,33 +97,22 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         }
 
         Bank bank = account.getBank();
-        double creationPrice = bank.getAccountCreationPrice().get();
-        creationPrice *= account.getSize();
-        creationPrice *= bank.getReimburseAccountCreation().get() ? 1 : 0;
+        if (account.isOwner(p) && bank.getReimburseAccountCreation().get()) {
+            double reimbursement = bank.getAccountCreationPrice().get();
+            reimbursement *= account.getSize();
+            reimbursement *= bank.isOwner(p) ? 0 : 1;
 
-        if (creationPrice > 0 && account.isOwner(p) && !bank.isOwner(p)) {
-
-            double finalCreationPrice = creationPrice;
-            Utils.depositPlayer(p.getPlayer(), finalCreationPrice, Callback.of(
-                    result -> p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
-                            new Replacement(Placeholder.AMOUNT, finalCreationPrice)
-                    )),
-                    error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-                            new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-                    ))
-            ));
-
-            if (bank.isPlayerBank()) {
-                OfflinePlayer bankOwner = bank.getOwner();
-                Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(
-                        result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
-                                new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName()),
-                                new Replacement(Placeholder.AMOUNT, finalCreationPrice)
-                        )),
-                        error -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
-                                new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-                        ))
-                ));
+            if (reimbursement > 0) {
+                if (PayrollOffice.deposit(p, reimbursement))
+                    p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
+                            new Replacement(Placeholder.AMOUNT, reimbursement)
+                    ));
+                if (bank.isPlayerBank() && PayrollOffice.withdraw(bank.getOwner(), reimbursement)) {
+                    Mailman.notify(bank.getOwner(), LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+                            new Replacement(Placeholder.PLAYER, account.getOwnerName()),
+                            new Replacement(Placeholder.AMOUNT, reimbursement)
+                    ));
+                }
             }
         }
 

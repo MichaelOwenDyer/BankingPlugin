@@ -96,15 +96,9 @@ public class Config {
 	public static ConfigPair<Integer> withdrawalMultiplierDecrement;
 	public static ConfigPair<Integer> getWithdrawalMultiplierDecrement() { return withdrawalMultiplierDecrement; }
 
-    /**
-     * The price a player has to pay in order to create a bank.
-     **/
-	public static double bankCreationPriceAdmin;
-	public static double bankCreationPricePlayer;
-
-    /**
-     * The price a player has to pay in order to create an account.
-     **/
+	/**
+	 * The price a player has to pay in order to create an account.
+	 **/
 	public static ConfigPair<Double> accountCreationPrice;
 	public static ConfigPair<Double> getAccountCreationPrice() { return accountCreationPrice; }
 
@@ -114,11 +108,15 @@ public class Config {
 	public static ConfigPair<Boolean> reimburseAccountCreation;
 	public static ConfigPair<Boolean> getReimburseAccountCreation() { return reimburseAccountCreation; }
 
+    /**
+     * The price a player has to pay in order to create a bank.
+     **/
+	public static double bankCreationPrice;
+
 	/**
 	 * Whether the bank creation price should be refunded at removal.
 	 */
-	public static boolean reimburseBankCreationAdmin;
-	public static boolean reimburseBankCreationPlayer;
+	public static boolean reimburseBankCreation;
 
 	/**
 	 * The default minimum balance.
@@ -468,12 +466,12 @@ public class Config {
 		);
 
 		offlineMultiplierDecrement = new ConfigPair<>(
-				config.getBoolean("offline-multiplier-decrement.allow-override"),
+				config.getBoolean("offline-multiplier-decrement.allow-override", true),
 				Math.abs(config.getInt("offline-multiplier-decrement.default", 0))
 		);
 
 		withdrawalMultiplierDecrement = new ConfigPair<>(
-				config.getBoolean("withdrawal-multiplier-decrement.allow-override"),
+				config.getBoolean("withdrawal-multiplier-decrement.allow-override", true),
 				Math.abs(config.getInt("withdrawal-multiplier-decrement.default", 1))
 		);
 
@@ -482,21 +480,18 @@ public class Config {
 				() -> new ItemStack(Material.STICK)
 		);
 
-		bankCreationPricePlayer = Math.abs(config.getDouble("creation-prices.bank.player", 100000.0));
-		bankCreationPriceAdmin = Math.abs(config.getDouble("creation-prices.bank.admin", 0.0));
-
 		accountCreationPrice = new ConfigPair<>(
-				config.getBoolean("creation-prices.account.allow-override"),
+				config.getBoolean("creation-prices.account.allow-override", true),
 				Math.abs(config.getDouble("creation-prices.account.default", 2500.0))
 		);
 
-		reimburseBankCreationPlayer = config.getBoolean("reimburse-creation.bank.player", false);
-		reimburseBankCreationAdmin = config.getBoolean("reimburse-creation.bank.admin", false);
-
 		reimburseAccountCreation = new ConfigPair<>(
-				config.getBoolean("reimburse-creation.account.allow-override"),
-				config.getBoolean("reimburse-creation.account.default", false)
+				config.getBoolean("reimburse-account-creation.allow-override", true),
+				config.getBoolean("reimburse-account-creation.default", false)
 		);
+
+		bankCreationPrice = Math.abs(config.getDouble("bank-creation-price", 100000.0));
+		reimburseBankCreation = config.getBoolean("reimburse-bank-creation", false);
 
 		minimumBalance = new ConfigPair<>(
 				config.getBoolean("minimum-account-balance.allow-override"),

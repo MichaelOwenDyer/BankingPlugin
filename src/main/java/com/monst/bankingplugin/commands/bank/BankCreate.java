@@ -5,12 +5,12 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
+import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.geo.selections.Selection;
-import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
@@ -140,29 +140,27 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
 
-        Bank bank = Bank.mint(name, isAdminBank ? null : p, selection);
-
-        double creationPrice = isAdminBank ? Config.bankCreationPriceAdmin : Config.bankCreationPricePlayer;
-        double balance = plugin.getEconomy().getBalance(p);
-        if (creationPrice > 0 && balance < creationPrice) {
-            plugin.debug(p.getName() + " does not have enough money to create a bank");
-            p.sendMessage(LangUtils.getMessage(Message.BANK_CREATE_INSUFFICIENT_FUNDS,
-                    new Replacement(Placeholder.PRICE, creationPrice),
-                    new Replacement(Placeholder.AMOUNT_REMAINING, creationPrice - balance),
-                    new Replacement(Placeholder.PLAYER_BALANCE, balance)
-            ));
-            return true;
+        if (!isAdminBank) {
+            double creationPrice = Config.bankCreationPrice;
+            if (!PayrollOffice.allowPayment(p, creationPrice * -1)) {
+                plugin.debug(p.getName() + " does not have enough money to create a bank");
+                double balance = plugin.getEconomy().getBalance(p);
+                p.sendMessage(LangUtils.getMessage(Message.BANK_CREATE_INSUFFICIENT_FUNDS,
+                        new Replacement(Placeholder.PRICE, creationPrice),
+                        new Replacement(Placeholder.AMOUNT_REMAINING, creationPrice - balance),
+                        new Replacement(Placeholder.PLAYER_BALANCE, balance)
+                ));
+                return true;
+            }
+            if (PayrollOffice.withdraw(p, creationPrice))
+                p.sendMessage(LangUtils.getMessage(Message.BANK_CREATE_FEE_PAID,
+                        new Replacement(Placeholder.PRICE, creationPrice)
+                ));
+            else
+                return true;
         }
 
-        if (!Utils.withdrawPlayer(p.getPlayer(), creationPrice, Callback.of(
-                result -> p.sendMessage(LangUtils.getMessage(Message.BANK_CREATE_FEE_PAID,
-                        new Replacement(Placeholder.PRICE, creationPrice)
-                )),
-                error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-                        new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-                ))
-        )))
-            return true;
+        Bank bank = Bank.mint(name, isAdminBank ? null : p, selection);
 
         BankCreateEvent event = new BankCreateEvent(p, bank);
         Bukkit.getPluginManager().callEvent(event);

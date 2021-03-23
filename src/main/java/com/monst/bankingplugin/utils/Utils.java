@@ -2,9 +2,7 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.TransactionFailedException;
 import com.monst.bankingplugin.geo.BlockVector3D;
-import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -173,35 +171,6 @@ public class Utils {
 
 	public static <T> T ternary(@Nullable T ifTrue, @Nonnull Supplier<T> ifFalse, @Nonnull Predicate<? super T> pred) {
 		return pred.test(ifTrue) ? ifTrue : ifFalse.get();
-	}
-
-	public static void depositPlayer(OfflinePlayer recipient, double amount, Callback<Void> callback) {
-		if (recipient == null)
-			return;
-		if (amount <= 0)
-			return;
-
-		EconomyResponse response = BankingPlugin.getInstance().getEconomy().depositPlayer(recipient, amount);
-		if (response.transactionSuccess()) {
-			Callback.yield(callback);
-			return;
-		}
-		Callback.error(callback, new TransactionFailedException(response.errorMessage));
-	}
-
-	public static boolean withdrawPlayer(OfflinePlayer payer, double amount, Callback<Void> callback) {
-		if (payer == null)
-			return false;
-		if (amount <= 0)
-			return true;
-
-		EconomyResponse response = BankingPlugin.getInstance().getEconomy().withdrawPlayer(payer, amount);
-		if (response.transactionSuccess()) {
-			Callback.yield(callback);
-			return true;
-		}
-		Callback.error(callback, new TransactionFailedException(response.errorMessage));
-		return false;
 	}
 
 	/**

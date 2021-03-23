@@ -12,10 +12,9 @@ import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -140,8 +139,8 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
 
         double net = reimbursement - creationPrice;
-        double balance = plugin.getEconomy().getBalance(p);
-        if (net < 0 && balance < net * -1) { // TODO: Test
+        if (!PayrollOffice.allowPayment(p, net)) {
+            double balance = plugin.getEconomy().getBalance(p);
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS,
                     new Replacement(Placeholder.PRICE, net),
                     new Replacement(Placeholder.PLAYER_BALANCE, balance),
@@ -150,62 +149,36 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             return;
         }
 
-        final double finalReimbursement = reimbursement;
-        final double finalCreationPrice = creationPrice;
-
-        // Customer receives reimbursement for old account
-        if (finalReimbursement > 0 && !oldBank.isOwner(p)) {
-            Utils.depositPlayer(p.getPlayer(), finalReimbursement, Callback.of(
-                    result -> p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
-                            new Replacement(Placeholder.AMOUNT, finalReimbursement)
-                    )),
-                    error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-                            new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-                    ))
-            ));
+        if (reimbursement > 0) {
+            // Customer receives reimbursement for old account
+            if (PayrollOffice.deposit(p, reimbursement))
+                p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
+                        new Replacement(Placeholder.AMOUNT, reimbursement)
+                ));
+            // Bank owner of old account pays reimbursement
+            if (oldBank.isPlayerBank() && PayrollOffice.withdraw(oldBank.getOwner(), reimbursement))
+                Mailman.notify(oldBank.getOwner(), LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+                        new Replacement(Placeholder.PLAYER, p::getName),
+                        new Replacement(Placeholder.AMOUNT, reimbursement)
+                ));
         }
 
-        // Bank owner of new account receives account creation fee
-        if (finalCreationPrice > 0 && newBank.isPlayerBank() && !newBank.isOwner(p)) {
-            OfflinePlayer bankOwner = newBank.getOwner();
-            Utils.depositPlayer(bankOwner, finalCreationPrice, Callback.of(
-                    result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
-                            new Replacement(Placeholder.PLAYER, p::getName),
-                            new Replacement(Placeholder.AMOUNT, finalCreationPrice),
-                            new Replacement(Placeholder.BANK_NAME, newBank::getColorizedName)
-                    )),
-                    error -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
-                            new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-                    ))
-            ));
-        }
-
-        // Account owner pays creation fee for new account
-        if (creationPrice > 0 && !newBank.isOwner(p)) {
-            if (!Utils.withdrawPlayer(p, finalCreationPrice, Callback.of(
-                    result -> p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_PAID,
-                            new Replacement(Placeholder.PRICE, finalCreationPrice),
-                            new Replacement(Placeholder.BANK_NAME, newBank::getColorizedName)
-                    )),
-                    error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-                            new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-                    ))
-            )))
+        if (creationPrice > 0) {
+            // Account owner pays creation fee for new account
+            if (PayrollOffice.withdraw(p, creationPrice))
+                p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_PAID,
+                        new Replacement(Placeholder.PRICE, creationPrice),
+                        new Replacement(Placeholder.BANK_NAME, newBank::getColorizedName)
+                ));
+            else
                 return;
-        }
-
-        // Bank owner of old account pays reimbursement
-        if (reimbursement > 0 && oldBank.isPlayerBank() && !oldBank.isOwner(p)) {
-            OfflinePlayer bankOwner = oldBank.getOwner();
-            Utils.withdrawPlayer(bankOwner, finalReimbursement, Callback.of(
-                    result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
-                            new Replacement(Placeholder.PLAYER, p::getName),
-                            new Replacement(Placeholder.AMOUNT, finalReimbursement)
-                    )),
-                    error -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
-                            new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-                    ))
-            ));
+            // Bank owner of new account receives account creation fee
+            if (newBank.isPlayerBank() && PayrollOffice.deposit(newBank.getOwner(), creationPrice))
+                Mailman.notify(newBank.getOwner(), LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
+                        new Replacement(Placeholder.PLAYER, p::getName),
+                        new Replacement(Placeholder.AMOUNT, creationPrice),
+                        new Replacement(Placeholder.BANK_NAME, newBank::getColorizedName)
+                ));
         }
 
         if (newAccount.create(true)) {

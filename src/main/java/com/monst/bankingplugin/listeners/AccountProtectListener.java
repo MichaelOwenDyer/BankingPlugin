@@ -12,10 +12,10 @@ import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.geo.locations.SingleChestLocation;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
@@ -80,40 +80,26 @@ public class AccountProtectListener extends BankingPluginListener {
 	@SuppressWarnings("ConstantConditions")
 	private void removeAndCreateSmaller(Account account, Block b, Player p) {
 		Bank bank = account.getBank();
-		double creationPrice = bank.getAccountCreationPrice().get();
-		creationPrice *= bank.getReimburseAccountCreation().get() ? 1 : 0;
-
-		if (creationPrice > 0 && account.isOwner(p) && !account.getBank().isOwner(p)) {
-			double finalCreationPrice = creationPrice;
-			String worldName = account.getChestLocation().getWorld() != null ? account.getChestLocation().getWorld().getName() : "world";
+		if (bank.getReimburseAccountCreation().get() && account.isOwner(p) && !bank.isOwner(p)) {
+			double creationPrice = bank.getAccountCreationPrice().get();
 			// Account owner is reimbursed for the part of the chest that was broken
-			Utils.depositPlayer(p, finalCreationPrice, Callback.of(
-					result -> p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
-							new Replacement(Placeholder.AMOUNT, finalCreationPrice)
-					)),
-					error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
-			));
-
+			if (PayrollOffice.deposit(p, creationPrice))
+				p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
+						new Replacement(Placeholder.AMOUNT, creationPrice)
+				));
 			// Bank owner reimburses the customer
-			if (creationPrice > 0 && bank.isPlayerBank() && !bank.isOwner(p)) {
-				OfflinePlayer bankOwner = bank.getOwner();
-				Utils.withdrawPlayer(bankOwner, finalCreationPrice, Callback.of(
-						result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
-								new Replacement(Placeholder.PLAYER, p::getName),
-								new Replacement(Placeholder.AMOUNT, finalCreationPrice)
-						)),
-						error -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ERROR_OCCURRED,
-								new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-						))
+			if (bank.isPlayerBank() && PayrollOffice.withdraw(bank.getOwner(), creationPrice)) {
+				Mailman.notify(bank.getOwner(), LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+						new Replacement(Placeholder.PLAYER, p.getName()),
+						new Replacement(Placeholder.AMOUNT, creationPrice)
 				));
 			}
 		}
 
 		if (account.isDoubleChest()) {
-
-			Chest chest;
-            chest = Utils.getChestAt(Utils.getAttachedChestBlock(b));
-
+			Chest chest = Utils.getChestAt(Utils.getAttachedChestBlock(b));
+			if (chest == null)
+				return;
             Account newAccount = Account.clone(account);
 			newAccount.setChestLocation(SingleChestLocation.from(chest));
 
@@ -189,9 +175,9 @@ public class AccountProtectListener extends BankingPluginListener {
             return;
 		}
 
-		double creationPrice = account.getBank().getAccountCreationPrice().get();
-		double balance = plugin.getEconomy().getBalance(p);
-		if (creationPrice > 0 && creationPrice > balance) {
+		double creationPrice = bank.getAccountCreationPrice().get();
+		if (!PayrollOffice.allowPayment(p, creationPrice * -1)) {
+			double balance = plugin.getEconomy().getBalance(p);
 			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_INSUFFICIENT_FUNDS,
 					new Replacement(Placeholder.PRICE, creationPrice),
 					new Replacement(Placeholder.AMOUNT_REMAINING, creationPrice - balance),
@@ -200,30 +186,21 @@ public class AccountProtectListener extends BankingPluginListener {
 			e.setCancelled(true);
 			return;
 		}
-		if (creationPrice > 0 && !account.getBank().isOwner(p)) {
-			OfflinePlayer owner = p.getPlayer();
-			if (!Utils.withdrawPlayer(owner, creationPrice, Callback.of(
-					result -> p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_PAID,
-							new Replacement(Placeholder.PRICE, creationPrice),
-							new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
-					)),
-					error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, error::getLocalizedMessage)))
-			))) {
+		if (creationPrice > 0 && !bank.isOwner(p)) {
+			if (PayrollOffice.withdraw(p, creationPrice))
+				p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_PAID,
+						new Replacement(Placeholder.PRICE, creationPrice),
+						new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
+				));
+			else {
 				e.setCancelled(true);
 				return;
 			}
-
-			if (creationPrice > 0 && !account.getBank().isOwner(p)) {
-				OfflinePlayer bankOwner = account.getBank().getOwner();
-				Utils.depositPlayer(bankOwner, creationPrice, Callback.of(
-						result -> Mailman.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_RECEIVED,
-								new Replacement(Placeholder.PLAYER, () -> account.getOwner().getName()),
-								new Replacement(Placeholder.AMOUNT, creationPrice),
-								new Replacement(Placeholder.BANK_NAME, () -> account.getBank().getColorizedName())
-						)),
-						error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-								new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-						))
+			if (bank.isPlayerBank() && PayrollOffice.deposit(bank.getOwner(), creationPrice)) {
+				Mailman.notify(bank.getOwner(), LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_RECEIVED,
+						new Replacement(Placeholder.PLAYER, account::getOwnerName),
+						new Replacement(Placeholder.AMOUNT, creationPrice),
+						new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
 				));
 			}
 		}

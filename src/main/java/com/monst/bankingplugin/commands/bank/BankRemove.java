@@ -4,14 +4,9 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
-import com.monst.bankingplugin.lang.LangUtils;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.lang.MailingRoom;
+import com.monst.bankingplugin.lang.*;
+import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -63,30 +58,23 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
             return true;
         }
 
-        if (sender instanceof Player && Config.confirmOnRemove && !isConfirmed((Player) sender, args)) {
-            sender.sendMessage(LangUtils.getMessage(Message.BANK_CONFIRM_REMOVE,
-                    new Replacement(Placeholder.NUMBER_OF_BANKS, 1),
-                    new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, () -> bank.getAccounts().size())
-            ));
-            return true;
-        }
-
         if (sender instanceof Player) {
-            double creationPrice = bank.isAdminBank() ? Config.bankCreationPriceAdmin : Config.bankCreationPricePlayer;
-            boolean reimburse = bank.isAdminBank() ? Config.reimburseBankCreationAdmin : Config.reimburseBankCreationPlayer;
-            creationPrice *= reimburse ? 1 : 0;
-
             Player executor = (Player) sender;
-            if (creationPrice > 0 && (bank.isAdminBank() || bank.isOwner(executor))) {
-                double finalCreationPrice = creationPrice;
-                Utils.depositPlayer(executor.getPlayer(), finalCreationPrice, Callback.of(
-                        result -> executor.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
-                                new Replacement(Placeholder.AMOUNT, finalCreationPrice)
-                        )),
-                        error -> executor.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-                                new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-                        ))
+            if (Config.confirmOnRemove && !isConfirmed(executor, args)) {
+                sender.sendMessage(LangUtils.getMessage(Message.BANK_CONFIRM_REMOVE,
+                        new Replacement(Placeholder.NUMBER_OF_BANKS, 1),
+                        new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, bank.getAccounts().size())
                 ));
+                return true;
+            }
+            if (bank.isPlayerBank() && Config.reimburseBankCreation && bank.isOwner(executor)) {
+                double reimbursement = Config.bankCreationPrice;
+                if (reimbursement > 0) {
+                    if (PayrollOffice.deposit(executor, reimbursement))
+                        executor.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
+                                new Replacement(Placeholder.AMOUNT, reimbursement)
+                        ));
+                }
             }
         }
 

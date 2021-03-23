@@ -203,7 +203,7 @@ public class InterestEventListener extends BankingPluginListener {
 
 		finalPayments.forEach((player, payment) -> {
 			if (PayrollOffice.allowPayment(player, payment))
-				PayrollOffice.submit(player, payment);
+				PayrollOffice.deposit(player, payment);
 			// TODO: if payment cannot be made, ...
 		});
 	}
