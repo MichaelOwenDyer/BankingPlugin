@@ -420,7 +420,7 @@ public class Config {
         commandNameAccount = config.getString("command-names.account", "account");
 		commandNameControl = config.getString("command-names.control", "bp");
 		interestPayoutTimes = new ConfigPair<>(
-				config.getBoolean("interest-payout-times.allow-override"),
+				config.getBoolean("interest-payout-times.allow-override", true),
 				config.getStringList("interest-payout-times.default").stream()
 						.map(Config::parseLocalTime)
 						.filter(Objects::nonNull)
@@ -432,12 +432,12 @@ public class Config {
 			plugin.getScheduler().scheduleAll();
 
 		interestRate = new ConfigPair<>(
-				config.getBoolean("interest-rate.allow-override"),
+				config.getBoolean("interest-rate.allow-override", true),
 				Math.abs(config.getDouble("interest-rate.default", 0.01))
 		);
 
 		multipliers = new ConfigPair<>(
-				config.getBoolean("interest-multipliers.allow-override"),
+				config.getBoolean("interest-multipliers.allow-override", true),
 				Utils.ternary(
 						config.getIntegerList("interest-multipliers.default"),
 						() -> Collections.singletonList(1),
@@ -446,7 +446,7 @@ public class Config {
 		);
 
 		initialInterestDelay = new ConfigPair<>(
-				config.getBoolean("initial-interest-delay.allow-override"),
+				config.getBoolean("initial-interest-delay.allow-override", true),
 				Math.abs(config.getInt("initial-interest-delay.default", 0))
 		);
 
@@ -456,12 +456,12 @@ public class Config {
 		);
 
 		allowedOfflinePayouts = new ConfigPair<>(
-				config.getBoolean("allowed-offline-payouts.allow-override"),
+				config.getBoolean("allowed-offline-payouts.allow-override", true),
 				Math.abs(config.getInt("allowed-offline-payouts.default", 1))
 		);
 
 		allowedOfflinePayoutsBeforeReset = new ConfigPair<>(
-				config.getBoolean("allowed-offline-payouts-before-multiplier-reset.allow-override"),
+				config.getBoolean("allowed-offline-payouts-before-multiplier-reset.allow-override", true),
 				Math.abs(config.getInt("allowed-offline-payouts-before-multiplier-reset.default", 1))
 		);
 
@@ -475,10 +475,7 @@ public class Config {
 				Math.abs(config.getInt("withdrawal-multiplier-decrement.default", 1))
 		);
 
-		accountInfoItem = Utils.nonNull(
-				parseItemStack(config.getString("account-info-item")),
-				() -> new ItemStack(Material.STICK)
-		);
+		accountInfoItem = parseItemStack(config.getString("account-info-item"));
 
 		accountCreationPrice = new ConfigPair<>(
 				config.getBoolean("creation-prices.account.allow-override", true),
@@ -494,22 +491,22 @@ public class Config {
 		reimburseBankCreation = config.getBoolean("reimburse-bank-creation", false);
 
 		minimumBalance = new ConfigPair<>(
-				config.getBoolean("minimum-account-balance.allow-override"),
+				config.getBoolean("minimum-account-balance.allow-override", true),
 				Math.abs(config.getDouble("minimum-account-balance.default", 1000.0))
 		);
 
 		lowBalanceFee = new ConfigPair<>(
-				config.getBoolean("low-balance-fee.allow-override"),
+				config.getBoolean("low-balance-fee.allow-override", true),
 				Math.abs(config.getDouble("low-balance-fee.default", 2000.0))
 		);
 
 		payOnLowBalance = new ConfigPair<>(
-				config.getBoolean("pay-interest-on-low-balance.allow-override"),
+				config.getBoolean("pay-interest-on-low-balance.allow-override", true),
 				config.getBoolean("pay-interest-on-low-balance.default", false)
 		);
 
 		playerBankAccountLimit = new ConfigPair<>(
-				config.getBoolean("player-bank-account-limit.allow-override"),
+				config.getBoolean("player-bank-account-limit.allow-override", true),
 				config.getInt("player-bank-account-limit.default", 1)
 		);
 
@@ -564,11 +561,7 @@ public class Config {
 	}
 
 	private static ItemStack parseItemStack(String string) {
-		try {
-			return new ItemStack(Objects.requireNonNull(Material.getMaterial(string)));
-		} catch (NullPointerException e) {
-			return null;
-		}
+		return Optional.ofNullable(string).map(Material::getMaterial).map(ItemStack::new).orElse(null);
 	}
 
 	private void loadLanguageConfig(boolean showMessages) {

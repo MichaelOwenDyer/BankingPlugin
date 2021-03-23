@@ -22,7 +22,6 @@ import com.monst.bankingplugin.utils.UpdateChecker.Result;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
-import org.apache.commons.lang.WordUtils;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -246,8 +245,7 @@ public class BankingPlugin extends JavaPlugin {
 			return typeFrequency;
 		}));
 		metrics.addCustomChart(new Metrics.SimplePie("account-info-item",
-				() -> WordUtils.capitalizeFully(Config.accountInfoItem.getType()
-						.name().replace("_", " "))
+				() -> Optional.ofNullable(Config.accountInfoItem).map(m -> m.getType().toString()).orElse("none")
 		));
 		metrics.addCustomChart(new Metrics.SimplePie("self-banking",
 				() -> Config.allowSelfBanking ? "Enabled" : "Disabled"));
