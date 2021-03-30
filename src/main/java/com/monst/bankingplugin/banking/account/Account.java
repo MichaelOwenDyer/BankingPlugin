@@ -164,8 +164,8 @@ public class Account extends BankingEntity {
 			inventory = getChestLocation().findInventory();
 			getChestLocation().checkSpaceAbove();
 		} catch (ChestNotFoundException | ChestBlockedException e) {
-			plugin.getAccountRepository().remove(this, Config.removeAccountOnError);
-			if (!Config.removeAccountOnError)
+			plugin.getAccountRepository().remove(this, Config.removeAccountOnError.get());
+			if (!Config.removeAccountOnError.get())
 				plugin.getAccountRepository().addInvalidAccount(this);
 
 			if (showConsoleMessages)
@@ -554,7 +554,7 @@ public class Account extends BankingEntity {
 			return;
 		OfflinePlayer previousOwner = getOwner();
 		owner = newOwner;
-		if (Config.trustOnTransfer)
+		if (Config.trustOnTransfer.get())
 			coowners.add(previousOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 		notifyObservers();

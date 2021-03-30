@@ -24,7 +24,7 @@ public abstract class Mailman {
     }
 
     public static void mail(OfflinePlayer player, String message) {
-        if (!Config.enableMail || player == null || message == null)
+        if (!Config.enableMail.get() || player == null || message == null)
             return;
         User user = BankingPlugin.getInstance().getEssentials().getUserMap().getUser(player.getUniqueId());
         if (user != null)

@@ -71,7 +71,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
             return;
         }
 
-        if (account.getBalance().signum() > 0 || Config.confirmOnRemove) {
+        if (account.getBalance().signum() > 0 || Config.confirmOnRemove.get()) {
             if (!isConfirmed(p, account.getID())) {
                 plugin.debug("Needs confirmation");
                 if (account.getBalance().signum() > 0) {

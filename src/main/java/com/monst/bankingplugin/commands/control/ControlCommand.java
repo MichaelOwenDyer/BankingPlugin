@@ -23,7 +23,7 @@ public class ControlCommand extends BankingPluginCommand<ControlCommand.SubComma
             throw e;
         }
 
-        this.name = Config.commandNameControl;
+        this.name = Config.controlCommandName.get();
         this.desc = LangUtils.getMessage(Message.CONTROL_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
 

@@ -43,7 +43,7 @@ public class WorldGuardListener extends BankingPluginListener {
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onCreateBank(BankCreateEvent e) {
-		if (!Config.enableWorldGuardIntegration || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
+		if (!Config.enableWorldGuardIntegration.get() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
 		for (BlockVector3D bv : e.getBank().getSelection().getCorners())
@@ -56,7 +56,7 @@ public class WorldGuardListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onResizeBank(BankResizeEvent e) {
-		if (!Config.enableWorldGuardIntegration || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
+		if (!Config.enableWorldGuardIntegration.get() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
 		for (BlockVector3D bv : e.getNewSelection().getCorners())
@@ -69,7 +69,7 @@ public class WorldGuardListener extends BankingPluginListener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onUseBlock(WrappedUseBlockEvent event) {
-		if (!Config.enableWorldGuardIntegration)
+		if (!Config.enableWorldGuardIntegration.get())
 			return;
 
 		Block block;

@@ -3,8 +3,8 @@ package com.monst.bankingplugin.banking.bank;
 import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.bank.configuration.*;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.config.values.overridable.*;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Callback;
@@ -87,21 +87,21 @@ public class Bank extends BankingEntity {
 	private final Set<Account> accounts;
 	private Selection selection;
 
-	private final CountInterestDelayOffline countInterestDelayOffline;
-	private final ReimburseAccountCreation reimburseAccountCreation;
-	private final PayOnLowBalance payOnLowBalance;
-	private final InterestRate interestRate;
-	private final AccountCreationPrice accountCreationPrice;
-	private final MinimumBalance minimumBalance;
-	private final LowBalanceFee lowBalanceFee;
-	private final InitialInterestDelay initialInterestDelay;
-	private final AllowedOfflinePayouts allowedOfflinePayouts;
-	private final AllowedOfflinePayoutsBeforeReset allowedOfflinePayoutsBeforeReset;
-	private final OfflineMultiplierDecrement offlineMultiplierDecrement;
-	private final WithdrawalMultiplierDecrement withdrawalMultiplierDecrement;
-	private final PlayerBankAccountLimit playerBankAccountLimit;
-	private final Multipliers multipliers;
-	private final InterestPayoutTimes interestPayoutTimes;
+	private final OverriddenValue<Boolean> countInterestDelayOffline;
+	private final OverriddenValue<Boolean> reimburseAccountCreation;
+	private final OverriddenValue<Boolean> payOnLowBalance;
+	private final OverriddenValue<Double> interestRate;
+	private final OverriddenValue<Double> accountCreationPrice;
+	private final OverriddenValue<Double> minimumBalance;
+	private final OverriddenValue<Double> lowBalanceFee;
+	private final OverriddenValue<Integer> initialInterestDelay;
+	private final OverriddenValue<Integer> allowedOfflinePayouts;
+	private final OverriddenValue<Integer> allowedOfflinePayoutsBeforeReset;
+	private final OverriddenValue<Integer> offlineMultiplierDecrement;
+	private final OverriddenValue<Integer> withdrawalMultiplierDecrement;
+	private final OverriddenValue<Integer> playerBankAccountLimit;
+	private final OverriddenValue<List<Integer>> multipliers;
+	private final OverriddenValue<List<LocalTime>> interestPayoutTimes;
 
 	/**
 	 * @param id the bank ID {@link BankingEntity}
@@ -121,21 +121,21 @@ public class Bank extends BankingEntity {
 		super(id, name, owner, coowners);
 		this.selection = selection;
 		this.accounts = new HashSet<>();
-		this.countInterestDelayOffline = new CountInterestDelayOffline(countInterestDelayOffline);
-		this.reimburseAccountCreation = new ReimburseAccountCreation(reimburseAccountCreation);
-		this.payOnLowBalance = new PayOnLowBalance(payOnLowBalance);
-		this.interestRate = new InterestRate(interestRate);
-		this.accountCreationPrice = new AccountCreationPrice(accountCreationPrice);
-		this.minimumBalance = new MinimumBalance(minimumBalance);
-		this.lowBalanceFee = new LowBalanceFee(lowBalanceFee);
-		this.initialInterestDelay = new InitialInterestDelay(initialInterestDelay);
-		this.allowedOfflinePayouts = new AllowedOfflinePayouts(allowedOfflinePayouts);
-		this.allowedOfflinePayoutsBeforeReset = new AllowedOfflinePayoutsBeforeReset(allowedOfflinePayoutsUntilReset);
-		this.offlineMultiplierDecrement = new OfflineMultiplierDecrement(offlineMultiplierDecrement);
-		this.withdrawalMultiplierDecrement = new WithdrawalMultiplierDecrement(withdrawalMultiplierDecrement);
-		this.playerBankAccountLimit = new PlayerBankAccountLimit(playerBankAccountLimit);
-		this.multipliers = new Multipliers(multipliers);
-		this.interestPayoutTimes = new InterestPayoutTimes(interestPayoutTimes);
+		this.countInterestDelayOffline = Config.countInterestDelayOffline.override(countInterestDelayOffline);
+		this.reimburseAccountCreation = Config.reimburseAccountCreation.override(reimburseAccountCreation);
+		this.payOnLowBalance = Config.payOnLowBalance.override(payOnLowBalance);
+		this.interestRate = Config.interestRate.override(interestRate);
+		this.accountCreationPrice = Config.accountCreationPrice.override(accountCreationPrice);
+		this.minimumBalance = Config.minimumBalance.override(minimumBalance);
+		this.lowBalanceFee = Config.lowBalanceFee.override(lowBalanceFee);
+		this.initialInterestDelay = Config.initialInterestDelay.override(initialInterestDelay);
+		this.allowedOfflinePayouts = Config.allowedOfflinePayouts.override(allowedOfflinePayouts);
+		this.allowedOfflinePayoutsBeforeReset = Config.allowedOfflinePayoutsBeforeReset.override(allowedOfflinePayoutsUntilReset);
+		this.offlineMultiplierDecrement = Config.offlineMultiplierDecrement.override(offlineMultiplierDecrement);
+		this.withdrawalMultiplierDecrement = Config.withdrawalMultiplierDecrement.override(withdrawalMultiplierDecrement);
+		this.playerBankAccountLimit = Config.playerBankAccountLimit.override(playerBankAccountLimit);
+		this.multipliers = Config.multipliers.override(multipliers);
+		this.interestPayoutTimes = Config.interestPayoutTimes.override(interestPayoutTimes);
 
 	}
 
@@ -238,67 +238,67 @@ public class Bank extends BankingEntity {
 		notifyObservers();
 	}
 
-	public CountInterestDelayOffline getCountInterestDelayOffline() {
+	public OverriddenValue<Boolean> getCountInterestDelayOffline() {
 		return countInterestDelayOffline;
 	}
 
-	public ReimburseAccountCreation getReimburseAccountCreation() {
+	public OverriddenValue<Boolean> getReimburseAccountCreation() {
 		return reimburseAccountCreation;
 	}
 
-	public PayOnLowBalance getPayOnLowBalance() {
+	public OverriddenValue<Boolean> getPayOnLowBalance() {
 		return payOnLowBalance;
 	}
 
-	public InterestRate getInterestRate() {
+	public OverriddenValue<Double> getInterestRate() {
 		return interestRate;
 	}
 
-	public AccountCreationPrice getAccountCreationPrice() {
+	public OverriddenValue<Double> getAccountCreationPrice() {
 		return accountCreationPrice;
 	}
 
-	public MinimumBalance getMinimumBalance() {
+	public OverriddenValue<Double> getMinimumBalance() {
 		return minimumBalance;
 	}
 
-	public LowBalanceFee getLowBalanceFee() {
+	public OverriddenValue<Double> getLowBalanceFee() {
 		return lowBalanceFee;
 	}
 
-	public InitialInterestDelay getInitialInterestDelay() {
+	public OverriddenValue<Integer> getInitialInterestDelay() {
 		return initialInterestDelay;
 	}
 
-	public AllowedOfflinePayouts getAllowedOfflinePayouts() {
+	public OverriddenValue<Integer> getAllowedOfflinePayouts() {
 		return allowedOfflinePayouts;
 	}
 
-	public AllowedOfflinePayoutsBeforeReset getAllowedOfflinePayoutsBeforeReset() {
+	public OverriddenValue<Integer> getAllowedOfflinePayoutsBeforeReset() {
 		return allowedOfflinePayoutsBeforeReset;
 	}
 
-	public OfflineMultiplierDecrement getOfflineMultiplierDecrement() {
+	public OverriddenValue<Integer> getOfflineMultiplierDecrement() {
 		return offlineMultiplierDecrement;
 	}
 
-	public WithdrawalMultiplierDecrement getWithdrawalMultiplierDecrement() {
+	public OverriddenValue<Integer> getWithdrawalMultiplierDecrement() {
 		return withdrawalMultiplierDecrement;
 	}
 
-	public PlayerBankAccountLimit getPlayerBankAccountLimit() {
+	public OverriddenValue<Integer> getPlayerBankAccountLimit() {
 		return playerBankAccountLimit;
 	}
 
-	public Multipliers getMultipliers() {
+	public OverriddenValue<List<Integer>> getMultipliers() {
 		return multipliers;
 	}
 
-	public InterestPayoutTimes getInterestPayoutTimes() {
+	public OverriddenValue<List<LocalTime>> getInterestPayoutTimes() {
 		return interestPayoutTimes;
 	}
 
-	public ConfigurationOption<?> get(BankField field) {
+	public OverriddenValue<?> get(BankField field) {
 		switch (field) {
 			case COUNT_INTEREST_DELAY_OFFLINE:
 				return getCountInterestDelayOffline();
@@ -336,10 +336,10 @@ public class Bank extends BankingEntity {
 	}
 
 	public boolean set(BankField field, String input) throws ArgumentParseException {
-		boolean overrideCompliant = get(field).set(input);
+		boolean isOverrideCompliant = get(field).set(input);
 		notifyObservers();
 		getAccounts().forEach(Account::notifyObservers);
-		return overrideCompliant;
+		return isOverrideCompliant;
 	}
 
 	/**
@@ -400,7 +400,7 @@ public class Bank extends BankingEntity {
 	public void setOwner(OfflinePlayer newOwner) {
 		OfflinePlayer prevOwner = getOwner();
 		owner = newOwner;
-		if (Config.trustOnTransfer)
+		if (Config.trustOnTransfer.get())
 			trustPlayer(prevOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 		notifyObservers();

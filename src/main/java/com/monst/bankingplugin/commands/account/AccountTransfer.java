@@ -109,7 +109,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
             return;
         }
 
-        if (Config.confirmOnTransfer && !isConfirmed(p, account.getID())) {
+        if (Config.confirmOnTransfer.get() && !isConfirmed(p, account.getID())) {
             plugin.debug("Needs confirmation");
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CONFIRM_TRANSFER,
                     new Replacement(Placeholder.PLAYER, newOwner::getName)

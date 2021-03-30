@@ -6,8 +6,11 @@ import com.monst.bankingplugin.lang.Placeholder;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import javax.annotation.Nonnull;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,7 +32,7 @@ public class LanguageConfig extends FileConfiguration {
     @Nonnull
     public String findTranslation(@Nonnull Message message) {
         String path = message.getPath();
-        String finalMessage = getString(path, null);
+        String finalMessage = getString(path);
         if (finalMessage != null)
             return finalMessage;
         // Value was missing
@@ -65,13 +68,12 @@ public class LanguageConfig extends FileConfiguration {
 
     @Override
     public void load(@Nonnull File file) throws IOException {
-        this.file = file;
-        try (FileInputStream fis = new FileInputStream(file);
-             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-             BufferedReader br = new BufferedReader(isr)) {
+        load(file.toPath());
+    }
 
-            loadFromStream(br.lines());
-        }
+    public void load(Path path) throws IOException {
+        this.file = path.toFile();
+        loadFromStream(Files.lines(path));
     }
 
     @Override

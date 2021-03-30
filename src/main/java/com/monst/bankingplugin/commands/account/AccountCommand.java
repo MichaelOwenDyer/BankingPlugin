@@ -24,7 +24,7 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 			throw e;
 		}
 
-		this.name = Config.commandNameAccount;
+		this.name = Config.accountCommandName.get();
 		this.desc = LangUtils.getMessage(Message.ACCOUNT_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
 

@@ -75,7 +75,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
             return true;
         }
 
-        if (sender instanceof Player && Config.confirmOnRemoveAll && !isConfirmed((Player) sender, args)) {
+        if (sender instanceof Player && Config.confirmOnRemoveAll.get() && !isConfirmed((Player) sender, args)) {
             sender.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CONFIRM_REMOVE_ALL,
                     new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
             ));

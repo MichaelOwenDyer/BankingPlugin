@@ -43,7 +43,7 @@ public class Utils {
 
 	public static boolean isAllowedName(String name) {
 		try {
-			return Config.nameRegex.trim().isEmpty() || Pattern.matches(Config.nameRegex, name);
+			return Config.nameRegex.get().trim().isEmpty() || Pattern.matches(Config.nameRegex.get(), name);
 		} catch (PatternSyntaxException e) {
 			return true;
 		}
@@ -161,16 +161,11 @@ public class Utils {
 
 	@Nonnull
 	public static <T> T nonNull(@Nullable T ifNotNull, @Nonnull Supplier<T> ifNull) {
-		return ternary(ifNotNull, ifNull, Objects::nonNull);
+		return ifNotNull != null ? ifNotNull : ifNull.get();
 	}
 
-	@Nonnull
-	public static <T, K> K nonNull(@Nullable T ifNotNull, @Nonnull Function<T, K> function, @Nonnull Supplier<K> ifNull) {
-		return ifNotNull != null ? function.apply(ifNotNull) : ifNull.get();
-	}
-
-	public static <T> T ternary(@Nullable T ifTrue, @Nonnull Supplier<T> ifFalse, @Nonnull Predicate<? super T> pred) {
-		return pred.test(ifTrue) ? ifTrue : ifFalse.get();
+	public static <T> T ternary(@Nullable T ifTrue, T ifFalse, @Nonnull Predicate<? super T> pred) {
+		return pred.test(ifTrue) ? ifTrue : ifFalse;
 	}
 
 	/**
@@ -296,18 +291,18 @@ public class Utils {
 	}
 
 	public static int getAccountLimit(Player player) {
-		return (int) getLimit(player, Permissions.ACCOUNT_NO_LIMIT, Config.defaultAccountLimit);
+		return (int) getLimit(player, Permissions.ACCOUNT_NO_LIMIT, Config.defaultAccountLimit.get());
 	}
 
 	public static int getBankLimit(Player player) {
-		return (int) getLimit(player, Permissions.BANK_NO_LIMIT, Config.defaultBankLimit);
+		return (int) getLimit(player, Permissions.BANK_NO_LIMIT, Config.defaultBankLimit.get());
 	}
 
 	/**
 	 * Gets the bank volume limit of a certain player, to see if the player is allowed to create a bank of a certain size.
 	 */
 	public static long getBankVolumeLimit(Player player) {
-		return getLimit(player, Permissions.BANK_NO_SIZE_LIMIT, Config.maximumBankVolume);
+		return getLimit(player, Permissions.BANK_NO_SIZE_LIMIT, Config.maximumBankVolume.get());
 	}
 
 	private static long getLimit(Player player, String permission, long defaultLimit) {

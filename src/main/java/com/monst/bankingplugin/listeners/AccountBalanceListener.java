@@ -86,7 +86,7 @@ public class AccountBalanceListener extends BankingPluginListener {
 
 		plugin.getDatabase().logAccountTransaction(new AccountTransaction(
 				account.getID(), account.getBank().getID(), executor.getUniqueId(), executor.getName(),
-                difference, account.getBalance(), balance, System.currentTimeMillis()
+				account.getBalance(), balance, difference, System.currentTimeMillis()
 		));
 	}
 }

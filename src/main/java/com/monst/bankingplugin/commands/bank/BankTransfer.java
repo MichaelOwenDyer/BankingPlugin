@@ -98,7 +98,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
             return true;
         }
 
-        if (sender instanceof Player && Config.confirmOnTransfer && isConfirmed((Player) sender, args)) {
+        if (sender instanceof Player && Config.confirmOnTransfer.get() && isConfirmed((Player) sender, args)) {
             sender.sendMessage(LangUtils.getMessage(Message.BANK_CONFIRM_TRANSFER,
                     new Replacement(Placeholder.PLAYER, newOwner != null ? newOwner.getName() : "ADMIN"),
                     new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)

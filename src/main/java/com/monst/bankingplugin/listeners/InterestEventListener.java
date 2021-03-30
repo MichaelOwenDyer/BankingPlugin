@@ -124,7 +124,7 @@ public class InterestEventListener extends BankingPluginListener {
 					new Argument("g", bank.getGiniCoefficient())
 			};
 
-			Expression revenueExpression = new Expression(Config.bankRevenueFunction, args);
+			Expression revenueExpression = new Expression(Config.bankRevenueFunction.get(), args);
 			BigDecimal revenue = QuickMath.scale(BigDecimal.valueOf(revenueExpression.calculate()));
 
 			if (revenue.signum() != 0)

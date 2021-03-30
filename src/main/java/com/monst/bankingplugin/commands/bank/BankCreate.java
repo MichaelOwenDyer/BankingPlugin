@@ -53,7 +53,7 @@ public class BankCreate extends BankCommand.SubCommand {
 
         Selection selection;
         if (args.length <= 3) {
-            if (Config.enableWorldEditIntegration && plugin.hasWorldEdit()) {
+            if (Config.enableWorldEditIntegration.get() && plugin.hasWorldEdit()) {
                 selection = WorldEditReader.getSelection(plugin, p);
                 if (selection == null) {
                     plugin.debug(p.getName() + " tried to create a bank with no WorldEdit selection");
@@ -78,7 +78,7 @@ public class BankCreate extends BankCommand.SubCommand {
         if (selection == null)
             return false;
 
-        if (Config.disabledWorlds.contains(selection.getWorld().getName())) {
+        if (Config.disabledWorlds.get().contains(selection.getWorld().getName())) {
             plugin.debug("BankingPlugin is disabled in world " + selection.getWorld().getName());
             p.sendMessage(LangUtils.getMessage(Message.WORLD_DISABLED));
             return true;
@@ -105,7 +105,7 @@ public class BankCreate extends BankCommand.SubCommand {
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING,
                     new Replacement(Placeholder.NUMBER_OF_BANKS, overlappingSelections::size)
             ));
-            if (plugin.hasGriefPrevention() && Config.enableGriefPreventionIntegration)
+            if (plugin.hasGriefPrevention() && Config.enableGriefPreventionIntegration.get())
                 VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;
         }
@@ -120,12 +120,12 @@ public class BankCreate extends BankCommand.SubCommand {
             ));
             return true;
         }
-        if (!isAdminBank && volume < Config.minimumBankVolume) {
-            plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume + ")");
+        if (!isAdminBank && volume < Config.minimumBankVolume.get()) {
+            plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume.get() + ")");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_SMALL,
                     new Replacement(Placeholder.BANK_SIZE, volume),
-                    new Replacement(Placeholder.MINIMUM, Config.minimumBankVolume),
-                    new Replacement(Placeholder.DIFFERENCE, () -> Config.minimumBankVolume - volume)
+                    new Replacement(Placeholder.MINIMUM, Config.minimumBankVolume::get),
+                    new Replacement(Placeholder.DIFFERENCE, () -> Config.minimumBankVolume.get() - volume)
             ));
             return true;
         }
@@ -141,7 +141,7 @@ public class BankCreate extends BankCommand.SubCommand {
         }
 
         if (!isAdminBank) {
-            double creationPrice = Config.bankCreationPrice;
+            double creationPrice = Config.bankCreationPrice.get();
             if (!PayrollOffice.allowPayment(p, creationPrice * -1)) {
                 plugin.debug(p.getName() + " does not have enough money to create a bank");
                 double balance = plugin.getEconomy().getBalance(p);

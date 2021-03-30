@@ -4,14 +4,10 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.utils.Observable;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * This class represents either a {@link Bank} or an {@link Account}.
@@ -66,7 +62,7 @@ public abstract class BankingEntity extends Observable implements Ownable, Namea
 	}
 
 	public UUID getOwnerUUID() {
-		return Utils.nonNull(owner, OfflinePlayer::getUniqueId, () -> null);
+		return Optional.ofNullable(owner).map(OfflinePlayer::getUniqueId).orElse(null);
 	}
 
 	@Override

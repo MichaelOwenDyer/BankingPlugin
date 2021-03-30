@@ -147,7 +147,7 @@ minimum-account-balance:
 # Set this to 0 to disable this feature.
 # Type: double
 low-balance-fee:
-    default: 2000
+    default: 1000
     allow-override: true
 
 # Set whether or not interest should still be paid to the account owner if the account balance is below the minimum.
@@ -210,7 +210,7 @@ confirm-on-remove: true
 # Set whether to require confirmation of removeall commands.
 # Type: boolean
 # Default: true
-confirm-on-removeall: true
+confirm-on-remove-all: true
 
 # Set whether to require confirmation of account transfer ownership commands.
 # Type: boolean
@@ -300,8 +300,8 @@ language-file: "en_US"
 
 # Set the regex pattern that bank names and account nicknames should be matched against. Players will not be allowed to set names that fail to match with this pattern. Invalid patterns will not be considered.
 # Type: String
-# Default: ''
-name-regex: ''
+# Default: '.*' (any)
+name-regex: '.*'
 
 # Set the prefix of all SQLite table names related to this plugin.
 database-table-prefix: "bankingplugin_"

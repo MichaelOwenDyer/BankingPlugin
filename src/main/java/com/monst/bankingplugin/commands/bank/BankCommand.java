@@ -33,7 +33,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
             throw e;
         }
 
-        this.name = Config.commandNameBank;
+        this.name = Config.bankCommandName.get();
         this.desc = LangUtils.getMessage(Message.BANK_COMMAND_DESC);
 		this.pluginCommand = super.createPluginCommand();
 

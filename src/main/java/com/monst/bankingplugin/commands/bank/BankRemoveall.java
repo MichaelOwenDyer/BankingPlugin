@@ -52,7 +52,7 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
         }
 
         int affectedAccounts = banks.stream().map(Bank::getAccounts).mapToInt(Collection::size).sum();
-        if (sender instanceof Player && Config.confirmOnRemoveAll && !isConfirmed((Player) sender, args)) {
+        if (sender instanceof Player && Config.confirmOnRemoveAll.get() && !isConfirmed((Player) sender, args)) {
             sender.sendMessage(LangUtils.getMessage(Message.BANK_CONFIRM_REMOVE,
                     new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size),
                     new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, affectedAccounts)

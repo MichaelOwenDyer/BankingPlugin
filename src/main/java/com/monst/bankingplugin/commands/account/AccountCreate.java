@@ -96,7 +96,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return;
         }
 
-        if (!Config.allowSelfBanking && bank.isOwner(p)) {
+        if (!Config.allowSelfBanking.get() && bank.isOwner(p)) {
             p.sendMessage(LangUtils.getMessage(Message.NO_SELF_BANKING, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
             plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
             return;

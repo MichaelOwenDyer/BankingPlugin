@@ -11,21 +11,21 @@ import java.util.stream.Stream;
  */
 public enum BankField {
 
-    COUNT_INTEREST_DELAY_OFFLINE (() -> Config.getCountInterestDelayOffline().isOverridable()),
-    REIMBURSE_ACCOUNT_CREATION (() -> Config.getReimburseAccountCreation().isOverridable()),
-    PAY_ON_LOW_BALANCE (() -> Config.getPayOnLowBalance().isOverridable()),
-    INTEREST_RATE (() -> Config.getInterestRate().isOverridable()),
-    ACCOUNT_CREATION_PRICE (() -> Config.getAccountCreationPrice().isOverridable()),
-    MINIMUM_BALANCE (() -> Config.getMinimumBalance().isOverridable()),
-    LOW_BALANCE_FEE (() -> Config.getLowBalanceFee().isOverridable()),
-    INITIAL_INTEREST_DELAY (() -> Config.getInitialInterestDelay().isOverridable()),
-    ALLOWED_OFFLINE_PAYOUTS (() -> Config.getAllowedOfflinePayouts().isOverridable()),
-    ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET(() -> Config.getAllowedOfflinePayoutsBeforeReset().isOverridable()),
-    OFFLINE_MULTIPLIER_DECREMENT (() -> Config.getOfflineMultiplierDecrement().isOverridable()),
-    WITHDRAWAL_MULTIPLIER_DECREMENT (() -> Config.getWithdrawalMultiplierDecrement().isOverridable()),
-    PLAYER_BANK_ACCOUNT_LIMIT (() -> Config.getPlayerBankAccountLimit().isOverridable()),
-    MULTIPLIERS (() -> Config.getMultipliers().isOverridable()),
-    INTEREST_PAYOUT_TIMES (() -> Config.getInterestPayoutTimes().isOverridable());
+    COUNT_INTEREST_DELAY_OFFLINE (() -> Config.countInterestDelayOffline.isOverridable()),
+    REIMBURSE_ACCOUNT_CREATION (() -> Config.reimburseAccountCreation.isOverridable()),
+    PAY_ON_LOW_BALANCE (() -> Config.payOnLowBalance.isOverridable()),
+    INTEREST_RATE (() -> Config.interestRate.isOverridable()),
+    ACCOUNT_CREATION_PRICE (() -> Config.accountCreationPrice.isOverridable()),
+    MINIMUM_BALANCE (() -> Config.minimumBalance.isOverridable()),
+    LOW_BALANCE_FEE (() -> Config.lowBalanceFee.isOverridable()),
+    INITIAL_INTEREST_DELAY (() -> Config.initialInterestDelay.isOverridable()),
+    ALLOWED_OFFLINE_PAYOUTS (() -> Config.allowedOfflinePayouts.isOverridable()),
+    ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET(() -> Config.allowedOfflinePayoutsBeforeReset.isOverridable()),
+    OFFLINE_MULTIPLIER_DECREMENT (() -> Config.offlineMultiplierDecrement.isOverridable()),
+    WITHDRAWAL_MULTIPLIER_DECREMENT (() -> Config.withdrawalMultiplierDecrement.isOverridable()),
+    PLAYER_BANK_ACCOUNT_LIMIT (() -> Config.playerBankAccountLimit.isOverridable()),
+    MULTIPLIERS (() -> Config.multipliers.isOverridable()),
+    INTEREST_PAYOUT_TIMES (() -> Config.interestPayoutTimes.isOverridable());
 
     private final Supplier<Boolean> overridable;
     private final String configName;

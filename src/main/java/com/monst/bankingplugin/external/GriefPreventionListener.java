@@ -38,7 +38,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onAccountCreate(AccountCreateEvent e) {
-        if (!Config.enableGriefPreventionIntegration)
+        if (!Config.enableGriefPreventionIntegration.get())
             return;
 
         for (Location loc : e.getAccount().getChestLocation())
@@ -51,7 +51,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onAccountExtend(AccountExtendEvent e) {
-		if (!Config.enableGriefPreventionIntegration)
+		if (!Config.enableGriefPreventionIntegration.get())
             return;
 
 		for (Location loc : e.getNewChestLocation())
@@ -64,7 +64,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onAccountMigrate(AccountMigrateEvent e) {
-	    if (!Config.enableGriefPreventionIntegration)
+	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
 
 	    for (Location loc : e.getNewChestLocation())
@@ -77,7 +77,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onAccountRecover(AccountRecoverEvent e) {
-	    if (!Config.enableGriefPreventionIntegration)
+	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
 
 	    for (Location loc : e.getNewChestLocation())
@@ -97,7 +97,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSelectionInteract(PlayerInteractEvent e) {
-        if (!Config.enableGriefPreventionIntegration)
+        if (!Config.enableGriefPreventionIntegration.get())
             return;
         if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
             return;
@@ -131,7 +131,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankCreate(BankCreateEvent e) {
-	    if (!Config.enableGriefPreventionIntegration)
+	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
@@ -140,7 +140,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankRemove(BankRemoveEvent e) {
-	    if (!Config.enableGriefPreventionIntegration)
+	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
@@ -149,7 +149,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankResize(BankResizeEvent e) {
-	    if (!Config.enableGriefPreventionIntegration)
+	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
@@ -158,7 +158,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankSelect(BankSelectEvent e) {
-	    if (!Config.enableGriefPreventionIntegration)
+	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
         VisualizationManager.visualizeSelection(((Player) e.getExecutor()), e.getBank());
     }

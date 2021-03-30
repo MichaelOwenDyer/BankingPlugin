@@ -89,7 +89,7 @@ public class BankingPlugin extends JavaPlugin {
 
         config = new Config(this);
 
-        if (Config.enableDebugLog) {
+        if (Config.enableDebugLog.get()) {
             try {
 				Path debugLogFile = getDataFolder().toPath().resolve("debug.txt");
                 debugWriter = new PrintWriter(Files.newOutputStream(debugLogFile), true);
@@ -99,13 +99,13 @@ public class BankingPlugin extends JavaPlugin {
             }
         }
 
-        debug("Loading BankingPlugin version " + getDescription().getVersion());
+        debugf("Loading BankingPlugin version %s", getDescription().getVersion());
 
         worldGuard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard != null) {
 			Optional<IWrappedFlag<WrappedState>> createBankFlag = WorldGuardWrapper.getInstance()
 					.registerFlag("create-bank", WrappedState.class,
-							Config.wgAllowCreateBankDefault ? WrappedState.ALLOW : WrappedState.DENY);
+							Config.worldGuardDefaultFlagValue.get() ? WrappedState.ALLOW : WrappedState.DENY);
 
 			debug("Flag create-bank: " + createBankFlag.isPresent());
         }
@@ -245,10 +245,10 @@ public class BankingPlugin extends JavaPlugin {
 			return typeFrequency;
 		}));
 		metrics.addCustomChart(new Metrics.SimplePie("account-info-item",
-				() -> Optional.ofNullable(Config.accountInfoItem).map(m -> m.getType().toString()).orElse("none")
+				() -> Optional.ofNullable(Config.accountInfoItem.get()).map(m -> m.getType().toString()).orElse("none")
 		));
 		metrics.addCustomChart(new Metrics.SimplePie("self-banking",
-				() -> Config.allowSelfBanking ? "Enabled" : "Disabled"));
+				() -> Config.allowSelfBanking.get() ? "Enabled" : "Disabled"));
 	}
 
 	/**
@@ -264,7 +264,7 @@ public class BankingPlugin extends JavaPlugin {
     // DO NOT USE
 	@SuppressWarnings("unused")
 	private void checkForUpdates() {
-        if (!Config.enableUpdateChecker) {
+        if (!Config.enableUpdateChecker.get()) {
             return;
         }
 
@@ -432,7 +432,7 @@ public class BankingPlugin extends JavaPlugin {
 	 * @param message the message to be printed
 	 */
 	public void debug(String message) {
-		if (!Config.enableDebugLog || debugWriter == null)
+		if (!Config.enableDebugLog.get() || debugWriter == null)
 			return;
 
 		String timestamp = Utils.formatTime(Calendar.getInstance().getTime());
@@ -456,7 +456,7 @@ public class BankingPlugin extends JavaPlugin {
 	 * @param throwable the {@link Throwable} of which the stacktrace will be printed
 	 */
 	public void debug(Throwable throwable) {
-		if (!Config.enableDebugLog || debugWriter == null)
+		if (!Config.enableDebugLog.get() || debugWriter == null)
 			return;
 		throwable.printStackTrace(debugWriter);
 		debugWriter.flush();

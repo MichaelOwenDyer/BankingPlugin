@@ -19,16 +19,16 @@ public class AccountTransaction extends Receipt {
     }
 
     public AccountTransaction(int accountID, int bankID, UUID executorUUID, String executorName,
-                              BigDecimal amount, BigDecimal newBalance, BigDecimal previousBalance, long time) {
+                              BigDecimal newBalance, BigDecimal previousBalance, BigDecimal amount, long time) {
         super(time);
         this.transactionID = -1;
         this.accountID = accountID;
         this.bankID = bankID;
         this.executorUUID = executorUUID.toString();
         this.executorName = executorName;
-        this.amount = amount;
         this.newBalance = newBalance;
         this.previousBalance = previousBalance;
+        this.amount = amount;
     }
 
     @Override

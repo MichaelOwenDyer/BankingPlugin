@@ -60,15 +60,15 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
 
         if (sender instanceof Player) {
             Player executor = (Player) sender;
-            if (Config.confirmOnRemove && !isConfirmed(executor, args)) {
+            if (Config.confirmOnRemove.get() && !isConfirmed(executor, args)) {
                 sender.sendMessage(LangUtils.getMessage(Message.BANK_CONFIRM_REMOVE,
                         new Replacement(Placeholder.NUMBER_OF_BANKS, 1),
                         new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, bank.getAccounts().size())
                 ));
                 return true;
             }
-            if (bank.isPlayerBank() && Config.reimburseBankCreation && bank.isOwner(executor)) {
-                double reimbursement = Config.bankCreationPrice;
+            if (bank.isPlayerBank() && Config.reimburseBankCreation.get() && bank.isOwner(executor)) {
+                double reimbursement = Config.bankCreationPrice.get();
                 if (reimbursement > 0) {
                     if (PayrollOffice.deposit(executor, reimbursement))
                         executor.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,

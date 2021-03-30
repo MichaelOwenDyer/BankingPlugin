@@ -212,7 +212,7 @@ public abstract class Database {
 				plugin.getLogger().info("Updating database finished.");
 
 			// Clean up economy log
-			if (Config.cleanupLogDays > 0)
+			if (Config.cleanupLogDays.get() > 0)
 				cleanUpLogs();
 
 			int accounts = query
@@ -481,7 +481,7 @@ public abstract class Database {
 
 			String name = values.getNextString();
 			String ownerUUID = values.getNextString();
-			OfflinePlayer owner = Utils.nonNull(ownerUUID, id -> Bukkit.getOfflinePlayer(UUID.fromString(id)), () -> null);
+			OfflinePlayer owner = Optional.ofNullable(ownerUUID).map(UUID::fromString).map(Bukkit::getOfflinePlayer).orElse(null);
 
 			Boolean countInterestDelayOffline = values.getNextBooleanNullable();
 			Boolean reimburseAccountCreation = values.getNextBooleanNullable();
@@ -700,7 +700,7 @@ public abstract class Database {
 	 * @param transaction The {@link AccountTransaction} to log
 	 */
 	public void logAccountTransaction(AccountTransaction transaction) {
-		if (!Config.enableAccountTransactionLog)
+		if (!Config.enableAccountTransactionLog.get())
 			return;
 		async(() -> {
 			plugin.debugf("Logging account transaction of %s at account #%d.",
@@ -710,9 +710,9 @@ public abstract class Database {
 					transaction.getBankID(),
 					transaction.getExecutorUUID(),
 					transaction.getExecutorName(),
-					transaction.getAmount(),
 					transaction.getNewBalance(),
 					transaction.getPreviousBalance(),
+					transaction.getAmount(),
 					dateFormat.format(transaction.getTime()),
 					transaction.getTime()
 			);
@@ -730,7 +730,7 @@ public abstract class Database {
 	 * @param interest  The {@link AccountInterest} to log
 	 */
 	public void logAccountInterest(AccountInterest interest) {
-		if (!Config.enableAccountInterestLog)
+		if (!Config.enableAccountInterestLog.get())
 			return;
 		async(() -> {
 			plugin.debugf("Logging %s in interest, %s in fees to account #%d.",
@@ -758,7 +758,7 @@ public abstract class Database {
 	 * @param profit  The {@link BankProfit} to log
 	 */
 	public void logBankProfit(BankProfit profit) {
-		if (!Config.enableBankProfitLog)
+		if (!Config.enableBankProfitLog.get())
 			return;
 		async(() -> {
 			plugin.debugf("Logging %s in revenue, %s in interest, %s in fees to bank #%d.",
@@ -820,11 +820,8 @@ public abstract class Database {
 	 * Cleans up the log to reduce file size
 	 */
 	public void cleanUpLogs() {
-		if (Config.cleanupLogDays < 0)
-			return;
-
 		run(() -> {
-			final long time = System.currentTimeMillis() - Config.cleanupLogDays * 86400000L;
+			final long time = System.currentTimeMillis() - Config.cleanupLogDays.get() * 86400000L;
 
 			long transactions = query.update("DELETE FROM " + tableAccountTransactions +
 					" WHERE Time < " + time).run().affectedRows();

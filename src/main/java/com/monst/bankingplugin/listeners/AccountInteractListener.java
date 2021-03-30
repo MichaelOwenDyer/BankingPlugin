@@ -158,7 +158,7 @@ public class AccountInteractListener extends BankingPluginListener {
 				return;
 
 			// Handles account info requests using config info item
-			ItemStack infoItem = Config.accountInfoItem;
+			ItemStack infoItem = Config.accountInfoItem.get();
 
 			if (infoItem != null) {
 				ItemStack item = Utils.getItemInMainHand(p);
