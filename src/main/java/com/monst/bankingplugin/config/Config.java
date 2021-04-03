@@ -1,12 +1,12 @@
 package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.config.values.ConfigField;
 import com.monst.bankingplugin.config.values.overridable.*;
 import com.monst.bankingplugin.config.values.simple.*;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
+import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.LangUtils;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
@@ -14,11 +14,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class Config {
 
@@ -301,88 +296,16 @@ public class Config {
 		return languageConfig;
 	}
 
-    /**
-     * <p>Set a configuration value</p>
-     * <i>Config is automatically reloaded</i>
-     *
-     * @param property Property to change
-     * @param value    Value to set
-     */
-    public void set(String property, String value) {
-    	boolean set = attemptParse(value, v -> plugin.getConfig().set(property, v));
-        if (!set)
-        	if (property.equalsIgnoreCase("interest-payout-times.default"))
-        		plugin.getConfig().set(property, Arrays.stream(value.replace("-","").split(" "))
-						.filter(s -> !s.isEmpty())
-						.map(s -> Utils.removePunctuation(s, ':'))
-						.collect(Collectors.toList()));
-			else
-				plugin.getConfig().set(property, value);
-
-		update(property, value);
-    }
-
-    /**
-     * Add a value to a list in the config.yml.
-     * If the list does not exist, a new list with the given value will be created
-     *
-     * @param property Location of the list
-     * @param value    Value to add
-     */
-	public void add(String property, String value) {
-		List list = Utils.nonNull(plugin.getConfig().getList(property), ArrayList::new);
-		boolean added = attemptParse(value, v -> list.add(v));
-		if (!added)
-			if (property.equalsIgnoreCase("interest-payout-times.default"))
-				list.addAll(Arrays.stream(value.replace("-","").split(" "))
-						.filter(s -> !s.isEmpty())
-						.map(s -> Utils.removePunctuation(s, ':'))
-						.collect(Collectors.toList()));
-			else
-				list.add(value);
-
-		update(property, value);
-    }
-
-    public void remove(String property, String value) {
-		List list = Utils.nonNull(plugin.getConfig().getList(property), ArrayList::new);
-		boolean removed = attemptParse(value, v -> list.remove(v));
-		if (!removed)
-			if (property.equalsIgnoreCase("interest-payout-times.default"))
-				list.removeAll(Arrays.stream(value.replace("-","").split(" "))
-						.filter(s -> !s.isEmpty())
-						.map(s -> Utils.removePunctuation(s, ':'))
-						.collect(Collectors.toList()));
-			else
-				list.remove(value);
-
-		update(property, value);
-    }
-
-    private boolean attemptParse(String value, Consumer<Object> listModifier) {
-
-		try {
-			listModifier.accept(Integer.parseInt(value));
-			return true;
-		} catch (NumberFormatException ignored) { /* Value not an integer */ }
-
-		try {
-			listModifier.accept(Double.parseDouble(value));
-			return true;
-		} catch (NumberFormatException ignored) { /* Value not a double */ }
-
-		if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-			listModifier.accept(Boolean.parseBoolean(value));
-			return true;
-		}
-
-		return false;
-	}
-
-	private void update(String property, String value) {
-		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, property, value));
-		if (property.endsWith(".default") || property.endsWith(".ignore-override"))
-			plugin.getBankRepository().getAll().forEach(Bank::notifyObservers);
+	/**
+	 * <p>Set a configuration value</p>
+	 * <i>Config is automatically reloaded</i>
+	 *
+	 * @param field 	Property to change
+	 * @param input		Value to set
+	 */
+	public void set(ConfigField field, String path, String input) throws ArgumentParseException {
+		field.getConfigValue().set(path, input);
+		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, field, input));
 		plugin.saveConfig();
 		reload(false, true, false);
 	}

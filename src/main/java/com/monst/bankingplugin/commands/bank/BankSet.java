@@ -1,14 +1,10 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
+import com.monst.bankingplugin.config.values.ConfigField;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
-import com.monst.bankingplugin.lang.LangUtils;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.lang.MailingRoom;
+import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -17,7 +13,6 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BankSet extends BankCommand.SubCommand {
 
@@ -45,10 +40,11 @@ public class BankSet extends BankCommand.SubCommand {
         Bank bank = bankRepo.getByIdentifier(args[1]);
         String fieldName = args[2];
         StringBuilder sb = new StringBuilder(32);
-        if (args.length > 3)
+        if (args.length > 3) {
             sb.append(args[3]);
-        for (int i = 4; i < args.length; i++)
-            sb.append(" ").append(args[i]);
+            for (int i = 4; i < args.length; i++)
+                sb.append(" ").append(args[i]);
+        }
         String value = sb.toString();
 
         if (bank == null) {
@@ -68,8 +64,8 @@ public class BankSet extends BankCommand.SubCommand {
             return true;
         }
 
-        BankField field = BankField.getByName(fieldName);
-        if (field == null) {
+        ConfigField field = ConfigField.getByName(fieldName);
+        if (field == null || field.isSimple()) {
             plugin.debug("No bank config field could be found with name " + fieldName);
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.STRING, fieldName)));
             return true;
@@ -79,7 +75,9 @@ public class BankSet extends BankCommand.SubCommand {
 
         try {
             if (!bank.set(field, value))
-                sender.sendMessage(LangUtils.getMessage(Message.BANK_PROPERTY_NOT_OVERRIDABLE, new Replacement(Placeholder.PROPERTY, field::getConfigName)));
+                sender.sendMessage(LangUtils.getMessage(Message.BANK_PROPERTY_NOT_OVERRIDABLE,
+                        new Replacement(Placeholder.PROPERTY, field::toString)
+                ));
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getMessage());
             return true;
@@ -88,9 +86,9 @@ public class BankSet extends BankCommand.SubCommand {
         String newValue = bank.get(field).getFormatted(true);
 
         plugin.debugf( "%s has changed %s at %s from %s to %s.",
-                sender.getName(), field.getConfigName(), bank.getName(), previousValue, newValue);
+                sender.getName(), field.toString(), bank.getName(), previousValue, newValue);
         MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_PROPERTY_SET,
-                new Replacement(Placeholder.PROPERTY, field::getConfigName),
+                new Replacement(Placeholder.PROPERTY, field::toString),
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                 new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
                 new Replacement(Placeholder.VALUE, newValue)
@@ -103,7 +101,7 @@ public class BankSet extends BankCommand.SubCommand {
         BankConfigureEvent e = new BankConfigureEvent(sender, bank, field, previousValue, value);
         Bukkit.getPluginManager().callEvent(e);
 
-        if (field == BankField.INTEREST_PAYOUT_TIMES)
+        if (field == ConfigField.INTEREST_PAYOUT_TIMES)
             plugin.getScheduler().schedulePayouts(bank);
 
         bankRepo.add(bank, true);
@@ -122,17 +120,14 @@ public class BankSet extends BankCommand.SubCommand {
                     .sorted()
                     .collect(Collectors.toList());
         else if (args.length == 3 && bankRepo.getByIdentifier(args[1]) != null) {
-            Stream<BankField> fields = Stream.of(BankField.values());
-            if (args[2].isEmpty())
-                fields = fields.filter(BankField::isOverridable);
-            return fields
-                    .map(BankField::getConfigName)
+            return ConfigField.getOverridableFields().stream()
+                    .map(ConfigField::toString)
                     .filter(name -> name.contains(args[2].toLowerCase()))
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 4) {
             Bank bank = bankRepo.getByIdentifier(args[1]);
-            BankField field = BankField.getByName(args[2]);
+            ConfigField field = ConfigField.getByName(args[2]);
             if (bank != null && field != null)
                 return Collections.singletonList(bank.get(field).getFormatted());
         }

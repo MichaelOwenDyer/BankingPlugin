@@ -432,13 +432,11 @@ public enum Message {
             "A co-owner attempts to perform an action on a bank or account that only the owner can perfom.",
             "&cYou must be the owner to do that."
     ),
-
     ERROR_OCCURRED (
             "An error occurs, usually during transactions when a loan was not permitted.",
             "&cAn error occurred: %ERROR%",
             Placeholder.ERROR
     ),
-
     PLAYER_NOT_FOUND (
             "A player references another player in command arguments who either does not exist or who has never played on the server before.",
             "&cNo player was found with the name \"%STRING%\".",
@@ -457,7 +455,6 @@ public enum Message {
             "A player attempts to migrate an account to the same chest.",
             "&cThat is the same chest."
     ),
-
     CLICK_CHEST_CREATE (
             "A player runs the /account create command and must click a chest.",
             "&6Click a chest to create an account."
@@ -514,7 +511,6 @@ public enum Message {
             "A player must execute a command for a second time to confirm.",
             "&6Execute again to confirm."
     ),
-
     NO_PERMISSION_ACCOUNT_CREATE (
             "A player attempts to create an account without permission.",
             "&cYou do not have permission to create an account."
@@ -599,7 +595,6 @@ public enum Message {
             "A player attempts to set the multiplier, interest delay, etc. of an account without permission.",
             "&cYou do not have permission to set internal account values."
     ),
-
     NO_PERMISSION_BANK_CREATE (
             "A player attempts to create a bank without permission.",
             "&cYou do not have permission to create a bank."
@@ -684,7 +679,6 @@ public enum Message {
             "A player attempts to select a bank without the WorldEdit permission worldedit.selection.pos.",
             "&cYou do not have permission to select a bank."
     ),
-
     NO_PERMISSION_RELOAD (
             "A player attempts to reload the plugin without permission.",
             "&cYou do not have permission to reload the plugin."
@@ -701,7 +695,6 @@ public enum Message {
             "A player attempts to trigger an interest payment without permission.",
             "&cYou do not have permission to trigger an interest payment."
     ),
-
     COMMAND_USAGE_ACCOUNT_CREATE (
             "",
             "&a/%COMMAND% create &6- Create an account.",
@@ -767,7 +760,6 @@ public enum Message {
             "&a/%COMMAND% transfer [name] &6- Transfer ownership of an account.",
             Placeholder.COMMAND
     ),
-
     COMMAND_USAGE_BANK_CREATE (
             "",
             "&a/%COMMAND% create &6- Create a bank.",
@@ -833,7 +825,6 @@ public enum Message {
             "&a/%COMMAND% transfer &6- Transfer ownership of a bank.",
             Placeholder.COMMAND
     ),
-
     COMMAND_USAGE_VERSION (
             "",
             "&a/%COMMAND% version &6- View the version of BankingPlugin.",
@@ -859,7 +850,6 @@ public enum Message {
             "&a/%COMMAND% payinterest <banks> &6- Trigger an interest payment.",
             Placeholder.COMMAND
     ),
-
     ACCOUNT_COMMAND_DESC (
             "",
             "Create, manage, and remove accounts."
@@ -872,7 +862,11 @@ public enum Message {
             "",
             "Manage the plugin."
     ),
-
+    NOT_A_CONFIG_VALUE(
+            "An admin tries to configure a property in the config that does not exist.",
+            "&c\"%STRING%\" is not a configuration property.",
+            Placeholder.STRING
+    ),
     CONFIG_VALUE_ADDED (
             "An admin adds a value to a property in the config.",
             "&6Added &a%VALUE% &6to &a%PROPERTY%&6.",
@@ -898,7 +892,6 @@ public enum Message {
             "&6Successfully reloaded &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
-
     UPDATE_AVAILABLE (
             "An admin is notified that an update to BankingPlugin is available.",
             "&6&lVersion &c%VERSION% &6of &aBanking&2Plugin &6is available &chere&6.",

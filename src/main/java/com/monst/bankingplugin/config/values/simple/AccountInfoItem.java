@@ -7,14 +7,14 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class AccountInfoItem extends SimpleConfigValue<ItemStack> {
+public class AccountInfoItem extends SimpleValue<ItemStack> {
 
     public AccountInfoItem() {
         super("account-info-item", new ItemStack(Material.STICK), AccountInfoItem::getItemStack);
     }
 
     @Override
-    ItemStack parse(String input) throws ItemStackParseException {
+    public ItemStack parse(String input) throws ItemStackParseException {
         return parseItemStack(input).orElseThrow(ItemStackParseException::new);
     }
 

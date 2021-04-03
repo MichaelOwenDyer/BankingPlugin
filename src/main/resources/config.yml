@@ -302,6 +302,3 @@ language-file: "en_US"
 # Type: String
 # Default: '.*' (any)
 name-regex: '.*'
-
-# Set the prefix of all SQLite table names related to this plugin.
-database-table-prefix: "bankingplugin_"

@@ -1,24 +1,36 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
-public abstract class ConfigValue<T> {
+public abstract class ConfigValue<T> implements Supplier<T> {
 
-    protected static FileConfiguration CONFIG = BankingPlugin.getInstance().getConfig();
+    protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
+    protected static final FileConfiguration CONFIG = PLUGIN.getConfig();
 
-    protected T defaultValue;
+    protected final T defaultValue;
     protected T lastSeenValue = null;
-    BiFunction<FileConfiguration, String, T> valueFinder;
+    private final BiFunction<FileConfiguration, String, T> valueFinder;
 
     protected ConfigValue(T defaultValue, BiFunction<FileConfiguration, String, T> valueFinder) {
         this.defaultValue = defaultValue;
         this.valueFinder = valueFinder;
     }
 
-    protected T get() {
+    public final String getFormatted() {
+        return format(get());
+    }
+
+    public String format(T t) {
+        return String.valueOf(t);
+    }
+
+    public T get() {
         if (lastSeenValue == null)
             lastSeenValue = valueFinder.apply(CONFIG, getPath());
         if (!isValid(lastSeenValue))
@@ -32,8 +44,15 @@ public abstract class ConfigValue<T> {
 
     protected abstract String getPath();
 
-    // public abstract void set(String value) throws ArgumentParseException;
+    public abstract List<String> getPaths();
 
-    public abstract void clear();
+    public void set(String path, String input) throws ArgumentParseException {
+        CONFIG.set(path, parse(input));
+        clear();
+    }
+
+    public abstract T parse(String input) throws ArgumentParseException;
+
+    protected abstract void clear();
 
 }

@@ -9,7 +9,7 @@ public abstract class ArgumentParseException extends Exception {
     private static final long serialVersionUID = 379872395581293355L;
 
     public ArgumentParseException() {
-        super();
+        super(); // TODO: Remove!
     }
 
     protected ArgumentParseException(Message message, String input) {

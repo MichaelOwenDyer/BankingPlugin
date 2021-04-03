@@ -88,12 +88,8 @@ public class LanguageConfig extends FileConfiguration {
                 .filter(l -> !l.startsWith("#"))
                 .filter(l -> l.contains("="))
                 .forEach(line -> {
-                    String[] split = line.split("=");
-                    String key = split[0];
-                    if (split.length == 1)
-                        configFilePathValues.put(key, "");
-                    else
-                        configFilePathValues.put(key, line.substring(line.indexOf('=') + 1));
+                    String[] pair = line.split("=", 2);
+                    configFilePathValues.put(pair[0], pair[1] == null ? "" : pair[1]);
                 });
     }
 

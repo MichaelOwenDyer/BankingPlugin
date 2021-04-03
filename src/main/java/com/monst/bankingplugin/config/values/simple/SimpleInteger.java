@@ -6,14 +6,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.util.Optional;
 import java.util.function.Function;
 
-abstract class SimpleInteger extends SimpleConfigValue<Integer> {
+abstract class SimpleInteger extends SimpleValue<Integer> {
 
     public SimpleInteger(String path, Integer defaultValue) {
         super(path, defaultValue, FileConfiguration::getInt);
     }
 
     @Override
-    Integer parse(String input) throws IntegerParseException {
+    public Integer parse(String input) throws IntegerParseException {
         return Optional.ofNullable(input)
                 .map(Integer::parseInt)
                 .map(getConstraint())

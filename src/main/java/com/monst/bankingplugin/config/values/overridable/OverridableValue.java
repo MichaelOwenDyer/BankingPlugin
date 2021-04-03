@@ -1,14 +1,19 @@
 package com.monst.bankingplugin.config.values.overridable;
 
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.values.ConfigValue;
+import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiFunction;
 
-abstract class OverridableValue<T> extends ConfigValue<T> {
+public abstract class OverridableValue<T> extends ConfigValue<T> {
 
-    String defaultPath;
-    String allowOverridePath;
+    final String defaultPath;
+    final String allowOverridePath;
     Boolean lastSeenOverridableValue;
 
     OverridableValue(String path, T defaultValue, BiFunction<FileConfiguration, String, T> valueFinder) {
@@ -22,8 +27,19 @@ abstract class OverridableValue<T> extends ConfigValue<T> {
         return defaultPath;
     }
 
+    @Override
+    public List<String> getPaths() {
+        return Arrays.asList(defaultPath, allowOverridePath);
+    }
+
     public T getDefault() {
         return super.get();
+    }
+
+    @Override
+    public void set(String path, String input) throws ArgumentParseException {
+        super.set(path, input);
+        BankingPlugin.getInstance().getBankRepository().getAll().forEach(Bank::notifyObservers);
     }
 
     public boolean isOverridable() {

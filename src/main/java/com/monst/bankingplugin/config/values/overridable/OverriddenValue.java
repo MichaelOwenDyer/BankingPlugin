@@ -3,22 +3,21 @@ package com.monst.bankingplugin.config.values.overridable;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public abstract class OverriddenValue<T> {
 
-    protected OverridableValue<T> attribute;
+    protected final OverridableValue<T> attribute;
     protected T value;
 
     protected OverriddenValue(OverridableValue<T> attribute, T value) {
         this.attribute = attribute;
         if (value == null && Config.stubbornBanks.get())
-            value = getSuper().getDefault();
+            value = getConfigAttribute().getDefault();
         this.value = value;
     }
 
-    protected OverridableValue<T> getSuper() {
+    protected OverridableValue<T> getConfigAttribute() {
         return attribute;
     }
 
@@ -32,10 +31,10 @@ public abstract class OverriddenValue<T> {
 
     public T get(boolean ignoreConfig) {
         if (value == null)
-            return getSuper().getDefault();
+            return getConfigAttribute().getDefault();
         if (ignoreConfig)
             return value;
-        return getSuper().isOverridable() ? value : getSuper().getDefault();
+        return getConfigAttribute().isOverridable() ? value : getConfigAttribute().getDefault();
     }
 
     public String getFormatted() {
@@ -43,11 +42,7 @@ public abstract class OverriddenValue<T> {
     }
 
     public String getFormatted(boolean ignoreConfig) {
-        return format(get(ignoreConfig));
-    }
-
-    String format(T value) {
-        return String.valueOf(value);
+        return getConfigAttribute().format(get(ignoreConfig));
     }
 
     public boolean set(@Nullable String input) throws ArgumentParseException {
@@ -55,10 +50,8 @@ public abstract class OverriddenValue<T> {
             value = null;
             return true;
         }
-        value = parse(input);
-        return getSuper().isOverridable();
+        value = getConfigAttribute().parse(input);
+        return getConfigAttribute().isOverridable();
     }
-
-    abstract T parse(@Nonnull String input) throws ArgumentParseException;
 
 }
