@@ -112,8 +112,8 @@ public class Bank extends BankingEntity {
 	 * @param selection the {@link Selection} representing the bounds of the bank
 	 *
 	 */
-	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-				 Selection selection, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
+	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners, Selection selection,
+				 Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
 				 Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
 				 Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer allowedOfflinePayoutsUntilReset,
 				 Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,

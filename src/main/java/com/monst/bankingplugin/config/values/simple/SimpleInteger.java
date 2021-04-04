@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.config.values.simple;
 
 import com.monst.bankingplugin.exceptions.IntegerParseException;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -9,7 +9,7 @@ import java.util.function.Function;
 abstract class SimpleInteger extends SimpleValue<Integer> {
 
     public SimpleInteger(String path, Integer defaultValue) {
-        super(path, defaultValue, FileConfiguration::getInt);
+        super(path, defaultValue, MemoryConfiguration::getInt);
     }
 
     @Override

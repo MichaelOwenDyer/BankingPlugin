@@ -1,11 +1,11 @@
 package com.monst.bankingplugin.config.values.simple;
 
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.MemoryConfiguration;
 
 public abstract class SimpleBoolean extends SimpleValue<Boolean> {
 
     public SimpleBoolean(String path, Boolean defaultValue) {
-        super(path, defaultValue, FileConfiguration::getBoolean);
+        super(path, defaultValue, MemoryConfiguration::getBoolean);
     }
 
     @Override

@@ -48,7 +48,9 @@ public abstract class OverridableValue<T> extends ConfigValue<T> {
         return lastSeenOverridableValue;
     }
 
-    public abstract OverriddenValue<T> override(T value);
+    public final OverriddenValue<T> override(T value) {
+        return new OverriddenValue<>(this, value);
+    }
 
     @Override
     public void clear() {

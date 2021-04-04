@@ -3,55 +3,49 @@ package com.monst.bankingplugin.config.values.overridable;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 
-import javax.annotation.Nullable;
+public class OverriddenValue<T> {
 
-public abstract class OverriddenValue<T> {
+    private final OverridableValue<T> configValue;
+    private T customValue;
 
-    protected final OverridableValue<T> attribute;
-    protected T value;
-
-    protected OverriddenValue(OverridableValue<T> attribute, T value) {
-        this.attribute = attribute;
-        if (value == null && Config.stubbornBanks.get())
-            value = getConfigAttribute().getDefault();
-        this.value = value;
-    }
-
-    protected OverridableValue<T> getConfigAttribute() {
-        return attribute;
+    OverriddenValue(OverridableValue<T> configValue, T customValue) {
+        this.configValue = configValue;
+        if (customValue == null && Config.stubbornBanks.get())
+            customValue = configValue.getDefault();
+        this.customValue = customValue;
     }
 
     public T getNullable() {
-        return value;
+        return customValue;
     }
 
     public T get() {
         return get(false);
     }
 
-    public T get(boolean ignoreConfig) {
-        if (value == null)
-            return getConfigAttribute().getDefault();
-        if (ignoreConfig)
-            return value;
-        return getConfigAttribute().isOverridable() ? value : getConfigAttribute().getDefault();
+    public T get(boolean ignoreNonOverridable) {
+        if (customValue == null)
+            return configValue.getDefault();
+        if (ignoreNonOverridable)
+            return customValue;
+        return configValue.isOverridable() ? customValue : configValue.getDefault();
     }
 
     public String getFormatted() {
         return getFormatted(false);
     }
 
-    public String getFormatted(boolean ignoreConfig) {
-        return getConfigAttribute().format(get(ignoreConfig));
+    public String getFormatted(boolean ignoreNonOverridable) {
+        return configValue.format(get(ignoreNonOverridable));
     }
 
-    public boolean set(@Nullable String input) throws ArgumentParseException {
+    public boolean set(String input) throws ArgumentParseException {
         if (input == null || input.isEmpty()) {
-            value = null;
+            customValue = null;
             return true;
         }
-        value = getConfigAttribute().parse(input);
-        return getConfigAttribute().isOverridable();
+        customValue = configValue.parse(input);
+        return configValue.isOverridable();
     }
 
 }

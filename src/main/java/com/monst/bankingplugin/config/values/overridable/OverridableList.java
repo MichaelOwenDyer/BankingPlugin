@@ -17,11 +17,6 @@ abstract class OverridableList<T> extends OverridableValue<List<T>> {
     }
 
     @Override
-    public OverriddenValue<List<T>> override(List<T> value) {
-        return new OverriddenList<>(this, value);
-    }
-
-    @Override
     public List<T> parse(@Nonnull String input) throws ListParseException {
         try {
             return parseToStream(input).collect(Collectors.toList());

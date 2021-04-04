@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.config.values.overridable;
 
 import com.monst.bankingplugin.exceptions.IntegerParseException;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.MemoryConfiguration;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -9,12 +9,7 @@ import java.util.Optional;
 abstract class OverridableInteger extends OverridableValue<Integer> {
 
     OverridableInteger(String path, Integer defaultValue) {
-        super(path, defaultValue, FileConfiguration::getInt);
-    }
-
-    @Override
-    public OverriddenValue<Integer> override(Integer value) {
-        return new OverriddenInteger(this, value);
+        super(path, defaultValue, MemoryConfiguration::getInt);
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.monst.bankingplugin.config.values.overridable;
 import com.monst.bankingplugin.exceptions.DoubleParseException;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.MemoryConfiguration;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -11,12 +11,7 @@ import java.util.Optional;
 public abstract class OverridableDouble extends OverridableValue<Double> {
 
     OverridableDouble(String path, Double defaultValue) {
-        super(path, defaultValue, FileConfiguration::getDouble);
-    }
-
-    @Override
-    public OverriddenValue<Double> override(Double value) {
-        return new OverriddenDouble(this, value);
+        super(path, defaultValue, MemoryConfiguration::getDouble);
     }
 
     @Override

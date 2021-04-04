@@ -79,7 +79,7 @@ public class BankSet extends BankCommand.SubCommand {
                         new Replacement(Placeholder.PROPERTY, field::toString)
                 ));
         } catch (ArgumentParseException e) {
-            sender.sendMessage(e.getMessage());
+            sender.sendMessage(e.getLocalizedMessage());
             return true;
         }
 
