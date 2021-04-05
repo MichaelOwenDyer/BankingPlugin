@@ -18,7 +18,7 @@ public abstract class OverridableDouble extends OverridableValue<Double> {
     public Double parse(@Nonnull String input) throws DoubleParseException {
         return Optional.ofNullable(input)
                 .map(i -> Utils.removePunctuation(i, '.'))
-                .map(Double::parseDouble)
+                .map(Utils::parseDouble)
                 .map(Math::abs)
                 .map(QuickMath::scale)
                 .orElseThrow(() -> new DoubleParseException(input));

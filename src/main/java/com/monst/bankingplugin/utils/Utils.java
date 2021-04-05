@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -104,6 +105,26 @@ public class Utils {
 	@SafeVarargs
 	public static <T extends Comparable<T>> T greatest(T... toCompare) {
 		return Arrays.stream(toCompare).max(Comparator.naturalOrder()).orElse(null);
+	}
+
+	public static Integer parseInteger(String s) {
+		return catchRuntimeException(() -> Integer.parseInt(s));
+	}
+
+	public static Double parseDouble(String s) {
+		return catchRuntimeException(() -> Double.parseDouble(s));
+	}
+
+	public static LocalTime parseLocalTime(String s) {
+		return catchRuntimeException(() -> LocalTime.parse(s));
+	}
+
+	public static <T> T catchRuntimeException(Supplier<T> supplier) {
+		try {
+			return supplier.get();
+		} catch (RuntimeException e) {
+			return null;
+		}
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values.overridable;
 
 import com.monst.bankingplugin.exceptions.IntegerParseException;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.configuration.MemoryConfiguration;
 
 import javax.annotation.Nonnull;
@@ -15,7 +16,7 @@ abstract class OverridableInteger extends OverridableValue<Integer> {
     @Override
     public Integer parse(@Nonnull String input) throws IntegerParseException {
         return Optional.ofNullable(input)
-                .map(Integer::parseInt)
+                .map(Utils::parseInteger)
                 .map(Math::abs)
                 .orElseThrow(() -> new IntegerParseException(input));
     }
