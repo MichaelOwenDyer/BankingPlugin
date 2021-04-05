@@ -14,12 +14,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public class ControlConfig extends ControlCommand.SubCommand {
+public class ControlConfigure extends ControlCommand.SubCommand {
 
-    ControlConfig() {
-        super("config", false);
+    ControlConfigure() {
+        super("configure", false);
     }
 
     @Override
@@ -42,25 +41,10 @@ public class ControlConfig extends ControlCommand.SubCommand {
             return true;
         }
 
-        if (args.length < 3)
+        if (args.length < 2)
             return false;
 
-        Message action;
-        switch (args[1].toLowerCase(Locale.ROOT)) {
-            case "set":
-                action = Message.CONFIG_VALUE_SET;
-                break;
-            case "add":
-                action = Message.CONFIG_VALUE_ADDED;
-                break;
-            case "remove":
-                action = Message.CONFIG_VALUE_REMOVED;
-                break;
-            default:
-                return false;
-        }
-
-        String path = args[2];
+        String path = args[1];
         ConfigField field = ConfigField.getByName(path);
         if (field == null) {
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_CONFIG_VALUE,
@@ -69,38 +53,20 @@ public class ControlConfig extends ControlCommand.SubCommand {
             return true;
         }
 
-        StringBuilder sb = new StringBuilder(32);
-        if (args.length > 3) {
-            sb.append(args[3]);
-            for (int i = 4; i < args.length; i++)
-                sb.append(" ").append(args[i]);
-        }
-        String value = sb.toString();
+        String input = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
 
         String previousValue = field.getConfigValue().getFormatted();
 
-        switch (action) {
-            case CONFIG_VALUE_SET:
-                try {
-                    plugin.getPluginConfig().set(field, path, value);
-                } catch (ArgumentParseException e) {
-                    sender.sendMessage(e.getLocalizedMessage());
-                    return true;
-                }
-                break;
-            case CONFIG_VALUE_ADDED:
-                // plugin.getPluginConfig().add("", value);
-                break;
-            case CONFIG_VALUE_REMOVED:
-                // plugin.getPluginConfig().remove("", value);
-                break;
-            default:
-                return false;
+        try {
+            plugin.getPluginConfig().set(field, path, input);
+        } catch (ArgumentParseException e) {
+            sender.sendMessage(e.getLocalizedMessage());
+            return true;
         }
 
         String newValue = field.getConfigValue().getFormatted();
 
-        sender.sendMessage(LangUtils.getMessage(action,
+        sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_SET,
                 new Replacement(Placeholder.PROPERTY, path),
                 new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
                 new Replacement(Placeholder.VALUE, newValue)
@@ -113,33 +79,22 @@ public class ControlConfig extends ControlCommand.SubCommand {
         if (!sender.hasPermission(Permissions.CONFIG))
             return Collections.emptyList();
 
-        if (args.length == 2)
-            return Stream.of("set", "add", "remove")
-                    .filter(option -> option.startsWith(args[1].toLowerCase(Locale.ROOT)))
-                    .collect(Collectors.toList());
+        ConfigField field = ConfigField.getByName(args[1]);
 
-        ConfigField field = ConfigField.getByName(args[2]);
-
-        if (args.length == 3) {
+        if (args.length == 2) {
             if (field != null && field.isOverridable())
                 return field.getOverridableValue().getPaths().stream()
-                        .filter(path -> path.contains(args[2].toLowerCase(Locale.ROOT)))
+                        .filter(path -> path.contains(args[1].toLowerCase(Locale.ROOT)))
                         .collect(Collectors.toList());
             return Arrays.stream(ConfigField.values())
                     .map(ConfigField::toString)
-                    .filter(path -> path.contains(args[2].toLowerCase(Locale.ROOT)))
+                    .filter(path -> path.contains(args[1].toLowerCase(Locale.ROOT)))
                     .sorted()
                     .collect(Collectors.toList());
         }
 
-        if (field == null)
-            return Collections.emptyList();
-
-        if (args.length == 4) {
-            if (field.isOverridable())
-                return Arrays.asList("default", "allow-override");
+        if (args.length == 3 && field != null)
             return Collections.singletonList(field.getConfigValue().getFormatted());
-        }
 
         return Collections.emptyList();
     }

@@ -28,7 +28,7 @@ public class ControlCommand extends BankingPluginCommand<ControlCommand.SubComma
 		this.pluginCommand = super.createPluginCommand();
 
         Stream.of(
-                new ControlConfig(),
+                new ControlConfigure(),
                 new ControlPayinterest(),
                 new ControlReload(),
                 new ControlUpdate(),
