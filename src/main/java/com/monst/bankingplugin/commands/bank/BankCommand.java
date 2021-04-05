@@ -47,7 +47,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 				new BankRename(),
 				new BankResize(),
 				new BankSelect(),
-				new BankSet(),
+				new BankConfigure(),
 				new BankTransfer(),
 				new BankTrust(),
 				new BankUntrust()

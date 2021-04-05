@@ -10,14 +10,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankSet extends BankCommand.SubCommand {
+public class BankConfigure extends BankCommand.SubCommand {
 
-    BankSet() {
-        super("set", false);
+    BankConfigure() {
+        super("configure", false);
     }
 
     @Override
@@ -39,13 +40,7 @@ public class BankSet extends BankCommand.SubCommand {
 
         Bank bank = bankRepo.getByIdentifier(args[1]);
         String fieldName = args[2];
-        StringBuilder sb = new StringBuilder(32);
-        if (args.length > 3) {
-            sb.append(args[3]);
-            for (int i = 4; i < args.length; i++)
-                sb.append(" ").append(args[i]);
-        }
-        String value = sb.toString();
+        String value = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
 
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[1]);

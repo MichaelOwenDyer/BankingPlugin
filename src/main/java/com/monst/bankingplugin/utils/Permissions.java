@@ -40,8 +40,8 @@ public class Permissions {
 	public static final String BANK_TRANSFER = "bankingplugin.bank.transfer";
 	public static final String BANK_TRANSFER_OTHER = "bankingplugin.bank.transfer.other";
 	public static final String BANK_TRANSFER_ADMIN = "bankingplugin.bank.transfer.admin";
-	public static final String BANK_SET_OTHER = "bankingplugin.bank.set.other";
-	public static final String BANK_SET_ADMIN = "bankingplugin.bank.set.admin";
+	public static final String BANK_SET_OTHER = "bankingplugin.bank.configure.other";
+	public static final String BANK_SET_ADMIN = "bankingplugin.bank.configure.admin";
 	public static final String BANK_SELECT = "worldedit.selection.pos";
 
 	public static final String BYPASS_EXTERNAL_PLUGINS = "bankingplugin.external-bypass";
