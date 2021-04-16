@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
@@ -130,7 +131,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 			if (args.length == 1)
 				return subCommands.stream()
 						.map(BankingPluginSubCommand::getName)
-						.filter(name -> name.startsWith(args[0].toLowerCase()))
+						.filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
 						.collect(Collectors.toList());
 
 			for (SubCommand subCommand : subCommands)

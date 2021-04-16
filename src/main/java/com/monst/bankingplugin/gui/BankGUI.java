@@ -37,8 +37,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	@Override
 	void evaluateClearance(Player player) {
 		canTP = player.isOp()
-				|| player.hasPermission("minecraft.command.tp")
-				|| player.hasPermission("essentials.tp.position");
+				|| Permissions.hasAny(player, "minecraft.command.tp", "essentials.tp.position");
 		canListAccounts = guiSubject.isTrusted(player)
 				|| player.hasPermission(Permissions.ACCOUNT_LIST_OTHER);
 	}
@@ -87,14 +86,12 @@ public class BankGUI extends SinglePageGUI<Bank> {
 			case 0:
 				return canTP ? (player, info) -> {
 					if (info.getClickType().isLeftClick())
-						player.teleport(Utils.getSafeLocation(guiSubject.getSelection().getCenterPoint().toLocation(guiSubject.getSelection().getWorld()))
-								.setDirection(player.getLocation().getDirection()));
+						Utils.teleport(player, guiSubject.getSelection().getTeleportLocation());
 					else if (info.getClickType().isRightClick())
-						player.teleport(guiSubject.getSelection()
+						Utils.teleport(player, guiSubject.getSelection()
 								.getWorld()
-								.getHighestBlockAt(guiSubject.getSelection().getCenterPoint().toLocation(guiSubject.getSelection().getWorld()))
-								.getLocation().add(0.5, 1, 0.5)
-								.setDirection(player.getLocation().getDirection()));
+								.getHighestBlockAt(guiSubject.getSelection().getTeleportLocation())
+								.getLocation().add(0.5, 1, 0.5));
 					this.close(player);
 				} : null;
 			case 8:

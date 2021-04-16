@@ -73,7 +73,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
         List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST_OTHER))
             onlinePlayers.remove(sender.getName());
-        return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
+        return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[1]));
     }
 
     public static void trust(Player p, Account account, OfflinePlayer playerToTrust) {

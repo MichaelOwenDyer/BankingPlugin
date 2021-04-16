@@ -166,7 +166,7 @@ public class PolygonalSelection extends Selection {
 	public boolean contains(Location loc) {
 		if (vertices.size() < 3)
 			return false;
-		if (!getWorld().equals(loc.getWorld()))
+		if (!Objects.equals(getWorld(), loc.getWorld()))
 			return false;
 		return contains(BlockVector3D.fromLocation(loc));
 	}
@@ -231,8 +231,8 @@ public class PolygonalSelection extends Selection {
 			return false;
 		PolygonalSelection other = (PolygonalSelection) o;
 		return getMinY() == other.getMinY() && getMaxY() == other.getMaxY()
-				&& getWorld().equals(other.getWorld())
-				&& getVertices().equals(other.getVertices());
+				&& Objects.equals(getWorld(), other.getWorld())
+				&& Objects.equals(getVertices(), other.getVertices());
 	}
 
 	@Override

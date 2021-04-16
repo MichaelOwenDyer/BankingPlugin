@@ -70,9 +70,9 @@ public class VisualizationManager {
 
             // Add blocks that are directly adjacent to corner blocks
             for (int i = 0; i < 3; i++) {
-                for (int a : new int[] {dimensions[i].getMin() + 1, dimensions[i].getMax() - 1}) {
-                    for (int b : new int[] {dimensions[(i + 1) % 3].getMin(), dimensions[(i + 1) % 3].getMax()}) {
-                        for (int c : new int[] {dimensions[(i + 2) % 3].getMin(), dimensions[(i + 2) % 3].getMax()}) {
+                for (int a : new int[] { dimensions[i].getMin() + 1, dimensions[i].getMax() - 1 }) {
+                    for (int b : new int[] { dimensions[(i + 1) % 3].getMin(), dimensions[(i + 1) % 3].getMax() }) {
+                        for (int c : new int[] { dimensions[(i + 2) % 3].getMin(), dimensions[(i + 2) % 3].getMax() }) {
                             Location loc = null;
                             switch (i) {
                                 case 0: loc = new Location(world, a, b, c); break;
@@ -88,8 +88,8 @@ public class VisualizationManager {
             // Add blocks that form the lines between the corners in intervals of the integer "step"
             for (int i = 0; i < 3; i++) {
                 for (int a = dimensions[i].getMin() + step; a < dimensions[i].getMax() - step / 2; a += step) {
-                    for (int b : new int[] {dimensions[(i + 1) % 3].getMin(), dimensions[(i + 1) % 3].getMax()}) {
-                        for (int c : new int[] {dimensions[(i + 2) % 3].getMin(), dimensions[(i + 2) % 3].getMax()}) {
+                    for (int b : new int[] { dimensions[(i + 1) % 3].getMin(), dimensions[(i + 1) % 3].getMax() }) {
+                        for (int c : new int[] { dimensions[(i + 2) % 3].getMin(), dimensions[(i + 2) % 3].getMax() }) {
                             Location loc = null;
                             switch (i) {
                                 case 0: loc = new Location(world, a, b, c); break;
@@ -120,7 +120,7 @@ public class VisualizationManager {
                 BlockVector2D current = points.get(i);
 
                 // Add blocks that are immediately vertically adjacent to corner blocks
-                for (int y : new int[] {sel.getMinY() + 1, sel.getMaxY() - 1}) {
+                for (int y : new int[] { sel.getMinY() + 1, sel.getMaxY() - 1 }) {
                     Location loc = current.toLocation(world, y);
                     newElements.add(new VisualizationElement(
                             loc,
@@ -142,13 +142,13 @@ public class VisualizationManager {
                 // Get the vertex after the current one; will eventually loop back to the first vertex
                 BlockVector2D next = points.get((i + 1) % points.size());
 
-                double[] unitVector = QuickMath.unitVector(current, next);
+                float[] unitVector = QuickMath.unitVector(current, next);
                 // These two doubles store the direction from the current vertex to the next. Through vector addition they form a diagonal of length 1
-                double unitX = unitVector[0];
-                double unitZ = unitVector[1];
+                float unitX = unitVector[0];
+                float unitZ = unitVector[1];
 
                 // The following blocks are placed at both minY and maxY
-                for (int y : new int[] {sel.getMinY(), sel.getMaxY()}) {
+                for (int y : new int[] { sel.getMinY(), sel.getMaxY() }) {
 
                     // Add the block that is immediately adjacent to the current vertex and pointing in the direction of the next vertex
                     Location unitAway = new Location(world, current.getX() + 0.5 + unitX, y, current.getZ() + 0.5 + unitZ);

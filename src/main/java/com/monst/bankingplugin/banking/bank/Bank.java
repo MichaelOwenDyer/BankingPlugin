@@ -409,23 +409,18 @@ public class Bank extends BankingEntity {
 
 	@Override
 	public void trustPlayer(OfflinePlayer p) {
-		if (p == null)
-			return;
 		super.trustPlayer(p);
 		plugin.getDatabase().addCoOwner(this, p, Callback.blank());
 	}
 
 	@Override
 	public void untrustPlayer(OfflinePlayer p) {
-		if (p == null)
-			return;
 		super.untrustPlayer(p);
 		plugin.getDatabase().removeCoOwner(this, p, Callback.blank());
 	}
 
 	@Override
 	public String toConsolePrintout() {
-
 		return Stream.of(
 				"\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")",
 				"Owner: " + getOwnerDisplayName(),
@@ -444,7 +439,7 @@ public class Bank extends BankingEntity {
 				"Average account value: " + Utils.formatAndColorize(QuickMath.divide(getTotalValue(), getAccounts().size())),
 				"Equality score: " + getGiniCoefficient(),
 				"Location: " + ChatColor.AQUA + getSelection().getCoordinates()
-		).map(s -> ChatColor.GRAY + s).collect(Collectors.joining(", ", "", ""));
+		).map(s -> ChatColor.GRAY + s).collect(Collectors.joining(", "));
 	}
 
 	@Override
@@ -467,7 +462,7 @@ public class Bank extends BankingEntity {
 			return false;
 
 		Bank otherBank = (Bank) o;
-		return getID() != -1 && getID().equals(otherBank.getID());
+		return getID() != -1 && Objects.equals(getID(), otherBank.getID());
 	}
 
 	@Override

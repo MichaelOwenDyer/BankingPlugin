@@ -112,14 +112,7 @@ public class BankRepository extends Observable implements Repository<Bank> {
     }
 
 	public Set<Selection> getOverlappingSelections(Selection sel) {
-		return getOverlappingSelectionsIgnoring(sel, null);
-	}
-
-	public Set<Selection> getOverlappingSelectionsIgnoring(Selection sel, Selection ignore) {
-		Set<Selection> overlappingSelections = Utils.filter(bankSelectionMap.keySet(), s -> s.overlaps(sel));
-		if (ignore != null)
-			overlappingSelections.remove(ignore);
-		return overlappingSelections;
+		return Utils.filter(bankSelectionMap.keySet(), s -> s.overlaps(sel));
 	}
 
 }

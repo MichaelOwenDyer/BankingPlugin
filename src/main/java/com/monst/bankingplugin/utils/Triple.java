@@ -50,7 +50,7 @@ public abstract class Triple<T, K, R> {
         if (getClass() != o.getClass())
             return false;
         Triple<?, ?, ?> other = (Triple<?, ?, ?>) o;
-        return first.equals(other.first) && second.equals(other.second) && third.equals(other.third);
+        return Objects.equals(first, other.first) && Objects.equals(second, other.second) && Objects.equals(third, other.third);
     }
 
     @Override

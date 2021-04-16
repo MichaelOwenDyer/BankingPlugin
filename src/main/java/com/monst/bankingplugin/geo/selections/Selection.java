@@ -3,10 +3,12 @@ package com.monst.bankingplugin.geo.selections;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
 public abstract class Selection {
@@ -37,6 +39,10 @@ public abstract class Selection {
 	 * @return the center point
 	 */
 	public abstract BlockVector3D getCenterPoint();
+
+	public Location getTeleportLocation() {
+		return Utils.getSafeLocation(getCenterPoint().toLocation(world));
+	}
 
 	/**
 	 * @return the minimum x-coordinate of this {@link Selection}
@@ -106,7 +112,7 @@ public abstract class Selection {
 	}
 
 	public boolean contains(ChestLocation loc) {
-		if (!getWorld().equals(loc.getWorld()))
+		if (!Objects.equals(getWorld(), loc.getWorld()))
 			return false;
 		for (Location chest : loc)
 			if (!contains(BlockVector3D.fromLocation(chest)))

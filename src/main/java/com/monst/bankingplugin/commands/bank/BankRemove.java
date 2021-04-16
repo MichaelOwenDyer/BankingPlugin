@@ -7,6 +7,7 @@ import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -107,7 +108,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)))
                     .map(Bank::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         }

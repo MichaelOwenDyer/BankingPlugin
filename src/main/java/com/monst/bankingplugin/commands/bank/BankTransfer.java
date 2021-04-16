@@ -142,7 +142,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
                     .map(Bank::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 3) {
@@ -152,7 +152,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
             Bank bank = bankRepo.getByIdentifier(args[1]);
             if (bank != null && bank.isPlayerBank())
                 onlinePlayers.remove(bank.getOwner().getName());
-            return Utils.filter(onlinePlayers, name -> name.toLowerCase().startsWith(args[2].toLowerCase()));
+            return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[2]));
         }
         return Collections.emptyList();
     }

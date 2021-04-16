@@ -44,27 +44,30 @@ public class QuickMath {
         return bd.setScale(scale, RoundingMode.HALF_EVEN);
     }
 
-    public static double vectorMagnitude(int x1, int x2, int... x3) {
+    public static double vectorMagnitude(int x1, int x2, int... xs) {
         double squaredSum = Math.pow(x1, 2) + Math.pow(x2, 2);
-        for (int v : x3)
-            squaredSum += Math.pow(v, 2);
+        for (int x : xs)
+            squaredSum += Math.pow(x, 2);
         return Math.sqrt(squaredSum);
     }
 
-    public static double[] unitVector(BlockVector2D from, BlockVector2D to) {
+    public static float[] unitVector(BlockVector2D from, BlockVector2D to) {
         BlockVector2D diff = from.vectorTo(to);
         double magnitude = vectorMagnitude(diff.getX(), diff.getZ());
-        return new double[] { diff.getX() / magnitude, diff.getZ() / magnitude };
+        return new float[] {
+                (float) (diff.getX() / magnitude),
+                (float) (diff.getZ() / magnitude)
+        };
     }
 
-    public static double[] unitVector(BlockVector3D from, BlockVector3D to) {
+    public static float[] unitVector(BlockVector3D from, BlockVector3D to) {
         BlockVector3D diff = from.vectorTo(to);
         double magnitude = vectorMagnitude(diff.getX(), diff.getY(), diff.getZ());
-        return new double[] { diff.getX() / magnitude, diff.getY() / magnitude, diff.getZ() / magnitude };
-    }
-
-    public static int between(int i, int lower, int upper) {
-        return Math.max(lower, Math.min(i, upper));
+        return new float[] {
+                (float) (diff.getX() / magnitude),
+                (float) (diff.getY() / magnitude),
+                (float) (diff.getZ() / magnitude)
+        };
     }
 
 }

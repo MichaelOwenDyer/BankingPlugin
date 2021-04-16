@@ -19,6 +19,8 @@ import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Objects;
+
 public class AccountMigrate extends AccountCommand.SubCommand {
 
     AccountMigrate() {
@@ -81,7 +83,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
     public static void migratePartTwo(Player p, Chest c, Account toMigrate) {
         ChestLocation chestLocation = ChestLocation.from(c);
         try {
-            if (toMigrate.equals(accountRepo.getAt(chestLocation))) {
+            if (Objects.equals(toMigrate, accountRepo.getAt(chestLocation))) {
                 plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
                 p.sendMessage(LangUtils.getMessage(Message.SAME_CHEST));
             } else {
@@ -108,7 +110,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             return;
         }
 
-        if (!toMigrate.getBank().equals(newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
+        if (!Objects.equals(toMigrate.getBank(), newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_BANK));
             plugin.debugf("%s does not have permission to migrate their account to another bank.", p.getName());
             return;

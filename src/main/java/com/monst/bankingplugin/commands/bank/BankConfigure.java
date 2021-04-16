@@ -6,6 +6,7 @@ import com.monst.bankingplugin.events.bank.BankConfigureEvent;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -28,7 +29,7 @@ public class BankConfigure extends BankCommand.SubCommand {
 
     @Override
     protected Message getUsageMessage() {
-        return Message.COMMAND_USAGE_BANK_SET;
+        return Message.COMMAND_USAGE_BANK_CONFIGURE;
     }
 
     @Override
@@ -111,13 +112,13 @@ public class BankConfigure extends BankCommand.SubCommand {
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
                     .map(Bank::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         else if (args.length == 3 && bankRepo.getByIdentifier(args[1]) != null) {
             return ConfigField.getOverridableFields().stream()
                     .map(ConfigField::toString)
-                    .filter(name -> name.contains(args[2].toLowerCase()))
+                    .filter(name -> Utils.containsIgnoreCase(name, args[2]))
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 4) {

@@ -112,7 +112,7 @@ public class BankRename extends BankCommand.SubCommand {
                             || (b.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (b.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))
                     .map(Bank::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         }

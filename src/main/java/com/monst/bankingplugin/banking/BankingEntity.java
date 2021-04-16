@@ -38,11 +38,15 @@ public abstract class BankingEntity extends Observable implements Ownable, Namea
 	}
 
 	public void trustPlayer(OfflinePlayer p) {
+		if (p == null)
+			return;
 		coowners.add(p);
 		notifyObservers();
 	}
 
 	public void untrustPlayer(OfflinePlayer p) {
+		if (p == null)
+			return;
 		coowners.remove(p);
 		notifyObservers();
 	}

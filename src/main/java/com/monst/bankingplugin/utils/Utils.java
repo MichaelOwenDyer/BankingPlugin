@@ -93,18 +93,8 @@ public class Utils {
 		return BinaryOperator.minBy(T::compareTo).apply(first, second);
 	}
 
-	@SafeVarargs
-	public static <T extends Comparable<T>> T least(T... toCompare) {
-		return Arrays.stream(toCompare).min(Comparator.naturalOrder()).orElse(null);
-	}
-
 	public static <T extends Comparable<T>> T greater(T first, T second) {
 		return BinaryOperator.maxBy(T::compareTo).apply(first, second);
-	}
-
-	@SafeVarargs
-	public static <T extends Comparable<T>> T greatest(T... toCompare) {
-		return Arrays.stream(toCompare).max(Comparator.naturalOrder()).orElse(null);
 	}
 
 	public static Integer parseInteger(String s) {
@@ -125,6 +115,18 @@ public class Utils {
 		} catch (RuntimeException e) {
 			return null;
 		}
+	}
+
+	public static boolean startsWithIgnoreCase(String s1, String s2) {
+		return s1.toLowerCase(Locale.ROOT).startsWith(s2.toLowerCase(Locale.ROOT));
+	}
+
+	public static boolean containsIgnoreCase(String s1, String s2) {
+		return s1.toLowerCase(Locale.ROOT).contains(s2.toLowerCase(Locale.ROOT));
+	}
+
+	public static void teleport(Player player, Location location) {
+		player.teleport(location.setDirection(player.getLocation().getDirection()));
 	}
 
 	/**
@@ -181,12 +183,13 @@ public class Utils {
 	}
 
 	@Nonnull
-	public static <T> T nonNull(@Nullable T ifNotNull, @Nonnull Supplier<T> ifNull) {
-		return ifNotNull != null ? ifNotNull : ifNull.get();
+	public static <T> T nonNull(@Nullable T ifNotNull, T ifNull) {
+		return ifNotNull != null ? ifNotNull : ifNull;
 	}
 
-	public static <T> T ternary(@Nullable T ifTrue, T ifFalse, @Nonnull Predicate<? super T> pred) {
-		return pred.test(ifTrue) ? ifTrue : ifFalse;
+	@Nonnull
+	public static <T> T nonNull(@Nullable T ifNotNull, @Nonnull Supplier<T> ifNull) {
+		return ifNotNull != null ? ifNotNull : ifNull.get();
 	}
 
 	/**
@@ -205,7 +208,7 @@ public class Utils {
 		stackedList.get(0).add(list.get(0));
 		int level = 0;
 		for (int i = 1; i < list.size(); i++) {
-			if (list.get(i).equals(stackedList.get(level).get(0)))
+			if (Objects.equals(list.get(i), stackedList.get(level).get(0)))
 				stackedList.get(level).add(list.get(i));
 			else {
 				stackedList.add(new ArrayList<>());
@@ -257,7 +260,7 @@ public class Utils {
 		InventoryHolder ih = inv.getHolder();
 		if (ih instanceof Chest)
 			return (Chest) ih;
-		else if (ih instanceof DoubleChest)
+		if (ih instanceof DoubleChest)
 			return (Chest) ((DoubleChest) ih).getLeftSide();
 		return null;
 	}
@@ -282,7 +285,7 @@ public class Utils {
 	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {
 		if (p1 == null || p2 == null)
 			return false;
-		return p1.getUniqueId().equals(p2.getUniqueId());
+		return Objects.equals(p1.getUniqueId(), p2.getUniqueId());
 	}
 
 	@SuppressWarnings("deprecation")

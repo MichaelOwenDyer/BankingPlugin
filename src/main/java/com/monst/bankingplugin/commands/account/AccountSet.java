@@ -10,6 +10,7 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -149,7 +150,7 @@ public class AccountSet extends AccountCommand.SubCommand {
         if (args.length != 2 || !sender.hasPermission(Permissions.ACCOUNT_SET))
             return Collections.emptyList();
         return Stream.of("multiplier", "delay-until-next-payout", "remaining-offline-payouts", "remaining-offline-payouts-until-reset")
-                .filter(field -> field.contains(args[1].toLowerCase()))
+                .filter(field -> Utils.containsIgnoreCase(field, args[1]))
                 .collect(Collectors.toList());
     }
 

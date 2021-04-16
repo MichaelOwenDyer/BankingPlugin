@@ -20,6 +20,7 @@ import org.bukkit.inventory.Inventory;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 
 public abstract class ChestLocation implements Iterable<Location> {
@@ -107,11 +108,11 @@ public abstract class ChestLocation implements Iterable<Location> {
     }
 
     public boolean contains(Location loc) {
-        if (!world.equals(loc.getWorld()))
+        if (!Objects.equals(getWorld(), loc.getWorld()))
             return false;
         BlockVector3D bv = BlockVector3D.fromLocation(loc);
         for (Location chest : this)
-            if (BlockVector3D.fromLocation(chest).equals(bv))
+            if (Objects.equals(BlockVector3D.fromLocation(chest), bv))
                 return true;
         return false;
     }

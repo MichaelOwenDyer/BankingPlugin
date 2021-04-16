@@ -810,9 +810,9 @@ public enum Message {
             "&a/%COMMAND% rename &6- Rename a bank.",
             Placeholder.COMMAND
     ),
-    COMMAND_USAGE_BANK_SET (
+    COMMAND_USAGE_BANK_CONFIGURE (
             "",
-            "&a/%COMMAND% set &6- Configure a bank.",
+            "&a/%COMMAND% configure &6- Configure a bank.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_SELECT (
@@ -837,7 +837,7 @@ public enum Message {
     ),
     COMMAND_USAGE_CONFIG (
             "",
-            "&a/%COMMAND% config [set|add|remove] [property] [value] &6- Configure BankingPlugin.",
+            "&a/%COMMAND% configure [property] [value] &6- Configure BankingPlugin.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_UPDATE (

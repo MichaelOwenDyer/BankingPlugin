@@ -1,5 +1,9 @@
 package com.monst.bankingplugin.utils;
 
+import org.bukkit.entity.Player;
+
+import java.util.Arrays;
+
 public class Permissions {
 
 	public static final String ACCOUNT_CREATE = "bankingplugin.account.create";
@@ -49,5 +53,13 @@ public class Permissions {
 	public static final String RELOAD = "bankingplugin.reload";
 	public static final String UPDATE = "bankingplugin.update";
 	public static final String PAY_INTEREST = "bankingplugin.pay-interest";
+
+	public static boolean hasAny(Player player, String... permissions) {
+		return Arrays.stream(permissions).anyMatch(player::hasPermission);
+	}
+
+	public static boolean hasAll(Player player, String... permissions) {
+		return Arrays.stream(permissions).allMatch(player::hasPermission);
+	}
 
 }

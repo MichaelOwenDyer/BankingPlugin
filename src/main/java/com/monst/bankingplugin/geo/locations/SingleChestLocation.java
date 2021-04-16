@@ -48,7 +48,7 @@ public class SingleChestLocation extends ChestLocation {
             return false;
 
         SingleChestLocation otherLoc = (SingleChestLocation) o;
-        return world.equals(otherLoc.world) && v1.equals(otherLoc.v1);
+        return Objects.equals(world, otherLoc.world) && Objects.equals(v1, otherLoc.v1);
     }
 
     @Override

@@ -148,7 +148,7 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
         return inForeground == other.inForeground
                 && getType() == other.getType()
                 && Utils.samePlayer(viewer, other.viewer)
-                && getSubject().equals(other.getSubject());
+                && Objects.equals(getSubject(), other.getSubject());
     }
 
     @Override

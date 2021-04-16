@@ -12,6 +12,7 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -122,7 +123,8 @@ public class BankResize extends BankCommand.SubCommand {
             ));
             return true;
         }
-        Set<Selection> overlappingSelections = bankRepo.getOverlappingSelectionsIgnoring(selection, bank.getSelection());
+        Set<Selection> overlappingSelections = bankRepo.getOverlappingSelections(selection);
+        overlappingSelections.remove(bank.getSelection());
         if (!overlappingSelections.isEmpty()) {
             plugin.debug("New selection is overlaps with an existing bank selection");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING,
@@ -132,7 +134,7 @@ public class BankResize extends BankCommand.SubCommand {
                 VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;
         }
-        long cutAccounts = bank.getAccounts().stream().filter(account -> !selection.contains(account.getChestLocation())).count();
+        long cutAccounts = bank.getAccounts(account -> !selection.contains(account.getChestLocation())).size();
         if (cutAccounts > 0) {
             plugin.debug("New selection does not contain all accounts");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_CUTS_ACCOUNTS, new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, cutAccounts)));
@@ -166,7 +168,7 @@ public class BankResize extends BankCommand.SubCommand {
         if (args.length == 2) {
             return bankRepo.getAll().stream()
                     .map(Bank::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length > 2) {

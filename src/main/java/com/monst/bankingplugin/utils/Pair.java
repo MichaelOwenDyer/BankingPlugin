@@ -40,7 +40,7 @@ public abstract class Pair<T, K> {
         if (getClass() != o.getClass())
             return false;
         Pair<?, ?> other = (Pair<?, ?>) o;
-        return first.equals(other.first) && second.equals(other.second);
+        return Objects.equals(first, other.first) && Objects.equals(second, other.second);
     }
 
     @Override

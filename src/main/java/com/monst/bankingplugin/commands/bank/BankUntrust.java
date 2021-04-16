@@ -98,7 +98,7 @@ public class BankUntrust extends BankCommand.SubCommand {
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRUST_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRUST_ADMIN)))
                     .map(Bank::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 3) {
@@ -106,7 +106,7 @@ public class BankUntrust extends BankCommand.SubCommand {
             if (bank == null)
                 return Collections.emptyList();
             List<String> coowners = bank.getCoOwners().stream().map(OfflinePlayer::getName).collect(Collectors.toList());
-            return Utils.filter(coowners, name -> name.toLowerCase().startsWith(args[2].toLowerCase()));
+            return Utils.filter(coowners, name -> Utils.startsWithIgnoreCase(name, args[2]));
         }
         return Collections.emptyList();
     }

@@ -38,9 +38,9 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	@Override
 	void evaluateClearance(Player player) {
 		canTP = player.isOp()
-				|| player.hasPermission("minecraft.command.tp")
-				|| player.hasPermission("essentials.tp.position");
-		isTrusted = guiSubject.isTrusted(player) || guiSubject.getBank().isTrusted(player)
+				|| Permissions.hasAny(player, "minecraft.command.tp", "essentials.tp.position");
+		isTrusted = guiSubject.isTrusted(player)
+				|| guiSubject.getBank().isTrusted(player)
 				|| player.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
 	}
 
@@ -85,7 +85,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 				if (!canTP)
 					return null;
 				return (player, info) -> {
-					player.teleport(guiSubject.getChestLocation().getTeleportLocation().setDirection(player.getLocation().getDirection()));
+					Utils.teleport(player, guiSubject.getChestLocation().getTeleportLocation());
 					this.close(player);
 				};
 			case 1:

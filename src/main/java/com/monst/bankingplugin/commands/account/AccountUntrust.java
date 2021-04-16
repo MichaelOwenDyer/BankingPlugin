@@ -72,7 +72,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
         if (args.length != 2)
             return Collections.emptyList();
         return Utils.filter(Utils.getOnlinePlayerNames(plugin),
-                name -> name.toLowerCase().startsWith(args[1].toLowerCase()));
+                name -> Utils.startsWithIgnoreCase(name, args[1]));
     }
 
     public static void untrust(Player p, Account account, OfflinePlayer playerToUntrust) {

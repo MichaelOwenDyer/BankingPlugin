@@ -7,12 +7,12 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class ControlConfigure extends ControlCommand.SubCommand {
@@ -84,11 +84,11 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         if (args.length == 2) {
             if (field != null && field.isOverridable())
                 return field.getOverridableValue().getPaths().stream()
-                        .filter(path -> path.contains(args[1].toLowerCase(Locale.ROOT)))
+                        .filter(path -> Utils.containsIgnoreCase(path, args[1]))
                         .collect(Collectors.toList());
             return Arrays.stream(ConfigField.values())
                     .map(ConfigField::toString)
-                    .filter(path -> path.contains(args[1].toLowerCase(Locale.ROOT)))
+                    .filter(path -> Utils.containsIgnoreCase(path, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         }

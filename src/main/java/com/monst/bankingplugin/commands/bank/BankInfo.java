@@ -3,6 +3,7 @@ package com.monst.bankingplugin.commands.bank;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.gui.BankGUI;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -42,7 +43,7 @@ public class BankInfo extends BankCommand.SubCommand {
         if (args.length == 2)
             return bankRepo.getAll().stream()
                     .map(Bank::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         return Collections.emptyList();

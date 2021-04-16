@@ -8,6 +8,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -87,7 +88,7 @@ public class BankSelect extends BankCommand.SubCommand {
             return bankRepo.getAll().stream()
                     .map(Bank::getName)
                     .sorted()
-                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();

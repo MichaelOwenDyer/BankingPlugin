@@ -1,11 +1,11 @@
 package com.monst.bankingplugin.utils;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.monst.bankingplugin.BankingPlugin;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -56,11 +56,14 @@ public class UpdateChecker {
                 return Result.TRUE;
             }
 
-        } catch (Exception e) {
+        } catch (JsonIOException | JsonSyntaxException | MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             plugin.debug("Failed to check for updates");
             plugin.debug(e);
             return Result.ERROR;
         }
+        return null;
     }
 
     /**

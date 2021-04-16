@@ -112,16 +112,16 @@ public class CuboidSelection extends Selection {
 	@Override
 	public Collection<BlockVector3D> getCorners() {
 		Set<BlockVector3D> vertices = new HashSet<>();
-		for (int x : new int[] {getMinX(), getMaxX()})
-			for (int y : new int[] {getMinY(), getMaxY()})
-				for (int z : new int[] {getMinZ(), getMaxZ()})
+		for (int x : new int[] { getMinX(), getMaxX() })
+			for (int y : new int[] { getMinY(), getMaxY() })
+				for (int z : new int[] { getMinZ(), getMaxZ() })
 					vertices.add(new BlockVector3D(x, y, z));
 		return vertices;
 	}
 
 	@Override
 	public boolean contains(Location loc) {
-		if (!getWorld().equals(loc.getWorld()))
+		if (!Objects.equals(getWorld(), loc.getWorld()))
 			return false;
 		return contains(BlockVector3D.fromLocation(loc));
 	}
@@ -156,9 +156,9 @@ public class CuboidSelection extends Selection {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		CuboidSelection otherSel = (CuboidSelection) o;
-		return getWorld().equals(otherSel.getWorld())
-				&& getMaximumPoint().equals(otherSel.getMaximumPoint())
-				&& getMinimumPoint().equals(otherSel.getMinimumPoint());
+		return Objects.equals(getWorld(), otherSel.getWorld())
+				&& Objects.equals(getMaximumPoint(), otherSel.getMaximumPoint())
+				&& Objects.equals(getMinimumPoint(), otherSel.getMinimumPoint());
 	}
 
 	@Override

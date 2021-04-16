@@ -136,7 +136,7 @@ public class AccountRepository extends Observable implements Repository<Account>
 	}
 
     /**
-	 * Removes a account. May not work properly if double chest doesn't exist!
+	 * Removes an account.
      * @param account Account to remove
      * @param removeFromDatabase Whether the account should also be removed from the database
      * @param callback Callback that - if succeeded - returns null
@@ -208,7 +208,7 @@ public class AccountRepository extends Observable implements Repository<Account>
 	}
 
 	private BigDecimal getWorth(ItemStack item) {
-		return Utils.nonNull(plugin.getEssentials().getWorth().getPrice(plugin.getEssentials(), item), () -> BigDecimal.ZERO);
+		return Utils.nonNull(plugin.getEssentials().getWorth().getPrice(plugin.getEssentials(), item), BigDecimal.ZERO);
 	}
 
 }
