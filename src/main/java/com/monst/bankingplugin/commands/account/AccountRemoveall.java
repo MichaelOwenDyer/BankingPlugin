@@ -10,7 +10,6 @@ import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
@@ -84,7 +83,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
         }
 
         AccountRemoveAllEvent event = new AccountRemoveAllEvent(sender, accounts);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Removeall event cancelled");
             return true;

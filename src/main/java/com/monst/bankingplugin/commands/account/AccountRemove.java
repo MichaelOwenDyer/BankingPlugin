@@ -41,7 +41,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         plugin.debug(sender.getName() + " wants to remove an account");
 
         AccountRemoveCommandEvent event = new AccountRemoveCommandEvent(((Player) sender));
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account pre-remove event cancelled");
             return true;
@@ -90,7 +90,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
                 account.getID());
 
         AccountRemoveEvent event = new AccountRemoveEvent(p, account);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Remove event cancelled (#" + account.getID() + ")");
             return;

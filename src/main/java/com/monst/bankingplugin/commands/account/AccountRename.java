@@ -77,8 +77,8 @@ public class AccountRename extends AccountCommand.SubCommand {
         }
         executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RENAMED, new Replacement(Placeholder.ACCOUNT_NAME, account::getChestName)));
         plugin.getAccountRepository().update(account, account.callUpdateChestName(), AccountField.NICKNAME);
-        AccountConfigureEvent e = new AccountConfigureEvent(executor, account, AccountField.NICKNAME, value);
-        Bukkit.getPluginManager().callEvent(e);
+        AccountConfigureEvent event = new AccountConfigureEvent(executor, account, AccountField.NICKNAME, value);
+        event.fire();
     }
 
     @Override

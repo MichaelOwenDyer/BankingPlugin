@@ -68,7 +68,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         }
 
         AccountMigrateCommandEvent event = new AccountMigrateCommandEvent(p, toMigrate);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account pre-migrate event cancelled");
             return;
@@ -121,7 +121,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         newAccount.setChestLocation(chestLocation);
 
         AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, chestLocation);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             plugin.debug("No permission to create account on a protected chest.");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));

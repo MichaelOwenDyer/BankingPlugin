@@ -78,7 +78,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
         newAccount.setChestLocation(chestLocation);
 
         AccountRecoverEvent event = new AccountRecoverEvent(p, newAccount, chestLocation);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             plugin.debug("No permission to recover an account to a protected chest.");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));

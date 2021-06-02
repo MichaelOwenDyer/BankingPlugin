@@ -108,7 +108,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
         }
 
         BankTransferEvent event = new BankTransferEvent(sender, bank, newOwner);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Bank transfer event cancelled");
             return true;

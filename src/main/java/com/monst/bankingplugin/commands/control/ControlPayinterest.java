@@ -8,7 +8,6 @@ import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 import java.util.*;
@@ -50,7 +49,7 @@ public class ControlPayinterest extends ControlCommand.SubCommand {
                     .collect(Collectors.toSet());
 
         InterestEvent event = new InterestEvent(plugin, sender, banks);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Interest event cancelled");
             return true;

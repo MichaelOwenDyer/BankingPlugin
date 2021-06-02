@@ -1,34 +1,19 @@
 package com.monst.bankingplugin.events.account;
 
+import com.monst.bankingplugin.events.BankingPluginEvent;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
-
-import javax.annotation.Nonnull;
 
 /**
  * Any event that involves one or more accounts.
  */
-public abstract class AccountEvent extends Event {
+public abstract class AccountEvent extends BankingPluginEvent {
 
-    private static final HandlerList handlers = new HandlerList();
-    private final CommandSender executor;
-
-    public AccountEvent(@Nonnull CommandSender executor) {
-        this.executor = executor;
+    public AccountEvent(CommandSender executor) {
+        super(executor);
     }
 
-    @Nonnull
     public CommandSender getExecutor() {
-        return executor;
+        return super.getSender();
     }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
-    }
 }

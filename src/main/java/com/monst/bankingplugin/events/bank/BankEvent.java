@@ -1,29 +1,16 @@
 package com.monst.bankingplugin.events.bank;
 
+import com.monst.bankingplugin.events.BankingPluginEvent;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
-public abstract class BankEvent extends Event {
-
-    private static final HandlerList handlers = new HandlerList();
-    private final CommandSender executor;
+public abstract class BankEvent extends BankingPluginEvent {
 
     public BankEvent(CommandSender executor) {
-        this.executor = executor;
+        super(executor);
     }
 
     public CommandSender getExecutor() {
-        return executor;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
+        return super.getSender();
     }
 
 }

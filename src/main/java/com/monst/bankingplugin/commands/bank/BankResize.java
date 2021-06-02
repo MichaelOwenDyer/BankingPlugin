@@ -142,7 +142,7 @@ public class BankResize extends BankCommand.SubCommand {
         }
 
         BankResizeEvent event = new BankResizeEvent(p, bank, selection);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Bank resize event cancelled");
             return true;

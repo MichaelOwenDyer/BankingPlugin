@@ -40,7 +40,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
                 plugin.debugf("%s is displaying info for account #%d", sender.getName(), id);
 
                 AccountInfoEvent event = new AccountInfoEvent(sender, account);
-                Bukkit.getPluginManager().callEvent(event);
+                event.fire();
                 if (event.isCancelled()) {
                     plugin.debug("Account info event cancelled");
                     return true;
@@ -61,7 +61,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
         }
 
         AccountInfoCommandEvent event = new AccountInfoCommandEvent((Player) sender);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account pre-info event cancelled");
             return true;
@@ -84,7 +84,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
                 (account.isCoOwner(player) ? " (is co-owner)" : ""), account.getID());
 
         AccountInfoEvent event = new AccountInfoEvent(player, account);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debugf("Account info event cancelled (#%d)", account.getID());
             return;

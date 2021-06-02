@@ -5,16 +5,11 @@ import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountTransferCommandEvent;
 import com.monst.bankingplugin.events.account.AccountTransferEvent;
-import com.monst.bankingplugin.lang.LangUtils;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -66,7 +61,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         }
 
         AccountTransferCommandEvent event = new AccountTransferCommandEvent(p, args);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account pre-transfer event cancelled");
             return true;
@@ -118,7 +113,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         }
 
         AccountTransferEvent event = new AccountTransferEvent(p, account, newOwner);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account transfer event cancelled");
             return;

@@ -61,7 +61,7 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
         }
 
         BankRemoveAllEvent event = new BankRemoveAllEvent(sender, banks);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Bank remove all event cancelled");
             return true;

@@ -1,35 +1,13 @@
 package com.monst.bankingplugin.events.control;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.events.BankingPluginEvent;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
-public abstract class ControlEvent extends Event {
-
-    private static final HandlerList handlers = new HandlerList();
-    private final BankingPlugin plugin;
-    private final CommandSender sender;
+public abstract class ControlEvent extends BankingPluginEvent {
 
     public ControlEvent(BankingPlugin plugin, CommandSender sender) {
-        this.plugin = plugin;
-        this.sender = sender;
+        super(sender);
     }
 
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-
-    public BankingPlugin getPlugin() {
-        return plugin;
-    }
-
-    public CommandSender getSender() {
-        return sender;
-    }
 }

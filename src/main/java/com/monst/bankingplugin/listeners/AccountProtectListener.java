@@ -156,7 +156,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		plugin.debugf("%s tries to extend %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 
 		AccountExtendEvent event = new AccountExtendEvent(p, account, newChestLocation);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
 		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             e.setCancelled(true);
 			p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED));

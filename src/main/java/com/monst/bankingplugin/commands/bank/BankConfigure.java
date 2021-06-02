@@ -7,7 +7,6 @@ import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -94,8 +93,8 @@ public class BankConfigure extends BankCommand.SubCommand {
         mailingRoom.addRecipient(sender);
         mailingRoom.send(); // TODO: Mail as well?
 
-        BankConfigureEvent e = new BankConfigureEvent(sender, bank, field, previousValue, value);
-        Bukkit.getPluginManager().callEvent(e);
+        BankConfigureEvent event = new BankConfigureEvent(sender, bank, field, previousValue, value);
+        event.fire();
 
         if (field == ConfigField.INTEREST_PAYOUT_TIMES)
             plugin.getScheduler().schedulePayouts(bank);

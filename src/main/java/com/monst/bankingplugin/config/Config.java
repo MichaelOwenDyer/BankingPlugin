@@ -7,7 +7,6 @@ import com.monst.bankingplugin.config.values.simple.*;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.LangUtils;
-import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -305,7 +304,7 @@ public class Config {
 	 */
 	public void set(ConfigField field, String input) throws ArgumentParseException {
 		field.getConfigValue().parseAndSet(input);
-		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, field, input));
+		new PluginConfigureEvent(plugin, field, input).fire();
 		plugin.saveConfig();
 		reload(false, true, false);
 	}

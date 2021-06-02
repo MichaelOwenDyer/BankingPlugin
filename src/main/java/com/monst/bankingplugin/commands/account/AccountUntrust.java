@@ -55,7 +55,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
 
         Player p = ((Player) sender);
         AccountUntrustCommandEvent event = new AccountUntrustCommandEvent(p, args);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account pre-untrust event cancelled");
             return true;
@@ -96,7 +96,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
         }
 
         AccountUntrustEvent event = new AccountUntrustEvent(p, account, playerToUntrust);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account untrust event cancelled");
             return;

@@ -54,7 +54,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
 
         Player p = ((Player) sender);
         AccountTrustCommandEvent event = new AccountTrustCommandEvent(p, args);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account pre-trust event cancelled");
             return true;
@@ -96,7 +96,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
         }
 
         AccountTrustEvent event = new AccountTrustEvent(p, account, playerToTrust);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account trust event cancelled");
             return;

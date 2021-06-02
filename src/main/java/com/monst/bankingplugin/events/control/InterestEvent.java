@@ -45,4 +45,5 @@ public class InterestEvent extends ControlEvent implements Cancellable {
 	public void setCancelled(boolean cancel) {
 		this.cancelled = cancel;
 	}
+
 }

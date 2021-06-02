@@ -41,7 +41,7 @@ public class ControlReload extends ControlCommand.SubCommand {
         }
 
         ReloadEvent event = new ReloadEvent(plugin, sender);
-        Bukkit.getPluginManager().callEvent(event);
+        event.fire();
         if (event.isCancelled()) {
             plugin.debug("Reload event cancelled");
             return true;

@@ -3,7 +3,6 @@ package com.monst.bankingplugin.listeners;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
-import com.monst.bankingplugin.sql.logging.AccountTransaction;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
 import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
@@ -11,9 +10,9 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.sql.logging.AccountTransaction;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -79,7 +78,7 @@ public class AccountBalanceListener extends BankingPluginListener {
 		accountRepo.update(account, Callback.blank(), AccountField.BALANCE);
 
 		plugin.debugf("Account #%d has been updated with a new balance (%s)", account.getID(), Utils.format(valueOnClose));
-		Bukkit.getPluginManager().callEvent(new AccountTransactionEvent(executor, account, difference, valueOnClose));
+		new AccountTransactionEvent(executor, account, difference, valueOnClose).fire();
 
 		if (account.getOwner().isOnline())
 			plugin.getDatabase().logLastSeen(account.getOwner().getPlayer());
