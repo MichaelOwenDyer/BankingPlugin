@@ -303,8 +303,8 @@ public class Config {
 	 * @param field 	Property to change
 	 * @param input		Value to set
 	 */
-	public void set(ConfigField field, String path, String input) throws ArgumentParseException {
-		field.getConfigValue().set(path, input);
+	public void set(ConfigField field, String input) throws ArgumentParseException {
+		field.getConfigValue().parseAndSet(input);
 		Bukkit.getPluginManager().callEvent(new PluginConfigureEvent(plugin, field, input));
 		plugin.saveConfig();
 		reload(false, true, false);
@@ -315,9 +315,6 @@ public class Config {
      */
 	public void reload(boolean firstLoad, boolean langReload, boolean showMessages) {
         plugin.reloadConfig();
-
-		if (plugin.isEnabled())
-			plugin.getScheduler().scheduleAll();
 
 		if (firstLoad || langReload)
 			loadLanguageConfig(showMessages);

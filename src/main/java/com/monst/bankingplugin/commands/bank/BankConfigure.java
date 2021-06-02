@@ -61,7 +61,7 @@ public class BankConfigure extends BankCommand.SubCommand {
         }
 
         ConfigField field = ConfigField.getByName(fieldName);
-        if (field == null || field.isSimple()) {
+        if (field == null || !field.isBankField()) {
             plugin.debug("No bank config field could be found with name " + fieldName);
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.STRING, fieldName)));
             return true;
@@ -116,7 +116,8 @@ public class BankConfigure extends BankCommand.SubCommand {
                     .sorted()
                     .collect(Collectors.toList());
         else if (args.length == 3 && bankRepo.getByIdentifier(args[1]) != null) {
-            return ConfigField.getOverridableFields().stream()
+            return ConfigField.stream()
+                    .filter(ConfigField::isBankField)
                     .map(ConfigField::toString)
                     .filter(name -> Utils.containsIgnoreCase(name, args[2]))
                     .sorted()

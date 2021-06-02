@@ -42,10 +42,10 @@
 		<worldguardwrapper.version>1.1.9-SNAPSHOT</worldguardwrapper.version>
 		<canvas.version>1.6.0-SNAPSHOT</canvas.version>
 		<hikaricp.version>4.0.3</hikaricp.version>
-		<slf4j-jdk14.version>2.0.0-alpha1</slf4j-jdk14.version>
 		<bstats.version>1.7</bstats.version>
 		<polylabel.version>1.2.1</polylabel.version>
 		<mxparser.version>4.4.2</mxparser.version>
+		<fluentjdbc.version>1.8.5</fluentjdbc.version>
 	</properties>
 
 	<repositories>
@@ -145,18 +145,6 @@
 			<artifactId>HikariCP</artifactId>
 			<version>${hikaricp.version}</version>
 			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>${slf4j-jdk14.version}</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.bstats</groupId>
@@ -179,7 +167,7 @@
 		<dependency>
 			<groupId>org.codejargon</groupId>
 			<artifactId>fluentjdbc</artifactId>
-			<version>1.8.5</version>
+			<version>${fluentjdbc.version}</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
@@ -221,7 +209,6 @@
 							<include>org.codemc.worldguardwrapper:worldguardwrapper</include>
 							<include>org.ipvp:canvas</include>
 							<include>com.zaxxer:HikariCP</include>
-							<include>org.slf4j</include>
 							<include>org.bstats</include>
 							<include>com.monst:polylabel-java</include>
 							<include>org.mariuszgromada.math:MathParser.org-mXparser</include>
@@ -240,10 +227,6 @@
 						<relocation>
 							<pattern>com.zaxxer.hikari</pattern>
 							<shadedPattern>com.monst.bankingplugin.dependencies.hikari</shadedPattern>
-						</relocation>
-						<relocation>
-							<pattern>org.slf4j</pattern>
-							<shadedPattern>com.monst.bankingplugin.dependencies.slf4j</shadedPattern>
 						</relocation>
 						<relocation>
 							<pattern>org.bstats.bukkit</pattern>

@@ -58,7 +58,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         String previousValue = field.getConfigValue().getFormatted();
 
         try {
-            plugin.getPluginConfig().set(field, path, input);
+            plugin.getPluginConfig().set(field, input);
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
             return true;
@@ -81,19 +81,17 @@ public class ControlConfigure extends ControlCommand.SubCommand {
 
         ConfigField field = ConfigField.getByName(args[1]);
 
-        if (args.length == 2) {
-            if (field != null && field.isOverridable())
-                return field.getOverridableValue().getPaths().stream()
-                        .filter(path -> Utils.containsIgnoreCase(path, args[1]))
-                        .collect(Collectors.toList());
+        if (args.length == 2)
             return Arrays.stream(ConfigField.values())
                     .map(ConfigField::toString)
                     .filter(path -> Utils.containsIgnoreCase(path, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
-        }
 
-        if (args.length == 3 && field != null)
+        if (field == null)
+            return Collections.emptyList();
+
+        if (args.length == 3)
             return Collections.singletonList(field.getConfigValue().getFormatted());
 
         return Collections.emptyList();

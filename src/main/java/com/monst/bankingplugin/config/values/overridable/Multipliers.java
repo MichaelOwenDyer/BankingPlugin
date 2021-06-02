@@ -1,38 +1,29 @@
 package com.monst.bankingplugin.config.values.overridable;
 
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.MemoryConfiguration;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
+/**
+ * A non-empty list of positive integers. Defaults to { 1 }
+ */
 public class Multipliers extends OverridableList<Integer> {
 
     public Multipliers() {
-        super("multipliers", Collections.singletonList(1), Multipliers::getMultipliers);
+        super("multipliers", Collections.singletonList(1));
     }
 
-    private static List<Integer> getMultipliers(MemorySection config, String path) {
+    @Override
+    public List<Integer> readValueFromFile(MemoryConfiguration config, String path) {
         List<Integer> multipliers = config.getIntegerList(path);
-        return multipliers.isEmpty() ? Collections.singletonList(1) : multipliers;
+        return multipliers.isEmpty() ? null : multipliers;
     }
 
     @Override
-    public List<Integer> parse(String input) {
-        return Arrays.stream(input.replaceAll("\\p{Punct}", " ").split("\\s\\s*"))
-                .filter(s -> !s.isEmpty())
-                .map(Utils::parseInteger)
-                .filter(Objects::nonNull)
-                .map(Math::abs)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    protected boolean isValid(List<Integer> value) {
-        return value != null && !value.isEmpty();
+    public Integer parseSingle(String input) {
+        return Utils.parseInteger(input);
     }
 
 }

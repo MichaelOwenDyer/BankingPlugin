@@ -1,21 +1,22 @@
-package com.monst.bankingplugin.config.values.simple;
+package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.DoubleParseException;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-public abstract class SimpleDouble extends SimpleValue<Double> {
+public interface IConfigDouble extends IConfigValue<Double> {
 
-    public SimpleDouble(String path, Double defaultValue) {
-        super(path, defaultValue, MemorySection::getDouble); // TODO: Apply constraint
+    @Override
+    default Double readValueFromFile(MemoryConfiguration config, String path) {
+        return config.getDouble(path);
     }
 
     @Override
-    public Double parse(String input) throws DoubleParseException {
+    default Double parse(String input) throws DoubleParseException {
         return Optional.ofNullable(input)
                 .map(i -> Utils.removePunctuation(i, '.'))
                 .map(Double::parseDouble)
@@ -24,7 +25,7 @@ public abstract class SimpleDouble extends SimpleValue<Double> {
                 .orElseThrow(() -> new DoubleParseException(input));
     }
 
-    Function<Double, Double> getConstraint() {
+    default Function<Double, Double> getConstraint() {
         return Function.identity();
     }
 

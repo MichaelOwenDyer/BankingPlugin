@@ -302,35 +302,35 @@ public class Bank extends BankingEntity {
 	public OverriddenValue<?> get(ConfigField field) {
 		switch (field) {
 			case COUNT_INTEREST_DELAY_OFFLINE:
-				return getCountInterestDelayOffline();
+				return countInterestDelayOffline;
 			case REIMBURSE_ACCOUNT_CREATION:
-				return getReimburseAccountCreation();
+				return reimburseAccountCreation;
 			case PAY_ON_LOW_BALANCE:
-				return getPayOnLowBalance();
+				return payOnLowBalance;
 			case INTEREST_RATE:
-				return getInterestRate();
+				return interestRate;
 			case ACCOUNT_CREATION_PRICE:
-				return getAccountCreationPrice();
+				return accountCreationPrice;
 			case MINIMUM_BALANCE:
-				return getMinimumBalance();
+				return minimumBalance;
 			case LOW_BALANCE_FEE:
-				return getLowBalanceFee();
+				return lowBalanceFee;
 			case INITIAL_INTEREST_DELAY:
-				return getInitialInterestDelay();
+				return initialInterestDelay;
 			case ALLOWED_OFFLINE_PAYOUTS:
-				return getAllowedOfflinePayouts();
+				return allowedOfflinePayouts;
 			case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
-				return getAllowedOfflinePayoutsBeforeReset();
+				return allowedOfflinePayoutsBeforeReset;
 			case OFFLINE_MULTIPLIER_DECREMENT:
-				return getOfflineMultiplierDecrement();
+				return offlineMultiplierDecrement;
 			case WITHDRAWAL_MULTIPLIER_DECREMENT:
-				return getWithdrawalMultiplierDecrement();
+				return withdrawalMultiplierDecrement;
 			case PLAYER_BANK_ACCOUNT_LIMIT:
-				return getPlayerBankAccountLimit();
+				return playerBankAccountLimit;
 			case MULTIPLIERS:
-				return getMultipliers();
+				return multipliers;
 			case INTEREST_PAYOUT_TIMES:
-				return getInterestPayoutTimes();
+				return interestPayoutTimes;
 			default:
 				return null;
 		}

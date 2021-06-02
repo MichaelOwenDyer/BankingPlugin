@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.config.values.simple;
+package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.IntegerParseException;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -6,21 +6,22 @@ import org.bukkit.configuration.MemoryConfiguration;
 import java.util.Optional;
 import java.util.function.Function;
 
-abstract class SimpleInteger extends SimpleValue<Integer> {
+public interface IConfigInteger extends IConfigValue<Integer> {
 
-    public SimpleInteger(String path, Integer defaultValue) {
-        super(path, defaultValue, MemoryConfiguration::getInt);
+    @Override
+    default Integer readValueFromFile(MemoryConfiguration config, String path) {
+        return config.getInt(path);
     }
 
     @Override
-    public Integer parse(String input) throws IntegerParseException {
+    default Integer parse(String input) throws IntegerParseException {
         return Optional.ofNullable(input)
                 .map(Integer::parseInt)
                 .map(getConstraint())
                 .orElseThrow(() -> new IntegerParseException(input));
     }
 
-    Function<Integer, Integer> getConstraint() {
+    default Function<Integer, Integer> getConstraint() {
         return Function.identity();
     }
 

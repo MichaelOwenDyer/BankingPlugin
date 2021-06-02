@@ -4,22 +4,18 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
-
-public abstract class ConfigValue<T> implements Supplier<T> {
+public abstract class ConfigValue<T> implements IConfigValue<T> {
 
     protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
     protected static final FileConfiguration CONFIG = PLUGIN.getConfig();
 
-    protected final T defaultValue;
+    protected final String path;
+    protected final T defaultConfiguration;
     protected T lastSeenValue = null;
-    private final BiFunction<FileConfiguration, String, T> valueFinder;
 
-    protected ConfigValue(T defaultValue, BiFunction<FileConfiguration, String, T> valueFinder) {
-        this.defaultValue = defaultValue;
-        this.valueFinder = valueFinder;
+    protected ConfigValue(String path, T defaultConfiguration) {
+        this.path = path;
+        this.defaultConfiguration = defaultConfiguration;
     }
 
     public final String getFormatted() {
@@ -30,29 +26,22 @@ public abstract class ConfigValue<T> implements Supplier<T> {
         return String.valueOf(t);
     }
 
+    @Override
     public T get() {
+        // if (lastSeenValue == null)
+            lastSeenValue = readValueFromFile(CONFIG, path);
         if (lastSeenValue == null)
-            lastSeenValue = valueFinder.apply(CONFIG, getPath());
-        if (!isValid(lastSeenValue))
-            lastSeenValue = defaultValue;
+            lastSeenValue = defaultConfiguration;
         return lastSeenValue;
     }
 
-    protected boolean isValid(T value) {
-        return value != null;
+    public void parseAndSet(String input) throws ArgumentParseException {
+        set(parse(input));
     }
 
-    protected abstract String getPath();
-
-    public abstract List<String> getPaths();
-
-    public void set(String path, String input) throws ArgumentParseException {
-        CONFIG.set(path, parse(input));
-        clear();
+    public void set(T input) {
+        CONFIG.set(path, input);
+        lastSeenValue = null;
     }
-
-    public abstract T parse(String input) throws ArgumentParseException;
-
-    protected abstract void clear();
 
 }

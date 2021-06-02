@@ -24,8 +24,11 @@ public class OverriddenValue<T> {
     }
 
     public T get(boolean ignoreNonOverridable) {
-        if (customValue == null)
+        if (customValue == null) {
+            if (Config.stubbornBanks.get())
+                return customValue = configValue.getDefault();
             return configValue.getDefault();
+        }
         if (ignoreNonOverridable)
             return customValue;
         return configValue.isOverridable() ? customValue : configValue.getDefault();

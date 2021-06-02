@@ -1,14 +1,13 @@
 package com.monst.bankingplugin.config.values.overridable;
 
-import org.bukkit.configuration.file.FileConfiguration;
+import com.monst.bankingplugin.config.values.IConfigList;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
-abstract class OverridableList<T> extends OverridableValue<List<T>> {
+abstract class OverridableList<T> extends OverridableValue<List<T>> implements IConfigList<T> {
 
-    OverridableList(String path, List<T> defaultValue, BiFunction<FileConfiguration, String, List<T>> valueFinder) {
-        super(path, defaultValue, valueFinder);
+    OverridableList(String path, List<T> prescribedValue) {
+        super(path, prescribedValue);
     }
 
 }
