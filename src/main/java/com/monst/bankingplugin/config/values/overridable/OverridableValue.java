@@ -1,24 +1,24 @@
 package com.monst.bankingplugin.config.values.overridable;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.values.ConfigValue;
-import com.monst.bankingplugin.config.values.Overridable;
 import com.monst.bankingplugin.config.values.simple.AllowOverride;
-import com.monst.bankingplugin.exceptions.ArgumentParseException;
 
-public abstract class OverridableValue<T> extends ConfigValue<T> implements Overridable<T> {
+public abstract class OverridableValue<T> extends ConfigValue<T> {
 
     private final AllowOverride allowOverride;
 
-    OverridableValue(String path, T prescribedValue) {
-        super(path + ".default", prescribedValue);
+    OverridableValue(String path, T defaultValue) {
+        super(path + ".default", defaultValue);
         this.allowOverride = new AllowOverride(path);
     }
 
-    @Override
     public AllowOverride getAllowOverride() {
         return allowOverride;
+    }
+
+    boolean isOverridable() {
+        return getAllowOverride().get();
     }
 
     public T getDefault() {
@@ -26,18 +26,15 @@ public abstract class OverridableValue<T> extends ConfigValue<T> implements Over
     }
 
     @Override
-    public void parseAndSet(String input) throws ArgumentParseException {
-        super.parseAndSet(input);
-        notifyGUIs();
+    protected void afterSet() {
+        PLUGIN.getBankRepository().getAll().forEach(Bank::notifyObservers);
+        afterNotify();
     }
 
-    @Override
+    protected void afterNotify() {}
+
     public final OverriddenValue<T> override(T value) {
         return new OverriddenValue<>(this, value);
-    }
-
-    private static void notifyGUIs() {
-        BankingPlugin.getInstance().getBankRepository().getAll().forEach(Bank::notifyObservers);
     }
 
 }

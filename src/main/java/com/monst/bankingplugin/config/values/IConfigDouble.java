@@ -19,7 +19,7 @@ public interface IConfigDouble extends IConfigValue<Double> {
     default Double parse(String input) throws DoubleParseException {
         return Optional.ofNullable(input)
                 .map(i -> Utils.removePunctuation(i, '.'))
-                .map(Double::parseDouble)
+                .map(Utils::parseDouble)
                 .map(getConstraint())
                 .map(QuickMath::scale)
                 .orElseThrow(() -> new DoubleParseException(input));

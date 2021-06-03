@@ -6,13 +6,6 @@ import com.monst.bankingplugin.config.values.overridable.*;
 import com.monst.bankingplugin.config.values.simple.*;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
-import com.monst.bankingplugin.lang.LangUtils;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class Config {
 
@@ -281,19 +274,10 @@ public class Config {
 
 	private final BankingPlugin plugin;
 
-	private LanguageConfig languageConfig;
-
 	public Config(BankingPlugin plugin) {
         this.plugin = plugin;
-
         plugin.saveDefaultConfig();
-
-		reload(true, true, true);
     }
-
-    public LanguageConfig getLanguageConfig() {
-		return languageConfig;
-	}
 
 	/**
 	 * <p>Set a configuration value</p>
@@ -303,81 +287,8 @@ public class Config {
 	 * @param input		Value to set
 	 */
 	public void set(ConfigField field, String input) throws ArgumentParseException {
-		field.getConfigValue().parseAndSet(input);
+		field.getConfigValue().set(input);
 		new PluginConfigureEvent(plugin, field, input).fire();
-		plugin.saveConfig();
-		reload(false, true, false);
 	}
 
-    /**
-     * Reload the configuration values from config.yml
-     */
-	public void reload(boolean firstLoad, boolean langReload, boolean showMessages) {
-        plugin.reloadConfig();
-
-		if (firstLoad || langReload)
-			loadLanguageConfig(showMessages);
-		if (!firstLoad && langReload)
-			LangUtils.reload();
-    }
-
-	private void loadLanguageConfig(boolean showMessages) {
-		languageConfig = new LanguageConfig(plugin, showMessages);
-		Path langFolder = plugin.getDataFolder().toPath().resolve("lang");
-		Path defaultLangFile = langFolder.resolve("en_US.lang");
-
-		if (!Files.exists(defaultLangFile))
-			plugin.saveResource("lang/en_US.lang", false);
-
-		if (!Files.exists(langFolder.resolve("de_DE.lang")))
-			plugin.saveResource("lang/de_DE.lang", false);
-
-		Path specifiedLang = langFolder.resolve(languageFile.get() + ".lang");
-		if (Files.exists(specifiedLang)) {
-			try {
-				if (showMessages)
-					plugin.getLogger().info("Using locale \"" + languageFile.get() + "\"");
-				languageConfig.load(specifiedLang);
-			} catch (IOException e) {
-				if (showMessages)
-					plugin.getLogger().warning("Using default language values.");
-				plugin.debug("Using default language values (#1)");
-				plugin.debug(e);
-			}
-		} else {
-			if (Files.exists(defaultLangFile)) {
-				try {
-					languageConfig.load(defaultLangFile);
-					if (showMessages)
-						plugin.getLogger().info("Using locale \"en_US\"");
-				} catch (IOException e) {
-					if (showMessages)
-						plugin.getLogger().warning("Using default language values.");
-					plugin.debug("Using default language values (#2)");
-					plugin.debug(e);
-				}
-			} else {
-				String fileName;
-				Reader reader = plugin.getTextResourceMirror(fileName = specifiedLang.toString());
-				if (reader == null)
-					reader = plugin.getTextResourceMirror(fileName = defaultLangFile.toString());
-
-				if (reader != null) {
-					try (BufferedReader br = new BufferedReader(reader)) {
-						languageConfig.loadFromStream(br.lines());
-						if (showMessages)
-							plugin.getLogger().info("Using lang file \"" + fileName + "\" (Streamed from .jar)");
-					} catch (IOException e) {
-						if (showMessages)
-							plugin.getLogger().warning("Using default language values.");
-						plugin.debug("Using default language values (#3)");
-					}
-				} else {
-					if (showMessages)
-						plugin.getLogger().warning("Using default language values.");
-					plugin.debug("Using default language values (#4, Reader is null)");
-				}
-			}
-		}
-	}
 }

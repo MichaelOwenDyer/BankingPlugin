@@ -2,20 +2,19 @@ package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
-import org.bukkit.configuration.file.FileConfiguration;
 
 public abstract class ConfigValue<T> implements IConfigValue<T> {
 
     protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
-    protected static final FileConfiguration CONFIG = PLUGIN.getConfig();
 
     protected final String path;
     protected final T defaultConfiguration;
-    protected T lastSeenValue = null;
+    protected T lastSeenValue;
 
     protected ConfigValue(String path, T defaultConfiguration) {
         this.path = path;
         this.defaultConfiguration = defaultConfiguration;
+        this.lastSeenValue = get(); // Initialize value in memory
     }
 
     public final String getFormatted() {
@@ -28,19 +27,29 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
 
     @Override
     public T get() {
-        // if (lastSeenValue == null)
-            lastSeenValue = readValueFromFile(CONFIG, path);
         if (lastSeenValue == null)
+            PLUGIN.reloadConfig();
+            lastSeenValue = readValueFromFile(PLUGIN.getConfig(), path);
+        if (lastSeenValue == null) {
+            PLUGIN.getConfig().set(path, defaultConfiguration);
+            PLUGIN.saveConfig();
             lastSeenValue = defaultConfiguration;
+        }
         return lastSeenValue;
     }
 
-    public void parseAndSet(String input) throws ArgumentParseException {
-        set(parse(input));
+    public void set(String input) throws ArgumentParseException {
+        T newValue = parse(input);
+        PLUGIN.reloadConfig();
+        PLUGIN.getConfig().set(path, newValue);
+        PLUGIN.saveConfig();
+        clearLastSeen();
+        afterSet();
     }
 
-    public void set(T input) {
-        CONFIG.set(path, input);
+    protected void afterSet() {}
+
+    public void clearLastSeen() {
         lastSeenValue = null;
     }
 

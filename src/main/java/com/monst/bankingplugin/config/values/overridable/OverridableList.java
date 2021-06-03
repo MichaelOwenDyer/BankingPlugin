@@ -6,8 +6,8 @@ import java.util.List;
 
 abstract class OverridableList<T> extends OverridableValue<List<T>> implements IConfigList<T> {
 
-    OverridableList(String path, List<T> prescribedValue) {
-        super(path, prescribedValue);
+    OverridableList(String path, List<T> defaultValue) {
+        super(path, defaultValue);
     }
 
 }

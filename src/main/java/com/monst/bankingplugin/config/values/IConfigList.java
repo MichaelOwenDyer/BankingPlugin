@@ -13,7 +13,7 @@ public interface IConfigList<T> extends IConfigValue<List<T>> {
     @Override
     default List<T> parse(String input) throws ListParseException {
         try {
-            return Arrays.stream(input.split("\\s*,\\s*"))
+            return Arrays.stream(input.split("\\s*,?\\s*"))
                     .map(this::parseSingle)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());

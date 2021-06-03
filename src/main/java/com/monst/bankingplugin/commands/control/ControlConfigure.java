@@ -82,7 +82,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         ConfigField field = ConfigField.getByName(args[1]);
 
         if (args.length == 2)
-            return Arrays.stream(ConfigField.values())
+            return ConfigField.stream()
                     .map(ConfigField::toString)
                     .filter(path -> Utils.containsIgnoreCase(path, args[1]))
                     .sorted()

@@ -1,7 +1,5 @@
 package com.monst.bankingplugin.config.values.overridable;
 
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.configuration.MemoryConfiguration;
 
@@ -13,15 +11,12 @@ import java.util.stream.Collectors;
 
 public class InterestPayoutTimes extends OverridableList<LocalTime> {
 
-    private static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
-
     public InterestPayoutTimes() {
         super("interest-payout-times", Collections.emptyList());
     }
 
     @Override
-    public void parseAndSet(String input) throws ArgumentParseException {
-        super.parseAndSet(input);
+    protected void afterNotify() {
         if (PLUGIN.isEnabled())
             PLUGIN.getScheduler().scheduleAll();
     }

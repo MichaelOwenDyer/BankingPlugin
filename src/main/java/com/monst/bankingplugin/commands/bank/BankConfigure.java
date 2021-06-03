@@ -93,8 +93,7 @@ public class BankConfigure extends BankCommand.SubCommand {
         mailingRoom.addRecipient(sender);
         mailingRoom.send(); // TODO: Mail as well?
 
-        BankConfigureEvent event = new BankConfigureEvent(sender, bank, field, previousValue, value);
-        event.fire();
+        new BankConfigureEvent(sender, bank, field, previousValue, value).fire();
 
         if (field == ConfigField.INTEREST_PAYOUT_TIMES)
             plugin.getScheduler().schedulePayouts(bank);

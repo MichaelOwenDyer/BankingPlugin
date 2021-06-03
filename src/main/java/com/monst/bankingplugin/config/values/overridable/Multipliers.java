@@ -5,6 +5,7 @@ import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A non-empty list of positive integers. Defaults to { 1 }
@@ -12,12 +13,12 @@ import java.util.List;
 public class Multipliers extends OverridableList<Integer> {
 
     public Multipliers() {
-        super("multipliers", Collections.singletonList(1));
+        super("interest-multipliers", Collections.singletonList(1));
     }
 
     @Override
     public List<Integer> readValueFromFile(MemoryConfiguration config, String path) {
-        List<Integer> multipliers = config.getIntegerList(path);
+        List<Integer> multipliers = config.getIntegerList(path).stream().map(Math::abs).collect(Collectors.toList());
         return multipliers.isEmpty() ? null : multipliers;
     }
 

@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.IntegerParseException;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.Optional;
@@ -16,7 +17,7 @@ public interface IConfigInteger extends IConfigValue<Integer> {
     @Override
     default Integer parse(String input) throws IntegerParseException {
         return Optional.ofNullable(input)
-                .map(Integer::parseInt)
+                .map(Utils::parseInteger)
                 .map(getConstraint())
                 .orElseThrow(() -> new IntegerParseException(input));
     }

@@ -6,8 +6,8 @@ import java.util.Set;
 
 abstract class OverridableSet<T> extends OverridableValue<Set<T>> implements IConfigSet<T> {
 
-    OverridableSet(String path, Set<T> prescribedValue) {
-        super(path, prescribedValue);
+    OverridableSet(String path, Set<T> defaultValue) {
+        super(path, defaultValue);
     }
 
 }

@@ -3,8 +3,7 @@ package com.monst.bankingplugin.events.account;
 import com.monst.bankingplugin.banking.account.Account;
 import org.bukkit.Bukkit;
 
-import javax.annotation.Nonnull;
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * This event is fired when the plugin is started or reloaded.
@@ -12,7 +11,7 @@ import java.util.Collection;
  */
 public class AccountInitializedEvent extends MultiAccountEvent {
 
-    public AccountInitializedEvent(@Nonnull Collection<Account> accounts) {
+    public AccountInitializedEvent(Set<Account> accounts) {
         super(Bukkit.getConsoleSender(), accounts);
     }
 

@@ -14,8 +14,8 @@ public class LangUtils {
     private static final EnumMap<Message, String> messages = new EnumMap<>(Message.class);
 
     public static void reload() {
-        LanguageConfig languageConfig = plugin.getPluginConfig().getLanguageConfig();
-        for (Message message : Message.values())
+        LanguageConfig languageConfig = plugin.getLanguageConfig();
+        for (Message message : Message.VALUES)
             messages.put(message, languageConfig.findTranslation(message));
     }
 

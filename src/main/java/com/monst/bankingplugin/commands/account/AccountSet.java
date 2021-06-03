@@ -11,7 +11,6 @@ import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -141,8 +140,7 @@ public class AccountSet extends AccountCommand.SubCommand {
         }
 
         plugin.getAccountRepository().update(account, Callback.blank(), field);
-        AccountConfigureEvent event = new AccountConfigureEvent(executor, account, field, value);
-        event.fire();
+        new AccountConfigureEvent(executor, account, field, value).fire();
     }
 
     @Override

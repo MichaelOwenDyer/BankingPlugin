@@ -10,7 +10,6 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -77,8 +76,7 @@ public class AccountRename extends AccountCommand.SubCommand {
         }
         executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RENAMED, new Replacement(Placeholder.ACCOUNT_NAME, account::getChestName)));
         plugin.getAccountRepository().update(account, account.callUpdateChestName(), AccountField.NICKNAME);
-        AccountConfigureEvent event = new AccountConfigureEvent(executor, account, AccountField.NICKNAME, value);
-        event.fire();
+        new AccountConfigureEvent(executor, account, AccountField.NICKNAME, value).fire();
     }
 
     @Override

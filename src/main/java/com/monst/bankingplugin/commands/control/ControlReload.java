@@ -9,10 +9,9 @@ import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
-import java.util.Collection;
+import java.util.Set;
 
 public class ControlReload extends ControlCommand.SubCommand {
 
@@ -47,10 +46,10 @@ public class ControlReload extends ControlCommand.SubCommand {
             return true;
         }
 
-        plugin.reload(true, true,
+        plugin.reload(true,
                 Callback.of(result -> {
-                    Collection<Bank> banks = result.getBanks();
-                    Collection<Account> accounts = result.getAccounts();
+                    Set<Bank> banks = result.getBanks();
+                    Set<Account> accounts = result.getAccounts();
                     plugin.getScheduler().scheduleAll();
                     sender.sendMessage(LangUtils.getMessage(Message.RELOADED_PLUGIN,
                             new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size),

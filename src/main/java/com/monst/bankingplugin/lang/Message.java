@@ -914,6 +914,8 @@ public enum Message {
             "&c&lError while checking for updates."
     );
 
+    public static final Message[] VALUES = values();
+
     private final String description;
     private final String defaultMessage;
     private final EnumSet<Placeholder> placeholders = EnumSet.noneOf(Placeholder.class);

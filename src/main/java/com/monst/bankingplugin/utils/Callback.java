@@ -10,10 +10,6 @@ public abstract class Callback<T> {
         return of(t -> {});
     }
 
-    public static <T> Callback<T> blankNoLog() {
-        return of(t -> {}, e -> {});
-    }
-
     public static <T> Callback<T> of(Consumer<T> onResult) {
         return new Callback<T>() {
             @Override
@@ -53,36 +49,12 @@ public abstract class Callback<T> {
 
     public static <T> void yield(Callback<T> callback, T result) {
         if (callback != null)
-            callback.yield(result);
+            BankingPlugin.runTask(() -> callback.onResult(result));
     }
 
     public static void error(Callback<?> callback, Throwable error) {
         if (callback != null)
-            callback.error(error);
+            BankingPlugin.runTask(() -> callback.onError(error));
     }
 
-    final void yield(final T result) {
-        BankingPlugin.runTask(() -> onResult(result));
-    }
-
-    public final void error(final Throwable throwable) {
-        BankingPlugin.runTask(() -> onError(throwable));
-    }
-
-    public Callback<T> andThen(Consumer<T> nextAction) {
-        return of(result -> {
-            onResult(result);
-            nextAction.accept(result);
-        }, this::onError);
-    }
-
-    public Callback<T> andThen(Consumer<T> nextAction, Consumer<Throwable> nextOnError) {
-        return of(result -> {
-            onResult(result);
-            nextAction.accept(result);
-        }, throwable -> {
-            onError(throwable);
-            nextOnError.accept(throwable);
-        });
-    }
 }

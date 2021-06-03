@@ -4,13 +4,12 @@
 #
 #
 
-# Set the command names to be used for bank management, account management, and system control in this plugin.
+# Set the command names to be used for account management, bank management, and plugin control.
 # Type: String
-# Defaults: "bank", "account", "bankingplugin"
-command-names:
-  bank: bank
-  account: account
-  control: bp
+# Defaults: "account", "bank", "bp"
+command-name-account: account
+command-name-bank: bank
+command-name-control: bp
 
 # Set the daily times at which customers should receive interest payments from their accounts.
 # The time zone will be that of the server, not of the individual players.

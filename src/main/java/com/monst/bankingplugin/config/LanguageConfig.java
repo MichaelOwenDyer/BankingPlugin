@@ -1,14 +1,13 @@
 package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import javax.annotation.Nonnull;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -21,12 +20,63 @@ public class LanguageConfig extends FileConfiguration {
     private final HashMap<String, String> configFilePathValues = new HashMap<>();
 
     private final BankingPlugin plugin;
-    private final boolean showMessages;
     private File file;
 
-    LanguageConfig(BankingPlugin plugin, boolean showMessages) {
+    public LanguageConfig(BankingPlugin plugin) {
         this.plugin = plugin;
-        this.showMessages = showMessages;
+    }
+
+    public void reload() {
+        Path langFolder = plugin.getDataFolder().toPath().resolve("lang");
+        Path defaultLangFile = langFolder.resolve("en_US.lang");
+
+        if (!Files.exists(defaultLangFile))
+            plugin.saveResource("lang/en_US.lang", false);
+
+        if (!Files.exists(langFolder.resolve("de_DE.lang")))
+            plugin.saveResource("lang/de_DE.lang", false);
+
+        Path specifiedLang = langFolder.resolve(Config.languageFile.get() + ".lang");
+        if (Files.exists(specifiedLang)) {
+            try {
+                plugin.getLogger().info("Using locale \"" + Config.languageFile.get() + "\"");
+                load(specifiedLang);
+            } catch (IOException e) {
+                plugin.getLogger().warning("Using default language values.");
+                plugin.debug("Using default language values (#1)");
+                plugin.debug(e);
+            }
+        } else {
+            if (Files.exists(defaultLangFile)) {
+                try {
+                    load(defaultLangFile);
+                    plugin.getLogger().info("Using locale \"en_US\"");
+                } catch (IOException e) {
+                    plugin.getLogger().warning("Using default language values.");
+                    plugin.debug("Using default language values (#2)");
+                    plugin.debug(e);
+                }
+            } else {
+                String fileName;
+                Reader reader = plugin.getTextResourceMirror(fileName = specifiedLang.toString());
+                if (reader == null)
+                    reader = plugin.getTextResourceMirror(fileName = defaultLangFile.toString());
+
+                if (reader != null) {
+                    try (BufferedReader br = new BufferedReader(reader)) {
+                        loadFromStream(br.lines());
+                        plugin.getLogger().info("Using lang file \"" + fileName + "\" (Streamed from .jar)");
+                    } catch (IOException e) {
+                        plugin.getLogger().warning("Using default language values.");
+                        plugin.debug("Using default language values (#3)");
+                    }
+                } else {
+                    plugin.getLogger().warning("Using default language values.");
+                    plugin.debug("Using default language values (#4, Reader is null)");
+                }
+            }
+        }
+        LangUtils.reload();
     }
 
     @Nonnull
@@ -46,24 +96,22 @@ public class LanguageConfig extends FileConfiguration {
                         message.getAvailablePlaceholders().stream()
                         .map(Placeholder::toString).collect(Collectors.joining(", ")));
                 writer.write("\n" + path + "=" + defaultMessage + "\n");
-                if (showMessages)
-                    plugin.getLogger().info("Missing translation for \"" + path + "\" has been added as \"" + defaultMessage + "\" to the selected language file.");
+                plugin.getLogger().info("Missing translation for \"" + path + "\" has been added as \"" + defaultMessage + "\" to the selected language file.");
             } catch (IOException e) {
                 plugin.debug("Failed to add language entry");
                 plugin.debug(e);
-                if (showMessages)
-                    plugin.getLogger().severe("Failed to add missing translation for \"" + path + "\".");
+                plugin.getLogger().severe("Failed to add missing translation for \"" + path + "\".");
             }
         }
         return defaultMessage;
     }
 
     @Override
-    public String getString(@Nonnull String path, String defaultValue) {
+    public String getString(@Nonnull String path) {
         for (Map.Entry<String, String> entry : configFilePathValues.entrySet())
             if (entry.getKey().equals(path))
                 return entry.getValue();
-        return defaultValue;
+        return null;
     }
 
     @Override
@@ -82,14 +130,16 @@ public class LanguageConfig extends FileConfiguration {
         return String.join("\n", lines);
     }
 
-    public void loadFromStream(@Nonnull Stream<String> lines) {
+    private void loadFromStream(@Nonnull Stream<String> lines) {
         lines
                 .filter(l -> !l.isEmpty())
                 .filter(l -> !l.startsWith("#"))
                 .filter(l -> l.contains("="))
                 .forEach(line -> {
                     String[] pair = line.split("=", 2);
-                    configFilePathValues.put(pair[0], pair[1] == null ? "" : pair[1]);
+                    String path = pair[0];
+                    String value = pair[1];
+                    configFilePathValues.put(path, value == null ? "" : value);
                 });
     }
 

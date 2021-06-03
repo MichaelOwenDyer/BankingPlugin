@@ -5,8 +5,8 @@ import com.monst.bankingplugin.utils.Utils;
 
 public abstract class OverridableDouble extends OverridableValue<Double> implements IConfigDouble {
 
-    OverridableDouble(String path, Double prescribedValue) {
-        super(path, prescribedValue);
+    OverridableDouble(String path, Double defaultValue) {
+        super(path, defaultValue);
     }
 
     @Override

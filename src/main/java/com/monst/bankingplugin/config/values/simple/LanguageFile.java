@@ -6,4 +6,9 @@ public class LanguageFile extends ConfigString {
         super("language-file", "en_US");
     }
 
+    @Override
+    protected void afterSet() {
+        PLUGIN.getLanguageConfig().reload();
+    }
+
 }

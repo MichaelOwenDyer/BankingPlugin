@@ -88,7 +88,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 	protected void sendBasicHelpMessage(CommandSender sender) {
 		plugin.debug("Sending basic help message to " + sender.getName());
 		for (SubCommand subCommand : subCommands) {
-			String msg = subCommand.getHelpMessage(sender, BankingPluginCommand.this.name);
+			String msg = subCommand.getHelpMessage(sender, name);
 			if (msg != null && !msg.isEmpty())
 				sender.sendMessage(msg);
 		}
@@ -106,7 +106,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 							return true;
 						}
 						if (!subCommand.execute(sender, args)) {
-							String helpMessage = subCommand.getHelpMessage(sender, BankingPluginCommand.this.name);
+							String helpMessage = subCommand.getHelpMessage(sender, name);
 							if (helpMessage != null && !helpMessage.isEmpty())
 								sender.sendMessage(helpMessage);
 						}

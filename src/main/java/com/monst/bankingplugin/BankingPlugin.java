@@ -7,11 +7,11 @@ import com.monst.bankingplugin.commands.account.AccountCommand;
 import com.monst.bankingplugin.commands.bank.BankCommand;
 import com.monst.bankingplugin.commands.control.ControlCommand;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.config.LanguageConfig;
 import com.monst.bankingplugin.events.account.AccountInitializedEvent;
 import com.monst.bankingplugin.events.bank.BankInitializedEvent;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardListener;
-import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.listeners.*;
 import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.repository.BankRepository;
@@ -46,6 +46,7 @@ public class BankingPlugin extends JavaPlugin {
 	private static BankingPlugin instance;
 
 	private Config config;
+	private LanguageConfig languageConfig;
 
 	private AccountCommand accountCommand;
 	private BankCommand bankCommand;
@@ -88,6 +89,7 @@ public class BankingPlugin extends JavaPlugin {
         instance = this;
 
         config = new Config(this);
+        languageConfig = new LanguageConfig(this);
 
         if (Config.enableDebugLog.get()) {
             try {
@@ -143,7 +145,7 @@ public class BankingPlugin extends JavaPlugin {
 		}
 
 		initializeRepositories();
-		LangUtils.reload();
+		getLanguageConfig().reload();
 		loadExternalPlugins();
 		initializeScheduler();
 		initializeCommands();
@@ -334,10 +336,10 @@ public class BankingPlugin extends JavaPlugin {
 	 * Initializes all banks and accounts stored in the {@link Database}.
 	 */
 	private void loadBanksAndAccounts() {
-		reload(false, true,
+		reload(true,
                 Callback.of(result -> {
-                	Collection<Bank> banks = result.getBanks();
-					Collection<Account> accounts = result.getAccounts();
+                	Set<Bank> banks = result.getBanks();
+					Set<Account> accounts = result.getAccounts();
 
 					new BankInitializedEvent(banks).fire();
 					new AccountInitializedEvent(accounts).fire();
@@ -356,18 +358,13 @@ public class BankingPlugin extends JavaPlugin {
 
 	/**
 	 * Reload the plugin
-	 *
-	 * @param reloadConfig        Whether the configuration should also be reloaded
-	 * @param showConsoleMessages Whether messages about the language file should be
+	 *  @param showConsoleMessages Whether messages about the language file should be
 	 *                            shown in the console
 	 * @param callback            Callback that - if succeeded - returns the amount
 	 *                            of accounts that were reloaded (as {@code int})
 	 */
-	public void reload(boolean reloadConfig, boolean showConsoleMessages, Callback<ReloadResult> callback) {
+	public void reload(boolean showConsoleMessages, Callback<ReloadResult> callback) {
 		debug("Loading banks and accounts from database...");
-
-		if (reloadConfig)
-			getPluginConfig().reload(false, true, true);
 
 		getDatabase().connect(Callback.of(
 				result -> {
@@ -396,16 +393,17 @@ public class BankingPlugin extends JavaPlugin {
 									}
 								});
 
-								if (banksBeforeReload.size() != 0 && banksBeforeReload.size() != reloadedBanks.size())
+								if (!banksBeforeReload.isEmpty() && banksBeforeReload.size() != reloadedBanks.size())
 									debugf("Number of banks before load was %d and is now %d.",
 											banksBeforeReload.size(), reloadedBanks.size());
-								if (accountsBeforeReload.size() != 0 && accountsBeforeReload.size() != reloadedAccounts.size())
+
+								if (!accountsBeforeReload.isEmpty() && accountsBeforeReload.size() != reloadedAccounts.size())
 									debugf("Number of accounts before load was %d and is now %d.",
 											accountsBeforeReload.size(), reloadedAccounts.size());
 
 								Callback.yield(callback, new ReloadResult(reloadedBanks, reloadedAccounts));
 							},
-							callback::error
+							error -> Callback.error(callback, error)
 					));
 				},
 				error -> {
@@ -419,12 +417,12 @@ public class BankingPlugin extends JavaPlugin {
 		));
 	}
 
-	public static class ReloadResult extends Pair<Collection<Bank>, Collection<Account>> {
-		public ReloadResult(Collection<Bank> banks, Collection<Account> accounts) {
+	public static class ReloadResult extends Pair<Set<Bank>, Set<Account>> {
+		public ReloadResult(Set<Bank> banks, Set<Account> accounts) {
 			super(banks, accounts);
 		}
-		public Collection<Bank> getBanks() { return super.getFirst(); }
-		public Collection<Account> getAccounts() { return super.getSecond(); }
+		public Set<Bank> getBanks() { return super.getFirst(); }
+		public Set<Account> getAccounts() { return super.getSecond(); }
 	}
 
 	/**
@@ -495,6 +493,10 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public Config getPluginConfig() {
 		return config;
+	}
+
+	public LanguageConfig getLanguageConfig() {
+		return languageConfig;
 	}
 
 	/**
