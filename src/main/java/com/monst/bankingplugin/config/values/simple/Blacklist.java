@@ -1,14 +1,14 @@
 package com.monst.bankingplugin.config.values.simple;
 
+import com.monst.bankingplugin.exceptions.MaterialParseException;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.EnumSet;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class Blacklist extends ConfigSet<Material> {
+public class Blacklist extends SimpleSet<Material> {
 
     public Blacklist() {
         super("blacklist", EnumSet.noneOf(Material.class));
@@ -16,15 +16,19 @@ public class Blacklist extends ConfigSet<Material> {
 
     @Override
     public Set<Material> readValueFromFile(MemoryConfiguration config, String path) {
-        return config.getStringList(path).stream()
-                .map(this::parseSingle)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(() -> EnumSet.noneOf(Material.class)));
+        if (isPathMissing())
+            return null;
+        EnumSet<Material> materials = EnumSet.noneOf(Material.class);
+        for (String material : config.getStringList(path))
+            try {
+                materials.add(parseSingle(material));
+            } catch (MaterialParseException ignored) {}
+        return materials;
     }
 
     @Override
-    public Material parseSingle(String input) {
-        return Material.getMaterial(input);
+    public Material parseSingle(String input) throws MaterialParseException {
+        return Optional.ofNullable(Material.getMaterial(input)).orElseThrow(() -> new MaterialParseException(input));
     }
 
 }

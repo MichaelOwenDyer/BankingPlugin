@@ -281,19 +281,23 @@ message.bank-property-not-overridable=&cThat property is not currently overridab
 # Available placeholders: %BANK_NAME%
 message.bank-selected=&6Bank &7%BANK_NAME% &6was selected with WorldEdit.
 
-# Scenario: A player attempts to set a bank property to a number, but provided a string that was not a number.
+# Scenario: A player attempts to set a configuration property to a number, but provided a string that was not a number.
 # Available placeholders: %STRING%
 message.not-a-number=&c"%STRING%" is not a number.
 
-# Scenario: A player attempts to set a bank property to an integer, but provided a string that was not an integer.
+# Scenario: A player attempts to set a configuration property to an integer, but provided a string that was not an integer.
 # Available placeholders: %STRING%
 message.not-an-integer=&c"%STRING%" is not an integer.
 
-# Scenario: A player attempts to set a bank property, but provided a string that was not a property.
+# Scenario: A player attempts to set a configuration property to a material, but provided a string that was not a material.
+# Available placeholders: %STRING%
+message.not-a-material=&c"%STRING%" is not a material.
+
+# Scenario: A player attempts to set a configuration property, but provided a string that was not a property.
 # Available placeholders: %STRING%
 message.not-a-property=&c"%STRING%" is not a property.
 
-# Scenario: A player attempts to set a bank property to a list, but provided a string that was not a list.
+# Scenario: A player attempts to set a configuration property to a list, but provided a string that was not a list.
 # Available placeholders: %STRING%
 message.not-a-list=&c"%STRING%" is not a parsable list.
 
@@ -800,3 +804,19 @@ message.update-checking=&6&lChecking for updates...
 # Scenario: An admin is notified that an error occurred while checking for updates.
 # Available placeholders:
 message.update-error=&c&lError while checking for updates.
+
+# Scenario: A player attempts to set a configuration property to a time, but provided a string that was not a time.
+# Available placeholders: %STRING%
+message.not-a-time=&c"%STRING%" is not a time.
+
+# Scenario: A player attempts to set a configuration property to a world, but provided a string that was not the name of a world.
+# Available placeholders: %STRING%
+message.not-a-world=&c"%STRING%" is not a world.
+
+# Scenario:
+# Available placeholders: %COMMAND%
+message.command-usage-bank-configure=&a/%COMMAND% configure &6- Configure a bank.
+
+# Scenario: An admin tries to configure a property in the config that does not exist.
+# Available placeholders: %STRING%
+message.not-a-config-value=&c"%STRING%" is not a configuration property.

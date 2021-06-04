@@ -3,9 +3,9 @@ package com.monst.bankingplugin.config.values.simple;
 import com.monst.bankingplugin.config.values.ConfigValue;
 import org.bukkit.configuration.MemoryConfiguration;
 
-public class ConfigString extends ConfigValue<String> {
+public class SimpleString extends ConfigValue<String> {
 
-    public ConfigString(String path, String defaultValue) {
+    public SimpleString(String path, String defaultValue) {
         super(path, defaultValue);
     }
 

@@ -5,9 +5,9 @@ import com.monst.bankingplugin.config.values.IConfigSet;
 
 import java.util.Set;
 
-public abstract class ConfigSet<T> extends ConfigValue<Set<T>> implements IConfigSet<T> {
+public abstract class SimpleSet<T> extends ConfigValue<Set<T>> implements IConfigSet<T> {
 
-    public ConfigSet(String path, Set<T> defaultValue) {
+    public SimpleSet(String path, Set<T> defaultValue) {
         super(path, defaultValue);
     }
 

@@ -14,7 +14,6 @@ import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -183,7 +182,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
                 ));
         }
 
-        if (newAccount.create(true)) {
+        if (newAccount.create()) {
             plugin.debugf("Account migrated (#%d)", newAccount.getID());
             accountRepo.remove(toMigrate, false, Callback.of(
                     result -> {

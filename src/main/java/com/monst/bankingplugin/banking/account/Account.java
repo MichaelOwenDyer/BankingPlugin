@@ -148,11 +148,10 @@ public class Account extends BankingEntity {
 	 * Attempts to create this account. This method will ensure that the chest exists at
 	 * the specified {@link Location} and is able to be opened.
 	 *
-	 * @param showConsoleMessages whether any error messages should be sent to the console
 	 * @return whether this account was successfully created
 	 * @see Utils#isTransparent(Block)
 	 */
-	public boolean create(boolean showConsoleMessages) {
+	public boolean create() {
 
 		if (created) {
 			plugin.debugf("Account was already created! (#%d)", getID());
@@ -168,8 +167,7 @@ public class Account extends BankingEntity {
 			if (!Config.removeAccountOnError.get())
 				plugin.getAccountRepository().addInvalidAccount(this);
 
-			if (showConsoleMessages)
-				plugin.getLogger().severe(e.getMessage());
+			plugin.getLogger().severe(e.getMessage());
 			plugin.debug("Failed to create account (#" + getID() + ")");
 			plugin.debug(e);
 			return false;

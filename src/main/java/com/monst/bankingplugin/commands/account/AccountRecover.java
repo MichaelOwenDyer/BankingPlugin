@@ -13,7 +13,6 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -85,7 +84,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
             return;
         }
 
-        if (newAccount.create(true)) {
+        if (newAccount.create()) {
             plugin.debugf("Account recovered (#%d)", newAccount.getID());
             accountRepo.removeInvalidAccount(toRecover);
             accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);

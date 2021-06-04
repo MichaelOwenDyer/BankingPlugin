@@ -39,8 +39,8 @@ public class LanguageConfig extends FileConfiguration {
         Path specifiedLang = langFolder.resolve(Config.languageFile.get() + ".lang");
         if (Files.exists(specifiedLang)) {
             try {
-                plugin.getLogger().info("Using locale \"" + Config.languageFile.get() + "\"");
                 load(specifiedLang);
+                plugin.getLogger().info("Using locale \"" + Config.languageFile.get() + "\"");
             } catch (IOException e) {
                 plugin.getLogger().warning("Using default language values.");
                 plugin.debug("Using default language values (#1)");

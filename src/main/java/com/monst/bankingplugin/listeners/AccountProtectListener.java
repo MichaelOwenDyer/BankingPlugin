@@ -15,7 +15,6 @@ import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
@@ -104,7 +103,7 @@ public class AccountProtectListener extends BankingPluginListener {
 			newAccount.setChestLocation(SingleChestLocation.from(chest));
 
 			accountRepo.remove(account, false, Callback.of(result -> {
-				newAccount.create(true);
+				newAccount.create();
 				accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.LOCATION);
 			}));
 		} else {
@@ -209,7 +208,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		newAccount.setChestLocation(newChestLocation);
 
 		accountRepo.remove(account, true, Callback.of(result -> {
-				if (newAccount.create(true)) {
+				if (newAccount.create()) {
 					accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.LOCATION);
 					plugin.debugf("%s extended %s's account (#%d)",
 							p.getName(), account.getOwner().getName(), account.getID());

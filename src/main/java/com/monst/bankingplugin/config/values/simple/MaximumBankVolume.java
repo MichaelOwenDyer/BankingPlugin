@@ -2,7 +2,7 @@ package com.monst.bankingplugin.config.values.simple;
 
 import java.util.function.Function;
 
-public class MaximumBankVolume extends ConfigInteger {
+public class MaximumBankVolume extends SimpleInteger {
 
     public MaximumBankVolume() {
         super("bank-size-limits.maximum", 100000);

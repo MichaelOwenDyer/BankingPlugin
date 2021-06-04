@@ -3,6 +3,9 @@ package com.monst.bankingplugin.config.values;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 
+import java.util.Collections;
+import java.util.List;
+
 public abstract class ConfigValue<T> implements IConfigValue<T> {
 
     protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
@@ -21,8 +24,8 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         return format(get());
     }
 
-    public String format(T t) {
-        return String.valueOf(t);
+    public List<String> getTabCompletions() {
+        return Collections.singletonList(getFormatted());
     }
 
     @Override
@@ -31,7 +34,7 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
             PLUGIN.reloadConfig();
             lastSeenValue = readValueFromFile(PLUGIN.getConfig(), path);
         if (lastSeenValue == null) {
-            PLUGIN.getConfig().set(path, defaultConfiguration);
+            PLUGIN.getConfig().set(path, convertToSettableType(defaultConfiguration));
             PLUGIN.saveConfig();
             lastSeenValue = defaultConfiguration;
         }
@@ -41,16 +44,21 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
     public void set(String input) throws ArgumentParseException {
         T newValue = parse(input);
         PLUGIN.reloadConfig();
-        PLUGIN.getConfig().set(path, newValue);
+        PLUGIN.getConfig().set(path, convertToSettableType(newValue));
         PLUGIN.saveConfig();
         clearLastSeen();
         afterSet();
     }
 
-    protected void afterSet() {}
-
     public void clearLastSeen() {
         lastSeenValue = null;
+    }
+
+    protected void afterSet() {}
+
+    @Override
+    public boolean isPathMissing() {
+        return !PLUGIN.getConfig().contains(path, true);
     }
 
 }

@@ -5,9 +5,9 @@ import com.monst.bankingplugin.config.values.IConfigList;
 
 import java.util.List;
 
-public abstract class ConfigList<T> extends ConfigValue<List<T>> implements IConfigList<T> {
+public abstract class SimpleList<T> extends ConfigValue<List<T>> implements IConfigList<T> {
 
-    public ConfigList(String path, List<T> defaultValue) {
+    public SimpleList(String path, List<T> defaultValue) {
         super(path, defaultValue);
     }
 

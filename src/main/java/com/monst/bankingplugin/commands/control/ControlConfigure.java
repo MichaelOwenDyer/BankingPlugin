@@ -92,7 +92,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
             return Collections.emptyList();
 
         if (args.length == 3)
-            return Collections.singletonList(field.getConfigValue().getFormatted());
+            return field.getConfigValue().getTabCompletions();
 
         return Collections.emptyList();
     }

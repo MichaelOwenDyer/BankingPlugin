@@ -421,18 +421,16 @@ public abstract class Database {
 	/**
 	 * Gets all banks and accounts from the database
 	 *
-	 * @param showConsoleMessages Whether console messages (errors or warnings)
-	 *                            should be shown
 	 * @param callback            Callback that - if succeeded - returns a read-only
 	 *                            collection of all banks and accounts (as
 	 *                            {@code Map<Bank, Set<Account>>})
 	 */
-	public void getBanksAndAccounts(boolean showConsoleMessages, Callback<Map<Bank, Set<Account>>> callback) {
+	public void getBanksAndAccounts(Callback<Map<Bank, Set<Account>>> callback) {
 		async(() -> {
-			Map<Bank, Set<Account>> banksAndAccounts = getBanks(showConsoleMessages, callback).stream()
+			Map<Bank, Set<Account>> banksAndAccounts = getBanks(callback).stream()
 					.collect(Collectors.toMap(
 							Function.identity(),
-							bank -> getAccounts(bank, showConsoleMessages, callback)
+							bank -> getAccounts(bank, callback)
 					));
 			Callback.yield(callback, Collections.unmodifiableMap(banksAndAccounts));
 		});
@@ -441,38 +439,34 @@ public abstract class Database {
 	/**
 	 * Gets all banks from the database.
 	 *
-	 * @param showConsoleMessages Whether console messages (errors or warnings)
-	 *                            should be shown
 	 */
-	private Set<Bank> getBanks(boolean showConsoleMessages, Callback<?> callback) {
+	private Set<Bank> getBanks(Callback<?> callback) {
 		plugin.debug("Fetching banks from the database.");
 		Set<Bank> banks = query
 						.select("SELECT * FROM " + tableBanks)
 						.errorHandler(forwardError(callback))
-						.setResult(reconstructBank(showConsoleMessages));
+						.setResult(reconstructBank());
 		plugin.debugf("Found %d bank%s.", banks.size(), banks.size() == 1 ? "" : "s");
 		return Collections.unmodifiableSet(banks);
 	}
 
 	/**
 	 * Gets all accounts registered at a certain bank from the database.
+	 *  @param bank                The bank to get the accounts of
 	 *
-	 * @param bank                The bank to get the accounts of
-	 * @param showConsoleMessages Whether console messages (errors or warnings)
-	 *                            should be shown
 	 */
-	private Set<Account> getAccounts(Bank bank, boolean showConsoleMessages, Callback<?> callback) {
+	private Set<Account> getAccounts(Bank bank, Callback<?> callback) {
 		plugin.debugf("Fetching accounts at bank #%d from the database.", bank.getID());
 		Set<Account> accounts = query
 						.select("SELECT * FROM " + tableAccounts + " WHERE BankID = ?")
 						.params(bank.getID())
 						.errorHandler(forwardError(callback))
-						.setResult(reconstructAccount(bank, showConsoleMessages));
+						.setResult(reconstructAccount(bank));
 		plugin.debugf("Found %d account%s.", accounts.size(), accounts.size() == 1 ? "" : "s");
 		return Collections.unmodifiableSet(accounts);
 	}
 
-	private Mapper<Bank> reconstructBank(boolean showConsoleMessages) {
+	private Mapper<Bank> reconstructBank() {
 		return rs -> {
 			ValueGrabber values = new ValueGrabber(rs);
 
@@ -515,7 +509,7 @@ public abstract class Database {
 			World world = Bukkit.getWorld(worldName);
 			if (world == null) {
 				WorldNotFoundException e = new WorldNotFoundException(worldName);
-				if (showConsoleMessages && !unknownWorldNames.contains(worldName)) {
+				if (!unknownWorldNames.contains(worldName)) {
 					plugin.getLogger().warning(e.getMessage());
 					unknownWorldNames.add(worldName);
 				}
@@ -575,7 +569,7 @@ public abstract class Database {
 		};
 	}
 
-	private Mapper<Account> reconstructAccount(Bank bank, boolean showConsoleMessages) {
+	private Mapper<Account> reconstructAccount(Bank bank) {
 		return rs -> {
 			ValueGrabber values = new ValueGrabber(rs);
 
@@ -596,7 +590,7 @@ public abstract class Database {
 			World world = Bukkit.getWorld(worldName);
 			if (world == null) {
 				WorldNotFoundException e = new WorldNotFoundException(worldName);
-				if (showConsoleMessages && !unknownWorldNames.contains(worldName)) {
+				if (!unknownWorldNames.contains(worldName)) {
 					plugin.getLogger().warning(e.getMessage());
 					unknownWorldNames.add(worldName);
 				}

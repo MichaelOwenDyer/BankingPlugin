@@ -324,23 +324,33 @@ public enum Message {
             Placeholder.BANK_NAME
     ),
     NOT_A_NUMBER (
-            "A player attempts to set a bank property to a number, but provided a string that was not a number.",
+            "A player attempts to set a configuration property to a number, but provided a string that was not a number.",
             "&c\"%STRING%\" is not a number.",
             Placeholder.STRING
     ),
     NOT_AN_INTEGER (
-            "A player attempts to set a bank property to an integer, but provided a string that was not an integer.",
+            "A player attempts to set a configuration property to an integer, but provided a string that was not an integer.",
             "&c\"%STRING%\" is not an integer.",
             Placeholder.STRING
     ),
-    NOT_A_PROPERTY (
-            "A player attempts to set a bank property, but provided a string that was not a property.",
-            "&c\"%STRING%\" is not a property.",
+    NOT_A_MATERIAL (
+            "A player attempts to set a configuration property to a material, but provided a string that was not a material.",
+            "&c\"%STRING%\" is not a material.",
             Placeholder.STRING
     ),
-    NOT_A_LIST (
-            "A player attempts to set a bank property to a list, but provided a string that was not a list.",
-            "&c\"%STRING%\" is not a parsable list.",
+    NOT_A_TIME (
+            "A player attempts to set a configuration property to a time, but provided a string that was not a time.",
+            "&c\"%STRING%\" is not a time.",
+            Placeholder.STRING
+    ),
+    NOT_A_WORLD (
+            "A player attempts to set a configuration property to a world, but provided a string that was not the name of a world.",
+            "&c\"%STRING%\" is not a world.",
+            Placeholder.STRING
+    ),
+    NOT_A_PROPERTY (
+            "A player attempts to set a configuration property, but provided a string that was not a property.",
+            "&c\"%STRING%\" is not a property.",
             Placeholder.STRING
     ),
     NAME_NOT_UNIQUE (

@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.config.values.simple;
 
 import com.monst.bankingplugin.config.values.ConfigValue;
-import com.monst.bankingplugin.exceptions.ItemStackParseException;
+import com.monst.bankingplugin.exceptions.MaterialParseException;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -23,14 +23,11 @@ public class AccountInfoItem extends ConfigValue<ItemStack> {
     }
 
     @Override
-    public ItemStack parse(String input) throws ItemStackParseException {
-        return parseItemStack(input).orElseThrow(ItemStackParseException::new);
-    }
-
-    private static Optional<ItemStack> parseItemStack(String name) {
-        return Optional.ofNullable(name)
+    public ItemStack parse(String input) throws MaterialParseException {
+        return Optional.ofNullable(input)
                 .map(Material::getMaterial)
-                .map(ItemStack::new);
+                .map(ItemStack::new)
+                .orElseThrow(() -> new MaterialParseException(input));
     }
 
     @Override

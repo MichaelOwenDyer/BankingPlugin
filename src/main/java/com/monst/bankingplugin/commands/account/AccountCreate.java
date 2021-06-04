@@ -10,7 +10,6 @@ import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.*;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
@@ -155,7 +154,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             }
         }
 
-        if (account.create(true)) {
+        if (account.create()) {
             plugin.debug("Account created");
             accountRepo.add(account, true, account.callUpdateChestName());
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));

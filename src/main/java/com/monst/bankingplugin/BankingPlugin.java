@@ -336,8 +336,8 @@ public class BankingPlugin extends JavaPlugin {
 	 * Initializes all banks and accounts stored in the {@link Database}.
 	 */
 	private void loadBanksAndAccounts() {
-		reload(true,
-                Callback.of(result -> {
+		reload(
+				Callback.of(result -> {
                 	Set<Bank> banks = result.getBanks();
 					Set<Account> accounts = result.getAccounts();
 
@@ -358,12 +358,10 @@ public class BankingPlugin extends JavaPlugin {
 
 	/**
 	 * Reload the plugin
-	 *  @param showConsoleMessages Whether messages about the language file should be
-	 *                            shown in the console
 	 * @param callback            Callback that - if succeeded - returns the amount
 	 *                            of accounts that were reloaded (as {@code int})
 	 */
-	public void reload(boolean showConsoleMessages, Callback<ReloadResult> callback) {
+	public void reload(Callback<ReloadResult> callback) {
 		debug("Loading banks and accounts from database...");
 
 		getDatabase().connect(Callback.of(
@@ -379,13 +377,13 @@ public class BankingPlugin extends JavaPlugin {
 						debugf("Removed bank (#%d)", bank.getID());
 					}
 
-					getDatabase().getBanksAndAccounts(showConsoleMessages, Callback.of(
+					getDatabase().getBanksAndAccounts(Callback.of(
 							bankAccountsMap -> {
 								bankAccountsMap.forEach((bank, bankAccounts) -> {
 									bankRepository.add(bank, false);
 									reloadedBanks.add(bank);
 									for (Account account : bankAccounts) {
-										if (account.create(showConsoleMessages)) {
+										if (account.create()) {
 											accountRepository.add(account, false, account.callUpdateChestName());
 											reloadedAccounts.add(account);
 										} else
