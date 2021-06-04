@@ -36,7 +36,7 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 				new AccountMigrate(),
 				new AccountRecover(),
 				new AccountRemove(),
-				new AccountRemoveall(),
+				new AccountRemoveAll(),
 				new AccountRename(),
 				new AccountSet(),
 				new AccountTransfer(),

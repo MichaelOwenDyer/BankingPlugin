@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.commands.account.AccountRemoveAll;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
@@ -8,7 +9,7 @@ import java.util.Collection;
 
 /**
  * This event is fired when multiple accounts are removed at once with the
- * {@link com.monst.bankingplugin.commands.account.AccountRemoveall} command.
+ * {@link AccountRemoveAll} command.
  */
 public class AccountRemoveAllEvent extends MultiAccountEvent implements Cancellable {
 
@@ -25,7 +26,7 @@ public class AccountRemoveAllEvent extends MultiAccountEvent implements Cancella
 
 	@Override
 	public void setCancelled(boolean cancel) {
-		cancelled = cancel;		
+		cancelled = cancel;
 	}
 
 }

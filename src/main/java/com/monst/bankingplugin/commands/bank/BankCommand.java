@@ -43,7 +43,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 				new BankLimits(),
 				new BankList(),
 				new BankRemove(),
-				new BankRemoveall(),
+				new BankRemoveAll(),
 				new BankRename(),
 				new BankResize(),
 				new BankSelect(),

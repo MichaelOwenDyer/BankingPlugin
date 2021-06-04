@@ -29,7 +29,7 @@ public class ControlCommand extends BankingPluginCommand<ControlCommand.SubComma
 
         Stream.of(
                 new ControlConfigure(),
-                new ControlPayinterest(),
+                new ControlPayInterest(),
                 new ControlReload(),
                 new ControlUpdate(),
                 new ControlVersion()

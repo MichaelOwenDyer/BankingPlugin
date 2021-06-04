@@ -13,9 +13,9 @@ import org.bukkit.command.CommandSender;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ControlPayinterest extends ControlCommand.SubCommand {
+public class ControlPayInterest extends ControlCommand.SubCommand {
 
-    ControlPayinterest() {
+    ControlPayInterest() {
         super("payinterest", false);
     }
 

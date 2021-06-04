@@ -17,9 +17,9 @@ import org.bukkit.entity.Player;
 import java.util.Collection;
 import java.util.Set;
 
-public class BankRemoveall extends BankCommand.SubCommand implements ConfirmableSubCommand {
+public class BankRemoveAll extends BankCommand.SubCommand implements ConfirmableSubCommand {
 
-    BankRemoveall() {
+    BankRemoveAll() {
         super("removeall", false);
     }
 

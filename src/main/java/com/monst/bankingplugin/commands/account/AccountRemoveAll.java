@@ -18,9 +18,9 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AccountRemoveall extends AccountCommand.SubCommand implements ConfirmableSubCommand {
+public class AccountRemoveAll extends AccountCommand.SubCommand implements ConfirmableSubCommand {
 
-    AccountRemoveall() {
+    AccountRemoveAll() {
         super("removeall", false);
     }
 
