@@ -60,7 +60,7 @@ public class Bank extends BankingEntity {
 								Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
 								Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer allowedOfflinePayoutsUntilReset,
 								Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
-								List<Integer> multipliers, List<LocalTime> interestPayoutTimes) {
+								List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 		return new Bank(
 				id,
 				name,
@@ -102,7 +102,7 @@ public class Bank extends BankingEntity {
 	private final OverriddenValue<Integer> withdrawalMultiplierDecrement;
 	private final OverriddenValue<Integer> playerBankAccountLimit;
 	private final OverriddenValue<List<Integer>> multipliers;
-	private final OverriddenValue<List<LocalTime>> interestPayoutTimes;
+	private final OverriddenValue<Set<LocalTime>> interestPayoutTimes;
 
 	/**
 	 * @param id the bank ID {@link BankingEntity}
@@ -117,7 +117,7 @@ public class Bank extends BankingEntity {
 				 Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
 				 Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer allowedOfflinePayoutsUntilReset,
 				 Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
-				 List<Integer> multipliers, List<LocalTime> interestPayoutTimes) {
+				 List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 
 		super(id, name, owner, coowners);
 		this.selection = selection;
@@ -295,7 +295,7 @@ public class Bank extends BankingEntity {
 		return multipliers;
 	}
 
-	public OverriddenValue<List<LocalTime>> getInterestPayoutTimes() {
+	public OverriddenValue<Set<LocalTime>> getInterestPayoutTimes() {
 		return interestPayoutTimes;
 	}
 

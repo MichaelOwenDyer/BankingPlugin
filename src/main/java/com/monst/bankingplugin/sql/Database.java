@@ -497,10 +497,10 @@ public abstract class Database {
 			} catch (NumberFormatException e) {
 				multipliers = Config.multipliers.getDefault();
 			}
-			List<LocalTime> interestPayoutTimes;
+			Set<LocalTime> interestPayoutTimes;
 			try {
 				String payoutTimesList = Optional.ofNullable(values.getNextString()).orElse("");
-				interestPayoutTimes = Arrays.stream(payoutTimesList.split("\\s*,\\s*")).map(LocalTime::parse).collect(Collectors.toList());
+				interestPayoutTimes = Arrays.stream(payoutTimesList.split("\\s*,\\s*")).map(LocalTime::parse).collect(Collectors.toCollection(LinkedHashSet::new));
 			} catch (DateTimeParseException e) {
 				interestPayoutTimes = Config.interestPayoutTimes.getDefault();
 			}

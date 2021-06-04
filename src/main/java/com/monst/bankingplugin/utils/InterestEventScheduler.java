@@ -63,7 +63,7 @@ public class InterestEventScheduler {
 
         BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>());
 
-        List<LocalTime> bankPayoutTimes = bank.getInterestPayoutTimes().get();
+        Set<LocalTime> bankPayoutTimes = bank.getInterestPayoutTimes().get();
         for (LocalTime time : bankPayoutTimes) {
             if (TIME_BANK_MAP.putIfAbsent(time, new HashSet<>()) == null) // If no other bank already has a payout scheduled at this time
                 PAYOUT_TASK_IDS.put(time, scheduleRepeatAtTime(time)); // Schedule the payout task

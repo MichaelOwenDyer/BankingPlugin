@@ -15,10 +15,7 @@ import org.ipvp.canvas.type.ChestMenu;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class BankGUI extends SinglePageGUI<Bank> {
 
@@ -269,7 +266,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getPayoutTimeLore() {
-		List<LocalTime> times = guiSubject.getInterestPayoutTimes().get();
+		Set<LocalTime> times = guiSubject.getInterestPayoutTimes().get();
 		List<String> lore = new ArrayList<>();
 		if (!times.isEmpty()) {
 			lore.add("Accounts will generate interest every day at: ");

@@ -1,9 +1,9 @@
 package com.monst.bankingplugin.config.values.overridable;
 
 import com.monst.bankingplugin.exceptions.IntegerParseException;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.configuration.MemoryConfiguration;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,14 +18,7 @@ public class Multipliers extends OverridableList<Integer> {
 
     @Override
     public List<Integer> readValueFromFile(MemoryConfiguration config, String path) {
-        if (isPathMissing())
-            return null;
-        List<Integer> multipliers = new ArrayList<>();
-        for (String multiplier : config.getStringList(path))
-            try {
-                multipliers.add(Math.abs(parseSingle(multiplier)));
-            } catch (IntegerParseException ignored) {}
-        return multipliers;
+        return Utils.map(super.readValueFromFile(config, path), Math::abs);
     }
 
     @Override
