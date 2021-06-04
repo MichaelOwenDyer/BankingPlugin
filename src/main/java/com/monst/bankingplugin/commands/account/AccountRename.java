@@ -47,7 +47,7 @@ public class AccountRename extends AccountCommand.SubCommand {
         String nickname = sb.toString();
 
         if (!nickname.trim().isEmpty() && !Utils.isAllowedName(nickname)) {
-            plugin.debug("Name \"" + nickname + "\" is not allowed");
+            PLUGIN.debug("Name \"" + nickname + "\" is not allowed");
             p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, nickname)));
             return true;
         }
@@ -59,23 +59,23 @@ public class AccountRename extends AccountCommand.SubCommand {
 
     public static void rename(Player executor, Account account, String value) {
         if (!(account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_RENAME_OTHER))) {
-            plugin.debugf("%s does not have permission to rename another player's account", executor.getName());
+            PLUGIN.debugf("%s does not have permission to rename another player's account", executor.getName());
             executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_RENAME_OTHER));
             return;
         }
 
         if (value.isEmpty()) {
-            plugin.debugf("%s has reset %s account nickname%s (#%d)", executor.getName(),
+            PLUGIN.debugf("%s has reset %s account nickname%s (#%d)", executor.getName(),
                     (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
                     (account.isCoOwner(executor) ? " (is co-owner)" : ""), account.getID());
             account.resetName();
         } else {
-            plugin.debugf("%s has renamed their account to \"%s\" (#%d)",
+            PLUGIN.debugf("%s has renamed their account to \"%s\" (#%d)",
                     executor.getName(), value, account.getID());
             account.setName(value);
         }
         executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RENAMED, new Replacement(Placeholder.ACCOUNT_NAME, account::getChestName)));
-        plugin.getAccountRepository().update(account, account.callUpdateChestName(), AccountField.NICKNAME);
+        PLUGIN.getAccountRepository().update(account, account.callUpdateChestName(), AccountField.NICKNAME);
         new AccountConfigureEvent(executor, account, AccountField.NICKNAME, value).fire();
     }
 

@@ -33,7 +33,7 @@ public class BankConfigure extends BankCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to configure a bank");
+        PLUGIN.debug(sender.getName() + " wants to configure a bank");
 
         if (args.length < 3)
             return false;
@@ -43,25 +43,25 @@ public class BankConfigure extends BankCommand.SubCommand {
         String value = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
 
         if (bank == null) {
-            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+            PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
             sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return true;
         }
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
-            plugin.debug(sender.getName() + " does not have permission to configure another player's bank");
+            PLUGIN.debug(sender.getName() + " does not have permission to configure another player's bank");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_OTHER));
             return true;
         }
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
-            plugin.debug(sender.getName() + " does not have permission to configure an admin bank");
+            PLUGIN.debug(sender.getName() + " does not have permission to configure an admin bank");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_ADMIN));
             return true;
         }
 
         ConfigField field = ConfigField.getByName(fieldName);
         if (field == null || !field.isBankField()) {
-            plugin.debug("No bank config field could be found with name " + fieldName);
+            PLUGIN.debug("No bank config field could be found with name " + fieldName);
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.STRING, fieldName)));
             return true;
         }
@@ -80,7 +80,7 @@ public class BankConfigure extends BankCommand.SubCommand {
 
         String newValue = bank.get(field).getFormatted(true);
 
-        plugin.debugf( "%s has changed %s at %s from %s to %s.",
+        PLUGIN.debugf( "%s has changed %s at %s from %s to %s.",
                 sender.getName(), field.toString(), bank.getName(), previousValue, newValue);
         MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_PROPERTY_SET,
                 new Replacement(Placeholder.PROPERTY, field::toString),
@@ -96,7 +96,7 @@ public class BankConfigure extends BankCommand.SubCommand {
         new BankConfigureEvent(sender, bank, field, previousValue, value).fire();
 
         if (field == ConfigField.INTEREST_PAYOUT_TIMES)
-            plugin.getScheduler().schedulePayouts(bank);
+            PLUGIN.getScheduler().schedulePayouts(bank);
 
         bankRepo.add(bank, true);
         return true;

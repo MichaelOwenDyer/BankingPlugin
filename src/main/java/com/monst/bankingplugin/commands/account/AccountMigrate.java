@@ -39,17 +39,17 @@ public class AccountMigrate extends AccountCommand.SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        plugin.debug(p.getName() + " wants to migrate an account");
+        PLUGIN.debug(p.getName() + " wants to migrate an account");
 
         if (!p.hasPermission(Permissions.ACCOUNT_MIGRATE)) {
-            plugin.debug(p.getName() + " does not have permission to migrate an account");
+            PLUGIN.debug(p.getName() + " does not have permission to migrate an account");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE));
             return true;
         }
 
         p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_MIGRATE));
         ClickType.setPlayerClickType(p, ClickType.migrate(null));
-        plugin.debug(p.getName() + " is migrating an account");
+        PLUGIN.debug(p.getName() + " is migrating an account");
         return true;
     }
 
@@ -57,11 +57,11 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         if (!toMigrate.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_OTHER)) {
             if (toMigrate.isTrusted(p)) {
-                plugin.debugf("%s cannot migrate account #%d as a co-owner", p.getName(), toMigrate.getID());
+                PLUGIN.debugf("%s cannot migrate account #%d as a co-owner", p.getName(), toMigrate.getID());
                 p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
                 return;
             }
-            plugin.debugf("%s does not have permission to migrate account #%d", p.getName(), toMigrate.getID());
+            PLUGIN.debugf("%s does not have permission to migrate account #%d", p.getName(), toMigrate.getID());
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER));
             return;
         }
@@ -69,11 +69,11 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         AccountMigrateCommandEvent event = new AccountMigrateCommandEvent(p, toMigrate);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Account pre-migrate event cancelled");
+            PLUGIN.debug("Account pre-migrate event cancelled");
             return;
         }
 
-        plugin.debugf("%s wants to migrate account #%d", p.getName(), toMigrate.getID());
+        PLUGIN.debugf("%s wants to migrate account #%d", p.getName(), toMigrate.getID());
         ClickType.setPlayerClickType(p, ClickType.migrate(toMigrate));
         p.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_MIGRATE));
 
@@ -83,10 +83,10 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         ChestLocation chestLocation = ChestLocation.from(c);
         try {
             if (Objects.equals(toMigrate, accountRepo.getAt(chestLocation))) {
-                plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
+                PLUGIN.debugf("%s clicked the same chest to migrate to.", p.getName());
                 p.sendMessage(LangUtils.getMessage(Message.SAME_CHEST));
             } else {
-                plugin.debugf("%s clicked an already existing account chest to migrate to", p.getName());
+                PLUGIN.debugf("%s clicked an already existing account chest to migrate to", p.getName());
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             }
             return;
@@ -96,7 +96,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             chestLocation.checkSpaceAbove();
         } catch (ChestBlockedException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
-            plugin.debug("Chest is blocked.");
+            PLUGIN.debug("Chest is blocked.");
             return;
         }
 
@@ -105,13 +105,13 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             newBank = chestLocation.getBank();
         } catch (BankNotFoundException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
-            plugin.debug("Chest is not in a bank.");
+            PLUGIN.debug("Chest is not in a bank.");
             return;
         }
 
         if (!Objects.equals(toMigrate.getBank(), newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_BANK));
-            plugin.debugf("%s does not have permission to migrate their account to another bank.", p.getName());
+            PLUGIN.debugf("%s does not have permission to migrate their account to another bank.", p.getName());
             return;
         }
 
@@ -122,7 +122,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, chestLocation);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-            plugin.debug("No permission to create account on a protected chest.");
+            PLUGIN.debug("No permission to create account on a protected chest.");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
             return;
         }
@@ -141,7 +141,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         double net = reimbursement - creationPrice;
         if (!PayrollOffice.allowPayment(p, net)) {
-            double balance = plugin.getEconomy().getBalance(p);
+            double balance = PLUGIN.getEconomy().getBalance(p);
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS,
                     new Replacement(Placeholder.PRICE, net),
                     new Replacement(Placeholder.PLAYER_BALANCE, balance),
@@ -183,7 +183,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         }
 
         if (newAccount.create()) {
-            plugin.debugf("Account migrated (#%d)", newAccount.getID());
+            PLUGIN.debugf("Account migrated (#%d)", newAccount.getID());
             accountRepo.remove(toMigrate, false, Callback.of(
                     result -> {
                         accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION); // Database entry is replaced

@@ -34,29 +34,29 @@ public class AccountCreate extends AccountCommand.SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        plugin.debug(p.getName() + " wants to create an account");
+        PLUGIN.debug(p.getName() + " wants to create an account");
 
         if (!hasPermission(p, Permissions.ACCOUNT_CREATE)) {
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE));
-            plugin.debug(p.getName() + " is not permitted to create an account");
+            PLUGIN.debug(p.getName() + " is not permitted to create an account");
             return true;
         }
 
         int limit = Utils.getAccountLimit(p);
         if (limit != -1 && accountRepo.getOwnedBy(p).size() >= limit) {
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
-            plugin.debug(p.getName() + " has reached their account limit");
+            PLUGIN.debug(p.getName() + " has reached their account limit");
             return true;
         }
 
         AccountCreateCommandEvent event = new AccountCreateCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Account pre-create event cancelled");
+            PLUGIN.debug("Account pre-create event cancelled");
             return true;
         }
 
-        plugin.debug(p.getName() + " can now click a chest to create an account");
+        PLUGIN.debug(p.getName() + " can now click a chest to create an account");
         p.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_CREATE));
         ClickType.setPlayerClickType(p, ClickType.create());
         return true;
@@ -72,9 +72,9 @@ public class AccountCreate extends AccountCommand.SubCommand {
     public static void create(Player p, Chest c) {
         ChestLocation chestLocation = ChestLocation.from(c);
 
-        if (plugin.getAccountRepository().isAccount(chestLocation)) {
+        if (PLUGIN.getAccountRepository().isAccount(chestLocation)) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
-            plugin.debug("Chest is already an account.");
+            PLUGIN.debug("Chest is already an account.");
             return;
         }
 
@@ -82,7 +82,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             chestLocation.checkSpaceAbove();
         } catch (ChestBlockedException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
-            plugin.debug("Chest is blocked.");
+            PLUGIN.debug("Chest is blocked.");
             return;
         }
 
@@ -91,13 +91,13 @@ public class AccountCreate extends AccountCommand.SubCommand {
             bank = chestLocation.getBank();
         } catch (BankNotFoundException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
-            plugin.debug("Chest is not in a bank.");
+            PLUGIN.debug("Chest is not in a bank.");
             return;
         }
 
         if (!Config.allowSelfBanking.get() && bank.isOwner(p)) {
             p.sendMessage(LangUtils.getMessage(Message.NO_SELF_BANKING, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
-            plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
+            PLUGIN.debug(p.getName() + " is not permitted to create an account at their own bank");
             return;
         }
         int playerAccountLimit = bank.getPlayerBankAccountLimit().get();
@@ -106,7 +106,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
                     new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                     new Replacement(Placeholder.LIMIT, playerAccountLimit)
             ));
-            plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
+            PLUGIN.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
             return;
         }
 
@@ -115,7 +115,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         AccountCreateEvent event = new AccountCreateEvent(p, account);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-            plugin.debug("No permission to create account on a protected chest.");
+            PLUGIN.debug("No permission to create account on a protected chest.");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
             return;
         }
@@ -125,7 +125,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         creationPrice *= bank.isOwner(p) ? 0 : 1;
 
         if (creationPrice > 0) {
-            double balance = plugin.getEconomy().getBalance(p);
+            double balance = PLUGIN.getEconomy().getBalance(p);
             if (creationPrice > balance) {
                 p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS,
                         new Replacement(Placeholder.PRICE, creationPrice),
@@ -155,11 +155,11 @@ public class AccountCreate extends AccountCommand.SubCommand {
         }
 
         if (account.create()) {
-            plugin.debug("Account created");
+            PLUGIN.debug("Account created");
             accountRepo.add(account, true, account.callUpdateChestName());
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         } else {
-            plugin.debugf("Could not create account");
+            PLUGIN.debugf("Could not create account");
             p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, "Could not create account")));
         }
     }

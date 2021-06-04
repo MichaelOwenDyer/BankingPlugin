@@ -36,15 +36,15 @@ public class BankUntrust extends BankCommand.SubCommand {
         if (args.length < 3)
             return false;
 
-        plugin.debug(sender.getName() + " wants to untrust a player from a bank");
+        PLUGIN.debug(sender.getName() + " wants to untrust a player from a bank");
 
         if (!sender.hasPermission(Permissions.BANK_TRUST)) {
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_UNTRUST));
             return true;
         }
-        Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
+        Bank bank = PLUGIN.getBankRepository().getByIdentifier(args[1]);
         if (bank == null) {
-            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+            PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
             sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return true;
         }
@@ -57,30 +57,30 @@ public class BankUntrust extends BankCommand.SubCommand {
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
                 || sender.hasPermission(Permissions.BANK_TRUST_OTHER))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
-                plugin.debugf("%s does not have permission to untrust a player from bank %s as a co-owner",
+                PLUGIN.debugf("%s does not have permission to untrust a player from bank %s as a co-owner",
                         sender.getName(), bank.getName());
                 sender.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
                 return true;
             }
-            plugin.debugf("%s does not have permission to untrust a player from bank %s", sender.getName(), bank.getName());
+            PLUGIN.debugf("%s does not have permission to untrust a player from bank %s", sender.getName(), bank.getName());
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_UNTRUST_OTHER));
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRUST_ADMIN)) {
-            plugin.debugf("%s does not have permission to untrust a player from admin bank %s", sender.getName(), bank.getName());
+            PLUGIN.debugf("%s does not have permission to untrust a player from admin bank %s", sender.getName(), bank.getName());
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_UNTRUST_ADMIN));
             return true;
         }
 
         boolean isSelf = sender instanceof Player && Utils.samePlayer(playerToUntrust, ((Player) sender));
         if (!bank.isCoOwner(playerToUntrust)) {
-            plugin.debugf("%s was not co-owner at bank %s (#%d)", playerToUntrust.getName(), bank.getName(), bank.getID());
+            PLUGIN.debugf("%s was not co-owner at bank %s (#%d)", playerToUntrust.getName(), bank.getName(), bank.getID());
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_COOWNER, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
             return true;
         }
 
-        plugin.debugf("%s has untrusted %s from bank %s (#%d)",
+        PLUGIN.debugf("%s has untrusted %s from bank %s (#%d)",
                 sender.getName(), playerToUntrust.getName(), bank.getName(), bank.getID());
         sender.sendMessage(LangUtils.getMessage(Message.REMOVED_COOWNER,
                 new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
@@ -102,7 +102,7 @@ public class BankUntrust extends BankCommand.SubCommand {
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 3) {
-            Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
+            Bank bank = PLUGIN.getBankRepository().getByIdentifier(args[1]);
             if (bank == null)
                 return Collections.emptyList();
             List<String> coowners = bank.getCoOwners().stream().map(OfflinePlayer::getName).collect(Collectors.toList());

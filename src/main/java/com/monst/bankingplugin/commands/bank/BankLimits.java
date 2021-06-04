@@ -33,7 +33,7 @@ public class BankLimits extends BankCommand.SubCommand {
         long allowedVolume = getVolumeLimit(p);
         String bankLimit = allowedBanks < 0 ? "∞" : "" + allowedBanks;
         String volumeLimit = allowedVolume < 0 ? "∞" : "" + allowedVolume;
-        plugin.debugf("%s is viewing their bank limits: %d / %s, max volume: %d", p.getName(), banksUsed, bankLimit, allowedVolume);
+        PLUGIN.debugf("%s is viewing their bank limits: %d / %s, max volume: %d", p.getName(), banksUsed, bankLimit, allowedVolume);
         p.sendMessage(LangUtils.getMessage(Message.BANK_LIMIT,
                 new Replacement(Placeholder.NUMBER_OF_BANKS, banksUsed),
                 new Replacement(Placeholder.LIMIT, bankLimit),

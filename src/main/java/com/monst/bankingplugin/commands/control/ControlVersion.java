@@ -20,10 +20,10 @@ public class ControlVersion extends ControlCommand.SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         if (sender instanceof Player) {
             sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Banking" + ChatColor.DARK_GREEN + ChatColor.BOLD + "Plugin" + ChatColor.RESET
-                    + ChatColor.AQUA + " v" + plugin.getDescription().getVersion()
+                    + ChatColor.AQUA + " v" + PLUGIN.getDescription().getVersion()
                     + ChatColor.DARK_GRAY + "\n         by monst");
         } else
-            sender.sendMessage(plugin.STARTUP_MESSAGE);
+            sender.sendMessage(PLUGIN.STARTUP_MESSAGE);
         return true;
     }
 

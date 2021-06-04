@@ -36,15 +36,15 @@ public class BankTrust extends BankCommand.SubCommand {
         if (args.length < 3)
             return false;
 
-        plugin.debug(sender.getName() + " wants to trust a player to a bank");
+        PLUGIN.debug(sender.getName() + " wants to trust a player to a bank");
 
         if (!sender.hasPermission(Permissions.BANK_TRUST)) {
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRUST));
             return true;
         }
-        Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
+        Bank bank = PLUGIN.getBankRepository().getByIdentifier(args[1]);
         if (bank == null) {
-            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+            PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
             sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
             return true;
         }
@@ -57,30 +57,30 @@ public class BankTrust extends BankCommand.SubCommand {
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
                 || sender.hasPermission(Permissions.BANK_TRUST_OTHER))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
-                plugin.debugf("%s does not have permission to trust a player to bank %s as a co-owner", sender.getName(), bank.getName());
+                PLUGIN.debugf("%s does not have permission to trust a player to bank %s as a co-owner", sender.getName(), bank.getName());
                 sender.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
                 return true;
             }
-            plugin.debugf("%s does not have permission to trust a player to bank %s", sender.getName(), bank.getName());
+            PLUGIN.debugf("%s does not have permission to trust a player to bank %s", sender.getName(), bank.getName());
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRUST_OTHER));
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRUST_ADMIN)) {
-            plugin.debugf("%s does not have permission to trust a player to admin bank %s", sender.getName(), bank.getName());
+            PLUGIN.debugf("%s does not have permission to trust a player to admin bank %s", sender.getName(), bank.getName());
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRUST_ADMIN));
             return true;
         }
 
         if (bank.isTrusted(playerToTrust)) {
-            plugin.debugf("%s was already trusted at bank %s (#%d)", playerToTrust.getName(), bank.getName(), bank.getID());
+            PLUGIN.debugf("%s was already trusted at bank %s (#%d)", playerToTrust.getName(), bank.getName(), bank.getID());
             sender.sendMessage(LangUtils.getMessage(bank.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER,
                     new Replacement(Placeholder.PLAYER, playerToTrust::getName)
             ));
             return true;
         }
 
-        plugin.debugf("%s has trusted %s to bank %s (#%d)",
+        PLUGIN.debugf("%s has trusted %s to bank %s (#%d)",
                 sender.getName(), playerToTrust.getName(), bank.getName(), bank.getID());
         sender.sendMessage(LangUtils.getMessage(Message.ADDED_COOWNER,
                 new Replacement(Placeholder.PLAYER, playerToTrust::getName)
@@ -102,7 +102,7 @@ public class BankTrust extends BankCommand.SubCommand {
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 3) {
-            List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
+            List<String> onlinePlayers = Utils.getOnlinePlayerNames(PLUGIN);
             if (!p.hasPermission(Permissions.BANK_TRUST_OTHER) && !p.hasPermission(Permissions.BANK_TRUST_ADMIN))
                 onlinePlayers.remove(p.getName());
             return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[2]));

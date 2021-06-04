@@ -21,7 +21,7 @@ public class BankList extends BankCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " is listing banks.");
+        PLUGIN.debug(sender.getName() + " is listing banks.");
 
         // TODO: Allow for more specific bank searching
 

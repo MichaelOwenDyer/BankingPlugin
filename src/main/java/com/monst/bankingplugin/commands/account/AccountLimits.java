@@ -31,7 +31,7 @@ public class AccountLimits extends AccountCommand.SubCommand {
         int used = accountRepo.getOwnedBy(p).size();
         int accLimit = Utils.getAccountLimit(p);
         String limit = accLimit < 0 ? "∞" : "" + accLimit;
-        plugin.debugf("%s is viewing their account limits: %s / %s", p.getName(), used, limit);
+        PLUGIN.debugf("%s is viewing their account limits: %s / %s", p.getName(), used, limit);
         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT,
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, used),
                 new Replacement(Placeholder.LIMIT, limit)

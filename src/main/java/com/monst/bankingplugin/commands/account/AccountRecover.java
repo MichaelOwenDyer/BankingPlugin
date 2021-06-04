@@ -35,7 +35,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to recover invalid accounts");
+        PLUGIN.debug(sender.getName() + " wants to recover invalid accounts");
 
         if (accountRepo.getNotFoundAccounts().isEmpty()) {
             sender.sendMessage(LangUtils.getMessage(Message.ACCOUNTS_NOT_FOUND));
@@ -50,7 +50,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
 
         ChestLocation chestLocation = ChestLocation.from(c);
         if (accountRepo.isAccount(chestLocation)) {
-            plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
+            PLUGIN.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             return;
         }
@@ -59,7 +59,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
             chestLocation.checkSpaceAbove();
         } catch (ChestBlockedException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
-            plugin.debug("Chest is blocked.");
+            PLUGIN.debug("Chest is blocked.");
             return;
         }
 
@@ -68,7 +68,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
             newBank = chestLocation.getBank();
         } catch (BankNotFoundException e) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
-            plugin.debug("Chest is not in a bank.");
+            PLUGIN.debug("Chest is not in a bank.");
             return;
         }
 
@@ -79,18 +79,18 @@ public class AccountRecover extends AccountCommand.SubCommand {
         AccountRecoverEvent event = new AccountRecoverEvent(p, newAccount, chestLocation);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-            plugin.debug("No permission to recover an account to a protected chest.");
+            PLUGIN.debug("No permission to recover an account to a protected chest.");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
             return;
         }
 
         if (newAccount.create()) {
-            plugin.debugf("Account recovered (#%d)", newAccount.getID());
+            PLUGIN.debugf("Account recovered (#%d)", newAccount.getID());
             accountRepo.removeInvalidAccount(toRecover);
             accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
             p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RECOVERED));
         } else {
-            plugin.debug("Could not recover account");
+            PLUGIN.debug("Could not recover account");
             p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, "Could not recover account.")));
         }
     }

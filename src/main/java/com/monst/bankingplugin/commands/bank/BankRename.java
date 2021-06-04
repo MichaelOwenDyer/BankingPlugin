@@ -32,7 +32,7 @@ public class BankRename extends BankCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " is renaming a bank");
+        PLUGIN.debug(sender.getName() + " is renaming a bank");
 
         if (args.length < 2)
             return false;
@@ -42,13 +42,13 @@ public class BankRename extends BankCommand.SubCommand {
         String newName;
         if (args.length == 2) {
             if (!(sender instanceof Player)) {
-                plugin.debug("Must be player");
+                PLUGIN.debug("Must be player");
                 sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
                 return true;
             }
             bank = bankRepo.getAt(((Player) sender).getLocation());
             if (bank == null) {
-                plugin.debug(sender.getName() + " was not standing in a bank");
+                PLUGIN.debug(sender.getName() + " was not standing in a bank");
                 sender.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
                 return true;
             }
@@ -56,7 +56,7 @@ public class BankRename extends BankCommand.SubCommand {
         } else {
             bank = bankRepo.getByIdentifier(args[1]);
             if (bank == null) {
-                plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+                PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
                 sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
                 return true;
             }
@@ -67,34 +67,34 @@ public class BankRename extends BankCommand.SubCommand {
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
-            plugin.debug(sender.getName() + " does not have permission to change the name of an admin bank");
+            PLUGIN.debug(sender.getName() + " does not have permission to change the name of an admin bank");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_ADMIN));
             return true;
         }
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
-            plugin.debug(sender.getName() + " does not have permission to change the name of another player's bank");
+            PLUGIN.debug(sender.getName() + " does not have permission to change the name of another player's bank");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_OTHER));
             return true;
         }
         if (bank.getRawName().contentEquals(newName)) {
-            plugin.debug("Same name");
+            PLUGIN.debug("Same name");
             sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
         Bank bankWithSameName = bankRepo.getByName(newName);
         if (bankWithSameName != null && !bankWithSameName.equals(bank)) {
-            plugin.debug("Name is not unique");
+            PLUGIN.debug("Name is not unique");
             sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
         if (!Utils.isAllowedName(newName)) {
-            plugin.debug("Name is not allowed");
+            PLUGIN.debug("Name is not allowed");
             sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, newName)));
             return true;
         }
 
-        plugin.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
+        PLUGIN.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
         sender.sendMessage(LangUtils.getMessage(Message.NAME_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
         bank.setName(newName);
         return true;

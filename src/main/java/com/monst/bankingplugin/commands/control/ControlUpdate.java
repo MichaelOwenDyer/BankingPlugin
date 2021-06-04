@@ -25,17 +25,17 @@ public class ControlUpdate extends ControlCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " is checking for updates");
+        PLUGIN.debug(sender.getName() + " is checking for updates");
 
         if (!sender.hasPermission(Permissions.UPDATE)) {
-            plugin.debug(sender.getName() + " does not have permission to update the plugin");
+            PLUGIN.debug(sender.getName() + " does not have permission to update the plugin");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_UPDATE));
             return true;
         }
 
         // sender.sendMessage(Messages.UPDATE_CHECKING);
 
-        UpdateChecker uc = new UpdateChecker(plugin);
+        UpdateChecker uc = new UpdateChecker(PLUGIN);
         UpdateChecker.Result result = uc.check();
 
         if (result == UpdateChecker.Result.TRUE) {

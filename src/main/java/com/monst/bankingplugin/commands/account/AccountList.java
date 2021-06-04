@@ -28,11 +28,11 @@ public class AccountList extends AccountCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to list accounts");
+        PLUGIN.debug(sender.getName() + " wants to list accounts");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
             if (!(sender instanceof Player)) {
-                plugin.debug("Only players can list their own accounts");
+                PLUGIN.debug("Only players can list their own accounts");
                 sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
                 return true;
             }
@@ -41,7 +41,7 @@ public class AccountList extends AccountCommand.SubCommand {
         AccountListEvent event = new AccountListEvent(sender, Collections.emptyList()); // FIXME: Pass accounts being listed
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Account list event cancelled");
+            PLUGIN.debug("Account list event cancelled");
             return true;
         }
 
@@ -71,7 +71,7 @@ public class AccountList extends AccountCommand.SubCommand {
         if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
-        return Utils.filter(Utils.getOnlinePlayerNames(plugin), name -> !argList.contains(name));
+        return Utils.filter(Utils.getOnlinePlayerNames(PLUGIN), name -> !argList.contains(name));
     }
 
 }

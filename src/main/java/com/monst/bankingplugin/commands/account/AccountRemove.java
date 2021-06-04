@@ -9,7 +9,6 @@ import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -38,16 +37,16 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to remove an account");
+        PLUGIN.debug(sender.getName() + " wants to remove an account");
 
         AccountRemoveCommandEvent event = new AccountRemoveCommandEvent(((Player) sender));
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Account pre-remove event cancelled");
+            PLUGIN.debug("Account pre-remove event cancelled");
             return true;
         }
 
-        plugin.debug(sender.getName() + " can now click a chest to remove an account");
+        PLUGIN.debug(sender.getName() + " can now click a chest to remove an account");
         sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_REMOVE));
         ClickType.setPlayerClickType(((Player) sender), ClickType.remove());
         return true;
@@ -73,7 +72,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
 
         if (account.getBalance().signum() > 0 || Config.confirmOnRemove.get()) {
             if (!isConfirmed(p, account.getID())) {
-                plugin.debug("Needs confirmation");
+                PLUGIN.debug("Needs confirmation");
                 if (account.getBalance().signum() > 0) {
                     p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_BALANCE_NOT_ZERO,
                             new Replacement(Placeholder.ACCOUNT_BALANCE, account::getBalance)
@@ -84,7 +83,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
             }
         }
 
-        plugin.debugf("%s is removing %s account (#%d)",
+        PLUGIN.debugf("%s is removing %s account (#%d)",
                 p.getName(),
                 account.isOwner(p) ? "their" : account.getOwner().getName() + "'s",
                 account.getID());
@@ -92,7 +91,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         AccountRemoveEvent event = new AccountRemoveEvent(p, account);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Remove event cancelled (#" + account.getID() + ")");
+            PLUGIN.debug("Remove event cancelled (#" + account.getID() + ")");
             return;
         }
 
@@ -117,9 +116,9 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         }
 
         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
-        plugin.getAccountRepository().remove(account, true);
+        PLUGIN.getAccountRepository().remove(account, true);
         ClickType.removePlayerClickType(p);
-        plugin.debug("Removed account (#" + account.getID() + ")");
+        PLUGIN.debug("Removed account (#" + account.getID() + ")");
     }
 
 }

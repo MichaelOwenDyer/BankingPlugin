@@ -31,31 +31,31 @@ public class ControlReload extends ControlCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " is reloading the plugin");
+        PLUGIN.debug(sender.getName() + " is reloading the plugin");
 
         if (!sender.hasPermission(Permissions.RELOAD)) {
-            plugin.debug(sender.getName() + " does not have permission to reload the plugin");
+            PLUGIN.debug(sender.getName() + " does not have permission to reload the plugin");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_RELOAD));
             return true;
         }
 
-        ReloadEvent event = new ReloadEvent(plugin, sender);
+        ReloadEvent event = new ReloadEvent(PLUGIN, sender);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Reload event cancelled");
+            PLUGIN.debug("Reload event cancelled");
             return true;
         }
 
-        plugin.reload(
+        PLUGIN.reload(
                 Callback.of(result -> {
                     Set<Bank> banks = result.getBanks();
                     Set<Account> accounts = result.getAccounts();
-                    plugin.getScheduler().scheduleAll();
+                    PLUGIN.getScheduler().scheduleAll();
                     sender.sendMessage(LangUtils.getMessage(Message.RELOADED_PLUGIN,
                             new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size),
                             new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
                     ));
-                    plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
+                    PLUGIN.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
                 }, error -> sender.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
                         new Replacement(Placeholder.ERROR, "No database access! Disabling BankingPlugin.")
                 )))

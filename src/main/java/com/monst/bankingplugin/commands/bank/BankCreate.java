@@ -13,7 +13,6 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -38,10 +37,10 @@ public class BankCreate extends BankCommand.SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        plugin.debug(p.getName() + " wants to create a bank");
+        PLUGIN.debug(p.getName() + " wants to create a bank");
 
         if (!p.hasPermission(Permissions.BANK_CREATE)) {
-            plugin.debug(p.getName() + " does not have permission to create a bank");
+            PLUGIN.debug(p.getName() + " does not have permission to create a bank");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_CREATE));
             return true;
         }
@@ -53,15 +52,15 @@ public class BankCreate extends BankCommand.SubCommand {
 
         Selection selection;
         if (args.length <= 3) {
-            if (Config.enableWorldEditIntegration.get() && plugin.hasWorldEdit()) {
-                selection = WorldEditReader.getSelection(plugin, p);
+            if (Config.enableWorldEditIntegration.get() && PLUGIN.hasWorldEdit()) {
+                selection = WorldEditReader.getSelection(PLUGIN, p);
                 if (selection == null) {
-                    plugin.debug(p.getName() + " tried to create a bank with no WorldEdit selection");
+                    PLUGIN.debug(p.getName() + " tried to create a bank with no WorldEdit selection");
                     p.sendMessage(LangUtils.getMessage(Message.BANK_SELECT_REGION));
                     return true;
                 }
             } else {
-                plugin.debug("WorldEdit is not enabled");
+                PLUGIN.debug("WorldEdit is not enabled");
                 p.sendMessage(LangUtils.getMessage(Message.WORLDEDIT_NOT_ENABLED));
                 return true;
             }
@@ -69,7 +68,7 @@ public class BankCreate extends BankCommand.SubCommand {
             try {
                 selection = parseCoordinates(args, p.getLocation());
             } catch (NumberFormatException e) {
-                plugin.debug("Could not parse coordinates in command args");
+                PLUGIN.debug("Could not parse coordinates in command args");
                 p.sendMessage(LangUtils.getMessage(Message.BANK_COORDINATE_PARSE_ERROR));
                 return false;
             }
@@ -79,7 +78,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return false;
 
         if (Config.disabledWorlds.get().contains(selection.getWorld().getName())) {
-            plugin.debug("BankingPlugin is disabled in world " + selection.getWorld().getName());
+            PLUGIN.debug("BankingPlugin is disabled in world " + selection.getWorld().getName());
             p.sendMessage(LangUtils.getMessage(Message.WORLD_DISABLED));
             return true;
         }
@@ -87,7 +86,7 @@ public class BankCreate extends BankCommand.SubCommand {
         boolean isAdminBank = args[args.length - 1].equalsIgnoreCase("admin");
 
         if (isAdminBank && !p.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
-            plugin.debug(p.getName() + " does not have permission to create an admin bank");
+            PLUGIN.debug(p.getName() + " does not have permission to create an admin bank");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_CREATE_ADMIN));
             return true;
         }
@@ -95,24 +94,24 @@ public class BankCreate extends BankCommand.SubCommand {
             int limit = Utils.getBankLimit(p);
             if (limit != -1 && bankRepo.getOwnedBy(p).size() >= limit) {
                 p.sendMessage(LangUtils.getMessage(Message.BANK_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
-                plugin.debug(p.getName() + " has reached their bank limit");
+                PLUGIN.debug(p.getName() + " has reached their bank limit");
                 return true;
             }
         }
         Set<Selection> overlappingSelections = bankRepo.getOverlappingSelections(selection);
         if (!overlappingSelections.isEmpty()) {
-            plugin.debug("Region is not exclusive");
+            PLUGIN.debug("Region is not exclusive");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING,
                     new Replacement(Placeholder.NUMBER_OF_BANKS, overlappingSelections::size)
             ));
-            if (plugin.hasGriefPrevention() && Config.enableGriefPreventionIntegration.get())
+            if (PLUGIN.hasGriefPrevention() && Config.enableGriefPreventionIntegration.get())
                 VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;
         }
         long volume = selection.getVolume();
         long volumeLimit = getVolumeLimit(p);
         if (!isAdminBank && volumeLimit >= 0 && volume > volumeLimit) {
-            plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
+            PLUGIN.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_LARGE,
                     new Replacement(Placeholder.BANK_SIZE, volume),
                     new Replacement(Placeholder.MAXIMUM, volumeLimit),
@@ -121,7 +120,7 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
         if (!isAdminBank && volume < Config.minimumBankVolume.get()) {
-            plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume.get() + ")");
+            PLUGIN.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume.get() + ")");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_SMALL,
                     new Replacement(Placeholder.BANK_SIZE, volume),
                     new Replacement(Placeholder.MINIMUM, Config.minimumBankVolume::get),
@@ -130,12 +129,12 @@ public class BankCreate extends BankCommand.SubCommand {
             return true;
         }
         if (bankRepo.getByName(name) != null) {
-            plugin.debug("Name is not unique");
+            PLUGIN.debug("Name is not unique");
             p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, name)));
             return true;
         }
         if (!Utils.isAllowedName(name)) {
-            plugin.debug("Name is not allowed");
+            PLUGIN.debug("Name is not allowed");
             p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, name)));
             return true;
         }
@@ -143,8 +142,8 @@ public class BankCreate extends BankCommand.SubCommand {
         if (!isAdminBank) {
             double creationPrice = Config.bankCreationPrice.get();
             if (!PayrollOffice.allowPayment(p, creationPrice * -1)) {
-                plugin.debug(p.getName() + " does not have enough money to create a bank");
-                double balance = plugin.getEconomy().getBalance(p);
+                PLUGIN.debug(p.getName() + " does not have enough money to create a bank");
+                double balance = PLUGIN.getEconomy().getBalance(p);
                 p.sendMessage(LangUtils.getMessage(Message.BANK_CREATE_INSUFFICIENT_FUNDS,
                         new Replacement(Placeholder.PRICE, creationPrice),
                         new Replacement(Placeholder.AMOUNT_REMAINING, creationPrice - balance),
@@ -165,13 +164,13 @@ public class BankCreate extends BankCommand.SubCommand {
         BankCreateEvent event = new BankCreateEvent(p, bank);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS)) {
-            plugin.debug("No permission to create bank without WorldGuard flag present");
+            PLUGIN.debug("No permission to create bank without WorldGuard flag present");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_CREATE_PROTECTED));
             return true;
         }
 
         bankRepo.add(bank, true);
-        plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
+        PLUGIN.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
         p.sendMessage(LangUtils.getMessage(Message.BANK_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         return true;
     }

@@ -10,7 +10,6 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -37,7 +36,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
 
-        plugin.debug(sender.getName() + " wants to untrust a player from an account");
+        PLUGIN.debug(sender.getName() + " wants to untrust a player from an account");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST));
@@ -57,13 +56,13 @@ public class AccountUntrust extends AccountCommand.SubCommand {
         AccountUntrustCommandEvent event = new AccountUntrustCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Account pre-untrust event cancelled");
+            PLUGIN.debug("Account pre-untrust event cancelled");
             return true;
         }
 
         sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_UNTRUST, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
         ClickType.setPlayerClickType(p, ClickType.untrust(playerToUntrust));
-        plugin.debug(sender.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
+        PLUGIN.debug(sender.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
         return true;
     }
 
@@ -71,7 +70,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length != 2)
             return Collections.emptyList();
-        return Utils.filter(Utils.getOnlinePlayerNames(plugin),
+        return Utils.filter(Utils.getOnlinePlayerNames(PLUGIN),
                 name -> Utils.startsWithIgnoreCase(name, args[1]));
     }
 
@@ -87,7 +86,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
 
         boolean isSelf = Utils.samePlayer(playerToUntrust, p);
         if (!account.isCoOwner(playerToUntrust)) {
-            plugin.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
+            PLUGIN.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
                     playerToUntrust.getName(), account.getID());
             p.sendMessage(LangUtils.getMessage(Message.NOT_A_COOWNER,
                     new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
@@ -98,11 +97,11 @@ public class AccountUntrust extends AccountCommand.SubCommand {
         AccountUntrustEvent event = new AccountUntrustEvent(p, account, playerToUntrust);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Account untrust event cancelled");
+            PLUGIN.debug("Account untrust event cancelled");
             return;
         }
 
-        plugin.debugf("%s has untrusted %s from %s account (#%d)", p.getName(),	playerToUntrust.getName(),
+        PLUGIN.debugf("%s has untrusted %s from %s account (#%d)", p.getName(),	playerToUntrust.getName(),
                 (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
         p.sendMessage(LangUtils.getMessage(Message.REMOVED_COOWNER,
                 new Replacement(Placeholder.PLAYER, playerToUntrust::getName)

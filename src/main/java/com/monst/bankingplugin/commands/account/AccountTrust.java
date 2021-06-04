@@ -10,7 +10,6 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -36,7 +35,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to trust a player to an account");
+        PLUGIN.debug(sender.getName() + " wants to trust a player to an account");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRUST));
@@ -56,13 +55,13 @@ public class AccountTrust extends AccountCommand.SubCommand {
         AccountTrustCommandEvent event = new AccountTrustCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Account pre-trust event cancelled");
+            PLUGIN.debug("Account pre-trust event cancelled");
             return true;
         }
 
         sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_TRUST, new Replacement(Placeholder.PLAYER, playerToTrust::getName)));
         ClickType.setPlayerClickType(p, ClickType.trust(playerToTrust));
-        plugin.debug(sender.getName() + " is trusting " + playerToTrust.getName() + " to an account");
+        PLUGIN.debug(sender.getName() + " is trusting " + playerToTrust.getName() + " to an account");
         return true;
     }
 
@@ -70,7 +69,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length != 2)
             return Collections.emptyList();
-        List<String> onlinePlayers = Utils.getOnlinePlayerNames(plugin);
+        List<String> onlinePlayers = Utils.getOnlinePlayerNames(PLUGIN);
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST_OTHER))
             onlinePlayers.remove(sender.getName());
         return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[1]));
@@ -88,7 +87,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
 
         boolean isSelf = Utils.samePlayer(playerToTrust, p);
         if (account.isTrusted(playerToTrust)) {
-            plugin.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
+            PLUGIN.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
             p.sendMessage(LangUtils.getMessage(account.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER,
                     new Replacement(Placeholder.PLAYER, playerToTrust::getName)
             ));
@@ -98,11 +97,11 @@ public class AccountTrust extends AccountCommand.SubCommand {
         AccountTrustEvent event = new AccountTrustEvent(p, account, playerToTrust);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Account trust event cancelled");
+            PLUGIN.debug("Account trust event cancelled");
             return;
         }
 
-        plugin.debugf("%s has trusted %s to %s account (#%d)", p.getName(), playerToTrust.getName(),
+        PLUGIN.debugf("%s has trusted %s to %s account (#%d)", p.getName(), playerToTrust.getName(),
                 (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
         p.sendMessage(LangUtils.getMessage(Message.ADDED_COOWNER,
                 new Replacement(Placeholder.PLAYER, playerToTrust::getName)

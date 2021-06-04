@@ -35,16 +35,16 @@ public class BankSelect extends BankCommand.SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        plugin.debug(p.getName() + " wants to select a bank");
+        PLUGIN.debug(p.getName() + " wants to select a bank");
 
-        if (!plugin.hasWorldEdit()) {
-            plugin.debug("WorldEdit is not enabled");
+        if (!PLUGIN.hasWorldEdit()) {
+            PLUGIN.debug("WorldEdit is not enabled");
             p.sendMessage(LangUtils.getMessage(Message.WORLDEDIT_NOT_ENABLED));
             return true;
         }
 
         if (!p.hasPermission(Permissions.BANK_SELECT)) {
-            plugin.debug(p.getName() + " does not have permission to select a bank");
+            PLUGIN.debug(p.getName() + " does not have permission to select a bank");
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SELECT));
             return true;
         }
@@ -53,14 +53,14 @@ public class BankSelect extends BankCommand.SubCommand {
         if (args.length == 1) {
             bank = bankRepo.getAt(p.getLocation());
             if (bank == null) {
-                plugin.debug(p.getName() + " wasn't standing in a bank");
+                PLUGIN.debug(p.getName() + " wasn't standing in a bank");
                 p.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
                 return true;
             }
         } else {
             bank = bankRepo.getByIdentifier(args[1]);
             if (bank == null) {
-                plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
+                PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
                 p.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
                 return true;
             }
@@ -69,12 +69,12 @@ public class BankSelect extends BankCommand.SubCommand {
         BankSelectEvent event = new BankSelectEvent(p, bank);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Bank select event cancelled");
+            PLUGIN.debug("Bank select event cancelled");
             return true;
         }
 
-        WorldEditReader.setSelection(plugin, bank.getSelection(), p);
-        plugin.debug(p.getName() + " has selected a bank");
+        WorldEditReader.setSelection(PLUGIN, bank.getSelection(), p);
+        PLUGIN.debug(p.getName() + " has selected a bank");
         p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
         ));

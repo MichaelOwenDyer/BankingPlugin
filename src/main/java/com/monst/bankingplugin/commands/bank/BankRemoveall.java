@@ -11,7 +11,6 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -36,10 +35,10 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to remove all banks");
+        PLUGIN.debug(sender.getName() + " wants to remove all banks");
 
         if (!sender.hasPermission(Permissions.BANK_REMOVEALL)) {
-            plugin.debug(sender.getName() + " does not have permission to remove all banks");
+            PLUGIN.debug(sender.getName() + " does not have permission to remove all banks");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_REMOVEALL));
             return true;
         }
@@ -63,7 +62,7 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
         BankRemoveAllEvent event = new BankRemoveAllEvent(sender, banks);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Bank remove all event cancelled");
+            PLUGIN.debug("Bank remove all event cancelled");
             return true;
         }
 
@@ -81,7 +80,7 @@ public class BankRemoveall extends BankCommand.SubCommand implements Confirmable
             mailingRoom.send();
         }
         banks.forEach(bank -> bankRepo.remove(bank, true));
-        plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
+        PLUGIN.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
         return true;
     }
 

@@ -37,10 +37,10 @@ public class AccountSet extends AccountCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to configure an account");
+        PLUGIN.debug(sender.getName() + " wants to configure an account");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_SET)) {
-            plugin.debug(sender.getName() + " does not have permission to configure an account");
+            PLUGIN.debug(sender.getName() + " does not have permission to configure an account");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_SET));
             return true;
         }
@@ -97,7 +97,7 @@ public class AccountSet extends AccountCommand.SubCommand {
                         new Replacement(Placeholder.MULTIPLIER, account::getRealMultiplier),
                         new Replacement(Placeholder.MULTIPLIER_STAGE, account::getMultiplierStage)
                 ));
-                plugin.debugf("%s has set the multiplier stage of account #%d to %d",
+                PLUGIN.debugf("%s has set the multiplier stage of account #%d to %d",
                         executor.getName(), account.getID(), account.getMultiplierStage());
                 break;
 
@@ -106,7 +106,7 @@ public class AccountSet extends AccountCommand.SubCommand {
                 value += isRelative ? account.getDelayUntilNextPayout() : 0;
                 account.setDelayUntilNextPayout(intValue);
 
-                plugin.debugf("%s has set the interest delay of account #%d to %d.",
+                PLUGIN.debugf("%s has set the interest delay of account #%d to %d.",
                         executor.getName(), account.getID(), account.getDelayUntilNextPayout());
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_INTEREST_DELAY,
                         new Replacement(Placeholder.NUMBER, account::getDelayUntilNextPayout)
@@ -118,7 +118,7 @@ public class AccountSet extends AccountCommand.SubCommand {
                 value += isRelative ? account.getRemainingOfflinePayouts() : 0;
                 account.setRemainingOfflinePayouts(intValue);
 
-                plugin.debugf("%s has set the remaining offline payouts of account #%d to %d.",
+                PLUGIN.debugf("%s has set the remaining offline payouts of account #%d to %d.",
                         executor.getName(), account.getID(), account.getRemainingOfflinePayouts());
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE,
                         new Replacement(Placeholder.NUMBER, account::getRemainingOfflinePayouts)
@@ -130,7 +130,7 @@ public class AccountSet extends AccountCommand.SubCommand {
                 value += isRelative ? account.getRemainingOfflinePayoutsUntilReset() : 0;
                 account.setRemainingOfflinePayoutsUntilReset(intValue);
 
-                plugin.debugf("%s has set the remaining offline payouts until reset of account #%d to %d.",
+                PLUGIN.debugf("%s has set the remaining offline payouts until reset of account #%d to %d.",
                         executor.getName(), account.getID(), account.getRemainingOfflinePayoutsUntilReset());
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE_RESET,
                         new Replacement(Placeholder.NUMBER, account::getRemainingOfflinePayoutsUntilReset)
@@ -139,7 +139,7 @@ public class AccountSet extends AccountCommand.SubCommand {
 
         }
 
-        plugin.getAccountRepository().update(account, Callback.blank(), field);
+        PLUGIN.getAccountRepository().update(account, Callback.blank(), field);
         new AccountConfigureEvent(executor, account, field, value).fire();
     }
 

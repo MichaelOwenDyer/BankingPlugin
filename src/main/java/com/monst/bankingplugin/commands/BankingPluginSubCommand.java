@@ -13,7 +13,7 @@ import java.util.List;
 
 public abstract class BankingPluginSubCommand {
 
-    protected static final BankingPlugin plugin = BankingPlugin.getInstance();
+    protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
 
 	private final String name;
 	private final boolean playerCommand;

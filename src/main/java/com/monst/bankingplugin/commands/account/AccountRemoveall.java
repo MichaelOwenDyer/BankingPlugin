@@ -37,10 +37,10 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
 
-        plugin.debug(sender.getName() + " wants to remove all accounts");
+        PLUGIN.debug(sender.getName() + " wants to remove all accounts");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL)) {
-            plugin.debug(sender.getName() + " does not have permission to remove all accounts");
+            PLUGIN.debug(sender.getName() + " does not have permission to remove all accounts");
             sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVEALL));
             return true;
         }
@@ -50,7 +50,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
         if (args.length == 1) {
             accounts = accountRepo.getAll();
         } else {
-            Map<String, Player> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
+            Map<String, Player> namePlayerMap = PLUGIN.getServer().getOnlinePlayers().stream().collect(
                     Collectors.toMap(
                             HumanEntity::getName,
                             e -> e
@@ -85,10 +85,10 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
         AccountRemoveAllEvent event = new AccountRemoveAllEvent(sender, accounts);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Removeall event cancelled");
+            PLUGIN.debug("Removeall event cancelled");
             return true;
         }
-        plugin.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
+        PLUGIN.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
         sender.sendMessage(LangUtils.getMessage(Message.ALL_ACCOUNTS_REMOVED,
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
         ));
@@ -101,7 +101,7 @@ public class AccountRemoveall extends AccountCommand.SubCommand implements Confi
         if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
-        return Utils.filter(Utils.getOnlinePlayerNames(plugin), name -> !argList.contains(name));
+        return Utils.filter(Utils.getOnlinePlayerNames(PLUGIN), name -> !argList.contains(name));
     }
 
 }
