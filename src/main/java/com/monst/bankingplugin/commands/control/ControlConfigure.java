@@ -33,7 +33,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " wants to configure the plugin");
+        PLUGIN.debugf("%s wants to configure the plugin: '%s'", sender.getName(), String.join(" ", args));
 
         if (!sender.hasPermission(Permissions.CONFIG)) {
             PLUGIN.debug(sender.getName() + " does not have permission to configure the config");
@@ -61,11 +61,13 @@ public class ControlConfigure extends ControlCommand.SubCommand {
             PLUGIN.getPluginConfig().set(field, input);
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
+            PLUGIN.debugf("Could not parse argument: %s", e.getLocalizedMessage());
             return true;
         }
 
         String newValue = field.getConfigValue().getFormatted();
 
+        PLUGIN.debugf("%s has set %s from %s to %s", sender.getName(), field.toString(), previousValue, newValue);
         sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_SET,
                 new Replacement(Placeholder.PROPERTY, path),
                 new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),

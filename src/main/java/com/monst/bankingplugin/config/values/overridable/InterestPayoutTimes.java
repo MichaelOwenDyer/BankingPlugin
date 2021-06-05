@@ -14,11 +14,11 @@ import java.util.Set;
 public class InterestPayoutTimes extends OverridableSet<LocalTime> {
 
     public InterestPayoutTimes() {
-        super("interest-payout-times", Collections.singleton(LocalTime.NOON));
+        super("interest-payout-times", Collections.emptySet());
     }
 
     @Override
-    protected void afterNotify() {
+    protected void afterSet2(Set<LocalTime> newValue) {
         if (PLUGIN.isEnabled())
             PLUGIN.getScheduler().scheduleAll();
     }
@@ -42,7 +42,7 @@ public class InterestPayoutTimes extends OverridableSet<LocalTime> {
         return new OverriddenValue<Set<LocalTime>>(this, value) {
             @Override
             protected void afterSet() {
-                InterestPayoutTimes.super.afterNotify();
+                InterestPayoutTimes.super.afterSet2(value);
             }
         };
     }

@@ -78,7 +78,7 @@ public class Account extends BankingEntity {
 	}
 
 	/**
-	 * Re-creates an account that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 * Re-creates an account that was stored in the database.
 	 *
 	 * @param id the account ID {@link BankingEntity}
 	 * @param owner the owner of the account {@link BankingEntity}
@@ -557,18 +557,6 @@ public class Account extends BankingEntity {
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 		notifyObservers();
 		plugin.getAccountRepository().notifyObservers();
-	}
-
-	@Override
-	public void trustPlayer(OfflinePlayer p) {
-		super.trustPlayer(p);
-		plugin.getDatabase().addCoOwner(this, p, null);
-	}
-
-	@Override
-	public void untrustPlayer(OfflinePlayer p) {
-		super.untrustPlayer(p);
-		plugin.getDatabase().removeCoOwner(this, p, null);
 	}
 
 	@Override

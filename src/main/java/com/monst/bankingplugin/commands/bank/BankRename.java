@@ -1,10 +1,12 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
@@ -97,6 +99,7 @@ public class BankRename extends BankCommand.SubCommand {
         PLUGIN.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
         sender.sendMessage(LangUtils.getMessage(Message.NAME_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
         bank.setName(newName);
+        PLUGIN.getBankRepository().update(bank, Callback.blank(), BankField.NAME); // Update bank in database
         return true;
     }
 

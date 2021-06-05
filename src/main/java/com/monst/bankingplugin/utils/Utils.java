@@ -382,7 +382,7 @@ public class Utils {
 	 */
 	public static <T, R> R filter(Collection<? extends T> collection, Predicate<? super T> filter, Collector<? super T, ?, R> collector) {
 		if (collection == null)
-			collection = Collections.emptySet();
+			return null;
 		return collection.stream().filter(filter).collect(collector);
 	}
 
@@ -406,7 +406,7 @@ public class Utils {
 	 */
 	public static <T, K, R> R map(Collection<? extends T> collection, Function<? super T, ? extends K> mapper, Collector<? super K, ?, R> collector) {
 		if (collection == null)
-			collection = Collections.emptySet();
+			return null;
 		return collection.stream().map(mapper).collect(collector);
 	}
 

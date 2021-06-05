@@ -2,6 +2,7 @@ package com.monst.bankingplugin.repository;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Callback;
@@ -9,12 +10,9 @@ import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class BankRepository extends Observable implements Repository<Bank> {
+public class BankRepository extends Observable implements Repository<Bank, BankField> {
 
 	private final BankingPlugin plugin;
 	private final Map<Selection, Bank> bankSelectionMap = new HashMap<>();
@@ -85,6 +83,32 @@ public class BankRepository extends Observable implements Repository<Bank> {
 			Callback.yield(callback, bank.getID());
 
     }
+
+    @Override
+	public void update(Bank bank, Callback<Void> callback, BankField... fieldArray) {
+		if (fieldArray.length == 0)
+			return;
+		EnumSet<BankField> fields = EnumSet.noneOf(BankField.class);
+		fields.addAll(Arrays.asList(fieldArray));
+
+		if (fields.remove(BankField.SELECTION)) {
+			fields.add(BankField.WORLD);
+			fields.add(BankField.MIN_X);
+			fields.add(BankField.MAX_X);
+			fields.add(BankField.MIN_Y);
+			fields.add(BankField.MAX_Y);
+			fields.add(BankField.MIN_Z);
+			fields.add(BankField.MAX_Z);
+			fields.add(BankField.VERTICES);
+			bankSelectionMap.put(bank.getSelection(), bank);
+		}
+		plugin.debugf("Updating the following fields of bank #%d in the database: " + fields, bank.getID());
+
+		plugin.getDatabase().updateBank(bank, fields, callback);
+
+		notifyObservers();
+		bank.notifyAccountObservers();
+	}
 
 	/**
 	 * Removes a bank from the repository.

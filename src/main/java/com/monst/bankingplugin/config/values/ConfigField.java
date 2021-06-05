@@ -81,7 +81,7 @@ public enum ConfigField {
     PLAYER_BANK_ACCOUNT_LIMIT$ALLOW_OVERRIDE (Config.playerBankAccountLimit.getAllowOverride()),
 
     MULTIPLIERS$DEFAULT (Config.multipliers),
-    MULTIPLIERS$ALLOW_OVERRIDE$DEFAULT (Config.multipliers.getAllowOverride()),
+    MULTIPLIERS$ALLOW_OVERRIDE (Config.multipliers.getAllowOverride()),
 
     INTEREST_PAYOUT_TIMES$DEFAULT (Config.interestPayoutTimes),
     INTEREST_PAYOUT_TIMES$ALLOW_OVERRIDE (Config.interestPayoutTimes.getAllowOverride());

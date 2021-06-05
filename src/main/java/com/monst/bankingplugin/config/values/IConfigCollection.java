@@ -34,6 +34,8 @@ public interface IConfigCollection<T, C extends Collection<T>> extends IConfigVa
 
     @Override
     default String format(C collection) {
+        if (collection.isEmpty())
+            return "[]";
         return collection.stream().map(String::valueOf).collect(Collectors.joining(", ")); // do not include [ ]
     }
 

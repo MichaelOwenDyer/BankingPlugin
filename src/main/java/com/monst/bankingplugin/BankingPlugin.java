@@ -91,15 +91,8 @@ public class BankingPlugin extends JavaPlugin {
         config = new Config(this);
         languageConfig = new LanguageConfig(this);
 
-        if (Config.enableDebugLog.get()) {
-            try {
-				Path debugLogFile = getDataFolder().toPath().resolve("debug.txt");
-                debugWriter = new PrintWriter(Files.newOutputStream(debugLogFile), true);
-			} catch (IOException e) {
-                getLogger().info("Failed to instantiate FileWriter.");
-                e.printStackTrace();
-            }
-        }
+        if (Config.enableDebugLog.get())
+            instantiateDebugWriter();
 
         debugf("Loading BankingPlugin version %s", getDescription().getVersion());
 
@@ -427,8 +420,11 @@ public class BankingPlugin extends JavaPlugin {
 	 * @param message the message to be printed
 	 */
 	public void debug(String message) {
-		if (!Config.enableDebugLog.get() || debugWriter == null)
+		if (!Config.enableDebugLog.get())
 			return;
+
+		if (debugWriter == null)
+			instantiateDebugWriter();
 
 		String timestamp = Utils.formatTime(Calendar.getInstance().getTime());
 		debugWriter.printf("[%s] %s%n", timestamp, message);
@@ -451,10 +447,24 @@ public class BankingPlugin extends JavaPlugin {
 	 * @param throwable the {@link Throwable} of which the stacktrace will be printed
 	 */
 	public void debug(Throwable throwable) {
-		if (!Config.enableDebugLog.get() || debugWriter == null)
+		if (!Config.enableDebugLog.get())
 			return;
+
+		if (debugWriter == null)
+			instantiateDebugWriter();
+
 		throwable.printStackTrace(debugWriter);
 		debugWriter.flush();
+	}
+
+	private void instantiateDebugWriter() {
+		try {
+			Path debugLogFile = getDataFolder().toPath().resolve("debug.txt");
+			debugWriter = new PrintWriter(Files.newOutputStream(debugLogFile), true);
+		} catch (IOException e) {
+			getLogger().info("Failed to instantiate FileWriter.");
+			e.printStackTrace();
+		}
 	}
 
 	/**

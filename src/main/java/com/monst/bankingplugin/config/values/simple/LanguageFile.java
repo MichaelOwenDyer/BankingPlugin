@@ -14,7 +14,7 @@ public class LanguageFile extends SimpleString {
     }
 
     @Override
-    protected void afterSet() {
+    protected void afterSet(String newValue) {
         PLUGIN.getLanguageConfig().reload();
     }
 

@@ -7,7 +7,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.overridable.OverriddenValue;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.geo.selections.Selection;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -52,7 +51,7 @@ public class Bank extends BankingEntity {
 	}
 
 	/**
-	 * Re-creates a bank that was stored in the {@link com.monst.bankingplugin.sql.Database}.
+	 * Re-creates a bank that was stored in the database.
 	 */
 	public static Bank recreate(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 								Selection selection, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
@@ -338,7 +337,7 @@ public class Bank extends BankingEntity {
 	public boolean set(BankField field, String input) throws ArgumentParseException {
 		boolean isOverrideCompliant = get(field).set(input);
 		notifyObservers();
-		getAccounts().forEach(Account::notifyObservers);
+		notifyAccountObservers();
 		return isOverrideCompliant;
 	}
 
@@ -390,9 +389,8 @@ public class Bank extends BankingEntity {
 	@Override
 	public void setName(String name) {
 		this.name = name;
-		plugin.getBankRepository().add(this, true); // Update bank in database
 		notifyObservers();
-		getAccounts().forEach(Account::notifyObservers);
+		notifyAccountObservers();
 		plugin.getBankRepository().notifyObservers();
 	}
 
@@ -406,16 +404,8 @@ public class Bank extends BankingEntity {
 		notifyObservers();
 	}
 
-	@Override
-	public void trustPlayer(OfflinePlayer p) {
-		super.trustPlayer(p);
-		plugin.getDatabase().addCoOwner(this, p, Callback.blank());
-	}
-
-	@Override
-	public void untrustPlayer(OfflinePlayer p) {
-		super.untrustPlayer(p);
-		plugin.getDatabase().removeCoOwner(this, p, Callback.blank());
+	public void notifyAccountObservers() {
+		getAccounts().forEach(Account::notifyObservers);
 	}
 
 	@Override
@@ -468,4 +458,5 @@ public class Bank extends BankingEntity {
 	public int hashCode() {
 		return getID() != -1 ? getID() : Objects.hash(owner, coowners, selection, name);
 	}
+
 }

@@ -1,8 +1,10 @@
 package com.monst.bankingplugin.banking.account;
 
+import com.monst.bankingplugin.banking.BankingEntityField;
+
 import java.util.function.Function;
 
-public enum AccountField {
+public enum AccountField implements BankingEntityField<Account> {
 
     OWNER ("OwnerUUID", Account::getOwnerUUID),
     BANK ("BankID", a -> a.getBank().getID()),
@@ -21,18 +23,19 @@ public enum AccountField {
     REMAINING_OFFLINE_PAYOUTS ("RemainingOfflinePayouts", Account::getRemainingOfflinePayouts),
     REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET ("RemainingOfflinePayoutsUntilReset", Account::getRemainingOfflinePayoutsUntilReset);
 
-    private final String attribute;
+    private final String databaseAttribute;
     private final Function<Account, Object> getter;
 
     AccountField(String attributes, Function<Account, Object> getter) {
-        this.attribute = attributes;
+        this.databaseAttribute = attributes;
         this.getter = getter;
     }
 
-    public String getName() {
-        return attribute;
+    public String getDatabaseAttribute() {
+        return databaseAttribute;
     }
 
+    @Override
     public Object getFrom(Account account) {
         return getter.apply(account);
     }

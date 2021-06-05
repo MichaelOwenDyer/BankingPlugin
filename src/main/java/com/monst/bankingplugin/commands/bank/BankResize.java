@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.external.VisualizationManager;
@@ -149,7 +150,7 @@ public class BankResize extends BankCommand.SubCommand {
 
         bankRepo.remove(bank, false);
         bank.setSelection(selection);
-        bankRepo.add(bank, true, Callback.of(
+        bankRepo.update(bank, Callback.of(
                 result -> {
                     PLUGIN.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
                     p.sendMessage(LangUtils.getMessage(Message.BANK_RESIZED, new Replacement(Placeholder.BANK_SIZE, selection::getVolume)));
@@ -157,7 +158,7 @@ public class BankResize extends BankCommand.SubCommand {
                 error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
                         new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
                 ))
-        ));
+        ), BankField.SELECTION);
         return true;
     }
 

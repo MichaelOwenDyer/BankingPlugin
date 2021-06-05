@@ -1,12 +1,15 @@
 package com.monst.bankingplugin.banking.bank;
 
+import com.monst.bankingplugin.banking.BankingEntityField;
+
 import java.util.Locale;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
-public enum BankField {
+public enum BankField implements BankingEntityField<Bank> {
 
-    NAME ("Name", true),
-    OWNER ("OwnerUUID", true),
+    NAME ("Name", Bank::getRawName),
+    OWNER ("OwnerUUID", Bank::getOwnerUUID),
     COUNT_INTEREST_DELAY_OFFLINE ("CountInterestDelayOffline"),
     REIMBURSE_ACCOUNT_CREATION ("ReimburseAccountCreation"),
     PAY_ON_LOW_BALANCE ("PayOnLowBalance"),
@@ -22,33 +25,33 @@ public enum BankField {
     PLAYER_BANK_ACCOUNT_LIMIT ("PlayerBankAccountLimit"),
     MULTIPLIERS ("Multipliers"),
     INTEREST_PAYOUT_TIMES ("InterestPayoutTimes"),
-    WORLD ("World", true),
-    MIN_X ("MinX", true),
-    MAX_X ("MaxX", true),
-    MIN_Y ("MinY", true),
-    MAX_Y ("MaxY", true),
-    MIN_Z ("MinZ", true),
-    MAX_Z ("MaxZ", true),
-    POLYGON_VERTICES ("PolygonVertices", true),
-    SELECTION ("", true); // Meant as a placeholder for the previous 7
+    WORLD ("World", b -> b.getSelection().getWorld()),
+    MIN_X ("MinX", b -> b.getSelection().getMinX()),
+    MAX_X ("MaxX", b -> b.getSelection().getMaxX()),
+    MIN_Y ("MinY", b -> b.getSelection().getMinY()),
+    MAX_Y ("MaxY", b -> b.getSelection().getMaxY()),
+    MIN_Z ("MinZ", b -> b.getSelection().getMinZ()),
+    MAX_Z ("MaxZ", b -> b.getSelection().getMaxZ()),
+    VERTICES("PolygonVertices", b -> b.getSelection().getVertices()),
+    SELECTION ("", Bank::getSelection); // Meant as a placeholder for the previous 7
 
     private static final BankField[] VALUES = values();
-    private static final BankField[] CONFIGURABLE = stream().filter(BankField::isConfigurable).toArray(BankField[]::new);
+    private static final BankField[] CONFIGURABLE = stream().filter(f -> f.getter == null).toArray(BankField[]::new);
 
-    private final String databaseName;
-    private final boolean databaseOnly;
+    private final String databaseAttribute;
+    private final Function<Bank, Object> getter;
 
-    BankField(String databaseName) {
-        this(databaseName, false);
+    BankField(String databaseAttribute) {
+        this(databaseAttribute, null);
     }
 
-    BankField(String databaseName, boolean databaseOnly) {
-        this.databaseName = databaseName;
-        this.databaseOnly = databaseOnly;
+    BankField(String databaseAttribute, Function<Bank, Object> getter) {
+        this.databaseAttribute = databaseAttribute;
+        this.getter = getter;
     }
 
-    public String getDatabaseName() {
-        return databaseName;
+    public String getDatabaseAttribute() {
+        return databaseAttribute;
     }
 
     public static BankField getByName(String name) {
@@ -58,8 +61,10 @@ public enum BankField {
                 .orElse(null);
     }
 
-    public boolean isConfigurable() {
-        return !databaseOnly;
+    public Object getFrom(Bank bank) {
+        if (getter == null)
+            return bank.get(this).getNullable();
+        return getter.apply(bank);
     }
 
     public static Stream<BankField> stream() {

@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector2D;
@@ -281,10 +282,10 @@ public abstract class Database {
 	public void updateAccount(Account account, EnumSet<AccountField> fields, Callback<Void> callback) {
 		async(() -> {
 			String attributes = fields.stream()
-					.map(a -> a.getName() + " = ?")
+					.map(f -> f.getDatabaseAttribute() + " = ?")
 					.collect(Collectors.joining(", "));
 			List<Object> params = fields.stream()
-					.map(a -> a.getFrom(account))
+					.map(f -> f.getFrom(account))
 					.collect(Collectors.toList());
 			query.update("UPDATE " + tableAccounts + " " +
 					"SET " + attributes + " " +
@@ -363,30 +364,30 @@ public abstract class Database {
 		});
 	}
 
-//	/**
-//	 * Updates a bank in the database.
-//	 * @param bank the bank to update
-//	 * @param fields the attributes to update
-//	 * @param callback callback which return returns null on success
-//	 */
-//	public void updateBank(Bank bank, EnumSet<BankField> fields, Callback<Void> callback) {
-//		async(() -> {
-//			String attributes = fields.stream()
-//					.map(a -> a.getAttribute() + " = ?")
-//					.collect(Collectors.joining(", "));
-//			List<Object> params = fields.stream()
-//					.map(a -> a.getFrom(bank))
-//					.collect(Collectors.toList());
-//			query.update("UPDATE " + tableBanks + " " +
-//					"SET " + attributes + " " +
-//					"WHERE BankID = ?")
-//					.params(params)
-//					.params(bank.getID())
-//					.errorHandler(forwardError(callback))
-//					.run();
-//			Callback.yield(callback);
-//		});
-//	}
+	/**
+	 * Updates a bank in the database.
+	 * @param bank the bank to update
+	 * @param fields the attributes to update
+	 * @param callback callback which return returns null on success
+	 */
+	public void updateBank(Bank bank, EnumSet<BankField> fields, Callback<Void> callback) {
+		async(() -> {
+			String attributes = fields.stream()
+					.map(a -> a.getDatabaseAttribute() + " = ?")
+					.collect(Collectors.joining(", "));
+			List<Object> params = fields.stream()
+					.map(f -> f.getFrom(bank))
+					.collect(Collectors.toList());
+			query.update("UPDATE " + tableBanks + " " +
+					"SET " + attributes + " " +
+					"WHERE BankID = ?")
+					.params(params)
+					.params(bank.getID())
+					.errorHandler(forwardError(callback))
+					.run();
+			Callback.yield(callback);
+		});
+	}
 
 	/**
 	 * Removes a bank from the database. All accounts associated with this bank will automatically be removed from the database as well.

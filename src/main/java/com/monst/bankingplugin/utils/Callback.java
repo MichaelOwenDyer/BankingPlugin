@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 public abstract class Callback<T> {
 
     public static <T> Callback<T> blank() {
-        return of(t -> {});
+        return of(result -> {}); // do nothing
     }
 
     public static <T> Callback<T> of(Consumer<T> onResult) {

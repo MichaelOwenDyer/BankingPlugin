@@ -42,19 +42,21 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
     }
 
     public final void set(String input) throws ArgumentParseException {
-        T newValue = parse(input);
+        T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
+        beforeSet(newValue);
         PLUGIN.reloadConfig();
         PLUGIN.getConfig().set(path, convertToSettableType(newValue));
         PLUGIN.saveConfig();
         clearLastSeen();
-        afterSet();
+        afterSet(newValue);
     }
 
     public final void clearLastSeen() {
         lastSeenValue = null;
     }
 
-    protected void afterSet() {}
+    protected void beforeSet(T newValue) {}
+    protected void afterSet(T newValue) {}
 
     @Override
     public boolean isPathMissing() {

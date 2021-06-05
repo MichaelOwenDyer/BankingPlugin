@@ -7,6 +7,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -74,39 +75,39 @@ public class AccountUntrust extends AccountCommand.SubCommand {
                 name -> Utils.startsWithIgnoreCase(name, args[1]));
     }
 
-    public static void untrust(Player p, Account account, OfflinePlayer playerToUntrust) {
-        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
-            if (account.isTrusted(p)) {
-                p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+    public static void untrust(Player executor, Account account, OfflinePlayer playerToUntrust) {
+        if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
+            if (account.isTrusted(executor)) {
+                executor.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
                 return;
             }
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER));
+            executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER));
             return;
         }
 
-        boolean isSelf = Utils.samePlayer(playerToUntrust, p);
         if (!account.isCoOwner(playerToUntrust)) {
             PLUGIN.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
                     playerToUntrust.getName(), account.getID());
-            p.sendMessage(LangUtils.getMessage(Message.NOT_A_COOWNER,
+            executor.sendMessage(LangUtils.getMessage(Message.NOT_A_COOWNER,
                     new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
             ));
             return;
         }
 
-        AccountUntrustEvent event = new AccountUntrustEvent(p, account, playerToUntrust);
+        AccountUntrustEvent event = new AccountUntrustEvent(executor, account, playerToUntrust);
         event.fire();
         if (event.isCancelled()) {
             PLUGIN.debug("Account untrust event cancelled");
             return;
         }
 
-        PLUGIN.debugf("%s has untrusted %s from %s account (#%d)", p.getName(),	playerToUntrust.getName(),
-                (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
-        p.sendMessage(LangUtils.getMessage(Message.REMOVED_COOWNER,
+        PLUGIN.debugf("%s has untrusted %s from %s account (#%d)", executor.getName(),	playerToUntrust.getName(),
+                (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"), account.getID());
+        executor.sendMessage(LangUtils.getMessage(Message.REMOVED_COOWNER,
                 new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
         ));
         account.untrustPlayer(playerToUntrust);
+        PLUGIN.getDatabase().removeCoOwner(account, playerToUntrust, Callback.blank());
     }
 
 }

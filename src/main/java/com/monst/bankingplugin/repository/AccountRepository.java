@@ -19,7 +19,7 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class AccountRepository extends Observable implements Repository<Account> {
+public class AccountRepository extends Observable implements Repository<Account, AccountField> {
 
 	private final BankingPlugin plugin;
 	private final Map<ChestLocation, Account> accountLocationMap = new HashMap<>();
@@ -111,6 +111,7 @@ public class AccountRepository extends Observable implements Repository<Account>
         notifyObservers();
     }
 
+    @Override
     public void update(Account account, Callback<Void> callback, AccountField... fieldArray) {
 		if (fieldArray.length == 0)
 			return;

@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankTransferEvent;
@@ -9,6 +10,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.lang.MailingRoom;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -128,7 +130,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
         mailingRoom.send();
 
         bank.setOwner(newOwner);
-        bankRepo.add(bank, true);
+        bankRepo.update(bank, Callback.blank(), BankField.OWNER);
         return true;
     }
 

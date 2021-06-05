@@ -5,6 +5,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -86,6 +87,7 @@ public class BankUntrust extends BankCommand.SubCommand {
                 new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
         ));
         bank.untrustPlayer(playerToUntrust);
+        PLUGIN.getDatabase().removeCoOwner(bank, playerToUntrust, Callback.blank());
         return true;
     }
 

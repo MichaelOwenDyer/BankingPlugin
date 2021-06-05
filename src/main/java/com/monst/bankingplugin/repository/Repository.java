@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.repository;
 
 import com.monst.bankingplugin.banking.BankingEntity;
+import com.monst.bankingplugin.banking.BankingEntityField;
 import com.monst.bankingplugin.exceptions.NotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Callback;
@@ -11,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public interface Repository<Entity extends BankingEntity> {
+public interface Repository<Entity extends BankingEntity, Field extends BankingEntityField<Entity>> {
 
     Set<Entity> getAll();
 
@@ -57,6 +58,8 @@ public interface Repository<Entity extends BankingEntity> {
     }
 
     void add(Entity entity, boolean addToDatabase, Callback<Integer> callback);
+
+    void update(Entity entity, Callback<Void> callback, Field... fields);
 
     default void remove(Entity entity, boolean removeFromDatabase) {
         remove(entity, removeFromDatabase, Callback.blank());

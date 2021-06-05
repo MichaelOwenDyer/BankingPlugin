@@ -7,6 +7,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -75,38 +76,38 @@ public class AccountTrust extends AccountCommand.SubCommand {
         return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[1]));
     }
 
-    public static void trust(Player p, Account account, OfflinePlayer playerToTrust) {
-        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
-            if (account.isTrusted(p)) {
-                p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+    public static void trust(Player executor, Account account, OfflinePlayer playerToTrust) {
+        if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
+            if (account.isTrusted(executor)) {
+                executor.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
                 return;
             }
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRUST_OTHER));
+            executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRUST_OTHER));
             return;
         }
 
-        boolean isSelf = Utils.samePlayer(playerToTrust, p);
         if (account.isTrusted(playerToTrust)) {
             PLUGIN.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
-            p.sendMessage(LangUtils.getMessage(account.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER,
+            executor.sendMessage(LangUtils.getMessage(account.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER,
                     new Replacement(Placeholder.PLAYER, playerToTrust::getName)
             ));
             return;
         }
 
-        AccountTrustEvent event = new AccountTrustEvent(p, account, playerToTrust);
+        AccountTrustEvent event = new AccountTrustEvent(executor, account, playerToTrust);
         event.fire();
         if (event.isCancelled()) {
             PLUGIN.debug("Account trust event cancelled");
             return;
         }
 
-        PLUGIN.debugf("%s has trusted %s to %s account (#%d)", p.getName(), playerToTrust.getName(),
-                (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"), account.getID());
-        p.sendMessage(LangUtils.getMessage(Message.ADDED_COOWNER,
+        PLUGIN.debugf("%s has trusted %s to %s account (#%d)", executor.getName(), playerToTrust.getName(),
+                (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"), account.getID());
+        executor.sendMessage(LangUtils.getMessage(Message.ADDED_COOWNER,
                 new Replacement(Placeholder.PLAYER, playerToTrust::getName)
         ));
         account.trustPlayer(playerToTrust);
+        PLUGIN.getDatabase().addCoOwner(account, playerToTrust, Callback.blank());
     }
 
 }
