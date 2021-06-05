@@ -33,7 +33,7 @@ public abstract class OverridableValue<T> extends ConfigValue<T> {
 
     protected void afterNotify() {}
 
-    public final OverriddenValue<T> override(T value) {
+    public OverriddenValue<T> override(T value) {
         return new OverriddenValue<>(this, value);
     }
 

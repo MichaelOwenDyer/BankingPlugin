@@ -9,7 +9,7 @@ public class PluginConfigureEvent extends ControlEvent {
     private final ConfigField field;
     private final Object newValue;
 
-    public PluginConfigureEvent(BankingPlugin plugin, ConfigField field, Object newValue) {
+    public <T> PluginConfigureEvent(BankingPlugin plugin, ConfigField field, T newValue) {
         super(plugin, Bukkit.getConsoleSender());
         this.field = field;
         this.newValue = newValue;

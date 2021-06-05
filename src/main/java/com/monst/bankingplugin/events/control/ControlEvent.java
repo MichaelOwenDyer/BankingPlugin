@@ -10,4 +10,13 @@ public abstract class ControlEvent extends BankingPluginEvent {
         super(sender);
     }
 
+    public ControlEvent(CommandSender sender) {
+        super(sender);
+    }
+
+    @Override
+    public CommandSender getSender() {
+        return super.getSender();
+    }
+
 }

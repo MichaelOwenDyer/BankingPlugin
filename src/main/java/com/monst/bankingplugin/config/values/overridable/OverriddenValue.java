@@ -43,12 +43,18 @@ public class OverriddenValue<T> {
     }
 
     public boolean set(String input) throws ArgumentParseException {
+        boolean overrideCompliant;
         if (input == null || input.isEmpty()) {
             customValue = null;
-            return true;
+            overrideCompliant = true;
+        } else {
+            customValue = configValue.parse(input);
+            overrideCompliant = configValue.isOverridable();
         }
-        customValue = configValue.parse(input);
-        return configValue.isOverridable();
+        afterSet();
+        return overrideCompliant;
     }
+
+    protected void afterSet() {};
 
 }

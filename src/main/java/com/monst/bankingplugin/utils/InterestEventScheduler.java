@@ -107,9 +107,8 @@ public class InterestEventScheduler {
         long offset = cal.getTimeInMillis() - currentTime;
         long ticks = offset / 50L;
 
-        int id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin,
-                () -> Bukkit.getServer().getPluginManager().callEvent(
-                        new InterestEvent(plugin, getScheduledBanks(time))), ticks, ticksInADay);
+        int id = Bukkit.getScheduler()
+                .scheduleSyncRepeatingTask(plugin, new InterestEvent(getScheduledBanks(time))::fire, ticks, ticksInADay);
         plugin.debug((id != -1 ? "Scheduled " : "Failed to schedule ") + "daily interest payout at " + time);
         return id;
     }

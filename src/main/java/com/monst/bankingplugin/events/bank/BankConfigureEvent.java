@@ -10,7 +10,7 @@ public class BankConfigureEvent extends SingleBankEvent {
     private final String oldValue;
     private final String newValue;
 
-    public BankConfigureEvent(CommandSender sender, Bank bank, ConfigField field, String oldValue, String newValue) {
+    public BankConfigureEvent(CommandSender sender, Bank bank, ConfigField field, String newValue, String oldValue) {
         super(sender, bank);
         this.field = field;
         this.oldValue = oldValue;

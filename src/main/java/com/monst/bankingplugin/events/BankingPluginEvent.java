@@ -9,7 +9,8 @@ import org.bukkit.event.HandlerList;
 public class BankingPluginEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
-    private static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
+    protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
+
     private final CommandSender sender;
 
     public BankingPluginEvent(CommandSender sender) {
@@ -29,7 +30,7 @@ public class BankingPluginEvent extends Event {
         return PLUGIN;
     }
 
-    public CommandSender getSender() {
+    protected CommandSender getSender() {
         return sender;
     }
 

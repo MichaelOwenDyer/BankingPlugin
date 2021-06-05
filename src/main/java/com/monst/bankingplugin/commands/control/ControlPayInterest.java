@@ -48,7 +48,7 @@ public class ControlPayInterest extends ControlCommand.SubCommand {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
-        InterestEvent event = new InterestEvent(PLUGIN, sender, banks);
+        InterestEvent event = new InterestEvent(sender, banks);
         event.fire();
         if (event.isCancelled()) {
             PLUGIN.debug("Interest event cancelled");

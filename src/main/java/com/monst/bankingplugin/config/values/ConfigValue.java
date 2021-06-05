@@ -29,7 +29,7 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
     }
 
     @Override
-    public T get() {
+    public final T get() {
         if (lastSeenValue == null)
             PLUGIN.reloadConfig();
             lastSeenValue = readValueFromFile(PLUGIN.getConfig(), path);
@@ -41,7 +41,7 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         return lastSeenValue;
     }
 
-    public void set(String input) throws ArgumentParseException {
+    public final void set(String input) throws ArgumentParseException {
         T newValue = parse(input);
         PLUGIN.reloadConfig();
         PLUGIN.getConfig().set(path, convertToSettableType(newValue));
@@ -50,7 +50,7 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         afterSet();
     }
 
-    public void clearLastSeen() {
+    public final void clearLastSeen() {
         lastSeenValue = null;
     }
 

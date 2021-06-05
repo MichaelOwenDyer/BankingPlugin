@@ -37,4 +37,14 @@ public class InterestPayoutTimes extends OverridableSet<LocalTime> {
         }
     }
 
+    @Override
+    public OverriddenValue<Set<LocalTime>> override(Set<LocalTime> value) {
+        return new OverriddenValue<Set<LocalTime>>(this, value) {
+            @Override
+            protected void afterSet() {
+                InterestPayoutTimes.super.afterNotify();
+            }
+        };
+    }
+
 }

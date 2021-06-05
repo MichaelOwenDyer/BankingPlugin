@@ -350,8 +350,6 @@ public class BankingPlugin extends JavaPlugin {
 
 					getLogger().info(message);
 					debug(message);
-
-					scheduler.scheduleAll();
 				})
 		);
 	}
@@ -399,6 +397,7 @@ public class BankingPlugin extends JavaPlugin {
 									debugf("Number of accounts before load was %d and is now %d.",
 											accountsBeforeReload.size(), reloadedAccounts.size());
 
+								scheduler.scheduleAll();
 								Callback.yield(callback, new ReloadResult(reloadedBanks, reloadedAccounts));
 							},
 							error -> Callback.error(callback, error)
