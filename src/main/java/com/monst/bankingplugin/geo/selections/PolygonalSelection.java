@@ -50,6 +50,7 @@ public class PolygonalSelection extends Selection {
 	/**
 	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalSelection}
 	 */
+	@Override
 	public List<BlockVector2D> getVertices() {
 		return vertices;
 	}

@@ -4,8 +4,7 @@ import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.banking.Nameable;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.config.values.ConfigField;
-import com.monst.bankingplugin.config.values.overridable.*;
+import com.monst.bankingplugin.config.values.overridable.OverriddenValue;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Callback;
@@ -299,7 +298,7 @@ public class Bank extends BankingEntity {
 		return interestPayoutTimes;
 	}
 
-	public OverriddenValue<?> get(ConfigField field) {
+	public OverriddenValue<?> get(BankField field) {
 		switch (field) {
 			case COUNT_INTEREST_DELAY_OFFLINE:
 				return countInterestDelayOffline;
@@ -336,7 +335,7 @@ public class Bank extends BankingEntity {
 		}
 	}
 
-	public boolean set(ConfigField field, String input) throws ArgumentParseException {
+	public boolean set(BankField field, String input) throws ArgumentParseException {
 		boolean isOverrideCompliant = get(field).set(input);
 		notifyObservers();
 		getAccounts().forEach(Account::notifyObservers);

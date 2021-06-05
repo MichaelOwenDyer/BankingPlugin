@@ -1153,7 +1153,7 @@ public abstract class Database {
 				sel.getMaxY(),
 				sel.getMinZ(),
 				sel.getMaxZ(),
-				sel.isPolygonal() ? ((PolygonalSelection) bank.getSelection()).getVertices() : null
+				sel.getVertices()
 		));
 	}
 

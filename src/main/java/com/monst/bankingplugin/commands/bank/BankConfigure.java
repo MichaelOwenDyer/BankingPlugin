@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.config.values.ConfigField;
+import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.*;
@@ -59,8 +59,8 @@ public class BankConfigure extends BankCommand.SubCommand {
             return true;
         }
 
-        ConfigField field = ConfigField.getByName(fieldName);
-        if (field == null || !field.isBankField()) {
+        BankField field = BankField.getByName(fieldName);
+        if (field == null) {
             PLUGIN.debug("No bank config field could be found with name " + fieldName);
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.STRING, fieldName)));
             return true;
@@ -111,15 +111,14 @@ public class BankConfigure extends BankCommand.SubCommand {
                     .sorted()
                     .collect(Collectors.toList());
         else if (args.length == 3 && bankRepo.getByIdentifier(args[1]) != null) {
-            return ConfigField.stream()
-                    .filter(ConfigField::isBankField)
-                    .map(ConfigField::toString)
+            return BankField.streamConfigurable()
+                    .map(BankField::toString)
                     .filter(name -> Utils.containsIgnoreCase(name, args[2]))
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 4) {
             Bank bank = bankRepo.getByIdentifier(args[1]);
-            ConfigField field = ConfigField.getByName(args[2]);
+            BankField field = BankField.getByName(args[2]);
             if (bank != null && field != null)
                 return Collections.singletonList(bank.get(field).getFormatted());
         }

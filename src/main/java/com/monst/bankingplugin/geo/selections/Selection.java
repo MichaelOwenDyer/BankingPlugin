@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -139,6 +140,8 @@ public abstract class Selection {
 	 * @return a set with every {@link BlockVector2D} in this selection
 	 */
 	public abstract Set<BlockVector2D> getFootprint();
+
+	public abstract List<BlockVector2D> getVertices();
 
 	/**
 	 * Get all corners of this selection.

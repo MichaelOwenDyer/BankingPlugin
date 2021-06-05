@@ -1,8 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.config.values.overridable.OverridableValue;
-import com.monst.bankingplugin.config.values.simple.AllowOverride;
 
 import java.util.Locale;
 import java.util.stream.Stream;
@@ -43,63 +41,61 @@ public enum ConfigField {
     LANGUAGE_FILE (Config.languageFile),
     NAME_REGEX (Config.nameRegex),
 
-    COUNT_INTEREST_DELAY_OFFLINE (Config.countInterestDelayOffline),
+    COUNT_INTEREST_DELAY_OFFLINE$DEFAULT (Config.countInterestDelayOffline),
     COUNT_INTEREST_DELAY_OFFLINE$ALLOW_OVERRIDE (Config.countInterestDelayOffline.getAllowOverride()),
-    REIMBURSE_ACCOUNT_CREATION (Config.reimburseAccountCreation),
+
+    REIMBURSE_ACCOUNT_CREATION$DEFAULT (Config.reimburseAccountCreation),
     REIMBURSE_ACCOUNT_CREATION$ALLOW_OVERRIDE (Config.reimburseAccountCreation.getAllowOverride()),
-    PAY_ON_LOW_BALANCE (Config.payOnLowBalance),
+
+    PAY_ON_LOW_BALANCE$DEFAULT (Config.payOnLowBalance),
     PAY_ON_LOW_BALANCE$ALLOW_OVERRIDE (Config.payOnLowBalance.getAllowOverride()),
-    INTEREST_RATE (Config.interestRate),
+
+    INTEREST_RATE$DEFAULT (Config.interestRate),
     INTEREST_RATE$ALLOW_OVERRIDE (Config.interestRate.getAllowOverride()),
-    ACCOUNT_CREATION_PRICE (Config.accountCreationPrice),
+
+    ACCOUNT_CREATION_PRICE$DEFAULT (Config.accountCreationPrice),
     ACCOUNT_CREATION_PRICE$ALLOW_OVERRIDE (Config.accountCreationPrice.getAllowOverride()),
-    MINIMUM_BALANCE (Config.minimumBalance),
+
+    MINIMUM_BALANCE$DEFAULT (Config.minimumBalance),
     MINIMUM_BALANCE$ALLOW_OVERRIDE (Config.minimumBalance.getAllowOverride()),
-    LOW_BALANCE_FEE (Config.lowBalanceFee),
+
+    LOW_BALANCE_FEE$DEFAULT (Config.lowBalanceFee),
     LOW_BALANCE_FEE$ALLOW_OVERRIDE (Config.lowBalanceFee.getAllowOverride()),
-    INITIAL_INTEREST_DELAY (Config.initialInterestDelay),
+
+    INITIAL_INTEREST_DELAY$DEFAULT (Config.initialInterestDelay),
     INITIAL_INTEREST_DELAY$ALLOW_OVERRIDE (Config.initialInterestDelay.getAllowOverride()),
-    ALLOWED_OFFLINE_PAYOUTS (Config.allowedOfflinePayouts),
+
+    ALLOWED_OFFLINE_PAYOUTS$DEFAULT (Config.allowedOfflinePayouts),
     ALLOWED_OFFLINE_PAYOUTS$ALLOW_OVERRIDE (Config.allowedOfflinePayouts.getAllowOverride()),
-    ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET (Config.allowedOfflinePayoutsBeforeReset),
+
+    ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET$DEFAULT (Config.allowedOfflinePayoutsBeforeReset),
     ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET$ALLOW_OVERRIDE (Config.allowedOfflinePayoutsBeforeReset.getAllowOverride()),
-    OFFLINE_MULTIPLIER_DECREMENT (Config.offlineMultiplierDecrement),
+
+    OFFLINE_MULTIPLIER_DECREMENT$DEFAULT (Config.offlineMultiplierDecrement),
     OFFLINE_MULTIPLIER_DECREMENT$ALLOW_OVERRIDE (Config.offlineMultiplierDecrement.getAllowOverride()),
-    WITHDRAWAL_MULTIPLIER_DECREMENT (Config.withdrawalMultiplierDecrement),
+
+    WITHDRAWAL_MULTIPLIER_DECREMENT$DEFAULT (Config.withdrawalMultiplierDecrement),
     WITHDRAWAL_MULTIPLIER_DECREMENT$ALLOW_OVERRIDE (Config.withdrawalMultiplierDecrement.getAllowOverride()),
-    PLAYER_BANK_ACCOUNT_LIMIT (Config.playerBankAccountLimit),
+
+    PLAYER_BANK_ACCOUNT_LIMIT$DEFAULT (Config.playerBankAccountLimit),
     PLAYER_BANK_ACCOUNT_LIMIT$ALLOW_OVERRIDE (Config.playerBankAccountLimit.getAllowOverride()),
-    MULTIPLIERS (Config.multipliers),
-    MULTIPLIERS$ALLOW_OVERRIDE (Config.multipliers.getAllowOverride()),
-    INTEREST_PAYOUT_TIMES (Config.interestPayoutTimes),
+
+    MULTIPLIERS$DEFAULT (Config.multipliers),
+    MULTIPLIERS$ALLOW_OVERRIDE$DEFAULT (Config.multipliers.getAllowOverride()),
+
+    INTEREST_PAYOUT_TIMES$DEFAULT (Config.interestPayoutTimes),
     INTEREST_PAYOUT_TIMES$ALLOW_OVERRIDE (Config.interestPayoutTimes.getAllowOverride());
 
     private static final ConfigField[] VALUES = values();
 
     private final ConfigValue<?> configValue;
-    private final boolean isBankField;
 
     ConfigField(ConfigValue<?> configValue) {
         this.configValue = configValue;
-        this.isBankField = false;
-    }
-
-    ConfigField(OverridableValue<?> overridableValue) {
-        this.configValue = overridableValue;
-        this.isBankField = true;
-    }
-
-    ConfigField(AllowOverride allowOverride) {
-        this.configValue = allowOverride;
-        this.isBankField = false;
     }
 
     public ConfigValue<?> getConfigValue() {
         return configValue;
-    }
-
-    public boolean isBankField() {
-        return isBankField;
     }
 
     public static ConfigField getByName(String name) {

@@ -5,10 +5,7 @@ import com.monst.bankingplugin.geo.BlockVector3D;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class represents a region of space in the shape of a rectangular prism. It is defined by a {@link World} and
@@ -107,6 +104,14 @@ public class CuboidSelection extends Selection {
 			for (int z = getMinZ(); z <= getMaxZ(); z++)
 				blocks.add(new BlockVector2D(x, z));
 		return blocks;
+	}
+
+	/**
+	 * Will only return non-null if polygonal
+	 */
+	@Override
+	public List<BlockVector2D> getVertices() {
+		return null;
 	}
 
 	@Override
