@@ -32,4 +32,5 @@ public class AccountRecoverEvent extends SingleAccountEvent implements Cancellab
     public void setCancelled(boolean cancel) {
         cancelled = cancel;
     }
+
 }

@@ -8,7 +8,7 @@ public enum AccountField implements BankingEntityField<Account> {
 
     OWNER ("OwnerUUID", Account::getOwnerUUID),
     BANK ("BankID", a -> a.getBank().getID()),
-    WORLD ("World", a -> a.getChestLocation().getWorld()),
+    WORLD ("World", a -> a.getChestLocation().getWorld().getName()),
     Y ("Y", a -> a.getChestLocation().getMinimumBlock().getY()),
     X1 ("X1", a -> a.getChestLocation().getMinimumBlock().getX()),
     Z1 ("Z1", a -> a.getChestLocation().getMinimumBlock().getZ()),

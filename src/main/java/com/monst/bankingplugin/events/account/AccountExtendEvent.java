@@ -33,4 +33,5 @@ public class AccountExtendEvent extends SingleAccountEvent implements Cancellabl
     public void setCancelled(boolean cancel) {
         cancelled = cancel;
     }
+
 }

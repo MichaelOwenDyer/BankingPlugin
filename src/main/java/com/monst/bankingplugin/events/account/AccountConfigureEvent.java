@@ -25,4 +25,5 @@ public class AccountConfigureEvent extends SingleAccountEvent {
     public String getNewValue() {
         return newValue;
     }
+
 }

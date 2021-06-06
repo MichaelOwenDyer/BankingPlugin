@@ -473,6 +473,10 @@ message.no-permission-account-untrust-other=&cYou do not have permission to remo
 # Available placeholders:
 message.no-permission-account-remove-other=&cYou do not have permission to remove someone else's account.
 
+# Scenario: A player attempts to remove a protected account without permission.
+# Available placeholders:
+message.no-permission-account-remove-protected=&cYou do not have permission to remove a protected account.
+
 # Scenario: A player attempts to remove multiple accounts at once without permission.
 # Available placeholders:
 message.no-permission-account-removeall=&cYou do not have permission to remove all accounts.
@@ -524,6 +528,10 @@ message.no-permission-account-extend-other=&cYou do not have permission to exten
 # Scenario: A player attempts to extend a protected account chest without permission.
 # Available placeholders:
 message.no-permission-account-extend-protected=&cYou do not have permission to extend a protected account chest.
+
+# Scenario: A player attempts to contract a protected account chest without permission.
+# Available placeholders:
+message.no-permission-account-contract-protected=&cYou do not have permission to contract a protected account chest.
 
 # Scenario: A player attempts to set the multiplier, interest delay, etc. of an account without permission.
 # Available placeholders:

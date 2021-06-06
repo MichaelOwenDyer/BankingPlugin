@@ -28,4 +28,5 @@ public class AccountListEvent extends MultiAccountEvent implements Cancellable {
     public void setCancelled(boolean cancel) {
         this.cancelled = cancel;
     }
+
 }

@@ -17,6 +17,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -117,7 +118,7 @@ public class Account extends BankingEntity {
 
 	private Bank bank;
 	private ChestLocation chestLocation;
-	private Inventory inventory;
+	private InventoryHolder inventoryHolder;
 
 	private BigDecimal balance;
 	private BigDecimal prevBalance;
@@ -160,7 +161,8 @@ public class Account extends BankingEntity {
 		plugin.debugf("Creating account (#%d)", getID());
 
 		try {
-			inventory = getChestLocation().findInventory();
+			inventoryHolder = getChestLocation().findInventoryHolder();
+			setChestLocation(ChestLocation.from(inventoryHolder));
 			getChestLocation().checkSpaceAbove();
 		} catch (ChestNotFoundException | ChestBlockedException e) {
 			plugin.getAccountRepository().remove(this, Config.removeAccountOnError.get());
@@ -295,11 +297,11 @@ public class Account extends BankingEntity {
 	 *
 	 * @return the account inventory.
 	 */
-	public Inventory getInventory(boolean update) {
+	public InventoryHolder getInventoryHolder(boolean update) {
 		if (!update)
-			return inventory;
+			return inventoryHolder;
 		try {
-			return inventory = getChestLocation().findInventory();
+			return inventoryHolder = getChestLocation().findInventoryHolder();
 		} catch (ChestNotFoundException e) {
 			return null;
 		}
@@ -343,13 +345,11 @@ public class Account extends BankingEntity {
 	}
 
 	private void setChestName(String name) {
-		Inventory inv = getInventory(true);
-		if (inv == null)
+		InventoryHolder ih = getInventoryHolder(true);
+		if (ih == null)
 			return;
 		if (isDoubleChest()) {
-			DoubleChest dc = (DoubleChest) inv.getHolder();
-			if (dc == null)
-				return;
+			DoubleChest dc = (DoubleChest) ih;
 			Chest left = (Chest) dc.getLeftSide();
 			Chest right = (Chest) dc.getRightSide();
 			if (left != null) {
@@ -361,11 +361,9 @@ public class Account extends BankingEntity {
 				right.update();
 			}
 		} else {
-			Chest chest = (Chest) inv.getHolder();
-			if (chest != null) {
-				chest.setCustomName(name);
-				chest.update();
-			}
+			Chest chest = (Chest) ih;
+			chest.setCustomName(name);
+			chest.update();
 		}
 		notifyObservers();
 		plugin.getAccountRepository().notifyObservers();
@@ -409,7 +407,7 @@ public class Account extends BankingEntity {
 	 */
 	public BigDecimal calculateBalance() {
 		plugin.debugf("Appraising account... (#%d)", getID());
-		return plugin.getAccountRepository().appraise(getInventory(true).getContents());
+		return plugin.getAccountRepository().appraise(getInventoryHolder(true).getInventory().getContents());
 	}
 
 	/**

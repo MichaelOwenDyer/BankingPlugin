@@ -12,8 +12,6 @@ import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
-import com.monst.bankingplugin.geo.locations.DoubleChestLocation;
-import com.monst.bankingplugin.geo.locations.SingleChestLocation;
 import com.monst.bankingplugin.geo.selections.CuboidSelection;
 import com.monst.bankingplugin.geo.selections.PolygonalSelection;
 import com.monst.bankingplugin.geo.selections.Selection;
@@ -607,12 +605,7 @@ public abstract class Database {
 			int z1 = values.getNextInt();
 			int x2 = values.getNextInt();
 			int z2 = values.getNextInt();
-			BlockVector3D v1 = new BlockVector3D(x1, y, z1);
-			ChestLocation chestLocation;
-			if (x1 == x2 && z1 == z2)
-				chestLocation = SingleChestLocation.from(world, v1);
-			else
-				chestLocation = DoubleChestLocation.from(world, v1, new BlockVector3D(x2, y, z2));
+			ChestLocation chestLocation = ChestLocation.of(world, new BlockVector3D(x1, y, z1), new BlockVector3D(x2, y, z2));
 
 			Set<OfflinePlayer> coowners = query
 					.select("SELECT CoOwnerUUID FROM " + tableCoOwnsAccount + " WHERE AccountID = ?")

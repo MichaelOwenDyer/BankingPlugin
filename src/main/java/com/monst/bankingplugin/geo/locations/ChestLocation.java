@@ -3,8 +3,6 @@ package com.monst.bankingplugin.geo.locations;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.exceptions.AccountNotFoundException;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector3D;
@@ -12,11 +10,13 @@ import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.repository.BankRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.block.DoubleChest;
+import org.bukkit.inventory.InventoryHolder;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -28,11 +28,26 @@ public abstract class ChestLocation implements Iterable<Location> {
     private static final BankRepository BANK_REPO = BankingPlugin.getInstance().getBankRepository();
     private static final AccountRepository ACCOUNT_REPO = BankingPlugin.getInstance().getAccountRepository();
 
-    public static ChestLocation from(Chest c) {
-        BlockVector3D[] locations = Utils.getChestCoordinates(c);
-        if (locations.length == 1)
-            return new SingleChestLocation(c.getWorld(), locations[0]);
-        return new DoubleChestLocation(c.getWorld(), locations[0], locations[1]);
+    public static ChestLocation from(InventoryHolder ih) {
+        if (ih instanceof DoubleChest) {
+            DoubleChest dc = (DoubleChest) ih;
+            Location leftLoc = ((Chest) dc.getLeftSide()).getLocation();
+            Location rightLoc = ((Chest) dc.getRightSide()).getLocation();
+            BlockVector3D leftBV = BlockVector3D.fromLocation(leftLoc);
+            BlockVector3D rightBV = BlockVector3D.fromLocation(rightLoc);
+            return DoubleChestLocation.of(dc.getWorld(), leftBV, rightBV);
+        } else {
+            Chest chest = (Chest) ih;
+            Location loc = chest.getLocation();
+            BlockVector3D bv = BlockVector3D.fromLocation(loc);
+            return SingleChestLocation.of(chest.getWorld(), bv);
+        }
+    }
+
+    public static ChestLocation of(World world, BlockVector3D v1, BlockVector3D v2) {
+        if (Objects.equals(v1, v2))
+            return SingleChestLocation.of(world, v1);
+        return DoubleChestLocation.of(world, v1, v2);
     }
 
     final World world;
@@ -65,11 +80,11 @@ public abstract class ChestLocation implements Iterable<Location> {
         return world;
     }
 
-    public Bank getBank() throws BankNotFoundException {
-        return Optional.ofNullable(BANK_REPO.getAt(this)).orElseThrow(() -> new BankNotFoundException(this));
+    public Bank getBank() {
+        return Optional.ofNullable(BANK_REPO.getAt(this)).orElse(null);
     }
 
-    public Account getAccount() throws AccountNotFoundException {
+    public Account getAccount() {
         return ACCOUNT_REPO.getAt(this);
     }
 
@@ -80,11 +95,9 @@ public abstract class ChestLocation implements Iterable<Location> {
      * @see Utils#isTransparent(Block)
      */
     public boolean isBlocked() {
-        try {
-            checkSpaceAbove();
-        } catch (ChestBlockedException e) {
-            return true;
-        }
+        for (Location chest : this)
+            if (!Utils.isTransparent(chest.getBlock().getRelative(BlockFace.UP)))
+                return true;
         return false;
     }
 
@@ -100,11 +113,11 @@ public abstract class ChestLocation implements Iterable<Location> {
                 throw new ChestBlockedException(chest.getBlock());
     }
 
-    public Inventory findInventory() throws ChestNotFoundException {
-        Chest chest = Utils.getChestAt(getMinimumLocation().getBlock());
-        if (chest == null)
+    public InventoryHolder findInventoryHolder() throws ChestNotFoundException {
+        Block b = getMinimumLocation().getBlock();
+        if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
             throw new ChestNotFoundException(this);
-        return chest.getInventory();
+        return ((Chest) b.getState()).getInventory().getHolder();
     }
 
     public boolean contains(Location loc) {

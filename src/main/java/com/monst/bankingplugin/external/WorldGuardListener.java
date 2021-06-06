@@ -10,15 +10,17 @@ import com.monst.bankingplugin.listeners.BankingPluginListener;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EClickType;
 import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.InventoryHolder;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.event.WrappedUseBlockEvent;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
@@ -101,7 +103,10 @@ public class WorldGuardListener extends BankingPluginListener {
 		// Don't show 'permission denied' messages for any kind of
 		// account interaction even if block interaction is not
 		// allowed in the region.
-		return plugin.getAccountRepository().isAccount(ChestLocation.from(Utils.getChestAt(block)));
+		if (block.getType() != Material.CHEST && block.getType() != Material.TRAPPED_CHEST)
+			return false;
+		InventoryHolder ih = ((Chest) block.getState()).getInventory().getHolder();
+		return plugin.getAccountRepository().isAccount(ChestLocation.from(ih));
     }
 
     private boolean isBankCreationBlockedByWorldGuard(Player player, Location loc) {

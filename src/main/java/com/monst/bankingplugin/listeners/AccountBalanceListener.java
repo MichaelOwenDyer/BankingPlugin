@@ -4,8 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
-import com.monst.bankingplugin.exceptions.AccountNotFoundException;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -13,11 +11,12 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.sql.logging.AccountTransaction;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.block.Chest;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryType;
 
 import java.math.BigDecimal;
 
@@ -34,23 +33,25 @@ public class AccountBalanceListener extends BankingPluginListener {
 	@EventHandler
 	@SuppressWarnings("unused")
 	public void onAccountInventoryClose(InventoryCloseEvent e) {
-
 		if (!(e.getPlayer() instanceof Player))
 			return;
-		if (e.getInventory().getType() != InventoryType.CHEST)
+		Player executor = (Player) e.getPlayer();
+
+		Location loc = e.getInventory().getLocation();
+		if (loc == null)
+			return;
+		Block b = loc.getBlock();
+		if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
 			return;
 
-		Chest chest = Utils.getChestHolding(e.getInventory());
-		if (chest == null)
+		Account account = accountRepo.getAt(b.getLocation());
+		if (account == null)
 			return;
-		ChestLocation loc = ChestLocation.from(chest);
 
-		Account account;
-		try {
-			account = accountRepo.getAt(loc);
-		} catch (AccountNotFoundException ex) {
-			return;
-		}
+		evaluateAccountTransaction(executor, account);
+	}
+
+	private void evaluateAccountTransaction(Player executor, Account account) {
 
 		BigDecimal valueOnClose = account.calculateBalance();
 		BigDecimal balance = account.getBalance();
@@ -62,7 +63,6 @@ public class AccountBalanceListener extends BankingPluginListener {
 		plugin.debugf("Appraised account balance: %s, diff: %s (#%d)",
 				Utils.format(valueOnClose), Utils.format(difference), account.getID());
 
-		Player executor = (Player) e.getPlayer();
 		executor.sendMessage(LangUtils.getMessage(difference.signum() > 0 ? Message.ACCOUNT_DEPOSIT : Message.ACCOUNT_WITHDRAWAL,
 				new Replacement(Placeholder.AMOUNT, difference::abs),
 				new Replacement(Placeholder.ACCOUNT_BALANCE, valueOnClose)
@@ -88,5 +88,6 @@ public class AccountBalanceListener extends BankingPluginListener {
 				account.getBalance(), balance, difference, System.currentTimeMillis()
 		));
 	}
+
 }
 

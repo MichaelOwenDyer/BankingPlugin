@@ -155,7 +155,7 @@ public class BankingPlugin extends JavaPlugin {
 
 		if (bankRepository != null)
 			for (Bank bank : bankRepository.getAll())
-				bankRepository.remove(bank, false);
+				bankRepository.remove(bank, false, null);
 
 		if (database != null) {
 			if (database instanceof SQLite)

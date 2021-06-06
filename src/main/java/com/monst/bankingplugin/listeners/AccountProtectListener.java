@@ -4,18 +4,21 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
-import com.monst.bankingplugin.exceptions.AccountNotFoundException;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.DoubleChestLocation;
 import com.monst.bankingplugin.geo.locations.SingleChestLocation;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,7 +28,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.Inventory;
 
 /**
  * This listener is intended to prevent all physical damage to {@link Account} chests,
@@ -44,40 +46,40 @@ public class AccountProtectListener extends BankingPluginListener {
 	 */
 	@EventHandler(ignoreCancelled = true)
 	public void onAccountChestBreak(BlockBreakEvent e) {
-		Chest c = Utils.getChestAt(e.getBlock());
-		if (c == null)
+		Block b = e.getBlock();
+		if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
 			return;
-		ChestLocation chestLocation = ChestLocation.from(c);
-		Account account = null;
-		try {
-			account = accountRepo.getAt(chestLocation);
-		} catch (AccountNotFoundException ex) {
+
+		Account account = accountRepo.getAt(b.getLocation());
+		if (account == null)
+			return;
+
+		Player p = e.getPlayer();
+		plugin.debugf("%s tries to break %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
+		if (!(p.isSneaking() && Utils.hasAxeInHand(p)) || (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER))) {
+			e.setCancelled(true);
+			e.getPlayer().sendMessage(LangUtils.getMessage(Message.CANNOT_BREAK_ACCOUNT));
 			return;
 		}
 
-		Player p = e.getPlayer();
-		if (p.isSneaking() && Utils.hasAxeInHand(p)) {
-			plugin.debugf("%s tries to break %s's account (#%d)",
-					p.getName(), account.getOwner().getName(), account.getID());
-			if (account.isOwner(p) || p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER)) {
-				removeAndCreateSmaller(account, e.getBlock(), p);
+		if (account.isDoubleChest()) {
+			AccountContractEvent event = new AccountContractEvent(p, account);
+			event.fire();
+			if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
+				e.setCancelled(true);
+				p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CONTRACT_PROTECTED));
+				return;
+			}
+		} else {
+			AccountRemoveEvent event = new AccountRemoveEvent(p, account);
+			event.fire();
+			if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
+				e.setCancelled(true);
+				p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED));
 				return;
 			}
 		}
-		e.setCancelled(true);
-		e.getPlayer().sendMessage(LangUtils.getMessage(Message.CANNOT_BREAK_ACCOUNT));
-	}
 
-	/**
-	 * Converts a large account chest to a small account chest by removing the account and creating
-	 * an identical small account in the remaining chest. Also removes accounts entirely when the
-	 * broken account was already a small chest.
-	 * @param account the account whose chest was broken
-	 * @param b the block where the account is located
-	 * @param p the player who broke the account chest
-	 */
-	@SuppressWarnings("ConstantConditions")
-	private void removeAndCreateSmaller(Account account, Block b, Player p) {
 		Bank bank = account.getBank();
 		if (bank.getReimburseAccountCreation().get() && account.isOwner(p) && !bank.isOwner(p)) {
 			double creationPrice = bank.getAccountCreationPrice().get();
@@ -96,21 +98,27 @@ public class AccountProtectListener extends BankingPluginListener {
 		}
 
 		if (account.isDoubleChest()) {
-			Chest chest = Utils.getChestAt(Utils.getAttachedChestBlock(b));
-			if (chest == null)
-				return;
-            Account newAccount = Account.clone(account);
-			newAccount.setChestLocation(SingleChestLocation.from(chest));
-
-			accountRepo.remove(account, false, Callback.of(result -> {
-				newAccount.create();
-				accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.LOCATION);
-			}));
+			DoubleChestLocation oldLoc = (DoubleChestLocation) account.getChestLocation();
+			SingleChestLocation newLoc = oldLoc.contract(BlockVector3D.fromLocation(b.getLocation()));
+			account.setChestLocation(newLoc);
+			accountRepo.update(account, account.callUpdateChestName(), AccountField.LOCATION);
 		} else {
 			accountRepo.remove(account, true);
 			plugin.debugf("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
 		}
+	}
+
+	/**
+	 * Converts a large account chest to a small account chest by removing the account and creating
+	 * an identical small account in the remaining chest. Also removes accounts entirely when the
+	 * broken account was already a small chest.
+	 * @param account the account whose chest was broken
+	 * @param b the block where the account is located
+	 * @param p the player who broke the account chest
+	 */
+	private void removeAndCreateSmaller(Account account, Block b, Player p) {
+
 	}
 
 	/**
@@ -127,24 +135,41 @@ public class AccountProtectListener extends BankingPluginListener {
         final Player p = e.getPlayer();
         final Block b = e.getBlockPlaced();
 
-		Block otherChest;
-        otherChest = Utils.getAttachedChestBlock(b);
-        if (otherChest == null)
-            return;
-
-        SingleChestLocation chest = SingleChestLocation.from(b.getWorld(), BlockVector3D.fromLocation(otherChest.getLocation()));
-		final Account account;
-		try {
-			account = accountRepo.getAt(chest);
-		} catch (AccountNotFoundException ex) {
+		if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
 			return;
+
+		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) b.getState().getBlockData();
+
+		if (data.getType() == org.bukkit.block.data.type.Chest.Type.SINGLE)
+			return;
+
+		BlockFace neighborFacing;
+		switch (data.getFacing()) {
+			case NORTH:
+				neighborFacing = data.getType() == org.bukkit.block.data.type.Chest.Type.LEFT ? BlockFace.EAST : BlockFace.WEST;
+				break;
+			case EAST:
+				neighborFacing = data.getType() == org.bukkit.block.data.type.Chest.Type.LEFT ? BlockFace.SOUTH : BlockFace.NORTH;
+				break;
+			case SOUTH:
+				neighborFacing = data.getType() == org.bukkit.block.data.type.Chest.Type.LEFT ? BlockFace.WEST : BlockFace.EAST;
+				break;
+			case WEST:
+				neighborFacing = data.getType() == org.bukkit.block.data.type.Chest.Type.LEFT ? BlockFace.NORTH : BlockFace.SOUTH;
+				break;
+			default:
+				return;
 		}
 
-		ChestLocation newChestLocation = chest.extend(BlockVector3D.fromLocation(b.getLocation()));
-		Bank bank;
-		try {
-			bank = newChestLocation.getBank();
-		} catch (BankNotFoundException ex) {
+        Block otherChest = b.getRelative(neighborFacing);
+        SingleChestLocation oldLoc = SingleChestLocation.of(b.getWorld(), BlockVector3D.fromLocation(otherChest.getLocation()));
+		Account account = accountRepo.getAt(oldLoc);
+		if (account == null)
+			return;
+
+		ChestLocation newLoc = oldLoc.extend(BlockVector3D.fromLocation(b.getLocation()));
+		Bank bank = newLoc.getBank();
+		if (bank == null) {
 			plugin.debugf("%s tried to extend %s's account (#%d), but new chest was not in a bank.",
 					p.getName(), account.getOwner().getName(), account.getID());
 			p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
@@ -154,7 +179,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 		plugin.debugf("%s tries to extend %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 
-		AccountExtendEvent event = new AccountExtendEvent(p, account, newChestLocation);
+		AccountExtendEvent event = new AccountExtendEvent(p, account, newLoc);
         event.fire();
 		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             e.setCancelled(true);
@@ -168,7 +193,7 @@ public class AccountProtectListener extends BankingPluginListener {
             return;
         }
 
-		if (newChestLocation.isBlocked()) {
+		if (newLoc.isBlocked()) {
             e.setCancelled(true);
 			p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             return;
@@ -204,20 +229,8 @@ public class AccountProtectListener extends BankingPluginListener {
 			}
 		}
 
-		Account newAccount = Account.clone(account);
-		newAccount.setChestLocation(newChestLocation);
-
-		accountRepo.remove(account, true, Callback.of(result -> {
-				if (newAccount.create()) {
-					accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.LOCATION);
-					plugin.debugf("%s extended %s's account (#%d)",
-							p.getName(), account.getOwner().getName(), account.getID());
-				} else
-					p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-							new Replacement(Placeholder.ERROR, "Failed to create account.")
-					));
-			})
-		);
+		account.setChestLocation(newLoc);
+		accountRepo.update(account, account.callUpdateChestName(), AccountField.LOCATION);
     }
 
 	/**
@@ -225,14 +238,12 @@ public class AccountProtectListener extends BankingPluginListener {
 	 */
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onAccountItemMove(InventoryMoveItemEvent e) {
-        if (!e.getInitiator().getType().equals(InventoryType.PLAYER)) {
-
-        	for (Inventory inv : new Inventory[] { e.getSource(), e.getDestination() }) {
-        		Chest chest = Utils.getChestHolding(inv);
-				if (chest != null && accountRepo.isAccount(ChestLocation.from(chest)))
-					e.setCancelled(true);
-			}
-        }
+        if (e.getInitiator().getType().equals(InventoryType.PLAYER))
+        	return;
+		if (accountRepo.isAccount(ChestLocation.from(e.getSource().getHolder())))
+			e.setCancelled(true);
+		else if (accountRepo.isAccount(ChestLocation.from(e.getDestination().getHolder())))
+			e.setCancelled(true);
     }
 
 	/**
@@ -242,16 +253,15 @@ public class AccountProtectListener extends BankingPluginListener {
 	public void onAccountItemClick(InventoryClickEvent e) {
 		if (!(e.getWhoClicked() instanceof Player))
 			return;
-		Chest chest = Utils.getChestHolding(e.getInventory());
-		if (chest == null)
+		Location invLoc = e.getInventory().getLocation();
+		if (invLoc == null)
 			return;
-		ChestLocation chestLocation = ChestLocation.from(chest);
-		Account account;
-		try {
-			account = accountRepo.getAt(chestLocation);
-		} catch (AccountNotFoundException ex) {
+		Block b = invLoc.getBlock();
+		if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
 			return;
-		}
+		Account account = accountRepo.getAt(b.getLocation());
+		if (account == null)
+			return;
 		Player executor = (Player) e.getWhoClicked();
 		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
 			executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EDIT_OTHER));

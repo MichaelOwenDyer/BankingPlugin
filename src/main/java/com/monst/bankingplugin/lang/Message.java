@@ -549,6 +549,10 @@ public enum Message {
             "A player attempts to remove someone else's account without permission.",
             "&cYou do not have permission to remove someone else's account."
     ),
+    NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED (
+            "A player attempts to remove a protected account without permission.",
+            "&cYou do not have permission to remove a protected account."
+    ),
     NO_PERMISSION_ACCOUNT_REMOVEALL (
             "A player attempts to remove multiple accounts at once without permission.",
             "&cYou do not have permission to remove all accounts."
@@ -600,6 +604,10 @@ public enum Message {
     NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED ( // TODO: Test
             "A player attempts to extend a protected account chest without permission.",
             "&cYou do not have permission to extend a protected account chest."
+    ),
+    NO_PERMISSION_ACCOUNT_CONTRACT_PROTECTED ( // TODO: Test
+            "A player attempts to contract a protected account chest without permission.",
+            "&cYou do not have permission to contract a protected account chest."
     ),
     NO_PERMISSION_ACCOUNT_SET (
             "A player attempts to set the multiplier, interest delay, etc. of an account without permission.",

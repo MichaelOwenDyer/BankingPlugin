@@ -13,6 +13,7 @@ import com.monst.bankingplugin.utils.ClickType.EClickType;
 import com.monst.bankingplugin.utils.ClickType.SetPair;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -32,19 +33,19 @@ public class AccountInteractListener extends BankingPluginListener {
 	}
 
 	/**
-	 * Checks every inventory interact event for an account action attempt, and
+	 * Checks every block interact event for an account action attempt, and
 	 * handles the action.
 	 */
-	@SuppressWarnings({"deprecation","unused"})
+	@SuppressWarnings({"unused"})
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onAccountInteract(PlayerInteractEvent e) {
 
 		Block b = e.getClickedBlock();
 		if (b == null)
 			return;
-		Chest chest = Utils.getChestAt(b);
-		if (chest == null)
+		if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
 			return;
+		Chest chest = (Chest) b.getState();
 
 		Player p = e.getPlayer();
 		Account account = accountRepo.getAt(b.getLocation());

@@ -29,12 +29,12 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
 
     @Override
     ItemStack createSlotItem(int slot) {
-        return guiSubject.getInventory(false).getItem(slot);
+        return guiSubject.getInventoryHolder(false).getInventory().getItem(slot);
     }
 
     @Override
     Slot.ClickHandler createClickHandler(int slot) {
-        ItemStack item = guiSubject.getInventory(false).getItem(slot);
+        ItemStack item = guiSubject.getInventoryHolder(false).getInventory().getItem(slot);
         if (item != null && item.getItemMeta() instanceof BlockStateMeta) {
             BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
             if (im.getBlockState() instanceof ShulkerBox) {

@@ -34,4 +34,5 @@ public class AccountMigrateEvent extends SingleAccountEvent implements Cancellab
     public void setCancelled(boolean cancel) {
         cancelled = cancel;
     }
+
 }

@@ -23,7 +23,7 @@ public abstract class Observable {
         if (!BankingPlugin.getInstance().isEnabled())
             return;
         if (cooldown) {
-            BankingPlugin.getInstance().debug(new IllegalStateException("GUIs were updated too quickly in succession!"));
+            BankingPlugin.getInstance().debug("GUIs were updated too quickly in succession!");
             return;
         }
         Utils.runTaskLater(() -> cooldown = false, 1);

@@ -9,7 +9,7 @@ import java.util.Objects;
 
 public class DoubleChestLocation extends ChestLocation {
 
-    public static DoubleChestLocation from(World world, BlockVector3D v1, BlockVector3D v2) {
+    public static DoubleChestLocation of(World world, BlockVector3D v1, BlockVector3D v2) {
         if (!v1.isAdjacent(v2))
             throw new IllegalArgumentException("Blocks must be adjacent!");
         return new DoubleChestLocation(world, v1, v2);
@@ -44,8 +44,12 @@ public class DoubleChestLocation extends ChestLocation {
         return new Location[] { v1.toLocation(world), v2.toLocation(world) };
     }
 
-    public SingleChestLocation contract(BlockVector3D v1) {
-        return new SingleChestLocation(world, v1);
+    public SingleChestLocation contract(BlockVector3D without) {
+        if (Objects.equals(v1, without))
+            return new SingleChestLocation(world, v2);
+        if (Objects.equals(v2, without))
+            return new SingleChestLocation(world, v1);
+        return null;
     }
 
     @Override

@@ -8,11 +8,11 @@ public class NotFoundException extends Exception {
         super();
     }
     public NotFoundException(String type, Block b) {
-        super(String.format("No " + type + " found in world \"%s\" at location: %d, %d, %d",
-                b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
+        super(String.format("No %s found in world \"%s\" at location: %d, %d, %d",
+                type, b.getWorld().getName(), b.getX(), b.getY(), b.getZ()));
     }
     public NotFoundException(String type, ChestLocation loc) {
-        super(String.format("No " + type + " found in world \"%s\" at location: ",
-                loc.getWorld().getName(), loc.toString()));
+        super(String.format("No %s found in world \"%s\" at location: %s",
+                type, loc.getWorld().getName(), loc));
     }
 }

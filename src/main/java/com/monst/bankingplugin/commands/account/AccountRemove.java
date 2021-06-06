@@ -90,8 +90,9 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
 
         AccountRemoveEvent event = new AccountRemoveEvent(p, account);
         event.fire();
-        if (event.isCancelled()) {
+        if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
             PLUGIN.debug("Remove event cancelled (#" + account.getID() + ")");
+            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED));
             return;
         }
 

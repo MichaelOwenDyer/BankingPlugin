@@ -5,15 +5,17 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
-import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.PayrollOffice;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 
 public class AccountCreate extends AccountCommand.SubCommand {
 
@@ -70,7 +72,8 @@ public class AccountCreate extends AccountCommand.SubCommand {
      * @param c  Chest where the account will be located
      */
     public static void create(Player p, Chest c) {
-        ChestLocation chestLocation = ChestLocation.from(c);
+        InventoryHolder ih = c.getInventory().getHolder();
+        ChestLocation chestLocation = ChestLocation.from(ih);
 
         if (PLUGIN.getAccountRepository().isAccount(chestLocation)) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
@@ -78,18 +81,14 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return;
         }
 
-        try {
-            chestLocation.checkSpaceAbove();
-        } catch (ChestBlockedException e) {
+        if (chestLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             PLUGIN.debug("Chest is blocked.");
             return;
         }
 
-        Bank bank;
-        try {
-            bank = chestLocation.getBank();
-        } catch (BankNotFoundException e) {
+        Bank bank = chestLocation.getBank();
+        if (bank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             PLUGIN.debug("Chest is not in a bank.");
             return;

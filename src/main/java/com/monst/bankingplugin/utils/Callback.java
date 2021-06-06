@@ -49,12 +49,19 @@ public abstract class Callback<T> {
 
     public static <T> void yield(Callback<T> callback, T result) {
         if (callback != null)
-            callback.onResult(result);
+            Utils.bukkitRunnable(() -> callback.onResult(result)).runTask(PLUGIN);
     }
 
     public static void error(Callback<?> callback, Throwable error) {
         if (callback != null)
-            callback.onError(error);
+            Utils.bukkitRunnable(() -> callback.onError(error)).runTask(PLUGIN);
+    }
+
+    public Callback<T> andThen(Consumer<T> nextAction) {
+        return of(result -> {
+            onResult(result);
+            nextAction.accept(result);
+        }, this::onError);
     }
 
 }

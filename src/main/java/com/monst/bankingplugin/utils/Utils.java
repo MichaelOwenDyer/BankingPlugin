@@ -8,13 +8,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
-import org.bukkit.block.data.type.Chest.Type;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -223,50 +220,9 @@ public class Utils {
 		return stackedList;
 	}
 
-	public static Block getAttachedChestBlock(Block b) {
-
-		getChestAt(b);
-
-		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) b.getState().getBlockData();
-
-		if (data.getType() == Type.SINGLE)
-			return null;
-
-		BlockFace neighborFacing;
-		switch (data.getFacing()) {
-			case NORTH:
-				neighborFacing = data.getType() == Type.LEFT ? BlockFace.EAST : BlockFace.WEST;
-				break;
-			case EAST:
-				neighborFacing = data.getType() == Type.LEFT ? BlockFace.SOUTH : BlockFace.NORTH;
-				break;
-			case SOUTH:
-				neighborFacing = data.getType() == Type.LEFT ? BlockFace.WEST : BlockFace.EAST;
-				break;
-			case WEST:
-				neighborFacing = data.getType() == Type.LEFT ? BlockFace.NORTH : BlockFace.SOUTH;
-				break;
-			default:
-				return null;
-		}
-
-		return b.getRelative(neighborFacing);
-	}
-
 	public static Chest getChestAt(Block b) {
 		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST)
 			return ((Chest) b.getState());
-		return null;
-	}
-
-	public static Chest getChestHolding(Inventory inv) {
-		if (inv.getType() != InventoryType.CHEST)
-			return null;
-		InventoryHolder ih = inv.getHolder();
-		if (ih instanceof Chest)
-			return (Chest) ih;
-		if (ih instanceof DoubleChest)
-			return (Chest) ((DoubleChest) ih).getLeftSide();
 		return null;
 	}
 

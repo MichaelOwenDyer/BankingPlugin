@@ -4,8 +4,6 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
-import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.gui.AccountRecoveryGUI;
 import com.monst.bankingplugin.lang.LangUtils;
@@ -47,33 +45,28 @@ public class AccountRecover extends AccountCommand.SubCommand {
     }
 
     public static void recover(Player p, Chest c, Account toRecover) {
-
-        ChestLocation chestLocation = ChestLocation.from(c);
+        ChestLocation chestLocation = ChestLocation.from(c.getInventory().getHolder());
         if (accountRepo.isAccount(chestLocation)) {
             PLUGIN.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             return;
         }
 
-        try {
-            chestLocation.checkSpaceAbove();
-        } catch (ChestBlockedException e) {
+        if (chestLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             PLUGIN.debug("Chest is blocked.");
             return;
         }
 
-        Bank newBank;
-        try {
-            newBank = chestLocation.getBank();
-        } catch (BankNotFoundException e) {
+        Bank bank = chestLocation.getBank();
+        if (bank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             PLUGIN.debug("Chest is not in a bank.");
             return;
         }
 
         Account newAccount = Account.clone(toRecover);
-        newAccount.setBank(newBank);
+        newAccount.setBank(bank);
         newAccount.setChestLocation(chestLocation);
 
         AccountRecoverEvent event = new AccountRecoverEvent(p, newAccount, chestLocation);

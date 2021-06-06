@@ -4,14 +4,13 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.AccountNotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.QuickMath;
 import org.bukkit.Location;
 import org.bukkit.block.ShulkerBox;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
@@ -28,7 +27,6 @@ public class AccountRepository extends Observable implements Repository<Account,
         this.plugin = plugin;
     }
 
-    @Deprecated
     public boolean isAccount(Location location) {
     	for (ChestLocation chest : accountLocationMap.keySet())
     		if (chest.contains(location))
@@ -42,12 +40,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 	 * @return Whether there is a account at the given location
 	 */
 	public boolean isAccount(ChestLocation chest) {
-		try {
-			getAt(chest);
-			return true;
-		} catch (AccountNotFoundException e) {
-			return false;
-		}
+		return getAt(chest) != null;
 	}
 
 	/**
@@ -61,7 +54,6 @@ public class AccountRepository extends Observable implements Repository<Account,
 		return new HashSet<>(accountLocationMap.values());
 	}
 
-	@Deprecated
 	public Account getAt(Location location) {
 		for (Map.Entry<ChestLocation, Account> entry : accountLocationMap.entrySet())
 			if (entry.getKey().contains(location))
@@ -76,11 +68,10 @@ public class AccountRepository extends Observable implements Repository<Account,
      * @return Account at the given location or <b>null</b> if no account is found there
      */
     @Override
-	public Account getAt(ChestLocation location) throws AccountNotFoundException {
-    	Account account;
-		if (location == null || (account = accountLocationMap.get(location)) == null)
-			throw new AccountNotFoundException(location);
-		return account;
+	public Account getAt(ChestLocation location) {
+    	if (location == null)
+    		return null;
+    	return accountLocationMap.get(location);
     }
 
 	/**
@@ -91,8 +82,8 @@ public class AccountRepository extends Observable implements Repository<Account,
      */
 	@Override
     public void add(Account account, boolean addToDatabase, Callback<Integer> callback) {
-    	Inventory inv = account.getInventory(true);
-    	if (inv == null) {
+    	InventoryHolder ih = account.getInventoryHolder(true);
+    	if (ih == null) {
     		plugin.debugf("Could not add account #%d because its inventory could not be found!", account.getID());
 			return;
 		}

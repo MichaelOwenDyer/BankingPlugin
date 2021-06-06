@@ -33,7 +33,7 @@ public enum BankField implements BankingEntityField<Bank> {
     MIN_Z ("MinZ", b -> b.getSelection().getMinZ()),
     MAX_Z ("MaxZ", b -> b.getSelection().getMaxZ()),
     VERTICES("PolygonVertices", b -> b.getSelection().getVertices()),
-    SELECTION ("", Bank::getSelection); // Meant as a placeholder for the previous 7
+    SELECTION ("", null); // Meant as a placeholder for the previous 7
 
     private static final BankField[] VALUES = values();
     private static final BankField[] CONFIGURABLE = stream().filter(f -> f.getter == null).toArray(BankField[]::new);

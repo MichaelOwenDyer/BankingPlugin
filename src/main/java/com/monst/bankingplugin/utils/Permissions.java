@@ -10,12 +10,13 @@ public class Permissions {
 	public static final String ACCOUNT_CREATE_PROTECTED = "bankingplugin.account.create.protected";
 	public static final String ACCOUNT_TRUST = "bankingplugin.account.trust";
 	public static final String ACCOUNT_TRUST_OTHER = "bankingplugin.account.trust.other";
-	public static final String ACCOUNT_REMOVE_OTHER = "bankingplugin.account.remove-other";
+	public static final String ACCOUNT_REMOVE_OTHER = "bankingplugin.account.remove.other";
+	public static final String ACCOUNT_REMOVE_PROTECTED = "bankingplugin.account.remove.protected";
 	public static final String ACCOUNT_REMOVEALL = "bankingplugin.account.removeall";
-	public static final String ACCOUNT_INFO_OTHER = "bankingplugin.account.info-other";
-	public static final String ACCOUNT_LIST_OTHER = "bankingplugin.account.list-other";
-	public static final String ACCOUNT_VIEW_OTHER = "bankingplugin.account.view-other";
-	public static final String ACCOUNT_EDIT_OTHER = "bankingplugin.account.edit-other";
+	public static final String ACCOUNT_INFO_OTHER = "bankingplugin.account.info.other";
+	public static final String ACCOUNT_LIST_OTHER = "bankingplugin.account.list.other";
+	public static final String ACCOUNT_VIEW_OTHER = "bankingplugin.account.view.other";
+	public static final String ACCOUNT_EDIT_OTHER = "bankingplugin.account.edit.other";
 	public static final String ACCOUNT_MIGRATE = "bankingplugin.account.migrate";
 	public static final String ACCOUNT_MIGRATE_OTHER = "bankingplugin.account.migrate.other";
 	public static final String ACCOUNT_MIGRATE_BANK = "bankingplugin.account.migrate.bank";
@@ -25,7 +26,7 @@ public class Permissions {
 	public static final String ACCOUNT_SET = "bankingplugin.account.set";
 	public static final String ACCOUNT_TRANSFER = "bankingplugin.account.transfer";
 	public static final String ACCOUNT_TRANSFER_OTHER = "bankingplugin.account.transfer.other";
-	public static final String ACCOUNT_EXTEND_OTHER = "bankingplugin.account.extend-other";
+	public static final String ACCOUNT_EXTEND_OTHER = "bankingplugin.account.extend.other";
 	public static final String ACCOUNT_NO_LIMIT = "bankingplugin.account.limit.*";
 
 	public static final String BANK_CREATE = "bankingplugin.bank.create";
@@ -52,7 +53,7 @@ public class Permissions {
 	public static final String CONFIG = "bankingplugin.config";
 	public static final String RELOAD = "bankingplugin.reload";
 	public static final String UPDATE = "bankingplugin.update";
-	public static final String PAY_INTEREST = "bankingplugin.pay-interest";
+	public static final String PAY_INTEREST = "bankingplugin.payinterest";
 
 	public static boolean hasAny(Player player, String... permissions) {
 		return Arrays.stream(permissions).anyMatch(player::hasPermission);

@@ -3,17 +3,12 @@ package com.monst.bankingplugin.geo.locations;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.Chest;
 
 import java.util.Objects;
 
 public class SingleChestLocation extends ChestLocation {
 
-    public static SingleChestLocation from(Chest c) {
-        return new SingleChestLocation(c.getWorld(), BlockVector3D.fromLocation(c.getLocation()));
-    }
-
-    public static SingleChestLocation from(World world, BlockVector3D v1) {
+    public static SingleChestLocation of(World world, BlockVector3D v1) {
         return new SingleChestLocation(world, v1);
     }
 
@@ -32,7 +27,7 @@ public class SingleChestLocation extends ChestLocation {
     }
 
     public DoubleChestLocation extend(BlockVector3D v2) {
-        return DoubleChestLocation.from(world, v1, v2);
+        return new DoubleChestLocation(world, v1, v2);
     }
 
     @Override

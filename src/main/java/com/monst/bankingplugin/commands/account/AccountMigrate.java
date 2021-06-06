@@ -5,9 +5,6 @@ import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
-import com.monst.bankingplugin.exceptions.AccountNotFoundException;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
-import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.Callback;
@@ -17,6 +14,7 @@ import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 
 import java.util.Objects;
 
@@ -80,9 +78,11 @@ public class AccountMigrate extends AccountCommand.SubCommand {
     }
 
     public static void migratePartTwo(Player p, Chest c, Account toMigrate) {
-        ChestLocation chestLocation = ChestLocation.from(c);
-        try {
-            if (Objects.equals(toMigrate, accountRepo.getAt(chestLocation))) {
+        InventoryHolder ih = c.getInventory().getHolder();
+        ChestLocation chestLocation = ChestLocation.from(ih);
+        Account clickedAccount = accountRepo.getAt(chestLocation);
+        if (clickedAccount != null) {
+            if (Objects.equals(toMigrate, clickedAccount)) {
                 PLUGIN.debugf("%s clicked the same chest to migrate to.", p.getName());
                 p.sendMessage(LangUtils.getMessage(Message.SAME_CHEST));
             } else {
@@ -90,20 +90,16 @@ public class AccountMigrate extends AccountCommand.SubCommand {
                 p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             }
             return;
-        } catch (AccountNotFoundException ignored) {}
+        }
 
-        try {
-            chestLocation.checkSpaceAbove();
-        } catch (ChestBlockedException e) {
+        if (chestLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             PLUGIN.debug("Chest is blocked.");
             return;
         }
 
-        Bank newBank;
-        try {
-            newBank = chestLocation.getBank();
-        } catch (BankNotFoundException e) {
+        Bank newBank = chestLocation.getBank();
+        if (newBank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             PLUGIN.debug("Chest is not in a bank.");
             return;
