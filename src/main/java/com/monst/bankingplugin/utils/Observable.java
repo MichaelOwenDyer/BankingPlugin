@@ -20,14 +20,13 @@ public abstract class Observable {
     }
 
     public void notifyObservers() {
-        BankingPlugin plugin = BankingPlugin.getInstance();
-        if (!plugin.isEnabled())
+        if (!BankingPlugin.getInstance().isEnabled())
             return;
         if (cooldown) {
-            plugin.debug(new IllegalStateException("GUIs were updated too quickly in succession!"));
+            BankingPlugin.getInstance().debug(new IllegalStateException("GUIs were updated too quickly in succession!"));
             return;
         }
-        BankingPlugin.runTaskLater(() -> cooldown = false, 1);
+        Utils.runTaskLater(() -> cooldown = false, 1);
         observers.forEach(GUI::update);
         cooldown = true;
     }

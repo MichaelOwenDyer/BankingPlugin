@@ -49,12 +49,12 @@ public abstract class Callback<T> {
 
     public static <T> void yield(Callback<T> callback, T result) {
         if (callback != null)
-            BankingPlugin.runTask(() -> callback.onResult(result));
+            callback.onResult(result);
     }
 
     public static void error(Callback<?> callback, Throwable error) {
         if (callback != null)
-            BankingPlugin.runTask(() -> callback.onError(error));
+            callback.onError(error);
     }
 
 }

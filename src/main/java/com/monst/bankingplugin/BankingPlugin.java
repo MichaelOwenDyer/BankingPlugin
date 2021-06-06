@@ -28,7 +28,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
@@ -54,8 +53,6 @@ public class BankingPlugin extends JavaPlugin {
 
 	private AccountRepository accountRepository;
 	private BankRepository bankRepository;
-
-	private InterestEventScheduler scheduler;
 
 	private boolean isUpdateNeeded = false;
 	private String latestVersion = "";
@@ -140,7 +137,6 @@ public class BankingPlugin extends JavaPlugin {
 		initializeRepositories();
 		getLanguageConfig().reload();
 		loadExternalPlugins();
-		initializeScheduler();
 		initializeCommands();
 		// checkForUpdates();
 		initializeDatabase();
@@ -215,10 +211,6 @@ public class BankingPlugin extends JavaPlugin {
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
 
-    private void initializeScheduler() {
-		scheduler = new InterestEventScheduler(this);
-	}
-
     private void enableMetrics() {
 		debug("Initializing metrics...");
 
@@ -263,7 +255,7 @@ public class BankingPlugin extends JavaPlugin {
             return;
         }
 
-        runTaskAsynchronously(() -> {
+        Utils.bukkitRunnable(() -> {
 			UpdateChecker uc = new UpdateChecker(BankingPlugin.this);
 			Result result = uc.check();
 
@@ -290,7 +282,7 @@ public class BankingPlugin extends JavaPlugin {
 					getLogger().severe("An error occurred while checking for updates.");
 					break;
 			}
-        });
+        }).runTaskAsynchronously(this);
     }
 
 	/**
@@ -329,21 +321,20 @@ public class BankingPlugin extends JavaPlugin {
 	 * Initializes all banks and accounts stored in the {@link Database}.
 	 */
 	private void loadBanksAndAccounts() {
-		reload(
-				Callback.of(result -> {
-                	Set<Bank> banks = result.getBanks();
-					Set<Account> accounts = result.getAccounts();
+		reload(Callback.of(result -> {
+				Set<Bank> banks = result.getBanks();
+				Set<Account> accounts = result.getAccounts();
 
-					new BankInitializedEvent(banks).fire();
-					new AccountInitializedEvent(accounts).fire();
+				new BankInitializedEvent(banks).fire();
+				new AccountInitializedEvent(accounts).fire();
 
-					String message = String.format("Initialized %d bank%s and %d account%s.",
-							banks.size(), banks.size() == 1 ? "" : "s",
-							accounts.size(), accounts.size() == 1 ? "" : "s");
+				String message = String.format("Initialized %d bank%s and %d account%s.",
+						banks.size(), banks.size() == 1 ? "" : "s",
+						accounts.size(), accounts.size() == 1 ? "" : "s");
 
-					getLogger().info(message);
-					debug(message);
-				})
+				getLogger().info(message);
+				debug(message);
+			})
 		);
 	}
 
@@ -390,7 +381,7 @@ public class BankingPlugin extends JavaPlugin {
 									debugf("Number of accounts before load was %d and is now %d.",
 											accountsBeforeReload.size(), reloadedAccounts.size());
 
-								scheduler.scheduleAll();
+								InterestEventScheduler.scheduleAll();
 								Callback.yield(callback, new ReloadResult(reloadedBanks, reloadedAccounts));
 							},
 							error -> Callback.error(callback, error)
@@ -489,13 +480,6 @@ public class BankingPlugin extends JavaPlugin {
 	}
 
 	/**
-	 * @return the instance of {@link InterestEventScheduler}
-	 */
-	public InterestEventScheduler getScheduler() {
-		return scheduler;
-	}
-
-	/**
 	 * @return BankingPlugin's {@link Config}
 	 */
 	public Config getPluginConfig() {
@@ -578,18 +562,6 @@ public class BankingPlugin extends JavaPlugin {
 
 	public Reader getTextResourceMirror(String file) {
 		return super.getTextResource(file);
-	}
-
-	public static BukkitTask runTask(Runnable runnable) {
-		return Utils.bukkitRunnable(runnable).runTask(getInstance());
-	}
-
-	public static BukkitTask runTaskLater(Runnable runnable, long delay) {
-		return Utils.bukkitRunnable(runnable).runTaskLater(getInstance(), delay);
-	}
-
-	public static BukkitTask runTaskAsynchronously(Runnable runnable) {
-		return Utils.bukkitRunnable(runnable).runTaskAsynchronously(getInstance());
 	}
 
 }

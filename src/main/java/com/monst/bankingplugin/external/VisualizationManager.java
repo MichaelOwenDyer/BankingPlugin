@@ -4,7 +4,9 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
-import com.monst.bankingplugin.geo.selections.*;
+import com.monst.bankingplugin.geo.selections.CuboidSelection;
+import com.monst.bankingplugin.geo.selections.PolygonalSelection;
+import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -37,12 +39,12 @@ public class VisualizationManager {
     }
 
     private static void visualize(Player p, Collection<Selection> selections, VisualizationType type) {
-        BankingPlugin.runTaskAsynchronously(() -> {
+        Utils.bukkitRunnable(() -> {
             Visualization visualization = new Visualization();
             for (Selection sel : selections)
                 visualization.elements.addAll(getSelectionElements(sel, p.getLocation(), type));
             Visualization.Apply(p, visualization);
-        });
+        }).runTaskAsynchronously(BankingPlugin.getInstance());
     }
 
     private static List<VisualizationElement> getSelectionElements(Selection sel, Location playerLoc, VisualizationType type) {

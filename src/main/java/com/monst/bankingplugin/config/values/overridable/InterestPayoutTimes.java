@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values.overridable;
 
 import com.monst.bankingplugin.exceptions.LocalTimeParseException;
+import com.monst.bankingplugin.utils.InterestEventScheduler;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -20,7 +21,7 @@ public class InterestPayoutTimes extends OverridableSet<LocalTime> {
     @Override
     protected void afterSet2(Set<LocalTime> newValue) {
         if (PLUGIN.isEnabled())
-            PLUGIN.getScheduler().scheduleAll();
+            InterestEventScheduler.scheduleAll();
     }
 
     @Override

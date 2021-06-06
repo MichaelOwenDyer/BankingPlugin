@@ -9,7 +9,6 @@ import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.QuickMath;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.inventory.Inventory;
@@ -209,7 +208,8 @@ public class AccountRepository extends Observable implements Repository<Account,
 	}
 
 	private BigDecimal getWorth(ItemStack item) {
-		return Utils.nonNull(plugin.getEssentials().getWorth().getPrice(plugin.getEssentials(), item), BigDecimal.ZERO);
+    	BigDecimal worth = plugin.getEssentials().getWorth().getPrice(plugin.getEssentials(), item);
+		return worth != null ? worth : BigDecimal.ZERO;
 	}
 
 }

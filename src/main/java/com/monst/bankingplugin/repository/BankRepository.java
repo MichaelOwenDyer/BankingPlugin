@@ -6,6 +6,7 @@ import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
@@ -75,7 +76,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 		plugin.debug("Adding/updating bank... (#" + bank.getID() + ")");
 
 		bankSelectionMap.put(bank.getSelection(), bank);
-		plugin.getScheduler().schedulePayouts(bank);
+		InterestEventScheduler.scheduleAll(bank);
 
         if (addToDatabase)
 			plugin.getDatabase().addBank(bank, callback);
@@ -127,7 +128,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 		bankSelectionMap.remove(bank.getSelection());
 		plugin.getBankRepository().notifyObservers();
 
-		plugin.getScheduler().unschedulePayouts(bank);
+		InterestEventScheduler.unscheduleAll(bank);
 
         if (removeFromDatabase)
 			plugin.getDatabase().removeBank(bank, callback);

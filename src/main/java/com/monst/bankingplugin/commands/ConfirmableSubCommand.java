@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Confirmable;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -27,7 +27,7 @@ public interface ConfirmableSubCommand extends Confirmable<String[]> {
 		UUID uuid = p.getUniqueId();
 		unconfirmedCommands.put(uuid, args);
 		Optional.ofNullable(confirmationTimers.get(uuid)).ifPresent(BukkitTask::cancel);
-		confirmationTimers.put(uuid, BankingPlugin.runTaskLater(() -> unconfirmedCommands.remove(uuid), 300));
+		confirmationTimers.put(uuid, Utils.runTaskLater(() -> unconfirmedCommands.remove(uuid), 300));
 	}
 
 	@Override

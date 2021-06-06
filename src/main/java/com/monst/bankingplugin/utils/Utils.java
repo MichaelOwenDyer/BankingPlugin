@@ -19,6 +19,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -180,6 +181,10 @@ public class Utils {
 				runnable.run();
 			}
 		};
+	}
+
+	public static BukkitTask runTaskLater(Runnable runnable, long delay) {
+		return Utils.bukkitRunnable(runnable).runTaskLater(BankingPlugin.getInstance(), delay);
 	}
 
 	@Nonnull
