@@ -15,7 +15,7 @@ public class OverriddenValue<T> {
         this.customValue = customValue;
     }
 
-    public T getNullable() {
+    public T getCustomValue() {
         return customValue;
     }
 
@@ -23,15 +23,13 @@ public class OverriddenValue<T> {
         return get(false);
     }
 
-    public T get(boolean ignoreNonOverridable) {
+    private T get(boolean ignoreNonOverridable) {
         if (customValue == null) {
             if (Config.stubbornBanks.get())
                 return customValue = configValue.getDefault();
             return configValue.getDefault();
         }
-        if (ignoreNonOverridable)
-            return customValue;
-        return configValue.isOverridable() ? customValue : configValue.getDefault();
+        return (configValue.isOverridable() | ignoreNonOverridable) ? customValue : configValue.getDefault();
     }
 
     public String getFormatted() {

@@ -6,6 +6,8 @@ import com.monst.bankingplugin.banking.account.AccountField;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.IntegerParseException;
+import com.monst.bankingplugin.exceptions.LocalTimeParseException;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
@@ -40,7 +42,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -491,20 +492,22 @@ public abstract class Database {
 			Integer offlineMultiplierDecrement = values.getNextInteger();
 			Integer withdrawalMultiplierDecrement = values.getNextInteger();
 			Integer playerBankAccountLimit = values.getNextInteger();
-			List<Integer> multipliers;
-			try {
-				String multiplierList = Optional.ofNullable(values.getNextString()).orElse("");
-				multipliers = Arrays.stream(multiplierList.split("\\s*,\\s*")).map(Integer::parseInt).collect(Collectors.toList());
-			} catch (NumberFormatException e) {
+
+			List<Integer> multipliers = new ArrayList<>();
+			String multiplierList = Optional.ofNullable(values.getNextString()).map(s -> s.replaceAll("[\\[\\]]", "")).orElse("");
+			for (String s : multiplierList.split("\\s*(,|\\s)\\s*"))
+				try {
+					multipliers.add(Config.multipliers.parseSingle(s));
+				} catch (IntegerParseException ignored) {}
+			if (multipliers.isEmpty())
 				multipliers = Config.multipliers.getDefault();
-			}
-			Set<LocalTime> interestPayoutTimes;
-			try {
-				String payoutTimesList = Optional.ofNullable(values.getNextString()).orElse("");
-				interestPayoutTimes = Arrays.stream(payoutTimesList.split("\\s*,\\s*")).map(LocalTime::parse).collect(Collectors.toCollection(LinkedHashSet::new));
-			} catch (DateTimeParseException e) {
-				interestPayoutTimes = Config.interestPayoutTimes.getDefault();
-			}
+
+			Set<LocalTime> interestPayoutTimes = new LinkedHashSet<>();
+			String payoutTimesList = Optional.ofNullable(values.getNextString()).map(s -> s.replaceAll("[\\[\\]]", "")).orElse("");
+			for (String s : payoutTimesList.split("\\s*(,|\\s)\\s*"))
+				try {
+					interestPayoutTimes.add(Config.interestPayoutTimes.parseSingle(s));
+				} catch (LocalTimeParseException ignored) {}
 
 			String worldName = values.getNextString();
 			World world = Bukkit.getWorld(worldName);
@@ -1132,21 +1135,21 @@ public abstract class Database {
 				bank.getID(),
 				bank.getRawName(),
 				bank.getOwnerUUID(),
-				bank.getCountInterestDelayOffline().getNullable(),
-				bank.getReimburseAccountCreation().getNullable(),
-				bank.getPayOnLowBalance().getNullable(),
-				bank.getInterestRate().getNullable(),
-				bank.getAccountCreationPrice().getNullable(),
-				bank.getMinimumBalance().getNullable(),
-				bank.getLowBalanceFee().getNullable(),
-				bank.getInitialInterestDelay().getNullable(),
-				bank.getAllowedOfflinePayouts().getNullable(),
-				bank.getAllowedOfflinePayoutsBeforeReset().getNullable(),
-				bank.getOfflineMultiplierDecrement().getNullable(),
-				bank.getWithdrawalMultiplierDecrement().getNullable(),
-				bank.getPlayerBankAccountLimit().getNullable(),
-				bank.getMultipliers().getNullable(),
-				bank.getInterestPayoutTimes().getNullable(),
+				bank.getCountInterestDelayOffline().getCustomValue(),
+				bank.getReimburseAccountCreation().getCustomValue(),
+				bank.getPayOnLowBalance().getCustomValue(),
+				bank.getInterestRate().getCustomValue(),
+				bank.getAccountCreationPrice().getCustomValue(),
+				bank.getMinimumBalance().getCustomValue(),
+				bank.getLowBalanceFee().getCustomValue(),
+				bank.getInitialInterestDelay().getCustomValue(),
+				bank.getAllowedOfflinePayouts().getCustomValue(),
+				bank.getAllowedOfflinePayoutsBeforeReset().getCustomValue(),
+				bank.getOfflineMultiplierDecrement().getCustomValue(),
+				bank.getWithdrawalMultiplierDecrement().getCustomValue(),
+				bank.getPlayerBankAccountLimit().getCustomValue(),
+				bank.getMultipliers().getCustomValue(),
+				bank.getInterestPayoutTimes().getCustomValue(),
 				sel.getWorld().getName(),
 				sel.getMinX(),
 				sel.getMaxX(),

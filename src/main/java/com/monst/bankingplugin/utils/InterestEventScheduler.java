@@ -49,7 +49,7 @@ public class InterestEventScheduler {
     public static void scheduleAll(Bank bank) {
         if (!PLUGIN.isEnabled() || bank == null)
             return;
-        PLUGIN.debugf("Scheduling interest payments of bank #%d", bank.getID());
+        PLUGIN.debugf("Scheduling interest payments of bank #%d.", bank.getID());
 
         Set<LocalTime> bankPayoutTimes = bank.getInterestPayoutTimes().get(); // Get times at which bank pays out
         BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>()); // Ensure the bank has a time set
@@ -71,7 +71,7 @@ public class InterestEventScheduler {
 
         Set<LocalTime> emptyTimes = new HashSet<>(); // Times at which no bank has a payout anymore
         for (LocalTime time : removedTimes) {
-            PLUGIN.debugf("Bank #%d no longer has an interest payment scheduled at %s.");
+            PLUGIN.debugf("Bank #%d no longer has an interest payment scheduled at %s.", bank.getID(), time.toString());
             Set<Bank> set = TIME_BANK_MAP.get(time); // See which banks are scheduled at this time
             set.remove(bank); // This bank no longer pays out at this time; remove it from the set
             if (set.isEmpty()) // Bank set is empty; time is no longer used by any bank
@@ -93,7 +93,7 @@ public class InterestEventScheduler {
     public static void unscheduleAll(Bank bank) {
         if (bank == null)
             return;
-        PLUGIN.debugf("Unscheduling interest payments of bank #%d", bank.getID());
+        PLUGIN.debugf("Unscheduling interest payments of bank #%d.", bank.getID());
 
         BANK_TIME_MAP.remove(bank);
         Set<LocalTime> emptyTimes = new HashSet<>();
@@ -134,7 +134,7 @@ public class InterestEventScheduler {
         // Schedule task starting at next instance, repeating daily, where an InterestEvent is fired with the scheduled banks
         int id = Bukkit.getScheduler()
                 .scheduleSyncRepeatingTask(PLUGIN, new InterestEvent(getScheduledBanks(time))::fire, ticks, ticksInADay);
-        PLUGIN.debug((id != -1 ? "Scheduled " : "Failed to schedule ") + "daily interest payout at " + time);
+        PLUGIN.debugf((id != -1 ? "Scheduled" : "Failed to schedule") + " interest payment at %s.", time.toString());
         return id;
     }
 
@@ -145,9 +145,9 @@ public class InterestEventScheduler {
     private static void unscheduleRepeatingPayment(LocalTime time) {
         if (!PAYOUT_TASK_IDS.containsKey(time))
             return;
-        PLUGIN.debugf("Unscheduling interest payment at %s.", time.toString());
         Bukkit.getScheduler().cancelTask(PAYOUT_TASK_IDS.get(time));
         PAYOUT_TASK_IDS.remove(time);
+        PLUGIN.debugf("Unscheduled interest payment at %s.", time.toString());
     }
 
     /**

@@ -22,11 +22,6 @@ public class InterestRate extends OverridableDouble {
     }
 
     @Override
-    public String format(Double value) {
-        return FORMATTER.format(value * 100) + "%";
-    }
-
-    @Override
     public Double parse(@Nonnull String input) throws DoubleParseException {
         BigDecimal bd;
         try {
@@ -38,6 +33,11 @@ public class InterestRate extends OverridableDouble {
         if (input.charAt(input.length() - 1) == '%')
             bd = QuickMath.divide(bd, 100);
         return bd.doubleValue();
+    }
+
+    @Override
+    public String format(Double value) {
+        return FORMATTER.format(value * 100) + "%";
     }
 
 }

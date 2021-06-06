@@ -11,13 +11,6 @@ import java.util.function.Function;
 public interface IConfigDouble extends IConfigValue<Double> {
 
     @Override
-    default Double readValueFromFile(MemoryConfiguration config, String path) {
-        if (isPathMissing())
-            return null;
-        return config.getDouble(path);
-    }
-
-    @Override
     default Double parse(String input) throws DoubleParseException {
         return Optional.ofNullable(input)
                 .map(i -> Utils.removePunctuation(i, '.'))
@@ -25,6 +18,13 @@ public interface IConfigDouble extends IConfigValue<Double> {
                 .map(getConstraint())
                 .map(QuickMath::scale)
                 .orElseThrow(() -> new DoubleParseException(input));
+    }
+
+    @Override
+    default Double readValueFromFile(MemoryConfiguration config, String path) {
+        if (isPathMissing())
+            return null;
+        return config.getDouble(path);
     }
 
     default Function<Double, Double> getConstraint() {

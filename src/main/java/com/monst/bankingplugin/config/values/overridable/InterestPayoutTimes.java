@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values.overridable;
 
+import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.exceptions.LocalTimeParseException;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
 
@@ -19,7 +20,8 @@ public class InterestPayoutTimes extends OverridableSet<LocalTime> {
     }
 
     @Override
-    protected void afterSet2(Set<LocalTime> newValue) {
+    protected void afterSet(Set<LocalTime> newValue) {
+        super.afterSet(newValue);
         if (PLUGIN.isEnabled())
             InterestEventScheduler.scheduleAll();
     }
@@ -39,11 +41,11 @@ public class InterestPayoutTimes extends OverridableSet<LocalTime> {
     }
 
     @Override
-    public OverriddenValue<Set<LocalTime>> override(Set<LocalTime> value) {
+    public OverriddenValue<Set<LocalTime>> override(Bank bank, Set<LocalTime> value) {
         return new OverriddenValue<Set<LocalTime>>(this, value) {
             @Override
             protected void afterSet() {
-                InterestPayoutTimes.super.afterSet2(value);
+                InterestEventScheduler.scheduleAll(bank);
             }
         };
     }

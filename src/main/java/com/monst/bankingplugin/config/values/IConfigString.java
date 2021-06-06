@@ -6,15 +6,15 @@ import org.bukkit.configuration.MemoryConfiguration;
 public interface IConfigString extends IConfigValue<String> {
 
     @Override
+    default String parse(String input) throws DoubleParseException {
+        return input;
+    }
+
+    @Override
     default String readValueFromFile(MemoryConfiguration config, String path) {
         if (isPathMissing())
             return null;
         return config.getString(path);
-    }
-
-    @Override
-    default String parse(String input) throws DoubleParseException {
-        return input;
     }
 
     @Override

@@ -10,18 +10,18 @@ import java.util.function.Function;
 public interface IConfigInteger extends IConfigValue<Integer> {
 
     @Override
-    default Integer readValueFromFile(MemoryConfiguration config, String path) {
-        if (isPathMissing())
-            return null;
-        return config.getInt(path);
-    }
-
-    @Override
     default Integer parse(String input) throws IntegerParseException {
         return Optional.ofNullable(input)
                 .map(Utils::parseInteger)
                 .map(getConstraint())
                 .orElseThrow(() -> new IntegerParseException(input));
+    }
+
+    @Override
+    default Integer readValueFromFile(MemoryConfiguration config, String path) {
+        if (isPathMissing())
+            return null;
+        return config.getInt(path);
     }
 
     default Function<Integer, Integer> getConstraint() {

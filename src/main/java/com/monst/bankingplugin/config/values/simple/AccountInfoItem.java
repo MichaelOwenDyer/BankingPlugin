@@ -15,19 +15,19 @@ public class AccountInfoItem extends ConfigValue<ItemStack> {
     }
 
     @Override
-    public ItemStack readValueFromFile(MemoryConfiguration config, String path) {
-        return Optional.ofNullable(config.getString(path))
-                .map(Material::getMaterial)
-                .map(ItemStack::new)
-                .orElse(null);
-    }
-
-    @Override
     public ItemStack parse(String input) throws MaterialParseException {
         return Optional.ofNullable(input)
                 .map(Material::getMaterial)
                 .map(ItemStack::new)
                 .orElseThrow(() -> new MaterialParseException(input));
+    }
+
+    @Override
+    public ItemStack readValueFromFile(MemoryConfiguration config, String path) {
+        return Optional.ofNullable(config.getString(path))
+                .map(Material::getMaterial)
+                .map(ItemStack::new)
+                .orElse(null);
     }
 
     @Override

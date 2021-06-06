@@ -63,7 +63,7 @@ public enum BankField implements BankingEntityField<Bank> {
 
     public Object getFrom(Bank bank) {
         if (getter == null)
-            return bank.get(this).getNullable();
+            return bank.get(this).getCustomValue();
         return getter.apply(bank);
     }
 
