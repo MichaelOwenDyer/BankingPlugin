@@ -15,7 +15,6 @@ import com.monst.bankingplugin.listeners.BankingPluginListener;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -41,8 +40,8 @@ public class GriefPreventionListener extends BankingPluginListener {
         if (!Config.enableGriefPreventionIntegration.get())
             return;
 
-        for (Location loc : e.getAccount().getChestLocation())
-			if (isBlockedByGriefPrevention(e.getPlayer(), loc)) {
+        for (Block block : e.getAccount().getChestLocation())
+			if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
 				e.setCancelled(true);
 				plugin.debug("Account create event cancelled by GriefPrevention");
                 return;
@@ -54,8 +53,8 @@ public class GriefPreventionListener extends BankingPluginListener {
 		if (!Config.enableGriefPreventionIntegration.get())
             return;
 
-		for (Location loc : e.getNewChestLocation())
-            if (isBlockedByGriefPrevention(e.getPlayer(), loc)) {
+		for (Block block : e.getNewChestLocation())
+            if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
                 e.setCancelled(true);
                 plugin.debug("Account extend event cancelled by GriefPrevention");
                 return;
@@ -67,8 +66,8 @@ public class GriefPreventionListener extends BankingPluginListener {
 	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
 
-	    for (Location loc : e.getNewChestLocation())
-            if (isBlockedByGriefPrevention(e.getPlayer(), loc)) {
+	    for (Block block : e.getNewChestLocation())
+            if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
                 e.setCancelled(true);
                 plugin.debug("Account migrate event cancelled by GriefPrevention");
                 return;
@@ -80,16 +79,16 @@ public class GriefPreventionListener extends BankingPluginListener {
 	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
 
-	    for (Location loc : e.getNewChestLocation())
-            if (isBlockedByGriefPrevention(e.getPlayer(), loc)) {
+	    for (Block block : e.getNewChestLocation())
+            if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
                 e.setCancelled(true);
                 plugin.debug("Account recover event cancelled by GriefPrevention");
                 return;
             }
     }
 
-    private boolean isBlockedByGriefPrevention(Player player, Location loc) {
-        Claim claim = griefPrevention.dataStore.getClaimAt(loc, false, null);
+    private boolean isBlockedByGriefPrevention(Player player, Block block) {
+        Claim claim = griefPrevention.dataStore.getClaimAt(block.getLocation(), false, null);
         if (claim == null)
             return false;
         return claim.allowContainers(player) != null;
@@ -122,7 +121,7 @@ public class GriefPreventionListener extends BankingPluginListener {
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.CHEST || clickedBlock.getType() == Material.TRAPPED_CHEST))
             return;
 
-        Bank bank = plugin.getBankRepository().getAt(clickedBlock.getLocation());
+        Bank bank = plugin.getBankRepository().getAt(clickedBlock);
         if (bank == null)
             return;
 

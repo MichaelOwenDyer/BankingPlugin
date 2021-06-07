@@ -4,8 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
-import com.monst.bankingplugin.geo.selections.CuboidSelection;
-import com.monst.bankingplugin.geo.selections.PolygonalSelection;
 import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.QuickMath;
@@ -53,7 +51,7 @@ public class VisualizationManager {
         World world = sel.getWorld();
         List<VisualizationElement> newElements = new ArrayList<>();
 
-        if (sel instanceof CuboidSelection) {
+        if (sel.isCuboid()) {
 
             // Add blocks at vertices
             sel.getCorners().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(location -> newElements.add(new VisualizationElement(
@@ -107,7 +105,7 @@ public class VisualizationManager {
             Set<BlockVector2D> blocks = sel.getFootprint();
             newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
 
-        } else {
+        } else if (sel.isPolygonal()) {
 
             // Add blocks at vertices
             sel.getCorners().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(loc -> newElements.add(new VisualizationElement(
@@ -116,7 +114,7 @@ public class VisualizationManager {
                     world.getBlockAt(loc).getBlockData()
             )));
 
-            List<BlockVector2D> points = ((PolygonalSelection) sel).getVertices();
+            List<BlockVector2D> points = sel.getVertices();
             for (int i = 0; i < points.size(); i++) {
 
                 BlockVector2D current = points.get(i);

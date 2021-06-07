@@ -8,7 +8,8 @@ import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.QuickMath;
-import org.bukkit.Location;
+import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.block.Block;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -27,9 +28,11 @@ public class AccountRepository extends Observable implements Repository<Account,
         this.plugin = plugin;
     }
 
-    public boolean isAccount(Location location) {
+    public boolean isAccount(Block block) {
+    	if (!Utils.isChest(block))
+    		return false;
     	for (ChestLocation chest : accountLocationMap.keySet())
-    		if (chest.contains(location))
+    		if (chest.contains(block))
     			return true;
 		return false;
 	}
@@ -54,9 +57,11 @@ public class AccountRepository extends Observable implements Repository<Account,
 		return new HashSet<>(accountLocationMap.values());
 	}
 
-	public Account getAt(Location location) {
+	public Account getAt(Block block) {
+		if (!Utils.isChest(block))
+			return null;
 		for (Map.Entry<ChestLocation, Account> entry : accountLocationMap.entrySet())
-			if (entry.getKey().contains(location))
+			if (entry.getKey().contains(block))
 				return entry.getValue();
 		return null;
 	}

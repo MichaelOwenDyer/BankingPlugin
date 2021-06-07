@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.bank.BankSelectEvent;
+import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -37,9 +38,9 @@ public class BankSelect extends BankCommand.SubCommand {
         Player p = ((Player) sender);
         PLUGIN.debug(p.getName() + " wants to select a bank");
 
-        if (!PLUGIN.hasWorldEdit()) {
-            PLUGIN.debug("WorldEdit is not enabled");
-            p.sendMessage(LangUtils.getMessage(Message.WORLDEDIT_NOT_ENABLED));
+        if (!PLUGIN.hasWorldEdit() && !PLUGIN.hasGriefPrevention()) {
+            PLUGIN.debug("Cannot select bank. Neither WorldEdit nor GriefPrevention are enabled.");
+            p.sendMessage(LangUtils.getMessage(Message.CANT_SELECT_BANK));
             return true;
         }
 
@@ -51,7 +52,7 @@ public class BankSelect extends BankCommand.SubCommand {
 
         Bank bank;
         if (args.length == 1) {
-            bank = bankRepo.getAt(p.getLocation());
+            bank = bankRepo.getAt(p.getLocation().getBlock());
             if (bank == null) {
                 PLUGIN.debug(p.getName() + " wasn't standing in a bank");
                 p.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
@@ -73,7 +74,10 @@ public class BankSelect extends BankCommand.SubCommand {
             return true;
         }
 
-        WorldEditReader.setSelection(PLUGIN, bank.getSelection(), p);
+        if (PLUGIN.hasWorldEdit())
+            WorldEditReader.setSelection(PLUGIN, bank.getSelection(), p);
+        if (PLUGIN.hasGriefPrevention())
+            VisualizationManager.visualizeSelection(p, bank);
         PLUGIN.debug(p.getName() + " has selected a bank");
         p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)

@@ -2,17 +2,13 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.geo.BlockVector3D;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -171,6 +167,10 @@ public class Utils {
 				|| block.getType().isTransparent();
 	}
 
+	public static boolean isChest(Block block) {
+		return block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST;
+	}
+
 	public static BukkitRunnable bukkitRunnable(Runnable runnable) {
 		return new BukkitRunnable() {
 			@Override
@@ -218,29 +218,6 @@ public class Utils {
 			}
 		}
 		return stackedList;
-	}
-
-	public static Chest getChestAt(Block b) {
-		if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST)
-			return ((Chest) b.getState());
-		return null;
-	}
-
-	/**
-	 * Get a set of locations of the inventory
-	 * @param chest the single or double chest to get the locations of
-	 * @return A set of 1 or 2 locations
-	 */
-	public static BlockVector3D[] getChestCoordinates(Chest chest) {
-		InventoryHolder ih = chest.getInventory().getHolder();
-		if (ih instanceof DoubleChest) {
-			DoubleChest dc = (DoubleChest) ih;
-			return new BlockVector3D[] {
-					BlockVector3D.fromLocation(((Chest) dc.getLeftSide()).getLocation()),
-					BlockVector3D.fromLocation(((Chest) dc.getRightSide()).getLocation())
-			};
-		} else
-			return new BlockVector3D[] { BlockVector3D.fromLocation(chest.getLocation()) };
 	}
 
 	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {

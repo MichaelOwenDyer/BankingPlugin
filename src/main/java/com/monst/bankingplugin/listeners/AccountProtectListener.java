@@ -7,7 +7,6 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
-import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.geo.locations.DoubleChestLocation;
 import com.monst.bankingplugin.geo.locations.SingleChestLocation;
@@ -16,10 +15,8 @@ import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -47,10 +44,7 @@ public class AccountProtectListener extends BankingPluginListener {
 	@EventHandler(ignoreCancelled = true)
 	public void onAccountChestBreak(BlockBreakEvent e) {
 		Block b = e.getBlock();
-		if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
-			return;
-
-		Account account = accountRepo.getAt(b.getLocation());
+		Account account = accountRepo.getAt(b);
 		if (account == null)
 			return;
 
@@ -99,7 +93,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 		if (account.isDoubleChest()) {
 			DoubleChestLocation oldLoc = (DoubleChestLocation) account.getChestLocation();
-			SingleChestLocation newLoc = oldLoc.contract(BlockVector3D.fromLocation(b.getLocation()));
+			SingleChestLocation newLoc = oldLoc.contract(b);
 			account.setChestLocation(newLoc);
 			accountRepo.update(account, account.callUpdateChestName(), AccountField.LOCATION);
 		} else {
@@ -124,18 +118,13 @@ public class AccountProtectListener extends BankingPluginListener {
 	/**
 	 * Listens for block place events, and handles the expansion of a small account chest into a large
 	 * account chest.
-	 * {@link Utils#getChestCoordinates(Chest)} performs largely the same task as a good portion of this {@link EventHandler},
-	 * but cannot be used since {@link BlockPlaceEvent}s are fired before the {@link org.bukkit.inventory.InventoryHolder}
-	 * of the new chest has been updated.
-	 * This means that when an account chest is extended and this handler is executed,
-	 * for all intents and purposes the account chest is actually still a single chest.
 	 */
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
 	public void onAccountExtend(BlockPlaceEvent e) {
         final Player p = e.getPlayer();
         final Block b = e.getBlockPlaced();
 
-		if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
+		if (!Utils.isChest(b))
 			return;
 
 		org.bukkit.block.data.type.Chest data = (org.bukkit.block.data.type.Chest) b.getState().getBlockData();
@@ -161,13 +150,12 @@ public class AccountProtectListener extends BankingPluginListener {
 				return;
 		}
 
-        Block otherChest = b.getRelative(neighborFacing);
-        SingleChestLocation oldLoc = SingleChestLocation.of(b.getWorld(), BlockVector3D.fromLocation(otherChest.getLocation()));
-		Account account = accountRepo.getAt(oldLoc);
+        Block firstChest = b.getRelative(neighborFacing);
+		Account account = accountRepo.getAt(firstChest);
 		if (account == null)
 			return;
 
-		ChestLocation newLoc = oldLoc.extend(BlockVector3D.fromLocation(b.getLocation()));
+		ChestLocation newLoc = new DoubleChestLocation(firstChest, neighborFacing.getOppositeFace());
 		Bank bank = newLoc.getBank();
 		if (bank == null) {
 			plugin.debugf("%s tried to extend %s's account (#%d), but new chest was not in a bank.",
@@ -256,10 +244,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		Location invLoc = e.getInventory().getLocation();
 		if (invLoc == null)
 			return;
-		Block b = invLoc.getBlock();
-		if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
-			return;
-		Account account = accountRepo.getAt(b.getLocation());
+		Account account = accountRepo.getAt(invLoc.getBlock());
 		if (account == null)
 			return;
 		Player executor = (Player) e.getWhoClicked();

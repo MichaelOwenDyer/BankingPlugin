@@ -10,6 +10,7 @@ import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 
 import java.util.*;
 
@@ -31,14 +32,14 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	}
 
     /**
-	 * Gets the {@link Bank} at a given location
+	 * Gets the {@link Bank} at a given block
 	 *
-	 * @param location {@link Location} of the bank
-	 * @return Bank at the given location or <b>null</b> if no bank is found there
+	 * @param block {@link Location} of the bank
+	 * @return Bank at the given block or <b>null</b> if no bank is found there
 	 */
-	public Bank getAt(Location location) {
+	public Bank getAt(Block block) {
 		for (Map.Entry<Selection, Bank> entry : bankSelectionMap.entrySet())
-			if (entry.getKey().contains(location))
+			if (entry.getKey().contains(block))
 				return entry.getValue();
 		return null;
     }

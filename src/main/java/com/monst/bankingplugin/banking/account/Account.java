@@ -315,11 +315,11 @@ public class Account extends BankingEntity {
 	}
 
 	public boolean isSingleChest() {
-		return getChestLocation().isSingle();
+		return getChestLocation().getSize() == 1;
 	}
 
 	public boolean isDoubleChest() {
-		return getChestLocation().isDouble();
+		return getChestLocation().getSize() == 2;
 	}
 
 	public boolean hasCustomName() {
@@ -407,7 +407,10 @@ public class Account extends BankingEntity {
 	 */
 	public BigDecimal calculateBalance() {
 		plugin.debugf("Appraising account... (#%d)", getID());
-		return plugin.getAccountRepository().appraise(getInventoryHolder(true).getInventory().getContents());
+		InventoryHolder ih = getInventoryHolder(true);
+		if (ih == null)
+			return BigDecimal.ZERO;
+		return plugin.getAccountRepository().appraise(ih.getInventory().getContents());
 	}
 
 	/**

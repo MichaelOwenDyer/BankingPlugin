@@ -5,12 +5,10 @@ import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
-import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.repository.BankRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -18,12 +16,11 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.InventoryHolder;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class ChestLocation implements Iterable<Location> {
+public abstract class ChestLocation implements Iterable<Block> {
 
     private static final BankRepository BANK_REPO = BankingPlugin.getInstance().getBankRepository();
     private static final AccountRepository ACCOUNT_REPO = BankingPlugin.getInstance().getAccountRepository();
@@ -31,53 +28,42 @@ public abstract class ChestLocation implements Iterable<Location> {
     public static ChestLocation from(InventoryHolder ih) {
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
-            Location leftLoc = ((Chest) dc.getLeftSide()).getLocation();
-            Location rightLoc = ((Chest) dc.getRightSide()).getLocation();
-            BlockVector3D leftBV = BlockVector3D.fromLocation(leftLoc);
-            BlockVector3D rightBV = BlockVector3D.fromLocation(rightLoc);
-            return DoubleChestLocation.of(dc.getWorld(), leftBV, rightBV);
-        } else {
-            Chest chest = (Chest) ih;
-            Location loc = chest.getLocation();
-            BlockVector3D bv = BlockVector3D.fromLocation(loc);
-            return SingleChestLocation.of(chest.getWorld(), bv);
-        }
+            Block leftLoc = ((Chest) dc.getLeftSide()).getBlock();
+            Block rightLoc = ((Chest) dc.getRightSide()).getBlock();
+            return new DoubleChestLocation(leftLoc, leftLoc.getFace(rightLoc));
+        } else if (ih instanceof Chest)
+            return new SingleChestLocation(((Chest) ih).getBlock());
+        return null;
     }
 
-    public static ChestLocation of(World world, BlockVector3D v1, BlockVector3D v2) {
-        if (Objects.equals(v1, v2))
-            return SingleChestLocation.of(world, v1);
-        return DoubleChestLocation.of(world, v1, v2);
+    public static ChestLocation at(World world, int y, int x1, int z1, int x2, int z2) {
+        Block b1 = world.getBlockAt(x1, y, z1);
+        if (x1 == x2 && z1 == z2)
+            return new SingleChestLocation(b1);
+        Block b2 = world.getBlockAt(x2, y, z2);
+        return new DoubleChestLocation(b1, b1.getFace(b2));
     }
 
-    final World world;
-    final BlockVector3D v1;
+    Block b1;
 
-    ChestLocation(World world, BlockVector3D v1) {
-        if (world == null)
-            throw new IllegalArgumentException("World must not be null!");
-        this.world = world;
-        this.v1 = v1;
+    ChestLocation(Block b1) {
+        this.b1 = b1;
     }
 
-    public BlockVector3D getMinimumBlock() {
-        return v1;
-    }
+    public abstract Block getMinimumBlock();
 
-    public BlockVector3D getMaximumBlock() {
-        return getMinimumBlock();
-    }
+    public abstract Block getMaximumBlock();
 
     public Location getMinimumLocation() {
-        return v1.toLocation(world);
+        return getMinimumBlock().getLocation();
     }
 
     public Location getMaximumLocation() {
-        return getMinimumLocation();
+        return getMaximumBlock().getLocation();
     }
 
     public World getWorld() {
-        return world;
+        return b1.getWorld();
     }
 
     public Bank getBank() {
@@ -95,8 +81,8 @@ public abstract class ChestLocation implements Iterable<Location> {
      * @see Utils#isTransparent(Block)
      */
     public boolean isBlocked() {
-        for (Location chest : this)
-            if (!Utils.isTransparent(chest.getBlock().getRelative(BlockFace.UP)))
+        for (Block chestSide : this)
+            if (!Utils.isTransparent(chestSide.getRelative(BlockFace.UP)))
                 return true;
         return false;
     }
@@ -108,46 +94,30 @@ public abstract class ChestLocation implements Iterable<Location> {
      * @see Utils#isTransparent(Block)
      */
     public void checkSpaceAbove() throws ChestBlockedException {
-        for (Location chest : this)
-            if (!Utils.isTransparent(chest.getBlock().getRelative(BlockFace.UP)))
-                throw new ChestBlockedException(chest.getBlock());
+        for (Block chestSide : this)
+            if (!Utils.isTransparent(chestSide.getRelative(BlockFace.UP)))
+                throw new ChestBlockedException(chestSide);
     }
 
-    public InventoryHolder findInventoryHolder() throws ChestNotFoundException {
-        Block b = getMinimumLocation().getBlock();
-        if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
-            throw new ChestNotFoundException(this);
+    public abstract InventoryHolder findInventoryHolder() throws ChestNotFoundException;
+
+    public static InventoryHolder getInventoryHolderAt(Block b) {
+        if (!Utils.isChest(b))
+            return null;
         return ((Chest) b.getState()).getInventory().getHolder();
     }
 
-    public boolean contains(Location loc) {
-        if (!Objects.equals(getWorld(), loc.getWorld()))
-            return false;
-        BlockVector3D bv = BlockVector3D.fromLocation(loc);
-        for (Location chest : this)
-            if (Objects.equals(BlockVector3D.fromLocation(chest), bv))
+    public boolean contains(Block b) {
+        for (Block chestSide : this)
+            if (Objects.equals(chestSide, b))
                 return true;
         return false;
     }
 
-    public Iterator<Location> iterator() {
-        return Arrays.stream(getLocations()).iterator();
-    }
-
-    public boolean isSingle() {
-        return getSize() == 1;
-    }
-
-    public boolean isDouble() {
-        return getSize() == 2;
-    }
-
-    public abstract Location getTeleportLocation();
-
-    public abstract Location[] getLocations();
+    public abstract Iterator<Block> iterator();
 
     public abstract byte getSize();
 
-    public abstract String toString();
+    public abstract Location getTeleportLocation();
 
 }

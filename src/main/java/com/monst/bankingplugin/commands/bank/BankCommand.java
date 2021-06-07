@@ -75,7 +75,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 			if (args.length == 1) {
 				if (sender instanceof Player) {
 					Player p = (Player) sender;
-					bank = bankRepo.getAt(p.getLocation());
+					bank = bankRepo.getAt(p.getLocation().getBlock());
 					if (bank == null) {
 						PLUGIN.debug(p.getName() + " wasn't standing in a bank");
 						p.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));

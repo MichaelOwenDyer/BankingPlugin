@@ -13,7 +13,6 @@ import com.monst.bankingplugin.utils.ClickType.EClickType;
 import com.monst.bankingplugin.utils.ClickType.SetPair;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -43,12 +42,12 @@ public class AccountInteractListener extends BankingPluginListener {
 		Block b = e.getClickedBlock();
 		if (b == null)
 			return;
-		if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
+		if (!Utils.isChest(b))
 			return;
 		Chest chest = (Chest) b.getState();
 
 		Player p = e.getPlayer();
-		Account account = accountRepo.getAt(b.getLocation());
+		Account account = accountRepo.getAt(b);
 		ClickType<?> clickType = ClickType.getPlayerClickType(p);
 		if (account == null && clickType == null)
 			return;

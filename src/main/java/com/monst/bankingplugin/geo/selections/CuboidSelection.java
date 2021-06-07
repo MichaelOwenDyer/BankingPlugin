@@ -2,8 +2,8 @@ package com.monst.bankingplugin.geo.selections;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
-import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import java.util.*;
 
@@ -85,8 +85,8 @@ public class CuboidSelection extends Selection {
 	@Override
 	public long getVolume() {
 		return (long) (getMaxX() - getMinX() + 1)
-			 * (getMaxY() - getMinY() + 1)
-			 * (getMaxZ() - getMinZ() + 1);
+			 		* (getMaxY() - getMinY() + 1)
+			 		* (getMaxZ() - getMinZ() + 1);
 	}
 
 	@Override
@@ -125,10 +125,10 @@ public class CuboidSelection extends Selection {
 	}
 
 	@Override
-	public boolean contains(Location loc) {
-		if (!Objects.equals(getWorld(), loc.getWorld()))
+	public boolean contains(Block block) {
+		if (!Objects.equals(getWorld(), block.getWorld()))
 			return false;
-		return contains(BlockVector3D.fromLocation(loc));
+		return contains(BlockVector3D.fromBlock(block));
 	}
 
 	@Override
@@ -137,8 +137,8 @@ public class CuboidSelection extends Selection {
 		int y = bv.getY();
 		int z = bv.getZ();
 		return x <= getMaxX() && x >= getMinX()
-				&& y <= getMaxY() && y >= getMinY()
-				&& z <= getMaxZ() && z >= getMinZ();
+			&& y <= getMaxY() && y >= getMinY()
+			&& z <= getMaxZ() && z >= getMinZ();
 	}
 
 	@Override
@@ -162,8 +162,8 @@ public class CuboidSelection extends Selection {
 			return false;
 		CuboidSelection otherSel = (CuboidSelection) o;
 		return Objects.equals(getWorld(), otherSel.getWorld())
-				&& Objects.equals(getMaximumPoint(), otherSel.getMaximumPoint())
-				&& Objects.equals(getMinimumPoint(), otherSel.getMinimumPoint());
+			&& Objects.equals(getMaximumPoint(), otherSel.getMaximumPoint())
+			&& Objects.equals(getMinimumPoint(), otherSel.getMinimumPoint());
 	}
 
 	@Override

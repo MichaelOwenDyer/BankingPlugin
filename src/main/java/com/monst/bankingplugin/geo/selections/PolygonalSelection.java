@@ -3,8 +3,8 @@ package com.monst.bankingplugin.geo.selections;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.polylabel.PolyLabel;
-import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,7 +66,7 @@ public class PolygonalSelection extends Selection {
 		Integer[][][] polygon = new Integer[1][vertices.size()][2];
 		for (int i = 0; i < vertices.size(); i++) {
 			BlockVector2D point = vertices.get(i);
-			polygon[0][i] = new Integer[] {point.getX(), point.getZ()};
+			polygon[0][i] = new Integer[] { point.getX(), point.getZ() };
 		}
 		PolyLabel.Result result = PolyLabel.polyLabel(polygon);
 		return new BlockVector3D((int) result.getX(), (maxY + minY) / 2, (int) result.getY());
@@ -164,18 +164,17 @@ public class PolygonalSelection extends Selection {
 	}
 
 	@Override
-	public boolean contains(Location loc) {
+	public boolean contains(Block block) {
 		if (vertices.size() < 3)
 			return false;
-		if (!Objects.equals(getWorld(), loc.getWorld()))
+		if (!Objects.equals(getWorld(), block.getWorld()))
 			return false;
-		return contains(BlockVector3D.fromLocation(loc));
+		return contains(BlockVector3D.fromBlock(block));
 	}
 
 	@Override
 	public boolean contains(BlockVector3D bv) {
-		int y = bv.getY();
-		return y <= maxY && y >= minY && contains(bv.toBlockVector2D());
+		return bv.getY() <= maxY && bv.getY() >= minY && contains(bv.toBlockVector2D());
 	}
 
 	@Override
@@ -232,12 +231,13 @@ public class PolygonalSelection extends Selection {
 			return false;
 		PolygonalSelection other = (PolygonalSelection) o;
 		return getMinY() == other.getMinY() && getMaxY() == other.getMaxY()
-				&& Objects.equals(getWorld(), other.getWorld())
-				&& Objects.equals(getVertices(), other.getVertices());
+			&& Objects.equals(getWorld(), other.getWorld())
+			&& Objects.equals(getVertices(), other.getVertices());
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(getWorld(), getMinY(), getMaxY(), vertices);
 	}
+
 }

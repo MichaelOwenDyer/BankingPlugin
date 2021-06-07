@@ -1,54 +1,83 @@
 package com.monst.bankingplugin.geo.locations;
 
-import com.monst.bankingplugin.geo.BlockVector3D;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.inventory.InventoryHolder;
 
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Objects;
 
 public class DoubleChestLocation extends ChestLocation {
 
-    public static DoubleChestLocation of(World world, BlockVector3D v1, BlockVector3D v2) {
-        if (!v1.isAdjacent(v2))
-            throw new IllegalArgumentException("Blocks must be adjacent!");
-        return new DoubleChestLocation(world, v1, v2);
+    private final BlockFace direction;
+    private final Block b2;
+
+    public DoubleChestLocation(@Nonnull Block block, @Nonnull BlockFace direction) {
+        super(block);
+        this.direction = direction;
+        this.b2 = b1.getRelative(direction);
     }
 
-    final BlockVector3D v2;
-
-    DoubleChestLocation(World world, BlockVector3D v1, BlockVector3D v2) {
-        super(world, Utils.lesser(v1, v2));
-        this.v2 = Utils.greater(v1, v2);
+    @Override
+    public Block getMinimumBlock() {
+        switch (direction) {
+            case SOUTH:
+            case EAST:
+                return b1;
+            case NORTH:
+            case WEST:
+                return b2;
+        }
+        throw new IllegalStateException("Illegal BlockFace direction!");
     }
 
-    public BlockVector3D getMaximumBlock() {
-        return v2;
+    @Override
+    public Block getMaximumBlock() {
+        switch (direction) {
+            case NORTH:
+            case WEST:
+                return b1;
+            case SOUTH:
+            case EAST:
+                return b2;
+        }
+        throw new IllegalStateException("Illegal BlockFace direction!");
     }
 
-    public Location getMaximumLocation() {
-        return v2.toLocation(world);
+    @Override
+    public InventoryHolder findInventoryHolder() throws ChestNotFoundException {
+        InventoryHolder ih1 = getInventoryHolderAt(b1);
+        InventoryHolder ih2 = getInventoryHolderAt(b2);
+        if (ih1 != null && ih2 != null && isSameChest(ih1, ih2))
+            return ih1;
+        throw new ChestNotFoundException(this);
+    }
+
+    private boolean isSameChest(InventoryHolder ih1, InventoryHolder ih2) {
+        Location loc1 = ih1.getInventory().getLocation();
+        Location loc2 = ih2.getInventory().getLocation();
+        return loc1 != null && loc2 != null && Objects.equals(loc1.getBlock(), loc2.getBlock());
+    }
+
+    @Override
+    public Iterator<Block> iterator() {
+        return Arrays.asList(getMinimumBlock(), getMaximumBlock()).iterator();
     }
 
     @Override
     public Location getTeleportLocation() {
-        if (v1.getX() == v2.getX())
-            return new Location(world, v1.getX() + 0.5, v1.getY(), v2.getZ());
-        if (v1.getZ() == v2.getZ())
-            return new Location(world, v2.getX(), v1.getY(), v1.getZ() + 0.5);
-        return null;
-    }
-
-    @Override
-    public Location[] getLocations() {
-        return new Location[] { v1.toLocation(world), v2.toLocation(world) };
-    }
-
-    public SingleChestLocation contract(BlockVector3D without) {
-        if (Objects.equals(v1, without))
-            return new SingleChestLocation(world, v2);
-        if (Objects.equals(v2, without))
-            return new SingleChestLocation(world, v1);
+        switch (direction) {
+            case NORTH:
+            case SOUTH:
+                return new Location(getWorld(), b1.getX() + 0.5, b1.getY(), getMaximumLocation().getZ());
+            case EAST:
+            case WEST:
+                return new Location(getWorld(), getMaximumLocation().getX(), b1.getY(), b1.getZ() + 0.5);
+        }
         return null;
     }
 
@@ -57,28 +86,12 @@ public class DoubleChestLocation extends ChestLocation {
         return 2;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        DoubleChestLocation otherLoc = (DoubleChestLocation) o;
-        return Objects.equals(world, otherLoc.world) && Objects.equals(v1, otherLoc.v1) && Objects.equals(v2, otherLoc.v2);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(world, v1, v2);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("DoubleChestLocation {%d,%d,%d and %d,%d,%d}",
-                v1.getX(), v1.getY(), v1.getZ(),
-                v2.getX(), v2.getY(), v2.getZ()
-        );
+    public SingleChestLocation contract(Block leaveBehind) {
+        if (Objects.equals(b1, leaveBehind))
+            return new SingleChestLocation(b2);
+        if (Objects.equals(b2, leaveBehind))
+            return new SingleChestLocation(b1);
+        return null;
     }
 
 }

@@ -48,7 +48,7 @@ public class BankRename extends BankCommand.SubCommand {
                 sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
                 return true;
             }
-            bank = bankRepo.getAt(((Player) sender).getLocation());
+            bank = bankRepo.getAt(((Player) sender).getLocation().getBlock());
             if (bank == null) {
                 PLUGIN.debug(sender.getName() + " was not standing in a bank");
                 sender.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
@@ -106,7 +106,7 @@ public class BankRename extends BankCommand.SubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            Bank bank = sender instanceof Player ? bankRepo.getAt(((Player) sender).getLocation()) : null;
+            Bank bank = sender instanceof Player ? bankRepo.getAt(((Player) sender).getLocation().getBlock()) : null;
             if (args[1].isEmpty() && bank != null)
                 return Collections.singletonList(bank.getName());
 

@@ -212,6 +212,10 @@ public enum Message {
             "A player attempts to create a bank without a WorldEdit selection or specifying coordinates in the command.",
             "&cYou must select a WorldEdit region or specify coordinates manually."
     ),
+    CANT_SELECT_BANK(
+            "A player attempts to select a bank, but neither WorldEdit nor GriefPrevention is enabled.",
+            "&cWorldEdit must be enabled to select a bank."
+    ),
     WORLDEDIT_NOT_ENABLED (
             "A player attempts to create a bank without specifying coordinates in the command and WorldEdit is not enabled.",
             "&cWorldEdit is not currently enabled. Please enter coordinates manually."

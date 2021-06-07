@@ -6,6 +6,7 @@ import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import java.util.Collection;
 import java.util.List;
@@ -112,11 +113,11 @@ public abstract class Selection {
 				getMinZ() > sel.getMaxZ() || getMaxZ() < sel.getMinZ();
 	}
 
-	public boolean contains(ChestLocation loc) {
-		if (!Objects.equals(getWorld(), loc.getWorld()))
+	public boolean contains(ChestLocation chest) {
+		if (!Objects.equals(getWorld(), chest.getWorld()))
 			return false;
-		for (Location chest : loc)
-			if (!contains(BlockVector3D.fromLocation(chest)))
+		for (Block chestSide : chest)
+			if (!contains(BlockVector3D.fromBlock(chestSide)))
 				return false;
 		return true;
 	}
@@ -124,10 +125,10 @@ public abstract class Selection {
 	/**
 	 * Returns true based on whether this selection contains the {@link Location},
 	 *
-	 * @param loc The location that may or may not be contained by this selection
+	 * @param block The block that may or may not be contained by this selection
 	 * @return Whether or not the location is contained
 	 */
-	public abstract boolean contains(Location loc);
+	public abstract boolean contains(Block block);
 
 	public abstract boolean contains(BlockVector3D bv);
 

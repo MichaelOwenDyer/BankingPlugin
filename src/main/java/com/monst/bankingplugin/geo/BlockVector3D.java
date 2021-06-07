@@ -3,6 +3,7 @@ package com.monst.bankingplugin.geo;
 import com.monst.bankingplugin.utils.Triple;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 public class BlockVector3D extends Triple<Integer, Integer, Integer> implements Comparable<BlockVector3D> {
     public BlockVector3D(int x, int y, int z) {
@@ -26,6 +27,10 @@ public class BlockVector3D extends Triple<Integer, Integer, Integer> implements 
 
     public static BlockVector3D fromLocation(Location loc) {
         return new BlockVector3D(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+    }
+
+    public static BlockVector3D fromBlock(Block block) {
+        return new BlockVector3D(block.getX(), block.getY(), block.getZ());
     }
 
     public boolean isAdjacent(BlockVector3D other) {

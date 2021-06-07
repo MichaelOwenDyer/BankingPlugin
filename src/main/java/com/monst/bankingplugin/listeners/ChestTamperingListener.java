@@ -2,7 +2,6 @@ package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -12,8 +11,6 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.world.StructureGrowEvent;
-
-import java.util.ArrayList;
 
 @SuppressWarnings("unused")
 public class ChestTamperingListener extends BankingPluginListener {
@@ -25,60 +22,56 @@ public class ChestTamperingListener extends BankingPluginListener {
     @EventHandler(priority = EventPriority.HIGH)
 	public void onAccountBlocked(BlockPlaceEvent e) {
         Block b = e.getBlockPlaced();
-        Block below = b.getRelative(BlockFace.DOWN);
-
-		if (Utils.isTransparent(b))
-			return;
-
-        if (accountRepo.isAccount(below.getLocation())) {
+        if (Utils.isTransparent(b))
+            return;
+        if (accountRepo.isAccount(b.getRelative(BlockFace.DOWN))) {
             e.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onMultiBlockPlace(BlockMultiPlaceEvent e) {
-        for (BlockState blockState : e.getReplacedBlockStates()) {
-            Block below = blockState.getBlock().getRelative(BlockFace.DOWN);
-            if (accountRepo.isAccount(below.getLocation())) {
+        for (BlockState blockState : e.getReplacedBlockStates())
+            if (accountRepo.isAccount(blockState.getBlock().getRelative(BlockFace.DOWN))) {
                 e.setCancelled(true);
+                return;
             }
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPistonExtend(BlockPistonExtendEvent e) {
 		// If the piston did not push any blocks
         Block airAfterPiston = e.getBlock().getRelative(e.getDirection());
-        Block belowAir = airAfterPiston.getRelative(BlockFace.DOWN);
-        if (accountRepo.isAccount(belowAir.getLocation())) {
+        if (accountRepo.isAccount(airAfterPiston.getRelative(BlockFace.DOWN))) {
             e.setCancelled(true);
             return;
         }
 
         for (Block b : e.getBlocks()) {
-            Block newBlock = b.getRelative(e.getDirection());
-            Block belowNewBlock = newBlock.getRelative(BlockFace.DOWN);
-            if (accountRepo.isAccount(belowNewBlock.getLocation())) e.setCancelled(true);
+            if (Utils.isTransparent(b))
+                continue;
+            Block blockToBeCovered = b.getRelative(e.getDirection()).getRelative(BlockFace.DOWN);
+            if (accountRepo.isAccount(blockToBeCovered)) {
+                e.setCancelled(true);
+                return;
+            }
         }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPistonRetract(BlockPistonRetractEvent e) {
         for (Block b : e.getBlocks()) {
-            Block newBlock = b.getRelative(e.getDirection());
-            Block belowNewBlock = newBlock.getRelative(BlockFace.DOWN);
-            if (accountRepo.isAccount(belowNewBlock.getLocation())) {
+            Block blockToBeCovered = b.getRelative(e.getDirection()).getRelative(BlockFace.DOWN);
+            if (accountRepo.isAccount(blockToBeCovered)) {
                 e.setCancelled(true);
+                return;
             }
         }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onLiquidFlow(BlockFromToEvent e) {
-        Block b = e.getToBlock();
-        Block below = b.getRelative(BlockFace.DOWN);
-
-        if (accountRepo.isAccount(below.getLocation()))
+        if (accountRepo.isAccount(e.getToBlock().getRelative(BlockFace.DOWN)))
         	e.setCancelled(true);
     }
 
@@ -86,8 +79,7 @@ public class ChestTamperingListener extends BankingPluginListener {
     public void onBucketEmpty(PlayerBucketEmptyEvent e) {
         Block clicked = e.getBlockClicked();
         Block underWater = clicked.getRelative(BlockFace.DOWN).getRelative(e.getBlockFace());
-
-        if (accountRepo.isAccount(clicked.getLocation()) || accountRepo.isAccount(underWater.getLocation()))
+        if (accountRepo.isAccount(clicked) || accountRepo.isAccount(underWater))
         	e.setCancelled(true);
     }
 
@@ -95,8 +87,10 @@ public class ChestTamperingListener extends BankingPluginListener {
     public void onStructureGrow(StructureGrowEvent e) {
         for (BlockState state : e.getBlocks()) {
             Block newBlock = state.getBlock();
-            if (accountRepo.isAccount(newBlock.getLocation()) || accountRepo.isAccount(newBlock.getRelative(BlockFace.DOWN).getLocation())) {
+            Block belowNewBlock = newBlock.getRelative(BlockFace.DOWN);
+            if (accountRepo.isAccount(newBlock) || accountRepo.isAccount(belowNewBlock)) {
                 e.setCancelled(true);
+                return;
             }
         }
     }
@@ -104,39 +98,27 @@ public class ChestTamperingListener extends BankingPluginListener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockGrow(BlockGrowEvent e) {
         Block newBlock = e.getNewState().getBlock();
-        if (accountRepo.isAccount(newBlock.getLocation()) || accountRepo.isAccount(newBlock.getRelative(BlockFace.DOWN).getLocation())) {
+        Block belowNewBlock = newBlock.getRelative(BlockFace.DOWN);
+        if (accountRepo.isAccount(newBlock) || accountRepo.isAccount(belowNewBlock))
             e.setCancelled(true);
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockSpread(BlockSpreadEvent e) {
         Block newBlock = e.getNewState().getBlock();
-        if (accountRepo.isAccount(newBlock.getLocation()) || accountRepo.isAccount(newBlock.getRelative(BlockFace.DOWN).getLocation())) {
+        Block belowNewBlock = newBlock.getRelative(BlockFace.DOWN);
+        if (accountRepo.isAccount(newBlock) || accountRepo.isAccount(belowNewBlock))
             e.setCancelled(true);
-        }
     }
 
 	@EventHandler(ignoreCancelled = true)
 	public void onEntityExplode(EntityExplodeEvent e) {
-		ArrayList<Block> bl = new ArrayList<>(e.blockList());
-		for (Block b : bl) {
-			if (b.getType().equals(Material.CHEST) || b.getType().equals(Material.TRAPPED_CHEST)) {
-				if (accountRepo.isAccount(b.getLocation()))
-					e.blockList().remove(b);
-			}
-		}
+        e.blockList().removeIf(accountRepo::isAccount);
 	}
 
 	@EventHandler
 	public void onBlockExplode(BlockExplodeEvent e) {
-		ArrayList<Block> bl = new ArrayList<>(e.blockList());
-		for (Block b : bl) {
-			if (b.getType().equals(Material.CHEST) || b.getType().equals(Material.TRAPPED_CHEST)) {
-				if (plugin.getAccountRepository().isAccount(b.getLocation()))
-					e.blockList().remove(b);
-			}
-		}
+        e.blockList().removeIf(accountRepo::isAccount);
 	}
 
 }

@@ -26,6 +26,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.codejargon.fluentjdbc.api.FluentJdbc;
 import org.codejargon.fluentjdbc.api.FluentJdbcBuilder;
@@ -605,7 +606,7 @@ public abstract class Database {
 			int z1 = values.getNextInt();
 			int x2 = values.getNextInt();
 			int z2 = values.getNextInt();
-			ChestLocation chestLocation = ChestLocation.of(world, new BlockVector3D(x1, y, z1), new BlockVector3D(x2, y, z2));
+			ChestLocation chestLocation = ChestLocation.at(world, y, x1, z1, x2, z2);
 
 			Set<OfflinePlayer> coowners = query
 					.select("SELECT CoOwnerUUID FROM " + tableCoOwnsAccount + " WHERE AccountID = ?")
@@ -1100,8 +1101,8 @@ public abstract class Database {
 
 	private LinkedList<Object> getAttributes(Account account) {
 		ChestLocation loc = account.getChestLocation();
-		BlockVector3D v1 = loc.getMinimumBlock();
-		BlockVector3D v2 = loc.getMaximumBlock();
+		Block v1 = loc.getMinimumBlock();
+		Block v2 = loc.getMaximumBlock();
 		return new LinkedList<>(Arrays.asList(
 				account.getID(),
 				account.getBank().getID(),
