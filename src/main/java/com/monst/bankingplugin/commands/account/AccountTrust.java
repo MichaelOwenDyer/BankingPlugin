@@ -56,7 +56,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
         AccountTrustCommandEvent event = new AccountTrustCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account pre-trust event cancelled");
+            PLUGIN.debug("Account trust command event cancelled");
             return true;
         }
 

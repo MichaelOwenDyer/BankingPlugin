@@ -7,12 +7,12 @@ import org.bukkit.event.Cancellable;
  * This event is fired when a player uses the {@link com.monst.bankingplugin.commands.account.AccountInfo}
  * command without specifying an account ID.
  */
-public class AccountInfoCommandEvent extends SingleAccountEvent implements Cancellable {
+public class AccountInfoCommandEvent extends AccountCommandEvent implements Cancellable {
 
 	private boolean cancelled;
 
-	public AccountInfoCommandEvent(Player player) {
-		super(player, null);
+	public AccountInfoCommandEvent(Player player, String[] args) {
+		super(player, args);
 	}
 
 	@Override

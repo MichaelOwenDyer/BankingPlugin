@@ -59,10 +59,10 @@ public class AccountInfo extends AccountCommand.SubCommand {
             return true;
         }
 
-        AccountInfoCommandEvent event = new AccountInfoCommandEvent((Player) sender);
+        AccountInfoCommandEvent event = new AccountInfoCommandEvent((Player) sender, args);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account pre-info event cancelled");
+            PLUGIN.debug("Account info command event cancelled");
             return true;
         }
 

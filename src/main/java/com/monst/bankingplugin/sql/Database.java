@@ -47,7 +47,7 @@ import java.util.stream.Stream;
 
 public abstract class Database {
 
-	final BankingPlugin plugin = BankingPlugin.getInstance();
+	protected final BankingPlugin plugin = BankingPlugin.getInstance();
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final Set<String> unknownWorldNames = new HashSet<>();
 	private final int DATABASE_VERSION = 1;

@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.events.account;
 
-import com.monst.bankingplugin.banking.account.Account;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
@@ -10,12 +9,12 @@ import javax.annotation.Nonnull;
  * This account is fired when a player uses the
  * {@link com.monst.bankingplugin.commands.account.AccountMigrate} command.
  */
-public class AccountMigrateCommandEvent extends SingleAccountEvent implements Cancellable {
+public class AccountMigrateCommandEvent extends AccountCommandEvent implements Cancellable {
 
     private boolean cancelled;
 
-    public AccountMigrateCommandEvent(@Nonnull Player player, @Nonnull Account account) {
-        super(player, account);
+    public AccountMigrateCommandEvent(@Nonnull Player player, @Nonnull String[] args) {
+        super(player, args);
     }
 
     @Override

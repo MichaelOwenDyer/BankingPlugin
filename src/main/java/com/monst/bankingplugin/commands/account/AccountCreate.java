@@ -54,7 +54,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         AccountCreateCommandEvent event = new AccountCreateCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account pre-create event cancelled");
+            PLUGIN.debug("Account create command event cancelled");
             return true;
         }
 

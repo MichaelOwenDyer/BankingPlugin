@@ -11,15 +11,15 @@ import javax.annotation.Nullable;
  * Any event that involves a single {@link Account}.
  */
 public abstract class SingleAccountEvent extends AccountEvent {
-	
+
 	private final Account account;
-	
-	public SingleAccountEvent(@Nonnull CommandSender sender, @Nullable Account account) {
+
+	public SingleAccountEvent(@Nonnull CommandSender sender, @Nonnull Account account) {
 		super(sender);
 		this.account = account;
 	}
 
-	@Nullable
+	@Nonnull
 	public Account getAccount() {
 		return account;
 	}

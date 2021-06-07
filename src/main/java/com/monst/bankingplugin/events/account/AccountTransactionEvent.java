@@ -10,13 +10,13 @@ import java.math.BigDecimal;
  * This event is fired when the contents of an account chest are updated in a way that the balance changes.
  */
 public class AccountTransactionEvent extends SingleAccountEvent {
-	
+
 	private final BigDecimal amount;
 	private final BigDecimal newBalance;
-	
-	public AccountTransactionEvent(@Nonnull Player executor, @Nonnull Account account,
+
+	public AccountTransactionEvent(@Nonnull Player player, @Nonnull Account account,
 								   @Nonnull BigDecimal amount, @Nonnull BigDecimal newBalance) {
-		super(executor, account);
+		super(player, account);
 		this.amount = amount;
 		this.newBalance = newBalance;
 	}

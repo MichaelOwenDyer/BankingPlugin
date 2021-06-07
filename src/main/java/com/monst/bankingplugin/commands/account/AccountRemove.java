@@ -39,10 +39,10 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
     protected boolean execute(CommandSender sender, String[] args) {
         PLUGIN.debug(sender.getName() + " wants to remove an account");
 
-        AccountRemoveCommandEvent event = new AccountRemoveCommandEvent(((Player) sender));
+        AccountRemoveCommandEvent event = new AccountRemoveCommandEvent((Player) sender, args);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account pre-remove event cancelled");
+            PLUGIN.debug("Account remove command event cancelled");
             return true;
         }
 

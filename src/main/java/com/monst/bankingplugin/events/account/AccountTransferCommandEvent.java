@@ -3,24 +3,16 @@ package com.monst.bankingplugin.events.account;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
-import java.util.Arrays;
-
 /**
  * This event is fired when a player uses the
  * {@link com.monst.bankingplugin.commands.account.AccountTransfer} command.
  */
-public class AccountTransferCommandEvent extends SingleAccountEvent implements Cancellable {
+public class AccountTransferCommandEvent extends AccountCommandEvent implements Cancellable {
 
 	private boolean cancelled;
-	private final String[] args;
 
 	public AccountTransferCommandEvent(Player player, String[] args) {
-		super(player, null);
-		this.args = Arrays.copyOf(args, args.length);
-	}
-
-	public String[] getArgs() {
-		return args;
+		super(player, args);
 	}
 
 	@Override

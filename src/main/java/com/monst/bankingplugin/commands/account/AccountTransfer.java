@@ -63,7 +63,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         AccountTransferCommandEvent event = new AccountTransferCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account pre-transfer event cancelled");
+            PLUGIN.debug("Account transfer command event cancelled");
             return true;
         }
 

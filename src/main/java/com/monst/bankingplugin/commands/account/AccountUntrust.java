@@ -57,7 +57,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
         AccountUntrustCommandEvent event = new AccountUntrustCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account pre-untrust event cancelled");
+            PLUGIN.debug("Account untrust command event cancelled");
             return true;
         }
 

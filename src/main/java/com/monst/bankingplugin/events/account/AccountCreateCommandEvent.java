@@ -3,24 +3,16 @@ package com.monst.bankingplugin.events.account;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
-import java.util.Arrays;
-
 /**
  * This event is fired when a player uses the
  * {@link com.monst.bankingplugin.commands.account.AccountCreate} command.
  */
-public class AccountCreateCommandEvent extends SingleAccountEvent implements Cancellable {
+public class AccountCreateCommandEvent extends AccountCommandEvent implements Cancellable {
 
 	private boolean cancelled;
-	private final String[] args;
 
 	public AccountCreateCommandEvent(Player player, String[] args) {
-		super(player, null);
-		this.args = Arrays.copyOf(args, args.length);
-	}
-
-	public String[] getArgs() {
-		return args;
+		super(player, args);
 	}
 
 	@Override

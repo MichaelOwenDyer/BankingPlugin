@@ -7,12 +7,12 @@ import org.bukkit.event.Cancellable;
  * This event is fired when a player uses the
  * {@link com.monst.bankingplugin.commands.account.AccountRemove} command.
  */
-public class AccountRemoveCommandEvent extends SingleAccountEvent implements Cancellable {
+public class AccountRemoveCommandEvent extends AccountCommandEvent implements Cancellable {
 
 	private boolean cancelled;
 
-	public AccountRemoveCommandEvent(Player player) {
-		super(player, null);
+	public AccountRemoveCommandEvent(Player player, String[] args) {
+		super(player, args);
 	}
 
 	@Override

@@ -65,7 +65,7 @@ public class WorldEditReader {
 			BlockVector3 max = BlockVector3.at(sel.getMaximumPoint().getX(), sel.getMaximumPoint().getY(), sel.getMaximumPoint().getZ());
 			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(sel.getWorld()), min, max);
 		} else {
-			List<BlockVector2> points = ((PolygonalSelection) sel).getVertices().stream()
+			List<BlockVector2> points = sel.getVertices().stream()
 					.map(point -> BlockVector2.at(point.getX(), point.getZ())).collect(Collectors.toList());
 			int minY = sel.getMinimumPoint().getY();
 			int maxY = sel.getMaximumPoint().getY();

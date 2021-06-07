@@ -45,6 +45,13 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             return true;
         }
 
+        AccountMigrateCommandEvent event = new AccountMigrateCommandEvent(p, args);
+        event.fire();
+        if (event.isCancelled()) {
+            PLUGIN.debug("Account migrate command event cancelled");
+            return true;
+        }
+
         p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_MIGRATE));
         ClickType.setPlayerClickType(p, ClickType.migrate(null));
         PLUGIN.debug(p.getName() + " is migrating an account");
@@ -61,13 +68,6 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             }
             PLUGIN.debugf("%s does not have permission to migrate account #%d", p.getName(), toMigrate.getID());
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER));
-            return;
-        }
-
-        AccountMigrateCommandEvent event = new AccountMigrateCommandEvent(p, toMigrate);
-        event.fire();
-        if (event.isCancelled()) {
-            PLUGIN.debug("Account pre-migrate event cancelled");
             return;
         }
 
