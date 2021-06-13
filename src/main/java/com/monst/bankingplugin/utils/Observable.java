@@ -9,7 +9,7 @@ import java.util.Set;
 public abstract class Observable {
 
     private final Set<GUI<?>> observers = new HashSet<>();
-    private boolean cooldown = false;
+    private int queuedUpdates = 0;
 
     public void addObserver(GUI<?> observer) {
         observers.add(observer);
@@ -22,11 +22,14 @@ public abstract class Observable {
     public void notifyObservers() {
         if (!BankingPlugin.getInstance().isEnabled())
             return;
-        if (cooldown)
+        queuedUpdates++;
+        Utils.runTaskLater(this::executeIfLast, 1);
+    }
+
+    private void executeIfLast() {
+        if (queuedUpdates-- > 1)
             return;
-        Utils.runTaskLater(() -> cooldown = false, 1);
         observers.forEach(GUI::update);
-        cooldown = true;
     }
 
 }
