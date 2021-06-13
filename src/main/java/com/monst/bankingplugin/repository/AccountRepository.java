@@ -107,8 +107,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 			plugin.getDatabase().addAccount(account, callback);
         } else {
 			account.getBank().addAccount(account); // Account is otherwise added to the bank in Database
-			account.getBank().notifyObservers();
-			Callback.yield(callback, account.getID());
+			Callback.callResult(callback, account.getID());
         }
         notifyObservers();
     }
@@ -156,7 +155,7 @@ public class AccountRepository extends Observable implements Repository<Account,
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);
         } else
-        	Callback.yield(callback);
+        	Callback.callResult(callback);
         notifyObservers();
     }
 

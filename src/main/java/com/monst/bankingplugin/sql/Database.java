@@ -90,7 +90,8 @@ public abstract class Database {
 
 	SqlErrorHandler forwardError(Callback<?> callback) {
 		return (e, msg) -> {
-			Callback.error(callback, e);
+			if (callback != null)
+				callback.onError(e);
 			throw e;
 		};
 	}
@@ -155,7 +156,6 @@ public abstract class Database {
 	 *                 that were found (as {@code int[]})
 	 */
 	public void connect(Callback<int[]> callback) {
-
 		async(() -> {
 			disconnect();
 
@@ -224,7 +224,7 @@ public abstract class Database {
 					.select("SELECT COUNT(BankID) FROM " + tableBanks)
 					.firstResult(Mappers.singleInteger())
 					.orElseThrow(IllegalStateException::new);
-			Callback.yield(callback, new int[] { banks, accounts });
+			Callback.callSyncResult(callback, new int[] { banks, accounts });
 		});
 	}
 
@@ -269,7 +269,7 @@ public abstract class Database {
 			account.getBank().addAccount(account);
 
 			plugin.debugf("Added account #%d to the database.", account.getID());
-			Callback.yield(callback, account.getID());
+			Callback.callSyncResult(callback, account.getID());
 		});
 	}
 
@@ -294,7 +294,7 @@ public abstract class Database {
 					.params(account.getID())
 					.errorHandler(forwardError(callback))
 					.run();
-			Callback.yield(callback);
+			Callback.callSyncResult(callback);
 		});
 	}
 
@@ -323,7 +323,7 @@ public abstract class Database {
 			});
 
 			plugin.debugf("Removed account #%d and %d coowners from the database.", account.getID(), removedCoowners);
-			Callback.yield(callback);
+			Callback.callSyncResult(callback);
 		});
 	}
 
@@ -360,7 +360,7 @@ public abstract class Database {
 			bank.setID(id);
 
 			plugin.debugf("Added bank #%d to the database.", bank.getID());
-			Callback.yield(callback, bank.getID());
+			Callback.callSyncResult(callback, bank.getID());
 		});
 	}
 
@@ -385,7 +385,7 @@ public abstract class Database {
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
 					.run();
-			Callback.yield(callback);
+			Callback.callSyncResult(callback);
 		});
 	}
 
@@ -415,7 +415,7 @@ public abstract class Database {
 			);
 
 			plugin.debugf("Removed bank #%d and %d coowners from the database.", bank.getID(), removedCoowners);
-			Callback.yield(callback);
+			Callback.callSyncResult(callback);
 		});
 	}
 
@@ -433,7 +433,7 @@ public abstract class Database {
 							Function.identity(),
 							bank -> getAccounts(bank, callback)
 					));
-			Callback.yield(callback, Collections.unmodifiableMap(banksAndAccounts));
+			Callback.callSyncResult(callback, Collections.unmodifiableMap(banksAndAccounts));
 		});
 	}
 
@@ -648,7 +648,7 @@ public abstract class Database {
 					.params(coownerUUID, entityID)
 					.errorHandler(forwardError(callback))
 					.run();
-			Callback.yield(callback);
+			Callback.callSyncResult(callback);
 		});
 	}
 
@@ -682,7 +682,7 @@ public abstract class Database {
 					.affectedRows();
 			if (affectedRows == 0)
 				plugin.debugf("Found no co-owner to remove.");
-			Callback.yield(callback);
+			Callback.callSyncResult(callback);
 		});
 	}
 
@@ -847,7 +847,7 @@ public abstract class Database {
 					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(transactionMapper);
 			plugin.debugf("Found %d transactions at account #%d.", result.size(), account.getID());
-			Callback.yield(callback, result);
+			Callback.callSyncResult(callback, result);
 		});
 	}
 
@@ -864,7 +864,7 @@ public abstract class Database {
 					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(transactionMapper);
 			plugin.debugf("Found %d transactions at bank #%d.", result.size(), bank.getID());
-			Callback.yield(callback, result);
+			Callback.callSyncResult(callback, result);
 		});
 	}
 
@@ -883,7 +883,7 @@ public abstract class Database {
 					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(interestMapper);
 			plugin.debugf("Found %d interest payments at account #%d.", result.size(), account.getID());
-			Callback.yield(callback, result);
+			Callback.callSyncResult(callback, result);
 		});
 	}
 
@@ -900,7 +900,7 @@ public abstract class Database {
 					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(interestMapper);
 			plugin.debugf("Found %d interest payments at bank #%d.", result.size(), bank.getID());
-			Callback.yield(callback, result);
+			Callback.callSyncResult(callback, result);
 		});
 	}
 
@@ -919,7 +919,7 @@ public abstract class Database {
 					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(revenueMapper);
 			plugin.debugf("Found %d revenue entries at bank #%d.", result.size(), bank.getID());
-			Callback.yield(callback, result);
+			Callback.callSyncResult(callback, result);
 		});
 	}
 
@@ -945,7 +945,7 @@ public abstract class Database {
 					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in account interest for %s.", Utils.format(interest), playerName);
-			Callback.yield(callback, QuickMath.scale(interest));
+			Callback.callSyncResult(callback, QuickMath.scale(interest));
 		});
 	}
 
@@ -971,7 +971,7 @@ public abstract class Database {
 					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in low balance fees paid by %s.", Utils.format(fees), playerName);
-			Callback.yield(callback, QuickMath.scale(fees));
+			Callback.callSyncResult(callback, QuickMath.scale(fees));
 		});
 	}
 
@@ -997,7 +997,7 @@ public abstract class Database {
 					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in bank profit earned by %s.", Utils.format(revenue), playerName);
-			Callback.yield(callback, QuickMath.scale(revenue));
+			Callback.callSyncResult(callback, QuickMath.scale(revenue));
 		});
 	}
 
@@ -1020,7 +1020,7 @@ public abstract class Database {
 					.firstResult(rs -> rs.getLong(1))
 					.orElse(-1L);
 			plugin.debugf("Found last logout for %s at %d.", playerName, lastLogout);
-			Callback.yield(callback, lastLogout);
+			Callback.callSyncResult(callback, lastLogout);
 		});
 	}
 

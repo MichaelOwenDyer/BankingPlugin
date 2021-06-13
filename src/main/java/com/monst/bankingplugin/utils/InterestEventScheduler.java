@@ -30,11 +30,11 @@ public class InterestEventScheduler {
     /**
      * Schedule the {@link InterestEvent}s of all banks on the server.
      */
-    public static void scheduleAll() {
+    public static void scheduleAllBanks() {
         if (!PLUGIN.isEnabled())
             return;
         PLUGIN.debug("Scheduling all interest payments...");
-        PLUGIN.getBankRepository().getAll().forEach(InterestEventScheduler::scheduleAll);
+        PLUGIN.getBankRepository().getAll().forEach(InterestEventScheduler::scheduleBank);
     }
 
     /**
@@ -46,7 +46,7 @@ public class InterestEventScheduler {
      * @see InterestEvent
      * @see InterestEventListener
      */
-    public static void scheduleAll(Bank bank) {
+    public static void scheduleBank(Bank bank) {
         if (!PLUGIN.isEnabled() || bank == null)
             return;
         PLUGIN.debugf("Scheduling interest payments of bank #%d.", bank.getID());

@@ -43,25 +43,36 @@ public abstract class Callback<T> {
         PLUGIN.debug(throwable);
     }
 
-    public static void yield(Callback<?> callback) {
-        Callback.yield(callback, null);
+    /**
+     * Returns a null result on the current thread if the callback is not null.
+     */
+    public static void callResult(Callback<?> callback) {
+        Callback.callResult(callback, null);
     }
 
-    public static <T> void yield(Callback<T> callback, T result) {
+    /**
+     * Returns the specified result on the current thread if the callback is not null.
+     */
+    public static <T> void callResult(Callback<T> callback, T result) {
+        if (callback != null)
+            callback.onResult(result);
+    }
+
+    /**
+     * Returns a null result <i>on the main thread</i> if the callback is not null.
+     * This should only be called from an asynchronous context, otherwise a task is created unnecessarily.
+     */
+    public static void callSyncResult(Callback<?> callback) {
+        Callback.callSyncResult(callback, null);
+    }
+
+    /**
+     * Returns the specified result <i>on the main thread</i> if the callback is not null.
+     * This should only be called from an asynchronous context, otherwise a task is created unnecessarily.
+     */
+    public static <T> void callSyncResult(Callback<T> callback, T result) {
         if (callback != null)
             Utils.bukkitRunnable(() -> callback.onResult(result)).runTask(PLUGIN);
-    }
-
-    public static void error(Callback<?> callback, Throwable error) {
-        if (callback != null)
-            Utils.bukkitRunnable(() -> callback.onError(error)).runTask(PLUGIN);
-    }
-
-    public Callback<T> andThen(Consumer<T> nextAction) {
-        return of(result -> {
-            onResult(result);
-            nextAction.accept(result);
-        }, this::onError);
     }
 
 }

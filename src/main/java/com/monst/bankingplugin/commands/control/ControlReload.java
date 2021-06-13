@@ -46,19 +46,19 @@ public class ControlReload extends ControlCommand.SubCommand {
             return true;
         }
 
-        PLUGIN.reload(
-                Callback.of(result -> {
-                    Set<Bank> banks = result.getBanks();
-                    Set<Account> accounts = result.getAccounts();
-                    sender.sendMessage(LangUtils.getMessage(Message.RELOADED_PLUGIN,
-                            new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size),
-                            new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
-                    ));
-                    PLUGIN.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
-                }, error -> sender.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-                        new Replacement(Placeholder.ERROR, "No database access! Disabling BankingPlugin.")
-                )))
-        );
+        PLUGIN.reload(Callback.of(result -> {
+            Set<Bank> banks = result.getBanks();
+            Set<Account> accounts = result.getAccounts();
+            sender.sendMessage(LangUtils.getMessage(Message.RELOADED_PLUGIN,
+                    new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size),
+                    new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
+            ));
+            PLUGIN.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
+        }, error ->
+                sender.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
+                    new Replacement(Placeholder.ERROR, "No database access! Disabling BankingPlugin.")
+                ))
+        ));
         return true;
     }
 

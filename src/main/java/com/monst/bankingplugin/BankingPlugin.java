@@ -381,14 +381,14 @@ public class BankingPlugin extends JavaPlugin {
 									debugf("Number of accounts before load was %d and is now %d.",
 											accountsBeforeReload.size(), reloadedAccounts.size());
 
-								InterestEventScheduler.scheduleAll();
-								Callback.yield(callback, new ReloadResult(reloadedBanks, reloadedAccounts));
+								InterestEventScheduler.scheduleAllBanks();
+								Callback.callResult(callback, new ReloadResult(reloadedBanks, reloadedAccounts));
 							},
-							error -> Callback.error(callback, error)
+							callback::onError
 					));
 				},
 				error -> {
-					Callback.error(callback, error);
+					callback.onError(error);
 					// Database connection probably failed => disable plugin to prevent more errors
 					getLogger().severe("No database access! Disabling BankingPlugin.");
 					if (error != null)

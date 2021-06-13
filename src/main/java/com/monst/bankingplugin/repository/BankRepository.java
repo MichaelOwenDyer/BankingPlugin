@@ -83,12 +83,12 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 		plugin.debug("Adding/updating bank... (#" + bank.getID() + ")");
 
 		bankSelectionMap.put(bank.getSelection(), bank);
-		InterestEventScheduler.scheduleAll(bank);
+		InterestEventScheduler.scheduleBank(bank);
 
         if (addToDatabase)
 			plugin.getDatabase().addBank(bank, callback);
         else
-			Callback.yield(callback, bank.getID());
+			Callback.callResult(callback, bank.getID());
 
     }
 
@@ -140,7 +140,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
         if (removeFromDatabase)
 			plugin.getDatabase().removeBank(bank, callback);
         else
-			Callback.yield(callback);
+			Callback.callResult(callback);
     }
 
 	public Set<Selection> getOverlappingSelections(Selection sel) {

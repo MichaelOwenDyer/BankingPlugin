@@ -23,7 +23,7 @@ public class InterestPayoutTimes extends OverridableSet<LocalTime> {
     protected void afterSet(Set<LocalTime> newValue) {
         super.afterSet(newValue);
         if (PLUGIN.isEnabled())
-            InterestEventScheduler.scheduleAll();
+            InterestEventScheduler.scheduleAllBanks();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class InterestPayoutTimes extends OverridableSet<LocalTime> {
         return new OverriddenValue<Set<LocalTime>>(this, value) {
             @Override
             protected void afterSet() {
-                InterestEventScheduler.scheduleAll(bank);
+                InterestEventScheduler.scheduleBank(bank);
             }
         };
     }
