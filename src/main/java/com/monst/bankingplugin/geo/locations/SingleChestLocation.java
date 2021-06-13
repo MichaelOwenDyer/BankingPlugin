@@ -53,4 +53,12 @@ public class SingleChestLocation extends ChestLocation {
         return new DoubleChestLocation(b1, direction);
     }
 
+    public String toString() {
+        return "(" +
+                b1.getX() + ", " +
+                b1.getY() + ", " +
+                b1.getZ() +
+                ")";
+    }
+
 }

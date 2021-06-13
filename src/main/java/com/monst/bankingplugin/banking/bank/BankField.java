@@ -25,7 +25,7 @@ public enum BankField implements BankingEntityField<Bank> {
     PLAYER_BANK_ACCOUNT_LIMIT ("PlayerBankAccountLimit"),
     MULTIPLIERS ("Multipliers"),
     INTEREST_PAYOUT_TIMES ("InterestPayoutTimes"),
-    WORLD ("World", b -> b.getSelection().getWorld()),
+    WORLD ("World", b -> b.getSelection().getWorld().getName()),
     MIN_X ("MinX", b -> b.getSelection().getMinX()),
     MAX_X ("MaxX", b -> b.getSelection().getMaxX()),
     MIN_Y ("MinY", b -> b.getSelection().getMinY()),

@@ -2,11 +2,11 @@ package com.monst.bankingplugin.repository;
 
 import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.banking.BankingEntityField;
-import com.monst.bankingplugin.exceptions.NotFoundException;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +16,9 @@ public interface Repository<Entity extends BankingEntity, Field extends BankingE
 
     Set<Entity> getAll();
 
-    Entity getAt(ChestLocation location) throws NotFoundException;
+    Entity getAt(ChestLocation location);
+
+    Entity getAt(Block block);
 
     /**
      * Gets all banks on the server that fulfill a certain {@link Predicate}

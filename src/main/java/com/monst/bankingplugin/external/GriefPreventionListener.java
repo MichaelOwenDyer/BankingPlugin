@@ -118,7 +118,7 @@ public class GriefPreventionListener extends BankingPluginListener {
             return;
         if (clickedBlock == null || clickedBlock.getType() == Material.AIR)
             return;
-        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.CHEST || clickedBlock.getType() == Material.TRAPPED_CHEST))
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && Utils.isChest(clickedBlock))
             return;
 
         Bank bank = plugin.getBankRepository().getAt(clickedBlock);

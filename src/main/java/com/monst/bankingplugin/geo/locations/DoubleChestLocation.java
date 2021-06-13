@@ -73,10 +73,10 @@ public class DoubleChestLocation extends ChestLocation {
         switch (direction) {
             case NORTH:
             case SOUTH:
-                return new Location(getWorld(), b1.getX() + 0.5, b1.getY(), getMaximumLocation().getZ());
+                return new Location(getWorld(), b1.getX() + 0.5, b1.getY() + 1, getMaximumLocation().getZ());
             case EAST:
             case WEST:
-                return new Location(getWorld(), getMaximumLocation().getX(), b1.getY(), b1.getZ() + 0.5);
+                return new Location(getWorld(), getMaximumLocation().getX(), b1.getY() + 1, b1.getZ() + 0.5);
         }
         return null;
     }
@@ -92,6 +92,18 @@ public class DoubleChestLocation extends ChestLocation {
         if (Objects.equals(b2, leaveBehind))
             return new SingleChestLocation(b1);
         return null;
+    }
+
+    public String toString() {
+        return "(" +
+                b1.getX() + ", " +
+                b1.getY() + ", " +
+                b1.getZ() +
+                "), (" +
+                b2.getX() + ", " +
+                b2.getY() + ", " +
+                b2.getZ() +
+                ")";
     }
 
 }

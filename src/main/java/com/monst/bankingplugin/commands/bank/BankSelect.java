@@ -39,7 +39,7 @@ public class BankSelect extends BankCommand.SubCommand {
         PLUGIN.debug(p.getName() + " wants to select a bank");
 
         if (!PLUGIN.hasWorldEdit() && !PLUGIN.hasGriefPrevention()) {
-            PLUGIN.debug("Cannot select bank. Neither WorldEdit nor GriefPrevention are enabled.");
+            PLUGIN.debug("Cannot select bank. Neither WorldEdit nor GriefPrevention is enabled.");
             p.sendMessage(LangUtils.getMessage(Message.CANT_SELECT_BANK));
             return true;
         }

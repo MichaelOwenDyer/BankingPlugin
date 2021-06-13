@@ -9,7 +9,6 @@ import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 
 import java.util.*;
@@ -23,6 +22,22 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
         this.plugin = plugin;
     }
 
+	/**
+	 * Gets all banks on the server.
+	 *
+	 * @return A new {@link HashSet} containing all banks
+	 */
+	@Override
+	public Set<Bank> getAll() {
+		return new HashSet<>(bankSelectionMap.values());
+	}
+
+	/**
+	 * Gets the {@link Bank} around a given {@link ChestLocation}
+	 *
+	 * @param chestLocation a {@link ChestLocation} that is contained entirely by the bank
+	 * @return Bank surrounding the given ChestLocation or <b>null</b> if no bank is found there
+	 */
     @Override
     public Bank getAt(ChestLocation chestLocation) {
 		for (Map.Entry<Selection, Bank> entry : bankSelectionMap.entrySet())
@@ -34,9 +49,10 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
     /**
 	 * Gets the {@link Bank} at a given block
 	 *
-	 * @param block {@link Location} of the bank
+	 * @param block a {@link Block} inside the bank
 	 * @return Bank at the given block or <b>null</b> if no bank is found there
 	 */
+    @Override
 	public Bank getAt(Block block) {
 		for (Map.Entry<Selection, Bank> entry : bankSelectionMap.entrySet())
 			if (entry.getKey().contains(block))
@@ -53,16 +69,6 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	public Bank getAt(Selection selection) {
 		return bankSelectionMap.get(selection);
 	}
-
-    /**
-	 * Gets all banks on the server.
-	 *
-	 * @return A new {@link HashSet} containing all banks
-	 */
-    @Override
-	public Set<Bank> getAll() {
-		return new HashSet<>(bankSelectionMap.values());
-    }
 
     /**
 	 * Adds a bank to the repository.

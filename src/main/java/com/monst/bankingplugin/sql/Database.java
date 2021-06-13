@@ -1079,7 +1079,7 @@ public abstract class Database {
 		}
 
 		boolean getNextBoolean() throws SQLException {
-			return Boolean.parseBoolean(rs.getString(index++));
+			return rs.getBoolean(index++);
 		}
 
 		Boolean getNextBooleanNullable() throws SQLException {

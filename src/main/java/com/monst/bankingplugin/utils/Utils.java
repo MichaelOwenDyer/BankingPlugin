@@ -160,8 +160,7 @@ public class Utils {
 
 	@SuppressWarnings("deprecation")
 	public static boolean isTransparent(Block block) {
-		return block.getType() == Material.CHEST
-				|| block.getType() == Material.TRAPPED_CHEST
+		return isChest(block)
 				|| block.getBlockData() instanceof Slab
 				|| block.getBlockData() instanceof Stairs
 				|| block.getType().isTransparent();

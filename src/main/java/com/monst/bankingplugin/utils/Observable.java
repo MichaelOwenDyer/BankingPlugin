@@ -8,8 +8,8 @@ import java.util.Set;
 
 public abstract class Observable {
 
-    final Set<GUI<?>> observers = new HashSet<>();
-    boolean cooldown = false;
+    private final Set<GUI<?>> observers = new HashSet<>();
+    private boolean cooldown = false;
 
     public void addObserver(GUI<?> observer) {
         observers.add(observer);
@@ -22,10 +22,8 @@ public abstract class Observable {
     public void notifyObservers() {
         if (!BankingPlugin.getInstance().isEnabled())
             return;
-        if (cooldown) {
-            BankingPlugin.getInstance().debug("GUIs were updated too quickly in succession!");
+        if (cooldown)
             return;
-        }
         Utils.runTaskLater(() -> cooldown = false, 1);
         observers.forEach(GUI::update);
         cooldown = true;

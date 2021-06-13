@@ -56,24 +56,6 @@ public class AccountProtectListener extends BankingPluginListener {
 			return;
 		}
 
-		if (account.isDoubleChest()) {
-			AccountContractEvent event = new AccountContractEvent(p, account);
-			event.fire();
-			if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
-				e.setCancelled(true);
-				p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CONTRACT_PROTECTED));
-				return;
-			}
-		} else {
-			AccountRemoveEvent event = new AccountRemoveEvent(p, account);
-			event.fire();
-			if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
-				e.setCancelled(true);
-				p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED));
-				return;
-			}
-		}
-
 		Bank bank = account.getBank();
 		if (bank.getReimburseAccountCreation().get() && account.isOwner(p) && !bank.isOwner(p)) {
 			double creationPrice = bank.getAccountCreationPrice().get();
@@ -96,10 +78,12 @@ public class AccountProtectListener extends BankingPluginListener {
 			SingleChestLocation newLoc = oldLoc.contract(b);
 			account.setChestLocation(newLoc);
 			accountRepo.update(account, account.callUpdateChestName(), AccountField.LOCATION);
+			new AccountContractEvent(p, account).fire();
 		} else {
 			accountRepo.remove(account, true);
 			plugin.debugf("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
+			new AccountRemoveEvent(p, account).fire();
 		}
 	}
 
@@ -226,11 +210,11 @@ public class AccountProtectListener extends BankingPluginListener {
 	 */
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onAccountItemMove(InventoryMoveItemEvent e) {
-        if (e.getInitiator().getType().equals(InventoryType.PLAYER))
+        if (e.getInitiator().getType() == InventoryType.PLAYER)
         	return;
-		if (accountRepo.isAccount(ChestLocation.from(e.getSource().getHolder())))
+        if (e.getSource().getType() == InventoryType.CHEST && accountRepo.isAccount(e.getSource().getLocation().getBlock()))
 			e.setCancelled(true);
-		else if (accountRepo.isAccount(ChestLocation.from(e.getDestination().getHolder())))
+		else if (e.getDestination().getType() == InventoryType.CHEST && accountRepo.isAccount(e.getDestination().getLocation().getBlock()))
 			e.setCancelled(true);
     }
 

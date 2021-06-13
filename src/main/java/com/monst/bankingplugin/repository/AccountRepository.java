@@ -57,6 +57,26 @@ public class AccountRepository extends Observable implements Repository<Account,
 		return new HashSet<>(accountLocationMap.values());
 	}
 
+    /**
+     * Gets the account at a given {@link ChestLocation}
+     *
+     * @param chestLocation ChestLocation of the account
+     * @return Account at the given ChestLocation or <b>null</b> if no account is found there
+     */
+    @Override
+	public Account getAt(ChestLocation chestLocation) {
+    	if (chestLocation == null)
+    		return null;
+    	return accountLocationMap.get(chestLocation);
+    }
+
+	/**
+	 * Gets the {@link Account} at a given block
+	 *
+	 * @param block a {@link Block} that the account is located at
+	 * @return Account at the given block or <b>null</b> if no account is found there
+	 */
+	@Override
 	public Account getAt(Block block) {
 		if (!Utils.isChest(block))
 			return null;
@@ -65,19 +85,6 @@ public class AccountRepository extends Observable implements Repository<Account,
 				return entry.getValue();
 		return null;
 	}
-
-    /**
-     * Gets the account at a given location
-     *
-     * @param location Location of the account
-     * @return Account at the given location or <b>null</b> if no account is found there
-     */
-    @Override
-	public Account getAt(ChestLocation location) {
-    	if (location == null)
-    		return null;
-    	return accountLocationMap.get(location);
-    }
 
 	/**
 	 * Adds and saves an account in the current session. Can also be used to update an already existing account.
