@@ -5,7 +5,6 @@ import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
@@ -96,7 +95,7 @@ public class BankConfigure extends BankCommand.SubCommand {
 
         new BankConfigureEvent(sender, bank, field, value, previousValue).fire();
 
-        bankRepo.update(bank, Callback.blank(), field);
+        bankRepo.update(bank, field);
         return true;
     }
 

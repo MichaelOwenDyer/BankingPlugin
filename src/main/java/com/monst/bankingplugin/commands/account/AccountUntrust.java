@@ -62,7 +62,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
         }
 
         sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_UNTRUST, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
-        ClickType.setPlayerClickType(p, ClickType.untrust(playerToUntrust));
+        ClickType.setUntrustClickType(p, playerToUntrust);
         PLUGIN.debug(sender.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
         return true;
     }
@@ -76,6 +76,8 @@ public class AccountUntrust extends AccountCommand.SubCommand {
     }
 
     public static void untrust(Player executor, Account account, OfflinePlayer playerToUntrust) {
+        ClickType.removeClickType(executor);
+
         if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
             if (account.isTrusted(executor)) {
                 executor.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));

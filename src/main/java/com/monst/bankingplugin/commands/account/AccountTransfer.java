@@ -6,7 +6,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountTransferCommandEvent;
 import com.monst.bankingplugin.events.account.AccountTransferEvent;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -68,7 +67,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         }
 
         p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_TRANSFER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
-        ClickType.setPlayerClickType(p, ClickType.transfer(newOwner));
+        ClickType.setTransferClickType(p, newOwner);
         PLUGIN.debug(p.getName() + " is transferring ownership of an account to " + newOwner.getName());
         return true;
     }
@@ -84,7 +83,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         return Utils.filter(returnCompletions, string -> Utils.startsWithIgnoreCase(string, args[1]));
     }
 
-    public void transfer(Player p, OfflinePlayer newOwner, Account account) {
+    public void transfer(Player p, Account account, OfflinePlayer newOwner) {
         PLUGIN.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
 
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
@@ -93,14 +92,14 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
                 p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
             else
                 p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER));
-            ClickType.removePlayerClickType(p);
+            ClickType.removeClickType(p);
             return;
         }
 
         if (account.isOwner(newOwner)) {
             PLUGIN.debug(p.getName() + " is already owner of account");
             p.sendMessage(LangUtils.getMessage(Message.ALREADY_OWNER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
-            ClickType.removePlayerClickType(p);
+            ClickType.removeClickType(p);
             return;
         }
 
@@ -136,8 +135,8 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         account.setOwner(newOwner);
         if (!hasCustomName)
             account.resetName();
-        PLUGIN.getAccountRepository().update(account, Callback.blank(), AccountField.OWNER);
-        ClickType.removePlayerClickType(p);
+        PLUGIN.getAccountRepository().update(account, AccountField.OWNER);
+        ClickType.removeClickType(p);
     }
 
 }

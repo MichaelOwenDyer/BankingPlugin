@@ -68,7 +68,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
 
         PLUGIN.debug(sender.getName() + " can now click an account to get info");
         sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_INFO));
-        ClickType.setPlayerClickType(((Player) sender), ClickType.info());
+        ClickType.setInfoClickType((Player) sender);
         return true;
     }
 
@@ -78,17 +78,16 @@ public class AccountInfo extends AccountCommand.SubCommand {
      * @param account Account from which the information will be retrieved
      */
     public static void info(Player player, Account account) {
+        ClickType.removeClickType(player);
         PLUGIN.debugf("%s is retrieving %s account info%s (#%d)",
                 player.getName(), (account.isOwner(player) ? "their" : account.getOwner().getName() + "'s"),
                 (account.isCoOwner(player) ? " (is co-owner)" : ""), account.getID());
-
         AccountInfoEvent event = new AccountInfoEvent(player, account);
         event.fire();
         if (event.isCancelled()) {
             PLUGIN.debugf("Account info event cancelled (#%d)", account.getID());
             return;
         }
-
         new AccountGUI(account).open(player);
     }
 

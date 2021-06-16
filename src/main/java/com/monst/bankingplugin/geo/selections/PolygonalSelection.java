@@ -68,8 +68,8 @@ public class PolygonalSelection extends Selection {
 			BlockVector2D point = vertices.get(i);
 			polygon[0][i] = new Integer[] { point.getX(), point.getZ() };
 		}
-		PolyLabel.Result result = PolyLabel.polyLabel(polygon);
-		return new BlockVector3D((int) result.getX(), (maxY + minY) / 2, (int) result.getY());
+		PolyLabel result = PolyLabel.polyLabel(polygon);
+		return new BlockVector3D((int) Math.round(result.getX()), (maxY + minY) / 2, (int) Math.round(result.getY()));
 	}
 
 	@Override

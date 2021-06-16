@@ -421,7 +421,7 @@ message.click-account-remove=&6Click an account chest to remove an account.
 # Available placeholders:
 message.click-account-rename=&6Click an account chest to rename it.
 
-# Scenario: A player runs the /account set command and must click an account chest.
+# Scenario: A player runs the /account configure command and must click an account chest.
 # Available placeholders: %PROPERTY%, %VALUE%
 message.click-account-set=&6Click an account chest to set &b%PROPERTY%&6 to &b%VALUE%&6.
 

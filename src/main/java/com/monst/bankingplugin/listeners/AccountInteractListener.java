@@ -2,28 +2,22 @@ package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.commands.account.*;
+import com.monst.bankingplugin.commands.account.AccountInfo;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.ClickType.EClickType;
-import com.monst.bankingplugin.utils.ClickType.SetPair;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.Objects;
 
 public class AccountInteractListener extends BankingPluginListener {
 
@@ -38,142 +32,64 @@ public class AccountInteractListener extends BankingPluginListener {
 	@SuppressWarnings({"unused"})
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onAccountInteract(PlayerInteractEvent e) {
-
-		Block b = e.getClickedBlock();
-		if (b == null)
-			return;
-		if (!Utils.isChest(b))
-			return;
-		Chest chest = (Chest) b.getState();
-
 		Player p = e.getPlayer();
-		Account account = accountRepo.getAt(b);
-		ClickType<?> clickType = ClickType.getPlayerClickType(p);
+		Block block = e.getClickedBlock();
+		Action action = e.getAction();
+
+		if (block == null)
+			return;
+		if (!Utils.isChest(block))
+			return;
+		if (action != Action.RIGHT_CLICK_BLOCK && action != Action.LEFT_CLICK_BLOCK)
+			return;
+
+		ClickType clickType = ClickType.getPlayerClickType(p);
+		Account account = accountRepo.getAt(block);
 		if (account == null && clickType == null)
 			return;
 
 		if (clickType != null) {
 
-			if (account == null && !(clickType.getType() == EClickType.CREATE
-					|| clickType.getType() == EClickType.MIGRATE
-					|| clickType.getType() == EClickType.RECOVER))
+			if (action == Action.LEFT_CLICK_BLOCK)
 				return;
-			if (account == null && clickType.getType() == EClickType.MIGRATE && clickType.get() == null)
+			if (account == null && !clickType.canClickedBlockNotBeAccount())
 				return;
-			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK))
-				return;
+
+			e.setCancelled(true);
 
 			switch (clickType.getType()) {
-
 				case CREATE:
-
-					if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-						p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
-						plugin.debug(p.getName() + " does not have permission to create an account on a protected chest.");
-					} else
-						AccountCreate.create(p, chest);
-					ClickType.removePlayerClickType(p);
-					break;
-
-				case INFO:
-
-					Objects.requireNonNull(account);
-					AccountInfo.info(p, account);
-					ClickType.removePlayerClickType(p);
-					break;
-
-				case MIGRATE:
-
-					if (clickType.get() == null) {
-						Objects.requireNonNull(account);
-						AccountMigrate.migratePartOne(p, account);
-					} else {
-						if (e.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-							p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_PROTECTED));
-							plugin.debug(p.getName() + " does not have permission to migrate an account to a protected chest.");
-						} else
-							AccountMigrate.migratePartTwo(p, chest, clickType.get());
-						ClickType.removePlayerClickType(p);
-					}
-					break;
-
 				case RECOVER:
-
-					Account toRecover = Objects.requireNonNull(clickType.get());
-					AccountRecover.recover(p, chest, toRecover);
-					ClickType.removePlayerClickType(p);
+					clickType.execute(p, block); // Operations on a block
 					break;
-
-				case REMOVE:
-
-					Objects.requireNonNull(account);
-					AccountRemove.getInstance().remove(p, account);
+				case MIGRATE_SELECT_NEW_CHEST:
+					clickType.execute(p, account, block); // Operations on an account and a block
 					break;
-
+				case INFO:
 				case RENAME:
-
-					String newName = Objects.requireNonNull(clickType.get());
-					Objects.requireNonNull(account);
-					AccountRename.rename(p, account, newName);
-					ClickType.removePlayerClickType(p);
-					break;
-
-				case SET:
-
-					SetPair pair = clickType.get();
-					AccountSet.set(p, account, pair.getField(), pair.getValue());
-					ClickType.removePlayerClickType(p);
-					break;
-
-				case TRANSFER:
-
-					Objects.requireNonNull(account);
-					OfflinePlayer newOwner = clickType.get();
-					AccountTransfer.getInstance().transfer(p, newOwner, account);
-					break;
-
+				case REMOVE:
 				case TRUST:
-
-					Objects.requireNonNull(account);
-					OfflinePlayer playerToTrust = clickType.get();
-					AccountTrust.trust(p, account, playerToTrust);
-					ClickType.removePlayerClickType(p);
-					break;
-
 				case UNTRUST:
-
-					Objects.requireNonNull(account);
-					OfflinePlayer playerToUntrust = clickType.get();
-					AccountUntrust.untrust(p, account, playerToUntrust);
-					ClickType.removePlayerClickType(p);
-					break;
+				case MIGRATE_SELECT_ACCOUNT:
+				case TRANSFER:
+				case CONFIGURE:
+					clickType.execute(p, account); // Operations on an account
 			}
-			e.setCancelled(true);
 
 		} else {
 
-			if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK))
-				return;
-			if (p.isSneaking() && Utils.hasAxeInHand(p) && e.getAction() == Action.LEFT_CLICK_BLOCK)
+			if (action == Action.LEFT_CLICK_BLOCK && p.isSneaking() && Utils.hasAxeInHand(p))
 				return;
 
-			// Handles account info requests using config info item
+			// The account info item will allow account info requests with no ClickType
 			ItemStack infoItem = Config.accountInfoItem.get();
-
-			if (infoItem != null) {
-				ItemStack item = Utils.getItemInMainHand(p);
-				if (item != null && infoItem.getType() == item.getType()) {
-					e.setCancelled(true);
-					AccountInfo.info(p, account);
-					return;
-				}
-				item = Utils.getItemInOffHand(p);
-				if (item != null && infoItem.getType() == item.getType()) {
-					e.setCancelled(true);
-					AccountInfo.info(p, account);
-					return;
-				}
-			}
+			if (infoItem != null)
+				for (ItemStack item : new ItemStack[] { Utils.getItemInMainHand(p), Utils.getItemInOffHand(p) })
+					if (item != null && infoItem.getType() == item.getType()) {
+						e.setCancelled(true);
+						AccountInfo.info(p, account);
+						return;
+					}
 
 			if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !p.isSneaking()) {
 				if (!account.isTrusted(p) && !account.getBank().isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
@@ -187,7 +103,7 @@ public class AccountInteractListener extends BankingPluginListener {
 				e.setCancelled(false);
 				if (!account.isTrusted(p))
 					p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_OPENED,
-							new Replacement(Placeholder.PLAYER, account.getOwner().getName())
+							new Replacement(Placeholder.PLAYER, account.getOwnerDisplayName())
 					));
 
 				plugin.debugf("%s is opening %s account%s (#%d)",

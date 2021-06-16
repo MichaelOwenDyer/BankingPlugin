@@ -23,7 +23,7 @@ public class Permissions {
 	public static final String ACCOUNT_RECOVER = "bankingplugin.account.recover";
 	public static final String ACCOUNT_RENAME = "bankingplugin.account.rename";
 	public static final String ACCOUNT_RENAME_OTHER = "bankingplugin.account.rename.other";
-	public static final String ACCOUNT_SET = "bankingplugin.account.set";
+	public static final String ACCOUNT_CONFIGURE = "bankingplugin.account.configure";
 	public static final String ACCOUNT_TRANSFER = "bankingplugin.account.transfer";
 	public static final String ACCOUNT_TRANSFER_OTHER = "bankingplugin.account.transfer.other";
 	public static final String ACCOUNT_EXTEND_OTHER = "bankingplugin.account.extend.other";

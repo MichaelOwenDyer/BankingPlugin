@@ -270,15 +270,6 @@ public class Config {
 	 */
 	public static LanguageFile languageFile = new LanguageFile();
 
-	/* ----------------------------------------------- */
-
-	private final BankingPlugin plugin;
-
-	public Config(BankingPlugin plugin) {
-        this.plugin = plugin;
-        plugin.saveDefaultConfig();
-    }
-
 	/**
 	 * <p>Set a configuration value</p>
 	 * <i>Config is automatically reloaded</i>
@@ -286,9 +277,9 @@ public class Config {
 	 * @param field 	Property to change
 	 * @param input		Value to set
 	 */
-	public void set(ConfigField field, String input) throws ArgumentParseException {
+	public static void set(ConfigField field, String input) throws ArgumentParseException {
 		field.getConfigValue().set(input);
-		new PluginConfigureEvent(plugin, field, input).fire();
+		new PluginConfigureEvent(BankingPlugin.getInstance(), field, input).fire();
 	}
 
 }

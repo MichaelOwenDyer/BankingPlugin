@@ -61,7 +61,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
         }
 
         sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_TRUST, new Replacement(Placeholder.PLAYER, playerToTrust::getName)));
-        ClickType.setPlayerClickType(p, ClickType.trust(playerToTrust));
+        ClickType.setTrustClickType(p, playerToTrust);
         PLUGIN.debug(sender.getName() + " is trusting " + playerToTrust.getName() + " to an account");
         return true;
     }
@@ -77,6 +77,8 @@ public class AccountTrust extends AccountCommand.SubCommand {
     }
 
     public static void trust(Player executor, Account account, OfflinePlayer playerToTrust) {
+        ClickType.removeClickType(executor);
+
         if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
             if (account.isTrusted(executor)) {
                 executor.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));

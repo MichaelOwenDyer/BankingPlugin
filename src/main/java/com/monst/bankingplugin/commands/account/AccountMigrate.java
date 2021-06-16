@@ -7,14 +7,13 @@ import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.lang.*;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
+import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
 
 import java.util.Objects;
 
@@ -53,36 +52,34 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         }
 
         p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_MIGRATE));
-        ClickType.setPlayerClickType(p, ClickType.migrate(null));
+        ClickType.setMigrateClickType(p);
         PLUGIN.debug(p.getName() + " is migrating an account");
         return true;
     }
 
-    public static void migratePartOne(Player p, Account toMigrate) {
+    public static void selectAccount(Player p, Account accountToMove) {
 
-        if (!toMigrate.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_OTHER)) {
-            if (toMigrate.isTrusted(p)) {
-                PLUGIN.debugf("%s cannot migrate account #%d as a co-owner", p.getName(), toMigrate.getID());
+        if (!accountToMove.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_OTHER)) {
+            if (accountToMove.isTrusted(p)) {
+                PLUGIN.debugf("%s cannot migrate account #%d as a co-owner", p.getName(), accountToMove.getID());
                 p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
                 return;
             }
-            PLUGIN.debugf("%s does not have permission to migrate account #%d", p.getName(), toMigrate.getID());
+            PLUGIN.debugf("%s does not have permission to migrate account #%d", p.getName(), accountToMove.getID());
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER));
             return;
         }
 
-        PLUGIN.debugf("%s wants to migrate account #%d", p.getName(), toMigrate.getID());
-        ClickType.setPlayerClickType(p, ClickType.migrate(toMigrate));
+        PLUGIN.debugf("%s wants to migrate account #%d", p.getName(), accountToMove.getID());
+        ClickType.setMigrateClickType(p, accountToMove);
         p.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_MIGRATE));
 
     }
 
-    public static void migratePartTwo(Player p, Chest c, Account toMigrate) {
-        InventoryHolder ih = c.getInventory().getHolder();
-        ChestLocation chestLocation = ChestLocation.from(ih);
-        Account clickedAccount = accountRepo.getAt(chestLocation);
+    public static void selectNewChest(Player p, Account accountToMove, Block targetBlock) {
+        Account clickedAccount = accountRepo.getAt(targetBlock);
         if (clickedAccount != null) {
-            if (Objects.equals(toMigrate, clickedAccount)) {
+            if (Objects.equals(accountToMove, clickedAccount)) {
                 PLUGIN.debugf("%s clicked the same chest to migrate to.", p.getName());
                 p.sendMessage(LangUtils.getMessage(Message.SAME_CHEST));
             } else {
@@ -92,30 +89,29 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             return;
         }
 
-        if (chestLocation.isBlocked()) {
+        Chest c = (Chest) targetBlock.getState();
+        ChestLocation newChestLocation = ChestLocation.from(c.getInventory().getHolder());
+
+        if (newChestLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             PLUGIN.debug("Chest is blocked.");
             return;
         }
 
-        Bank newBank = chestLocation.getBank();
+        Bank newBank = newChestLocation.getBank();
         if (newBank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             PLUGIN.debug("Chest is not in a bank.");
             return;
         }
 
-        if (!Objects.equals(toMigrate.getBank(), newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
+        if (!Objects.equals(accountToMove.getBank(), newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
             p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_BANK));
             PLUGIN.debugf("%s does not have permission to migrate their account to another bank.", p.getName());
             return;
         }
 
-        Account newAccount = Account.clone(toMigrate);
-        newAccount.setBank(newBank);
-        newAccount.setChestLocation(chestLocation);
-
-        AccountMigrateEvent event = new AccountMigrateEvent(p, newAccount, chestLocation);
+        AccountMigrateEvent event = new AccountMigrateEvent(p, accountToMove, newChestLocation);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             PLUGIN.debug("No permission to create account on a protected chest.");
@@ -123,17 +119,17 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             return;
         }
 
-        Bank oldBank = toMigrate.getBank();
+        Bank oldBank = accountToMove.getBank();
 
         double creationPrice = newBank.getAccountCreationPrice().get();
         creationPrice *= (newBank.isOwner(p) ? 0 : 1);
-        creationPrice *= chestLocation.getSize();
+        creationPrice *= newChestLocation.getSize();
 
         double reimbursement = oldBank.getReimburseAccountCreation().get() ?
                 oldBank.getAccountCreationPrice().get() :
                 0.0d;
         reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
-        reimbursement *= toMigrate.getSize(); // Double chest is worth twice as much
+        reimbursement *= accountToMove.getSize(); // Double chest is worth twice as much
 
         double net = reimbursement - creationPrice;
         if (!PayrollOffice.allowPayment(p, net)) {
@@ -178,18 +174,12 @@ public class AccountMigrate extends AccountCommand.SubCommand {
                 ));
         }
 
-        if (newAccount.create()) {
-            PLUGIN.debugf("Account migrated (#%d)", newAccount.getID());
-            accountRepo.remove(toMigrate, false, Callback.of(
-                    result -> {
-                        accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION); // Database entry is replaced
-                        p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_MIGRATED));
-                    },
-                    error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-                            new Replacement(Placeholder.ERROR, error::getLocalizedMessage)
-                    ))
-            ));
-        }
+        accountToMove.clearChestName();
+        accountToMove.setChestLocation(newChestLocation);
+        accountToMove.setBank(newBank);
+        accountRepo.update(accountToMove, accountToMove.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
+        p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_MIGRATED));
+        PLUGIN.debugf("Account migrated (#%d)", accountToMove.getID());
     }
 
 }

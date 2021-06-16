@@ -84,7 +84,7 @@ public class WorldGuardListener extends BankingPluginListener {
 	}
 
 	private boolean isChestInteractAllowed(Player player, Block block) {
-		ClickType<?> clickType = ClickType.getPlayerClickType(player);
+		ClickType clickType = ClickType.getPlayerClickType(player);
 		if (clickType != null && clickType.getType() == EClickType.CREATE) {
 			// If the player is about to create an account, but does not have
 			// access to the chest, show the 'permission denied' message
@@ -93,8 +93,9 @@ public class WorldGuardListener extends BankingPluginListener {
 			Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag("chest-access", WrappedState.class);
 			if (!flag.isPresent())
 				plugin.debug("WorldGuard flag 'chest-access' is not present!");
-			return flag.map(f -> wgWrapper.queryFlag(player, block.getLocation(), f).orElse(WrappedState.DENY))
-					.orElse(WrappedState.DENY) == WrappedState.ALLOW;
+			return flag.map(f ->
+					wgWrapper.queryFlag(player, block.getLocation(), f).orElse(WrappedState.DENY)
+			).orElse(WrappedState.DENY) == WrappedState.ALLOW;
 		}
 		// Don't show 'permission denied' messages for any kind of
 		// account interaction even if block interaction is not

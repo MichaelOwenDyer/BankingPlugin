@@ -33,7 +33,7 @@ public class AccountRecoveryGUI extends AccountListGUI {
         ItemStackTemplate template = new StaticItemTemplate(item);
         Slot.ClickHandler clickHandler = (player, info) -> {
             player.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_RECOVER));
-            ClickType.setPlayerClickType(player, ClickType.recover(account));
+            ClickType.setRecoverClickType(player, account);
             close(player);
         };
         return SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build();

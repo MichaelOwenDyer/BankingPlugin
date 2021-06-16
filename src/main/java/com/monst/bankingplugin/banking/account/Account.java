@@ -162,7 +162,7 @@ public class Account extends BankingEntity {
 
 		try {
 			inventoryHolder = getChestLocation().findInventoryHolder();
-			setChestLocation(ChestLocation.from(inventoryHolder));
+			chestLocation = ChestLocation.from(inventoryHolder);
 			getChestLocation().checkSpaceAbove();
 		} catch (ChestNotFoundException | ChestBlockedException e) {
 			plugin.getAccountRepository().remove(this, Config.removeAccountOnError.get());
@@ -288,8 +288,7 @@ public class Account extends BankingEntity {
 	 * @return a {@link String} describing the location of the account chest.
 	 */
 	public String getCoordinates() {
-		Location loc = chestLocation.getMinimumLocation();
-		return loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ();
+		return chestLocation.toString();
 	}
 
 	/**

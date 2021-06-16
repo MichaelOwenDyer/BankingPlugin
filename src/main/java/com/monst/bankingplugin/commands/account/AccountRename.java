@@ -52,12 +52,13 @@ public class AccountRename extends AccountCommand.SubCommand {
             return true;
         }
 
-        ClickType.setPlayerClickType(p, ClickType.rename(nickname));
+        ClickType.setRenameClickType(p, nickname);
         p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_RENAME));
         return true;
     }
 
     public static void rename(Player executor, Account account, String value) {
+        ClickType.removeClickType(executor);
         if (!(account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_RENAME_OTHER))) {
             PLUGIN.debugf("%s does not have permission to rename another player's account", executor.getName());
             executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_RENAME_OTHER));

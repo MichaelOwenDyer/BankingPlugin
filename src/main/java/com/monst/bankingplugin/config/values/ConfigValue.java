@@ -28,7 +28,6 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         return Collections.singletonList(getFormatted());
     }
 
-    @Override
     public final T get() {
         if (lastSeenValue == null)
             PLUGIN.reloadConfig();

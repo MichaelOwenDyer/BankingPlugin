@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.control;
 
+import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.ConfigField;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import com.monst.bankingplugin.lang.LangUtils;
@@ -58,7 +59,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         String previousValue = field.getConfigValue().getFormatted();
 
         try {
-            PLUGIN.getPluginConfig().set(field, input);
+            Config.set(field, input);
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
             PLUGIN.debugf("Could not parse argument: %s", e.getLocalizedMessage());

@@ -174,7 +174,6 @@ public class AccountRepository extends Observable implements Repository<Account,
 		if (account == null)
 			return;
 		notFoundAccounts.remove(account);
-		accountLocationMap.put(account.getChestLocation(), account);
 		notifyObservers();
 	}
 

@@ -56,7 +56,7 @@ public class InterestEventListener extends BankingPluginListener {
 		banksAndAccounts.forEach((bank, accounts) -> {
 			for (Account account : accounts) {
 				if (!account.allowNextPayout()) { // Account is frozen, pays no interest
-					accountRepo.update(account, Callback.blank(),
+					accountRepo.update(account,
 							AccountField.DELAY_UNTIL_NEXT_PAYOUT,
 							AccountField.REMAINING_OFFLINE_PAYOUTS,
 							AccountField.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET
@@ -103,7 +103,7 @@ public class InterestEventListener extends BankingPluginListener {
 						System.currentTimeMillis()
 				));
 
-				accountRepo.update(account, Callback.blank(),
+				accountRepo.update(account,
 						AccountField.MULTIPLIER_STAGE,
 						AccountField.DELAY_UNTIL_NEXT_PAYOUT,
 						AccountField.REMAINING_OFFLINE_PAYOUTS,

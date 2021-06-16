@@ -48,7 +48,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
 
         PLUGIN.debug(sender.getName() + " can now click a chest to remove an account");
         sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_REMOVE));
-        ClickType.setPlayerClickType(((Player) sender), ClickType.remove());
+        ClickType.setRemoveClickType((Player) sender);
         return true;
     }
 
@@ -66,7 +66,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
             else
                 p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER));
             if (!hasEntry(p))
-                ClickType.removePlayerClickType(p);
+                ClickType.removeClickType(p);
             return;
         }
 
@@ -118,7 +118,6 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
 
         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         PLUGIN.getAccountRepository().remove(account, true);
-        ClickType.removePlayerClickType(p);
         PLUGIN.debug("Removed account (#" + account.getID() + ")");
     }
 

@@ -30,7 +30,7 @@ public interface ConfirmableAccountAction extends Confirmable<Integer> {
     @Override
     default void removeEntry(Player p) {
         unconfirmed.remove(p.getUniqueId());
-        ClickType.removePlayerClickType(p);
+        ClickType.removeClickType(p);
     }
 
     @Override
@@ -39,7 +39,7 @@ public interface ConfirmableAccountAction extends Confirmable<Integer> {
         ids.remove(id);
         if (ids.isEmpty()) {
             unconfirmed.remove(p.getUniqueId());
-            ClickType.removePlayerClickType(p);
+            ClickType.removeClickType(p);
         } else
             unconfirmed.put(p.getUniqueId(), ids);
     }

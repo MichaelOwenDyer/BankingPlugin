@@ -12,6 +12,7 @@ import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -60,18 +61,19 @@ public class AccountCreate extends AccountCommand.SubCommand {
 
         PLUGIN.debug(p.getName() + " can now click a chest to create an account");
         p.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_CREATE));
-        ClickType.setPlayerClickType(p, ClickType.create());
+        ClickType.setCreateClickType(p);
         return true;
     }
 
     /**
-     * Create a new account
+     * Creates a new account at the specified block.
      *
      * @param p  Player who executed the command will receive the message
      *                          and become the owner of the account
-     * @param c  Chest where the account will be located
+     * @param b  Clicked chest block to create the account at
      */
-    public static void create(Player p, Chest c) {
+    public static void create(Player p, Block b) {
+        Chest c = (Chest) b.getState();
         InventoryHolder ih = c.getInventory().getHolder();
         ChestLocation chestLocation = ChestLocation.from(ih);
 

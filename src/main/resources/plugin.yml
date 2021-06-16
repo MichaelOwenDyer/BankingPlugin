@@ -41,7 +41,7 @@ permissions:
             bankingplugin.account.removeall: true
             bankingplugin.account.rename: true
             bankingplugin.account.rename.other: true
-            bankingplugin.account.set: true
+            bankingplugin.account.configure: true
             bankingplugin.account.transfer: true
             bankingplugin.account.transfer.other: true
             bankingplugin.account.trust: true
@@ -149,7 +149,7 @@ permissions:
         children:
             bankingplugin.account.rename: true
 
-    bankingplugin.account.set:
+    bankingplugin.account.configure:
         description: Gives access to configuration of internal account values such as multiplier and interest delay.
         default: op
 

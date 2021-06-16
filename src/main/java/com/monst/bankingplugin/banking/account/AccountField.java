@@ -2,7 +2,9 @@ package com.monst.bankingplugin.banking.account;
 
 import com.monst.bankingplugin.banking.BankingEntityField;
 
+import java.util.Locale;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public enum AccountField implements BankingEntityField<Account> {
 
@@ -23,6 +25,8 @@ public enum AccountField implements BankingEntityField<Account> {
     REMAINING_OFFLINE_PAYOUTS ("RemainingOfflinePayouts", Account::getRemainingOfflinePayouts),
     REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET ("RemainingOfflinePayoutsUntilReset", Account::getRemainingOfflinePayoutsUntilReset);
 
+    private static final AccountField[] VALUES = values();
+
     private final String databaseAttribute;
     private final Function<Account, Object> getter;
 
@@ -38,6 +42,22 @@ public enum AccountField implements BankingEntityField<Account> {
     @Override
     public Object getFrom(Account account) {
         return getter.apply(account);
+    }
+
+    public static AccountField getByName(String name) {
+        return stream()
+                .filter(field -> field.toString().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static Stream<AccountField> stream() {
+        return Stream.of(VALUES);
+    }
+
+    @Override
+    public String toString() {
+        return name().toLowerCase(Locale.ROOT).replace('_', '-');
     }
 
 }

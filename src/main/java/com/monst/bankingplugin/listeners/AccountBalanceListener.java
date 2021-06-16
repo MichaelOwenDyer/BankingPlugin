@@ -10,7 +10,6 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.sql.logging.AccountTransaction;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -74,7 +73,7 @@ public class AccountBalanceListener extends BankingPluginListener {
 				));
 
 		account.setBalance(appraisal);
-		accountRepo.update(account, Callback.blank(), AccountField.BALANCE);
+		accountRepo.update(account, AccountField.BALANCE);
 
 		plugin.debugf("Account #%d has been updated with a new balance of %s", account.getID(), Utils.format(appraisal));
 		new AccountTransactionEvent(executor, account, difference, appraisal).fire();

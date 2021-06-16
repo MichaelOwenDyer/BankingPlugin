@@ -44,7 +44,6 @@ public class BankingPlugin extends JavaPlugin {
 
 	private static BankingPlugin instance;
 
-	private Config config;
 	private LanguageConfig languageConfig;
 
 	private AccountCommand accountCommand;
@@ -85,7 +84,7 @@ public class BankingPlugin extends JavaPlugin {
     public void onLoad() {
         instance = this;
 
-        config = new Config(this);
+		saveDefaultConfig();
         languageConfig = new LanguageConfig(this);
 
         if (Config.enableDebugLog.get())
@@ -477,13 +476,6 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public BankRepository getBankRepository() {
 		return bankRepository;
-	}
-
-	/**
-	 * @return BankingPlugin's {@link Config}
-	 */
-	public Config getPluginConfig() {
-		return config;
 	}
 
 	public LanguageConfig getLanguageConfig() {

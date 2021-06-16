@@ -61,6 +61,10 @@ public interface Repository<Entity extends BankingEntity, Field extends BankingE
 
     void add(Entity entity, boolean addToDatabase, Callback<Integer> callback);
 
+    default void update(Entity entity, Field... fields) {
+        update(entity, Callback.blank(), fields);
+    }
+
     void update(Entity entity, Callback<Void> callback, Field... fields);
 
     default void remove(Entity entity, boolean removeFromDatabase) {

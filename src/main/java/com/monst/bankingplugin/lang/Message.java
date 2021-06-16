@@ -95,12 +95,12 @@ public enum Message {
             Placeholder.ACCOUNT_NAME
     ),
     ACCOUNT_SET_MULTIPLIER (
-            "An admin sets an account multiplier.", // TODO: Test
+            "An admin sets the multiplier of an account.", // TODO: Test
             "&6Account multiplier set to &b%MULTIPLIER%x&6.",
             Placeholder.MULTIPLIER, Placeholder.MULTIPLIER_STAGE
     ),
     ACCOUNT_SET_INTEREST_DELAY (
-            "An admin sets an account interest delay.",
+            "An admin sets the interest delay of an account.",
             "&6Account interest delay set to &b%NUMBER%&6.",
             Placeholder.NUMBER
     ),
@@ -212,7 +212,7 @@ public enum Message {
             "A player attempts to create a bank without a WorldEdit selection or specifying coordinates in the command.",
             "&cYou must select a WorldEdit region or specify coordinates manually."
     ),
-    CANT_SELECT_BANK(
+    CANT_SELECT_BANK (
             "A player attempts to select a bank, but neither WorldEdit nor GriefPrevention is enabled.",
             "&cWorldEdit must be enabled to select a bank."
     ),
@@ -497,8 +497,8 @@ public enum Message {
             "A player runs the /account rename command and must click an account chest.",
             "&6Click an account chest to rename it."
     ),
-    CLICK_ACCOUNT_SET (
-            "A player runs the /account set command and must click an account chest.",
+    CLICK_ACCOUNT_CONFIGURE (
+            "A player runs the /account configure command and must click an account chest.",
             "&6Click an account chest to set &b%PROPERTY%&6 to &b%VALUE%&6.",
             Placeholder.PROPERTY, Placeholder.VALUE
     ),
@@ -613,7 +613,7 @@ public enum Message {
             "A player attempts to contract a protected account chest without permission.",
             "&cYou do not have permission to contract a protected account chest."
     ),
-    NO_PERMISSION_ACCOUNT_SET (
+    NO_PERMISSION_ACCOUNT_CONFIGURE (
             "A player attempts to set the multiplier, interest delay, etc. of an account without permission.",
             "&cYou do not have permission to set internal account values."
     ),
@@ -747,9 +747,9 @@ public enum Message {
             "&a/%COMMAND% removeall &6- Remove all accounts.",
             Placeholder.COMMAND
     ),
-    COMMAND_USAGE_ACCOUNT_SET (
+    COMMAND_USAGE_ACCOUNT_CONFIGURE (
             "",
-            "&a/%COMMAND% set [property] [value] &6- Set an account value.",
+            "&a/%COMMAND% configure [property] [value] &6- Configure an account value.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_ACCOUNT_TRUST (
@@ -884,7 +884,7 @@ public enum Message {
             "",
             "Manage the plugin."
     ),
-    NOT_A_CONFIG_VALUE(
+    NOT_A_CONFIG_VALUE (
             "An admin tries to configure a property in the config that does not exist.",
             "&c\"%STRING%\" is not a configuration property.",
             Placeholder.STRING

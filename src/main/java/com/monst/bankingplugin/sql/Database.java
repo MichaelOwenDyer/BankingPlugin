@@ -43,10 +43,21 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class Database {
+
+	// Disable log messages from Hikari
+	static {
+		Logger.getLogger("com.zaxxer.hikari.pool.PoolBase").setLevel(Level.OFF);
+		Logger.getLogger("com.zaxxer.hikari.pool.HikariPool").setLevel(Level.OFF);
+		Logger.getLogger("com.zaxxer.hikari.HikariDataSource").setLevel(Level.OFF);
+		Logger.getLogger("com.zaxxer.hikari.HikariConfig").setLevel(Level.OFF);
+		Logger.getLogger("com.zaxxer.hikari.util.DriverDataSource").setLevel(Level.OFF);
+	}
 
 	protected final BankingPlugin plugin = BankingPlugin.getInstance();
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

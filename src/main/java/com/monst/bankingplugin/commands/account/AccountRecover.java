@@ -8,9 +8,8 @@ import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.gui.AccountRecoveryGUI;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
+import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -44,13 +43,15 @@ public class AccountRecover extends AccountCommand.SubCommand {
         return true;
     }
 
-    public static void recover(Player p, Chest c, Account toRecover) {
-        ChestLocation chestLocation = ChestLocation.from(c.getInventory().getHolder());
-        if (accountRepo.isAccount(chestLocation)) {
+    public static void recover(Player p, Account toRecover, Block b) {
+        if (accountRepo.isAccount(b)) {
             PLUGIN.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             return;
         }
+
+        Chest c = (Chest) b.getState();
+        ChestLocation chestLocation = ChestLocation.from(c.getInventory().getHolder());
 
         if (chestLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
@@ -65,11 +66,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
             return;
         }
 
-        Account newAccount = Account.clone(toRecover);
-        newAccount.setBank(bank);
-        newAccount.setChestLocation(chestLocation);
-
-        AccountRecoverEvent event = new AccountRecoverEvent(p, newAccount, chestLocation);
+        AccountRecoverEvent event = new AccountRecoverEvent(p, toRecover, chestLocation);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             PLUGIN.debug("No permission to recover an account to a protected chest.");
@@ -77,14 +74,11 @@ public class AccountRecover extends AccountCommand.SubCommand {
             return;
         }
 
-        if (newAccount.create()) {
-            PLUGIN.debugf("Account recovered (#%d)", newAccount.getID());
-            accountRepo.removeInvalidAccount(toRecover);
-            accountRepo.update(newAccount, newAccount.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
-            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RECOVERED));
-        } else {
-            PLUGIN.debug("Could not recover account");
-            p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, "Could not recover account.")));
-        }
+        PLUGIN.debugf("Account recovered (#%d)", toRecover.getID());
+        toRecover.setChestLocation(chestLocation);
+        toRecover.setBank(bank);
+        accountRepo.removeInvalidAccount(toRecover);
+        accountRepo.update(toRecover, toRecover.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
+        p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RECOVERED));
     }
 }
