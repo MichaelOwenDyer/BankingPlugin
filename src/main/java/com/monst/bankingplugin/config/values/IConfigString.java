@@ -11,9 +11,7 @@ public interface IConfigString extends IConfigValue<String> {
     }
 
     @Override
-    default String readValueFromFile(MemoryConfiguration config, String path) {
-        if (isPathMissing())
-            return null;
+    default String readFromFile(MemoryConfiguration config, String path) {
         return config.getString(path);
     }
 

@@ -30,13 +30,13 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
 
     @Override
     public final T get() {
-        if (lastSeenValue == null)
-            PLUGIN.reloadConfig();
-            lastSeenValue = readValueFromFile(PLUGIN.getConfig(), path);
         if (lastSeenValue == null) {
-            PLUGIN.getConfig().set(path, convertToSettableType(defaultConfiguration));
-            PLUGIN.saveConfig();
-            lastSeenValue = defaultConfiguration;
+            reload();
+            if (isValueMissing()) {
+                setDefault();
+                save();
+            }
+            lastSeenValue = readFromFile();
         }
         return lastSeenValue;
     }
@@ -44,23 +44,42 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
     public final void set(String input) throws ArgumentParseException {
         T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
         beforeSet(newValue);
-        PLUGIN.reloadConfig();
-        PLUGIN.getConfig().set(path, convertToSettableType(newValue));
-        PLUGIN.saveConfig();
-        clearLastSeen();
+        reload();
+        writeToFile(newValue);
+        save();
+        forgetLastSeen();
         afterSet(newValue);
     }
 
-    public final void clearLastSeen() {
+    public final void forgetLastSeen() {
         lastSeenValue = null;
     }
 
     protected void beforeSet(T newValue) {}
     protected void afterSet(T newValue) {}
 
-    @Override
-    public boolean isPathMissing() {
-        return !PLUGIN.getConfig().contains(path, true);
+    private void reload() {
+        PLUGIN.reloadConfig();
+    }
+
+    private void save() {
+        PLUGIN.saveConfig();
+    }
+
+    private void writeToFile(T t) {
+        PLUGIN.getConfig().set(path, convertToSettableType(t));
+    }
+
+    private T readFromFile() {
+        return readFromFile(PLUGIN.getConfig(), path);
+    }
+
+    private void setDefault() {
+        writeToFile(defaultConfiguration);
+    }
+
+    private boolean isValueMissing() {
+        return !PLUGIN.getConfig().isSet(path);
     }
 
 }

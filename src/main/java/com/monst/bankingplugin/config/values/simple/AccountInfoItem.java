@@ -23,7 +23,7 @@ public class AccountInfoItem extends ConfigValue<ItemStack> {
     }
 
     @Override
-    public ItemStack readValueFromFile(MemoryConfiguration config, String path) {
+    public ItemStack readFromFile(MemoryConfiguration config, String path) {
         return Optional.ofNullable(config.getString(path))
                 .map(Material::getMaterial)
                 .map(ItemStack::new)

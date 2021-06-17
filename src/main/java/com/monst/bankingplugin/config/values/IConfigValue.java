@@ -9,7 +9,7 @@ public interface IConfigValue<T> extends Supplier<T> {
 
     T parse(String input) throws ArgumentParseException;
 
-    T readValueFromFile(MemoryConfiguration config, String path);
+    T readFromFile(MemoryConfiguration config, String path);
 
     default String format(T t) {
         return String.valueOf(t);
@@ -18,7 +18,5 @@ public interface IConfigValue<T> extends Supplier<T> {
     default Object convertToSettableType(T t) {
         return t;
     }
-
-    boolean isPathMissing();
 
 }

@@ -17,8 +17,8 @@ public class Multipliers extends OverridableList<Integer> {
     }
 
     @Override
-    public List<Integer> readValueFromFile(MemoryConfiguration config, String path) {
-        return Utils.map(super.readValueFromFile(config, path), Math::abs);
+    public List<Integer> readFromFile(MemoryConfiguration config, String path) {
+        return Utils.map(super.readFromFile(config, path), Math::abs);
     }
 
     @Override

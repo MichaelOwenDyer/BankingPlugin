@@ -18,9 +18,7 @@ public interface IConfigInteger extends IConfigValue<Integer> {
     }
 
     @Override
-    default Integer readValueFromFile(MemoryConfiguration config, String path) {
-        if (isPathMissing())
-            return null;
+    default Integer readFromFile(MemoryConfiguration config, String path) {
         return config.getInt(path);
     }
 

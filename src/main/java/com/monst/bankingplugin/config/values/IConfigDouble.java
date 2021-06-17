@@ -21,9 +21,7 @@ public interface IConfigDouble extends IConfigValue<Double> {
     }
 
     @Override
-    default Double readValueFromFile(MemoryConfiguration config, String path) {
-        if (isPathMissing())
-            return null;
+    default Double readFromFile(MemoryConfiguration config, String path) {
         return config.getDouble(path);
     }
 

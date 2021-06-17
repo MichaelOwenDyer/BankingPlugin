@@ -17,9 +17,7 @@ public interface IConfigCollection<T, C extends Collection<T>> extends IConfigVa
     }
 
     @Override
-    default C readValueFromFile(MemoryConfiguration config, String path) {
-        if (isPathMissing())
-            return null;
+    default C readFromFile(MemoryConfiguration config, String path) {
         C collection = getEmptyCollection();
         for (String string : config.getStringList(path))
             try {
