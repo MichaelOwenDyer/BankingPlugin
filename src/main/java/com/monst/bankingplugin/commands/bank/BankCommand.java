@@ -14,6 +14,7 @@ import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.repository.BankRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -110,21 +111,19 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		 * @return a {@link CuboidSelection} described by the command arguments
 		 * @throws NumberFormatException if the coordinates could not be parsed
 		 */
-		static CuboidSelection parseCoordinates(String[] args, Location loc) throws NumberFormatException {
+		static CuboidSelection parseCoordinates(String[] args, Block loc) throws NumberFormatException {
 			int x1, y1, z1, x2, y2, z2;
 			if (args.length == 5 || args.length == 6) {
-				x1 = parseCoordinate(args[2], x2 = loc.getBlockX());
-				y1 = parseCoordinate(args[3], y2 = loc.getBlockY());
-				z1 = parseCoordinate(args[4], z2 = loc.getBlockZ());
-
+				x1 = parseCoordinate(args[2], x2 = loc.getX());
+				y1 = parseCoordinate(args[3], y2 = loc.getY());
+				z1 = parseCoordinate(args[4], z2 = loc.getZ());
 			} else if (args.length >= 8) {
-				x1 = parseCoordinate(args[2], loc.getBlockX());
-				y1 = parseCoordinate(args[3], loc.getBlockY());
-				z1 = parseCoordinate(args[4], loc.getBlockZ());
-				x2 = parseCoordinate(args[5], loc.getBlockX());
-				y2 = parseCoordinate(args[6], loc.getBlockY());
-				z2 = parseCoordinate(args[7], loc.getBlockZ());
-
+				x1 = parseCoordinate(args[2], loc.getX());
+				y1 = parseCoordinate(args[3], loc.getY());
+				z1 = parseCoordinate(args[4], loc.getZ());
+				x2 = parseCoordinate(args[5], loc.getX());
+				y2 = parseCoordinate(args[6], loc.getY());
+				z2 = parseCoordinate(args[7], loc.getZ());
 			} else
 				return null;
 			BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);

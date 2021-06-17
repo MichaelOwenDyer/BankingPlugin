@@ -3,7 +3,6 @@ package com.monst.bankingplugin.external;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.geo.BlockVector2D;
-import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.QuickMath;
@@ -13,6 +12,7 @@ import me.ryanhamshire.GriefPrevention.VisualizationElement;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 
@@ -54,14 +54,14 @@ public class VisualizationManager {
         if (sel.isCuboid()) {
 
             // Add blocks at vertices
-            sel.getCorners().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(location -> newElements.add(new VisualizationElement(
+            sel.getCorners().stream().map(Block::getLocation).forEach(location -> newElements.add(new VisualizationElement(
                     location,
                     type.getCornerBlockData(),
                     world.getBlockAt(location).getBlockData()
             )));
 
-            BlockVector3D min = sel.getMinimumPoint();
-            BlockVector3D max = sel.getMaximumPoint();
+            Block min = sel.getMinimumBlock();
+            Block max = sel.getMaximumBlock();
             MinMax[] dimensions = new MinMax[] {
                     new MinMax(min.getX(), max.getX()),
                     new MinMax(min.getY(), max.getY()),
@@ -102,13 +102,10 @@ public class VisualizationManager {
                 }
             }
 
-            Set<BlockVector2D> blocks = sel.getFootprint();
-            newElements.removeIf(e -> !blocks.contains(new BlockVector2D(e.location.getBlockX(), e.location.getBlockZ())));
-
         } else if (sel.isPolygonal()) {
 
             // Add blocks at vertices
-            sel.getCorners().stream().map(bv -> bv.toLocation(sel.getWorld())).forEach(loc -> newElements.add(new VisualizationElement(
+            sel.getCorners().stream().map(Block::getLocation).forEach(loc -> newElements.add(new VisualizationElement(
                     loc,
                     type.getCornerBlockData(),
                     world.getBlockAt(loc).getBlockData()

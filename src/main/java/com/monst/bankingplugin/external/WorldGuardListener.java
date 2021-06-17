@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
-import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.listeners.BankingPluginListener;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.ClickType.EClickType;
@@ -44,8 +43,8 @@ public class WorldGuardListener extends BankingPluginListener {
 		if (!Config.enableWorldGuardIntegration.get() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
-		for (BlockVector3D bv : e.getBank().getSelection().getCorners())
-			if (isBankCreationBlockedByWorldGuard((Player) e.getExecutor(), bv.toLocation(e.getBank().getSelection().getWorld()))) {
+		for (Block block : e.getBank().getSelection().getCorners())
+			if (isBankCreationBlockedByWorldGuard((Player) e.getExecutor(), block.getLocation())) {
 				e.setCancelled(true);
 				plugin.debug("Bank create event cancelled by WorldGuard");
 				return;
@@ -57,8 +56,8 @@ public class WorldGuardListener extends BankingPluginListener {
 		if (!Config.enableWorldGuardIntegration.get() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
-		for (BlockVector3D bv : e.getNewSelection().getCorners())
-			if (isBankCreationBlockedByWorldGuard((Player) e.getExecutor(), bv.toLocation(e.getNewSelection().getWorld()))) {
+		for (Block block : e.getNewSelection().getCorners())
+			if (isBankCreationBlockedByWorldGuard((Player) e.getExecutor(), block.getLocation())) {
 				e.setCancelled(true);
 				plugin.debug("Bank resize event cancelled by WorldGuard");
 				return;

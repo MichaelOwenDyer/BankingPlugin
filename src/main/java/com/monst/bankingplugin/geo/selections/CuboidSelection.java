@@ -13,8 +13,8 @@ import java.util.*;
  */
 public class CuboidSelection extends Selection {
 
-	private final BlockVector3D min;
-	private final BlockVector3D max;
+	private final Block min;
+	private final Block max;
 
 	/**
 	 * Creates a new {@link CuboidSelection} with the specified attributes
@@ -25,12 +25,12 @@ public class CuboidSelection extends Selection {
 	 * @return a new CuboidSelection
 	 */
 	public static CuboidSelection of(World world, BlockVector3D loc1, BlockVector3D loc2) {
-		BlockVector3D min = new BlockVector3D(
+		Block min = world.getBlockAt(
 				Math.min(loc1.getX(), loc2.getX()),
 				Math.min(loc1.getY(), loc2.getY()),
 				Math.min(loc1.getZ(), loc2.getZ())
 		);
-		BlockVector3D max = new BlockVector3D(
+		Block max = world.getBlockAt(
 				Math.max(loc1.getX(), loc2.getX()),
 				Math.max(loc1.getY(), loc2.getY()),
 				Math.max(loc1.getZ(), loc2.getZ())
@@ -38,28 +38,28 @@ public class CuboidSelection extends Selection {
 		return new CuboidSelection(world, min, max);
 	}
 
-	private CuboidSelection(World world, BlockVector3D min, BlockVector3D max) {
+	private CuboidSelection(World world, Block min, Block max) {
 		super(world);
 		this.min = min;
 		this.max = max;
 	}
 
 	@Override
-	public BlockVector3D getMinimumPoint() {
+	public Block getMinimumBlock() {
 		return min;
 	}
 
 	@Override
-	public BlockVector3D getMaximumPoint() {
+	public Block getMaximumBlock() {
 		return max;
 	}
 
 	@Override
-	public BlockVector3D getCenterPoint() {
+	public Block getCenterPoint() {
 		int centerX = (getMaxX() + getMinX()) / 2;
 		int centerY = (getMaxY() + getMinY()) / 2;
 		int centerZ = (getMaxZ() + getMinZ()) / 2;
-		return new BlockVector3D(centerX, centerY, centerZ);
+		return world.getBlockAt(centerX, centerY, centerZ);
 	}
 
 	@Override
@@ -106,47 +106,21 @@ public class CuboidSelection extends Selection {
 		return blocks;
 	}
 
-	/**
-	 * Will only return non-null if polygonal
-	 */
 	@Override
 	public List<BlockVector2D> getVertices() {
-		return null;
-	}
-
-	@Override
-	public Collection<BlockVector3D> getCorners() {
-		Set<BlockVector3D> vertices = new HashSet<>();
+		List<BlockVector2D> vertices = new LinkedList<>();
 		for (int x : new int[] { getMinX(), getMaxX() })
-			for (int y : new int[] { getMinY(), getMaxY() })
-				for (int z : new int[] { getMinZ(), getMaxZ() })
-					vertices.add(new BlockVector3D(x, y, z));
+			for (int z : new int[] { getMinZ(), getMaxZ() })
+				vertices.add(new BlockVector2D(x, z));
 		return vertices;
 	}
 
 	@Override
-	public boolean contains(Block block) {
-		if (!Objects.equals(getWorld(), block.getWorld()))
-			return false;
-		return contains(BlockVector3D.fromBlock(block));
-	}
-
-	@Override
-	public boolean contains(BlockVector3D bv) {
-		int x = bv.getX();
-		int y = bv.getY();
-		int z = bv.getZ();
-		return x <= getMaxX() && x >= getMinX()
-			&& y <= getMaxY() && y >= getMinY()
-			&& z <= getMaxZ() && z >= getMinZ();
-	}
-
-	@Override
-	public boolean contains(BlockVector2D bv) {
-		return bv.getX() <= getMaxX()
-			&& bv.getX() >= getMinX()
-			&& bv.getZ() <= getMaxZ()
-			&& bv.getZ() >= getMinZ();
+	public boolean contains(int x, int z) {
+		return x <= getMaxX()
+			&& x >= getMinX()
+			&& z <= getMaxZ()
+			&& z >= getMinZ();
 	}
 
 	@Override
@@ -162,8 +136,8 @@ public class CuboidSelection extends Selection {
 			return false;
 		CuboidSelection otherSel = (CuboidSelection) o;
 		return Objects.equals(getWorld(), otherSel.getWorld())
-			&& Objects.equals(getMaximumPoint(), otherSel.getMaximumPoint())
-			&& Objects.equals(getMinimumPoint(), otherSel.getMinimumPoint());
+			&& Objects.equals(getMaximumBlock(), otherSel.getMaximumBlock())
+			&& Objects.equals(getMinimumBlock(), otherSel.getMinimumBlock());
 	}
 
 	@Override

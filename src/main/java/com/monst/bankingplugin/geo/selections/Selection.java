@@ -1,21 +1,20 @@
 package com.monst.bankingplugin.geo.selections;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
-import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 public abstract class Selection {
 
-	private final World world;
+	final World world;
 
 	Selection(World world) {
 		this.world = world;
@@ -24,15 +23,15 @@ public abstract class Selection {
 	/**
 	 * @return the point on the bounding box of this {@link Selection} with the lowest x, y, and z values.
 	 */
-    public BlockVector3D getMinimumPoint() {
-		return new BlockVector3D(getMinX(), getMinY(), getMinZ());
+    public Block getMinimumBlock() {
+		return world.getBlockAt(getMinX(), getMinY(), getMinZ());
 	}
 
 	/**
 	 * @return the point on the bounding box of this {@link Selection} with the highest x, y, and z values.
 	 */
-	public BlockVector3D getMaximumPoint() {
-		return new BlockVector3D(getMaxX(), getMaxY(), getMaxZ());
+	public Block getMaximumBlock() {
+		return world.getBlockAt(getMaxX(), getMaxY(), getMaxZ());
 	}
 
 	/**
@@ -40,10 +39,10 @@ public abstract class Selection {
 	 *
 	 * @return the center point
 	 */
-	public abstract BlockVector3D getCenterPoint();
+	public abstract Block getCenterPoint();
 
 	public Location getTeleportLocation() {
-		return Utils.getSafeLocation(getCenterPoint().toLocation(world));
+		return Utils.getSafeLocation(getCenterPoint());
 	}
 
 	/**
@@ -114,25 +113,44 @@ public abstract class Selection {
 	}
 
 	public boolean contains(ChestLocation chest) {
-		if (!Objects.equals(getWorld(), chest.getWorld()))
-			return false;
 		for (Block chestSide : chest)
-			if (!contains(BlockVector3D.fromBlock(chestSide)))
+			if (!contains(chestSide))
 				return false;
 		return true;
 	}
 
 	/**
-	 * Returns true based on whether this selection contains the {@link Location},
+	 * Returns true based on whether this selection contains the {@link Block},
 	 *
 	 * @param block The block that may or may not be contained by this selection
-	 * @return Whether or not the location is contained
+	 * @return Whether or not the block is contained
 	 */
-	public abstract boolean contains(Block block);
+	public boolean contains(Block block) {
+		if (!Objects.equals(getWorld(), block.getWorld()))
+			return false;
+		return contains(block.getX(), block.getY(), block.getZ());
+	}
 
-	public abstract boolean contains(BlockVector3D bv);
+	/**
+	 * Returns true if this selection contains this set of coordinates, assuming the same {@link World}.
+	 *
+	 * @param x the x-coordinate
+	 * @param y the y-coordinate
+	 * @param z the z-coordinate
+	 * @return Whether or not the set of coordinates is contained
+	 */
+	public boolean contains(int x, int y, int z) {
+		return y <= getMaxY() && y >= getMinY() && contains(x, z);
+	}
 
-	public abstract boolean contains(BlockVector2D bv);
+	/**
+	 * Returns true if this selection contains this (x,z) coordinate pair, assuming the same {@link World} and a compatible y-coordinate.
+	 *
+	 * @param x the x-coordinate
+	 * @param z the z-coordinate
+	 * @return Whether or not the coordinate pair is contained
+	 */
+	public abstract boolean contains(int x, int z);
 
 	/**
 	 * Gets a {@link Set<BlockVector2D>} containing a horizontal cross-section
@@ -142,14 +160,28 @@ public abstract class Selection {
 	 */
 	public abstract Set<BlockVector2D> getFootprint();
 
+	/**
+	 * Gets an ordered list of {@link BlockVector2D}s containing each vertex of this selection.
+	 * The order of the elements is selection-specific.
+	 * @return a {@link List<BlockVector2D>} of all vertices of the selection.
+	 */
 	public abstract List<BlockVector2D> getVertices();
 
 	/**
-	 * Get all corners of this selection.
+	 * Get all (upper and lower) corner {@link Block}s of this selection.
+	 * This will return two blocks per {@link BlockVector2D} from {@link #getVertices()},
+	 * one at {@link #getMinY()} and the other at {@link #getMaxY()}.
 	 *
-	 * @return a Collection<Location> representing all vertices.
+	 * @return a {@link List<Block>} representing all corner {@link Block}s.
 	 */
-	public abstract Collection<BlockVector3D> getCorners();
+	public List<Block> getCorners() {
+		List<Block> vertices = new LinkedList<>();
+		for (BlockVector2D bv : getVertices()) {
+			vertices.add(world.getBlockAt(bv.getX(), getMinY(), bv.getZ()));
+			vertices.add(world.getBlockAt(bv.getX(), getMaxY(), bv.getZ()));
+		}
+		return vertices;
+	}
 
 	public boolean isCuboid() {
 		return false;

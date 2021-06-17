@@ -54,14 +54,6 @@ public abstract class ChestLocation implements Iterable<Block> {
 
     public abstract Block getMaximumBlock();
 
-    public Location getMinimumLocation() {
-        return getMinimumBlock().getLocation();
-    }
-
-    public Location getMaximumLocation() {
-        return getMaximumBlock().getLocation();
-    }
-
     public World getWorld() {
         return b1.getWorld();
     }

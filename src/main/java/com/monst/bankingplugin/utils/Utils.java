@@ -124,21 +124,16 @@ public class Utils {
 	}
 
 	/**
-	 * Finds the next lowest safe location at or directly below a certain {@link Location}.
+	 * Finds the next lowest safe location at or directly below a certain {@link Block}.
 	 * If no safe block is found then the original location is returned.
-	 * @param location the location from which to start searching
-	 * @return a {@link Location} at or directly below the given location that is safe to stand on
+	 * @param start the block from which to start searching
+	 * @return a {@link Location} at or directly below the given block that is safe to stand on
 	 */
-	public static Location getSafeLocation(Location location) {
-		World world = location.getWorld();
-		if (world == null)
-			return location;
-		int blockX = location.getBlockX();
-		int blockZ = location.getBlockZ();
-		for (int y = location.getBlockY(); y > 0; y--)
-			if (isSafeBlock(world.getBlockAt(blockX, y, blockZ)))
-				return new Location(world, blockX + 0.5d, y, blockZ + 0.5d);
-		return location;
+	public static Location getSafeLocation(Block start) {
+		for (Block block = start; start.getY() > 0; block = block.getRelative(BlockFace.DOWN))
+			if (isSafeBlock(block))
+				return block.getLocation().add(0.5, 0,0.5);
+		return start.getLocation();
 	}
 
 	/**
@@ -149,12 +144,10 @@ public class Utils {
 	 */
 	@SuppressWarnings("deprecation")
 	public static boolean isSafeBlock(Block b) {
-		if (!b.getType().isTransparent() && !b.getLocation().add(0, 1, 0).getBlock().getType().isTransparent()) {
+		if (!b.getType().isTransparent() && !b.getLocation().add(0, 1, 0).getBlock().getType().isTransparent())
 			return false; // not transparent (standing in block)
-		}
-		if (!b.getRelative(BlockFace.UP).getType().isTransparent()) {
+		if (!b.getRelative(BlockFace.UP).getType().isTransparent())
 			return false; // not transparent (will suffocate)
-		}
 		return b.getRelative(BlockFace.DOWN).getType().isSolid() || b.getRelative(BlockFace.DOWN).getType() == Material.WATER;
 	}
 

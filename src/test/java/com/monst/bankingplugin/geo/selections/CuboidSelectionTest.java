@@ -12,14 +12,14 @@ class CuboidSelectionTest {
     void getMinimumPoint() {
         CuboidSelection sel = CuboidSelection.of(
                 null, new BlockVector3D(0, 9, 5), new BlockVector3D(4, 0, 0));
-        assertEquals(new BlockVector3D(0, 0, 0), sel.getMinimumPoint());
+        assertEquals(new BlockVector3D(0, 0, 0), sel.getMinimumBlock());
     }
 
     @Test
     void getMaximumPoint() {
         CuboidSelection sel = CuboidSelection.of(
                 null, new BlockVector3D(0, 9, 5), new BlockVector3D(4, 0, 0));
-        assertEquals(new BlockVector3D(4, 9, 5), sel.getMaximumPoint());
+        assertEquals(new BlockVector3D(4, 9, 5), sel.getMaximumBlock());
     }
 
     @Test

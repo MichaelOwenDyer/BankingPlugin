@@ -71,7 +71,7 @@ public class BankResize extends BankCommand.SubCommand {
             }
         } else {
             try {
-                selection = parseCoordinates(args, p.getLocation());
+                selection = parseCoordinates(args, p.getLocation().getBlock());
             } catch (NumberFormatException e) {
                 PLUGIN.debug("Could not parse coordinates in command args: \"" + Arrays.toString(args) + "\"");
                 p.sendMessage(LangUtils.getMessage(Message.BANK_COORDINATE_PARSE_ERROR));
@@ -153,7 +153,7 @@ public class BankResize extends BankCommand.SubCommand {
         bankRepo.update(bank, Callback.of(
                 result -> {
                     PLUGIN.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
-                    p.sendMessage(LangUtils.getMessage(Message.BANK_RESIZED, new Replacement(Placeholder.BANK_SIZE, selection::getVolume)));
+                    p.sendMessage(LangUtils.getMessage(Message.BANK_RESIZED, new Replacement(Placeholder.BANK_SIZE, volume)));
                 },
                 error -> p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
                         new Replacement(Placeholder.ERROR, error::getLocalizedMessage)

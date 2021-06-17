@@ -66,7 +66,7 @@ public class BankCreate extends BankCommand.SubCommand {
             }
         } else {
             try {
-                selection = parseCoordinates(args, p.getLocation());
+                selection = parseCoordinates(args, p.getLocation().getBlock());
             } catch (NumberFormatException e) {
                 PLUGIN.debug("Could not parse coordinates in command args");
                 p.sendMessage(LangUtils.getMessage(Message.BANK_COORDINATE_PARSE_ERROR));

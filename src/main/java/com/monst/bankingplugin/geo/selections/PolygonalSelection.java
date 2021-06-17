@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.geo.selections;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
-import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.polylabel.PolyLabel;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -42,17 +41,11 @@ public class PolygonalSelection extends Selection {
 
 	private PolygonalSelection(World world, List<BlockVector2D> vertices, int minY, int maxY) {
 		super(world);
+		if (vertices == null || vertices.size() < 3)
+			throw new IllegalArgumentException("Vertices cannot be fewer than 3!");
 		this.vertices = vertices;
 		this.minY = minY;
 		this.maxY = maxY;
-	}
-
-	/**
-	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalSelection}
-	 */
-	@Override
-	public List<BlockVector2D> getVertices() {
-		return vertices;
 	}
 
 	/**
@@ -62,14 +55,14 @@ public class PolygonalSelection extends Selection {
 	 * @return the pole of inaccessibility of this PolygonalSelection
 	 */
 	@Override
-	public BlockVector3D getCenterPoint() {
+	public Block getCenterPoint() {
 		Integer[][][] polygon = new Integer[1][vertices.size()][2];
 		for (int i = 0; i < vertices.size(); i++) {
 			BlockVector2D point = vertices.get(i);
 			polygon[0][i] = new Integer[] { point.getX(), point.getZ() };
 		}
 		PolyLabel result = PolyLabel.polyLabel(polygon);
-		return new BlockVector3D((int) Math.round(result.getX()), (maxY + minY) / 2, (int) Math.round(result.getY()));
+		return world.getBlockAt((int) Math.round(result.getX()), (maxY + minY) / 2, (int) Math.round(result.getY()));
 	}
 
 	@Override
@@ -131,16 +124,6 @@ public class PolygonalSelection extends Selection {
 	}
 
 	@Override
-	public Collection<BlockVector3D> getCorners() {
-		List<BlockVector3D> corners = new ArrayList<>();
-		for (BlockVector2D point : vertices) {
-			corners.add(point.toBlockVector3D(minY));
-			corners.add(point.toBlockVector3D(maxY));
-		}
-		return corners;
-	}
-
-	@Override
 	public boolean overlaps(Selection sel) {
 		if (isDisjunct(sel))
 			return false;
@@ -152,36 +135,26 @@ public class PolygonalSelection extends Selection {
 	@Override
 	public Set<BlockVector2D> getFootprint() {
 		Set<BlockVector2D> blocks = new HashSet<>();
-		BlockVector3D min = getMinimumPoint();
-		BlockVector3D max = getMaximumPoint();
+		Block min = getMinimumBlock();
+		Block max = getMaximumBlock();
 		for (int x = min.getX(); x <= max.getX(); x++)
 			for (int z = min.getZ(); z <= max.getZ(); z++) {
-				BlockVector2D bv = new BlockVector2D(x, z);
-				if (contains(bv))
-					blocks.add(bv);
+				if (contains(x, z))
+					blocks.add(new BlockVector2D(x, z));
 			}
 		return blocks;
 	}
 
+	/**
+	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalSelection}
+	 */
 	@Override
-	public boolean contains(Block block) {
-		if (vertices.size() < 3)
-			return false;
-		if (!Objects.equals(getWorld(), block.getWorld()))
-			return false;
-		return contains(BlockVector3D.fromBlock(block));
+	public List<BlockVector2D> getVertices() {
+		return vertices;
 	}
 
 	@Override
-	public boolean contains(BlockVector3D bv) {
-		return bv.getY() <= maxY && bv.getY() >= minY && contains(bv.toBlockVector2D());
-	}
-
-	@Override
-	public boolean contains(BlockVector2D bv) {
-		int pointX = bv.getX(); //width
-		int pointZ = bv.getZ(); //depth
-
+	public boolean contains(int pointX, int pointZ) {
 		int nextX, nextZ, x1, z1, x2, z2;
 		int prevX = vertices.get(vertices.size() - 1).getX();
 		int prevZ = vertices.get(vertices.size() - 1).getZ();
@@ -217,6 +190,7 @@ public class PolygonalSelection extends Selection {
 		}
 		return inside;
 	}
+
 
 	@Override
 	public boolean isPolygonal() {
