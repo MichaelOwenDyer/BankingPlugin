@@ -24,15 +24,6 @@ public abstract class ClickType {
         this.eClickType = eClickType;
     }
 
-	/**
-	 * Retrieves the object that is being carried by this ClickType.
-	 * @param <K> the dynamic return type
-	 */
-	@SuppressWarnings("unchecked")
-    public <K> K get() {
-    	return null;
-	}
-
 	public boolean canClickedBlockNotBeAccount() {
 		return false;
 	}

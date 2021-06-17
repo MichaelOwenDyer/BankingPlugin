@@ -6,7 +6,6 @@ import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.listeners.BankingPluginListener;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.ClickType.EClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -84,7 +83,7 @@ public class WorldGuardListener extends BankingPluginListener {
 
 	private boolean isChestInteractAllowed(Player player, Block block) {
 		ClickType clickType = ClickType.getPlayerClickType(player);
-		if (clickType != null && clickType.getType() == EClickType.CREATE) {
+		if (clickType != null && clickType.canClickedBlockNotBeAccount()) {
 			// If the player is about to create an account, but does not have
 			// access to the chest, show the 'permission denied' message
 			// (if not previously set to allowed by another plugin).

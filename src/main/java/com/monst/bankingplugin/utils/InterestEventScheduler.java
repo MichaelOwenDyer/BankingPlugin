@@ -107,6 +107,13 @@ public class InterestEventScheduler {
             emptyTimes.forEach(InterestEventScheduler::unscheduleRepeatingPayment);
     }
 
+    public static void unscheduleAll() {
+        PAYOUT_TASK_IDS.values().forEach(Bukkit.getScheduler()::cancelTask);
+        PAYOUT_TASK_IDS.clear();
+        TIME_BANK_MAP.clear();
+        BANK_TIME_MAP.clear();
+    }
+
     /**
      * Performs the necessary arithmetic to schedule an {@link InterestEvent}
      * as a {@link org.bukkit.scheduler.BukkitTask} repeating every 24 hours at the specified time.

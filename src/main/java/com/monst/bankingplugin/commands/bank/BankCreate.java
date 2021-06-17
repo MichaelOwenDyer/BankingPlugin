@@ -123,7 +123,7 @@ public class BankCreate extends BankCommand.SubCommand {
             PLUGIN.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume.get() + ")");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_TOO_SMALL,
                     new Replacement(Placeholder.BANK_SIZE, volume),
-                    new Replacement(Placeholder.MINIMUM, Config.minimumBankVolume::get),
+                    new Replacement(Placeholder.MINIMUM, Config.minimumBankVolume),
                     new Replacement(Placeholder.DIFFERENCE, () -> Config.minimumBankVolume.get() - volume)
             ));
             return true;

@@ -151,6 +151,7 @@ public class BankingPlugin extends JavaPlugin {
 		debug("Disabling BankingPlugin...");
 
 		ClickType.clear();
+		InterestEventScheduler.unscheduleAll();
 
 		if (bankRepository != null)
 			for (Bank bank : bankRepository.getAll())

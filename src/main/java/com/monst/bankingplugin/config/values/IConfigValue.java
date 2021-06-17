@@ -3,7 +3,9 @@ package com.monst.bankingplugin.config.values;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 import org.bukkit.configuration.MemoryConfiguration;
 
-public interface IConfigValue<T> {
+import java.util.function.Supplier;
+
+public interface IConfigValue<T> extends Supplier<T> {
 
     T parse(String input) throws ArgumentParseException;
 
