@@ -87,7 +87,7 @@ public class BankTrust extends BankCommand.SubCommand {
                 new Replacement(Placeholder.PLAYER, playerToTrust::getName)
         ));
         bank.trustPlayer(playerToTrust);
-        PLUGIN.getDatabase().addCoOwner(bank, playerToTrust, Callback.blank());
+        PLUGIN.getDatabase().addCoOwner(bank, playerToTrust, Callback.doNothing());
         return true;
     }
 

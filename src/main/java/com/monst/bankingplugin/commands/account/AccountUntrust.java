@@ -109,7 +109,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
                 new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
         ));
         account.untrustPlayer(playerToUntrust);
-        PLUGIN.getDatabase().removeCoOwner(account, playerToUntrust, Callback.blank());
+        PLUGIN.getDatabase().removeCoOwner(account, playerToUntrust, Callback.doNothing());
     }
 
 }

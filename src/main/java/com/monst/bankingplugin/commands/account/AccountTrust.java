@@ -109,7 +109,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
                 new Replacement(Placeholder.PLAYER, playerToTrust::getName)
         ));
         account.trustPlayer(playerToTrust);
-        PLUGIN.getDatabase().addCoOwner(account, playerToTrust, Callback.blank());
+        PLUGIN.getDatabase().addCoOwner(account, playerToTrust, Callback.doNothing());
     }
 
 }

@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 public abstract class Callback<T> {
 
-    public static <T> Callback<T> blank() {
+    public static <T> Callback<T> doNothing() {
         return of(result -> {}); // do nothing
     }
 

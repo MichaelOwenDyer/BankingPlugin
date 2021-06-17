@@ -87,7 +87,7 @@ public class BankUntrust extends BankCommand.SubCommand {
                 new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
         ));
         bank.untrustPlayer(playerToUntrust);
-        PLUGIN.getDatabase().removeCoOwner(bank, playerToUntrust, Callback.blank());
+        PLUGIN.getDatabase().removeCoOwner(bank, playerToUntrust, Callback.doNothing());
         return true;
     }
 
