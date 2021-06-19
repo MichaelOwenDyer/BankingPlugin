@@ -61,7 +61,7 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
 
     abstract Menu createMenu();
 
-    abstract void evaluateClearance(Player player);
+    void evaluateClearance(Player player) {}
 
     abstract ItemStack createSlotItem(int slot);
 

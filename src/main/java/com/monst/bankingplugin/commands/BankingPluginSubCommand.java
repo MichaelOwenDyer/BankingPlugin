@@ -74,7 +74,7 @@ public abstract class BankingPluginSubCommand {
     }
 
     protected boolean hasPermission(CommandSender sender, String permission) {
-        if (sender == null || permission == null || permission.isEmpty())
+        if (permission == null || permission.isEmpty() || sender == null)
             return true;
         boolean hasPermission = sender.hasPermission(permission);
         if (!hasPermission) {

@@ -330,7 +330,7 @@ public class Bank extends BankingEntity {
 			case INTEREST_PAYOUT_TIMES:
 				return interestPayoutTimes;
 			default:
-				return null;
+				throw new IllegalStateException("Unknown bank field!");
 		}
 	}
 

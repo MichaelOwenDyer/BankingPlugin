@@ -16,7 +16,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
 import java.math.BigDecimal;
@@ -292,7 +291,7 @@ public class Account extends BankingEntity {
 	}
 
 	/**
-	 * Gets the {@link Inventory} of this account chest.
+	 * Gets the {@link InventoryHolder} of this account chest.
 	 *
 	 * @return the account inventory.
 	 */

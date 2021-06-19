@@ -91,7 +91,7 @@ public class DoubleChestLocation extends ChestLocation {
             return new SingleChestLocation(b2);
         if (Objects.equals(b2, leaveBehind))
             return new SingleChestLocation(b1);
-        return null;
+        throw new IllegalArgumentException("Block not contained in ChestLocation cannot be removed!");
     }
 
     public String toString() {

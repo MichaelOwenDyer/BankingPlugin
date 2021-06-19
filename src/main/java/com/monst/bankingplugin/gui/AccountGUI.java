@@ -82,34 +82,30 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	ClickHandler createClickHandler(int slot) {
 		switch (slot) {
 			case 0:
-				if (!canTP)
-					return null;
-				return (player, info) -> {
-					Utils.teleport(player, guiSubject.getChestLocation().getTeleportLocation());
-					this.close(player);
-				};
+				if (canTP)
+					return (player, info) -> {
+						Utils.teleport(player, guiSubject.getChestLocation().getTeleportLocation());
+						this.close(player);
+					};
 			case 1:
 				return (player, info) -> new BankGUI(guiSubject.getBank()).setParentGUI(this).open(player);
 			case 7:
-				if (!isTrusted)
-					return null;
-				return (player, info) -> {
-					if (info.getClickType().isLeftClick())
-						BankingPlugin.getInstance().getDatabase().getTransactionsAtAccount(guiSubject,
-								Callback.of(list -> new AccountTransactionGUI(guiSubject, () -> list).setParentGUI(this).open(player))
-						);
-					else if (info.getClickType().isRightClick())
-						BankingPlugin.getInstance().getDatabase().getInterestPaymentsAtAccount(guiSubject,
-								Callback.of(list -> new AccountInterestGUI(guiSubject, () -> list).setParentGUI(this).open(player))
-						);
-				};
+				if (isTrusted)
+					return (player, info) -> {
+						if (info.getClickType().isLeftClick())
+							BankingPlugin.getInstance().getDatabase().getTransactionsAtAccount(guiSubject,
+									Callback.of(list -> new AccountTransactionGUI(guiSubject, () -> list).setParentGUI(this).open(player))
+							);
+						else if (info.getClickType().isRightClick())
+							BankingPlugin.getInstance().getDatabase().getInterestPaymentsAtAccount(guiSubject,
+									Callback.of(list -> new AccountInterestGUI(guiSubject, () -> list).setParentGUI(this).open(player))
+							);
+					};
 			case 8:
-				if (!isTrusted)
-					return null;
-				return (player, info) -> new AccountContentsGUI(guiSubject).setParentGUI(this).open(player);
-			default:
-				return null;
+				if (isTrusted)
+					return (player, info) -> new AccountContentsGUI(guiSubject).setParentGUI(this).open(player);
 		}
+		return null;
 	}
 
 	@Override

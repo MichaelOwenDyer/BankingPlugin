@@ -23,7 +23,7 @@ public class HasOrCanGet<T> implements Supplier<T> {
             return t;
         if (tSupplier != null)
             return tSupplier.get();
-        return null;
+        throw new IllegalStateException("Neither value nor supplier was non-null!");
     }
 
 }

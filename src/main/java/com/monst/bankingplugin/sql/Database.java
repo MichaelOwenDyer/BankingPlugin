@@ -7,7 +7,7 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.banking.bank.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.IntegerParseException;
-import com.monst.bankingplugin.exceptions.LocalTimeParseException;
+import com.monst.bankingplugin.exceptions.TimeParseException;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
@@ -517,7 +517,7 @@ public abstract class Database {
 			for (String s : payoutTimesList.split("\\s*(,|\\s)\\s*"))
 				try {
 					interestPayoutTimes.add(Config.interestPayoutTimes.parseSingle(s));
-				} catch (LocalTimeParseException ignored) {}
+				} catch (TimeParseException ignored) {}
 
 			String worldName = values.getNextString();
 			World world = Bukkit.getWorld(worldName);

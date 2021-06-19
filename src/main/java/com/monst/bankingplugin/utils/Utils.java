@@ -367,9 +367,8 @@ public class Utils {
 	public static ItemStack getItemInOffHand(Player p) {
 		if (getMajorVersion() < 9)
 			return null;
-		if (p.getInventory().getItemInOffHand().getType() == Material.AIR)
-			return null;
-		return p.getInventory().getItemInOffHand();
+		ItemStack item = p.getInventory().getItemInOffHand();
+		return item.getType() == Material.AIR ? null : item;
 	}
 
 	/**

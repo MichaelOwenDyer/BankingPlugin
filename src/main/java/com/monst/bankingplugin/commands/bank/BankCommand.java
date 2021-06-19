@@ -5,6 +5,7 @@ import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
 import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.IntegerParseException;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.selections.CuboidSelection;
 import com.monst.bankingplugin.lang.LangUtils;
@@ -111,7 +112,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		 * @return a {@link CuboidSelection} described by the command arguments
 		 * @throws NumberFormatException if the coordinates could not be parsed
 		 */
-		static CuboidSelection parseCoordinates(String[] args, Block loc) throws NumberFormatException {
+		static CuboidSelection parseCoordinates(String[] args, Block loc) throws IntegerParseException {
 			int x1, y1, z1, x2, y2, z2;
 			if (args.length == 5 || args.length == 6) {
 				x1 = parseCoordinate(args[2], x2 = loc.getX());
@@ -131,7 +132,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
 		}
 
-		private static int parseCoordinate(String arg, int relativeTo) throws NumberFormatException {
+		private static int parseCoordinate(String arg, int relativeTo) throws IntegerParseException {
 			return arg.startsWith("~") ? Integer.parseInt(arg.substring(1)) + relativeTo : Integer.parseInt(arg);
 		}
 

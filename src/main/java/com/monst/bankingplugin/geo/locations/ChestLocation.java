@@ -33,7 +33,7 @@ public abstract class ChestLocation implements Iterable<Block> {
             return new DoubleChestLocation(leftLoc, leftLoc.getFace(rightLoc));
         } else if (ih instanceof Chest)
             return new SingleChestLocation(((Chest) ih).getBlock());
-        return null;
+        throw new IllegalArgumentException("InventoryHolder must be a chest!");
     }
 
     public static ChestLocation at(World world, int y, int x1, int z1, int x2, int z2) {

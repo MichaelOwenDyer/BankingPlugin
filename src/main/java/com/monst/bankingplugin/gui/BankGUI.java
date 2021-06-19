@@ -81,24 +81,22 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	ClickHandler createClickHandler(int slot) {
 		switch (slot) {
 			case 0:
-				return canTP ? (player, info) -> {
-					if (info.getClickType().isLeftClick())
-						Utils.teleport(player, guiSubject.getSelection().getTeleportLocation());
-					else if (info.getClickType().isRightClick())
-						Utils.teleport(player, guiSubject.getSelection()
-								.getWorld()
-								.getHighestBlockAt(guiSubject.getSelection().getTeleportLocation())
-								.getLocation().add(0.5, 1, 0.5));
-					this.close(player);
-				} : null;
+				if (canTP)
+					return (player, info) -> {
+						if (info.getClickType().isLeftClick())
+							Utils.teleport(player, guiSubject.getSelection().getTeleportLocation());
+						else if (info.getClickType().isRightClick())
+							Utils.teleport(player, guiSubject.getSelection()
+									.getWorld()
+									.getHighestBlockAt(guiSubject.getSelection().getTeleportLocation())
+									.getLocation().add(0.5, 1, 0.5));
+						this.close(player);
+					};
 			case 8:
 				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
 					return (player, info) -> new AccountListGUI(guiSubject::getAccounts).setParentGUI(this).open(player);
-				else
-					return null;
-			default:
-				return null;
 		}
+		return null;
 	}
 
 	@Override

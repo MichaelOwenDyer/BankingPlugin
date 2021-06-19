@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -22,10 +23,10 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
         return ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getChestName()).redraw(true).build();
     }
 
-    @Override
-    void evaluateClearance(Player player) {
-        // canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
-    }
+//    @Override
+//    void evaluateClearance(Player player) {
+//        canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
+//    }
 
     @Override
     ItemStack createSlotItem(int slot) {
