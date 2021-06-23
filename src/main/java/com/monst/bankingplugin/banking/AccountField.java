@@ -1,6 +1,4 @@
-package com.monst.bankingplugin.banking.account;
-
-import com.monst.bankingplugin.banking.BankingEntityField;
+package com.monst.bankingplugin.banking;
 
 import java.util.Locale;
 import java.util.function.Function;
@@ -10,12 +8,12 @@ public enum AccountField implements BankingEntityField<Account> {
 
     OWNER ("OwnerUUID", Account::getOwnerUUID),
     BANK ("BankID", a -> a.getBank().getID()),
-    WORLD ("World", a -> a.getChestLocation().getWorld().getName()),
-    Y ("Y", a -> a.getChestLocation().getMinimumBlock().getY()),
-    X1 ("X1", a -> a.getChestLocation().getMinimumBlock().getX()),
-    Z1 ("Z1", a -> a.getChestLocation().getMinimumBlock().getZ()),
-    X2 ("X2", a -> a.getChestLocation().getMaximumBlock().getX()),
-    Z2 ("Z2", a -> a.getChestLocation().getMaximumBlock().getZ()),
+    WORLD ("World", a -> a.getLocation().getWorld().getName()),
+    Y ("Y", a -> a.getLocation().getMinimumBlock().getY()),
+    X1 ("X1", a -> a.getLocation().getMinimumBlock().getX()),
+    Z1 ("Z1", a -> a.getLocation().getMinimumBlock().getZ()),
+    X2 ("X2", a -> a.getLocation().getMaximumBlock().getX()),
+    Z2 ("Z2", a -> a.getLocation().getMaximumBlock().getZ()),
     LOCATION ("", null), // Meant as a placeholder for the previous 6
     NICKNAME ("Nickname", Account::getRawName),
     BALANCE ("Balance", Account::getBalance),

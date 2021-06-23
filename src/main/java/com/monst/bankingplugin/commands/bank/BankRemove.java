@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.commands.bank;
 
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;

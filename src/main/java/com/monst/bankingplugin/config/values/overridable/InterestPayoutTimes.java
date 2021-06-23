@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values.overridable;
 
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.exceptions.TimeParseException;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
 

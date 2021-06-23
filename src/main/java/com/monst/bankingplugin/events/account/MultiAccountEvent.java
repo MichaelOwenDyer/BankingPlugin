@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.account;
 
-import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.Account;
 import org.bukkit.command.CommandSender;
 
 import javax.annotation.Nonnull;

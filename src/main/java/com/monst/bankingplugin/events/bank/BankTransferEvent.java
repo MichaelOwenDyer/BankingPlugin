@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.bank;
 
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;

@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.commands.bank;
 
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.gui.BankListGUI;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;

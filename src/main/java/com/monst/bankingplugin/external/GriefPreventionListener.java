@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
@@ -40,7 +40,7 @@ public class GriefPreventionListener extends BankingPluginListener {
         if (!Config.enableGriefPreventionIntegration.get())
             return;
 
-        for (Block block : e.getAccount().getChestLocation())
+        for (Block block : e.getAccount().getLocation())
 			if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
 				e.setCancelled(true);
 				plugin.debug("Account create event cancelled by GriefPrevention");

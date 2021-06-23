@@ -1,8 +1,5 @@
-package com.monst.bankingplugin.banking.account;
+package com.monst.bankingplugin.banking;
 
-import com.monst.bankingplugin.banking.BankingEntity;
-import com.monst.bankingplugin.banking.Nameable;
-import com.monst.bankingplugin.banking.bank.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
@@ -66,7 +63,7 @@ public class Account extends BankingEntity {
 				account.getOwner(),
 				account.getCoOwners(),
 				account.getBank(),
-				account.getChestLocation(),
+				account.getLocation(),
 				account.getRawName(),
 				account.getBalance(),
 				account.getPrevBalance(),
@@ -160,9 +157,9 @@ public class Account extends BankingEntity {
 		plugin.debugf("Creating account (#%d)", getID());
 
 		try {
-			inventoryHolder = getChestLocation().findInventoryHolder();
+			inventoryHolder = getLocation().findInventoryHolder();
 			chestLocation = ChestLocation.from(inventoryHolder);
-			getChestLocation().checkSpaceAbove();
+			getLocation().checkSpaceAbove();
 		} catch (ChestNotFoundException | ChestBlockedException e) {
 			plugin.getAccountRepository().remove(this, Config.removeAccountOnError.get());
 			if (!Config.removeAccountOnError.get())
@@ -267,7 +264,7 @@ public class Account extends BankingEntity {
 	 *
 	 * @return the {@link Location} of the account chest.
 	 */
-	public ChestLocation getChestLocation() {
+	public ChestLocation getLocation() {
 		return chestLocation;
 	}
 
@@ -299,7 +296,7 @@ public class Account extends BankingEntity {
 		if (!update)
 			return inventoryHolder;
 		try {
-			return inventoryHolder = getChestLocation().findInventoryHolder();
+			return inventoryHolder = getLocation().findInventoryHolder();
 		} catch (ChestNotFoundException e) {
 			return null;
 		}
@@ -309,15 +306,15 @@ public class Account extends BankingEntity {
 	 * @return 1 if single chest, 2 if double.
 	 */
 	public byte getSize() {
-		return getChestLocation().getSize();
+		return getLocation().getSize();
 	}
 
 	public boolean isSingleChest() {
-		return getChestLocation().getSize() == 1;
+		return getLocation().getSize() == 1;
 	}
 
 	public boolean isDoubleChest() {
-		return getChestLocation().getSize() == 2;
+		return getLocation().getSize() == 2;
 	}
 
 	public boolean hasCustomName() {

@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.bank;
 
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.geo.selections.Selection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;

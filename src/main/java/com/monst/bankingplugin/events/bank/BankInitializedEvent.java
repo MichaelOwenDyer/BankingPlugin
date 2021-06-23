@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.bank;
 
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import org.bukkit.Bukkit;
 
 import java.util.Set;

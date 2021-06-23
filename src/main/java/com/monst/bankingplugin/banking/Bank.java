@@ -1,8 +1,5 @@
-package com.monst.bankingplugin.banking.bank;
+package com.monst.bankingplugin.banking;
 
-import com.monst.bankingplugin.banking.BankingEntity;
-import com.monst.bankingplugin.banking.Nameable;
-import com.monst.bankingplugin.banking.account.Account;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.overridable.OverriddenValue;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;

@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.control;
 
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.control.ReloadEvent;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;

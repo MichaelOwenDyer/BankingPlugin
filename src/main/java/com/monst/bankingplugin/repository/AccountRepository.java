@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.repository;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.account.AccountField;
+import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.utils.Callback;
@@ -101,7 +101,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 		}
 
         plugin.debugf("Adding account #%d to the session...", account.getID());
-		accountLocationMap.put(account.getChestLocation(), account);
+		accountLocationMap.put(account.getLocation(), account);
 
         if (addToDatabase) {
 			plugin.getDatabase().addAccount(account, callback);
@@ -126,7 +126,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 			fields.add(AccountField.Z1);
 			fields.add(AccountField.X2);
 			fields.add(AccountField.Z2);
-			accountLocationMap.put(account.getChestLocation(), account);
+			accountLocationMap.put(account.getLocation(), account);
 		}
 		plugin.debugf("Updating the following fields of account #%d in the database: " + fields, account.getID());
 
@@ -150,7 +150,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 		account.clearChestName();
 		account.getBank().removeAccount(account);
 
-		accountLocationMap.remove(account.getChestLocation());
+		accountLocationMap.remove(account.getLocation());
 
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);

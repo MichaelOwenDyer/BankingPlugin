@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.account;
 
-import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.gui.AccountGUI;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;

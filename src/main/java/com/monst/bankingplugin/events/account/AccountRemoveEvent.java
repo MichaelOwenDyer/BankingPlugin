@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.account;
 
-import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.Account;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
@@ -24,7 +24,7 @@ public class AccountRemoveEvent extends SingleAccountEvent implements Cancellabl
 
 	@Override
 	public void setCancelled(boolean cancel) {
-		cancelled = cancel;		
+		cancelled = cancel;
 	}
 
 }

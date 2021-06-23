@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.events.bank;
 
-import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
+import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.banking.BankField;
 import org.bukkit.command.CommandSender;
 
 public class BankConfigureEvent extends SingleBankEvent {

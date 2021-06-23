@@ -1,9 +1,7 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.banking.Account;
 import org.bukkit.block.ShulkerBox;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.ipvp.canvas.Menu;

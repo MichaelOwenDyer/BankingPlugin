@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.account;
 
-import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.Account;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
  * clicks on a chest and creates an account.
  */
 public class AccountCreateEvent extends SingleAccountEvent implements Cancellable {
-	
+
 	private boolean cancelled;
 
 	public AccountCreateEvent(@Nonnull Player player, @Nonnull Account account) {
@@ -25,7 +25,7 @@ public class AccountCreateEvent extends SingleAccountEvent implements Cancellabl
 
 	@Override
 	public void setCancelled(boolean cancel) {
-		cancelled = cancel;		
+		cancelled = cancel;
 	}
 
 }

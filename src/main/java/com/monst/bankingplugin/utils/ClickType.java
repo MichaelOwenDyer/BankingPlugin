@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.utils;
 
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.account.AccountField;
+import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.commands.account.*;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;

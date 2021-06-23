@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
 import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;

@@ -1,10 +1,10 @@
 package com.monst.bankingplugin.sql;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.account.AccountField;
-import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
+import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.banking.AccountField;
+import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.IntegerParseException;
 import com.monst.bankingplugin.exceptions.TimeParseException;
@@ -1111,7 +1111,7 @@ public abstract class Database {
 	}
 
 	private LinkedList<Object> getAttributes(Account account) {
-		ChestLocation loc = account.getChestLocation();
+		ChestLocation loc = account.getLocation();
 		Block v1 = loc.getMinimumBlock();
 		Block v2 = loc.getMaximumBlock();
 		return new LinkedList<>(Arrays.asList(

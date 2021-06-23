@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.commands.account;
 
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.account.AccountField;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.banking.AccountField;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.geo.locations.ChestLocation;

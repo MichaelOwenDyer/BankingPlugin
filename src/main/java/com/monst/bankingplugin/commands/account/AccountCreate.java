@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.account;
 
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;

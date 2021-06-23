@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.account;
 
-import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;

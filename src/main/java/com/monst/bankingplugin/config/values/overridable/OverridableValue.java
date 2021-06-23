@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values.overridable;
 
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.config.values.ConfigValue;
 import com.monst.bankingplugin.config.values.simple.AllowOverride;
 

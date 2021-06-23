@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;

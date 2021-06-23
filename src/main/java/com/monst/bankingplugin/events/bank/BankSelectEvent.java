@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.events.bank;
 
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
@@ -21,5 +21,5 @@ public class BankSelectEvent extends SingleBankEvent implements Cancellable {
 	public void setCancelled(boolean cancel) {
 		cancelled = cancel;
 	}
-	
+
 }

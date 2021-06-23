@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.commands.account.AccountInfo;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.LangUtils;

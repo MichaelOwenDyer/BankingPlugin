@@ -1,6 +1,4 @@
-package com.monst.bankingplugin.banking.bank;
-
-import com.monst.bankingplugin.banking.BankingEntityField;
+package com.monst.bankingplugin.banking;
 
 import java.util.Locale;
 import java.util.function.Function;
@@ -42,7 +40,8 @@ public enum BankField implements BankingEntityField<Bank> {
     private final Function<Bank, Object> getter;
 
     BankField(String databaseAttribute) {
-        this(databaseAttribute, null);
+        this.databaseAttribute = databaseAttribute;
+        this.getter = null;
     }
 
     BankField(String databaseAttribute, Function<Bank, Object> getter) {

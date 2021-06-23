@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.slot.Slot;

@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.repository;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
+import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
 import com.monst.bankingplugin.geo.selections.Selection;
 import com.monst.bankingplugin.utils.Callback;

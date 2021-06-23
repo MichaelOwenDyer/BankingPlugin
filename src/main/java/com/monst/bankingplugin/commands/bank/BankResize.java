@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.bank;
 
-import com.monst.bankingplugin.banking.bank.Bank;
-import com.monst.bankingplugin.banking.bank.BankField;
+import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.external.VisualizationManager;
@@ -134,7 +134,7 @@ public class BankResize extends BankCommand.SubCommand {
                 VisualizationManager.visualizeOverlap(p, overlappingSelections);
             return true;
         }
-        long cutAccounts = bank.getAccounts(account -> !selection.contains(account.getChestLocation())).size();
+        long cutAccounts = bank.getAccounts(account -> !selection.contains(account.getLocation())).size();
         if (cutAccounts > 0) {
             PLUGIN.debug("New selection does not contain all accounts");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_CUTS_ACCOUNTS, new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, cutAccounts)));

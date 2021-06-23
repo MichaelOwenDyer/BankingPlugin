@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -84,7 +84,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 			case 0:
 				if (canTP)
 					return (player, info) -> {
-						Utils.teleport(player, guiSubject.getChestLocation().getTeleportLocation());
+						Utils.teleport(player, guiSubject.getLocation().getTeleportLocation());
 						this.close(player);
 					};
 			case 1:

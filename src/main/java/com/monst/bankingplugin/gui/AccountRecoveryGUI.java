@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.banking.account.Account;
+import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.ClickType;
@@ -40,7 +40,7 @@ public class AccountRecoveryGUI extends AccountListGUI {
     }
 
     private List<String> getRecoveryLore(Account account) {
-        String worldName = account.getChestLocation().getWorld() == null ? "" : " in \"" + account.getChestLocation().getWorld().getName() + "\"";
+        String worldName = account.getLocation().getWorld() == null ? "" : " in \"" + account.getLocation().getWorld().getName() + "\"";
         return wordWrapAll(40,
                 "Account ID: " + ChatColor.DARK_GRAY + account.getID(),
                 "Owner: " + account.getOwnerDisplayName(),

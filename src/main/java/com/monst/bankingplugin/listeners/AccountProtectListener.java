@@ -1,9 +1,9 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.account.Account;
-import com.monst.bankingplugin.banking.account.AccountField;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.banking.AccountField;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
@@ -74,7 +74,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		}
 
 		if (account.isDoubleChest()) {
-			DoubleChestLocation oldLoc = (DoubleChestLocation) account.getChestLocation();
+			DoubleChestLocation oldLoc = (DoubleChestLocation) account.getLocation();
 			SingleChestLocation newLoc = oldLoc.contract(b);
 			account.setChestLocation(newLoc);
 			accountRepo.update(account, account.callUpdateChestName(), AccountField.LOCATION);

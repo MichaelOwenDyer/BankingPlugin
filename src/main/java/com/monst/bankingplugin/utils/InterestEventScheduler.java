@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.bank.Bank;
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.listeners.InterestEventListener;
 import org.bukkit.Bukkit;
