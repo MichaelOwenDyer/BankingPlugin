@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.geo.selections;
+package com.monst.bankingplugin.geo.regions;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
@@ -12,30 +12,30 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class Selection {
+public abstract class BankRegion {
 
 	final World world;
 
-	Selection(World world) {
+	BankRegion(World world) {
 		this.world = world;
 	}
 
 	/**
-	 * @return the point on the bounding box of this {@link Selection} with the lowest x, y, and z values.
+	 * @return the point on the bounding box of this {@link BankRegion} with the lowest x, y, and z values.
 	 */
     public Block getMinimumBlock() {
 		return world.getBlockAt(getMinX(), getMinY(), getMinZ());
 	}
 
 	/**
-	 * @return the point on the bounding box of this {@link Selection} with the highest x, y, and z values.
+	 * @return the point on the bounding box of this {@link BankRegion} with the highest x, y, and z values.
 	 */
 	public Block getMaximumBlock() {
 		return world.getBlockAt(getMaxX(), getMaxY(), getMaxZ());
 	}
 
 	/**
-	 * Gets the center point of this selection.
+	 * Gets the center point of this region.
 	 *
 	 * @return the center point
 	 */
@@ -46,70 +46,70 @@ public abstract class Selection {
 	}
 
 	/**
-	 * @return the minimum x-coordinate of this {@link Selection}
+	 * @return the minimum x-coordinate of this {@link BankRegion}
 	 */
 	public abstract int getMinX();
 
 	/**
-	 * @return the maximum x-coordinate of this {@link Selection}
+	 * @return the maximum x-coordinate of this {@link BankRegion}
 	 */
 	public abstract int getMaxX();
 
 	/**
-	 * @return the minimum y-coordinate of this {@link Selection}
+	 * @return the minimum y-coordinate of this {@link BankRegion}
 	 */
 	public abstract int getMinY();
 
 	/**
-	 * @return the maximum y-coordinate of this {@link Selection}
+	 * @return the maximum y-coordinate of this {@link BankRegion}
 	 */
 	public abstract int getMaxY();
 
 	/**
-	 * @return the minimum z-coordinate of this {@link Selection}
+	 * @return the minimum z-coordinate of this {@link BankRegion}
 	 */
 	public abstract int getMinZ();
 
 	/**
-	 * @return the maximum z-coordinate of this {@link Selection}
+	 * @return the maximum z-coordinate of this {@link BankRegion}
 	 */
 	public abstract int getMaxZ();
 
 	/**
-	 * @return the world this {@link Selection} is in
+	 * @return the world this {@link BankRegion} is in
 	 */
 	public World getWorld() {
 		return world;
 	}
 
 	/**
-	 * Gets a {@link String} that illustrates the location of this selection.
+	 * Gets a {@link String} that illustrates the location of this region.
 	 *
 	 * @return a coordinate string
 	 */
 	public abstract String getCoordinates();
 
 	/**
-	 * Gets the number of blocks in this selection.
+	 * Gets the number of blocks in this region.
 	 *
 	 * @return the number of blocks
 	 */
 	public abstract long getVolume();
 
 	/**
-	 * @param sel The other selection
-	 * @return whether or not this selection overlaps with another one
+	 * @param region The other region
+	 * @return whether or not this region overlaps with another one
 	 */
-	public abstract boolean overlaps(Selection sel);
+	public abstract boolean overlaps(BankRegion region);
 
 	/**
-	 * @param sel The other selection
-	 * @return whether this selection *cannot* overlap with the other selection
+	 * @param region The other region
+	 * @return whether this region *cannot* overlap with the other region
 	 */
-	public final boolean isDisjunct(Selection sel) {
-		return getMinX() > sel.getMaxX() || getMaxX() < sel.getMinX() ||
-				getMinY() > sel.getMaxY() || getMaxY() < sel.getMinY() ||
-				getMinZ() > sel.getMaxZ() || getMaxZ() < sel.getMinZ();
+	public final boolean isDisjunct(BankRegion region) {
+		return getMinX() > region.getMaxX() || getMaxX() < region.getMinX() ||
+				getMinY() > region.getMaxY() || getMaxY() < region.getMinY() ||
+				getMinZ() > region.getMaxZ() || getMaxZ() < region.getMinZ();
 	}
 
 	public boolean contains(ChestLocation chest) {
@@ -120,9 +120,9 @@ public abstract class Selection {
 	}
 
 	/**
-	 * Returns true based on whether this selection contains the {@link Block},
+	 * Returns true based on whether this region contains the {@link Block},
 	 *
-	 * @param block The block that may or may not be contained by this selection
+	 * @param block The block that may or may not be contained by this region
 	 * @return Whether or not the block is contained
 	 */
 	public boolean contains(Block block) {
@@ -132,7 +132,7 @@ public abstract class Selection {
 	}
 
 	/**
-	 * Returns true if this selection contains this set of coordinates, assuming the same {@link World}.
+	 * Returns true if this region contains this set of coordinates, assuming the same {@link World}.
 	 *
 	 * @param x the x-coordinate
 	 * @param y the y-coordinate
@@ -144,7 +144,7 @@ public abstract class Selection {
 	}
 
 	/**
-	 * Returns true if this selection contains this (x,z) coordinate pair, assuming the same {@link World} and a compatible y-coordinate.
+	 * Returns true if this region contains this (x,z) coordinate pair, assuming the same {@link World} and a compatible y-coordinate.
 	 *
 	 * @param x the x-coordinate
 	 * @param z the z-coordinate
@@ -154,21 +154,21 @@ public abstract class Selection {
 
 	/**
 	 * Gets a {@link Set<BlockVector2D>} containing a horizontal cross-section
-	 * of this selection with no y-coordinate.
+	 * of this region with no y-coordinate.
 	 *
-	 * @return a set with every {@link BlockVector2D} in this selection
+	 * @return a set with every {@link BlockVector2D} in this region
 	 */
 	public abstract Set<BlockVector2D> getFootprint();
 
 	/**
-	 * Gets an ordered list of {@link BlockVector2D}s containing each vertex of this selection.
-	 * The order of the elements is selection-specific.
-	 * @return a {@link List<BlockVector2D>} of all vertices of the selection.
+	 * Gets an ordered list of {@link BlockVector2D}s containing each vertex of this region.
+	 * The order of the elements is region-specific.
+	 * @return a {@link List<BlockVector2D>} of all vertices of the region.
 	 */
 	public abstract List<BlockVector2D> getVertices();
 
 	/**
-	 * Get all (upper and lower) corner {@link Block}s of this selection.
+	 * Get all (upper and lower) corner {@link Block}s of this region.
 	 * This will return two blocks per {@link BlockVector2D} from {@link #getVertices()},
 	 * one at {@link #getMinY()} and the other at {@link #getMaxY()}.
 	 *

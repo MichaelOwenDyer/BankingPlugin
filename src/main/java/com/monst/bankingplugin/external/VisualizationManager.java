@@ -3,7 +3,7 @@ package com.monst.bankingplugin.external;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.geo.BlockVector2D;
-import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -24,28 +24,28 @@ public class VisualizationManager {
         Visualization.Revert(p);
     }
 
-    public static void visualizeSelection(Player p, Bank bank) {
-        visualizeSelection(p, bank.getSelection(), bank.isAdminBank());
+    public static void visualizeRegion(Player p, Bank bank) {
+        visualizeRegion(p, bank.getRegion(), bank.isAdminBank());
     }
 
-    public static void visualizeSelection(Player p, Selection sel, boolean isAdmin) {
+    public static void visualizeRegion(Player p, BankRegion sel, boolean isAdmin) {
         visualize(p, Collections.singleton(sel), isAdmin ? VisualizationType.ADMIN : VisualizationType.NORMAL);
     }
 
-    public static void visualizeOverlap(Player p, Collection<Selection> selections) {
-        visualize(p, selections, VisualizationType.OVERLAP);
+    public static void visualizeOverlap(Player p, Collection<BankRegion> bankRegions) {
+        visualize(p, bankRegions, VisualizationType.OVERLAP);
     }
 
-    private static void visualize(Player p, Collection<Selection> selections, VisualizationType type) {
+    private static void visualize(Player p, Collection<BankRegion> bankRegions, VisualizationType type) {
         Utils.bukkitRunnable(() -> {
             Visualization visualization = new Visualization();
-            for (Selection sel : selections)
-                visualization.elements.addAll(getSelectionElements(sel, p.getLocation(), type));
+            for (BankRegion region : bankRegions)
+                visualization.elements.addAll(getRegionElements(region, p.getLocation(), type));
             Visualization.Apply(p, visualization);
         }).runTaskAsynchronously(BankingPlugin.getInstance());
     }
 
-    private static List<VisualizationElement> getSelectionElements(Selection sel, Location playerLoc, VisualizationType type) {
+    private static List<VisualizationElement> getRegionElements(BankRegion sel, Location playerLoc, VisualizationType type) {
 
         final int step = 10;
         World world = sel.getWorld();

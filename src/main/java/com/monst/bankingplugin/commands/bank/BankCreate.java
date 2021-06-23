@@ -3,9 +3,10 @@ package com.monst.bankingplugin.commands.bank;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
+import com.monst.bankingplugin.exceptions.IntegerParseException;
 import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
-import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -50,11 +51,11 @@ public class BankCreate extends BankCommand.SubCommand {
 
         String name = args[1];
 
-        Selection selection;
+        BankRegion bankRegion;
         if (args.length <= 3) {
             if (Config.enableWorldEditIntegration.get() && PLUGIN.hasWorldEdit()) {
-                selection = WorldEditReader.getSelection(PLUGIN, p);
-                if (selection == null) {
+                bankRegion = WorldEditReader.getBankRegion(PLUGIN, p);
+                if (bankRegion == null) {
                     PLUGIN.debug(p.getName() + " tried to create a bank with no WorldEdit selection");
                     p.sendMessage(LangUtils.getMessage(Message.BANK_SELECT_REGION));
                     return true;
@@ -66,19 +67,19 @@ public class BankCreate extends BankCommand.SubCommand {
             }
         } else {
             try {
-                selection = parseCoordinates(args, p.getLocation().getBlock());
-            } catch (NumberFormatException e) {
-                PLUGIN.debug("Could not parse coordinates in command args");
-                p.sendMessage(LangUtils.getMessage(Message.BANK_COORDINATE_PARSE_ERROR));
+                bankRegion = parseCoordinates(args, p.getLocation().getBlock());
+            } catch (IntegerParseException e) {
+                p.sendMessage(e.getLocalizedMessage());
+                PLUGIN.debugf("Could not parse coordinate: \"%s\"", e.getLocalizedMessage());
                 return false;
             }
         }
 
-        if (selection == null)
+        if (bankRegion == null)
             return false;
 
-        if (Config.disabledWorlds.get().contains(selection.getWorld().getName())) {
-            PLUGIN.debug("BankingPlugin is disabled in world " + selection.getWorld().getName());
+        if (Config.disabledWorlds.get().contains(bankRegion.getWorld())) {
+            PLUGIN.debug("BankingPlugin is disabled in world " + bankRegion.getWorld().getName());
             p.sendMessage(LangUtils.getMessage(Message.WORLD_DISABLED));
             return true;
         }
@@ -98,17 +99,17 @@ public class BankCreate extends BankCommand.SubCommand {
                 return true;
             }
         }
-        Set<Selection> overlappingSelections = bankRepo.getOverlappingSelections(selection);
-        if (!overlappingSelections.isEmpty()) {
+        Set<BankRegion> overlappingRegions = bankRepo.getOverlappingRegions(bankRegion);
+        if (!overlappingRegions.isEmpty()) {
             PLUGIN.debug("Region is not exclusive");
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING,
-                    new Replacement(Placeholder.NUMBER_OF_BANKS, overlappingSelections::size)
+                    new Replacement(Placeholder.NUMBER_OF_BANKS, overlappingRegions::size)
             ));
             if (PLUGIN.hasGriefPrevention() && Config.enableGriefPreventionIntegration.get())
-                VisualizationManager.visualizeOverlap(p, overlappingSelections);
+                VisualizationManager.visualizeOverlap(p, overlappingRegions);
             return true;
         }
-        long volume = selection.getVolume();
+        long volume = bankRegion.getVolume();
         long volumeLimit = getVolumeLimit(p);
         if (!isAdminBank && volumeLimit >= 0 && volume > volumeLimit) {
             PLUGIN.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
@@ -159,7 +160,7 @@ public class BankCreate extends BankCommand.SubCommand {
                 return true;
         }
 
-        Bank bank = Bank.mint(name, isAdminBank ? null : p, selection);
+        Bank bank = Bank.mint(name, isAdminBank ? null : p, bankRegion);
 
         BankCreateEvent event = new BankCreateEvent(p, bank);
         event.fire();

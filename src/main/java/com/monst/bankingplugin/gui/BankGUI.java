@@ -84,11 +84,11 @@ public class BankGUI extends SinglePageGUI<Bank> {
 				if (canTP)
 					return (player, info) -> {
 						if (info.getClickType().isLeftClick())
-							Utils.teleport(player, guiSubject.getSelection().getTeleportLocation());
+							Utils.teleport(player, guiSubject.getRegion().getTeleportLocation());
 						else if (info.getClickType().isRightClick())
-							Utils.teleport(player, guiSubject.getSelection()
+							Utils.teleport(player, guiSubject.getRegion()
 									.getWorld()
-									.getHighestBlockAt(guiSubject.getSelection().getTeleportLocation())
+									.getHighestBlockAt(guiSubject.getRegion().getTeleportLocation())
 									.getLocation().add(0.5, 1, 0.5));
 						this.close(player);
 					};
@@ -112,7 +112,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 				? ChatColor.RED + "[none]"
 				: ChatColor.AQUA + Utils.map(guiSubject.getCoOwners(), OfflinePlayer::getName).toString())
 		);
-		lore.add("Location: " + ChatColor.AQUA + guiSubject.getSelection().getCoordinates());
+		lore.add("Location: " + ChatColor.AQUA + guiSubject.getRegion().getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to bank.");
 		return wordWrapAll(45, lore);

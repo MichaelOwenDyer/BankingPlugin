@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.geo.selections;
+package com.monst.bankingplugin.geo.regions;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.polylabel.PolyLabel;
@@ -11,27 +11,27 @@ import java.util.stream.Collectors;
 /**
  * This class represents a region of space in the shape of a polygonal prism. It is defined by a {@link World},
  * a minimum and a maximum y-coordinate, and an ordered list of {@link BlockVector2D} (x,z) coordinate pairs to
- * represent the vertices. An edge of this selection is a line formed between two neighboring coordinate pairs on the list.
+ * represent the vertices. An edge of this region is a line formed between two neighboring coordinate pairs on the list.
  */
-public class PolygonalSelection extends Selection {
+public class PolygonalBankRegion extends BankRegion {
 
 	private final List<BlockVector2D> vertices;
 	private final int minY;
 	private final int maxY;
 
 	/**
-	 * Creates a new {@link PolygonalSelection} with the specified attributes
+	 * Creates a new {@link PolygonalBankRegion} with the specified attributes
 	 *
-	 * @param world the world the selection is in
-	 * @param points the vertices of the selection
+	 * @param world the world the region is in
+	 * @param points the vertices of the region
 	 * @param y1 the first y-coordinate bound (upper or lower)
 	 * @param y2 the other y-coordinate bound
-	 * @return a new PolygonalSelection
+	 * @return a new PolygonalBankRegion
 	 */
-	public static PolygonalSelection of(World world, List<BlockVector2D> points, int y1, int y2) {
+	public static PolygonalBankRegion of(World world, List<BlockVector2D> points, int y1, int y2) {
 		y1 = Math.min(Math.max(0, y1), world.getMaxHeight()); // Ensure y1 is between 0 and world.getMaxHeight()
 		y2 = Math.min(Math.max(0, y2), world.getMaxHeight()); // Ensure y2 is between 0 and world.getMaxHeight()
-		return new PolygonalSelection(
+		return new PolygonalBankRegion(
 				world,
 				points,
 				Math.min(y1, y2), // Take the lower of the two y-values to be minY
@@ -39,7 +39,7 @@ public class PolygonalSelection extends Selection {
 		);
 	}
 
-	private PolygonalSelection(World world, List<BlockVector2D> vertices, int minY, int maxY) {
+	private PolygonalBankRegion(World world, List<BlockVector2D> vertices, int minY, int maxY) {
 		super(world);
 		if (vertices == null || vertices.size() < 3)
 			throw new IllegalArgumentException("Vertices cannot be fewer than 3!");
@@ -49,10 +49,10 @@ public class PolygonalSelection extends Selection {
 	}
 
 	/**
-	 * This method finds the "visual center" of this {@link PolygonalSelection} using an external library {@link PolyLabel}.
+	 * This method finds the "visual center" of this {@link PolygonalBankRegion} using an external library {@link PolyLabel}.
 	 * This is <b>not</b> the center of the bounding box; it is the point within the polygon that is furthest from any edge.
 	 *
-	 * @return the pole of inaccessibility of this PolygonalSelection
+	 * @return the pole of inaccessibility of this PolygonalBankRegion
 	 */
 	@Override
 	public Block getCenterPoint() {
@@ -68,14 +68,14 @@ public class PolygonalSelection extends Selection {
 	@Override
 	public int getMinX() {
 		if (vertices.isEmpty())
-			throw new IllegalStateException("No vertices in PolygonalSelection!");
+			throw new IllegalStateException("No vertices in PolygonalBankRegion!");
 		return vertices.stream().mapToInt(BlockVector2D::getX).min().getAsInt();
 	}
 
 	@Override
 	public int getMaxX() {
 		if (vertices.isEmpty())
-			throw new IllegalStateException("No vertices in PolygonalSelection!");
+			throw new IllegalStateException("No vertices in PolygonalBankRegion!");
 		return vertices.stream().mapToInt(BlockVector2D::getX).max().getAsInt();
 	}
 
@@ -92,14 +92,14 @@ public class PolygonalSelection extends Selection {
 	@Override
 	public int getMinZ() {
 		if (vertices.isEmpty())
-			throw new IllegalStateException("No vertices in PolygonalSelection!");
+			throw new IllegalStateException("No vertices in PolygonalBankRegion!");
 		return vertices.stream().mapToInt(BlockVector2D::getZ).min().getAsInt();
 	}
 
 	@Override
 	public int getMaxZ() {
 		if (vertices.isEmpty())
-			throw new IllegalStateException("No vertices in PolygonalSelection!");
+			throw new IllegalStateException("No vertices in PolygonalBankRegion!");
 		return vertices.stream().mapToInt(BlockVector2D::getZ).max().getAsInt();
 	}
 
@@ -124,10 +124,10 @@ public class PolygonalSelection extends Selection {
 	}
 
 	@Override
-	public boolean overlaps(Selection sel) {
-		if (isDisjunct(sel))
+	public boolean overlaps(BankRegion region) {
+		if (isDisjunct(region))
 			return false;
-		Set<BlockVector2D> blocks = sel.getFootprint();
+		Set<BlockVector2D> blocks = region.getFootprint();
 		return getFootprint().stream().anyMatch(blocks::contains);
 	}
 
@@ -146,7 +146,7 @@ public class PolygonalSelection extends Selection {
 	}
 
 	/**
-	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalSelection}
+	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalBankRegion}
 	 */
 	@Override
 	public List<BlockVector2D> getVertices() {
@@ -203,7 +203,7 @@ public class PolygonalSelection extends Selection {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		PolygonalSelection other = (PolygonalSelection) o;
+		PolygonalBankRegion other = (PolygonalBankRegion) o;
 		return getMinY() == other.getMinY() && getMaxY() == other.getMaxY()
 			&& Objects.equals(getWorld(), other.getWorld())
 			&& Objects.equals(getVertices(), other.getVertices());

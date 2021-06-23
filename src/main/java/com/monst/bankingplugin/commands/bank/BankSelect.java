@@ -75,9 +75,9 @@ public class BankSelect extends BankCommand.SubCommand {
         }
 
         if (PLUGIN.hasWorldEdit())
-            WorldEditReader.setSelection(PLUGIN, bank.getSelection(), p);
+            WorldEditReader.setSelection(PLUGIN, bank.getRegion(), p);
         if (PLUGIN.hasGriefPrevention())
-            VisualizationManager.visualizeSelection(p, bank);
+            VisualizationManager.visualizeRegion(p, bank);
         PLUGIN.debug(p.getName() + " has selected a bank");
         p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)

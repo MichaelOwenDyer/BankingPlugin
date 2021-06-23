@@ -7,7 +7,7 @@ import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.IntegerParseException;
 import com.monst.bankingplugin.geo.BlockVector3D;
-import com.monst.bankingplugin.geo.selections.CuboidSelection;
+import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -106,13 +106,13 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		}
 
 		/**
-		 * Parses coordinates for a new bank selection from command arguments
+		 * Parses coordinates for a new bank region from command arguments
 		 * @param args the arguments to parse
 		 * @param loc the location of the player sending the command
-		 * @return a {@link CuboidSelection} described by the command arguments
+		 * @return a {@link CuboidBankRegion} described by the command arguments
 		 * @throws NumberFormatException if the coordinates could not be parsed
 		 */
-		static CuboidSelection parseCoordinates(String[] args, Block loc) throws IntegerParseException {
+		static CuboidBankRegion parseCoordinates(String[] args, Block loc) throws IntegerParseException {
 			int x1, y1, z1, x2, y2, z2;
 			if (args.length == 5 || args.length == 6) {
 				x1 = parseCoordinate(args[2], x2 = loc.getX());
@@ -129,7 +129,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 				return null;
 			BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);
 			BlockVector3D loc2 = new BlockVector3D(x2, y2, z2);
-			return CuboidSelection.of(loc.getWorld(), loc1, loc2);
+			return CuboidBankRegion.of(loc.getWorld(), loc1, loc2);
 		}
 
 		private static int parseCoordinate(String arg, int relativeTo) throws IntegerParseException {

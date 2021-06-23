@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.geo.selections;
+package com.monst.bankingplugin.geo.regions;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
 import org.bukkit.World;
@@ -10,17 +10,17 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PolygonalSelectionTest {
+public class PolygonalBankRegionTest {
 
-    private static Constructor<PolygonalSelection> constructor;
+    private static Constructor<PolygonalBankRegion> constructor;
     static {
         try {
-            constructor = PolygonalSelection.class.getDeclaredConstructor(World.class, List.class, int.class, int.class);
+            constructor = PolygonalBankRegion.class.getDeclaredConstructor(World.class, List.class, int.class, int.class);
             constructor.setAccessible(true);
         } catch (NoSuchMethodException ignored) {}
     }
 
-    static PolygonalSelection newSel(int... args) {
+    static PolygonalBankRegion newSel(int... args) {
         assertEquals(0, args.length % 2);
         List<BlockVector2D> points = new ArrayList<>();
         for (int i = 0; i < args.length; i += 2) {

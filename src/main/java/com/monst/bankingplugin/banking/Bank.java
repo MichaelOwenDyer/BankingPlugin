@@ -3,7 +3,7 @@ package com.monst.bankingplugin.banking;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.overridable.OverriddenValue;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
-import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -22,13 +22,13 @@ public class Bank extends BankingEntity {
 	/**
 	 * Creates a new bank.
 	 */
-	public static Bank mint(String name, OfflinePlayer owner, Selection selection) {
+	public static Bank mint(String name, OfflinePlayer owner, BankRegion region) {
 		return new Bank(
 				-1,
 				name,
 				owner,
 				new HashSet<>(),
-				selection,
+				region,
 				null,
 				null,
 				null,
@@ -51,7 +51,7 @@ public class Bank extends BankingEntity {
 	 * Re-creates a bank that was stored in the database.
 	 */
 	public static Bank recreate(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-								Selection selection, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
+								BankRegion region, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
 								Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
 								Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer allowedOfflinePayoutsUntilReset,
 								Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
@@ -61,7 +61,7 @@ public class Bank extends BankingEntity {
 				name,
 				owner,
 				new HashSet<>(coowners),
-				selection,
+				region,
 				countInterestDelayOffline,
 				reimburseAccountCreation,
 				payOnLowBalance,
@@ -81,7 +81,7 @@ public class Bank extends BankingEntity {
 	}
 
 	private final Set<Account> accounts;
-	private Selection selection;
+	private BankRegion region;
 
 	private final OverriddenValue<Boolean> countInterestDelayOffline;
 	private final OverriddenValue<Boolean> reimburseAccountCreation;
@@ -104,10 +104,10 @@ public class Bank extends BankingEntity {
 	 * @param name the name of the bank {@link Nameable}
 	 * @param owner the owner of the bank {@link BankingEntity}
 	 * @param coowners the co-owners of the bank {@link BankingEntity}
-	 * @param selection the {@link Selection} representing the bounds of the bank
+	 * @param region the {@link BankRegion} representing the bounds of the bank
 	 *
 	 */
-	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners, Selection selection,
+	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners, BankRegion region,
 				 Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
 				 Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
 				 Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer allowedOfflinePayoutsUntilReset,
@@ -115,7 +115,7 @@ public class Bank extends BankingEntity {
 				 List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 
 		super(id, name, owner, coowners);
-		this.selection = selection;
+		this.region = region;
 		this.accounts = new HashSet<>();
 		this.countInterestDelayOffline = Config.countInterestDelayOffline.override(this, countInterestDelayOffline);
 		this.reimburseAccountCreation = Config.reimburseAccountCreation.override(this, reimburseAccountCreation);
@@ -220,17 +220,17 @@ public class Bank extends BankingEntity {
 	}
 
 	/**
-	 * @return the {@link Selection} representing the bounds of this bank
+	 * @return the {@link BankRegion} representing the bounds of this bank
 	 */
-	public Selection getSelection() {
-		return selection;
+	public BankRegion getRegion() {
+		return region;
 	}
 
 	/**
-	 * @param sel the new {@link Selection} to represent the bounds of this bank
+	 * @param region the new {@link BankRegion} to represent the bounds of this bank
 	 */
-	public void setSelection(Selection sel) {
-		this.selection = sel;
+	public void setRegion(BankRegion region) {
+		this.region = region;
 		notifyObservers();
 	}
 
@@ -424,7 +424,7 @@ public class Bank extends BankingEntity {
 				"Total value: " + Utils.formatAndColorize(getTotalValue()),
 				"Average account value: " + Utils.formatAndColorize(QuickMath.divide(getTotalValue(), getAccounts().size())),
 				"Equality score: " + getGiniCoefficient(),
-				"Location: " + ChatColor.AQUA + getSelection().getCoordinates()
+				"Location: " + ChatColor.AQUA + getRegion().getCoordinates()
 		).map(s -> ChatColor.GRAY + s).collect(Collectors.joining(", "));
 	}
 
@@ -436,7 +436,7 @@ public class Bank extends BankingEntity {
 				"Owner: " + getOwnerName(),
 				"Number of accounts: " + getAccounts().size(),
 				"Total value: " + Utils.format(getTotalValue()),
-				"Location: " + getSelection().getCoordinates()
+				"Location: " + getRegion().getCoordinates()
 		);
 	}
 
@@ -453,7 +453,7 @@ public class Bank extends BankingEntity {
 
 	@Override
 	public int hashCode() {
-		return getID() != -1 ? getID() : Objects.hash(owner, coowners, selection, name);
+		return getID() != -1 ? getID() : Objects.hash(owner, coowners, region, name);
 	}
 
 }

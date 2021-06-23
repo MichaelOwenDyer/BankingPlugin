@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.geo.selections;
+package com.monst.bankingplugin.geo.regions;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
@@ -11,20 +11,20 @@ import java.util.*;
  * This class represents a region of space in the shape of a rectangular prism. It is defined by a {@link World} and
  * a minimum and a maximum {@link BlockVector3D} point in space.
  */
-public class CuboidSelection extends Selection {
+public class CuboidBankRegion extends BankRegion {
 
 	private final Block min;
 	private final Block max;
 
 	/**
-	 * Creates a new {@link CuboidSelection} with the specified attributes
+	 * Creates a new {@link CuboidBankRegion} with the specified attributes
 	 *
-	 * @param world the world the selection is in
+	 * @param world the world the region is in
 	 * @param loc1 the first corner bound (any combination of upper/lower x, y, z values)
 	 * @param loc2 the other corner bound
-	 * @return a new CuboidSelection
+	 * @return a new CuboidBankRegion
 	 */
-	public static CuboidSelection of(World world, BlockVector3D loc1, BlockVector3D loc2) {
+	public static CuboidBankRegion of(World world, BlockVector3D loc1, BlockVector3D loc2) {
 		Block min = world.getBlockAt(
 				Math.min(loc1.getX(), loc2.getX()),
 				Math.min(loc1.getY(), loc2.getY()),
@@ -35,10 +35,10 @@ public class CuboidSelection extends Selection {
 				Math.max(loc1.getY(), loc2.getY()),
 				Math.max(loc1.getZ(), loc2.getZ())
 		);
-		return new CuboidSelection(world, min, max);
+		return new CuboidBankRegion(world, min, max);
 	}
 
-	private CuboidSelection(World world, Block min, Block max) {
+	private CuboidBankRegion(World world, Block min, Block max) {
 		super(world);
 		this.min = min;
 		this.max = max;
@@ -90,11 +90,11 @@ public class CuboidSelection extends Selection {
 	}
 
 	@Override
-	public boolean overlaps(Selection sel) {
-		if (isDisjunct(sel))
+	public boolean overlaps(BankRegion region) {
+		if (isDisjunct(region))
 			return false;
 		Set<BlockVector2D> blocks = getFootprint();
-		return sel.getFootprint().stream().anyMatch(blocks::contains);
+		return region.getFootprint().stream().anyMatch(blocks::contains);
 	}
 
 	@Override
@@ -134,10 +134,10 @@ public class CuboidSelection extends Selection {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		CuboidSelection otherSel = (CuboidSelection) o;
-		return Objects.equals(getWorld(), otherSel.getWorld())
-			&& Objects.equals(getMaximumBlock(), otherSel.getMaximumBlock())
-			&& Objects.equals(getMinimumBlock(), otherSel.getMinimumBlock());
+		CuboidBankRegion otherRegion = (CuboidBankRegion) o;
+		return Objects.equals(getWorld(), otherRegion.getWorld())
+			&& Objects.equals(getMaximumBlock(), otherRegion.getMaximumBlock())
+			&& Objects.equals(getMinimumBlock(), otherRegion.getMinimumBlock());
 	}
 
 	@Override

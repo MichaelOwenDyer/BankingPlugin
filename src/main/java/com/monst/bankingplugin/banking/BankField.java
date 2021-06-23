@@ -23,15 +23,15 @@ public enum BankField implements BankingEntityField<Bank> {
     PLAYER_BANK_ACCOUNT_LIMIT ("PlayerBankAccountLimit"),
     MULTIPLIERS ("Multipliers"),
     INTEREST_PAYOUT_TIMES ("InterestPayoutTimes"),
-    WORLD ("World", b -> b.getSelection().getWorld().getName()),
-    MIN_X ("MinX", b -> b.getSelection().getMinX()),
-    MAX_X ("MaxX", b -> b.getSelection().getMaxX()),
-    MIN_Y ("MinY", b -> b.getSelection().getMinY()),
-    MAX_Y ("MaxY", b -> b.getSelection().getMaxY()),
-    MIN_Z ("MinZ", b -> b.getSelection().getMinZ()),
-    MAX_Z ("MaxZ", b -> b.getSelection().getMaxZ()),
-    VERTICES("PolygonVertices", b -> b.getSelection().getVertices()),
-    SELECTION ("", null); // Meant as a placeholder for the previous 7
+    WORLD ("World", b -> b.getRegion().getWorld().getName()),
+    MIN_X ("MinX", b -> b.getRegion().getMinX()),
+    MAX_X ("MaxX", b -> b.getRegion().getMaxX()),
+    MIN_Y ("MinY", b -> b.getRegion().getMinY()),
+    MAX_Y ("MaxY", b -> b.getRegion().getMaxY()),
+    MIN_Z ("MinZ", b -> b.getRegion().getMinZ()),
+    MAX_Z ("MaxZ", b -> b.getRegion().getMaxZ()),
+    VERTICES("PolygonVertices", b -> b.getRegion().getVertices()),
+    REGION ("", null); // Meant as a placeholder for the previous 7
 
     private static final BankField[] VALUES = values();
     private static final BankField[] CONFIGURABLE = stream().filter(f -> f.getter == null).toArray(BankField[]::new);

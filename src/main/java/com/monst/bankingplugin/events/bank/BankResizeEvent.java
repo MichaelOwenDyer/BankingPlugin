@@ -1,26 +1,26 @@
 package com.monst.bankingplugin.events.bank;
 
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.geo.regions.BankRegion;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
 public class BankResizeEvent extends SingleBankEvent implements Cancellable {
 
 	private boolean cancelled;
-	private final Selection newSelection;
+	private final BankRegion newBankRegion;
 
-	public BankResizeEvent(Player player, Bank bank, Selection newSelection) {
+	public BankResizeEvent(Player player, Bank bank, BankRegion newBankRegion) {
 		super(player, bank);
-		this.newSelection = newSelection;
+		this.newBankRegion = newBankRegion;
 	}
 
-	public Selection getOldSelection() {
-		return getBank().getSelection();
+	public BankRegion getPreviousRegion() {
+		return getBank().getRegion();
 	}
 
-	public Selection getNewSelection() {
-		return newSelection;
+	public BankRegion getNewRegion() {
+		return newBankRegion;
 	}
 
 	@Override

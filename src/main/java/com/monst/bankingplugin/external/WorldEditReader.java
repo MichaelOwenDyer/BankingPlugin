@@ -3,9 +3,9 @@ package com.monst.bankingplugin.external;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
-import com.monst.bankingplugin.geo.selections.CuboidSelection;
-import com.monst.bankingplugin.geo.selections.PolygonalSelection;
-import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
+import com.monst.bankingplugin.geo.regions.PolygonalBankRegion;
+import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 public class WorldEditReader {
 
-	public static Selection getSelection(BankingPlugin plugin, Player p) {
+	public static BankRegion getBankRegion(BankingPlugin plugin, Player p) {
 
 		Region region;
 		try {
@@ -42,7 +42,7 @@ public class WorldEditReader {
 				BlockVector3 vector2 = cuboid.getPos2();
 				BlockVector3D loc1 = new BlockVector3D(vector1.getBlockX(), vector1.getBlockY(), vector1.getBlockZ());
 				BlockVector3D loc2 = new BlockVector3D(vector2.getBlockX(), vector2.getBlockY(), vector2.getBlockZ());
-				return CuboidSelection.of(Optional.ofNullable(cuboid.getWorld()).map(BukkitAdapter::adapt).orElse(null), loc1, loc2);
+				return CuboidBankRegion.of(Optional.ofNullable(cuboid.getWorld()).map(BukkitAdapter::adapt).orElse(null), loc1, loc2);
 			} else if (region instanceof Polygonal2DRegion) {
 				Polygonal2DRegion polygon = (Polygonal2DRegion) region;
 				int minY = polygon.getMinimumY();
@@ -50,32 +50,32 @@ public class WorldEditReader {
 				World world = Optional.ofNullable(polygon.getWorld()).map(BukkitAdapter::adapt).orElse(null);
 				List<BlockVector2D> points = polygon.getPoints().stream()
 						.map(point -> new BlockVector2D(point.getBlockX(), point.getBlockZ())).collect(Collectors.toList());
-				return PolygonalSelection.of(world, points, minY, maxY);
+				return PolygonalBankRegion.of(world, points, minY, maxY);
 			}
 		} catch (IncompleteRegionException ignored) {}
 		return null;
 	}
 
-	public static void setSelection(BankingPlugin plugin, Selection sel, Player p) {
+	public static void setSelection(BankingPlugin plugin, BankRegion reg, Player p) {
 
 		WorldEditPlugin worldEdit = plugin.getWorldEdit();
 		RegionSelector regionSelector;
-		if (sel instanceof CuboidSelection) {
-			BlockVector3 min = BlockVector3.at(sel.getMinimumBlock().getX(), sel.getMinimumBlock().getY(), sel.getMinimumBlock().getZ());
-			BlockVector3 max = BlockVector3.at(sel.getMaximumBlock().getX(), sel.getMaximumBlock().getY(), sel.getMaximumBlock().getZ());
-			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(sel.getWorld()), min, max);
+		if (reg instanceof CuboidBankRegion) {
+			BlockVector3 min = BlockVector3.at(reg.getMinimumBlock().getX(), reg.getMinimumBlock().getY(), reg.getMinimumBlock().getZ());
+			BlockVector3 max = BlockVector3.at(reg.getMaximumBlock().getX(), reg.getMaximumBlock().getY(), reg.getMaximumBlock().getZ());
+			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(reg.getWorld()), min, max);
 		} else {
-			List<BlockVector2> points = sel.getVertices().stream()
+			List<BlockVector2> points = reg.getVertices().stream()
 					.map(point -> BlockVector2.at(point.getX(), point.getZ())).collect(Collectors.toList());
-			int minY = sel.getMinimumBlock().getY();
-			int maxY = sel.getMaximumBlock().getY();
-			regionSelector = new Polygonal2DRegionSelector(BukkitAdapter.adapt(sel.getWorld()), points, minY, maxY);
+			int minY = reg.getMinimumBlock().getY();
+			int maxY = reg.getMaximumBlock().getY();
+			regionSelector = new Polygonal2DRegionSelector(BukkitAdapter.adapt(reg.getWorld()), points, minY, maxY);
 		}
 
-		plugin.debug(p.getName() + " has selected the bank at " + sel.getCoordinates());
-		regionSelector.setWorld(BukkitAdapter.adapt(sel.getWorld()));
+		plugin.debug(p.getName() + " has selected the bank at " + reg.getCoordinates());
+		regionSelector.setWorld(BukkitAdapter.adapt(reg.getWorld()));
 		worldEdit.getWorldEdit().getSessionManager().get(BukkitAdapter.adapt(p))
-				.setRegionSelector(BukkitAdapter.adapt(sel.getWorld()), regionSelector);
+				.setRegionSelector(BukkitAdapter.adapt(reg.getWorld()), regionSelector);
 	}
 
 }

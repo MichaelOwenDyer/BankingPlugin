@@ -95,7 +95,7 @@ public class GriefPreventionListener extends BankingPluginListener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onSelectionInteract(PlayerInteractEvent e) {
+    public void onBankRegionInteract(PlayerInteractEvent e) {
         if (!Config.enableGriefPreventionIntegration.get())
             return;
         if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
@@ -125,7 +125,7 @@ public class GriefPreventionListener extends BankingPluginListener {
         if (bank == null)
             return;
 
-        VisualizationManager.visualizeSelection(e.getPlayer(), bank);
+        VisualizationManager.visualizeRegion(e.getPlayer(), bank);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -134,7 +134,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
-            VisualizationManager.visualizeSelection(((Player) executor), e.getBank());
+            VisualizationManager.visualizeRegion(((Player) executor), e.getBank());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -152,13 +152,13 @@ public class GriefPreventionListener extends BankingPluginListener {
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
-	        VisualizationManager.visualizeSelection(((Player) executor), e.getNewSelection(), e.getBank().isAdminBank());
+	        VisualizationManager.visualizeRegion(((Player) executor), e.getNewRegion(), e.getBank().isAdminBank());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankSelect(BankSelectEvent e) {
 	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
-        VisualizationManager.visualizeSelection(((Player) e.getExecutor()), e.getBank());
+        VisualizationManager.visualizeRegion(((Player) e.getExecutor()), e.getBank());
     }
 }

@@ -4,7 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
-import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Observable;
@@ -16,7 +16,7 @@ import java.util.*;
 public class BankRepository extends Observable implements Repository<Bank, BankField> {
 
 	private final BankingPlugin plugin;
-	private final Map<Selection, Bank> bankSelectionMap = new HashMap<>();
+	private final Map<BankRegion, Bank> bankRegionMap = new HashMap<>();
 
     public BankRepository(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -29,7 +29,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	 */
 	@Override
 	public Set<Bank> getAll() {
-		return new HashSet<>(bankSelectionMap.values());
+		return new HashSet<>(bankRegionMap.values());
 	}
 
 	/**
@@ -40,7 +40,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	 */
     @Override
     public Bank getAt(ChestLocation chestLocation) {
-		for (Map.Entry<Selection, Bank> entry : bankSelectionMap.entrySet())
+		for (Map.Entry<BankRegion, Bank> entry : bankRegionMap.entrySet())
 			if (entry.getKey().contains(chestLocation))
 				return entry.getValue();
 		return null;
@@ -54,20 +54,20 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	 */
     @Override
 	public Bank getAt(Block block) {
-		for (Map.Entry<Selection, Bank> entry : bankSelectionMap.entrySet())
+		for (Map.Entry<BankRegion, Bank> entry : bankRegionMap.entrySet())
 			if (entry.getKey().contains(block))
 				return entry.getValue();
 		return null;
     }
 
 	/**
-	 * Gets the {@link Bank} with a given selection
+	 * Gets the {@link Bank} with a given region
 	 *
-	 * @param selection {@link Selection} of the bank
+	 * @param region {@link BankRegion} of the bank
 	 * @return Bank in the given region or <b>null</b> if no bank is found there
 	 */
-	public Bank getAt(Selection selection) {
-		return bankSelectionMap.get(selection);
+	public Bank getAt(BankRegion region) {
+		return bankRegionMap.get(region);
 	}
 
     /**
@@ -82,7 +82,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	public void add(Bank bank, boolean addToDatabase, Callback<Integer> callback) {
 		plugin.debug("Adding/updating bank... (#" + bank.getID() + ")");
 
-		bankSelectionMap.put(bank.getSelection(), bank);
+		bankRegionMap.put(bank.getRegion(), bank);
 		InterestEventScheduler.scheduleBank(bank);
 
         if (addToDatabase)
@@ -99,7 +99,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 		EnumSet<BankField> fields = EnumSet.noneOf(BankField.class);
 		fields.addAll(Arrays.asList(fieldArray));
 
-		if (fields.remove(BankField.SELECTION)) {
+		if (fields.remove(BankField.REGION)) {
 			fields.add(BankField.WORLD);
 			fields.add(BankField.MIN_X);
 			fields.add(BankField.MAX_X);
@@ -108,7 +108,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 			fields.add(BankField.MIN_Z);
 			fields.add(BankField.MAX_Z);
 			fields.add(BankField.VERTICES);
-			bankSelectionMap.put(bank.getSelection(), bank);
+			bankRegionMap.put(bank.getRegion(), bank);
 		}
 		plugin.debugf("Updating the following fields of bank #%d in the database: " + fields, bank.getID());
 
@@ -132,7 +132,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 
 		bank.getAccounts().forEach(account -> plugin.getAccountRepository().remove(account, removeFromDatabase));
 
-		bankSelectionMap.remove(bank.getSelection());
+		bankRegionMap.remove(bank.getRegion());
 		plugin.getBankRepository().notifyObservers();
 
 		InterestEventScheduler.unscheduleAll(bank);
@@ -143,8 +143,8 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 			Callback.callResult(callback);
     }
 
-	public Set<Selection> getOverlappingSelections(Selection sel) {
-		return Utils.filter(bankSelectionMap.keySet(), s -> s.overlaps(sel));
+	public Set<BankRegion> getOverlappingRegions(BankRegion sel) {
+		return Utils.filter(bankRegionMap.keySet(), s -> s.overlaps(sel));
 	}
 
 }

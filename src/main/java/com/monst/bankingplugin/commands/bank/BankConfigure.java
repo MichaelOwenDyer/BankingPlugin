@@ -75,6 +75,7 @@ public class BankConfigure extends BankCommand.SubCommand {
                 ));
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
+            PLUGIN.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());
             return true;
         }
 

@@ -12,9 +12,9 @@ import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.ChestLocation;
-import com.monst.bankingplugin.geo.selections.CuboidSelection;
-import com.monst.bankingplugin.geo.selections.PolygonalSelection;
-import com.monst.bankingplugin.geo.selections.Selection;
+import com.monst.bankingplugin.geo.regions.BankRegion;
+import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
+import com.monst.bankingplugin.geo.regions.PolygonalBankRegion;
 import com.monst.bankingplugin.sql.logging.AccountInterest;
 import com.monst.bankingplugin.sql.logging.AccountTransaction;
 import com.monst.bankingplugin.sql.logging.BankProfit;
@@ -539,15 +539,15 @@ public abstract class Database {
 			int minZ = values.getNextInt();
 			int maxZ = values.getNextInt();
 			String vertices = values.getNextString();
-			Selection selection;
+			BankRegion bankRegion;
 			if (vertices != null) {
 				List<BlockVector2D> points = Arrays.stream(vertices.substring(1, vertices.length() - 1).split("\\), \\(")).map(string -> {
 					String[] xAndZ = string.split("\\s*,\\s");
 					return new BlockVector2D(Integer.parseInt(xAndZ[0]), Integer.parseInt(xAndZ[1]));
 				}).collect(Collectors.toList());
-				selection = PolygonalSelection.of(world, points, minY, maxY);
+				bankRegion = PolygonalBankRegion.of(world, points, minY, maxY);
 			} else {
-				selection = CuboidSelection.of(world, new BlockVector3D(minX, minY, minZ), new BlockVector3D(maxX, maxY, maxZ));
+				bankRegion = CuboidBankRegion.of(world, new BlockVector3D(minX, minY, minZ), new BlockVector3D(maxX, maxY, maxZ));
 			}
 
 			Set<OfflinePlayer> coowners = query
@@ -563,7 +563,7 @@ public abstract class Database {
 					name,
 					owner,
 					coowners,
-					selection,
+					bankRegion,
 					countInterestDelayOffline,
 					reimburseAccountCreation,
 					payOnLowBalance,
@@ -1135,7 +1135,7 @@ public abstract class Database {
 	}
 
 	private LinkedList<Object> getAttributes(Bank bank) {
-		Selection sel = bank.getSelection();
+		BankRegion region = bank.getRegion();
 		return new LinkedList<>(Arrays.asList(
 				bank.getID(),
 				bank.getRawName(),
@@ -1155,14 +1155,14 @@ public abstract class Database {
 				bank.getPlayerBankAccountLimit().getCustomValue(),
 				bank.getMultipliers().getCustomValue(),
 				bank.getInterestPayoutTimes().getCustomValue(),
-				sel.getWorld().getName(),
-				sel.getMinX(),
-				sel.getMaxX(),
-				sel.getMinY(),
-				sel.getMaxY(),
-				sel.getMinZ(),
-				sel.getMaxZ(),
-				sel.getVertices()
+				region.getWorld().getName(),
+				region.getMinX(),
+				region.getMaxX(),
+				region.getMinY(),
+				region.getMaxY(),
+				region.getMinZ(),
+				region.getMaxZ(),
+				region.getVertices()
 		));
 	}
 
