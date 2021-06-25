@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.banking.Account;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
@@ -13,15 +13,15 @@ import javax.annotation.Nonnull;
 public class AccountExtendEvent extends SingleAccountEvent implements Cancellable {
 
 	private boolean cancelled;
-    private final ChestLocation newChestLocation;
+    private final AccountLocation newAccountLocation;
 
-    public AccountExtendEvent(@Nonnull Player player, @Nonnull Account account, @Nonnull ChestLocation newChestLocation) {
+    public AccountExtendEvent(@Nonnull Player player, @Nonnull Account account, @Nonnull AccountLocation newAccountLocation) {
         super(player, account);
-        this.newChestLocation = newChestLocation;
+        this.newAccountLocation = newAccountLocation;
     }
 
-    public ChestLocation getNewChestLocation() {
-        return newChestLocation;
+    public AccountLocation getNewAccountLocation() {
+        return newAccountLocation;
     }
 
     @Override

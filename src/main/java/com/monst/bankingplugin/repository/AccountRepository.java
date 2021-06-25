@@ -4,7 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.QuickMath;
@@ -21,7 +21,7 @@ import java.util.*;
 public class AccountRepository extends Observable implements Repository<Account, AccountField> {
 
 	private final BankingPlugin plugin;
-	private final Map<ChestLocation, Account> accountLocationMap = new HashMap<>();
+	private final Map<AccountLocation, Account> accountLocationMap = new HashMap<>();
 	private final Set<Account> notFoundAccounts = new HashSet<>();
 
     public AccountRepository(BankingPlugin plugin) {
@@ -31,7 +31,7 @@ public class AccountRepository extends Observable implements Repository<Account,
     public boolean isAccount(Block block) {
     	if (!Utils.isChest(block))
     		return false;
-    	for (ChestLocation chest : accountLocationMap.keySet())
+    	for (AccountLocation chest : accountLocationMap.keySet())
     		if (chest.contains(block))
     			return true;
 		return false;
@@ -42,7 +42,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 	 * @param chest Location to check
 	 * @return Whether there is a account at the given location
 	 */
-	public boolean isAccount(ChestLocation chest) {
+	public boolean isAccount(AccountLocation chest) {
 		return getAt(chest) != null;
 	}
 
@@ -58,16 +58,16 @@ public class AccountRepository extends Observable implements Repository<Account,
 	}
 
     /**
-     * Gets the account at a given {@link ChestLocation}
+     * Gets the account at a given {@link AccountLocation}
      *
-     * @param chestLocation ChestLocation of the account
-     * @return Account at the given ChestLocation or <b>null</b> if no account is found there
+     * @param accountLocation AccountLocation of the account
+     * @return Account at the given AccountLocation or <b>null</b> if no account is found there
      */
     @Override
-	public Account getAt(ChestLocation chestLocation) {
-    	if (chestLocation == null)
+	public Account getAt(AccountLocation accountLocation) {
+    	if (accountLocation == null)
     		return null;
-    	return accountLocationMap.get(chestLocation);
+    	return accountLocationMap.get(accountLocation);
     }
 
 	/**
@@ -80,7 +80,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 	public Account getAt(Block block) {
 		if (!Utils.isChest(block))
 			return null;
-		for (Map.Entry<ChestLocation, Account> entry : accountLocationMap.entrySet())
+		for (Map.Entry<AccountLocation, Account> entry : accountLocationMap.entrySet())
 			if (entry.getKey().contains(block))
 				return entry.getValue();
 		return null;

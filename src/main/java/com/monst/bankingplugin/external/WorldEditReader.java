@@ -60,17 +60,18 @@ public class WorldEditReader {
 
 		WorldEditPlugin worldEdit = plugin.getWorldEdit();
 		RegionSelector regionSelector;
-		if (reg instanceof CuboidBankRegion) {
+		if (reg.isCuboid()) {
 			BlockVector3 min = BlockVector3.at(reg.getMinimumBlock().getX(), reg.getMinimumBlock().getY(), reg.getMinimumBlock().getZ());
 			BlockVector3 max = BlockVector3.at(reg.getMaximumBlock().getX(), reg.getMaximumBlock().getY(), reg.getMaximumBlock().getZ());
 			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(reg.getWorld()), min, max);
-		} else {
+		} else if (reg.isPolygonal()) {
 			List<BlockVector2> points = reg.getVertices().stream()
 					.map(point -> BlockVector2.at(point.getX(), point.getZ())).collect(Collectors.toList());
 			int minY = reg.getMinimumBlock().getY();
 			int maxY = reg.getMaximumBlock().getY();
 			regionSelector = new Polygonal2DRegionSelector(BukkitAdapter.adapt(reg.getWorld()), points, minY, maxY);
-		}
+		} else
+			throw new IllegalStateException();
 
 		plugin.debug(p.getName() + " has selected the bank at " + reg.getCoordinates());
 		regionSelector.setWorld(BukkitAdapter.adapt(reg.getWorld()));

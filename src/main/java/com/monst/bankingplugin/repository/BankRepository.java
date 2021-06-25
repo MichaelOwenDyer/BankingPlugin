@@ -3,7 +3,7 @@ package com.monst.bankingplugin.repository;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
@@ -33,15 +33,15 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	}
 
 	/**
-	 * Gets the {@link Bank} around a given {@link ChestLocation}
+	 * Gets the {@link Bank} around a given {@link AccountLocation}
 	 *
-	 * @param chestLocation a {@link ChestLocation} that is contained entirely by the bank
-	 * @return Bank surrounding the given ChestLocation or <b>null</b> if no bank is found there
+	 * @param accountLocation a {@link AccountLocation} that is contained entirely by the bank
+	 * @return Bank surrounding the given AccountLocation or <b>null</b> if no bank is found there
 	 */
     @Override
-    public Bank getAt(ChestLocation chestLocation) {
+    public Bank getAt(AccountLocation accountLocation) {
 		for (Map.Entry<BankRegion, Bank> entry : bankRegionMap.entrySet())
-			if (entry.getKey().contains(chestLocation))
+			if (entry.getKey().contains(accountLocation))
 				return entry.getValue();
 		return null;
 	}

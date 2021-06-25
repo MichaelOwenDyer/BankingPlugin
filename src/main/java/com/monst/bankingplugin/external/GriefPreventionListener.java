@@ -53,7 +53,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 		if (!Config.enableGriefPreventionIntegration.get())
             return;
 
-		for (Block block : e.getNewChestLocation())
+		for (Block block : e.getNewAccountLocation())
             if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
                 e.setCancelled(true);
                 plugin.debug("Account extend event cancelled by GriefPrevention");
@@ -66,7 +66,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
 
-	    for (Block block : e.getNewChestLocation())
+	    for (Block block : e.getNewAccountLocation())
             if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
                 e.setCancelled(true);
                 plugin.debug("Account migrate event cancelled by GriefPrevention");
@@ -79,7 +79,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 	    if (!Config.enableGriefPreventionIntegration.get())
 	        return;
 
-	    for (Block block : e.getNewChestLocation())
+	    for (Block block : e.getNewAccountLocation())
             if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
                 e.setCancelled(true);
                 plugin.debug("Account recover event cancelled by GriefPrevention");

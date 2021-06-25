@@ -5,7 +5,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
@@ -75,21 +75,21 @@ public class AccountCreate extends AccountCommand.SubCommand {
     public static void create(Player p, Block b) {
         Chest c = (Chest) b.getState();
         InventoryHolder ih = c.getInventory().getHolder();
-        ChestLocation chestLocation = ChestLocation.from(ih);
+        AccountLocation accountLocation = AccountLocation.from(ih);
 
-        if (PLUGIN.getAccountRepository().isAccount(chestLocation)) {
+        if (PLUGIN.getAccountRepository().isAccount(accountLocation)) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             PLUGIN.debug("Chest is already an account.");
             return;
         }
 
-        if (chestLocation.isBlocked()) {
+        if (accountLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             PLUGIN.debug("Chest is blocked.");
             return;
         }
 
-        Bank bank = chestLocation.getBank();
+        Bank bank = accountLocation.getBank();
         if (bank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             PLUGIN.debug("Chest is not in a bank.");
@@ -111,7 +111,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return;
         }
 
-        Account account = Account.mint(p, chestLocation);
+        Account account = Account.mint(p, accountLocation);
 
         AccountCreateEvent event = new AccountCreateEvent(p, account);
         event.fire();
@@ -122,7 +122,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         }
 
         double creationPrice = bank.getAccountCreationPrice().get();
-        creationPrice *= chestLocation.getSize();
+        creationPrice *= accountLocation.getSize();
         creationPrice *= bank.isOwner(p) ? 0 : 1;
 
         if (creationPrice > 0) {

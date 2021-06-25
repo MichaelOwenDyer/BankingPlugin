@@ -11,7 +11,7 @@ import com.monst.bankingplugin.exceptions.TimeParseException;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.geo.regions.PolygonalBankRegion;
@@ -617,7 +617,7 @@ public abstract class Database {
 			int z1 = values.getNextInt();
 			int x2 = values.getNextInt();
 			int z2 = values.getNextInt();
-			ChestLocation chestLocation = ChestLocation.at(world, y, x1, z1, x2, z2);
+			AccountLocation accountLocation = AccountLocation.at(world, y, x1, z1, x2, z2);
 
 			Set<OfflinePlayer> coowners = query
 					.select("SELECT CoOwnerUUID FROM " + tableCoOwnsAccount + " WHERE AccountID = ?")
@@ -626,7 +626,7 @@ public abstract class Database {
 			plugin.debugf("Found %d account coowner%s.", coowners.size(), coowners.size() == 1 ? "" : "s");
 
 			plugin.debugf("Initializing account #%d at bank #%d (\"%s\")", accountID, bank.getID(), bank.getName());
-			return Account.reopen(accountID, owner, coowners, bank, chestLocation, nickname, balance, prevBalance,
+			return Account.reopen(accountID, owner, coowners, bank, accountLocation, nickname, balance, prevBalance,
 					multiplierStage, delayUntilNextPayout, remainingOfflinePayouts, remainingOfflinePayoutsUntilReset);
 		};
 	}
@@ -1111,7 +1111,7 @@ public abstract class Database {
 	}
 
 	private LinkedList<Object> getAttributes(Account account) {
-		ChestLocation loc = account.getLocation();
+		AccountLocation loc = account.getLocation();
 		Block v1 = loc.getMinimumBlock();
 		Block v2 = loc.getMaximumBlock();
 		return new LinkedList<>(Arrays.asList(

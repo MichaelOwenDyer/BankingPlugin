@@ -7,9 +7,9 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
-import com.monst.bankingplugin.geo.locations.DoubleChestLocation;
-import com.monst.bankingplugin.geo.locations.SingleChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
+import com.monst.bankingplugin.geo.locations.DoubleAccountLocation;
+import com.monst.bankingplugin.geo.locations.SingleAccountLocation;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
@@ -74,9 +74,9 @@ public class AccountProtectListener extends BankingPluginListener {
 		}
 
 		if (account.isDoubleChest()) {
-			DoubleChestLocation oldLoc = (DoubleChestLocation) account.getLocation();
-			SingleChestLocation newLoc = oldLoc.contract(b);
-			account.setChestLocation(newLoc);
+			DoubleAccountLocation oldLoc = (DoubleAccountLocation) account.getLocation();
+			SingleAccountLocation newLoc = oldLoc.contract(b);
+			account.setLocation(newLoc);
 			accountRepo.update(account, account.callUpdateChestName(), AccountField.LOCATION);
 			new AccountContractEvent(p, account).fire();
 		} else {
@@ -139,7 +139,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		if (account == null)
 			return;
 
-		ChestLocation newLoc = new DoubleChestLocation(firstChest, neighborFacing.getOppositeFace());
+		AccountLocation newLoc = new DoubleAccountLocation(firstChest, neighborFacing.getOppositeFace());
 		Bank bank = newLoc.getBank();
 		if (bank == null) {
 			plugin.debugf("%s tried to extend %s's account (#%d), but new chest was not in a bank.",
@@ -201,7 +201,7 @@ public class AccountProtectListener extends BankingPluginListener {
 			}
 		}
 
-		account.setChestLocation(newLoc);
+		account.setLocation(newLoc);
 		accountRepo.update(account, account.callUpdateChestName(), AccountField.LOCATION);
     }
 

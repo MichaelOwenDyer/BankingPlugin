@@ -10,9 +10,9 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Iterator;
 
-public class SingleChestLocation extends ChestLocation {
+public class SingleAccountLocation extends AccountLocation {
 
-    public SingleChestLocation(@Nonnull Block block) {
+    public SingleAccountLocation(@Nonnull Block block) {
         super(block);
     }
 
@@ -49,8 +49,8 @@ public class SingleChestLocation extends ChestLocation {
         return 1;
     }
 
-    public DoubleChestLocation extend(BlockFace direction) {
-        return new DoubleChestLocation(b1, direction);
+    public DoubleAccountLocation extend(BlockFace direction) {
+        return new DoubleAccountLocation(b1, direction);
     }
 
     public String toString() {

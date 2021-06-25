@@ -5,7 +5,7 @@ import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
@@ -90,15 +90,15 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         }
 
         Chest c = (Chest) targetBlock.getState();
-        ChestLocation newChestLocation = ChestLocation.from(c.getInventory().getHolder());
+        AccountLocation newAccountLocation = AccountLocation.from(c.getInventory().getHolder());
 
-        if (newChestLocation.isBlocked()) {
+        if (newAccountLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             PLUGIN.debug("Chest is blocked.");
             return;
         }
 
-        Bank newBank = newChestLocation.getBank();
+        Bank newBank = newAccountLocation.getBank();
         if (newBank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             PLUGIN.debug("Chest is not in a bank.");
@@ -111,7 +111,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
             return;
         }
 
-        AccountMigrateEvent event = new AccountMigrateEvent(p, accountToMove, newChestLocation);
+        AccountMigrateEvent event = new AccountMigrateEvent(p, accountToMove, newAccountLocation);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             PLUGIN.debug("No permission to create account on a protected chest.");
@@ -123,7 +123,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
 
         double creationPrice = newBank.getAccountCreationPrice().get();
         creationPrice *= (newBank.isOwner(p) ? 0 : 1);
-        creationPrice *= newChestLocation.getSize();
+        creationPrice *= newAccountLocation.getSize();
 
         double reimbursement = oldBank.getReimburseAccountCreation().get() ?
                 oldBank.getAccountCreationPrice().get() :
@@ -175,7 +175,7 @@ public class AccountMigrate extends AccountCommand.SubCommand {
         }
 
         accountToMove.clearChestName();
-        accountToMove.setChestLocation(newChestLocation);
+        accountToMove.setLocation(newAccountLocation);
         accountToMove.setBank(newBank);
         accountRepo.update(accountToMove, accountToMove.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_MIGRATED));

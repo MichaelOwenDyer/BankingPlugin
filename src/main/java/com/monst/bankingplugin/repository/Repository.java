@@ -2,7 +2,7 @@ package com.monst.bankingplugin.repository;
 
 import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.banking.BankingEntityField;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -16,7 +16,7 @@ public interface Repository<Entity extends BankingEntity, Field extends BankingE
 
     Set<Entity> getAll();
 
-    Entity getAt(ChestLocation location);
+    Entity getAt(AccountLocation location);
 
     Entity getAt(Block block);
 

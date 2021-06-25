@@ -3,7 +3,7 @@ package com.monst.bankingplugin.banking;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -33,7 +33,7 @@ public class Account extends BankingEntity {
 	 *
 	 * @return the new account
 	 */
-	public static Account mint(OfflinePlayer owner, ChestLocation loc) {
+	public static Account mint(OfflinePlayer owner, AccountLocation loc) {
 		Bank bank = plugin.getBankRepository().getAt(loc);
 		return new Account(
 				-1,
@@ -81,7 +81,7 @@ public class Account extends BankingEntity {
 	 * @param owner the owner of the account {@link BankingEntity}
 	 * @param coowners the co-owners of the account {@link BankingEntity}
 	 * @param bank the {@link Bank} the account is registered at
-	 * @param loc the {@link ChestLocation} of the account chest
+	 * @param loc the {@link AccountLocation} of the account chest
 	 * @param name the account name {@link Nameable}
 	 * @param balance the current account balance {@link #getBalance()}
 	 * @param prevBalance the previous account balance {@link #getPrevBalance()}
@@ -90,7 +90,7 @@ public class Account extends BankingEntity {
 	 * @param remainingOfflinePayouts the number of remaining offline interest payments this account will generate
 	 * @param remainingOfflineUntilReset the number of remaining offline interest payments before the multiplier stage is reset
 	 */
-	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, ChestLocation loc,
+	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, AccountLocation loc,
 								 String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
 								 int delayUntilNextPayout, int remainingOfflinePayouts, int remainingOfflineUntilReset) {
 		return new Account(
@@ -113,7 +113,7 @@ public class Account extends BankingEntity {
 	private boolean hasCustomName;
 
 	private Bank bank;
-	private ChestLocation chestLocation;
+	private AccountLocation accountLocation;
 	private InventoryHolder inventoryHolder;
 
 	private BigDecimal balance;
@@ -124,13 +124,13 @@ public class Account extends BankingEntity {
 	int remainingOfflinePayouts;
 	int remainingOfflineUntilReset;
 
-	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, ChestLocation loc,
+	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, AccountLocation loc,
 					String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
 					int delayUntilNextPayout, int remainingOfflinePayouts, int remainingOfflineUntilReset) {
 
 		super(id, name, owner, coowners);
 		this.bank = bank;
-		this.chestLocation = loc;
+		this.accountLocation = loc;
 		this.hasCustomName = !Objects.equals(getRawName(), getDefaultName());
 		this.balance = balance;
 		this.prevBalance = prevBalance;
@@ -158,7 +158,7 @@ public class Account extends BankingEntity {
 
 		try {
 			inventoryHolder = getLocation().findInventoryHolder();
-			chestLocation = ChestLocation.from(inventoryHolder);
+			accountLocation = AccountLocation.from(inventoryHolder);
 			getLocation().checkSpaceAbove();
 		} catch (ChestNotFoundException | ChestBlockedException e) {
 			plugin.getAccountRepository().remove(this, Config.removeAccountOnError.get());
@@ -264,17 +264,17 @@ public class Account extends BankingEntity {
 	 *
 	 * @return the {@link Location} of the account chest.
 	 */
-	public ChestLocation getLocation() {
-		return chestLocation;
+	public AccountLocation getLocation() {
+		return accountLocation;
 	}
 
 	/**
 	 * Sets the location of this account.
 	 *
-	 * @param chestLocation the new location
+	 * @param accountLocation the new location
 	 */
-	public void setChestLocation(ChestLocation chestLocation) {
-		this.chestLocation = chestLocation;
+	public void setLocation(AccountLocation accountLocation) {
+		this.accountLocation = accountLocation;
 		notifyObservers();
 	}
 
@@ -284,7 +284,7 @@ public class Account extends BankingEntity {
 	 * @return a {@link String} describing the location of the account chest.
 	 */
 	public String getCoordinates() {
-		return chestLocation.toString();
+		return accountLocation.toString();
 	}
 
 	/**
@@ -595,6 +595,6 @@ public class Account extends BankingEntity {
 
 	@Override
 	public int hashCode() {
-		return getID() != -1 ? getID() : Objects.hash(owner, coowners, bank, chestLocation, name);
+		return getID() != -1 ? getID() : Objects.hash(owner, coowners, bank, accountLocation, name);
 	}
 }

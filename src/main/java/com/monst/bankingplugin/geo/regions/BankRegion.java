@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.geo.regions;
 
 import com.monst.bankingplugin.geo.BlockVector2D;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -112,7 +112,7 @@ public abstract class BankRegion {
 				getMinZ() > region.getMaxZ() || getMaxZ() < region.getMinZ();
 	}
 
-	public boolean contains(ChestLocation chest) {
+	public boolean contains(AccountLocation chest) {
 		for (Block chestSide : chest)
 			if (!contains(chestSide))
 				return false;

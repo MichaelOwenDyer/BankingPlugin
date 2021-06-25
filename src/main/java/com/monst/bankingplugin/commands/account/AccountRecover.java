@@ -4,7 +4,7 @@ import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
-import com.monst.bankingplugin.geo.locations.ChestLocation;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.gui.AccountRecoveryGUI;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -51,22 +51,22 @@ public class AccountRecover extends AccountCommand.SubCommand {
         }
 
         Chest c = (Chest) b.getState();
-        ChestLocation chestLocation = ChestLocation.from(c.getInventory().getHolder());
+        AccountLocation accountLocation = AccountLocation.from(c.getInventory().getHolder());
 
-        if (chestLocation.isBlocked()) {
+        if (accountLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
             PLUGIN.debug("Chest is blocked.");
             return;
         }
 
-        Bank bank = chestLocation.getBank();
+        Bank bank = accountLocation.getBank();
         if (bank == null) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
             PLUGIN.debug("Chest is not in a bank.");
             return;
         }
 
-        AccountRecoverEvent event = new AccountRecoverEvent(p, toRecover, chestLocation);
+        AccountRecoverEvent event = new AccountRecoverEvent(p, toRecover, accountLocation);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             PLUGIN.debug("No permission to recover an account to a protected chest.");
@@ -75,7 +75,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
         }
 
         PLUGIN.debugf("Account recovered (#%d)", toRecover.getID());
-        toRecover.setChestLocation(chestLocation);
+        toRecover.setLocation(accountLocation);
         toRecover.setBank(bank);
         accountRepo.removeInvalidAccount(toRecover);
         accountRepo.update(toRecover, toRecover.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);

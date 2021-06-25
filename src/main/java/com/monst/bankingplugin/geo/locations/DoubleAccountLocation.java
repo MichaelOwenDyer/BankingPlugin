@@ -11,12 +11,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
 
-public class DoubleChestLocation extends ChestLocation {
+public class DoubleAccountLocation extends AccountLocation {
 
     private final BlockFace direction;
     private final Block b2;
 
-    public DoubleChestLocation(@Nonnull Block block, @Nonnull BlockFace direction) {
+    public DoubleAccountLocation(@Nonnull Block block, @Nonnull BlockFace direction) {
         super(block);
         this.direction = direction;
         this.b2 = b1.getRelative(direction);
@@ -86,12 +86,12 @@ public class DoubleChestLocation extends ChestLocation {
         return 2;
     }
 
-    public SingleChestLocation contract(Block leaveBehind) {
+    public SingleAccountLocation contract(Block leaveBehind) {
         if (Objects.equals(b1, leaveBehind))
-            return new SingleChestLocation(b2);
+            return new SingleAccountLocation(b2);
         if (Objects.equals(b2, leaveBehind))
-            return new SingleChestLocation(b1);
-        throw new IllegalArgumentException("Block not contained in ChestLocation cannot be removed!");
+            return new SingleAccountLocation(b1);
+        throw new IllegalArgumentException("Block not contained in AccountLocation cannot be removed!");
     }
 
     public String toString() {
