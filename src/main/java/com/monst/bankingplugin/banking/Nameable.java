@@ -1,15 +1,17 @@
 package com.monst.bankingplugin.banking;
 
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.ChatColor;
 
 public interface Nameable {
 
     /**
      * @return the name of this nameable, stripped of all colors
-     * @see Utils#stripColor(String)
+     * @see ChatColor#stripColor(String)
+     * @see ChatColor#stripColor(String)
      */
     default String getName() {
-        return Utils.stripColor(getRawName());
+        return ChatColor.stripColor(Utils.colorize(getRawName()));
     }
 
     /**

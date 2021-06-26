@@ -61,7 +61,7 @@ public class AccountList extends AccountCommand.SubCommand {
         } else {
             int i = 0;
             for (Account account : accountRepo.getAll())
-                sender.sendMessage(Utils.colorize("&b" + ++i + ". &7" + account.getColorizedName() + "&7(#" + account.getID() + ")"));
+                sender.sendMessage(Utils.colorize("&b" + ++i + ". &7" + account.getRawName() + "&7(#" + account.getID() + ")"));
         }
         return true;
     }

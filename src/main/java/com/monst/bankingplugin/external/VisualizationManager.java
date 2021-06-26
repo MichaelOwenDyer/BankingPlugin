@@ -118,7 +118,7 @@ public class VisualizationManager {
 
                 // Add blocks that are immediately vertically adjacent to corner blocks
                 for (int y : new int[] { sel.getMinY() + 1, sel.getMaxY() - 1 }) {
-                    Location loc = current.toLocation(world, y);
+                    Location loc = new Location(world, current.getX(), y, current.getZ());
                     newElements.add(new VisualizationElement(
                             loc,
                             type.getAccentBlockData(),
@@ -128,7 +128,7 @@ public class VisualizationManager {
 
                 // Add blocks that form the vertical lines at the corners in intervals of the integer "step"
                 for (int y = sel.getMinY() + step; y < sel.getMaxY() - (step / 2); y += step) {
-                    Location loc = current.toLocation(world, y);
+                    Location loc = new Location(world, current.getX(), y, current.getZ());
                     newElements.add(new VisualizationElement(
                             loc,
                             type.getAccentBlockData(),
@@ -169,7 +169,7 @@ public class VisualizationManager {
                     Location nextAccent = new Location(world, current.getX() + 0.5 + increaseX, y, current.getZ() + 0.5 + increaseZ);
                     while (Math.sqrt(Math.pow(next.getX() - nextAccent.getX(), 2) + Math.pow(next.getZ() - nextAccent.getZ(), 2)) > step / 2.0) {
                         newElements.add(new VisualizationElement(
-                                Utils.blockifyLocation(nextAccent),
+                                nextAccent,
                                 type.getAccentBlockData(),
                                 world.getBlockAt(nextAccent).getBlockData()
                         ));

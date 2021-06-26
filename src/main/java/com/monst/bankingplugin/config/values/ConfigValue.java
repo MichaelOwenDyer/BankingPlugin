@@ -3,6 +3,7 @@ package com.monst.bankingplugin.config.values;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.ArgumentParseException;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         return lastSeenValue;
     }
 
-    public final void set(String input) throws ArgumentParseException {
+    public final void set(@Nonnull String input) throws ArgumentParseException {
         T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
         beforeSet(newValue);
         reload();

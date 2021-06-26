@@ -52,7 +52,7 @@ public class QuickMath {
     }
 
     public static float[] unitVector(BlockVector2D from, BlockVector2D to) {
-        BlockVector2D diff = from.vectorTo(to);
+        BlockVector2D diff = new BlockVector2D(to.getX() - from.getX(), to.getZ() - from.getZ());
         double magnitude = vectorMagnitude(diff.getX(), diff.getZ());
         return new float[] {
                 (float) (diff.getX() / magnitude),
@@ -61,7 +61,7 @@ public class QuickMath {
     }
 
     public static float[] unitVector(BlockVector3D from, BlockVector3D to) {
-        BlockVector3D diff = from.vectorTo(to);
+        BlockVector3D diff = new BlockVector3D(to.getX() - from.getX(), to.getY() - from.getY(), to.getZ() - from.getZ());
         double magnitude = vectorMagnitude(diff.getX(), diff.getY(), diff.getZ());
         return new float[] {
                 (float) (diff.getX() / magnitude),

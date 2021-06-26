@@ -2,6 +2,10 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.ArgumentParseException;
+import com.monst.bankingplugin.exceptions.DoubleParseException;
+import com.monst.bankingplugin.exceptions.IntegerParseException;
+import com.monst.bankingplugin.exceptions.TimeParseException;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -20,7 +24,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -62,10 +65,6 @@ public class Utils {
 		return ChatColor.translateAlternateColorCodes('&', s);
 	}
 
-	public static String stripColor(String s) {
-		return ChatColor.stripColor(colorize(s));
-	}
-
 	public static String format(double d) {
 		return BankingPlugin.getInstance().getEconomy().format(d);
 	}
@@ -79,35 +78,23 @@ public class Utils {
 		return color + format(bd);
 	}
 
-	public static Location blockifyLocation(Location loc) {
-		return new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+	public static Integer parseInteger(String s) throws IntegerParseException {
+		return wrapRuntimeException(() -> Integer.parseInt(s), () -> new IntegerParseException(s));
 	}
 
-	public static <T extends Comparable<T>> T lesser(T first, T second) {
-		return BinaryOperator.minBy(T::compareTo).apply(first, second);
+	public static Double parseDouble(String s) throws DoubleParseException {
+		return wrapRuntimeException(() -> Double.parseDouble(s), () -> new DoubleParseException(s));
 	}
 
-	public static <T extends Comparable<T>> T greater(T first, T second) {
-		return BinaryOperator.maxBy(T::compareTo).apply(first, second);
+	public static LocalTime parseLocalTime(String s) throws TimeParseException {
+		return wrapRuntimeException(() -> LocalTime.parse(s), () -> new TimeParseException(s));
 	}
 
-	public static Integer parseInteger(String s) {
-		return catchRuntimeException(() -> Integer.parseInt(s));
-	}
-
-	public static Double parseDouble(String s) {
-		return catchRuntimeException(() -> Double.parseDouble(s));
-	}
-
-	public static LocalTime parseLocalTime(String s) {
-		return catchRuntimeException(() -> LocalTime.parse(s));
-	}
-
-	public static <T> T catchRuntimeException(Supplier<T> supplier) {
+	public static <T, E extends ArgumentParseException> T wrapRuntimeException(Supplier<T> supplier, Supplier<E> exceptionSupplier) throws E {
 		try {
 			return supplier.get();
 		} catch (RuntimeException e) {
-			return null;
+			throw exceptionSupplier.get();
 		}
 	}
 
