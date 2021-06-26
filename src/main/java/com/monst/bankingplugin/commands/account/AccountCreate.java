@@ -73,6 +73,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
      * @param b  Clicked chest block to create the account at
      */
     public static void create(Player p, Block b) {
+        ClickType.removeClickType(p);
         Chest c = (Chest) b.getState();
         InventoryHolder ih = c.getInventory().getHolder();
         AccountLocation accountLocation = AccountLocation.from(ih);

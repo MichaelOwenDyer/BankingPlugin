@@ -234,7 +234,7 @@ enable-update-checker: true
 # Type: boolean
 enable-account-transaction-log: true
 enable-account-interest-log: true
-enable-bank-profit-log: true
+enable-bank-income-log: true
 enable-debug-log: true
 
 # Set the maximum age for log entries in days.

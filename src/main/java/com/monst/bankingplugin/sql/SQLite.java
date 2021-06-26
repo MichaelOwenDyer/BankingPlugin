@@ -165,9 +165,9 @@ public class SQLite extends Database {
     }
 
     @Override
-    String getQueryCreateTableBankProfit() {
-    	return getQueryCreateTable(tableBankProfit,
-                "ProfitID INTEGER PRIMARY KEY AUTOINCREMENT",
+    String getQueryCreateTableBankIncome() {
+    	return getQueryCreateTable(tableBankIncome,
+                "IncomeID INTEGER PRIMARY KEY AUTOINCREMENT",
                 "BankID INTEGER NOT NULL REFERENCES " + tableBanks + " (BankID) ON DELETE CASCADE",
                 "Revenue REAL NOT NULL",
                 "Interest REAL NOT NULL",

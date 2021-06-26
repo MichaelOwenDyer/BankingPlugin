@@ -29,14 +29,22 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
     private static final int FILTER_SLOT = 29;
     private static final int SORTER_SLOT = 33;
 
+    private static <T> MenuItemFilter<T> all() {
+        return MenuItemFilter.of(ChatColor.GRAY + "All", t -> true);
+    }
+
+    private static <T> MenuItemSorter<T> unsorted() {
+        return MenuItemSorter.of(ChatColor.GRAY + "Unsorted", (t1, t2) -> 0);
+    }
+
     private final Supplier<? extends Collection<? extends T>> source;
     private Collection<? extends T> mostRecentItems;
 
-    private final List<MenuItemFilter<? super T>> filters = new ArrayList<>(Collections.singleton(MenuItemFilter.of(ChatColor.GRAY + "All", t -> true)));
+    private final List<MenuItemFilter<? super T>> filters = new ArrayList<>(Collections.singleton(all()));
     private int currentFilter = 0;
     private SlotSettings filterSlotSettings = null;
 
-    private final List<MenuItemSorter<? super T>> sorters = new ArrayList<>(Collections.singleton(MenuItemSorter.of(ChatColor.GRAY + "Unsorted", (t1, t2) -> 0)));
+    private final List<MenuItemSorter<? super T>> sorters = new ArrayList<>(Collections.singleton(unsorted()));
     private int currentSorter = 0;
     private SlotSettings sorterSlotSettings = null;
 
@@ -50,9 +58,9 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
     }
 
     @Override
-    void open(boolean firstTime) {
+    void open(boolean goingDeeper) {
         subscribe(getSubject());
-        if (firstTime)
+        if (goingDeeper)
             shortenGUIChain();
         update();
     }

@@ -189,9 +189,9 @@ public class Config {
 	public static EnableAccountInterestLog enableAccountInterestLog = new EnableAccountInterestLog();
 
 	/**
-	 * Whether bank profits and losses should be logged in the database.
+	 * Whether bank income should be logged in the database.
 	 */
-	public static EnableBankProfitLog enableBankProfitLog = new EnableBankProfitLog();
+	public static EnableBankIncomeLog enableBankIncomeLog = new EnableBankIncomeLog();
 
 	/**
 	 * Whether the debug log file should be created.

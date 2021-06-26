@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 
 public class AccountRecoveryGUI extends AccountListGUI {
 
-    public AccountRecoveryGUI(Supplier<Set<? extends Account>> source) {
+    public AccountRecoveryGUI(Supplier<Set<Account>> source) {
         super(source);
     }
 

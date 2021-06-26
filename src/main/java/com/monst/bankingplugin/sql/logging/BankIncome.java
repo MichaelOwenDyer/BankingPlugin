@@ -2,22 +2,22 @@ package com.monst.bankingplugin.sql.logging;
 
 import java.math.BigDecimal;
 
-public class BankProfit extends Receipt {
+public class BankIncome extends Receipt {
 
-    private int profitID;
+    private int incomeID;
     private int bankID;
     private BigDecimal revenue;
     private BigDecimal interest;
     private BigDecimal lowBalanceFees;
     private BigDecimal profit;
 
-    public BankProfit() {
+    public BankIncome() {
         super();
     }
 
-    public BankProfit(int bankID, BigDecimal revenue, BigDecimal interest, BigDecimal lowBalanceFees, long time) {
+    public BankIncome(int bankID, BigDecimal revenue, BigDecimal interest, BigDecimal lowBalanceFees, long time) {
         super(time);
-        this.profitID = -1;
+        this.incomeID = -1;
         this.bankID = bankID;
         this.revenue = revenue;
         this.interest = interest;
@@ -27,7 +27,7 @@ public class BankProfit extends Receipt {
 
     @Override
     public int getID() {
-        return profitID;
+        return incomeID;
     }
 
     public int getBankID() {

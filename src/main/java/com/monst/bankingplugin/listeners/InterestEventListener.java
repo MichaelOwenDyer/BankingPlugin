@@ -8,7 +8,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.sql.logging.AccountInterest;
-import com.monst.bankingplugin.sql.logging.BankProfit;
+import com.monst.bankingplugin.sql.logging.BankIncome;
 import com.monst.bankingplugin.utils.*;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
@@ -139,7 +139,7 @@ public class InterestEventListener extends BankingPluginListener {
 					.map(accountFees::get)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-			plugin.getDatabase().logBankProfit(new BankProfit(
+			plugin.getDatabase().logBankIncome(new BankIncome(
 					bank.getID(),
 					revenue,
 					interest,

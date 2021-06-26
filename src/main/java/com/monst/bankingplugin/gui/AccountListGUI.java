@@ -31,7 +31,7 @@ public class AccountListGUI extends MultiPageGUI<Account> {
             MenuItemFilter.of("Double Chest Accounts", Account::isDoubleChest)
     );
 
-    public AccountListGUI(Supplier<Set<? extends Account>> source) {
+    public AccountListGUI(Supplier<Set<Account>> source) {
         super(source, FILTERS, SORTERS);
     }
 

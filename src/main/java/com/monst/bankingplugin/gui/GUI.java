@@ -29,7 +29,7 @@ public abstract class GUI<T> {
 
 	enum GUIType {
 		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY,
-        ACCOUNT_TRANSACTION_LOG, ACCOUNT_INTEREST_LOG, BANK_PROFIT_LOG
+        ACCOUNT_TRANSACTION_LOG, ACCOUNT_INTEREST_LOG, BANK_INCOME_LOG
 	}
 
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");

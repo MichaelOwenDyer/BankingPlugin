@@ -1,6 +1,8 @@
 package com.monst.bankingplugin.gui;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -48,6 +50,9 @@ public class BankGUI extends SinglePageGUI<Bank> {
 				return createSlotItem(Material.PLAYER_HEAD, "General Information", getGeneralInfoLore());
 			case 4:
 				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
+			case 7:
+				if (canListAccounts)
+					return createSlotItem(Material.BOOKSHELF, "Income Log", Collections.emptyList());
 			case 8:
 				if (canListAccounts)
 					return createSlotItem(Material.CHEST, "Account List",
@@ -92,6 +97,12 @@ public class BankGUI extends SinglePageGUI<Bank> {
 									.getLocation().add(0.5, 1, 0.5));
 						this.close(player);
 					};
+			case 7:
+				if (canListAccounts)
+					return (player, info) ->
+							BankingPlugin.getInstance().getDatabase().getIncomeAtBank(guiSubject,
+									Callback.of(list -> new BankIncomeGUI(() -> list).setParentGUI(this).open(player))
+							);
 			case 8:
 				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
 					return (player, info) -> new AccountListGUI(guiSubject::getAccounts).setParentGUI(this).open(player);

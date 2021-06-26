@@ -46,7 +46,7 @@ public class AccountList extends AccountCommand.SubCommand {
         }
 
         if (sender instanceof Player) {
-            Supplier<Set<? extends Account>> getVisibleAccounts = () -> {
+            Supplier<Set<Account>> getVisibleAccounts = () -> {
                 if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
                     return accountRepo.getMatching(account -> account.isTrusted(((Player) sender)));
                 else if (args.length == 1)

@@ -17,7 +17,7 @@ import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.geo.regions.PolygonalBankRegion;
 import com.monst.bankingplugin.sql.logging.AccountInterest;
 import com.monst.bankingplugin.sql.logging.AccountTransaction;
-import com.monst.bankingplugin.sql.logging.BankProfit;
+import com.monst.bankingplugin.sql.logging.BankIncome;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -71,7 +71,7 @@ public abstract class Database {
 	final String tableCoOwnsAccount = "co_owns_account";
 	final String tableAccountTransactions = "AccountTransactions";
 	final String tableAccountInterest = "AccountInterest";
-	final String tableBankProfit = "BankProfit";
+	final String tableBankIncome = "BankIncome";
 	final String tablePlayers = "Players";
 	final String tableFields = "Fields";
 
@@ -93,7 +93,7 @@ public abstract class Database {
 
 	abstract String getQueryCreateTableAccountInterest();
 
-	abstract String getQueryCreateTableBankProfit();
+	abstract String getQueryCreateTableBankIncome();
 
 	abstract String getQueryCreateTablePlayers();
 
@@ -208,7 +208,7 @@ public abstract class Database {
 					getQueryCreateTableCoOwnsAccount(), // Create co_owns_account table
 					getQueryCreateTableAccountTransactions(), // Create account transaction log table
 					getQueryCreateTableAccountInterest(), // Create account interest log table
-					getQueryCreateTableBankProfit(), // Create bank revenue log table
+					getQueryCreateTableBankIncome(), // Create bank revenue log table
 					getQueryCreateTablePlayers(), // Create players table
 					getQueryCreateTableFields() // Create fields table
 			)
@@ -756,28 +756,28 @@ public abstract class Database {
 	}
 
 	/**
-	 * Logs bank profit to the database.
+	 * Logs bank income to the database.
 	 *
-	 * @param profit  The {@link BankProfit} to log
+	 * @param income The {@link BankIncome} to log
 	 */
-	public void logBankProfit(BankProfit profit) {
-		if (!Config.enableBankProfitLog.get())
+	public void logBankIncome(BankIncome income) {
+		if (!Config.enableBankIncomeLog.get())
 			return;
 		async(() -> {
 			plugin.debugf("Logging %s in revenue, %s in interest, %s in fees to bank #%d.",
-					Utils.format(profit.getRevenue()), Utils.format(profit.getInterest()),
-					Utils.format(profit.getLowBalanceFees()), profit.getBankID());
+					Utils.format(income.getRevenue()), Utils.format(income.getInterest()),
+					Utils.format(income.getLowBalanceFees()), income.getBankID());
 			List<Object> params = Arrays.asList(
-					profit.getBankID(),
-					profit.getRevenue(),
-					profit.getInterest(),
-					profit.getLowBalanceFees(),
-					profit.getProfit(),
-					dateFormat.format(profit.getTime()),
-					profit.getTime()
+					income.getBankID(),
+					income.getRevenue(),
+					income.getInterest(),
+					income.getLowBalanceFees(),
+					income.getProfit(),
+					dateFormat.format(income.getTime()),
+					income.getTime()
 			);
 			query
-					.update("INSERT INTO " + tableBankProfit + " " +
+					.update("INSERT INTO " + tableBankIncome + " " +
 							"(BankID, Revenue, Interest, LowBalanceFees, Profit, Timestamp, Time) VALUES(?,?,?,?,?,?,?)")
 					.params(params)
 					.run();
@@ -830,7 +830,7 @@ public abstract class Database {
 					" WHERE Time < " + time).run().affectedRows();
 			long interest = query.update("DELETE FROM " + tableAccountInterest +
 					" WHERE Time < " + time).run().affectedRows();
-			long revenue = query.update("DELETE FROM " + tableBankProfit +
+			long revenue = query.update("DELETE FROM " + tableBankIncome +
 					" WHERE Time < " + time).run().affectedRows();
 			long players = query.update("DELETE FROM " + tablePlayers +
 					" WHERE LastSeen < " + time).run().affectedRows();
@@ -915,21 +915,21 @@ public abstract class Database {
 		});
 	}
 
-	final Mapper<BankProfit> revenueMapper = objectMappers.forClass(BankProfit.class);
+	final Mapper<BankIncome> revenueMapper = objectMappers.forClass(BankIncome.class);
 
-	public void getRevenueAtBank(Bank bank, Callback<List<BankProfit>> callback) {
+	public void getIncomeAtBank(Bank bank, Callback<List<BankIncome>> callback) {
 		async(() -> {
-			plugin.debugf("Fetching revenue at bank #%d.", bank.getID());
-			List<BankProfit> result = query
+			plugin.debugf("Fetching income at bank #%d.", bank.getID());
+			List<BankIncome> result = query
 					.select("SELECT * " +
-							"FROM " + tableBankProfit + " " +
+							"FROM " + tableBankIncome + " " +
 							"WHERE BankID = ? " +
-							"ORDER BY RevenueID DESC")
+							"ORDER BY IncomeID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
 					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(revenueMapper);
-			plugin.debugf("Found %d revenue entries at bank #%d.", result.size(), bank.getID());
+			plugin.debugf("Found %d income entries at bank #%d.", result.size(), bank.getID());
 			Callback.callSyncResult(callback, result);
 		});
 	}
@@ -1000,7 +1000,7 @@ public abstract class Database {
 			plugin.debugf("Fetching bank profit earned by %s since last logout at %s.", playerName, timeFormatted);
 			BigDecimal revenue = query
 					.select("SELECT SUM(Profit) " +
-							"FROM " + tableBankProfit + " NATURAL JOIN " + tableBanks + " " +
+							"FROM " + tableBankIncome + " NATURAL JOIN " + tableBanks + " " +
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))

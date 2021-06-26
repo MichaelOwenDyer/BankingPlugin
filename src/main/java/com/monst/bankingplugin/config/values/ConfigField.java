@@ -26,7 +26,7 @@ public enum ConfigField {
     ENABLE_UPDATE_CHECKER (Config.enableUpdateChecker),
     ENABLE_ACCOUNT_TRANSACTION_LOG (Config.enableAccountTransactionLog),
     ENABLE_ACCOUNT_INTEREST_LOG (Config.enableAccountInterestLog),
-    ENABLE_BANK_PROFIT_LOG (Config.enableBankProfitLog),
+    ENABLE_BANK_INCOME_LOG (Config.enableBankIncomeLog),
     ENABLE_DEBUG_LOG (Config.enableDebugLog),
     CLEANUP_LOG_DAYS (Config.cleanupLogDays),
     ENABLE_WORLDGUARD_INTEGRATION (Config.enableWorldGuardIntegration),
