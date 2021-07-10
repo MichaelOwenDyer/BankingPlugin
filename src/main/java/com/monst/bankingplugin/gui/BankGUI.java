@@ -1,8 +1,6 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -17,7 +15,11 @@ import org.ipvp.canvas.type.ChestMenu;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public class BankGUI extends SinglePageGUI<Bank> {
 
@@ -95,14 +97,11 @@ public class BankGUI extends SinglePageGUI<Bank> {
 									.getWorld()
 									.getHighestBlockAt(guiSubject.getRegion().getTeleportLocation())
 									.getLocation().add(0.5, 1, 0.5));
-						this.close(player);
+						exit(player);
 					};
 			case 7:
 				if (canListAccounts)
-					return (player, info) ->
-							BankingPlugin.getInstance().getDatabase().getIncomeAtBank(guiSubject,
-									Callback.of(list -> new BankIncomeGUI(() -> list).setParentGUI(this).open(player))
-							);
+					return (player, info) -> new BankIncomeGUI(guiSubject).setParentGUI(this).open(player);
 			case 8:
 				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
 					return (player, info) -> new AccountListGUI(guiSubject::getAccounts).setParentGUI(this).open(player);
@@ -116,7 +115,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getGeneralInfoLore() {
-		List<String> lore = new ArrayList<>();
+		Stream.Builder<String> lore = Stream.builder();
 		lore.add("Bank ID: " + guiSubject.getID());
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
 		lore.add("Co-owners: " + (guiSubject.getCoOwners().isEmpty()
@@ -126,7 +125,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 		lore.add("Location: " + ChatColor.AQUA + guiSubject.getRegion().getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to bank.");
-		return wordWrapAll(45, lore);
+		return wordWrapAll(45, lore.build());
 	}
 
 	private List<String> getStatisticsLore() {
@@ -190,7 +189,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 		double lowBalanceFee = guiSubject.getLowBalanceFee().get();
 		boolean strikethrough = minBalance == 0;
 		boolean payOnLowBalance = guiSubject.getPayOnLowBalance().get();
-		List<String> lore = new ArrayList<>();
+		Stream.Builder<String> lore = Stream.builder();
 		lore.add("Minimum balance: " + ChatColor.GREEN + Utils.format(minBalance));
 		lore.add("Low balance fee: " + ChatColor.RED + (strikethrough ? ChatColor.STRIKETHROUGH : "") + Utils.format(lowBalanceFee));
 		if (!strikethrough) {
@@ -198,14 +197,14 @@ public class BankGUI extends SinglePageGUI<Bank> {
 			lore.add("Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
 					+ " continue " + ChatColor.GRAY + "to be paid out when the account balance is low.");
 		}
-		return wordWrapAll(38, lore);
+		return wordWrapAll(38, lore.build());
 	}
 
 	private List<String> getOfflinePayoutsLore() {
 		int offlinePayouts = guiSubject.getAllowedOfflinePayouts().get();
 		int offlineDecrement = guiSubject.getOfflineMultiplierDecrement().get();
 		int beforeReset = guiSubject.getAllowedOfflinePayoutsBeforeReset().get();
-		List<String> lore = new ArrayList<>();
+		Stream.Builder<String> lore = Stream.builder();
 		lore.add("While account holders are offline...");
 		lore.add("");
 		lore.add("accounts will " + (offlinePayouts == 0 ? ChatColor.RED + "not generate interest" + ChatColor.GRAY
@@ -225,7 +224,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 					: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY
 					+ String.format(" time%s", beforeReset == 1 ? "" : "s")) + ".");
 		}
-		return wordWrapAll(lore);
+		return wordWrapAll(lore.build());
 	}
 
 	private List<String> getInterestRateLore() {
@@ -237,7 +236,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	private List<String> getInterestDelayLore() {
 		int interestDelay = guiSubject.getInitialInterestDelay().get();
 		boolean countOffline = guiSubject.getCountInterestDelayOffline().get();
-		List<String> lore = new ArrayList<>();
+		Stream.Builder<String> lore = Stream.builder();
 		lore.add("New accounts will begin to generate interest " + (interestDelay == 0
 				? ChatColor.GREEN + "immediately" + ChatColor.GRAY + " after creation."
 				: "after " + ChatColor.AQUA + interestDelay + ChatColor.GRAY +
@@ -249,7 +248,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 					: ChatColor.RED + "must be online")
 						+ ChatColor.GRAY + " for these cycles to be counted toward the delay.");
 		}
-		return wordWrapAll(lore);
+		return wordWrapAll(lore.build());
 	}
 
 	private List<String> getWithdrawalPolicyLore() {
@@ -276,13 +275,13 @@ public class BankGUI extends SinglePageGUI<Bank> {
 
 	private List<String> getPayoutTimeLore() {
 		Set<LocalTime> times = guiSubject.getInterestPayoutTimes().get();
-		List<String> lore = new ArrayList<>();
+		Stream.Builder<String> lore = Stream.builder();
 		if (!times.isEmpty()) {
 			lore.add("Accounts will generate interest every day at: ");
 			for (LocalTime time : times)
 				lore.add(ChatColor.GOLD + " - " + time.toString());
 		} else
 			lore.add("Accounts will not generate interest.");
-		return wordWrapAll(lore);
+		return wordWrapAll(lore.build());
 	}
 }

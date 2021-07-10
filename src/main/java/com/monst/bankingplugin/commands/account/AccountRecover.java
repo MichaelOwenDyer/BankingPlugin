@@ -39,7 +39,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
             return true;
         }
 
-        new AccountRecoveryGUI(accountRepo::getNotFoundAccounts).open(((Player) sender));
+        new AccountRecoveryGUI(accountRepo::getNotFoundAccounts).open((Player) sender);
         return true;
     }
 

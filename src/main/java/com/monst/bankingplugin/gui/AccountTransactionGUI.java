@@ -1,9 +1,7 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.sql.logging.AccountTransaction;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -17,7 +15,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public class AccountTransactionGUI extends HistoryGUI<AccountTransaction> {
 
@@ -38,11 +35,11 @@ public class AccountTransactionGUI extends HistoryGUI<AccountTransaction> {
             MenuItemSorter.of("Player Name Z-A", BY_EXECUTOR.reversed())
     );
 
-    private final Account account;
+    private final Slot.ClickHandler switchView;
 
-    public AccountTransactionGUI(Account account, Supplier<List<AccountTransaction>> source) {
-        super(source, FILTERS, SORTERS);
-        this.account = account;
+    public AccountTransactionGUI(Account account) {
+        super(callback -> DATABASE.getTransactionsAtAccount(account, callback), FILTERS, SORTERS);
+        this.switchView = (player, info) -> new AccountInterestGUI(account).setParentGUI(parentGUI).open(player);
     }
 
     @Override
@@ -75,11 +72,6 @@ public class AccountTransactionGUI extends HistoryGUI<AccountTransaction> {
                 Material.BOOK,
                 "Account Interest Log",
                 Collections.singletonList("Click to view the interest log.")
-        );
-        Slot.ClickHandler switchView = (player, info) -> BankingPlugin.getInstance().getDatabase()
-                .getInterestPaymentsAtAccount(account, Callback.of(
-                        list -> new AccountInterestGUI(account, () -> list).setParentGUI(parentGUI).open(player)
-                )
         );
         return switchViewSlotSettings = SlotSettings.builder()
                 .itemTemplate(new StaticItemTemplate(item))

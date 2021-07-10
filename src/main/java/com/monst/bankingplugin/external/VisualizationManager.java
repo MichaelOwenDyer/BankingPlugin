@@ -169,7 +169,7 @@ public class VisualizationManager {
                     Location nextAccent = new Location(world, current.getX() + 0.5 + increaseX, y, current.getZ() + 0.5 + increaseZ);
                     while (Math.sqrt(Math.pow(next.getX() - nextAccent.getX(), 2) + Math.pow(next.getZ() - nextAccent.getZ(), 2)) > step / 2.0) {
                         newElements.add(new VisualizationElement(
-                                nextAccent,
+                                new Location(nextAccent.getWorld(), nextAccent.getBlockX(), nextAccent.getBlockY(), nextAccent.getBlockZ()),
                                 type.getAccentBlockData(),
                                 world.getBlockAt(nextAccent).getBlockData()
                         ));

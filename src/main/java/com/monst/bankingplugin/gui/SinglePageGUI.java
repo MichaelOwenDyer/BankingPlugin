@@ -24,24 +24,31 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
     }
 
     @Override
-    void open(boolean firstTime) {
-        subscribe(getSubject());
-        if (firstTime) {
-            menu = createMenu();
-            menu.setCloseHandler(CLOSE_HANDLER);
-            shortenGUIChain();
-        }
-        if (menu == null)
-            return;
+    public void open(Player player) {
+        subscribe();
+        shortenGUIChain();
+        menu = createMenu();
+        menu.setCloseHandler(CLOSE_HANDLER);
+        evaluateClearance(player);
         update();
-        menu.open(viewer);
+        menu.open(player);
+    }
+
+    @Override
+    void reopen(Player player) {
+        evaluateClearance(player);
+        if (needsUpdate)
+            update();
+        menu.open(player);
     }
 
     @Override
     public void update() {
-        if (!isInForeground())
+        if (!isInForeground()) {
+            needsUpdate = true;
             return;
-        evaluateClearance(viewer);
+        }
+        needsUpdate = false;
         for (int i = 0; i < menu.getDimensions().getArea(); i++) {
             menu.getSlot(i).setItem(createSlotItem(i));
             menu.getSlot(i).setClickHandler(createClickHandler(i));
@@ -50,7 +57,6 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
 
     @Override
     void close(Player player) {
-        parentGUI = null;
         menu.close(player);
     }
 
@@ -61,7 +67,9 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
 
     abstract Menu createMenu();
 
-    void evaluateClearance(Player player) {}
+    void evaluateClearance(Player player) {
+
+    }
 
     abstract ItemStack createSlotItem(int slot);
 
@@ -78,7 +86,7 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
         if (highlightStage != -1)
             for (List<Integer> level : stackedMultipliers) {
                 stage++;
-                if (highlightStage - level.size() < 0)
+                if (highlightStage < level.size())
                     break;
                 else
                     highlightStage -= level.size();
@@ -146,14 +154,12 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
 
         SinglePageGUI<?> other = (SinglePageGUI<?>) o;
         return inForeground == other.inForeground
-                && getType() == other.getType()
-                && Utils.samePlayer(viewer, other.viewer)
-                && Objects.equals(getSubject(), other.getSubject());
+                && getType() == other.getType();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSubject(), viewer, inForeground, getType());
+        return Objects.hash(inForeground, getType());
     }
 
 }

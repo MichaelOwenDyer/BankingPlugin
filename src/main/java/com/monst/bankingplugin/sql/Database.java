@@ -541,10 +541,9 @@ public abstract class Database {
 			String vertices = values.getNextString();
 			BankRegion bankRegion;
 			if (vertices != null) {
-				List<BlockVector2D> points = Arrays.stream(vertices.substring(1, vertices.length() - 1).split("\\), \\(")).map(string -> {
-					String[] xAndZ = string.split("\\s*,\\s");
-					return new BlockVector2D(Integer.parseInt(xAndZ[0]), Integer.parseInt(xAndZ[1]));
-				}).collect(Collectors.toList());
+				List<BlockVector2D> points = Arrays.stream(vertices.split("\\|"))
+						.map(BlockVector2D::parse)
+						.collect(Collectors.toList());
 				bankRegion = PolygonalBankRegion.of(world, points, minY, maxY);
 			} else {
 				bankRegion = CuboidBankRegion.of(world, new BlockVector3D(minX, minY, minZ), new BlockVector3D(maxX, maxY, maxZ));
@@ -845,7 +844,7 @@ public abstract class Database {
 
 	final Mapper<AccountTransaction> transactionMapper = objectMappers.forClass(AccountTransaction.class);
 
-	public void getTransactionsAtAccount(Account account, Callback<List<AccountTransaction>> callback) {
+	public void getTransactionsAtAccount(Account account, Callback<Collection<AccountTransaction>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching transactions at account #%d.", account.getID());
 			List<AccountTransaction> result = query
@@ -862,7 +861,7 @@ public abstract class Database {
 		});
 	}
 
-	public void getTransactionsAtBank(Bank bank, Callback<List<AccountTransaction>> callback) {
+	public void getTransactionsAtBank(Bank bank, Callback<Collection<AccountTransaction>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching transactions at bank #%d.", bank.getID());
 			List<AccountTransaction> result = query
@@ -881,7 +880,7 @@ public abstract class Database {
 
 	final Mapper<AccountInterest> interestMapper = objectMappers.forClass(AccountInterest.class);
 
-	public void getInterestPaymentsAtAccount(Account account, Callback<List<AccountInterest>> callback) {
+	public void getInterestPaymentsAtAccount(Account account, Callback<Collection<AccountInterest>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching account interest payments at account #%d.", account.getID());
 			List<AccountInterest> result = query
@@ -898,7 +897,7 @@ public abstract class Database {
 		});
 	}
 
-	public void getInterestPaymentsAtBank(Bank bank, Callback<List<AccountInterest>> callback) {
+	public void getInterestPaymentsAtBank(Bank bank, Callback<Collection<AccountInterest>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching account interest payments at bank #%d.", bank.getID());
 			List<AccountInterest> result = query
@@ -917,7 +916,7 @@ public abstract class Database {
 
 	final Mapper<BankIncome> revenueMapper = objectMappers.forClass(BankIncome.class);
 
-	public void getIncomeAtBank(Bank bank, Callback<List<BankIncome>> callback) {
+	public void getIncomesAtBank(Bank bank, Callback<Collection<BankIncome>> callback) {
 		async(() -> {
 			plugin.debugf("Fetching income at bank #%d.", bank.getID());
 			List<BankIncome> result = query
@@ -1162,7 +1161,7 @@ public abstract class Database {
 				region.getMaxY(),
 				region.getMinZ(),
 				region.getMaxZ(),
-				region.getVertices()
+				region.isCuboid() ? null : region.getVertices().stream().map(String::valueOf).collect(Collectors.joining("|"))
 		));
 	}
 

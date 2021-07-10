@@ -33,7 +33,7 @@ public class BankListGUI extends MultiPageGUI<Bank> {
             MenuItemFilter.of("Player Banks", Bank::isPlayerBank)
     );
 
-    public BankListGUI(Supplier<Set<Bank>> source) {
+    public BankListGUI(Supplier<Collection<Bank>> source) {
         super(source, FILTERS, SORTERS);
     }
 

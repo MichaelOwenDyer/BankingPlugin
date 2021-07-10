@@ -1,9 +1,7 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -16,10 +14,10 @@ import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class AccountGUI extends SinglePageGUI<Account> {
 
@@ -85,7 +83,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 				if (canTP)
 					return (player, info) -> {
 						Utils.teleport(player, guiSubject.getLocation().getTeleportLocation());
-						this.close(player);
+						exit(player);
 					};
 			case 1:
 				return (player, info) -> new BankGUI(guiSubject.getBank()).setParentGUI(this).open(player);
@@ -93,13 +91,9 @@ public class AccountGUI extends SinglePageGUI<Account> {
 				if (isTrusted)
 					return (player, info) -> {
 						if (info.getClickType().isLeftClick())
-							BankingPlugin.getInstance().getDatabase().getTransactionsAtAccount(guiSubject,
-									Callback.of(list -> new AccountTransactionGUI(guiSubject, () -> list).setParentGUI(this).open(player))
-							);
+							new AccountTransactionGUI(guiSubject).setParentGUI(this).open(player);
 						else if (info.getClickType().isRightClick())
-							BankingPlugin.getInstance().getDatabase().getInterestPaymentsAtAccount(guiSubject,
-									Callback.of(list -> new AccountInterestGUI(guiSubject, () -> list).setParentGUI(this).open(player))
-							);
+							new AccountInterestGUI(guiSubject).setParentGUI(this).open(player);
 					};
 			case 8:
 				if (isTrusted)
@@ -114,7 +108,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	}
 
 	private List<String> getGeneralInfoLore() {
-		List<String> lore = new ArrayList<>();
+		Stream.Builder<String> lore = Stream.builder();
 		lore.add("Account ID: " + guiSubject.getID());
 		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
 		lore.add("Co-owners: " + (guiSubject.getCoOwners().isEmpty() ?
@@ -123,7 +117,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 		lore.add("Location: " + ChatColor.AQUA + "(" + guiSubject.getCoordinates() + ")");
 		if (canTP)
 			lore.add("Click to teleport to account.");
-		return wordWrapAll(60, lore);
+		return wordWrapAll(60, lore.build());
 	}
 
 	private List<String> getBankInfoLore() {

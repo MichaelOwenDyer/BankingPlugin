@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.gui;
 
+import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.sql.logging.BankIncome;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -12,7 +13,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public class BankIncomeGUI extends HistoryGUI<BankIncome> {
 
@@ -38,8 +38,8 @@ public class BankIncomeGUI extends HistoryGUI<BankIncome> {
             MenuItemSorter.of("Least Low Balance Fees", BY_LOW_BALANCE_FEES)
     );
 
-    public BankIncomeGUI(Supplier<List<BankIncome>> source) {
-        super(source, FILTERS, SORTERS);
+    public BankIncomeGUI(Bank bank) {
+        super(callback -> DATABASE.getIncomesAtBank(bank, callback), FILTERS, SORTERS);
     }
 
     @Override

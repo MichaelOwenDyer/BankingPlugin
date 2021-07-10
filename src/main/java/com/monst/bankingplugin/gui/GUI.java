@@ -35,26 +35,17 @@ public abstract class GUI<T> {
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
 
 	GUI<?> parentGUI;
-	Player viewer;
 	boolean inForeground = true;
+	boolean needsUpdate = false;
 
 	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) ->
 			Utils.bukkitRunnable(() -> {
 				if (isInForeground() && hasParent()) {
 					parentGUI.inForeground = true;
-					parentGUI.open(false);
+					parentGUI.reopen(player);
+					unsubscribe();
 				}
-				unsubscribe(getSubject());
 			}).runTask(BankingPlugin.getInstance());
-
-	/**
-	 * Opens this GUI for the specified player.
-	 * @param player player to open this GUI for
-	 */
-	public void open(Player player) {
-		this.viewer = player;
-		open(true);
-	}
 
 	/**
 	 * Gets the {@link Observable} this GUI is observing for updates, or {@code null}
@@ -63,29 +54,50 @@ public abstract class GUI<T> {
 	 */
 	abstract Observable getSubject();
 
-	void subscribe(Observable observable) {
+	void subscribe() {
+		Observable observable = getSubject();
 		if (observable != null)
 			observable.addObserver(this);
 	}
 
-	void unsubscribe(Observable observable) {
+	void unsubscribe() {
+		Observable observable = getSubject();
 		if (observable != null)
 			observable.removeObserver(this);
 	}
 
 	/**
-	 * Opens this GUI.
-	 * @param firstTime whether this is the first time opening the GUI.
+	 * Opens this GUI for the specified player, shortening the GUI chain.
+	 * This should be used when opening a new GUI.
 	 */
-	abstract void open(boolean firstTime);
+	public abstract void open(Player player);
 
+	/**
+	 * Opens this GUI for the specified player without shortening the GUI chain.
+	 * This should be used when returning to a previous GUI in the chain.
+	 */
+	abstract void reopen(Player player);
+
+	/**
+	 * Reloads the information in this GUI.
+	 * This will only affect GUIs already open in the foreground; background GUIs will not be updated.
+	 */
 	public abstract void update();
 
 	/**
-	 * Exits the GUI for the player, ignoring any parent GUIs.
+	 * Closes the GUI for the player, opening the parent GUI if it exists.
 	 * @param player the player to close this GUI for
 	 */
 	abstract void close(Player player);
+
+	/**
+	 * Exits the GUI for the player, ignoring the parent GUI.
+	 * @param player the player to exit this GUI for
+	 */
+	void exit(Player player) {
+		parentGUI = null;
+		close(player);
+	}
 
 	abstract GUIType getType();
 
@@ -100,10 +112,6 @@ public abstract class GUI<T> {
 			parentGUI.inForeground = false;
 		this.parentGUI = parentGUI;
 		return this;
-	}
-
-	GUI<?> getParentGUI() {
-		return parentGUI;
 	}
 
 	/**
@@ -178,12 +186,8 @@ public abstract class GUI<T> {
 		return item;
 	}
 
-	static List<String> wordWrapAll(List<String> lore) {
-		return wordWrapAll(30, lore.stream());
-	}
-
-	static List<String> wordWrapAll(int lineLength, List<String> lore) {
-		return wordWrapAll(lineLength, lore.stream());
+	static List<String> wordWrapAll(Stream<String> lore) {
+		return wordWrapAll(30, lore);
 	}
 
 	static List<String> wordWrapAll(String... args) {
@@ -200,4 +204,5 @@ public abstract class GUI<T> {
 				.map(s -> s.replace("" + ChatColor.WHITE, ""))
 				.collect(Collectors.toList());
 	}
+
 }

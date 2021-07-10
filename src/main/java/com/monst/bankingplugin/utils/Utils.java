@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utils {
 
@@ -325,6 +326,11 @@ public class Utils {
 		if (collection == null)
 			return null;
 		return collection.stream().map(mapper).collect(collector);
+	}
+
+	@SafeVarargs
+	public static <T> List<T> concat(List<T>... lists) {
+		return Stream.of(lists).flatMap(List::stream).collect(Collectors.toList());
 	}
 
 	/**

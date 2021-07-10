@@ -1,3 +1,0 @@
-<configuration>
-    <logger name="com.zaxxer.hikari" level="ERROR"/>
-</configuration>

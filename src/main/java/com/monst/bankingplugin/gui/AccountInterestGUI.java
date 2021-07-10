@@ -1,9 +1,7 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.sql.logging.AccountInterest;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -15,7 +13,6 @@ import org.ipvp.canvas.template.StaticItemTemplate;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public class AccountInterestGUI extends HistoryGUI<AccountInterest> {
 
@@ -33,11 +30,11 @@ public class AccountInterestGUI extends HistoryGUI<AccountInterest> {
             MenuItemSorter.of("Smallest Value", BY_TOTAL_VALUE)
     );
 
-    private final Account account;
+    private final Slot.ClickHandler switchView;
 
-    AccountInterestGUI(Account account, Supplier<List<AccountInterest>> source) {
-        super(source, FILTERS, SORTERS);
-        this.account = account;
+    AccountInterestGUI(Account account) {
+        super(callback -> DATABASE.getInterestPaymentsAtAccount(account, callback), FILTERS, SORTERS);
+        this.switchView = (player, info) -> new AccountTransactionGUI(account).setParentGUI(parentGUI).open(player);
     }
 
     @Override
@@ -73,11 +70,6 @@ public class AccountInterestGUI extends HistoryGUI<AccountInterest> {
                 Material.BOOK,
                 "Account Transaction Log",
                 Collections.singletonList("Click to view the transaction log.")
-        );
-        Slot.ClickHandler switchView = (player, info) -> BankingPlugin.getInstance().getDatabase()
-                .getTransactionsAtAccount(account, Callback.of(
-                        list -> new AccountTransactionGUI(account, () -> list).setParentGUI(parentGUI).open(player)
-                )
         );
         return switchViewSlotSettings = SlotSettings.builder()
                 .itemTemplate(new StaticItemTemplate(item))

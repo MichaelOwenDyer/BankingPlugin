@@ -4,11 +4,13 @@ import org.bukkit.ChatColor;
 
 import java.util.function.Predicate;
 
-public abstract class MenuItemFilter<T> implements Predicate<T> {
+public interface MenuItemFilter<T> extends MenuItemController, Predicate<T> {
 
-    public abstract String getName();
+    static <T> MenuItemFilter<T> all() {
+        return of(ChatColor.GRAY + "All", t -> true);
+    }
 
-    public static <T> MenuItemFilter<T> of(String name, Predicate<T> predicate) {
+    static <T> MenuItemFilter<T> of(String name, Predicate<T> predicate) {
         return new MenuItemFilter<T>() {
             @Override
             public String getName() {

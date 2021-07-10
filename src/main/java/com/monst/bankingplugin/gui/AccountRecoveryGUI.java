@@ -11,13 +11,13 @@ import org.ipvp.canvas.slot.SlotSettings;
 import org.ipvp.canvas.template.ItemStackTemplate;
 import org.ipvp.canvas.template.StaticItemTemplate;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 
 public class AccountRecoveryGUI extends AccountListGUI {
 
-    public AccountRecoveryGUI(Supplier<Set<Account>> source) {
+    public AccountRecoveryGUI(Supplier<Collection<Account>> source) {
         super(source);
     }
 
@@ -34,7 +34,7 @@ public class AccountRecoveryGUI extends AccountListGUI {
         Slot.ClickHandler clickHandler = (player, info) -> {
             player.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_RECOVER));
             ClickType.setRecoverClickType(player, account);
-            close(player);
+            exit(player);
         };
         return SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build();
     }
@@ -53,4 +53,5 @@ public class AccountRecoveryGUI extends AccountListGUI {
     GUIType getType() {
         return GUIType.ACCOUNT_RECOVERY;
     }
+
 }

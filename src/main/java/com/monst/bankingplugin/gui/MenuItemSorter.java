@@ -4,11 +4,13 @@ import org.bukkit.ChatColor;
 
 import java.util.Comparator;
 
-public abstract class MenuItemSorter<T> implements Comparator<T> {
+public interface MenuItemSorter<T> extends MenuItemController, Comparator<T> {
 
-    public abstract String getName();
+    static <T> MenuItemSorter<T> unsorted() {
+        return of(ChatColor.GRAY + "Unsorted", (t1, t2) -> 0);
+    }
 
-    public static <T> MenuItemSorter<T> of(String name, Comparator<? super T> comparator) {
+    static <T> MenuItemSorter<T> of(String name, Comparator<? super T> comparator) {
         return new MenuItemSorter<T>() {
             @Override
             public String getName() {
