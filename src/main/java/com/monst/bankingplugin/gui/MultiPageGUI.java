@@ -86,18 +86,18 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
     }
 
     private void reloadPages() {
-        List<Menu> newMenuPages = createMenuPages();
-        Menu currentlyLookingAt = currentPage();
-        currentPage = Math.min(currentPage, newMenuPages.size() - 1);
-        for (Slot slot : newMenuPages.get(currentPage))
-            currentlyLookingAt.getSlot(slot.getIndex()).setSettings(slot.getSettings());
+        List<Menu> menuPages = createMenuPages();
+        Menu currentlyOpen = currentPage();
+        currentPage = Math.min(currentPage, menuPages.size() - 1);
+        for (Slot slot : menuPages.get(currentPage))
+            currentlyOpen.getSlot(slot.getIndex()).setSettings(slot.getSettings());
         if (currentPage > 0)
-            newMenuPages.get(currentPage - 1).getSlot(NEXT_PAGE_SLOT).setClickHandler((p, c) -> currentlyLookingAt.open(p));
-        if (currentPage < newMenuPages.size() - 1)
-            newMenuPages.get(currentPage + 1).getSlot(PREV_PAGE_SLOT).setClickHandler((p, c) -> currentlyLookingAt.open(p));
-        newMenuPages.remove(currentPage);
-        newMenuPages.add(currentPage, currentlyLookingAt);
-        menuPages = newMenuPages;
+            linkPages(menuPages.get(currentPage - 1), currentlyOpen);
+        if (currentPage < menuPages.size() - 1)
+            linkPages(currentlyOpen, menuPages.get(currentPage + 1));
+        menuPages.remove(currentPage);
+        menuPages.add(currentPage, currentlyOpen);
+        this.menuPages = menuPages;
     }
 
     @Override
@@ -134,7 +134,6 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
     }
 
     private void addStandardModifications(Menu page) {
-        addPageTracker(page);
         page.setCloseHandler(CLOSE_HANDLER);
     }
 
@@ -154,6 +153,7 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
         List<Menu> menuPages = builder.build();
         itemFilterer.apply(menuPages, FILTER_SLOT);
         itemSorter.apply(menuPages, SORTER_SLOT);
+        linkPages(menuPages);
         return menuPages;
     }
 
@@ -165,21 +165,20 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
                 .collect(Collectors.toList());
     }
 
-    private void addPageTracker(Menu page) {
-        Slot nextSlot = page.getSlot(NEXT_PAGE_SLOT);
-        nextSlot.getClickHandler().ifPresent(nextPageHandler ->
-                nextSlot.setClickHandler((player, info) -> {
-                    nextPageHandler.click(player, info);
-                    currentPage++;
-                })
-        );
-        Slot prevSlot = page.getSlot(PREV_PAGE_SLOT);
-        prevSlot.getClickHandler().ifPresent(prevPageHandler ->
-                prevSlot.setClickHandler((player, info) -> {
-                    prevPageHandler.click(player, info);
-                    currentPage--;
-                })
-        );
+    private void linkPages(List<Menu> menuPages) {
+        for (int i = 1 ; i < menuPages.size() ; i++)
+            linkPages(menuPages.get(i - 1), menuPages.get(i));
+    }
+
+    private void linkPages(Menu prev, Menu next) {
+        prev.getSlot(NEXT_PAGE_SLOT).setClickHandler((p, c) -> {
+            next.open(p);
+            currentPage++;
+        });
+        next.getSlot(PREV_PAGE_SLOT).setClickHandler((p, c) -> {
+            prev.open(p);
+            currentPage--;
+        });
     }
 
     private abstract class ItemManager<C extends MenuItemController> {
