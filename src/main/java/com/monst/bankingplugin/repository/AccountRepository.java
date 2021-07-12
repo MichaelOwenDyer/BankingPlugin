@@ -28,22 +28,17 @@ public class AccountRepository extends Observable implements Repository<Account,
         this.plugin = plugin;
     }
 
-    public boolean isAccount(Block block) {
+	/**
+	 * Checks whether there is an account located at a specified block.
+	 * @return whether an account is present.
+	 */
+	public boolean isAccount(Block block) {
     	if (!Utils.isChest(block))
     		return false;
     	for (AccountLocation chest : accountLocationMap.keySet())
     		if (chest.contains(block))
     			return true;
 		return false;
-	}
-
-	/**
-	 * Checks whether there is a account at a given location
-	 * @param chest Location to check
-	 * @return Whether there is a account at the given location
-	 */
-	public boolean isAccount(AccountLocation chest) {
-		return getAt(chest) != null;
 	}
 
 	/**

@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 
 public abstract class Receipt {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, hh:mm a");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, hh:mm a");
 
     long time;
 
@@ -23,7 +23,7 @@ public abstract class Receipt {
     }
 
     public String getTimeFormatted() {
-        return dateFormat.format(getTime());
+        return DATE_FORMAT.format(getTime());
     }
 
 }

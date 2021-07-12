@@ -74,15 +74,16 @@ public class AccountCreate extends AccountCommand.SubCommand {
      */
     public static void create(Player p, Block b) {
         ClickType.removeClickType(p);
-        Chest c = (Chest) b.getState();
-        InventoryHolder ih = c.getInventory().getHolder();
-        AccountLocation accountLocation = AccountLocation.from(ih);
 
-        if (PLUGIN.getAccountRepository().isAccount(accountLocation)) {
+        if (PLUGIN.getAccountRepository().isAccount(b)) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
             PLUGIN.debug("Chest is already an account.");
             return;
         }
+
+        Chest c = (Chest) b.getState();
+        InventoryHolder ih = c.getInventory().getHolder();
+        AccountLocation accountLocation = AccountLocation.from(ih);
 
         if (accountLocation.isBlocked()) {
             p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));

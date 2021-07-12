@@ -25,7 +25,7 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	/**
 	 * Gets all banks on the server.
 	 *
-	 * @return A new {@link HashSet} containing all banks
+	 * @return a {@link Set} of all banks.
 	 */
 	@Override
 	public Set<Bank> getAll() {
@@ -71,12 +71,11 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	}
 
     /**
-	 * Adds a bank to the repository.
+	 * Adds a bank to this repository and returns the bank's ID to the {@link Callback}.
 	 *
-	 * @param bank          Bank to add
-	 * @param addToDatabase Whether the bank should also be added to the database
-	 * @param callback      Callback that - if succeeded - returns the ID the bank
-	 *                      had or was given (as {@code int})
+	 * @param bank          The bank to add
+	 * @param addToDatabase Whether to also add the bank to the database
+	 * @param callback      Callback that returns the ID of the bank
 	 */
     @Override
 	public void add(Bank bank, boolean addToDatabase, Callback<Integer> callback) {
@@ -92,6 +91,12 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 
     }
 
+	/**
+	 * Updates the specified fields of the specified bank in the database, and returns {@code null} to the {@link Callback}.
+	 * @param bank the entity to update in the database
+	 * @param callback the callback that will be called after updating is completed.
+	 * @param fieldArray the fields to update in the database
+	 */
     @Override
 	public void update(Bank bank, Callback<Void> callback, BankField... fieldArray) {
 		if (fieldArray.length == 0)
@@ -121,16 +126,16 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 	/**
 	 * Removes a bank from the repository.
 	 *
-	 * @param bank               Bank to remove
-	 * @param removeFromDatabase Whether the bank should also be removed from the
-	 *                           database
-	 * @param callback           Callback that - if succeeded - returns null
+	 * @param bank               The bank to remove
+	 * @param removeFromDatabase Whether to also remove the bank from the database
+	 * @param callback           Callback that returns {@code null} after removal
 	 */
 	@Override
 	public void remove(Bank bank, boolean removeFromDatabase, Callback<Void> callback) {
 		plugin.debugf("Removing bank #%d", bank.getID());
 
-		bank.getAccounts().forEach(account -> plugin.getAccountRepository().remove(account, removeFromDatabase));
+		// Accounts will be deleted from the database automatically if the bank is
+		bank.getAccounts().forEach(account -> plugin.getAccountRepository().remove(account, false));
 
 		bankRegionMap.remove(bank.getRegion());
 		plugin.getBankRepository().notifyObservers();
@@ -143,6 +148,10 @@ public class BankRepository extends Observable implements Repository<Bank, BankF
 			Callback.callResult(callback);
     }
 
+	/**
+	 * Gets the bank regions which overlap with the specified region.
+	 * @return a {@link Set} of {@link BankRegion}s which overlap with the specified region.
+	 */
 	public Set<BankRegion> getOverlappingRegions(BankRegion sel) {
 		return Utils.filter(bankRegionMap.keySet(), s -> s.overlaps(sel));
 	}

@@ -7,7 +7,6 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -109,7 +108,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
                 new Replacement(Placeholder.PLAYER, playerToTrust::getName)
         ));
         account.trustPlayer(playerToTrust);
-        PLUGIN.getDatabase().addCoOwner(account, playerToTrust, Callback.doNothing());
+        PLUGIN.getDatabase().addCoOwner(account, playerToTrust, null);
     }
 
 }

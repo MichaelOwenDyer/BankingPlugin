@@ -129,19 +129,12 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
                 .previousButtonSlot(PREV_PAGE_SLOT)
                 .nextButton(createSlotItem(Material.ARROW, "Next Page", Collections.emptyList()))
                 .nextButtonSlot(NEXT_PAGE_SLOT)
-                .newMenuModifier(this::addStandardModifications)
-                .newMenuModifier(this::addCustomModifications);
+                .newMenuModifier(this::setCloseHandler)
+                .newMenuModifier(this::modify);
     }
 
-    private void addStandardModifications(Menu page) {
+    private void setCloseHandler(Menu page) {
         page.setCloseHandler(CLOSE_HANDLER);
-    }
-
-    /**
-     * Can be overridden by subclasses to further customize the menu pages
-     */
-    void addCustomModifications(Menu page) {
-
     }
 
     private List<Menu> createMenuPages() {
@@ -166,7 +159,7 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
     }
 
     private void linkPages(List<Menu> menuPages) {
-        for (int i = 1 ; i < menuPages.size() ; i++)
+        for (int i = 1; i < menuPages.size(); i++)
             linkPages(menuPages.get(i - 1), menuPages.get(i));
     }
 
@@ -179,6 +172,13 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
             prev.open(p);
             currentPage--;
         });
+    }
+
+    /**
+     * Can be overridden by subclasses to further customize the menu pages
+     */
+    void modify(Menu page) {
+
     }
 
     private abstract class ItemManager<C extends MenuItemController> {

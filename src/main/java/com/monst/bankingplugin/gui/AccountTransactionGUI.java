@@ -6,7 +6,6 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.slot.SlotSettings;
 import org.ipvp.canvas.template.StaticItemTemplate;
 
@@ -35,11 +34,11 @@ public class AccountTransactionGUI extends HistoryGUI<AccountTransaction> {
             MenuItemSorter.of("Player Name Z-A", BY_EXECUTOR.reversed())
     );
 
-    private final Slot.ClickHandler switchView;
+    private final SlotSettings switchViewSlot;
 
     public AccountTransactionGUI(Account account) {
         super(callback -> DATABASE.getTransactionsAtAccount(account, callback), FILTERS, SORTERS);
-        this.switchView = (player, info) -> new AccountInterestGUI(account).setParentGUI(parentGUI).open(player);
+        this.switchViewSlot = createSwitchViewSlot(account);
     }
 
     @Override
@@ -59,23 +58,19 @@ public class AccountTransactionGUI extends HistoryGUI<AccountTransaction> {
     }
 
     @Override
-    void addCustomModifications(Menu page) {
-        page.getSlot(SWITCH_VIEW_SLOT).setSettings(getSwitchViewSlotSettings());
-        switchViewSlotSettings = null;
+    void modify(Menu page) {
+        page.getSlot(SWITCH_VIEW_SLOT).setSettings(switchViewSlot);
     }
 
-    private SlotSettings switchViewSlotSettings = null;
-    private SlotSettings getSwitchViewSlotSettings() {
-        if (switchViewSlotSettings != null)
-            return switchViewSlotSettings;
+    private SlotSettings createSwitchViewSlot(Account account) {
         ItemStack item = createSlotItem(
                 Material.BOOK,
                 "Account Interest Log",
                 Collections.singletonList("Click to view the interest log.")
         );
-        return switchViewSlotSettings = SlotSettings.builder()
+        return SlotSettings.builder()
                 .itemTemplate(new StaticItemTemplate(item))
-                .clickHandler(switchView)
+                .clickHandler((player, info) -> new AccountInterestGUI(account).setParentGUI(parentGUI).open(player))
                 .build();
     }
 

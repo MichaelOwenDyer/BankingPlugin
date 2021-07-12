@@ -7,7 +7,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.slot.SlotSettings;
 import org.ipvp.canvas.template.StaticItemTemplate;
 
@@ -30,11 +29,11 @@ public class AccountInterestGUI extends HistoryGUI<AccountInterest> {
             MenuItemSorter.of("Smallest Value", BY_TOTAL_VALUE)
     );
 
-    private final Slot.ClickHandler switchView;
+    private final SlotSettings switchViewSlot;
 
     AccountInterestGUI(Account account) {
         super(callback -> DATABASE.getInterestPaymentsAtAccount(account, callback), FILTERS, SORTERS);
-        this.switchView = (player, info) -> new AccountTransactionGUI(account).setParentGUI(parentGUI).open(player);
+        this.switchViewSlot = createSwitchViewSlot(account);
     }
 
     @Override
@@ -57,23 +56,19 @@ public class AccountInterestGUI extends HistoryGUI<AccountInterest> {
     }
 
     @Override
-    void addCustomModifications(Menu page) {
-        page.getSlot(SWITCH_VIEW_SLOT).setSettings(getSwitchViewSlotSettings());
-        switchViewSlotSettings = null;
+    void modify(Menu page) {
+        page.getSlot(SWITCH_VIEW_SLOT).setSettings(switchViewSlot);
     }
 
-    private SlotSettings switchViewSlotSettings = null;
-    private SlotSettings getSwitchViewSlotSettings() {
-        if (switchViewSlotSettings != null)
-            return switchViewSlotSettings;
+    private SlotSettings createSwitchViewSlot(Account account) {
         ItemStack item = createSlotItem(
                 Material.BOOK,
                 "Account Transaction Log",
                 Collections.singletonList("Click to view the transaction log.")
         );
-        return switchViewSlotSettings = SlotSettings.builder()
+        return SlotSettings.builder()
                 .itemTemplate(new StaticItemTemplate(item))
-                .clickHandler(switchView)
+                .clickHandler((player, info) -> new AccountTransactionGUI(account).setParentGUI(parentGUI).open(player))
                 .build();
     }
 
