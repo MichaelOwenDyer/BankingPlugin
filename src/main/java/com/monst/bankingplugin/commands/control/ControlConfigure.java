@@ -1,14 +1,14 @@
 package com.monst.bankingplugin.commands.control;
 
-import com.monst.bankingplugin.config.values.ConfigField;
-import com.monst.bankingplugin.events.control.PluginConfigureEvent;
+import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.config.values.ConfigValue;
+import com.monst.bankingplugin.events.control.PluginConfigureCommandEvent;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
@@ -46,8 +46,8 @@ public class ControlConfigure extends ControlCommand.SubCommand {
             return false;
 
         String path = args[1];
-        ConfigField field = ConfigField.getByName(path);
-        if (field == null) {
+        ConfigValue<?> configValue = Config.getByPath(path);
+        if (configValue == null) {
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_CONFIG_VALUE,
                     new Replacement(Placeholder.STRING, path)
             ));
@@ -56,28 +56,28 @@ public class ControlConfigure extends ControlCommand.SubCommand {
 
         String input = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
 
-        PluginConfigureEvent event = new PluginConfigureEvent(sender, field, input);
+        PluginConfigureCommandEvent event = new PluginConfigureCommandEvent(sender, configValue, input);
         event.fire();
         if (event.isCancelled() && !sender.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS)) {
             PLUGIN.debug("Plugin configure event cancelled");
             return true;
         }
 
-        String previousValue = field.getConfigValue().getFormatted();
+        String previousValue = configValue.getFormatted();
 
         boolean restartRequired;
 
         try {
-            restartRequired = !field.getConfigValue().set(input);
+            restartRequired = !configValue.set(input);
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
             PLUGIN.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());
             return true;
         }
 
-        String newValue = field.getConfigValue().getFormatted();
+        String newValue = configValue.getFormatted();
 
-        PLUGIN.debugf("%s has set %s from %s to %s", sender.getName(), field.toString(), previousValue, newValue);
+        PLUGIN.debugf("%s has set %s from %s to %s", sender.getName(), configValue.getPath(), previousValue, newValue);
         sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_SET,
                 new Replacement(Placeholder.PROPERTY, path),
                 new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
@@ -96,20 +96,16 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         if (!sender.hasPermission(Permissions.CONFIG))
             return Collections.emptyList();
 
-        ConfigField field = ConfigField.getByName(args[1]);
-
         if (args.length == 2)
-            return ConfigField.stream()
-                    .map(ConfigField::toString)
-                    .filter(path -> Utils.containsIgnoreCase(path, args[1]))
-                    .sorted()
-                    .collect(Collectors.toList());
+            return Config.matchPath(args[1]);
 
-        if (field == null)
+        ConfigValue<?> configValue = Config.getByPath(args[1]);
+
+        if (configValue == null)
             return Collections.emptyList();
 
         if (args.length == 3)
-            return field.getConfigValue().getTabCompletions();
+            return configValue.getTabCompletions();
 
         return Collections.emptyList();
     }

@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 
@@ -21,6 +22,10 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         this.path = path;
         this.defaultConfiguration = defaultConfiguration;
         get(); // Initialize value in memory
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public final String getFormatted() {
@@ -60,6 +65,7 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         setT(newValue);
         forgetLastSeen();
         afterSet(newValue);
+        new PluginConfigureEvent(this, newValue).fire();
         return isHotSwappable();
     }
 

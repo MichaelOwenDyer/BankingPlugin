@@ -1,7 +1,13 @@
 package com.monst.bankingplugin.config;
 
+import com.monst.bankingplugin.config.values.ConfigValue;
 import com.monst.bankingplugin.config.values.overridable.*;
 import com.monst.bankingplugin.config.values.simple.*;
+import com.monst.bankingplugin.utils.Utils;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Config {
 
@@ -270,5 +276,88 @@ public class Config {
 	 * The language file to use.
 	 */
 	public static LanguageFile languageFile = new LanguageFile();
+
+	private static final ConfigValue<?>[] VALUES = new ConfigValue[] {
+			accountCommandName,
+			bankCommandName,
+			controlCommandName,
+			accountInfoItem,
+			bankCreationPrice,
+			reimburseBankCreation,
+			defaultBankLimit,
+			defaultAccountLimit,
+			minimumBalance,
+			maximumBankVolume,
+			stubbornBanks,
+			allowSelfBanking,
+			confirmOnRemove,
+			confirmOnRemoveAll,
+			confirmOnTransfer,
+			trustOnTransfer,
+			enableUpdateChecker,
+			enableAccountTransactionLog,
+			enableAccountInterestLog,
+			enableBankIncomeLog,
+			enableDebugLog,
+			cleanupLogDays,
+			enableWorldGuardIntegration,
+			enableGriefPreventionIntegration,
+			enableWorldEditIntegration,
+			worldGuardDefaultFlagValue,
+			removeAccountOnError,
+			blacklist,
+			bankRevenueFunction,
+			disabledWorlds,
+			enableMail,
+			nameRegex,
+			enableStartupMessage,
+			languageFile,
+
+			countInterestDelayOffline,
+			countInterestDelayOffline.getAllowOverride(),
+			reimburseAccountCreation,
+			reimburseAccountCreation.getAllowOverride(),
+			payOnLowBalance,
+			payOnLowBalance.getAllowOverride(),
+			interestRate,
+			interestRate.getAllowOverride(),
+			accountCreationPrice,
+			accountCreationPrice.getAllowOverride(),
+			minimumBalance,
+			minimumBalance.getAllowOverride(),
+			lowBalanceFee,
+			lowBalanceFee.getAllowOverride(),
+			initialInterestDelay,
+			initialInterestDelay.getAllowOverride(),
+			allowedOfflinePayouts,
+			allowedOfflinePayouts.getAllowOverride(),
+			allowedOfflinePayoutsBeforeReset,
+			allowedOfflinePayoutsBeforeReset.getAllowOverride(),
+			offlineMultiplierDecrement,
+			offlineMultiplierDecrement.getAllowOverride(),
+			withdrawalMultiplierDecrement,
+			withdrawalMultiplierDecrement.getAllowOverride(),
+			playerBankAccountLimit,
+			playerBankAccountLimit.getAllowOverride(),
+			multipliers,
+			multipliers.getAllowOverride(),
+			interestPayoutTimes,
+			interestPayoutTimes.getAllowOverride()
+	};
+
+	public static List<String> matchPath(String input) {
+		return Stream.of(VALUES)
+				.map(ConfigValue::getPath)
+				.filter(path -> Utils.containsIgnoreCase(path, input))
+				.sorted()
+				.collect(Collectors.toList());
+	}
+
+	public static ConfigValue<?> getByPath(String path) {
+		return Stream.of(VALUES)
+				.filter(value -> value.getPath().equalsIgnoreCase(path))
+				.findFirst()
+				.orElse(null);
+	}
 
 }

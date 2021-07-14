@@ -1,37 +1,25 @@
 package com.monst.bankingplugin.events.control;
 
-import com.monst.bankingplugin.config.values.ConfigField;
-import org.bukkit.command.CommandSender;
-import org.bukkit.event.Cancellable;
+import com.monst.bankingplugin.config.values.ConfigValue;
+import org.bukkit.Bukkit;
 
-public class PluginConfigureEvent extends ControlEvent implements Cancellable {
+public class PluginConfigureEvent extends ControlEvent {
 
-    private boolean cancelled;
-    private final ConfigField field;
+    private final ConfigValue<?> configValue;
     private final Object newValue;
 
-    public <T> PluginConfigureEvent(CommandSender sender, ConfigField field, T newValue) {
-        super(sender);
-        this.field = field;
+    public <T> PluginConfigureEvent(ConfigValue<T> configValue, T newValue) {
+        super(Bukkit.getConsoleSender());
+        this.configValue = configValue;
         this.newValue = newValue;
     }
 
-    public ConfigField getField() {
-        return field;
+    public ConfigValue<?> getConfigValue() {
+        return configValue;
     }
 
     public Object getNewValue() {
         return newValue;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    @Override
-    public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
     }
 
 }

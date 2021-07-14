@@ -911,7 +911,7 @@ public enum Message {
     ),
     RESTART_REQUIRED (
             "An admin sets the value of a property in the config, but a restart is required before the changes can take effect.",
-            "&cA restart is required before changes to &a%PROPERTY% &ccan take effect.",
+            "&cA restart is required before changes to that property can take effect.",
             Placeholder.PROPERTY
     ),
     INTEREST_PAYOUT_TRIGGERED (

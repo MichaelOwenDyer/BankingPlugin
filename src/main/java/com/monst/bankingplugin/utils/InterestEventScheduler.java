@@ -140,7 +140,7 @@ public class InterestEventScheduler {
 
         // Schedule task starting at next instance, repeating daily, where an InterestEvent is fired with the scheduled banks
         int id = Bukkit.getScheduler()
-                .scheduleSyncRepeatingTask(PLUGIN, new InterestEvent(getScheduledBanks(time))::fire, ticks, ticksInADay);
+                .scheduleSyncRepeatingTask(PLUGIN, new InterestEvent(Bukkit.getConsoleSender(), getScheduledBanks(time))::fire, ticks, ticksInADay);
         PLUGIN.debugf((id != -1 ? "Scheduled" : "Failed to schedule") + " interest payment at %s.", time.toString());
         return id;
     }

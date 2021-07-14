@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.events.control;
 
 import com.monst.bankingplugin.banking.Bank;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
@@ -12,15 +11,6 @@ public class InterestEvent extends ControlEvent implements Cancellable {
 
 	private boolean cancelled;
 	private final Set<Bank> banks;
-
-
-	public InterestEvent() {
-		this(Bukkit.getConsoleSender(), PLUGIN.getBankRepository().getAll());
-	}
-
-	public InterestEvent(Set<Bank> banks) {
-		this(Bukkit.getConsoleSender(), banks);
-	}
 
 	public InterestEvent(CommandSender sender, Set<Bank> banks) {
 		super(sender);
