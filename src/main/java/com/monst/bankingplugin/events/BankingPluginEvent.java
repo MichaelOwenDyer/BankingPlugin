@@ -34,7 +34,7 @@ public class BankingPluginEvent extends Event {
         return sender;
     }
 
-    public void fire() {
+    public final void fire() {
         Bukkit.getPluginManager().callEvent(this);
     }
 

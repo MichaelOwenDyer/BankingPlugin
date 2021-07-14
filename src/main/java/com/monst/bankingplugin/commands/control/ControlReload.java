@@ -39,7 +39,7 @@ public class ControlReload extends ControlCommand.SubCommand {
             return true;
         }
 
-        ReloadEvent event = new ReloadEvent(PLUGIN, sender);
+        ReloadEvent event = new ReloadEvent(sender);
         event.fire();
         if (event.isCancelled()) {
             PLUGIN.debug("Reload event cancelled");

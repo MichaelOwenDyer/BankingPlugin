@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.events.control;
 
-import com.monst.bankingplugin.BankingPlugin;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 
@@ -11,8 +10,8 @@ public class ReloadEvent extends ControlEvent implements Cancellable {
 
     private boolean cancelled;
 
-    public ReloadEvent(BankingPlugin plugin, CommandSender sender) {
-        super(plugin, sender);
+    public ReloadEvent(CommandSender sender) {
+        super(sender);
     }
 
     @Override

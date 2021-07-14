@@ -909,6 +909,11 @@ public enum Message {
             "&6Changed &a%PROPERTY% &6from &a%PREVIOUS_VALUE% &6to &a%VALUE%&6.",
             Placeholder.PROPERTY, Placeholder.PREVIOUS_VALUE, Placeholder.VALUE
     ),
+    RESTART_REQUIRED (
+            "An admin sets the value of a property in the config, but a restart is required before the changes can take effect.",
+            "&cA restart is required before changes to &a%PROPERTY% &ccan take effect.",
+            Placeholder.PROPERTY
+    ),
     INTEREST_PAYOUT_TRIGGERED (
             "An admin triggers an interest payout.",
             "&6Triggered an interest payout at &b%NUMBER_OF_BANKS% &6bank(s).",

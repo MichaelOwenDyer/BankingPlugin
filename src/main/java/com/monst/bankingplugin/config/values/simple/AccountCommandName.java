@@ -6,4 +6,9 @@ public class AccountCommandName extends SimpleString {
         super("command-name-account", "account");
     }
 
+    @Override
+    protected boolean isHotSwappable() {
+        return false;
+    }
+
 }

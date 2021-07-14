@@ -53,13 +53,14 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         }
     }
 
-    public final void set(@Nonnull String input) throws ArgumentParseException {
+    public final boolean set(@Nonnull String input) throws ArgumentParseException {
         T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
         beforeSet(newValue);
         reload();
         setT(newValue);
         forgetLastSeen();
         afterSet(newValue);
+        return isHotSwappable();
     }
 
     public final void forgetLastSeen() {
@@ -68,6 +69,9 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
 
     protected void beforeSet(T newValue) {}
     protected void afterSet(T newValue) {}
+    protected boolean isHotSwappable() {
+        return true;
+    }
 
     private void setDefault() {
         setT(defaultConfiguration);

@@ -1,23 +1,19 @@
 package com.monst.bankingplugin.config;
 
-import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.values.ConfigField;
 import com.monst.bankingplugin.config.values.overridable.*;
 import com.monst.bankingplugin.config.values.simple.*;
-import com.monst.bankingplugin.events.control.PluginConfigureEvent;
-import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 
 public class Config {
+
+	/**
+	 * The account command of BankingPlugin <i>(default: account)</i>
+	 **/
+	public static AccountCommandName accountCommandName = new AccountCommandName();
 
     /**
      * The bank command of BankingPlugin <i>(default: bank)</i>
      **/
     public static BankCommandName bankCommandName = new BankCommandName();
-
-    /**
-     * The account command of BankingPlugin <i>(default: account)</i>
-     **/
-    public static AccountCommandName accountCommandName = new AccountCommandName();
 
     /**
      * The control command of BankingPlugin <i>(default: bp)</i>
@@ -274,17 +270,5 @@ public class Config {
 	 * The language file to use.
 	 */
 	public static LanguageFile languageFile = new LanguageFile();
-
-	/**
-	 * <p>Set a configuration value</p>
-	 * <i>Config is automatically reloaded</i>
-	 *
-	 * @param field 	Property to change
-	 * @param input		Value to set
-	 */
-	public static void set(ConfigField field, String input) throws ArgumentParseException {
-		field.getConfigValue().set(input);
-		new PluginConfigureEvent(BankingPlugin.getInstance(), field, input).fire();
-	}
 
 }

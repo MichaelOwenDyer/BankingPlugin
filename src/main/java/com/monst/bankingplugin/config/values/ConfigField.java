@@ -38,8 +38,9 @@ public enum ConfigField {
     BANK_REVENUE_FUNCTION (Config.bankRevenueFunction),
     DISABLED_WORLDS (Config.disabledWorlds),
     ENABLE_MAIL (Config.enableMail),
-    LANGUAGE_FILE (Config.languageFile),
     NAME_REGEX (Config.nameRegex),
+    ENABLE_STARTUP_MESSAGE (Config.enableStartupMessage),
+    LANGUAGE_FILE (Config.languageFile),
 
     COUNT_INTEREST_DELAY_OFFLINE$DEFAULT (Config.countInterestDelayOffline),
     COUNT_INTEREST_DELAY_OFFLINE$ALLOW_OVERRIDE (Config.countInterestDelayOffline.getAllowOverride()),

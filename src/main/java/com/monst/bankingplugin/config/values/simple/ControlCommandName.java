@@ -6,4 +6,9 @@ public class ControlCommandName extends SimpleString {
         super("command-name-control", "bp");
     }
 
+    @Override
+    protected boolean isHotSwappable() {
+        return false;
+    }
+
 }

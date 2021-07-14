@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.commands.control;
 
-import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.ConfigField;
+import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -56,10 +56,19 @@ public class ControlConfigure extends ControlCommand.SubCommand {
 
         String input = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
 
+        PluginConfigureEvent event = new PluginConfigureEvent(sender, field, input);
+        event.fire();
+        if (event.isCancelled() && !sender.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS)) {
+            PLUGIN.debug("Plugin configure event cancelled");
+            return true;
+        }
+
         String previousValue = field.getConfigValue().getFormatted();
 
+        boolean restartRequired;
+
         try {
-            Config.set(field, input);
+            restartRequired = !field.getConfigValue().set(input);
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
             PLUGIN.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());
@@ -74,6 +83,11 @@ public class ControlConfigure extends ControlCommand.SubCommand {
                 new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
                 new Replacement(Placeholder.VALUE, newValue)
         ));
+        if (restartRequired) {
+            sender.sendMessage(LangUtils.getMessage(Message.RESTART_REQUIRED,
+                    new Replacement(Placeholder.PROPERTY, path)
+            ));
+        }
         return true;
     }
 

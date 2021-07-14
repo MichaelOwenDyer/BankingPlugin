@@ -114,7 +114,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 		lore.add("Co-owners: " + (guiSubject.getCoOwners().isEmpty() ?
 				ChatColor.RED + "[none]" :
 				ChatColor.AQUA + Utils.map(guiSubject.getCoOwners(), OfflinePlayer::getName).toString()));
-		lore.add("Location: " + ChatColor.AQUA + "(" + guiSubject.getCoordinates() + ")");
+		lore.add("Location: " + ChatColor.AQUA + guiSubject.getCoordinates());
 		if (canTP)
 			lore.add("Click to teleport to account.");
 		return wordWrapAll(60, lore.build());

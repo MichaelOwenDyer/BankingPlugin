@@ -1,16 +1,17 @@
 package com.monst.bankingplugin.events.control;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.values.ConfigField;
-import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.event.Cancellable;
 
-public class PluginConfigureEvent extends ControlEvent {
+public class PluginConfigureEvent extends ControlEvent implements Cancellable {
 
+    private boolean cancelled;
     private final ConfigField field;
     private final Object newValue;
 
-    public <T> PluginConfigureEvent(BankingPlugin plugin, ConfigField field, T newValue) {
-        super(plugin, Bukkit.getConsoleSender());
+    public <T> PluginConfigureEvent(CommandSender sender, ConfigField field, T newValue) {
+        super(sender);
         this.field = field;
         this.newValue = newValue;
     }
@@ -21,6 +22,16 @@ public class PluginConfigureEvent extends ControlEvent {
 
     public Object getNewValue() {
         return newValue;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean cancel) {
+        this.cancelled = cancel;
     }
 
 }
