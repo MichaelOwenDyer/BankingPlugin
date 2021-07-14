@@ -64,7 +64,7 @@ public class LanguageConfig extends FileConfiguration {
 
                 if (reader != null) {
                     try (BufferedReader br = new BufferedReader(reader)) {
-                        loadFromStream(br.lines());
+                        load(br.lines());
                         plugin.getLogger().info("Using lang file \"" + fileName + "\" (Streamed from .jar)");
                     } catch (IOException e) {
                         plugin.getLogger().warning("Using default language values.");
@@ -76,11 +76,12 @@ public class LanguageConfig extends FileConfiguration {
                 }
             }
         }
-        LangUtils.reload();
+        for (Message message : Message.VALUES)
+            LangUtils.setTranslation(message, findTranslation(message));
     }
 
     @Nonnull
-    public String findTranslation(@Nonnull Message message) {
+    private String findTranslation(@Nonnull Message message) {
         String path = message.getPath();
         String finalMessage = getString(path);
         if (finalMessage != null)
@@ -114,14 +115,9 @@ public class LanguageConfig extends FileConfiguration {
         return null;
     }
 
-    @Override
-    public void load(@Nonnull File file) throws IOException {
-        load(file.toPath());
-    }
-
     public void load(Path path) throws IOException {
         this.file = path.toFile();
-        loadFromStream(Files.lines(path));
+        load(Files.lines(path));
     }
 
     @Override
@@ -130,7 +126,7 @@ public class LanguageConfig extends FileConfiguration {
         return String.join("\n", lines);
     }
 
-    private void loadFromStream(@Nonnull Stream<String> lines) {
+    private void load(@Nonnull Stream<String> lines) {
         lines
                 .filter(l -> !l.isEmpty())
                 .filter(l -> !l.startsWith("#"))
@@ -145,7 +141,7 @@ public class LanguageConfig extends FileConfiguration {
 
     @Override
     public void loadFromString(@Nonnull String s) {
-        loadFromStream(Arrays.stream(s.split("\n")));
+        load(Arrays.stream(s.split("\n")));
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.lang;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.LanguageConfig;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 
@@ -13,10 +12,8 @@ public class LangUtils {
     private static final BankingPlugin plugin = BankingPlugin.getInstance();
     private static final EnumMap<Message, String> messages = new EnumMap<>(Message.class);
 
-    public static void reload() {
-        LanguageConfig languageConfig = plugin.getLanguageConfig();
-        for (Message message : Message.VALUES)
-            messages.put(message, languageConfig.findTranslation(message));
+    public static void setTranslation(Message message, String translation) {
+        messages.put(message, translation);
     }
 
     /**
