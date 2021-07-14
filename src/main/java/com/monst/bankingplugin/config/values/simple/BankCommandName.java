@@ -7,7 +7,7 @@ public class BankCommandName extends SimpleString {
     }
 
     @Override
-    protected boolean isHotSwappable() {
+    public boolean isHotSwappable() {
         return false;
     }
 

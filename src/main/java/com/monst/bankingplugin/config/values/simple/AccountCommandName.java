@@ -7,7 +7,7 @@ public class AccountCommandName extends SimpleString {
     }
 
     @Override
-    protected boolean isHotSwappable() {
+    public boolean isHotSwappable() {
         return false;
     }
 

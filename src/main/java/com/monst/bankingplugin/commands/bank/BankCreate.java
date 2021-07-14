@@ -131,12 +131,15 @@ public class BankCreate extends BankCommand.SubCommand {
         }
         if (bankRepo.getByName(name) != null) {
             PLUGIN.debug("Name is not unique");
-            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, name)));
+            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.NAME, name)));
             return true;
         }
-        if (!Utils.isAllowedName(name)) {
+        if (!Config.nameRegex.matches(name)) {
             PLUGIN.debug("Name is not allowed");
-            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, name)));
+            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED,
+                    new Replacement(Placeholder.NAME, name),
+                    new Replacement(Placeholder.PATTERN, Config.nameRegex)
+            ));
             return true;
         }
 

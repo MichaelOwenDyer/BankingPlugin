@@ -98,7 +98,7 @@ public class BankingPlugin extends JavaPlugin {
 					.registerFlag("create-bank", WrappedState.class,
 							Config.worldGuardDefaultFlagValue.get() ? WrappedState.ALLOW : WrappedState.DENY);
 
-			debug("Flag create-bank: " + createBankFlag.isPresent());
+			debug("WorldGuard flag present: " + createBankFlag.isPresent());
         }
     }
 
@@ -380,7 +380,7 @@ public class BankingPlugin extends JavaPlugin {
 		));
 	}
 
-	private static class FetchResult extends Pair<Set<Bank>, Set<Account>> {
+	public static class FetchResult extends Pair<Set<Bank>, Set<Account>> {
 		public FetchResult(Set<Bank> banks, Set<Account> accounts) {
 			super(banks, accounts);
 		}
@@ -426,7 +426,7 @@ public class BankingPlugin extends JavaPlugin {
 		if (debugWriter == null)
 			instantiateDebugWriter();
 
-		String timestamp = Utils.formatTime(Calendar.getInstance().getTime());
+		String timestamp = Utils.currentTimestamp();
 		debugWriter.printf("[%s] %s%n", timestamp, message);
 
 		if (debugWriter.checkError())

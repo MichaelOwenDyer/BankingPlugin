@@ -39,7 +39,6 @@ import org.codejargon.fluentjdbc.api.query.listen.AfterQueryListener;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -59,7 +58,6 @@ public abstract class Database {
 	}
 
 	protected final BankingPlugin plugin = BankingPlugin.getInstance();
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final Set<String> unknownWorldNames = new HashSet<>();
 	private final int DATABASE_VERSION = 1;
 	private final ObjectMappers objectMappers = ObjectMappers.builder().build();
@@ -714,7 +712,7 @@ public abstract class Database {
 					transaction.getNewBalance(),
 					transaction.getPreviousBalance(),
 					transaction.getAmount(),
-					dateFormat.format(transaction.getTime()),
+					Utils.timestamp(transaction.getTime()),
 					transaction.getTime()
 			);
 			query
@@ -742,7 +740,7 @@ public abstract class Database {
 					interest.getInterest(),
 					interest.getLowBalanceFee(),
 					interest.getFinalPayment(),
-					dateFormat.format(interest.getTime()),
+					Utils.timestamp(interest.getTime()),
 					interest.getTime()
 			);
 			query
@@ -771,7 +769,7 @@ public abstract class Database {
 					income.getInterest(),
 					income.getLowBalanceFees(),
 					income.getProfit(),
-					dateFormat.format(income.getTime()),
+					Utils.timestamp(income.getTime()),
 					income.getTime()
 			);
 			query
@@ -941,9 +939,8 @@ public abstract class Database {
 	 */
 	public void getInterestEarnedByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
-		String timeFormatted = dateFormat.format(time);
 		async(() -> {
-			plugin.debugf("Fetching account interest for %s since last logout at %s.", playerName, timeFormatted);
+			plugin.debugf("Fetching account interest for %s since last logout at %s.", playerName, Utils.timestamp(time));
 			BigDecimal interest = query
 					.select("SELECT SUM(FinalPayment) " +
 							"FROM " + tableAccountInterest + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
@@ -967,9 +964,8 @@ public abstract class Database {
 	 */
 	public void getLowBalanceFeesPaidByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
-		String timeFormatted = dateFormat.format(time);
 		async(() -> {
-			plugin.debugf("Fetching low balance fees paid by %s since last logout at %s.", playerName, timeFormatted);
+			plugin.debugf("Fetching low balance fees paid by %s since last logout at %s.", playerName, Utils.timestamp(time));
 			BigDecimal fees = query
 					.select("SELECT SUM(LowBalanceFee) " +
 							"FROM " + tableAccountInterest + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
@@ -993,9 +989,8 @@ public abstract class Database {
 	 */
 	public void getBankProfitEarnedByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
-		String timeFormatted = dateFormat.format(time);
 		async(() -> {
-			plugin.debugf("Fetching bank profit earned by %s since last logout at %s.", playerName, timeFormatted);
+			plugin.debugf("Fetching bank profit earned by %s since last logout at %s.", playerName, Utils.timestamp(time));
 			BigDecimal revenue = query
 					.select("SELECT SUM(Profit) " +
 							"FROM " + tableBankIncome + " NATURAL JOIN " + tableBanks + " " +

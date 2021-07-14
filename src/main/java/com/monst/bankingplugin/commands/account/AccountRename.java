@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
+import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountConfigureEvent;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -9,7 +10,6 @@ import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -46,9 +46,12 @@ public class AccountRename extends AccountCommand.SubCommand {
             sb.append(" ").append(args[i]);
         String nickname = sb.toString();
 
-        if (!nickname.trim().isEmpty() && !Utils.isAllowedName(nickname)) {
+        if (!nickname.trim().isEmpty() && !Config.nameRegex.matches(nickname)) {
             PLUGIN.debug("Name \"" + nickname + "\" is not allowed");
-            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, nickname)));
+            p.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED,
+                    new Replacement(Placeholder.NAME, nickname),
+                    new Replacement(Placeholder.PATTERN, Config.nameRegex)
+            ));
             return true;
         }
 

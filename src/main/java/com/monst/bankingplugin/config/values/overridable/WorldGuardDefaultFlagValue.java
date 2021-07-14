@@ -8,4 +8,9 @@ public class WorldGuardDefaultFlagValue extends SimpleBoolean {
         super("worldguard-default-flag-value", false);
     }
 
+    @Override
+    public boolean isHotSwappable() {
+        return false;
+    }
+
 }

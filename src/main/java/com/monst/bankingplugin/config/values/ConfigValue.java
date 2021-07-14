@@ -58,7 +58,7 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         }
     }
 
-    public final boolean set(@Nonnull String input) throws ArgumentParseException {
+    public final void set(@Nonnull String input) throws ArgumentParseException {
         T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
         beforeSet(newValue);
         reload();
@@ -66,7 +66,6 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         forgetLastSeen();
         afterSet(newValue);
         new PluginConfigureEvent(this, newValue).fire();
-        return isHotSwappable();
     }
 
     public final void forgetLastSeen() {
@@ -75,7 +74,8 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
 
     protected void beforeSet(T newValue) {}
     protected void afterSet(T newValue) {}
-    protected boolean isHotSwappable() {
+
+    public boolean isHotSwappable() {
         return true;
     }
 

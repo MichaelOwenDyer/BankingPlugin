@@ -8,6 +8,7 @@ import org.bukkit.World;
 import java.time.LocalTime;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 public class Parser {
 
@@ -39,6 +40,10 @@ public class Parser {
 
     public static Material parseMaterial(String name) throws MaterialParseException {
         return Optional.ofNullable(name).map(Material::matchMaterial).orElseThrow(() -> new MaterialParseException(name));
+    }
+
+    public static Pattern parsePattern(String regex) throws PatternParseException {
+        return wrapRuntimeException(() -> Pattern.compile(regex), () -> new PatternParseException(regex));
     }
 
     private static <T, E extends ArgumentParseException> T wrapRuntimeException(Supplier<T> supplier, Supplier<E> exceptionSupplier) throws E {

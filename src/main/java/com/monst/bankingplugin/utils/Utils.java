@@ -22,24 +22,19 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class Utils {
 
-	private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-	public static String formatTime(Object toFormat) {
-		return FORMATTER.format(toFormat);
+	private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
+	public static String currentTimestamp() {
+		return FORMATTER.format(Calendar.getInstance().getTime());
 	}
 
-	public static boolean isAllowedName(String name) {
-		try {
-			return Config.nameRegex.get().trim().isEmpty() || Pattern.matches(Config.nameRegex.get(), name);
-		} catch (PatternSyntaxException e) {
-			return true;
-		}
+	public static String timestamp(Object o) {
+		return FORMATTER.format(o);
 	}
 
 	public static String removePunctuation(String s, char... exclude) {

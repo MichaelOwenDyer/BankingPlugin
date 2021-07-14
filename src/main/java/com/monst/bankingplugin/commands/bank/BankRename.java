@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
+import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -80,18 +81,21 @@ public class BankRename extends BankCommand.SubCommand {
         }
         if (bank.getRawName().contentEquals(newName)) {
             PLUGIN.debug("Same name");
-            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
+            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_CHANGED, new Replacement(Placeholder.NAME, newName)));
             return true;
         }
         Bank bankWithSameName = bankRepo.getByName(newName);
         if (bankWithSameName != null && !bankWithSameName.equals(bank)) {
             PLUGIN.debug("Name is not unique");
-            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.BANK_NAME, newName)));
+            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.NAME, newName)));
             return true;
         }
-        if (!Utils.isAllowedName(newName)) {
+        if (!Config.nameRegex.matches(newName)) {
             PLUGIN.debug("Name is not allowed");
-            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED, new Replacement(Placeholder.BANK_NAME, newName)));
+            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED,
+                    new Replacement(Placeholder.NAME, newName),
+                    new Replacement(Placeholder.PATTERN, Config.nameRegex)
+            ));
             return true;
         }
 

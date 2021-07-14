@@ -65,10 +65,8 @@ public class ControlConfigure extends ControlCommand.SubCommand {
 
         String previousValue = configValue.getFormatted();
 
-        boolean restartRequired;
-
         try {
-            restartRequired = !configValue.set(input);
+            configValue.set(input);
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
             PLUGIN.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());
@@ -83,7 +81,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
                 new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
                 new Replacement(Placeholder.VALUE, newValue)
         ));
-        if (restartRequired) {
+        if (!configValue.isHotSwappable()) {
             sender.sendMessage(LangUtils.getMessage(Message.RESTART_REQUIRED,
                     new Replacement(Placeholder.PROPERTY, path)
             ));

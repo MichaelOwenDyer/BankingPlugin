@@ -347,6 +347,11 @@ public enum Message {
             "&c\"%STRING%\" is not a material.",
             Placeholder.STRING
     ),
+    NOT_A_PATTERN (
+            "A player attempts to set a configuration property to a regular expression, but provided a string that was not a valid pattern.",
+            "&c\"%STRING%\" is not a valid regular expression.",
+            Placeholder.STRING
+    ),
     NOT_A_TIME (
             "A player attempts to set a configuration property to a time, but provided a string that was not a time.",
             "&c\"%STRING%\" is not a time.",
@@ -365,17 +370,17 @@ public enum Message {
     NAME_NOT_UNIQUE (
             "A player attempts to create or rename a bank with a name already in use by another bank.",
             "&cA bank with that name already exists.",
-            Placeholder.BANK_NAME
+            Placeholder.NAME
     ),
     NAME_NOT_ALLOWED (
-            "A player attempts to create or rename a bank with a name that does not match the name-regex pattern in the config.",
-            "&cName is not allowed.",
-            Placeholder.BANK_NAME
+            "A player attempts to create or rename a bank or account with a name that does not match the name-regex pattern in the config.",
+            "&cThat name is not allowed.",
+            Placeholder.NAME, Placeholder.PATTERN
     ),
     NAME_NOT_CHANGED (
             "A player renames a bank to the same name.",
-            "&cThe bank name was not changed.",
-            Placeholder.BANK_NAME
+            "&cThe name was not changed.",
+            Placeholder.NAME
     ),
     NAME_CHANGED (
             "A player renames a bank to a different name.",
