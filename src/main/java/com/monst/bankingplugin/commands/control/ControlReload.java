@@ -56,7 +56,7 @@ public class ControlReload extends ControlCommand.SubCommand {
             PLUGIN.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
         }, error ->
                 sender.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED,
-                    new Replacement(Placeholder.ERROR, "No database access! Disabling BankingPlugin.")
+                    new Replacement(Placeholder.ERROR, "Fatal error while loading banks and accounts from the database.")
                 ))
         ));
         return true;

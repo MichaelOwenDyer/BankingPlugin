@@ -6,9 +6,9 @@ import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.config.Config;
+import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.exceptions.parse.TimeParseException;
-import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
@@ -42,7 +42,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -441,7 +440,7 @@ public abstract class Database {
 		async(() -> {
 			Map<Bank, Set<Account>> banksAndAccounts = getBanks(callback).stream()
 					.collect(Collectors.toMap(
-							Function.identity(),
+							bank -> bank,
 							bank -> getAccounts(bank, callback)
 					));
 			Callback.callSyncResult(callback, Collections.unmodifiableMap(banksAndAccounts));

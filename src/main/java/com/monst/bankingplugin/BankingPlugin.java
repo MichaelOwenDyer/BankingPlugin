@@ -137,14 +137,14 @@ public class BankingPlugin extends JavaPlugin {
 		}
 
 		initializeRepositories();
-		getLanguageConfig().reload();
+		reloadLanguageConfig();
 		loadExternalPlugins();
 		initializeCommands();
 		// checkForUpdates();
-		initializeDatabase();
         registerListeners();
         registerExternalListeners();
-		loadBanksAndAccounts();
+		initializeDatabase();
+		initializeBankingEntities();
 		enableMetrics();
 
 	}
@@ -187,6 +187,10 @@ public class BankingPlugin extends JavaPlugin {
 		bankRepository = new BankRepository(this);
 	}
 
+	public void reloadLanguageConfig() {
+		languageConfig.reload();
+	}
+
     private void initializeCommands() {
 		accountCommand = new AccountCommand(this);
 		bankCommand = new BankCommand(this);
@@ -213,42 +217,6 @@ public class BankingPlugin extends JavaPlugin {
 		if (hasWorldGuard())
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
-
-    private void enableMetrics() {
-		debug("Initializing metrics...");
-
-		Metrics metrics = new Metrics(this, 8474);
-		metrics.addCustomChart(new Metrics.AdvancedPie("bank-types", () -> {
-			Map<String, Integer> typeFrequency = new HashMap<>();
-			int playerBanks = 0;
-			int adminBanks = 0;
-
-			for (Bank bank : bankRepository.getAll())
-				if (bank.isPlayerBank())
-					playerBanks++;
-				else
-					adminBanks++;
-
-			typeFrequency.put("Admin", adminBanks);
-			typeFrequency.put("Player", playerBanks);
-
-			return typeFrequency;
-		}));
-		metrics.addCustomChart(new Metrics.SimplePie("account-info-item",
-				() -> Optional.ofNullable(Config.accountInfoItem.get()).map(m -> m.getType().toString()).orElse("none")
-		));
-		metrics.addCustomChart(new Metrics.SimplePie("self-banking",
-				() -> Config.allowSelfBanking.get() ? "Enabled" : "Disabled"));
-	}
-
-	/**
-	 * Initialize the {@link Database}
-	 * @see SQLite
-	 */
-	private void initializeDatabase() {
-		database = new SQLite();
-		debug("Database initialized.");
-	}
 
 	// URLs NOT YET SET UP
     // DO NOT USE
@@ -321,34 +289,45 @@ public class BankingPlugin extends JavaPlugin {
     }
 
 	/**
-	 * Initializes all banks and accounts stored in the {@link Database}.
+	 * Initialize the {@link Database}
+	 * @see SQLite
 	 */
-	private void loadBanksAndAccounts() {
-		reload(Callback.of(result -> {
-				Set<Bank> banks = result.getBanks();
-				Set<Account> accounts = result.getAccounts();
+	private void initializeDatabase() {
+		database = new SQLite();
+		debug("Database initialized.");
+	}
 
-				new BankInitializedEvent(banks).fire();
-				new AccountInitializedEvent(accounts).fire();
+	private void initializeBankingEntities() {
+		fetchBankingEntities(Callback.of(result -> {
+			Set<Bank> banks = result.getBanks();
+			Set<Account> accounts = result.getAccounts();
 
-				String message = String.format("Initialized %d bank%s and %d account%s.",
-						banks.size(), banks.size() == 1 ? "" : "s",
-						accounts.size(), accounts.size() == 1 ? "" : "s");
+			new BankInitializedEvent(banks).fire();
+			new AccountInitializedEvent(accounts).fire();
 
-				getLogger().info(message);
-				debug(message);
-			})
-		);
+			String message = String.format("Initialized %d bank%s and %d account%s.",
+					banks.size(), banks.size() == 1 ? "" : "s",
+					accounts.size(), accounts.size() == 1 ? "" : "s");
+			getLogger().info(message);
+			debug(message);
+		}));
 	}
 
 	/**
-	 * Reload the plugin
+	 * Reloads the plugin
 	 * @param callback            Callback that - if succeeded - returns the amount
 	 *                            of accounts that were reloaded (as {@code int})
 	 */
-	public void reload(Callback<ReloadResult> callback) {
-		debug("Loading banks and accounts from database...");
+	public void reload(Callback<FetchResult> callback) {
+		debug("Reloading...");
+		reloadLanguageConfig();
+		fetchBankingEntities(callback);
+	}
 
+	/**
+	 * Fetches all banks and accounts from the {@link Database}.
+	 */
+	private void fetchBankingEntities(Callback<FetchResult> callback) {
 		getDatabase().connect(Callback.of(
 				result -> {
 					Collection<Bank> banksBeforeReload = bankRepository.getAll();
@@ -385,7 +364,7 @@ public class BankingPlugin extends JavaPlugin {
 											accountsBeforeReload.size(), reloadedAccounts.size());
 
 								InterestEventScheduler.scheduleAllBanks();
-								Callback.callResult(callback, new ReloadResult(reloadedBanks, reloadedAccounts));
+								Callback.callResult(callback, new FetchResult(reloadedBanks, reloadedAccounts));
 							},
 							callback::onError
 					));
@@ -401,12 +380,39 @@ public class BankingPlugin extends JavaPlugin {
 		));
 	}
 
-	public static class ReloadResult extends Pair<Set<Bank>, Set<Account>> {
-		public ReloadResult(Set<Bank> banks, Set<Account> accounts) {
+	private static class FetchResult extends Pair<Set<Bank>, Set<Account>> {
+		public FetchResult(Set<Bank> banks, Set<Account> accounts) {
 			super(banks, accounts);
 		}
 		public Set<Bank> getBanks() { return super.getFirst(); }
 		public Set<Account> getAccounts() { return super.getSecond(); }
+	}
+
+	private void enableMetrics() {
+		debug("Initializing metrics...");
+
+		Metrics metrics = new Metrics(this, 8474);
+		metrics.addCustomChart(new Metrics.AdvancedPie("bank-types", () -> {
+			Map<String, Integer> typeFrequency = new HashMap<>();
+			int playerBanks = 0;
+			int adminBanks = 0;
+
+			for (Bank bank : bankRepository.getAll())
+				if (bank.isPlayerBank())
+					playerBanks++;
+				else
+					adminBanks++;
+
+			typeFrequency.put("Admin", adminBanks);
+			typeFrequency.put("Player", playerBanks);
+
+			return typeFrequency;
+		}));
+		metrics.addCustomChart(new Metrics.SimplePie("account-info-item",
+				() -> Optional.ofNullable(Config.accountInfoItem.get()).map(m -> m.getType().toString()).orElse("none")
+		));
+		metrics.addCustomChart(new Metrics.SimplePie("self-banking",
+				() -> Config.allowSelfBanking.get() ? "Enabled" : "Disabled"));
 	}
 
 	/**
@@ -482,10 +488,6 @@ public class BankingPlugin extends JavaPlugin {
 		return bankRepository;
 	}
 
-	public LanguageConfig getLanguageConfig() {
-		return languageConfig;
-	}
-
 	/**
 	 * @return the {@link Economy} registered by Vault
 	 */
@@ -533,27 +535,6 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public GriefPrevention getGriefPrevention() {
 		return griefPrevention;
-	}
-
-	/**
-	 * @return the instance of {@link AccountCommand}
-	 */
-	public AccountCommand getAccountCommand() {
-		return accountCommand;
-	}
-
-	/**
-	 * @return the instance of {@link BankCommand}
-	 */
-	public BankCommand getBankCommand() {
-		return bankCommand;
-	}
-
-	/**
-	 * @return the instance of {@link ControlCommand}
-	 */
-	public ControlCommand getControlCommand() {
-		return controlCommand;
 	}
 
 	public Reader getTextResourceMirror(String file) {
