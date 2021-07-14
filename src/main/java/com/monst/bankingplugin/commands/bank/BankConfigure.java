@@ -44,7 +44,7 @@ public class BankConfigure extends BankCommand.SubCommand {
 
         if (bank == null) {
             PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
-            sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+            sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
@@ -62,7 +62,7 @@ public class BankConfigure extends BankCommand.SubCommand {
         BankField field = BankField.getByName(fieldName);
         if (field == null) {
             PLUGIN.debug("No bank config field could be found with name " + fieldName);
-            sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.STRING, fieldName)));
+            sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.INPUT, fieldName)));
             return true;
         }
 

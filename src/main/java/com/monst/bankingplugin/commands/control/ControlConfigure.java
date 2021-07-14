@@ -49,7 +49,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         ConfigValue<?> configValue = Config.getByPath(path);
         if (configValue == null) {
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_CONFIG_VALUE,
-                    new Replacement(Placeholder.STRING, path)
+                    new Replacement(Placeholder.INPUT, path)
             ));
             return true;
         }

@@ -20,7 +20,7 @@ public enum Placeholder {
     NUMBER,
     MULTIPLIER,
     MULTIPLIER_STAGE,
-    STRING,
+    INPUT,
     ERROR,
     LIMIT,
     PROPERTY,

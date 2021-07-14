@@ -67,8 +67,8 @@ public enum Message {
     ),
     ACCOUNT_NOT_FOUND (
             "A player attempts to open a GUI of an account with a specific ID, but there is no account with that ID.",
-            "&cCould not find account with ID &b%STRING%&c.",
-            Placeholder.STRING
+            "&cCould not find account with ID &b%INPUT%&c.",
+            Placeholder.INPUT
     ),
     ACCOUNTS_NOT_FOUND (
             "A player attempts to list the accounts of a player who does not have any accounts.",
@@ -261,8 +261,8 @@ public enum Message {
     ),
     BANK_NOT_FOUND (
             "A player attempts to open a GUI of a bank with a specified name or ID, but no bank could be found.",
-            "&cCould not find bank with the name or ID \"%STRING%\".",
-            Placeholder.STRING
+            "&cCould not find bank with the name or ID \"%INPUT%\".",
+            Placeholder.INPUT
     ),
     BANKS_NOT_FOUND (
             "A player attempts to list all banks, but there are no banks on the server.",
@@ -330,42 +330,42 @@ public enum Message {
     NOT_A_NUMBER (
             "A player attempts to set a configuration property to a number, but provided a string that was not a number.",
             "&c\"%STRING%\" is not a number.",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     NOT_AN_INTEGER (
             "A player attempts to set a configuration property to an integer, but provided a string that was not an integer.",
             "&c\"%STRING%\" is not an integer.",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     NOT_A_BOOLEAN (
             "A player attempts to set a configuration property to a boolean, but provided a string that was not \"true\" or \"false\".",
             "&c\"%STRING%\" is not a boolean.",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     NOT_A_MATERIAL (
             "A player attempts to set a configuration property to a material, but provided a string that was not a material.",
             "&c\"%STRING%\" is not a material.",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     NOT_A_PATTERN (
             "A player attempts to set a configuration property to a regular expression, but provided a string that was not a valid pattern.",
             "&c\"%STRING%\" is not a valid regular expression.",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     NOT_A_TIME (
             "A player attempts to set a configuration property to a time, but provided a string that was not a time.",
             "&c\"%STRING%\" is not a time.",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     NOT_A_WORLD (
             "A player attempts to set a configuration property to a world, but provided a string that was not the name of a world.",
             "&c\"%STRING%\" is not a world.",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     NOT_A_PROPERTY (
             "A player attempts to set a configuration property, but provided a string that was not a property.",
             "&c\"%STRING%\" is not a property.",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     NAME_NOT_UNIQUE (
             "A player attempts to create or rename a bank with a name already in use by another bank.",
@@ -464,7 +464,7 @@ public enum Message {
     PLAYER_NOT_FOUND (
             "A player references another player in command arguments who either does not exist or who has never played on the server before.",
             "&cNo player was found with the name \"%STRING%\".",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     ACCOUNT_LIMIT_AT_BANK_REACHED (
             "A player attempts to create an account at a bank, but has reached their limit for that specific bank.",
@@ -897,7 +897,7 @@ public enum Message {
     NOT_A_CONFIG_VALUE (
             "An admin tries to configure a property in the config that does not exist.",
             "&c\"%STRING%\" is not a configuration property.",
-            Placeholder.STRING
+            Placeholder.INPUT
     ),
     CONFIG_VALUE_ADDED (
             "An admin adds a value to a property in the config.",

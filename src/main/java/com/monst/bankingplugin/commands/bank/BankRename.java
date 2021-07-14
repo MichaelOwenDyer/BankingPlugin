@@ -59,7 +59,7 @@ public class BankRename extends BankCommand.SubCommand {
             bank = bankRepo.getByIdentifier(args[1]);
             if (bank == null) {
                 PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
-                sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+                sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                 return true;
             }
             sb = new StringBuilder(args[2]);

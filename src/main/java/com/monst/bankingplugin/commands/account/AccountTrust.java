@@ -47,7 +47,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
 
         OfflinePlayer playerToTrust = Utils.getPlayer(args[1]);
         if (playerToTrust == null) {
-            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
 

@@ -48,14 +48,14 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
         Bank bank = bankRepo.getByIdentifier(args[1]);
         if (bank == null) {
             PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
-            sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+            sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
         OfflinePlayer newOwner = null;
         if (args.length > 2) {
             newOwner = Utils.getPlayer(args[2]);
             if (newOwner == null) {
-                sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+                sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                 return true;
             }
         }

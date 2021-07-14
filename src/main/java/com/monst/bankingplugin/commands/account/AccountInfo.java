@@ -32,7 +32,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
                 int id = Integer.parseInt(args[1]);
                 Account account = accountRepo.getByID(id);
                 if (account == null) {
-                    sender.sendMessage(LangUtils.getMessage(Message.ACCOUNT_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+                    sender.sendMessage(LangUtils.getMessage(Message.ACCOUNT_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                     return true;
                 }
 

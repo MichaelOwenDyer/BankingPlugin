@@ -53,7 +53,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
         String property = args[1];
         AccountField field = AccountField.getByName(property);
         if (field == null) {
-            executor.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.STRING, args[1])));
+            executor.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
 
@@ -61,7 +61,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
         try {
             value = "" + Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
-            executor.sendMessage(LangUtils.getMessage(Message.NOT_A_NUMBER, new Replacement(Placeholder.STRING, args[2])));
+            executor.sendMessage(LangUtils.getMessage(Message.NOT_A_NUMBER, new Replacement(Placeholder.INPUT, args[2])));
             return true;
         }
 

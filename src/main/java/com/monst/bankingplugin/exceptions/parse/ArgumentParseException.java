@@ -8,7 +8,7 @@ import com.monst.bankingplugin.lang.Replacement;
 public abstract class ArgumentParseException extends Exception {
 
     protected ArgumentParseException(Message message, String input) {
-        super(LangUtils.getMessage(message, new Replacement(Placeholder.STRING, input)));
+        super(LangUtils.getMessage(message, new Replacement(Placeholder.INPUT, input)));
     }
 
 }

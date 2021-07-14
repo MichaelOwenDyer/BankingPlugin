@@ -55,7 +55,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
         OfflinePlayer newOwner = Utils.getPlayer(args[1]);
         if (newOwner == null) {
-            p.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+            p.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
 

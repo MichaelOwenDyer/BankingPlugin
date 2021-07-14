@@ -85,7 +85,7 @@ public class BankResize extends BankCommand.SubCommand {
         bank = bankRepo.getByIdentifier(args[1]);
         if (bank == null) {
             PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
-            p.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+            p.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
         if (bank.isPlayerBank() && !bank.isOwner(p) && !p.hasPermission(Permissions.BANK_RESIZE_OTHER)) {

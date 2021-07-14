@@ -48,7 +48,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
 
         OfflinePlayer playerToUntrust = Utils.getPlayer(args[1]);
         if (playerToUntrust == null) {
-            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.STRING, args[1])));
+            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
 
