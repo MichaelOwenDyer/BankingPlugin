@@ -104,7 +104,8 @@ public class BankingPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		getServer().getConsoleSender().sendMessage(STARTUP_MESSAGE);
+		if (Config.enableStartupMessage.get())
+			getServer().getConsoleSender().sendMessage(STARTUP_MESSAGE);
 
 		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
 			debug("Could not find plugin \"Vault\".");
@@ -120,16 +121,18 @@ public class BankingPlugin extends JavaPlugin {
             return;
         }
 
-		switch (Utils.getServerVersion()) {
+		String serverVersion = Utils.getServerVersion();
+		switch (serverVersion) {
 			case "v1_15_R1":
 			case "v1_15_R2":
 			case "v1_16_R1":
 			case "v1_16_R2":
 			case "v1_16_R3":
+			case "v1_17_R1":
 				break;
 			default:
-				debug("Server version not officially supported: " + Utils.getServerVersion() + "!");
-				getLogger().warning("Server version not officially supported: " + Utils.getServerVersion() + "!");
+				debug("Server version not officially supported: " + serverVersion + "!");
+				getLogger().warning("Server version not officially supported: " + serverVersion + "!");
 				getLogger().warning("Plugin may still work, but more errors are expected!");
 		}
 

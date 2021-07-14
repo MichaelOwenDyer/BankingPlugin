@@ -1,7 +1,9 @@
 package com.monst.bankingplugin.config.values.simple;
 
 import com.monst.bankingplugin.config.values.ConfigValue;
-import com.monst.bankingplugin.exceptions.MaterialParseException;
+import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.parse.MaterialParseException;
+import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -16,22 +18,24 @@ public class AccountInfoItem extends ConfigValue<ItemStack> {
 
     @Override
     public ItemStack parse(String input) throws MaterialParseException {
-        return Optional.ofNullable(input)
-                .map(Material::getMaterial)
-                .map(ItemStack::new)
-                .orElseThrow(() -> new MaterialParseException(input));
+        return new ItemStack(Parser.parseMaterial(input));
     }
 
     @Override
-    public ItemStack readFromFile(MemoryConfiguration config, String path) {
+    public ItemStack readFromFile(MemoryConfiguration config, String path) throws CorruptedValueException {
         return Optional.ofNullable(config.getString(path))
-                .map(Material::getMaterial)
+                .map(Material::matchMaterial)
                 .map(ItemStack::new)
-                .orElse(null);
+                .orElseThrow(CorruptedValueException::new);
     }
 
     @Override
     public String format(ItemStack itemStack) {
+        return itemStack.getType().toString();
+    }
+
+    @Override
+    public Object convertToSettableType(ItemStack itemStack) {
         return itemStack.getType().toString();
     }
 

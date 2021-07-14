@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values.simple;
 
-import com.monst.bankingplugin.exceptions.MaterialParseException;
+import com.monst.bankingplugin.exceptions.parse.MaterialParseException;
 import org.bukkit.Material;
 
 import java.util.EnumSet;

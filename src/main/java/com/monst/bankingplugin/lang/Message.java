@@ -337,6 +337,11 @@ public enum Message {
             "&c\"%STRING%\" is not an integer.",
             Placeholder.STRING
     ),
+    NOT_A_BOOLEAN (
+            "A player attempts to set a configuration property to a boolean, but provided a string that was not \"true\" or \"false\".",
+            "&c\"%STRING%\" is not a boolean.",
+            Placeholder.STRING
+    ),
     NOT_A_MATERIAL (
             "A player attempts to set a configuration property to a material, but provided a string that was not a material.",
             "&c\"%STRING%\" is not a material.",

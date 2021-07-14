@@ -2,7 +2,7 @@ package com.monst.bankingplugin.commands.control;
 
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.ConfigField;
-import com.monst.bankingplugin.exceptions.ArgumentParseException;
+import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;

@@ -13,7 +13,7 @@ public interface IConfigSet<T> extends IConfigCollection<T, Set<T>> {
 
     @Override
     default Object convertToSettableType(Set<T> set) {
-        return set.stream().map(String::valueOf).collect(Collectors.toList()); // must convert to string list to set
+        return set.stream().map(String::valueOf).collect(Collectors.toList()); // must convert to List<String> in order to set
     }
 
 }

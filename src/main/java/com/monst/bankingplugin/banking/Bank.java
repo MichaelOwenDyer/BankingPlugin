@@ -2,7 +2,7 @@ package com.monst.bankingplugin.banking;
 
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.overridable.OverriddenValue;
-import com.monst.bankingplugin.exceptions.ArgumentParseException;
+import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;

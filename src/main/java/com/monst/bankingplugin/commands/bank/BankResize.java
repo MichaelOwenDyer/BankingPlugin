@@ -4,7 +4,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
-import com.monst.bankingplugin.exceptions.IntegerParseException;
+import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.geo.regions.BankRegion;

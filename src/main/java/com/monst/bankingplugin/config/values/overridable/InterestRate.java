@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values.overridable;
 
-import com.monst.bankingplugin.exceptions.DoubleParseException;
+import com.monst.bankingplugin.exceptions.parse.DoubleParseException;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 

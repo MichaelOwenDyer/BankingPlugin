@@ -1,11 +1,11 @@
 package com.monst.bankingplugin.config.values.overridable;
 
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.exceptions.TimeParseException;
+import com.monst.bankingplugin.exceptions.parse.TimeParseException;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
+import com.monst.bankingplugin.utils.Parser;
 
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -33,11 +33,7 @@ public class InterestPayoutTimes extends OverridableSet<LocalTime> {
 
     @Override
     public LocalTime parseSingle(String input) throws TimeParseException {
-        try {
-            return LocalTime.parse(input);
-        } catch (DateTimeParseException e) {
-            throw new TimeParseException(input);
-        }
+        return Parser.parseLocalTime(input);
     }
 
     @Override

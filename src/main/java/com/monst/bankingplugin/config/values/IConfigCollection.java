@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values;
 
-import com.monst.bankingplugin.exceptions.ArgumentParseException;
+import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.Collection;
@@ -17,12 +18,20 @@ public interface IConfigCollection<T, C extends Collection<T>> extends IConfigVa
     }
 
     @Override
-    default C readFromFile(MemoryConfiguration config, String path) {
+    default C readFromFile(MemoryConfiguration config, String path) throws CorruptedValueException {
         C collection = getEmptyCollection();
+        boolean isCorrupted = false;
         for (String string : config.getStringList(path))
             try {
                 collection.add(parseSingle(string));
-            } catch (Exception ignored) {}
+            } catch (ArgumentParseException e) {
+                isCorrupted = true;
+            }
+        if (isCorrupted) {
+            if (collection.isEmpty())
+                collection = null;
+            throw new CorruptedValueException(collection);
+        }
         return collection;
     }
 

@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.config.values.overridable;
 
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.ArgumentParseException;
+import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 
 public class OverriddenValue<T> {
 

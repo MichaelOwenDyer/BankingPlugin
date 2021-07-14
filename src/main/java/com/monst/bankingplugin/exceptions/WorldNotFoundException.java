@@ -1,9 +1,9 @@
 package com.monst.bankingplugin.exceptions;
 
-public class WorldNotFoundException extends Exception {
-    private static final long serialVersionUID = -555886332156936972L;
+public class WorldNotFoundException extends NotFoundException {
 
     public WorldNotFoundException(String worldName) {
         super("Could not find world with name \"" + worldName + "\"");
     }
+
 }

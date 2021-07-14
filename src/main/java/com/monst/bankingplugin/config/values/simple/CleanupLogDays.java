@@ -1,7 +1,5 @@
 package com.monst.bankingplugin.config.values.simple;
 
-import java.util.function.Function;
-
 public class CleanupLogDays extends SimpleInteger {
 
     public CleanupLogDays() {
@@ -9,8 +7,8 @@ public class CleanupLogDays extends SimpleInteger {
     }
 
     @Override
-    public Function<Integer, Integer> getConstraint() {
-        return Math::abs;
+    public Integer constrain(Integer i) {
+        return Math.abs(i);
     }
 
 }

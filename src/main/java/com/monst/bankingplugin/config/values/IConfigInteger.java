@@ -1,25 +1,26 @@
 package com.monst.bankingplugin.config.values;
 
-import com.monst.bankingplugin.exceptions.IntegerParseException;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
+import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.configuration.MemoryConfiguration;
-
-import java.util.function.Function;
 
 public interface IConfigInteger extends IConfigValue<Integer> {
 
     @Override
     default Integer parse(String input) throws IntegerParseException {
-        return getConstraint().apply(Utils.parseInteger(input));
+        return constrain(Parser.parseInt(input));
     }
 
     @Override
-    default Integer readFromFile(MemoryConfiguration config, String path) {
+    default Integer readFromFile(MemoryConfiguration config, String path) throws CorruptedValueException {
+        if (!config.isInt(path))
+            throw new CorruptedValueException();
         return config.getInt(path);
     }
 
-    default Function<Integer, Integer> getConstraint() {
-        return Function.identity();
+    default Integer constrain(Integer i) {
+        return i;
     }
 
 }

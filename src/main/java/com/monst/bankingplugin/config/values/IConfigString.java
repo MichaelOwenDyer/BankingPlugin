@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values;
 
-import com.monst.bankingplugin.exceptions.DoubleParseException;
+import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.parse.DoubleParseException;
 import org.bukkit.configuration.MemoryConfiguration;
 
 public interface IConfigString extends IConfigValue<String> {
@@ -11,7 +12,9 @@ public interface IConfigString extends IConfigValue<String> {
     }
 
     @Override
-    default String readFromFile(MemoryConfiguration config, String path) {
+    default String readFromFile(MemoryConfiguration config, String path) throws CorruptedValueException {
+        if (!config.isString(path))
+            throw new CorruptedValueException();
         return config.getString(path);
     }
 

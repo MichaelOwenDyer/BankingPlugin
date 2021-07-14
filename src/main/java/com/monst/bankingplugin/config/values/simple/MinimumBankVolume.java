@@ -1,7 +1,5 @@
 package com.monst.bankingplugin.config.values.simple;
 
-import java.util.function.Function;
-
 public class MinimumBankVolume extends SimpleInteger {
 
     public MinimumBankVolume() {
@@ -9,8 +7,8 @@ public class MinimumBankVolume extends SimpleInteger {
     }
 
     @Override
-    public Function<Integer, Integer> getConstraint() {
-        return i -> Math.max(i, 0);
+    public Integer constrain(Integer i) {
+        return Math.max(i, 0);
     }
 
 }

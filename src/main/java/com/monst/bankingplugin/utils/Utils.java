@@ -2,10 +2,6 @@ package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.ArgumentParseException;
-import com.monst.bankingplugin.exceptions.DoubleParseException;
-import com.monst.bankingplugin.exceptions.IntegerParseException;
-import com.monst.bankingplugin.exceptions.TimeParseException;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -22,7 +18,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -31,7 +26,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Utils {
 
@@ -77,26 +71,6 @@ public class Utils {
 	public static String formatAndColorize(BigDecimal bd) {
 		ChatColor color = bd.signum() >= 1 ? ChatColor.GREEN : ChatColor.RED;
 		return color + format(bd);
-	}
-
-	public static Integer parseInteger(String s) throws IntegerParseException {
-		return wrapRuntimeException(() -> Integer.parseInt(s), () -> new IntegerParseException(s));
-	}
-
-	public static Double parseDouble(String s) throws DoubleParseException {
-		return wrapRuntimeException(() -> Double.parseDouble(s), () -> new DoubleParseException(s));
-	}
-
-	public static LocalTime parseLocalTime(String s) throws TimeParseException {
-		return wrapRuntimeException(() -> LocalTime.parse(s), () -> new TimeParseException(s));
-	}
-
-	public static <T, E extends ArgumentParseException> T wrapRuntimeException(Supplier<T> supplier, Supplier<E> exceptionSupplier) throws E {
-		try {
-			return supplier.get();
-		} catch (RuntimeException e) {
-			throw exceptionSupplier.get();
-		}
 	}
 
 	public static boolean startsWithIgnoreCase(String s1, String s2) {
@@ -326,11 +300,6 @@ public class Utils {
 		if (collection == null)
 			return null;
 		return collection.stream().map(mapper).collect(collector);
-	}
-
-	@SafeVarargs
-	public static <T> List<T> concat(List<T>... lists) {
-		return Stream.of(lists).flatMap(List::stream).collect(Collectors.toList());
 	}
 
 	/**

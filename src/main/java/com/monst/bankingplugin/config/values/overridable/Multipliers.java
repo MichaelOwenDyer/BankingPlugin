@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values.overridable;
 
-import com.monst.bankingplugin.exceptions.IntegerParseException;
+import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 
 import java.util.Collections;
 

@@ -5,7 +5,7 @@ import com.monst.bankingplugin.config.values.ConfigField;
 import com.monst.bankingplugin.config.values.overridable.*;
 import com.monst.bankingplugin.config.values.simple.*;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
-import com.monst.bankingplugin.exceptions.ArgumentParseException;
+import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 
 public class Config {
 
@@ -264,6 +264,11 @@ public class Config {
 	 * against.
 	 */
 	public static NameRegex nameRegex = new NameRegex();
+
+	/**
+	 * Whether to enable the plugin startup message in the console upon server start.
+	 */
+	public static EnableStartupMessage enableStartupMessage = new EnableStartupMessage();
 
 	/**
 	 * The language file to use.

@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.exceptions;
+package com.monst.bankingplugin.exceptions.parse;
 
 import com.monst.bankingplugin.lang.Message;
 

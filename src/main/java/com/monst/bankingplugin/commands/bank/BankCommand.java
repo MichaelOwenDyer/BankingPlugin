@@ -5,7 +5,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
 import com.monst.bankingplugin.commands.BankingPluginSubCommand;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.IntegerParseException;
+import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.lang.LangUtils;
@@ -13,6 +13,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.repository.BankRepository;
+import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -133,7 +134,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		}
 
 		private static int parseCoordinate(String arg, int relativeTo) throws IntegerParseException {
-			return arg.startsWith("~") ? Integer.parseInt(arg.substring(1)) + relativeTo : Integer.parseInt(arg);
+			return arg.startsWith("~") ? Integer.parseInt(arg.substring(1)) + relativeTo : Parser.parseInt(arg);
 		}
 
 	}
