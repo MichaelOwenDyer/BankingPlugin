@@ -73,7 +73,6 @@ public class SQLite extends Database {
                 "LowBalanceFee REAL",
                 "InitialInterestDelay INTEGER",
                 "AllowedOfflinePayouts INTEGER",
-                "AllowedOfflinePayoutsBeforeMultiplierReset INTEGER",
                 "OfflineMultiplierDecrement INTEGER",
                 "WithdrawalMultiplierDecrement INTEGER",
                 "PlayerBankAccountLimit INTEGER",
@@ -114,7 +113,6 @@ public class SQLite extends Database {
     			"MultiplierStage INTEGER NOT NULL",
     			"DelayUntilNextPayout INTEGER NOT NULL",
     			"RemainingOfflinePayouts INTEGER NOT NULL",
-    			"RemainingOfflinePayoutsUntilReset INTEGER NOT NULL",
 
 				"World TEXT NOT NULL",
                 "Y INTEGER NOT NULL",

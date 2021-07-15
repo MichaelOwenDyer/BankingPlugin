@@ -20,13 +20,13 @@ public enum AccountField implements BankingEntityField<Account> {
     PREVIOUS_BALANCE ("PreviousBalance", Account::getPrevBalance),
     MULTIPLIER_STAGE ("MultiplierStage", Account::getMultiplierStage),
     DELAY_UNTIL_NEXT_PAYOUT ("DelayUntilNextPayout", Account::getDelayUntilNextPayout),
-    REMAINING_OFFLINE_PAYOUTS ("RemainingOfflinePayouts", Account::getRemainingOfflinePayouts),
-    REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET ("RemainingOfflinePayoutsUntilReset", Account::getRemainingOfflinePayoutsUntilReset);
+    REMAINING_OFFLINE_PAYOUTS ("RemainingOfflinePayouts", Account::getRemainingOfflinePayouts);
 
     private static final AccountField[] VALUES = values();
 
     private final String databaseAttribute;
     private final Function<Account, Object> getter;
+    private String path;
 
     AccountField(String attributes, Function<Account, Object> getter) {
         this.databaseAttribute = attributes;
@@ -55,7 +55,7 @@ public enum AccountField implements BankingEntityField<Account> {
 
     @Override
     public String toString() {
-        return name().toLowerCase(Locale.ROOT).replace('_', '-');
+        return path != null ? path : (path = name().toLowerCase(Locale.ROOT).replace('_', '-'));
     }
 
 }

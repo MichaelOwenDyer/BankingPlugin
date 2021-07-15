@@ -259,8 +259,8 @@ public abstract class Database {
 			plugin.debugf("Adding account to the database.");
 			final String replaceQuery = "REPLACE INTO " + tableAccounts + "(" + (account.hasID() ? "AccountID, " : "") +
 					"BankID, Nickname, OwnerUUID, Balance, PreviousBalance, MultiplierStage, DelayUntilNextPayout, " +
-					"RemainingOfflinePayouts, RemainingOfflinePayoutsUntilReset, World, Y, X1, Z1, X2, Z2) " +
-					"VALUES(" + (account.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+					"RemainingOfflinePayouts, World, Y, X1, Z1, X2, Z2) " +
+					"VALUES(" + (account.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 			final LinkedList<Object> params = getAttributes(account);
 			if (!account.hasID())
@@ -348,10 +348,10 @@ public abstract class Database {
 			final String replaceQuery = "REPLACE INTO " + tableBanks + "(" + (bank.hasID() ? "BankID, " : "") +
 					"Name, OwnerUUID, CountInterestDelayOffline, ReimburseAccountCreation, PayOnLowBalance, " +
 					"InterestRate, AccountCreationPrice, MinimumBalance, LowBalanceFee, InitialInterestDelay, " +
-					"AllowedOfflinePayouts, AllowedOfflinePayoutsBeforeMultiplierReset, OfflineMultiplierDecrement, " +
-					"WithdrawalMultiplierDecrement, PlayerBankAccountLimit, Multipliers, InterestPayoutTimes, " +
+					"AllowedOfflinePayouts, OfflineMultiplierDecrement, WithdrawalMultiplierDecrement, " +
+					"PlayerBankAccountLimit, Multipliers, InterestPayoutTimes, " +
 					"World, MinX, MaxX, MinY, MaxY, MinZ, MaxZ, PolygonVertices) " +
-					"VALUES(" + (bank.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+					"VALUES(" + (bank.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 			final LinkedList<Object> params = getAttributes(bank);
 			if (!bank.hasID())
@@ -495,7 +495,6 @@ public abstract class Database {
 			Double lowBalanceFee = values.getNextDoubleNullable();
 			Integer initialInterestDelay = values.getNextInteger();
 			Integer allowedOfflinePayouts = values.getNextInteger();
-			Integer allowedOfflinePayoutsBeforeMultiplierReset = values.getNextInteger();
 			Integer offlineMultiplierDecrement = values.getNextInteger();
 			Integer withdrawalMultiplierDecrement = values.getNextInteger();
 			Integer playerBankAccountLimit = values.getNextInteger();
@@ -569,8 +568,7 @@ public abstract class Database {
 					lowBalanceFee,
 					initialInterestDelay,
 					allowedOfflinePayouts,
-					allowedOfflinePayoutsBeforeMultiplierReset,
-					offlineMultiplierDecrement,
+                    offlineMultiplierDecrement,
 					withdrawalMultiplierDecrement,
 					playerBankAccountLimit,
 					multipliers,
@@ -594,7 +592,6 @@ public abstract class Database {
 			int multiplierStage = values.getNextInt();
 			int delayUntilNextPayout = values.getNextInt();
 			int remainingOfflinePayouts = values.getNextInt();
-			int remainingOfflinePayoutsUntilReset = values.getNextInt();
 
 			String worldName = values.getNextString();
 			World world = Bukkit.getWorld(worldName);
@@ -623,7 +620,7 @@ public abstract class Database {
 
 			plugin.debugf("Initializing account #%d at bank #%d (\"%s\")", accountID, bank.getID(), bank.getName());
 			return Account.reopen(accountID, owner, coowners, bank, accountLocation, nickname, balance, prevBalance,
-					multiplierStage, delayUntilNextPayout, remainingOfflinePayouts, remainingOfflinePayoutsUntilReset);
+					multiplierStage, delayUntilNextPayout, remainingOfflinePayouts);
 		};
 	}
 
@@ -1117,7 +1114,6 @@ public abstract class Database {
 				account.getMultiplierStage(),
 				account.getDelayUntilNextPayout(),
 				account.getRemainingOfflinePayouts(),
-				account.getRemainingOfflinePayoutsUntilReset(),
 				loc.getWorld().getName(),
 				v1.getY(),
 				v1.getX(),
@@ -1142,7 +1138,6 @@ public abstract class Database {
 				bank.getLowBalanceFee().getCustomValue(),
 				bank.getInitialInterestDelay().getCustomValue(),
 				bank.getAllowedOfflinePayouts().getCustomValue(),
-				bank.getAllowedOfflinePayoutsBeforeReset().getCustomValue(),
 				bank.getOfflineMultiplierDecrement().getCustomValue(),
 				bank.getWithdrawalMultiplierDecrement().getCustomValue(),
 				bank.getPlayerBankAccountLimit().getCustomValue(),

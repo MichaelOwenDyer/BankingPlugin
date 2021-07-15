@@ -46,8 +46,7 @@ public class Account extends BankingEntity {
 				BigDecimal.ZERO,
 				0,
 				bank.getInitialInterestDelay().get(),
-				bank.getAllowedOfflinePayouts().get(),
-				bank.getAllowedOfflinePayoutsBeforeReset().get()
+				bank.getAllowedOfflinePayouts().get()
 		);
 	}
 
@@ -69,15 +68,13 @@ public class Account extends BankingEntity {
 				account.getPrevBalance(),
 				account.getMultiplierStage(),
 				account.getDelayUntilNextPayout(),
-				account.getRemainingOfflinePayouts(),
-				account.getRemainingOfflinePayoutsUntilReset()
+				account.getRemainingOfflinePayouts()
 		);
 	}
 
 	/**
 	 * Re-creates an account that was stored in the database.
-	 *
-	 * @param id the account ID {@link BankingEntity}
+	 *  @param id the account ID {@link BankingEntity}
 	 * @param owner the owner of the account {@link BankingEntity}
 	 * @param coowners the co-owners of the account {@link BankingEntity}
 	 * @param bank the {@link Bank} the account is registered at
@@ -88,11 +85,10 @@ public class Account extends BankingEntity {
 	 * @param multiplierStage the multiplier stage of this account
 	 * @param delayUntilNextPayout the number of payments this account will wait before generating interest
 	 * @param remainingOfflinePayouts the number of remaining offline interest payments this account will generate
-	 * @param remainingOfflineUntilReset the number of remaining offline interest payments before the multiplier stage is reset
 	 */
 	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, AccountLocation loc,
 								 String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
-								 int delayUntilNextPayout, int remainingOfflinePayouts, int remainingOfflineUntilReset) {
+								 int delayUntilNextPayout, int remainingOfflinePayouts) {
 		return new Account(
 				id,
 				owner,
@@ -104,8 +100,7 @@ public class Account extends BankingEntity {
 				QuickMath.scale(prevBalance),
 				multiplierStage,
 				delayUntilNextPayout,
-				remainingOfflinePayouts,
-				remainingOfflineUntilReset
+				remainingOfflinePayouts
 		);
 	}
 
@@ -122,11 +117,10 @@ public class Account extends BankingEntity {
 	int multiplierStage;
 	int delayUntilNextPayout;
 	int remainingOfflinePayouts;
-	int remainingOfflineUntilReset;
 
 	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, AccountLocation loc,
 					String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
-					int delayUntilNextPayout, int remainingOfflinePayouts, int remainingOfflineUntilReset) {
+					int delayUntilNextPayout, int remainingOfflinePayouts) {
 
 		super(id, name, owner, coowners);
 		this.bank = bank;
@@ -137,7 +131,6 @@ public class Account extends BankingEntity {
 		this.multiplierStage = multiplierStage;
 		this.delayUntilNextPayout = delayUntilNextPayout;
 		this.remainingOfflinePayouts = remainingOfflinePayouts;
-		this.remainingOfflineUntilReset = remainingOfflineUntilReset;
 
 	}
 
@@ -437,17 +430,6 @@ public class Account extends BankingEntity {
 	}
 
 	/**
-	 * Gets the current number of remaining offline payouts until the multiplier resets at this account. This specifies
-	 * how many (more) consecutive times this account will generate interest for offline account holders before the
-	 * multiplier stage is reset to 0.
-	 *
-	 * @return the current number of remaining offline payouts until the multiplier is reset
-	 */
-	public int getRemainingOfflinePayoutsUntilReset() {
-		return remainingOfflineUntilReset;
-	}
-
-	/**
 	 * Determines whether to allow the next interest payout or not.
 	 */
 	public boolean allowNextPayout() {
@@ -459,7 +441,6 @@ public class Account extends BankingEntity {
 		}
 		if (online) {
 			remainingOfflinePayouts = Math.max(remainingOfflinePayouts, bank.getAllowedOfflinePayouts().get());
-			remainingOfflineUntilReset = Math.max(remainingOfflineUntilReset, bank.getAllowedOfflinePayoutsBeforeReset().get());
 			return true;
 		}
 		return remainingOfflinePayouts-- > 0;
@@ -486,8 +467,6 @@ public class Account extends BankingEntity {
 	public void incrementMultiplier() {
 		if (isTrustedPlayerOnline())
 			setMultiplierStage(++multiplierStage);
-		else if (remainingOfflineUntilReset-- <= 0)
-			setMultiplierStage(0);
 		else
 			setMultiplierStage(multiplierStage - bank.getOfflineMultiplierDecrement().get());
 	}
@@ -531,15 +510,6 @@ public class Account extends BankingEntity {
 	 */
 	public void setRemainingOfflinePayouts(int remaining) {
 		remainingOfflinePayouts = Math.max(0, remaining);
-	}
-
-	/**
-	 * Sets the remaining offline payouts until reset. This determines how many more times an account will be able to
-	 * generate interest offline before the account multiplier resets.
-	 * @param remaining the number of payouts to allow before the multiplier is reset
-	 */
-	public void setRemainingOfflinePayoutsUntilReset(int remaining) {
-		remainingOfflineUntilReset = Math.max(0, remaining);
 	}
 
 	@Override

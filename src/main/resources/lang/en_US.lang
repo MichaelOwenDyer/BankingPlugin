@@ -103,10 +103,6 @@ message.account-set-interest-delay=&6Account interest delay set to &b%NUMBER%&6.
 # Available placeholders: %NUMBER%
 message.account-set-remaining-offline=&6Account remaining offline payouts set to &b%NUMBER%&6.
 
-# Scenario: A player sets the remaining offline payouts before multiplier reset at an account.
-# Available placeholders: %NUMBER%
-message.account-set-remaining-offline-reset=&6Account remaining offline payouts until multiplier reset set to &b%NUMBER%&6.
-
 # Scenario: A player clicks an account to transfer it to another player and must click again to confirm.
 # Available placeholders: %PLAYER%
 message.account-confirm-transfer=&6Click again to confirm transferring ownership of an account to %PLAYER%.

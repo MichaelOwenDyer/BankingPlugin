@@ -42,7 +42,6 @@ public class Bank extends BankingEntity {
 				null,
 				null,
 				null,
-				null,
 				null
 		);
 	}
@@ -53,8 +52,8 @@ public class Bank extends BankingEntity {
 	public static Bank recreate(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 								BankRegion region, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
 								Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
-								Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer allowedOfflinePayoutsUntilReset,
-								Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
+								Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer offlineMultiplierDecrement,
+								Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
 								List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 		return new Bank(
 				id,
@@ -71,7 +70,6 @@ public class Bank extends BankingEntity {
 				lowBalanceFee,
 				initialInterestDelay,
 				allowedOfflinePayouts,
-				allowedOfflinePayoutsUntilReset,
 				offlineMultiplierDecrement,
 				withdrawalMultiplierDecrement,
 				playerBankAccountLimit,
@@ -92,7 +90,6 @@ public class Bank extends BankingEntity {
 	private final OverriddenValue<Double> lowBalanceFee;
 	private final OverriddenValue<Integer> initialInterestDelay;
 	private final OverriddenValue<Integer> allowedOfflinePayouts;
-	private final OverriddenValue<Integer> allowedOfflinePayoutsBeforeReset;
 	private final OverriddenValue<Integer> offlineMultiplierDecrement;
 	private final OverriddenValue<Integer> withdrawalMultiplierDecrement;
 	private final OverriddenValue<Integer> playerBankAccountLimit;
@@ -110,8 +107,8 @@ public class Bank extends BankingEntity {
 	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners, BankRegion region,
 				 Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
 				 Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
-				 Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer allowedOfflinePayoutsUntilReset,
-				 Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
+				 Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer offlineMultiplierDecrement,
+				 Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
 				 List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 
 		super(id, name, owner, coowners);
@@ -126,7 +123,6 @@ public class Bank extends BankingEntity {
 		this.lowBalanceFee = Config.lowBalanceFee.override(this, lowBalanceFee);
 		this.initialInterestDelay = Config.initialInterestDelay.override(this, initialInterestDelay);
 		this.allowedOfflinePayouts = Config.allowedOfflinePayouts.override(this, allowedOfflinePayouts);
-		this.allowedOfflinePayoutsBeforeReset = Config.allowedOfflinePayoutsBeforeReset.override(this, allowedOfflinePayoutsUntilReset);
 		this.offlineMultiplierDecrement = Config.offlineMultiplierDecrement.override(this, offlineMultiplierDecrement);
 		this.withdrawalMultiplierDecrement = Config.withdrawalMultiplierDecrement.override(this, withdrawalMultiplierDecrement);
 		this.playerBankAccountLimit = Config.playerBankAccountLimit.override(this, playerBankAccountLimit);
@@ -285,10 +281,6 @@ public class Bank extends BankingEntity {
 		return allowedOfflinePayouts;
 	}
 
-	public OverriddenValue<Integer> getAllowedOfflinePayoutsBeforeReset() {
-		return allowedOfflinePayoutsBeforeReset;
-	}
-
 	public OverriddenValue<Integer> getOfflineMultiplierDecrement() {
 		return offlineMultiplierDecrement;
 	}
@@ -329,8 +321,6 @@ public class Bank extends BankingEntity {
 				return initialInterestDelay;
 			case ALLOWED_OFFLINE_PAYOUTS:
 				return allowedOfflinePayouts;
-			case ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET:
-				return allowedOfflinePayoutsBeforeReset;
 			case OFFLINE_MULTIPLIER_DECREMENT:
 				return offlineMultiplierDecrement;
 			case WITHDRAWAL_MULTIPLIER_DECREMENT:
@@ -431,7 +421,6 @@ public class Bank extends BankingEntity {
 						list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString(),
 				"Account creation price: " + ChatColor.GREEN + getAccountCreationPrice().getFormatted(),
 				"Offline payouts: " + ChatColor.AQUA + getAllowedOfflinePayouts().getFormatted(),
-						" (" + ChatColor.AQUA + getAllowedOfflinePayoutsBeforeReset().getFormatted() + ChatColor.GRAY + " before multiplier reset)",
 				"Initial payout delay: " + ChatColor.AQUA + getInitialInterestDelay().getFormatted(),
 				"Minimum balance: " + ChatColor.GREEN + getMinimumBalance().getFormatted(),
 						" (" + ChatColor.RED + getLowBalanceFee().getFormatted() + ChatColor.GRAY + " fee)",

@@ -77,21 +77,11 @@ allowed-offline-payouts:
     default: 1
     allow-override: true
 
-# Set the number of consecutive times a player can be offline for an interest payout before their account multiplier is reset.
-# This is independent of the number of times a player can collect interest payouts offline.
-# A player could continue to receive baseline interest payouts offline after the multiplier reset if allowed-offline-payouts is set higher than this.
-# If allowed-offline-payouts is set lower than this, an offline player will stop receiving payouts but will not lose their multiplier until this number is reached.
-# Set this value to 0 for a no-tolerance policy on missing payouts (multiplier reset at first offline payout).
-# Set this value to -1 to disable this feature.
-# Type: int
-# Default: 1
-allowed-offline-payouts-before-multiplier-reset:
-    default: 1
-    allow-override: true
-
-# Set the behavior of account interest multipliers when a player is offline for a payout cycle.
+# Set the behavior of account interest multipliers when all account holders are offline for an interest payout.
 # Setting this value to X causes the multiplier to decrease by X stages per payout cycle while the player is offline.
-# Setting this value to 0 causes the multiplier to freeze until the player comes back online. It will remain the same as long as it is not reset.
+# Setting this value to 0 causes the multiplier to freeze until the player comes back online.
+# Setting this value to -1 causes the multiplier to reset on offline payouts.
+# This will only trigger if neither the account owner nor any account co-owners are online at the time of the payout.
 # Type: int
 # Default: 0
 offline-multiplier-decrement:
@@ -101,8 +91,9 @@ offline-multiplier-decrement:
 # Set the behavior of account interest multipliers when the player makes a withdrawal.
 # Setting this value to X causes the multiplier to decrease by X stages per withdrawal.
 # Setting this value to 0 causes the multiplier not to be affected by withdrawals.
-# Setting this value to -1 causes the multiplier to reset on withdrawal.
-# This only affects withdrawals that bring the account balance below its balance at the previous payout cycle.
+# Setting this value to -1 causes the multiplier to reset on withdrawals.
+# This will only trigger for withdrawals that bring the account balance lower than the balance at the previous payout.
+# This means that a player can make a deposit and then a withdrawal of equal or lesser amount within the same payout cycle without ramifications.
 # Type: int
 # Default: 1
 withdrawal-multiplier-decrement:

@@ -109,11 +109,6 @@ public enum Message {
             "&6Account remaining offline payouts set to &b%NUMBER%&6.",
             Placeholder.NUMBER
     ),
-    ACCOUNT_SET_REMAINING_OFFLINE_RESET (
-            "A player sets the remaining offline payouts before multiplier reset at an account.",
-            "&6Account remaining offline payouts until multiplier reset set to &b%NUMBER%&6.",
-            Placeholder.NUMBER
-    ),
     ACCOUNT_CONFIRM_TRANSFER (
             "A player clicks an account to transfer it to another player and must click again to confirm.",
             "&6Click again to confirm transferring ownership of an account to %PLAYER%.",

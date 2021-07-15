@@ -17,7 +17,6 @@ public enum BankField implements BankingEntityField<Bank> {
     LOW_BALANCE_FEE ("LowBalanceFee"),
     INITIAL_INTEREST_DELAY ("InitialInterestDelay"),
     ALLOWED_OFFLINE_PAYOUTS ("AllowedOfflinePayouts"),
-    ALLOWED_OFFLINE_PAYOUTS_BEFORE_MULTIPLIER_RESET ("AllowedOfflinePayoutsBeforeMultiplierReset"),
     OFFLINE_MULTIPLIER_DECREMENT ("OfflineMultiplierDecrement"),
     WITHDRAWAL_MULTIPLIER_DECREMENT ("WithdrawalMultiplierDecrement"),
     PLAYER_BANK_ACCOUNT_LIMIT ("PlayerBankAccountLimit"),
@@ -38,6 +37,7 @@ public enum BankField implements BankingEntityField<Bank> {
 
     private final String databaseAttribute;
     private final Function<Bank, Object> getter;
+    private String path;
 
     BankField(String databaseAttribute) {
         this.databaseAttribute = databaseAttribute;
@@ -76,7 +76,7 @@ public enum BankField implements BankingEntityField<Bank> {
 
     @Override
     public String toString() {
-        return name().toLowerCase(Locale.ROOT).replace('_', '-');
+        return path != null ? path : (path = name().toLowerCase(Locale.ROOT).replace('_', '-'));
     }
 
 }

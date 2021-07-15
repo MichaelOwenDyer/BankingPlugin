@@ -83,7 +83,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
             case MULTIPLIER_STAGE:
 
-                value += isRelative ? account.getMultiplierStage() : 0;
+                intValue += isRelative ? account.getMultiplierStage() : 0;
                 account.setMultiplierStage(intValue);
 
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_MULTIPLIER,
@@ -96,7 +96,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
             case DELAY_UNTIL_NEXT_PAYOUT:
 
-                value += isRelative ? account.getDelayUntilNextPayout() : 0;
+                intValue += isRelative ? account.getDelayUntilNextPayout() : 0;
                 account.setDelayUntilNextPayout(intValue);
 
                 PLUGIN.debugf("%s has set the interest delay of account #%d to %d.",
@@ -108,25 +108,13 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
             case REMAINING_OFFLINE_PAYOUTS:
 
-                value += isRelative ? account.getRemainingOfflinePayouts() : 0;
+                intValue += isRelative ? account.getRemainingOfflinePayouts() : 0;
                 account.setRemainingOfflinePayouts(intValue);
 
                 PLUGIN.debugf("%s has set the remaining offline payouts of account #%d to %d.",
                         executor.getName(), account.getID(), account.getRemainingOfflinePayouts());
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE,
                         new Replacement(Placeholder.NUMBER, account::getRemainingOfflinePayouts)
-                ));
-                break;
-
-            case REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET:
-
-                value += isRelative ? account.getRemainingOfflinePayoutsUntilReset() : 0;
-                account.setRemainingOfflinePayoutsUntilReset(intValue);
-
-                PLUGIN.debugf("%s has set the remaining offline payouts until reset of account #%d to %d.",
-                        executor.getName(), account.getID(), account.getRemainingOfflinePayoutsUntilReset());
-                executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE_RESET,
-                        new Replacement(Placeholder.NUMBER, account::getRemainingOfflinePayoutsUntilReset)
                 ));
                 break;
 
@@ -140,7 +128,8 @@ public class AccountConfigure extends AccountCommand.SubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length != 2 || !sender.hasPermission(Permissions.ACCOUNT_CONFIGURE))
             return Collections.emptyList();
-        return Stream.of("multiplier", "delay-until-next-payout", "remaining-offline-payouts", "remaining-offline-payouts-until-reset")
+        return Stream.of(AccountField.MULTIPLIER_STAGE, AccountField.DELAY_UNTIL_NEXT_PAYOUT, AccountField.REMAINING_OFFLINE_PAYOUTS)
+                .map(AccountField::toString)
                 .filter(field -> Utils.containsIgnoreCase(field, args[1]))
                 .collect(Collectors.toList());
     }

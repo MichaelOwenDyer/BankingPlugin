@@ -163,7 +163,6 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	private List<String> getAccountRestrictionsLore() {
 		int delay = guiSubject.getDelayUntilNextPayout();
 		int remainingOffline = guiSubject.getRemainingOfflinePayouts();
-		int untilReset = guiSubject.getRemainingOfflinePayoutsUntilReset();
 		int offlineDecrement = guiSubject.getBank().getOfflineMultiplierDecrement().get();
 		return wordWrapAll(
 				(delay == 0 ?
@@ -174,17 +173,12 @@ public class AccountGUI extends SinglePageGUI<Account> {
 				"Account can generate interest for " + ChatColor.AQUA + remainingOffline + ChatColor.GRAY
 						+ String.format(" offline payout cycle%s.", remainingOffline == 1 ? "" : "s"),
 				"",
-				"Account multiplier will " + (untilReset < 0 ?
-						"not reset while offline." :
-						(untilReset == 0 ?
-								"reset immediately on an offline payout." :
-								"reset after " + ChatColor.AQUA + untilReset + ChatColor.GRAY
-										+ String.format(" offline payout cycle%s.", untilReset == 1 ? "" : "s"))),
-				"",
-				"Account multiplier will " + (offlineDecrement < 0 ?
-						"decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " stages for every offline payout." :
-						(offlineDecrement == 0 ?
-								" freeze while offline." : " reset"))
+				"Account multiplier will " + (offlineDecrement == 0 ? " freeze while offline." :
+						(offlineDecrement > 0 ?
+								"decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " stages for every offline payout." :
+								"reset upon the first offline payout."
+						)
+				)
 		);
 
 	}

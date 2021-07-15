@@ -59,8 +59,7 @@ public class InterestEventListener extends BankingPluginListener {
 				if (!account.allowNextPayout()) { // Account is frozen, pays no interest
 					accountRepo.update(account,
 							AccountField.DELAY_UNTIL_NEXT_PAYOUT,
-							AccountField.REMAINING_OFFLINE_PAYOUTS,
-							AccountField.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET
+							AccountField.REMAINING_OFFLINE_PAYOUTS
 					);
 					continue;
 				}
@@ -108,7 +107,6 @@ public class InterestEventListener extends BankingPluginListener {
 						AccountField.MULTIPLIER_STAGE,
 						AccountField.DELAY_UNTIL_NEXT_PAYOUT,
 						AccountField.REMAINING_OFFLINE_PAYOUTS,
-						AccountField.REMAINING_OFFLINE_PAYOUTS_UNTIL_RESET,
 						AccountField.PREVIOUS_BALANCE
 				);
 			}

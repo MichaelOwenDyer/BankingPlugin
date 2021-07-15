@@ -198,27 +198,16 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	private List<String> getOfflinePayoutsLore() {
 		int offlinePayouts = guiSubject.getAllowedOfflinePayouts().get();
 		int offlineDecrement = guiSubject.getOfflineMultiplierDecrement().get();
-		int beforeReset = guiSubject.getAllowedOfflinePayoutsBeforeReset().get();
 		Stream.Builder<String> lore = Stream.builder();
-		lore.add("While account holders are offline...");
-		lore.add("");
-		lore.add("accounts will " + (offlinePayouts == 0 ? ChatColor.RED + "not generate interest" + ChatColor.GRAY
+		lore.add("Accounts will " + (offlinePayouts == 0 ? ChatColor.RED + "not generate interest" + ChatColor.GRAY
 				: "generate interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
-				+ String.format(" time%s", offlinePayouts == 1 ? "" : "s")) + "."
+				+ String.format(" time%s", offlinePayouts == 1 ? "" : "s")) + " while account holders are offline."
 		);
-		if (beforeReset != 0) {
-			lore.add("");
-			lore.add("account multipliers will " + (offlineDecrement == 0
-					? ChatColor.AQUA + "freeze" + ChatColor.GRAY
-					: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " for every payout")
-				+ ".");
-		}
-		if (beforeReset > -1) {
-			lore.add("");
-			lore.add("Multipliers will reset " + (beforeReset == 0 ? ChatColor.RED + "before paying out interest" + ChatColor.GRAY
-					: "after generating interest " + ChatColor.AQUA + beforeReset + ChatColor.GRAY
-					+ String.format(" time%s", beforeReset == 1 ? "" : "s")) + ".");
-		}
+		lore.add("");
+		lore.add("Account multipliers will " + (offlineDecrement == 0
+				? ChatColor.AQUA + "freeze" + ChatColor.GRAY
+				: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " for every payout")
+			+ " while account holders are offline.");
 		return wordWrapAll(lore.build());
 	}
 

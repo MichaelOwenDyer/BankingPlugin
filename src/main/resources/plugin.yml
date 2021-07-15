@@ -150,7 +150,7 @@ permissions:
             bankingplugin.account.rename: true
 
     bankingplugin.account.configure:
-        description: Gives access to configuration of internal account values such as multiplier and interest delay.
+        description: Gives access to configuration of internal account values such as multiplier stage and interest delay.
         default: op
 
     bankingplugin.account.trust:

@@ -60,12 +60,6 @@ public class Config {
 	public static AllowedOfflinePayouts allowedOfflinePayouts = new AllowedOfflinePayouts();
 
     /**
-	 * The number of payouts a player is allowed to be offline for (but not
-	 * necessarily collect) before their multiplier is reset.
-	 **/
-	public static AllowedOfflinePayoutsBeforeReset allowedOfflinePayoutsBeforeReset = new AllowedOfflinePayoutsBeforeReset();
-
-    /**
 	 * The behavior of an offline player's multiplier.
 	 **/
 	public static OfflineMultiplierDecrement offlineMultiplierDecrement = new OfflineMultiplierDecrement();
@@ -331,8 +325,6 @@ public class Config {
 			initialInterestDelay.getAllowOverride(),
 			allowedOfflinePayouts,
 			allowedOfflinePayouts.getAllowOverride(),
-			allowedOfflinePayoutsBeforeReset,
-			allowedOfflinePayoutsBeforeReset.getAllowOverride(),
 			offlineMultiplierDecrement,
 			offlineMultiplierDecrement.getAllowOverride(),
 			withdrawalMultiplierDecrement,
