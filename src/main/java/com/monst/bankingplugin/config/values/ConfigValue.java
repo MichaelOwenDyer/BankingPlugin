@@ -8,7 +8,6 @@ import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class ConfigValue<T> implements IConfigValue<T> {
 
@@ -44,16 +43,25 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         if (isValueMissing()) {
             setDefault();
             PLUGIN.getLogger().info(String.format("Missing config value \"%s\" was added to the config.yml file.", path));
+            PLUGIN.debugf("Config value \"%s\" was missing, replacing with default: %s", path, format(defaultConfiguration));
             return lastSeenValue = defaultConfiguration;
         }
         try {
-            return lastSeenValue = Objects.requireNonNull(readFromFile());
+            PLUGIN.debugf("Fetching value \"%s\" from file.", path);
+            T valueFromFile = readFromFile();
+            PLUGIN.debugf("... Successfully fetched \"%s\"", format(valueFromFile));
+            return lastSeenValue = valueFromFile;
         } catch (CorruptedValueException e) {
-            if (e.hasReplacement())
+            PLUGIN.debugf("... Value was corrupted. Fixing...");
+            if (e.hasReplacement()) {
                 setT(e.getReplacement());
-            else
+                PLUGIN.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
+                PLUGIN.debugf("... Salvaged and set as \"%s\".", format(e.getReplacement()));
+            } else {
                 setDefault();
-            PLUGIN.getLogger().info(String.format("Revalidated corrupt config value \"%s\" in the config.yml file.", path));
+                PLUGIN.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
+                PLUGIN.debugf("... Reset value to default \"%s\".", format(defaultConfiguration));
+            }
             return lastSeenValue = e.getReplacement();
         }
     }
