@@ -2,7 +2,6 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -13,7 +12,6 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
-import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -130,13 +128,10 @@ public class BankGUI extends SinglePageGUI<Bank> {
 
 	private List<String> getStatisticsLore() {
 		return Arrays.asList(
+				"Total account value: " + Utils.formatAndColorize(guiSubject.getTotalValue()),
+				"Average account value: " + Utils.formatAndColorize(guiSubject.getAverageValue()),
 				"Number of accounts: " + ChatColor.AQUA + guiSubject.getAccounts().size(),
-				"Number of account holders: " + ChatColor.AQUA + guiSubject.getAccountsByOwner().keySet().size(),
-				"Total value: " + Utils.formatAndColorize(guiSubject.getTotalValue()),
-				"Average account value: " +
-						Utils.formatAndColorize(guiSubject.getAccounts().isEmpty()
-								? BigDecimal.ZERO
-								: QuickMath.divide(guiSubject.getTotalValue(), guiSubject.getAccounts().size())),
+				"Number of account holders: " + ChatColor.AQUA + guiSubject.getAccountHolders().size(),
 				"Equality score: " + getEqualityLore(guiSubject)
 		);
 	}

@@ -30,4 +30,11 @@ public interface IConfigDouble extends IConfigValue<Double> {
         return Utils.format(value);
     }
 
+    interface Absolute extends IConfigDouble {
+        @Override
+        default Double constrain(Double d) {
+            return Math.abs(d);
+        }
+    }
+
 }

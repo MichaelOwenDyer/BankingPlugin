@@ -24,9 +24,9 @@ public enum Placeholder {
     ERROR,
     LIMIT,
     PROPERTY,
-    PATTERN,
     VALUE,
     PREVIOUS_VALUE,
+    PATTERN,
     WORLD,
     COMMAND,
     VERSION;

@@ -1,9 +1,11 @@
 package com.monst.bankingplugin.config.values.overridable;
 
-public class AllowedOfflinePayoutsBeforeReset extends OverridableInteger {
+import com.monst.bankingplugin.config.values.IConfigInteger;
+
+public class AllowedOfflinePayoutsBeforeReset extends OverridableInteger implements IConfigInteger.Absolute {
 
     public AllowedOfflinePayoutsBeforeReset() {
-        super("allowed-offline-payouts-before-reset", 1);
+        super("allowed-offline-payouts-before-multiplier-reset", 1);
     }
 
 }

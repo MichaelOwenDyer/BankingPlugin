@@ -9,11 +9,12 @@ import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.sql.logging.AccountInterest;
 import com.monst.bankingplugin.sql.logging.BankIncome;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.Pair;
+import com.monst.bankingplugin.utils.PayrollOffice;
+import com.monst.bankingplugin.utils.QuickMath;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
-import org.mariuszgromada.math.mxparser.Argument;
-import org.mariuszgromada.math.mxparser.Expression;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -117,15 +118,13 @@ public class InterestEventListener extends BankingPluginListener {
 
 		banksAndAccounts.forEach((bank, accounts) -> {
 
-			Argument[] args = new Argument[]{
-					new Argument("x", bank.getTotalValue().doubleValue()),
-					new Argument("n", bank.getAccountsByOwner().size()),
-					new Argument("a", bank.getAccounts().size()),
-					new Argument("g", bank.getGiniCoefficient())
-			};
-
-			Expression revenueExpression = new Expression(Config.bankRevenueFunction.get(), args);
-			BigDecimal revenue = QuickMath.scale(BigDecimal.valueOf(revenueExpression.calculate()));
+			BigDecimal revenue = Config.bankRevenueFunction.evaluate(
+					bank.getTotalValue().doubleValue(),
+					bank.getAverageValue().doubleValue(),
+					bank.getAccounts().size(),
+					bank.getAccountHolders().size(),
+					bank.getGiniCoefficient()
+			);
 
 			if (revenue.signum() != 0)
 				revenueTracker.put(bank, revenue); // Bank will receive revenue

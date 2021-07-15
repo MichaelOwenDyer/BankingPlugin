@@ -7,16 +7,18 @@
 # %ACCOUNT_BALANCE = An account balance.
 # %BANK_NAME% = The (possibly colored) name of a bank.
 # %ACCOUNT_NAME% = The (possibly colored) name of an account.
+# %NAME% = A (possibly colored) name.
 # %PLAYER% = The name of a player.
 # %NUMBER_OF_ACCOUNTS% = An integer number of accounts.
 # %NUMBER_OF_BANKS% = An integer number of banks.
 # %NUMBER% = A generic integer.
-# %STRING% = Something that was typed by the player in a command.
+# %INPUT% = Something that was typed by the player in a command.
 # %ERROR% = An error message.
 # %LIMIT% = An integer bank or account limit.
 # %PROPERTY% = A property in a configuration context.
 # %VALUE% = The value of a property in a configuration context.
 # %PREVIOUS_VALUE% = The previous value of a property in a configuration context, before it was changed.
+# %PATTERN% = A regular expression.
 # %COMMAND% = The custom name of one of the three BankingPlugin commands.
 # %VERSION% = The plugin version.
 #
@@ -66,8 +68,8 @@ message.account-confirm-remove-all=&6You are about to remove &b%NUMBER_OF_ACCOUN
 message.all-accounts-removed=&6Successfully removed &b%NUMBER_OF_ACCOUNTS% &6account(s).
 
 # Scenario: A player attempts to open a GUI of an account with a specific ID, but there is no account with that ID.
-# Available placeholders: %STRING%
-message.account-not-found=&cCould not find account with ID &b%STRING%&c.
+# Available placeholders: %INPUT%
+message.account-not-found=&cCould not find account with ID &b%INPUT%&c.
 
 # Scenario: A player attempts to list the accounts of a player who does not have any accounts.
 # Available placeholders:
@@ -89,11 +91,11 @@ message.account-limit-reached=&cYou are not allowed to create any more accounts!
 # Available placeholders: %ACCOUNT_NAME%
 message.account-renamed=&6Account renamed to &7%ACCOUNT_NAME%&6.
 
-# Scenario: An admin sets an account multiplier.
+# Scenario: An admin sets the multiplier of an account.
 # Available placeholders: %MULTIPLIER%, %MULTIPLIER_STAGE%
 message.account-set-multiplier=&6Account multiplier set to &b%MULTIPLIER%x&6.
 
-# Scenario: An admin sets an account interest delay.
+# Scenario: An admin sets the interest delay of an account.
 # Available placeholders: %NUMBER%
 message.account-set-interest-delay=&6Account interest delay set to &b%NUMBER%&6.
 
@@ -189,13 +191,13 @@ message.bank-create-fee-paid=&6You have been charged &a%PRICE% &6to create a ban
 # Available placeholders:
 message.bank-select-region=&cYou must select a WorldEdit region or specify coordinates manually.
 
+# Scenario: A player attempts to select a bank, but neither WorldEdit nor GriefPrevention is enabled.
+# Available placeholders:
+message.cant-select-bank=&cWorldEdit must be enabled to select a bank.
+
 # Scenario: A player attempts to create a bank without specifying coordinates in the command and WorldEdit is not enabled.
 # Available placeholders:
 message.worldedit-not-enabled=&cWorldEdit is not currently enabled. Please enter coordinates manually.
-
-# Scenario: A player attempts to create a bank but provides invalid coordinates in the command arguments.
-# Available placeholders:
-message.bank-coordinate-parse-error=&cCould not parse coordinates in command arguments.
 
 # Scenario: A player attempts to create a bank in world that is disabled in the config.
 # Available placeholders: %WORLD%
@@ -226,8 +228,8 @@ message.bank-removed=&6Bank %BANK_NAME% and %NUMBER_OF_ACCOUNTS% account(s) were
 message.all-banks-removed=&6Successfully removed &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).
 
 # Scenario: A player attempts to open a GUI of a bank with a specified name or ID, but no bank could be found.
-# Available placeholders: %STRING%
-message.bank-not-found=&cCould not find bank with the name or ID "%STRING%".
+# Available placeholders: %INPUT%
+message.bank-not-found=&cCould not find bank with the name or ID "%INPUT%".
 
 # Scenario: A player attempts to list all banks, but there are no banks on the server.
 # Available placeholders:
@@ -282,36 +284,52 @@ message.bank-property-not-overridable=&cThat property is not currently overridab
 message.bank-selected=&6Bank &7%BANK_NAME% &6was selected with WorldEdit.
 
 # Scenario: A player attempts to set a configuration property to a number, but provided a string that was not a number.
-# Available placeholders: %STRING%
-message.not-a-number=&c"%STRING%" is not a number.
+# Available placeholders: %INPUT%
+message.not-a-number=&c"%INPUT%" is not a number.
 
 # Scenario: A player attempts to set a configuration property to an integer, but provided a string that was not an integer.
-# Available placeholders: %STRING%
-message.not-an-integer=&c"%STRING%" is not an integer.
+# Available placeholders: %INPUT%
+message.not-an-integer=&c"%INPUT%" is not an integer.
+
+# Scenario: A player attempts to set a configuration property to a boolean, but provided a string that was not "true" or "false".
+# Available placeholders: %INPUT%
+message.not-a-boolean=&c"%INPUT%" is not a boolean.
 
 # Scenario: A player attempts to set a configuration property to a material, but provided a string that was not a material.
-# Available placeholders: %STRING%
-message.not-a-material=&c"%STRING%" is not a material.
+# Available placeholders: %INPUT%
+message.not-a-material=&c"%INPUT%" is not a material.
+
+# Scenario: A player attempts to set a configuration property to a regular expression, but provided a string that was not a valid pattern.
+# Available placeholders: %INPUT%
+message.not-a-pattern=&c"%INPUT%" is not a valid regular expression.
+
+# Scenario: A player attempts to set a configuration property to a mathematical function, but provided a string that was not a valid function.
+# Available placeholders: %INPUT%
+message.not-a-function=&c"%INPUT%" is not a valid function.
+
+# Scenario: A player attempts to set a configuration property to a time, but provided a string that was not a time.
+# Available placeholders: %INPUT%
+message.not-a-time=&c"%INPUT%" is not a time.
+
+# Scenario: A player attempts to set a configuration property to a world, but provided a string that was not the name of a world.
+# Available placeholders: %INPUT%
+message.not-a-world=&c"%INPUT%" is not a world.
 
 # Scenario: A player attempts to set a configuration property, but provided a string that was not a property.
-# Available placeholders: %STRING%
-message.not-a-property=&c"%STRING%" is not a property.
-
-# Scenario: A player attempts to set a configuration property to a list, but provided a string that was not a list.
-# Available placeholders: %STRING%
-message.not-a-list=&c"%STRING%" is not a parsable list.
+# Available placeholders: %INPUT%
+message.not-a-property=&c"%INPUT%" is not a property.
 
 # Scenario: A player attempts to create or rename a bank with a name already in use by another bank.
-# Available placeholders: %BANK_NAME%
+# Available placeholders: %NAME%
 message.name-not-unique=&cA bank with that name already exists.
 
-# Scenario: A player attempts to create or rename a bank with a name that does not match the name-regex pattern in the config.
-# Available placeholders: %BANK_NAME%
-message.name-not-allowed=&cName is not allowed.
+# Scenario: A player attempts to create or rename a bank or account with a name that does not match the name-regex pattern in the config.
+# Available placeholders: %NAME%, %PATTERN%
+message.name-not-allowed=&cThat name is not allowed.
 
 # Scenario: A player renames a bank to the same name.
-# Available placeholders: %BANK_NAME%
-message.name-not-changed=&cThe bank name was not changed.
+# Available placeholders: %NAME%
+message.name-not-changed=&cThe name was not changed.
 
 # Scenario: A player renames a bank to a different name.
 # Available placeholders: %BANK_NAME%
@@ -327,7 +345,7 @@ message.low-balance-fee-received=&6You received &a%AMOUNT% &cin low balance fees
 
 # Scenario: A bank owner receives some bank revenue.
 # Available placeholders: %AMOUNT%, %NUMBER_OF_BANKS%
-message.bank-revenue=&6You received &a%AMOUNT% &6in bank revenue from &a%NUMBER_OF_BANKS% &6bank(s).
+message.bank-revenue=&6You received &a%AMOUNT% &6in bank revenue from &b%NUMBER_OF_BANKS% &6bank(s).
 
 # Scenario: A bank owner makes a profit from their bank.
 # Available placeholders: %AMOUNT%, %BANK_NAME%
@@ -378,8 +396,8 @@ message.must-be-owner=&cYou must be the owner to do that.
 message.error-occurred=&cAn error occurred: %ERROR%
 
 # Scenario: A player references another player in command arguments who either does not exist or who has never played on the server before.
-# Available placeholders: %STRING%
-message.player-not-found=&cNo player was found with the name "%STRING%".
+# Available placeholders: %INPUT%
+message.player-not-found=&cNo player was found with the name "%INPUT%".
 
 # Scenario: A player attempts to create an account at a bank, but has reached their limit for that specific bank.
 # Available placeholders: %BANK_NAME%, %LIMIT%
@@ -423,7 +441,7 @@ message.click-account-rename=&6Click an account chest to rename it.
 
 # Scenario: A player runs the /account configure command and must click an account chest.
 # Available placeholders: %PROPERTY%, %VALUE%
-message.click-account-set=&6Click an account chest to set &b%PROPERTY%&6 to &b%VALUE%&6.
+message.click-account-configure=&6Click an account chest to set &b%PROPERTY%&6 to &b%VALUE%&6.
 
 # Scenario: A player runs the /account transfer command and must click an account chest.
 # Available placeholders: %PLAYER%
@@ -535,7 +553,7 @@ message.no-permission-account-contract-protected=&cYou do not have permission to
 
 # Scenario: A player attempts to set the multiplier, interest delay, etc. of an account without permission.
 # Available placeholders:
-message.no-permission-account-set=&cYou do not have permission to set internal account values.
+message.no-permission-account-configure=&cYou do not have permission to set internal account values.
 
 # Scenario: A player attempts to create a bank without permission.
 # Available placeholders:
@@ -663,7 +681,7 @@ message.command-usage-account-remove-all=&a/%COMMAND% removeall &6- Remove all a
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-account-set=&a/%COMMAND% set [property] [value] &6- Set an account value.
+message.command-usage-account-configure=&a/%COMMAND% configure [property] [value] &6- Configure an account value.
 
 # Scenario:
 # Available placeholders: %COMMAND%
@@ -731,7 +749,7 @@ message.command-usage-bank-rename=&a/%COMMAND% rename &6- Rename a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-bank-set=&a/%COMMAND% set &6- Configure a bank.
+message.command-usage-bank-configure=&a/%COMMAND% configure &6- Configure a bank.
 
 # Scenario:
 # Available placeholders: %COMMAND%
@@ -751,7 +769,7 @@ message.command-usage-reload=&a/%COMMAND% reload &6- Reload BankingPlugin.
 
 # Scenario:
 # Available placeholders: %COMMAND%
-message.command-usage-config=&a/%COMMAND% config [set|add|remove] [property] [value] &6- Configure BankingPlugin.
+message.command-usage-config=&a/%COMMAND% configure [property] [value] &6- Configure BankingPlugin.
 
 # Scenario:
 # Available placeholders: %COMMAND%
@@ -773,6 +791,10 @@ message.bank-command-desc=Create, manage, and remove banks.
 # Available placeholders:
 message.control-command-desc=Manage the plugin.
 
+# Scenario: An admin tries to configure a property in the config that does not exist.
+# Available placeholders: %INPUT%
+message.not-a-config-value=&c"%INPUT%" is not a configuration property.
+
 # Scenario: An admin adds a value to a property in the config.
 # Available placeholders: %PROPERTY%, %VALUE%
 message.config-value-added=&6Added &a%VALUE% &6to &a%PROPERTY%&6.
@@ -784,6 +806,10 @@ message.config-value-removed=&6Removed &a%VALUE% &6from &a%PROPERTY%&6.
 # Scenario: An admin sets the value of a property in the config.
 # Available placeholders: %PROPERTY%, %VALUE%, %PREVIOUS_VALUE%
 message.config-value-set=&6Changed &a%PROPERTY% &6from &a%PREVIOUS_VALUE% &6to &a%VALUE%&6.
+
+# Scenario: An admin sets the value of a property in the config, but a restart is required before the changes can take effect.
+# Available placeholders: %PROPERTY%
+message.restart-required=&cA restart is required before changes to that property can take effect.
 
 # Scenario: An admin triggers an interest payout.
 # Available placeholders: %NUMBER_OF_BANKS%
@@ -812,19 +838,3 @@ message.update-checking=&6&lChecking for updates...
 # Scenario: An admin is notified that an error occurred while checking for updates.
 # Available placeholders:
 message.update-error=&c&lError while checking for updates.
-
-# Scenario: A player attempts to set a configuration property to a time, but provided a string that was not a time.
-# Available placeholders: %STRING%
-message.not-a-time=&c"%STRING%" is not a time.
-
-# Scenario: A player attempts to set a configuration property to a world, but provided a string that was not the name of a world.
-# Available placeholders: %STRING%
-message.not-a-world=&c"%STRING%" is not a world.
-
-# Scenario:
-# Available placeholders: %COMMAND%
-message.command-usage-bank-configure=&a/%COMMAND% configure &6- Configure a bank.
-
-# Scenario: An admin tries to configure a property in the config that does not exist.
-# Available placeholders: %STRING%
-message.not-a-config-value=&c"%STRING%" is not a configuration property.

@@ -360,4 +360,11 @@ public class Config {
 				.orElse(null);
 	}
 
+	public static void reload() {
+		for (ConfigValue<?> configValue : VALUES) {
+			configValue.forgetLastSeen();
+			configValue.get();
+		}
+	}
+
 }

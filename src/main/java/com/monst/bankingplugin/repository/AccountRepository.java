@@ -175,9 +175,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 	public BigDecimal appraise(ItemStack[] contents) {
 		BigDecimal sum = BigDecimal.ZERO;
 		for (ItemStack item : contents) {
-			if (item == null)
-				continue;
-			if (Config.blacklist.get().contains(item.getType()))
+			if (Config.blacklist.contains(item))
 				continue;
 			BigDecimal itemValue = getWorth(item);
 			if (item.getItemMeta() instanceof BlockStateMeta) {
@@ -185,9 +183,7 @@ public class AccountRepository extends Observable implements Repository<Account,
                 if (im.getBlockState() instanceof ShulkerBox) {
                 	ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
                 	for (ItemStack innerItem : shulkerBox.getInventory().getContents()) {
-                		if (innerItem == null)
-                			continue;
-                		if (Config.blacklist.get().contains(innerItem.getType()))
+                		if (Config.blacklist.contains(innerItem))
 							continue;
 						BigDecimal innerItemValue = getWorth(innerItem);
 						if (innerItemValue.signum() != 0)

@@ -1,9 +1,11 @@
 package com.monst.bankingplugin.config.values.overridable;
 
-public class MinimumBalance extends OverridableDouble {
+import com.monst.bankingplugin.config.values.IConfigDouble;
+
+public class MinimumBalance extends OverridableDouble implements IConfigDouble.Absolute {
 
     public MinimumBalance() {
-        super("minimum-balance", 1000d);
+        super("minimum-account-balance", 1000d);
     }
 
 }

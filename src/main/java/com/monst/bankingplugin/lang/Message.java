@@ -220,10 +220,6 @@ public enum Message {
             "A player attempts to create a bank without specifying coordinates in the command and WorldEdit is not enabled.",
             "&cWorldEdit is not currently enabled. Please enter coordinates manually."
     ),
-    BANK_COORDINATE_PARSE_ERROR (
-            "A player attempts to create a bank but provides invalid coordinates in the command arguments.",
-            "&cCould not parse coordinates in command arguments."
-    ),
     WORLD_DISABLED (
             "A player attempts to create a bank in world that is disabled in the config.",
             "&cBank creation is disabled in this world.",
@@ -251,7 +247,7 @@ public enum Message {
     ),
     BANK_REMOVED (
             "A player removes a bank and all its accounts.",
-            "&6Bank %BANK_NAME% and %NUMBER_OF_ACCOUNTS% account(s) were removed.",
+            "&6Bank &b%BANK_NAME% &6and &b%NUMBER_OF_ACCOUNTS% &6account(s) were removed.",
             Placeholder.BANK_NAME, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     ALL_BANKS_REMOVED (
@@ -329,42 +325,47 @@ public enum Message {
     ),
     NOT_A_NUMBER (
             "A player attempts to set a configuration property to a number, but provided a string that was not a number.",
-            "&c\"%STRING%\" is not a number.",
+            "&c\"%INPUT%\" is not a number.",
             Placeholder.INPUT
     ),
     NOT_AN_INTEGER (
             "A player attempts to set a configuration property to an integer, but provided a string that was not an integer.",
-            "&c\"%STRING%\" is not an integer.",
+            "&c\"%INPUT%\" is not an integer.",
             Placeholder.INPUT
     ),
     NOT_A_BOOLEAN (
             "A player attempts to set a configuration property to a boolean, but provided a string that was not \"true\" or \"false\".",
-            "&c\"%STRING%\" is not a boolean.",
+            "&c\"%INPUT%\" is not a boolean.",
             Placeholder.INPUT
     ),
     NOT_A_MATERIAL (
             "A player attempts to set a configuration property to a material, but provided a string that was not a material.",
-            "&c\"%STRING%\" is not a material.",
+            "&c\"%INPUT%\" is not a material.",
             Placeholder.INPUT
     ),
     NOT_A_PATTERN (
             "A player attempts to set a configuration property to a regular expression, but provided a string that was not a valid pattern.",
-            "&c\"%STRING%\" is not a valid regular expression.",
+            "&c\"%INPUT%\" is not a valid regular expression.",
+            Placeholder.INPUT
+    ),
+    NOT_A_FUNCTION (
+            "A player attempts to set a configuration property to a mathematical function, but provided a string that was not a valid function.",
+            "&c\"%INPUT%\" is not a valid function.",
             Placeholder.INPUT
     ),
     NOT_A_TIME (
             "A player attempts to set a configuration property to a time, but provided a string that was not a time.",
-            "&c\"%STRING%\" is not a time.",
+            "&c\"%INPUT%\" is not a time.",
             Placeholder.INPUT
     ),
     NOT_A_WORLD (
             "A player attempts to set a configuration property to a world, but provided a string that was not the name of a world.",
-            "&c\"%STRING%\" is not a world.",
+            "&c\"%INPUT%\" is not a world.",
             Placeholder.INPUT
     ),
     NOT_A_PROPERTY (
             "A player attempts to set a configuration property, but provided a string that was not a property.",
-            "&c\"%STRING%\" is not a property.",
+            "&c\"%INPUT%\" is not a property.",
             Placeholder.INPUT
     ),
     NAME_NOT_UNIQUE (
@@ -399,7 +400,7 @@ public enum Message {
     ),
     BANK_REVENUE (
             "A bank owner receives some bank revenue.",
-            "&6You received &a%AMOUNT% &6in bank revenue from &a%NUMBER_OF_BANKS% &6bank(s).",
+            "&6You received &a%AMOUNT% &6in bank revenue from &b%NUMBER_OF_BANKS% &6bank(s).",
             Placeholder.AMOUNT, Placeholder.NUMBER_OF_BANKS
     ),
     BANK_PROFIT (
@@ -463,7 +464,7 @@ public enum Message {
     ),
     PLAYER_NOT_FOUND (
             "A player references another player in command arguments who either does not exist or who has never played on the server before.",
-            "&cNo player was found with the name \"%STRING%\".",
+            "&cNo player was found with the name \"%INPUT%\".",
             Placeholder.INPUT
     ),
     ACCOUNT_LIMIT_AT_BANK_REACHED (
@@ -896,7 +897,7 @@ public enum Message {
     ),
     NOT_A_CONFIG_VALUE (
             "An admin tries to configure a property in the config that does not exist.",
-            "&c\"%STRING%\" is not a configuration property.",
+            "&c\"%INPUT%\" is not a configuration property.",
             Placeholder.INPUT
     ),
     CONFIG_VALUE_ADDED (

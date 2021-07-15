@@ -48,14 +48,13 @@ public class ControlPayInterest extends ControlCommand.SubCommand {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
-        InterestEvent event = new InterestEvent(sender, banks);
-        event.fire();
-        if (event.isCancelled()) {
-            PLUGIN.debug("Interest event cancelled");
-            return true;
-        }
         PLUGIN.debugf("%s has triggered an interest payment at %s", sender.getName(), Utils.map(banks, Bank::getName));
         sender.sendMessage(LangUtils.getMessage(Message.INTEREST_PAYOUT_TRIGGERED, new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size)));
+
+        InterestEvent event = new InterestEvent(sender, banks);
+        event.fire();
+        if (event.isCancelled())
+            PLUGIN.debug("Interest event cancelled");
         return true;
     }
 

@@ -1,14 +1,11 @@
 package com.monst.bankingplugin.config.values.simple;
 
-public class MinimumBankVolume extends SimpleInteger {
+import com.monst.bankingplugin.config.values.IConfigInteger;
+
+public class MinimumBankVolume extends SimpleInteger implements IConfigInteger.Absolute {
 
     public MinimumBankVolume() {
         super("bank-size-limits.minimum", 125);
-    }
-
-    @Override
-    public Integer constrain(Integer i) {
-        return Math.max(i, 0);
     }
 
 }

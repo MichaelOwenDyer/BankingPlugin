@@ -23,4 +23,11 @@ public interface IConfigInteger extends IConfigValue<Integer> {
         return i;
     }
 
+    interface Absolute extends IConfigInteger {
+        @Override
+        default Integer constrain(Integer i) {
+            return Math.abs(i);
+        }
+    }
+
 }

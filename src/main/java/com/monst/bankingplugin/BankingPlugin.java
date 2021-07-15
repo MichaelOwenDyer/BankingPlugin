@@ -95,8 +95,7 @@ public class BankingPlugin extends JavaPlugin {
         worldGuard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard != null) {
 			Optional<IWrappedFlag<WrappedState>> createBankFlag = WorldGuardWrapper.getInstance()
-					.registerFlag("create-bank", WrappedState.class,
-							Config.worldGuardDefaultFlagValue.get() ? WrappedState.ALLOW : WrappedState.DENY);
+					.registerFlag("create-bank", WrappedState.class, Config.worldGuardDefaultFlagValue.getWrappedState());
 
 			debug("WorldGuard flag present: " + createBankFlag.isPresent());
         }
@@ -321,6 +320,7 @@ public class BankingPlugin extends JavaPlugin {
 	public void reload(Callback<FetchResult> callback) {
 		debug("Reloading...");
 		reloadLanguageConfig();
+		Config.reload();
 		fetchBankingEntities(callback);
 	}
 

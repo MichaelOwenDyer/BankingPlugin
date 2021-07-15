@@ -1,13 +1,12 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
-import com.monst.bankingplugin.exceptions.parse.DoubleParseException;
 import org.bukkit.configuration.MemoryConfiguration;
 
 public interface IConfigString extends IConfigValue<String> {
 
     @Override
-    default String parse(String input) throws DoubleParseException {
+    default String parse(String input) {
         return input;
     }
 

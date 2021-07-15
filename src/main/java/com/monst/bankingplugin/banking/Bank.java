@@ -181,7 +181,16 @@ public class Bank extends BankingEntity {
 	 * @see Account#getBalance()
 	 */
 	public BigDecimal getTotalValue() {
-		return getAccounts().stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+		return accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	/**
+	 * Calculates the average of all {@link Account} balances at this bank.
+	 * @return the average value of the accounts at this bank
+	 * @see Account#getBalance()
+	 */
+	public BigDecimal getAverageValue() {
+		return accounts.isEmpty() ? BigDecimal.ZERO : QuickMath.divide(getTotalValue(), accounts.size());
 	}
 
 	/**
@@ -189,13 +198,12 @@ public class Bank extends BankingEntity {
 	 * all accounts at this bank grouped by owner
 	 */
 	public Map<OfflinePlayer, List<Account>> getAccountsByOwner() {
-		return getAccounts().stream().collect(Collectors.groupingBy(Account::getOwner));
+		return accounts.stream().collect(Collectors.groupingBy(Account::getOwner));
 	}
 
 	/**
 	 * @return a {@link Map<OfflinePlayer>} containing
 	 * all account owners at this bank and their total account balances
-	 * @see #getAccountsByOwner()
 	 */
 	public Map<OfflinePlayer, BigDecimal> getBalancesByOwner() {
 		return getAccountsByOwner().entrySet().stream().collect(
@@ -209,11 +217,18 @@ public class Bank extends BankingEntity {
 	}
 
 	/**
+	 * @return a {@link Set<OfflinePlayer>} containing all account holders at this bank.
+	 */
+	public Set<OfflinePlayer> getAccountHolders() {
+		return accounts.stream().map(Account::getOwner).collect(Collectors.toSet());
+	}
+
+	/**
 	 * @return a {@link Set<OfflinePlayer>} containing all account owners
 	 * and account co-owners at this bank.
 	 */
 	public Set<OfflinePlayer> getCustomers() {
-		return getAccounts().stream()
+		return accounts.stream()
 				.map(Account::getTrustedPlayers)
 				.flatMap(Collection::stream)
 				.collect(Collectors.toSet());
@@ -354,12 +369,12 @@ public class Bank extends BankingEntity {
 
 	/**
 	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
-	 * inequality among all n accounts at the bank.
+	 * (in)equality among all n accounts at the bank.
 	 *
 	 * @return G = ( 2 * (sum(i...n) i * n[i].getBalance()) / n * (sum(i...n) n[i].getBalance()) ) - ( n + 1 / n )
 	 */
 	public double getGiniCoefficient() {
-		if (getAccounts().isEmpty())
+		if (accounts.isEmpty())
 			return 0;
 		BigDecimal totalValue = getTotalValue();
 		if (totalValue.signum() == 0)
@@ -402,7 +417,7 @@ public class Bank extends BankingEntity {
 	}
 
 	public void notifyAccountObservers() {
-		getAccounts().forEach(Account::notifyObservers);
+		accounts.forEach(Account::notifyObservers);
 	}
 
 	@Override
@@ -420,9 +435,9 @@ public class Bank extends BankingEntity {
 				"Initial payout delay: " + ChatColor.AQUA + getInitialInterestDelay().getFormatted(),
 				"Minimum balance: " + ChatColor.GREEN + getMinimumBalance().getFormatted(),
 						" (" + ChatColor.RED + getLowBalanceFee().getFormatted() + ChatColor.GRAY + " fee)",
-				"Accounts: " + ChatColor.AQUA + getAccounts().size(),
-				"Total value: " + Utils.formatAndColorize(getTotalValue()),
-				"Average account value: " + Utils.formatAndColorize(QuickMath.divide(getTotalValue(), getAccounts().size())),
+				"Accounts: " + ChatColor.AQUA + accounts.size(),
+				"Total account value: " + Utils.formatAndColorize(getTotalValue()),
+				"Average account value: " + Utils.formatAndColorize(getAverageValue()),
 				"Equality score: " + getGiniCoefficient(),
 				"Location: " + ChatColor.AQUA + getRegion().getCoordinates()
 		).map(s -> ChatColor.GRAY + s).collect(Collectors.joining(", "));

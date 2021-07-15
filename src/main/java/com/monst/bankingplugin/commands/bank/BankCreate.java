@@ -80,7 +80,7 @@ public class BankCreate extends BankCommand.SubCommand {
 
         if (Config.disabledWorlds.get().contains(bankRegion.getWorld())) {
             PLUGIN.debug("BankingPlugin is disabled in world " + bankRegion.getWorld().getName());
-            p.sendMessage(LangUtils.getMessage(Message.WORLD_DISABLED));
+            p.sendMessage(LangUtils.getMessage(Message.WORLD_DISABLED, new Replacement(Placeholder.WORLD, bankRegion.getWorld().getName())));
             return true;
         }
 
