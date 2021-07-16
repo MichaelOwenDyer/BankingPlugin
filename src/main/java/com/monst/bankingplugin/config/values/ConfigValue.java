@@ -43,24 +43,17 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         if (isValueMissing()) {
             setDefault();
             PLUGIN.getLogger().info(String.format("Missing config value \"%s\" was added to the config.yml file.", path));
-            PLUGIN.debugf("Config value \"%s\" was missing, replacing with default: %s", path, format(defaultConfiguration));
             return lastSeenValue = defaultConfiguration;
         }
         try {
-            PLUGIN.debugf("Fetching value \"%s\" from file.", path);
-            T valueFromFile = readFromFile();
-            PLUGIN.debugf("... Successfully fetched \"%s\"", format(valueFromFile));
-            return lastSeenValue = valueFromFile;
+            return lastSeenValue = readFromFile();
         } catch (CorruptedValueException e) {
-            PLUGIN.debugf("... Value was corrupted. Fixing...");
             if (e.hasReplacement()) {
                 setT(e.getReplacement());
                 PLUGIN.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
-                PLUGIN.debugf("... Salvaged and set as \"%s\".", format(e.getReplacement()));
             } else {
                 setDefault();
                 PLUGIN.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
-                PLUGIN.debugf("... Reset value to default \"%s\".", format(defaultConfiguration));
             }
             return lastSeenValue = e.getReplacement();
         }
