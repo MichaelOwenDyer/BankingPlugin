@@ -5,19 +5,30 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 
+import java.text.NumberFormat;
+import java.text.ParsePosition;
 import java.time.LocalTime;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class Parser {
 
+    private static final NumberFormat LOCAL_FORMAT = NumberFormat.getNumberInstance(Locale.getDefault());
+
     public static int parseInt(String s) throws IntegerParseException {
         return wrapRuntimeException(() -> Integer.parseInt(s), () -> new IntegerParseException(s));
     }
 
-    public static double parseDouble(String s) throws DoubleParseException {
-        return wrapRuntimeException(() -> Double.parseDouble(s), () -> new DoubleParseException(s));
+    public static double parseDouble(String input) throws DoubleParseException {
+        input = input.replace("$", "");
+        ParsePosition parsePosition = new ParsePosition(0);
+        Number number = LOCAL_FORMAT.parse(input, parsePosition);
+        if (parsePosition.getIndex() != input.length()) {
+            throw new DoubleParseException(input);
+        }
+        return number.doubleValue();
     }
 
     public static boolean parseBoolean(String s) throws BooleanParseException {
