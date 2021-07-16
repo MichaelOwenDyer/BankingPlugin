@@ -131,7 +131,7 @@ public abstract class ClickType {
 		ClickType.setClickType(p, new RenameClickType(newName));
 	}
 
-	public static void setConfigureClickType(Player p, AccountField field, String value) {
+	public static void setConfigureClickType(Player p, AccountField field, int value) {
     	ClickType.setClickType(p, new ConfigureClickType(field, value));
 	}
 
@@ -255,9 +255,9 @@ public abstract class ClickType {
 	private static class ConfigureClickType extends ClickType {
 
     	private final AccountField field;
-    	private final String value;
+    	private final int value;
 
-		private ConfigureClickType(AccountField field, String value) {
+		private ConfigureClickType(AccountField field, int value) {
 			super(EClickType.CONFIGURE);
 			this.field = field;
 			this.value = value;

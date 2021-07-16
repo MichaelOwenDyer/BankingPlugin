@@ -10,9 +10,9 @@ import org.bukkit.entity.Player;
 public class AccountConfigureEvent extends SingleAccountEvent {
 
     private final AccountField field;
-    private final String newValue;
+    private final Object newValue;
 
-    public AccountConfigureEvent(Player player, Account account, AccountField field, String newValue) {
+    public AccountConfigureEvent(Player player, Account account, AccountField field, Object newValue) {
         super(player, account);
         this.field = field;
         this.newValue = newValue;
@@ -22,7 +22,7 @@ public class AccountConfigureEvent extends SingleAccountEvent {
         return field;
     }
 
-    public String getNewValue() {
+    public Object getNewValue() {
         return newValue;
     }
 

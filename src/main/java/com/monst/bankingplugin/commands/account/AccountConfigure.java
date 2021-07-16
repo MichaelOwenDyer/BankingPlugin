@@ -3,11 +3,13 @@ package com.monst.bankingplugin.commands.account;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.events.account.AccountConfigureEvent;
+import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
@@ -57,11 +59,11 @@ public class AccountConfigure extends AccountCommand.SubCommand {
             return true;
         }
 
-        String value;
+        int value;
         try {
-            value = "" + Integer.parseInt(args[2]);
-        } catch (NumberFormatException e) {
-            executor.sendMessage(LangUtils.getMessage(Message.NOT_A_NUMBER, new Replacement(Placeholder.INPUT, args[2])));
+            value = Parser.parseInt(args[2]);
+        } catch (IntegerParseException e) {
+            executor.sendMessage(e.getLocalizedMessage());
             return true;
         }
 
@@ -73,18 +75,14 @@ public class AccountConfigure extends AccountCommand.SubCommand {
         return true;
     }
 
-    public static void configure(Player executor, Account account, AccountField field, String value) {
+    public static void configure(Player executor, Account account, AccountField field, int value) {
         ClickType.removeClickType(executor);
-
-        int intValue = Integer.parseInt(value);
-        boolean isRelative = value.startsWith("+") || value.startsWith("-");
 
         switch (field) {
 
             case MULTIPLIER_STAGE:
 
-                intValue += isRelative ? account.getMultiplierStage() : 0;
-                account.setMultiplierStage(intValue);
+                account.setMultiplierStage(value);
 
                 executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_MULTIPLIER,
                         new Replacement(Placeholder.MULTIPLIER, account::getRealMultiplier),
@@ -96,8 +94,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
             case DELAY_UNTIL_NEXT_PAYOUT:
 
-                intValue += isRelative ? account.getDelayUntilNextPayout() : 0;
-                account.setDelayUntilNextPayout(intValue);
+                account.setDelayUntilNextPayout(value);
 
                 PLUGIN.debugf("%s has set the interest delay of account #%d to %d.",
                         executor.getName(), account.getID(), account.getDelayUntilNextPayout());
@@ -108,8 +105,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
             case REMAINING_OFFLINE_PAYOUTS:
 
-                intValue += isRelative ? account.getRemainingOfflinePayouts() : 0;
-                account.setRemainingOfflinePayouts(intValue);
+                account.setRemainingOfflinePayouts(value);
 
                 PLUGIN.debugf("%s has set the remaining offline payouts of account #%d to %d.",
                         executor.getName(), account.getID(), account.getRemainingOfflinePayouts());

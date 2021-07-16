@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values.overridable;
 
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
+import com.monst.bankingplugin.utils.Parser;
 
 import java.util.Collections;
 
@@ -15,11 +16,7 @@ public class Multipliers extends OverridableList<Integer> {
 
     @Override
     public Integer parseSingle(String input) throws IntegerParseException {
-        try {
-            return Math.abs(Integer.parseInt(input));
-        } catch (NumberFormatException e) {
-            throw new IntegerParseException(input);
-        }
+        return Math.abs(Parser.parseInt(input));
     }
 
 }

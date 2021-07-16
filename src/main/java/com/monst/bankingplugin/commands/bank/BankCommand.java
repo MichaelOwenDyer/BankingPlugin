@@ -134,7 +134,7 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		}
 
 		private static int parseCoordinate(String arg, int relativeTo) throws IntegerParseException {
-			return arg.startsWith("~") ? Integer.parseInt(arg.substring(1)) + relativeTo : Parser.parseInt(arg);
+			return arg.startsWith("~") ? Parser.parseInt(arg.substring(1)) + relativeTo : Parser.parseInt(arg);
 		}
 
 	}
