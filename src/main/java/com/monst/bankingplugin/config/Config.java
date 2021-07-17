@@ -271,7 +271,7 @@ public class Config {
 	 */
 	public static LanguageFile languageFile = new LanguageFile();
 
-	private static final ConfigValue<?>[] VALUES = new ConfigValue[] {
+	private static final ConfigValue<?, ?>[] VALUES = new ConfigValue[] {
 			accountCommandName,
 			bankCommandName,
 			controlCommandName,
@@ -345,7 +345,7 @@ public class Config {
 				.collect(Collectors.toList());
 	}
 
-	public static ConfigValue<?> getByPath(String path) {
+	public static ConfigValue<?, ?> getByPath(String path) {
 		return Stream.of(VALUES)
 				.filter(value -> value.getPath().equalsIgnoreCase(path))
 				.findFirst()
@@ -353,7 +353,7 @@ public class Config {
 	}
 
 	public static void reload() {
-		for (ConfigValue<?> configValue : VALUES) {
+		for (ConfigValue<?, ?> configValue : VALUES) {
 			configValue.forgetLastSeen();
 			configValue.get();
 		}

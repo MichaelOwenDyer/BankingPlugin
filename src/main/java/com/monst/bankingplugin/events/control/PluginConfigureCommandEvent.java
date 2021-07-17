@@ -7,16 +7,16 @@ import org.bukkit.event.Cancellable;
 public class PluginConfigureCommandEvent extends ControlEvent implements Cancellable {
 
     private boolean cancelled;
-    private final ConfigValue<?> configValue;
+    private final ConfigValue<?, ?> configValue;
     private final String newValue;
 
-    public PluginConfigureCommandEvent(CommandSender sender, ConfigValue<?> configValue, String newValue) {
+    public PluginConfigureCommandEvent(CommandSender sender, ConfigValue<?, ?> configValue, String newValue) {
         super(sender);
         this.configValue = configValue;
         this.newValue = newValue;
     }
 
-    public ConfigValue<?> getConfigValue() {
+    public ConfigValue<?, ?> getConfigValue() {
         return configValue;
     }
 

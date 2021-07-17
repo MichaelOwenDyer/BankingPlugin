@@ -5,12 +5,11 @@ import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.MaterialParseException;
 import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.Material;
-import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class AccountInfoItem extends ConfigValue<ItemStack> {
+public class AccountInfoItem extends ConfigValue<String, ItemStack> {
 
     public AccountInfoItem() {
         super("account-info-item", new ItemStack(Material.STICK));
@@ -22,8 +21,13 @@ public class AccountInfoItem extends ConfigValue<ItemStack> {
     }
 
     @Override
-    public ItemStack readFromFile(MemoryConfiguration config, String path) throws CorruptedValueException {
-        return Optional.ofNullable(config.getString(path))
+    public boolean isCorrectType(Object o) {
+        return o instanceof String;
+    }
+
+    @Override
+    public ItemStack convertToActualType(String s) throws CorruptedValueException {
+        return Optional.ofNullable(s)
                 .map(Material::matchMaterial)
                 .map(ItemStack::new)
                 .orElseThrow(CorruptedValueException::new);
@@ -31,11 +35,6 @@ public class AccountInfoItem extends ConfigValue<ItemStack> {
 
     @Override
     public String format(ItemStack itemStack) {
-        return itemStack.getType().toString();
-    }
-
-    @Override
-    public Object convertToSettableType(ItemStack itemStack) {
         return itemStack.getType().toString();
     }
 

@@ -5,10 +5,10 @@ import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 
 public class OverriddenValue<T> {
 
-    private final OverridableValue<T> configValue;
+    private final OverridableValue<?, T> configValue;
     private T customValue;
 
-    OverriddenValue(OverridableValue<T> configValue, T customValue) {
+    OverriddenValue(OverridableValue<?, T> configValue, T customValue) {
         this.configValue = configValue;
         if (customValue == null && Config.stubbornBanks.get())
             customValue = configValue.getDefault();

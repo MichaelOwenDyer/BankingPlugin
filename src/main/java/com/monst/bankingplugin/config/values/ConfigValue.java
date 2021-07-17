@@ -3,13 +3,19 @@ package com.monst.bankingplugin.config.values;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.MissingValueException;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class ConfigValue<T> implements IConfigValue<T> {
+/**
+ * A value stored in the config.yml file under a certain path.
+ * @param <V> the type the value is stored as in the file
+ * @param <T> the real type of the config value
+ */
+public abstract class ConfigValue<V, T> implements IConfigValue<V, T> {
 
     protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
 
@@ -40,22 +46,22 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         if (lastSeenValue != null)
             return lastSeenValue;
         reload();
-        if (isValueMissing()) {
+        try {
+            return lastSeenValue = readFromFile();
+        } catch (MissingValueException e) {
             setDefault();
             PLUGIN.getLogger().info(String.format("Missing config value \"%s\" was added to the config.yml file.", path));
             return lastSeenValue = defaultConfiguration;
-        }
-        try {
-            return lastSeenValue = readFromFile();
         } catch (CorruptedValueException e) {
             if (e.hasReplacement()) {
                 setT(e.getReplacement());
                 PLUGIN.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
+                return lastSeenValue = e.getReplacement();
             } else {
                 setDefault();
                 PLUGIN.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
+                return lastSeenValue = defaultConfiguration;
             }
-            return lastSeenValue = e.getReplacement();
         }
     }
 
@@ -85,7 +91,7 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
     }
 
     private void setT(T t) {
-        setObject(convertToSettableType(t));
+        setObject(convertToConfigType(t));
     }
 
     private void setObject(Object o) {
@@ -101,12 +107,8 @@ public abstract class ConfigValue<T> implements IConfigValue<T> {
         PLUGIN.reloadConfig();
     }
 
-    private T readFromFile() throws CorruptedValueException {
-        return readFromFile(PLUGIN.getConfig(), path);
-    }
-
-    private boolean isValueMissing() {
-        return !PLUGIN.getConfig().isSet(path);
+    private T readFromFile() throws MissingValueException, CorruptedValueException {
+        return read(PLUGIN.getConfig(), path);
     }
 
 }

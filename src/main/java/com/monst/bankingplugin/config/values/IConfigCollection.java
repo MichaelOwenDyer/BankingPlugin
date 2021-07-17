@@ -5,9 +5,15 @@ import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
-public interface IConfigCollection<T, C extends Collection<T>> extends IConfigValue<C> {
+/**
+ * A collection of objects stored in the config as a {@link List<String>}.
+ * @param <T> the type of object
+ * @param <C> the type of collection
+ */
+public interface IConfigCollection<T, C extends Collection<T>> extends IConfigValue<List<String>, C> {
 
     @Override
     default C parse(String input) throws ArgumentParseException {
@@ -18,19 +24,30 @@ public interface IConfigCollection<T, C extends Collection<T>> extends IConfigVa
     }
 
     @Override
-    default C readFromFile(MemoryConfiguration config, String path) throws CorruptedValueException {
+    default Object get(MemoryConfiguration config, String path) {
+        return config.get(path, null) != null ? config.getStringList(path) : null;
+    }
+
+    @Override
+    default boolean isCorrectType(Object o) {
+        return true; // Object returned by #get will always be a List
+    }
+
+    @Override
+    default C convertToActualType(List<String> vs) throws CorruptedValueException {
         C collection = getEmptyCollection();
         boolean isCorrupted = false;
-        for (String string : config.getStringList(path))
+        for (String v : vs)
             try {
-                collection.add(parseSingle(string));
+                if (!collection.add(parseSingle(v)))
+                    isCorrupted = true; // if object could not be added because it violated a collection constraint
             } catch (ArgumentParseException e) {
-                isCorrupted = true;
+                isCorrupted = true; // if object could not be parsed
             }
         if (isCorrupted) {
             if (collection.isEmpty())
                 collection = null;
-            throw new CorruptedValueException(collection);
+            throw new CorruptedValueException(collection); // Suggest replacement value for config
         }
         return collection;
     }
@@ -44,6 +61,11 @@ public interface IConfigCollection<T, C extends Collection<T>> extends IConfigVa
         if (collection.isEmpty())
             return "[]";
         return collection.stream().map(String::valueOf).collect(Collectors.joining(", ")); // do not include [ ]
+    }
+
+    @Override
+    default Object convertToConfigType(C ts) {
+        return ts;
     }
 
 }

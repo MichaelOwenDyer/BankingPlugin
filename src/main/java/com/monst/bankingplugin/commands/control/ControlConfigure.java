@@ -46,7 +46,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
             return false;
 
         String path = args[1];
-        ConfigValue<?> configValue = Config.getByPath(path);
+        ConfigValue<?, ?> configValue = Config.getByPath(path);
         if (configValue == null) {
             sender.sendMessage(LangUtils.getMessage(Message.NOT_A_CONFIG_VALUE,
                     new Replacement(Placeholder.INPUT, path)
@@ -97,7 +97,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         if (args.length == 2)
             return Config.matchPath(args[1]);
 
-        ConfigValue<?> configValue = Config.getByPath(args[1]);
+        ConfigValue<?, ?> configValue = Config.getByPath(args[1]);
 
         if (configValue == null)
             return Collections.emptyList();

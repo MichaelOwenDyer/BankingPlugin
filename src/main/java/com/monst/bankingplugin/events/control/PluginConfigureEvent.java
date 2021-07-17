@@ -5,16 +5,16 @@ import org.bukkit.Bukkit;
 
 public class PluginConfigureEvent extends ControlEvent {
 
-    private final ConfigValue<?> configValue;
+    private final ConfigValue<?, ?> configValue;
     private final Object newValue;
 
-    public <T> PluginConfigureEvent(ConfigValue<T> configValue, T newValue) {
+    public <T> PluginConfigureEvent(ConfigValue<?, T> configValue, T newValue) {
         super(Bukkit.getConsoleSender());
         this.configValue = configValue;
         this.newValue = newValue;
     }
 
-    public ConfigValue<?> getConfigValue() {
+    public ConfigValue<?, ?> getConfigValue() {
         return configValue;
     }
 

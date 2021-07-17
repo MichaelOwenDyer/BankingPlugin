@@ -4,13 +4,12 @@ import com.monst.bankingplugin.config.values.ConfigValue;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.ExpressionParseException;
 import com.monst.bankingplugin.utils.QuickMath;
-import org.bukkit.configuration.MemoryConfiguration;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
 
 import java.math.BigDecimal;
 
-public class BankRevenueFunction extends ConfigValue<Expression> {
+public class BankRevenueFunction extends ConfigValue<String, Expression> {
 
     private static final Argument[] ARGS = new Argument[] {
             new Argument("x"), // Total value of bank
@@ -33,9 +32,14 @@ public class BankRevenueFunction extends ConfigValue<Expression> {
     }
 
     @Override
-    public Expression readFromFile(MemoryConfiguration config, String path) throws CorruptedValueException {
+    public boolean isCorrectType(Object o) {
+        return o instanceof String;
+    }
+
+    @Override
+    public Expression convertToActualType(String s) throws CorruptedValueException {
         try {
-            return parse(config.getString(path));
+            return parse(s);
         } catch (ExpressionParseException e) {
             throw new CorruptedValueException();
         }
@@ -43,11 +47,6 @@ public class BankRevenueFunction extends ConfigValue<Expression> {
 
     @Override
     public String format(Expression expression) {
-        return expression.getExpressionString();
-    }
-
-    @Override
-    public Object convertToSettableType(Expression expression) {
         return expression.getExpressionString();
     }
 

@@ -4,11 +4,10 @@ import com.monst.bankingplugin.config.values.ConfigValue;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.PatternParseException;
 import com.monst.bankingplugin.utils.Parser;
-import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.regex.Pattern;
 
-public class NameRegex extends ConfigValue<Pattern> {
+public class NameRegex extends ConfigValue<String, Pattern> {
 
     public NameRegex() {
         super("name-regex", Pattern.compile(".*"));
@@ -20,17 +19,17 @@ public class NameRegex extends ConfigValue<Pattern> {
     }
 
     @Override
-    public Pattern readFromFile(MemoryConfiguration config, String path) throws CorruptedValueException {
-        try {
-            return parse(config.getString(path));
-        } catch (PatternParseException e) {
-            throw new CorruptedValueException();
-        }
+    public boolean isCorrectType(Object o) {
+        return o instanceof String;
     }
 
     @Override
-    public Object convertToSettableType(Pattern pattern) {
-        return format(pattern);
+    public Pattern convertToActualType(String s) throws CorruptedValueException {
+        try {
+            return parse(s);
+        } catch (PatternParseException e) {
+            throw new CorruptedValueException();
+        }
     }
 
     public boolean matches(String name) {

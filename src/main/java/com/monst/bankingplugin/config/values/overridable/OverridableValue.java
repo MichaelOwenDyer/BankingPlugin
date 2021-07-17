@@ -4,7 +4,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.config.values.ConfigValue;
 import com.monst.bankingplugin.config.values.simple.AllowOverride;
 
-public abstract class OverridableValue<T> extends ConfigValue<T> {
+public abstract class OverridableValue<V, T> extends ConfigValue<V, T> {
 
     private final AllowOverride allowOverride;
 
