@@ -11,8 +11,8 @@ public interface IConfigBoolean extends IUnaryConfigValue<Boolean> {
     }
 
     @Override
-    default boolean isCorrectType(Object o) {
-        return o instanceof Boolean;
+    default Boolean cast(Object o) {
+        return (Boolean) o;
     }
 
 }

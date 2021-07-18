@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.DoubleParseException;
 import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.QuickMath;
@@ -13,8 +14,10 @@ public interface IConfigDouble extends IUnaryConfigValue<Double> {
     }
 
     @Override
-    default boolean isCorrectType(Object o) {
-        return o instanceof Double;
+    default Double cast(Object o) throws CorruptedValueException {
+        if (!(o instanceof Number))
+            throw new CorruptedValueException();
+        return ((Number) o).doubleValue();
     }
 
     @Override
@@ -24,12 +27,9 @@ public interface IConfigDouble extends IUnaryConfigValue<Double> {
 
     interface Absolute extends IConfigDouble {
         @Override
-        default boolean isCorrupted(Double d) {
-            return d < 0;
-        }
-        @Override
-        default Double replace(Double d) {
-            return Math.abs(d);
+        default void ensureValid(Double d) throws CorruptedValueException {
+            if (d < 0)
+                throw new CorruptedValueException(Math.abs(d));
         }
     }
 

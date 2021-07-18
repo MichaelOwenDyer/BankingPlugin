@@ -15,18 +15,30 @@ public interface IConfigValue<V, T> extends Supplier<T> {
         Object o = get(config, path);
         if (o == null)
             throw new MissingValueException();
-        if (!isCorrectType(o))
+        try {
+            return convertToActualType(cast(o));
+        } catch (ClassCastException e) {
             throw new CorruptedValueException();
-        @SuppressWarnings("unchecked")
-        V v = (V) o;
-        return convertToActualType(v);
+        }
     }
 
+    /**
+     * Retrieves the raw object from the configuration file.
+     */
     default Object get(MemoryConfiguration config, String path) {
-        return config.get(path, null);
+        return config.get(path, null); // Use generic method get() to preserve nullability and ensure value presence
     }
 
-    boolean isCorrectType(Object o);
+    /**
+     * Casts the object into the correct type, throwing a ClassCastException if the object is not the correct type
+     * or a CorruptedValueException with a replacement if the object is not the correct type, but can be repaired.
+     * @throws ClassCastException if the object is of an unrelated type - the entry will be reset.
+     * @throws CorruptedValueException if the object is of a related (but still incorrect) type - the entry will be repaired.
+     */
+    @SuppressWarnings("unchecked")
+    default V cast(Object o) throws CorruptedValueException {
+        return (V) o;
+    }
 
     T convertToActualType(V v) throws CorruptedValueException;
 

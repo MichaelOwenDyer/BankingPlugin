@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.utils.Parser;
 
@@ -11,18 +12,19 @@ public interface IConfigInteger extends IUnaryConfigValue<Integer> {
     }
 
     @Override
-    default boolean isCorrectType(Object o) {
-        return o instanceof Integer;
+    default Integer cast(Object o) throws CorruptedValueException {
+        if (!(o instanceof Number))
+            throw new CorruptedValueException();
+        if (!(o instanceof Integer)) // Value is a number, but not an integer
+            throw new CorruptedValueException(((Number) o).intValue()); // Repair it
+        return (Integer) o;
     }
 
     interface Absolute extends IConfigInteger {
         @Override
-        default boolean isCorrupted(Integer i) {
-            return i < 0;
-        }
-        @Override
-        default Integer replace(Integer d) {
-            return Math.abs(d);
+        default void ensureValid(Integer i) throws CorruptedValueException {
+            if (i < 0)
+                throw new CorruptedValueException(Math.abs(i));
         }
     }
 

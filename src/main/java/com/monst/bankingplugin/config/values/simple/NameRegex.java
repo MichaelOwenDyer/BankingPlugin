@@ -19,8 +19,8 @@ public class NameRegex extends ConfigValue<String, Pattern> {
     }
 
     @Override
-    public boolean isCorrectType(Object o) {
-        return o instanceof String;
+    public String cast(Object o) {
+        return (String) o;
     }
 
     @Override

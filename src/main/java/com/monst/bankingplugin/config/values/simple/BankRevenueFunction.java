@@ -32,8 +32,8 @@ public class BankRevenueFunction extends ConfigValue<String, Expression> {
     }
 
     @Override
-    public boolean isCorrectType(Object o) {
-        return o instanceof String;
+    public String cast(Object o) {
+        return (String) o;
     }
 
     @Override

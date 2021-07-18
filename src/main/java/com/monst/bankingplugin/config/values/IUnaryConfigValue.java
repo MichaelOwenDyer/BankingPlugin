@@ -5,21 +5,12 @@ import com.monst.bankingplugin.exceptions.CorruptedValueException;
 public interface IUnaryConfigValue<T> extends IConfigValue<T, T> {
 
     default T convertToActualType(T t) throws CorruptedValueException {
-        if (isCorrupted(t))
-            throw new CorruptedValueException(replace(t));
+        ensureValid(t);
         return t;
     }
 
-    default boolean isCorrupted(T t) {
-        return false;
-    }
+    default void ensureValid(T t) throws CorruptedValueException {}
 
-    default T replace(T t) {
-        return null;
-    }
-
-    default Object convertToConfigType(T t) {
-        return t;
-    }
+    default Object convertToConfigType(T t) { return t; }
 
 }

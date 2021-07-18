@@ -29,8 +29,9 @@ public interface IConfigCollection<T, C extends Collection<T>> extends IConfigVa
     }
 
     @Override
-    default boolean isCorrectType(Object o) {
-        return true; // Object returned by #get will always be a List
+    @SuppressWarnings("unchecked")
+    default List<String> cast(Object o) {
+        return (List<String>) o;
     }
 
     @Override

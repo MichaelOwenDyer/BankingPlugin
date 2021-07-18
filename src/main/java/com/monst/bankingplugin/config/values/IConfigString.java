@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.config.values;
 
+import org.bukkit.configuration.MemoryConfiguration;
+
 public interface IConfigString extends IUnaryConfigValue<String> {
 
     @Override
@@ -8,8 +10,13 @@ public interface IConfigString extends IUnaryConfigValue<String> {
     }
 
     @Override
-    default boolean isCorrectType(Object o) {
-        return o instanceof String;
+    default Object get(MemoryConfiguration config, String path) {
+        return config.getString(path, null);
+    }
+
+    @Override
+    default String cast(Object o) {
+        return (String) o;
     }
 
     @Override
