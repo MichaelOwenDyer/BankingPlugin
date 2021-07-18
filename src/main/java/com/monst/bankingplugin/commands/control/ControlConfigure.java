@@ -66,7 +66,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         String previousValue = configValue.getFormatted();
 
         try {
-            configValue.set(input);
+            Config.set(configValue, input);
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
             PLUGIN.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());

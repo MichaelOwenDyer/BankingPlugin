@@ -1,8 +1,11 @@
 package com.monst.bankingplugin.config;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.values.ConfigValue;
 import com.monst.bankingplugin.config.values.overridable.*;
 import com.monst.bankingplugin.config.values.simple.*;
+import com.monst.bankingplugin.events.control.PluginConfigureEvent;
+import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.utils.Utils;
 
 import java.util.List;
@@ -10,6 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Config {
+
+	public static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
 
 	/**
 	 * The account command of BankingPlugin <i>(default: account)</i>
@@ -271,6 +276,10 @@ public class Config {
 	 */
 	public static LanguageFile languageFile = new LanguageFile();
 
+	static {
+		PLUGIN.saveConfig();
+	}
+
 	private static final ConfigValue<?, ?>[] VALUES = new ConfigValue[] {
 			accountCommandName,
 			bankCommandName,
@@ -351,11 +360,17 @@ public class Config {
 				.orElse(null);
 	}
 
+	public static <T> void set(ConfigValue<?, T> configValue, String input) throws ArgumentParseException {
+		PLUGIN.reloadConfig();
+		T newValue = configValue.set(input);
+		new PluginConfigureEvent(configValue, newValue).fire();
+		PLUGIN.saveConfig();
+	}
+
 	public static void reload() {
-		for (ConfigValue<?, ?> configValue : VALUES) {
-			configValue.forgetLastSeen();
-			configValue.get();
-		}
+		PLUGIN.reloadConfig();
+		Stream.of(VALUES).forEach(ConfigValue::reload);
+		PLUGIN.saveConfig();
 	}
 
 }

@@ -313,9 +313,8 @@ public class BankingPlugin extends JavaPlugin {
 	}
 
 	/**
-	 * Reloads the plugin
-	 * @param callback            Callback that - if succeeded - returns the amount
-	 *                            of accounts that were reloaded (as {@code int})
+	 * Reloads the plugin.
+	 * @param callback            Callback that returns the reloaded banks and accounts.
 	 */
 	public void reload(Callback<FetchResult> callback) {
 		debug("Reloading...");

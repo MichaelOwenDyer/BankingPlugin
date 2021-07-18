@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.MissingValueException;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
@@ -45,7 +44,6 @@ public abstract class ConfigValue<V, T> implements IConfigValue<V, T> {
     public final T get() {
         if (lastSeenValue != null)
             return lastSeenValue;
-        reload();
         try {
             return lastSeenValue = readFromFile();
         } catch (MissingValueException e) {
@@ -65,22 +63,26 @@ public abstract class ConfigValue<V, T> implements IConfigValue<V, T> {
         }
     }
 
-    public final void set(@Nonnull String input) throws ArgumentParseException {
+    public final T set(@Nonnull String input) throws ArgumentParseException {
         T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
         beforeSet(newValue);
-        reload();
         setT(newValue);
         forgetLastSeen();
         afterSet(newValue);
-        new PluginConfigureEvent(this, newValue).fire();
-    }
-
-    public final void forgetLastSeen() {
-        lastSeenValue = null;
+        return newValue;
     }
 
     protected void beforeSet(T newValue) {}
     protected void afterSet(T newValue) {}
+
+    public final void reload() {
+        forgetLastSeen();
+        get();
+    }
+
+    private void forgetLastSeen() {
+        lastSeenValue = null;
+    }
 
     public boolean isHotSwappable() {
         return true;
@@ -96,15 +98,6 @@ public abstract class ConfigValue<V, T> implements IConfigValue<V, T> {
 
     private void setObject(Object o) {
         PLUGIN.getConfig().set(path, o);
-        save();
-    }
-
-    private void save() {
-        PLUGIN.saveConfig();
-    }
-
-    private void reload() {
-        PLUGIN.reloadConfig();
     }
 
     private T readFromFile() throws MissingValueException, CorruptedValueException {
