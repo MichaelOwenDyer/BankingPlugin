@@ -318,8 +318,8 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public void reload(Callback<FetchResult> callback) {
 		debug("Reloading...");
-		reloadLanguageConfig();
 		Config.reload();
+		reloadLanguageConfig();
 		fetchBankingEntities(callback);
 	}
 
