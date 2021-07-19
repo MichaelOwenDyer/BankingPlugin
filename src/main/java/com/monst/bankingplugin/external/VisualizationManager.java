@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.regions.BankRegion;
+import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -16,7 +17,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class VisualizationManager {
 
@@ -37,28 +41,29 @@ public class VisualizationManager {
     }
 
     private static void visualize(Player p, Collection<BankRegion> bankRegions, VisualizationType type) {
+        Callback<Visualization> callback = Callback.of(visualization -> {
+            visualization.elements.forEach(element -> element.realBlock = element.location.getBlock().getBlockData());
+            Visualization.Apply(p, visualization);
+        });
         Utils.bukkitRunnable(() -> {
             Visualization visualization = new Visualization();
             for (BankRegion region : bankRegions)
                 visualization.elements.addAll(getRegionElements(region, p.getLocation(), type));
-            Visualization.Apply(p, visualization);
+            Callback.callSyncResult(callback, visualization);
         }).runTaskAsynchronously(BankingPlugin.getInstance());
     }
 
     private static List<VisualizationElement> getRegionElements(BankRegion sel, Location playerLoc, VisualizationType type) {
-
         final int step = 10;
-        World world = sel.getWorld();
+        final World world = sel.getWorld();
         List<VisualizationElement> newElements = new ArrayList<>();
 
         if (sel.isCuboid()) {
-
             // Add blocks at vertices
-            sel.getCorners().stream().map(Block::getLocation).forEach(location -> newElements.add(new VisualizationElement(
-                    location,
-                    type.getCornerBlockData(),
-                    world.getBlockAt(location).getBlockData()
-            )));
+            sel.getCorners().stream()
+                    .map(Block::getLocation)
+                    .map(location -> new VisualizationElement(location, type.cornerBlockData, null))
+                    .forEach(newElements::add);
 
             Block min = sel.getMinimumBlock();
             Block max = sel.getMaximumBlock();
@@ -79,7 +84,7 @@ public class VisualizationManager {
                                 case 1: loc = new Location(world, c, a, b); break;
                                 case 2: loc = new Location(world, b, c, a);
                             }
-                            newElements.add(new VisualizationElement(loc, type.getAccentBlockData(), world.getBlockAt(loc).getBlockData()));
+                            newElements.add(new VisualizationElement(loc, type.accentBlockData, null));
                         }
                     }
                 }
@@ -96,20 +101,17 @@ public class VisualizationManager {
                                 case 1: loc = new Location(world, c, a, b); break;
                                 case 2: loc = new Location(world, b, c, a);
                             }
-                            newElements.add(new VisualizationElement(loc, type.getAccentBlockData(), world.getBlockAt(loc).getBlockData()));
+                            newElements.add(new VisualizationElement(loc, type.accentBlockData, null));
                         }
                     }
                 }
             }
-
-        } else if (sel.isPolygonal()) {
-
+        } else {
             // Add blocks at vertices
-            sel.getCorners().stream().map(Block::getLocation).forEach(loc -> newElements.add(new VisualizationElement(
-                    loc,
-                    type.getCornerBlockData(),
-                    world.getBlockAt(loc).getBlockData()
-            )));
+            sel.getCorners().stream()
+                    .map(Block::getLocation)
+                    .map(loc -> new VisualizationElement(loc, type.cornerBlockData, null))
+                    .forEach(newElements::add);
 
             List<BlockVector2D> points = sel.getVertices();
             for (int i = 0; i < points.size(); i++) {
@@ -121,8 +123,8 @@ public class VisualizationManager {
                     Location loc = new Location(world, current.getX(), y, current.getZ());
                     newElements.add(new VisualizationElement(
                             loc,
-                            type.getAccentBlockData(),
-                            world.getBlockAt(loc).getBlockData()
+                            type.accentBlockData,
+                            null
                     ));
                 }
 
@@ -131,8 +133,8 @@ public class VisualizationManager {
                     Location loc = new Location(world, current.getX(), y, current.getZ());
                     newElements.add(new VisualizationElement(
                             loc,
-                            type.getAccentBlockData(),
-                            world.getBlockAt(loc).getBlockData()
+                            type.accentBlockData,
+                            null
                     ));
                 }
 
@@ -151,16 +153,16 @@ public class VisualizationManager {
                     Location unitAway = new Location(world, current.getX() + 0.5 + unitX, y, current.getZ() + 0.5 + unitZ);
                     newElements.add(new VisualizationElement(
                             unitAway,
-                            type.getAccentBlockData(),
-                            world.getBlockAt(unitAway).getBlockData()
+                            type.accentBlockData,
+                            null
                     ));
 
                     // Add the block that is immediately adjacent to the next vertex and pointing in the direction of the current vertex
                     Location unitAwayNext = new Location(world, next.getX() + 0.5 - unitX, y, next.getZ() + 0.5 - unitZ);
                     newElements.add(new VisualizationElement(
                             unitAwayNext,
-                            type.getAccentBlockData(),
-                            world.getBlockAt(unitAwayNext).getBlockData()
+                            type.accentBlockData,
+                            null
                     ));
 
                     // Add blocks that form the lines between the vertices in intervals of the integer "step"
@@ -170,8 +172,8 @@ public class VisualizationManager {
                     while (Math.sqrt(Math.pow(next.getX() - nextAccent.getX(), 2) + Math.pow(next.getZ() - nextAccent.getZ(), 2)) > step / 2.0) {
                         newElements.add(new VisualizationElement(
                                 new Location(nextAccent.getWorld(), nextAccent.getBlockX(), nextAccent.getBlockY(), nextAccent.getBlockZ()),
-                                type.getAccentBlockData(),
-                                world.getBlockAt(nextAccent).getBlockData()
+                                type.accentBlockData,
+                                null
                         ));
                         nextAccent = nextAccent.add(increaseX, 0, increaseZ);
                     }
@@ -215,14 +217,6 @@ public class VisualizationManager {
         VisualizationType(BlockData cornerBlockData, BlockData accentBlockData) {
             this.cornerBlockData = cornerBlockData;
             this.accentBlockData = accentBlockData;
-        }
-
-        private BlockData getCornerBlockData() {
-            return cornerBlockData;
-        }
-
-        private BlockData getAccentBlockData() {
-            return accentBlockData;
         }
 
     }

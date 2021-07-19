@@ -57,7 +57,7 @@ public class BankResize extends BankCommand.SubCommand {
             return false;
 
         else if (args.length == 2) {
-            if (Config.enableWorldEditIntegration.get() && PLUGIN.hasWorldEdit()) {
+            if (PLUGIN.isWorldEditIntegrated()) {
                 bankRegion = WorldEditReader.getBankRegion(PLUGIN, p);
                 if (bankRegion == null) {
                     PLUGIN.debug(p.getName() + " tried to resize a bank with no WorldEdit selection");
@@ -130,7 +130,7 @@ public class BankResize extends BankCommand.SubCommand {
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING,
                     new Replacement(Placeholder.NUMBER_OF_BANKS, overlappingBankRegions::size)
             ));
-            if (PLUGIN.hasGriefPrevention() && Config.enableGriefPreventionIntegration.get())
+            if (PLUGIN.isGriefPreventionIntegrated())
                 VisualizationManager.visualizeOverlap(p, overlappingBankRegions);
             return true;
         }

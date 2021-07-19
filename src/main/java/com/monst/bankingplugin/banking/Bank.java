@@ -327,7 +327,7 @@ public class Bank extends BankingEntity {
 				return withdrawalMultiplierDecrement;
 			case PLAYER_BANK_ACCOUNT_LIMIT:
 				return playerBankAccountLimit;
-			case MULTIPLIERS:
+			case INTEREST_MULTIPLIERS:
 				return multipliers;
 			case INTEREST_PAYOUT_TIMES:
 				return interestPayoutTimes;

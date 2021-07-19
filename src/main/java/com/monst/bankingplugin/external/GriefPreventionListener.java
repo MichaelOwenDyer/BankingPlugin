@@ -2,7 +2,6 @@ package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
@@ -37,7 +36,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onAccountCreate(AccountCreateEvent e) {
-        if (!Config.enableGriefPreventionIntegration.get())
+        if (!plugin.isGriefPreventionIntegrated())
             return;
 
         for (Block block : e.getAccount().getLocation())
@@ -50,7 +49,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onAccountExtend(AccountExtendEvent e) {
-		if (!Config.enableGriefPreventionIntegration.get())
+		if (!plugin.isGriefPreventionIntegrated())
             return;
 
 		for (Block block : e.getNewAccountLocation())
@@ -63,7 +62,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onAccountMigrate(AccountMigrateEvent e) {
-	    if (!Config.enableGriefPreventionIntegration.get())
+	    if (!plugin.isGriefPreventionIntegrated())
 	        return;
 
 	    for (Block block : e.getNewAccountLocation())
@@ -76,7 +75,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onAccountRecover(AccountRecoverEvent e) {
-	    if (!Config.enableGriefPreventionIntegration.get())
+	    if (!plugin.isGriefPreventionIntegrated())
 	        return;
 
 	    for (Block block : e.getNewAccountLocation())
@@ -96,7 +95,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBankRegionInteract(PlayerInteractEvent e) {
-        if (!Config.enableGriefPreventionIntegration.get())
+        if (!plugin.isGriefPreventionIntegrated())
             return;
         if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
             return;
@@ -130,7 +129,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankCreate(BankCreateEvent e) {
-	    if (!Config.enableGriefPreventionIntegration.get())
+	    if (!plugin.isGriefPreventionIntegrated())
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
@@ -139,7 +138,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankRemove(BankRemoveEvent e) {
-	    if (!Config.enableGriefPreventionIntegration.get())
+	    if (!plugin.isGriefPreventionIntegrated())
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
@@ -148,7 +147,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankResize(BankResizeEvent e) {
-	    if (!Config.enableGriefPreventionIntegration.get())
+	    if (!plugin.isGriefPreventionIntegrated())
 	        return;
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
@@ -157,8 +156,9 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankSelect(BankSelectEvent e) {
-	    if (!Config.enableGriefPreventionIntegration.get())
+	    if (!plugin.isGriefPreventionIntegrated())
 	        return;
-        VisualizationManager.visualizeRegion(((Player) e.getExecutor()), e.getBank());
+        VisualizationManager.visualizeRegion((Player) e.getExecutor(), e.getBank());
     }
+
 }

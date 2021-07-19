@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
 import com.monst.bankingplugin.listeners.BankingPluginListener;
@@ -30,7 +29,7 @@ public class WorldGuardListener extends BankingPluginListener {
 	public WorldGuardListener(BankingPlugin plugin) {
         super(plugin);
         this.wgWrapper = WorldGuardWrapper.getInstance();
-        wgWrapper.getFlag("create-bank", WrappedState.class).ifPresent(flag -> this.bankCreateFlag = flag);
+        wgWrapper.getFlag("create-bank", WrappedState.class).ifPresent(flag -> bankCreateFlag = flag);
         if (bankCreateFlag == null) {
 			plugin.getLogger().severe("Failed to find WorldGuard state flag 'create-bank'");
 			plugin.debug("WorldGuard state flag 'create-bank' is not present!");
@@ -39,7 +38,7 @@ public class WorldGuardListener extends BankingPluginListener {
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onCreateBank(BankCreateEvent e) {
-		if (!Config.enableWorldGuardIntegration.get() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
+		if (!plugin.isWorldGuardIntegrated() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
 		for (Block block : e.getBank().getRegion().getCorners())
@@ -52,7 +51,7 @@ public class WorldGuardListener extends BankingPluginListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onResizeBank(BankResizeEvent e) {
-		if (!Config.enableWorldGuardIntegration.get() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
+		if (!plugin.isWorldGuardIntegrated() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
 		for (Block block : e.getNewRegion().getCorners())
@@ -65,7 +64,7 @@ public class WorldGuardListener extends BankingPluginListener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onUseBlock(WrappedUseBlockEvent event) {
-		if (!Config.enableWorldGuardIntegration.get())
+		if (!plugin.isWorldGuardIntegrated())
 			return;
 
 		Block block;

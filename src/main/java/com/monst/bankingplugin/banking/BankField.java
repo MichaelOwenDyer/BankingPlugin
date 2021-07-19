@@ -20,7 +20,7 @@ public enum BankField implements BankingEntityField<Bank> {
     OFFLINE_MULTIPLIER_DECREMENT ("OfflineMultiplierDecrement"),
     WITHDRAWAL_MULTIPLIER_DECREMENT ("WithdrawalMultiplierDecrement"),
     PLAYER_BANK_ACCOUNT_LIMIT ("PlayerBankAccountLimit"),
-    MULTIPLIERS ("Multipliers"),
+    INTEREST_MULTIPLIERS("Multipliers"),
     INTEREST_PAYOUT_TIMES ("InterestPayoutTimes"),
     WORLD ("World", b -> b.getRegion().getWorld().getName()),
     MIN_X ("MinX", b -> b.getRegion().getMinX()),

@@ -96,7 +96,6 @@ public class BankingPlugin extends JavaPlugin {
         if (worldGuard != null) {
 			Optional<IWrappedFlag<WrappedState>> createBankFlag = WorldGuardWrapper.getInstance()
 					.registerFlag("create-bank", WrappedState.class, Config.worldGuardDefaultFlagValue.getWrappedState());
-
 			debug("WorldGuard flag present: " + createBankFlag.isPresent());
         }
     }
@@ -213,7 +212,7 @@ public class BankingPlugin extends JavaPlugin {
 		if (essentialsPlugin instanceof Essentials)
 			essentials = (Essentials) essentialsPlugin;
 
-		if (hasWorldGuard())
+		if (isWorldGuardIntegrated())
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
 
@@ -281,9 +280,9 @@ public class BankingPlugin extends JavaPlugin {
 	 * @see WorldGuardListener
 	 */
 	private void registerExternalListeners() {
-		if (hasGriefPrevention())
+		if (isGriefPreventionIntegrated())
 			getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
-		if (hasWorldGuard())
+		if (isWorldGuardIntegrated())
 			getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);
     }
 
@@ -504,8 +503,22 @@ public class BankingPlugin extends JavaPlugin {
 	/**
 	 * @return whether the plugin is integrated with {@link com.sk89q.worldedit.WorldEdit}
 	 */
-	public boolean hasWorldEdit() {
-		return worldEdit != null && worldEdit.isEnabled();
+	public boolean isWorldEditIntegrated() {
+		return worldEdit != null && worldEdit.isEnabled() && Config.enableWorldEditIntegration.get();
+	}
+
+	/**
+	 * @return whether the plugin is integrated with WorldGuard
+	 */
+	public boolean isWorldGuardIntegrated() {
+		return worldGuard != null && worldGuard.isEnabled() && Config.enableWorldGuardIntegration.get();
+	}
+
+	/**
+	 * @return whether the plugin is integrated with {@link GriefPrevention}
+	 */
+	public boolean isGriefPreventionIntegrated() {
+		return griefPrevention != null && griefPrevention.isEnabled() && Config.enableGriefPreventionIntegration.get();
 	}
 
 	/**
@@ -513,20 +526,6 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public WorldEditPlugin getWorldEdit() {
 		return worldEdit;
-	}
-
-	/**
-	 * @return whether the plugin is integrated with WorldGuard
-	 */
-	public boolean hasWorldGuard() {
-		return worldGuard != null && worldGuard.isEnabled();
-	}
-
-	/**
-	 * @return whether the plugin is integrated with {@link GriefPrevention}
-	 */
-	public boolean hasGriefPrevention() {
-		return griefPrevention != null && griefPrevention.isEnabled();
 	}
 
 	/**

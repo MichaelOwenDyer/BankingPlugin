@@ -216,39 +216,26 @@ public class Utils {
 		return getLimit(player, Permissions.BANK_NO_SIZE_LIMIT, Config.maximumBankVolume.get());
 	}
 
-	private static long getLimit(Player player, String permission, long defaultLimit) {
-		long limit = 0;
-		boolean useDefault = true;
-
-		String permPrefix = permission.replaceAll("\\*", "");
-
+	private static long getLimit(Player player, String unlimitedPerm, final long defaultLimit) {
+		long limit = defaultLimit;
+		String permPrefix = unlimitedPerm.substring(0, unlimitedPerm.length() - 1);
 		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
-			if (permInfo.getPermission().startsWith(permPrefix)
-					&& player.hasPermission(permInfo.getPermission())) {
-				if (permInfo.getPermission().equalsIgnoreCase(permission)) {
-					limit = -1;
-					useDefault = false;
-					break;
-				} else {
-					String[] spl = permInfo.getPermission().split(permPrefix);
+			if (!permInfo.getValue())
+				continue;
+			if (permInfo.getPermission().equalsIgnoreCase(unlimitedPerm))
+				return -1;
 
-					if (spl.length > 1) {
-						try {
-							long newLimit = Long.parseLong(spl[1]);
-							if (newLimit < 0) {
-								limit = -1;
-								break;
-							}
-							limit = Math.max(limit, newLimit);
-							useDefault = false;
-						} catch (NumberFormatException ignored) {}
-					}
-				}
-			}
+			String[] split = permInfo.getPermission().split(permPrefix);
+			if (split.length <= 1)
+				continue;
+			try {
+				long newLimit = Long.parseLong(split[1]);
+				if (newLimit < 0)
+					return -1;
+				limit = Math.max(limit, newLimit);
+			} catch (NumberFormatException ignored) {}
 		}
-		if (limit < -1)
-			limit = -1;
-		return useDefault ? defaultLimit : limit;
+		return Math.max(limit, -1);
 	}
 
 	public static <T> Set<T> filter(Set<? extends T> collection, Predicate<? super T> filter) {

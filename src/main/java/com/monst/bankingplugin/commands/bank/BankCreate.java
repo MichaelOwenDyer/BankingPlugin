@@ -53,7 +53,7 @@ public class BankCreate extends BankCommand.SubCommand {
 
         BankRegion bankRegion;
         if (args.length <= 3) {
-            if (Config.enableWorldEditIntegration.get() && PLUGIN.hasWorldEdit()) {
+            if (PLUGIN.isWorldEditIntegrated()) {
                 bankRegion = WorldEditReader.getBankRegion(PLUGIN, p);
                 if (bankRegion == null) {
                     PLUGIN.debug(p.getName() + " tried to create a bank with no WorldEdit selection");
@@ -105,7 +105,7 @@ public class BankCreate extends BankCommand.SubCommand {
             p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING,
                     new Replacement(Placeholder.NUMBER_OF_BANKS, overlappingRegions::size)
             ));
-            if (PLUGIN.hasGriefPrevention() && Config.enableGriefPreventionIntegration.get())
+            if (PLUGIN.isGriefPreventionIntegrated())
                 VisualizationManager.visualizeOverlap(p, overlappingRegions);
             return true;
         }

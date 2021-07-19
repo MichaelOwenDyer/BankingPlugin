@@ -2,7 +2,6 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.bank.BankSelectEvent;
-import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
@@ -38,7 +37,7 @@ public class BankSelect extends BankCommand.SubCommand {
         Player p = ((Player) sender);
         PLUGIN.debug(p.getName() + " wants to select a bank");
 
-        if (!PLUGIN.hasWorldEdit() && !PLUGIN.hasGriefPrevention()) {
+        if (!PLUGIN.isWorldEditIntegrated() && !PLUGIN.isGriefPreventionIntegrated()) {
             PLUGIN.debug("Cannot select bank. Neither WorldEdit nor GriefPrevention is enabled.");
             p.sendMessage(LangUtils.getMessage(Message.CANT_SELECT_BANK));
             return true;
@@ -74,10 +73,8 @@ public class BankSelect extends BankCommand.SubCommand {
             return true;
         }
 
-        if (PLUGIN.hasWorldEdit())
+        if (PLUGIN.isWorldEditIntegrated())
             WorldEditReader.setSelection(PLUGIN, bank.getRegion(), p);
-        if (PLUGIN.hasGriefPrevention())
-            VisualizationManager.visualizeRegion(p, bank);
         PLUGIN.debug(p.getName() + " has selected a bank");
         p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
