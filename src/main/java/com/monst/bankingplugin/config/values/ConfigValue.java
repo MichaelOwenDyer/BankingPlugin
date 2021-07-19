@@ -5,6 +5,7 @@ import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.InvalidValueException;
 import com.monst.bankingplugin.exceptions.MissingValueException;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
+import org.bukkit.command.CommandSender;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -74,8 +75,10 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
         return format(get());
     }
 
-    public List<String> getTabCompletions() {
-        return Collections.singletonList(getFormatted());
+    public List<String> getTabCompletions(CommandSender sender, String[] args) {
+        if (args.length == 3)
+            return Collections.singletonList(getFormatted());
+        return Collections.emptyList();
     }
 
     public String getPath() {

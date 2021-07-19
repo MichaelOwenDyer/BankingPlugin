@@ -2,12 +2,12 @@ package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.parse.WorldParseException;
 import com.monst.bankingplugin.utils.Parser;
+import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DisabledWorlds extends ConfigValue<List<String>, Set<World>> implements ConfigCollection<World, Set<World>> {
@@ -29,6 +29,16 @@ public class DisabledWorlds extends ConfigValue<List<String>, Set<World>> implem
     @Override
     public Object convertToStorableType(Set<World> set) {
         return set.stream().map(World::getName).collect(Collectors.toList()); // must cast to List<String> in order to set
+    }
+
+    @Override
+    public List<String> getTabCompletions(CommandSender sender, String[] args) {
+        List<String> argsList = Arrays.asList(args);
+        return Bukkit.getWorlds().stream()
+                .map(World::getName)
+                .filter(name -> !argsList.contains(name))
+                .filter(name -> Utils.containsIgnoreCase(name, args[args.length - 1]))
+                .collect(Collectors.toList());
     }
 
 }

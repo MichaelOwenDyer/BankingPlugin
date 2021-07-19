@@ -44,6 +44,7 @@ public class ControlPayInterest extends ControlCommand.SubCommand {
             banks = PLUGIN.getBankRepository().getAll();
         else
             banks = Arrays.stream(args)
+                    .skip(1)
                     .map(PLUGIN.getBankRepository()::getByIdentifier)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
@@ -66,6 +67,7 @@ public class ControlPayInterest extends ControlCommand.SubCommand {
         return PLUGIN.getBankRepository().getAll().stream()
                 .map(Bank::getName)
                 .filter(name -> !argList.contains(name))
+                .filter(name -> Utils.startsWithIgnoreCase(name, args[args.length - 1]))
                 .sorted()
                 .collect(Collectors.toList());
     }

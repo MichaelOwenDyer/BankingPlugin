@@ -98,14 +98,9 @@ public class ControlConfigure extends ControlCommand.SubCommand {
             return Config.matchPath(args[1]);
 
         ConfigValue<?, ?> configValue = Config.getByPath(args[1]);
-
         if (configValue == null)
             return Collections.emptyList();
-
-        if (args.length == 3)
-            return configValue.getTabCompletions();
-
-        return Collections.emptyList();
+        return configValue.getTabCompletions(sender, args);
     }
 
 }
