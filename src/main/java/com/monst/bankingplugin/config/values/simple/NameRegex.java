@@ -1,13 +1,14 @@
 package com.monst.bankingplugin.config.values.simple;
 
 import com.monst.bankingplugin.config.values.ConfigValue;
+import com.monst.bankingplugin.config.values.IBinaryConfigValue;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.PatternParseException;
 import com.monst.bankingplugin.utils.Parser;
 
 import java.util.regex.Pattern;
 
-public class NameRegex extends ConfigValue<String, Pattern> {
+public class NameRegex extends ConfigValue<String, Pattern> implements IBinaryConfigValue<String, Pattern> {
 
     public NameRegex() {
         super("name-regex", Pattern.compile(".*"));

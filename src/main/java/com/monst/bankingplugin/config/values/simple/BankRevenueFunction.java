@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values.simple;
 
 import com.monst.bankingplugin.config.values.ConfigValue;
+import com.monst.bankingplugin.config.values.IBinaryConfigValue;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.ExpressionParseException;
 import com.monst.bankingplugin.utils.QuickMath;
@@ -9,7 +10,7 @@ import org.mariuszgromada.math.mxparser.Expression;
 
 import java.math.BigDecimal;
 
-public class BankRevenueFunction extends ConfigValue<String, Expression> {
+public class BankRevenueFunction extends ConfigValue<String, Expression> implements IBinaryConfigValue<String, Expression> {
 
     private static final Argument[] ARGS = new Argument[] {
             new Argument("x"), // Total value of bank

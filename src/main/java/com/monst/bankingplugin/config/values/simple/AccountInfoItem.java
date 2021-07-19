@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values.simple;
 
 import com.monst.bankingplugin.config.values.ConfigValue;
+import com.monst.bankingplugin.config.values.IBinaryConfigValue;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.MaterialParseException;
 import com.monst.bankingplugin.utils.Parser;
@@ -9,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class AccountInfoItem extends ConfigValue<String, ItemStack> {
+public class AccountInfoItem extends ConfigValue<String, ItemStack> implements IBinaryConfigValue<String, ItemStack> {
 
     public AccountInfoItem() {
         super("account-info-item", new ItemStack(Material.STICK));
