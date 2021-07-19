@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.config.values;
 
-import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.ExpressionParseException;
 import com.monst.bankingplugin.utils.QuickMath;
 import org.mariuszgromada.math.mxparser.Argument;
@@ -8,7 +7,7 @@ import org.mariuszgromada.math.mxparser.Expression;
 
 import java.math.BigDecimal;
 
-public class BankRevenueFunction extends ConfigValue<String, Expression> implements NonNativeValue<String, Expression> {
+public class BankRevenueFunction extends ConfigValue<String, Expression> implements NonNativeString<Expression> {
 
     private static final Argument[] ARGS = new Argument[] {
             new Argument("x"), // Total value of bank
@@ -28,20 +27,6 @@ public class BankRevenueFunction extends ConfigValue<String, Expression> impleme
         if (!expression.checkSyntax())
             throw new ExpressionParseException(input);
         return expression;
-    }
-
-    @Override
-    public String cast(Object o) {
-        return (String) o;
-    }
-
-    @Override
-    public Expression translate(String s) throws CorruptedValueException {
-        try {
-            return parse(s);
-        } catch (ExpressionParseException e) {
-            throw new CorruptedValueException();
-        }
     }
 
     @Override

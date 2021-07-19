@@ -114,19 +114,19 @@ public class Bank extends BankingEntity {
 		super(id, name, owner, coowners);
 		this.region = region;
 		this.accounts = new HashSet<>();
-		this.countInterestDelayOffline = Config.countInterestDelayOffline.override(this, countInterestDelayOffline);
-		this.reimburseAccountCreation = Config.reimburseAccountCreation.override(this, reimburseAccountCreation);
-		this.payOnLowBalance = Config.payOnLowBalance.override(this, payOnLowBalance);
-		this.interestRate = Config.interestRate.override(this, interestRate);
-		this.accountCreationPrice = Config.accountCreationPrice.override(this, accountCreationPrice);
-		this.minimumBalance = Config.minimumBalance.override(this, minimumBalance);
-		this.lowBalanceFee = Config.lowBalanceFee.override(this, lowBalanceFee);
-		this.initialInterestDelay = Config.initialInterestDelay.override(this, initialInterestDelay);
-		this.allowedOfflinePayouts = Config.allowedOfflinePayouts.override(this, allowedOfflinePayouts);
-		this.offlineMultiplierDecrement = Config.offlineMultiplierDecrement.override(this, offlineMultiplierDecrement);
-		this.withdrawalMultiplierDecrement = Config.withdrawalMultiplierDecrement.override(this, withdrawalMultiplierDecrement);
-		this.playerBankAccountLimit = Config.playerBankAccountLimit.override(this, playerBankAccountLimit);
-		this.multipliers = Config.multipliers.override(this, multipliers);
+		this.countInterestDelayOffline = Config.countInterestDelayOffline.override(countInterestDelayOffline);
+		this.reimburseAccountCreation = Config.reimburseAccountCreation.override(reimburseAccountCreation);
+		this.payOnLowBalance = Config.payOnLowBalance.override(payOnLowBalance);
+		this.interestRate = Config.interestRate.override(interestRate);
+		this.accountCreationPrice = Config.accountCreationPrice.override(accountCreationPrice);
+		this.minimumBalance = Config.minimumBalance.override(minimumBalance);
+		this.lowBalanceFee = Config.lowBalanceFee.override(lowBalanceFee);
+		this.initialInterestDelay = Config.initialInterestDelay.override(initialInterestDelay);
+		this.allowedOfflinePayouts = Config.allowedOfflinePayouts.override(allowedOfflinePayouts);
+		this.offlineMultiplierDecrement = Config.offlineMultiplierDecrement.override(offlineMultiplierDecrement);
+		this.withdrawalMultiplierDecrement = Config.withdrawalMultiplierDecrement.override(withdrawalMultiplierDecrement);
+		this.playerBankAccountLimit = Config.playerBankAccountLimit.override(playerBankAccountLimit);
+		this.multipliers = Config.multipliers.override(multipliers);
 		this.interestPayoutTimes = Config.interestPayoutTimes.override(this, interestPayoutTimes);
 
 	}

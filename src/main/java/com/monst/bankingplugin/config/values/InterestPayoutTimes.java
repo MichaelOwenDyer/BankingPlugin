@@ -43,7 +43,6 @@ public class InterestPayoutTimes extends OverridableValue<List<String>, Set<Loca
         return set.stream().map(LocalTime::toString).collect(Collectors.toList()); // must cast to List<String> in order to set
     }
 
-    @Override
     public OverriddenValue<Set<LocalTime>> override(Bank bank, Set<LocalTime> value) {
         return new OverriddenValue<Set<LocalTime>>(this, value) {
             @Override

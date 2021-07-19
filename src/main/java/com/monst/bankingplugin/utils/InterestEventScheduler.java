@@ -42,7 +42,7 @@ public class InterestEventScheduler {
      * New repeating tasks will be scheduled for any unique payout times at this bank.
      * Old repeating tasks will be unscheduled if they are not being used by any bank anymore.
      *
-     * @see #scheduleRepeatingPayment(LocalTime)
+     * @see #scheduleRepeatingEventAt(LocalTime)
      * @see InterestEvent
      * @see InterestEventListener
      */
@@ -57,7 +57,7 @@ public class InterestEventScheduler {
 
         for (LocalTime time : bankPayoutTimes) {
             if (TIME_BANK_MAP.putIfAbsent(time, new HashSet<>()) == null) // No other bank has a payout scheduled at this time already
-                PAYOUT_TASK_IDS.put(time, scheduleRepeatingPayment(time)); // Therefore, schedule a new payout task
+                PAYOUT_TASK_IDS.put(time, scheduleRepeatingEventAt(time)); // Therefore, schedule a new payout task
             else
                 PLUGIN.debugf("Bank #%d has scheduled an interest payment at %s, task at this time is already scheduled.", bank.getID(), time.toString());
             TIME_BANK_MAP.get(time).add(bank); // Add the bank to this time's bank set
@@ -80,7 +80,7 @@ public class InterestEventScheduler {
 
         emptyTimes.forEach(TIME_BANK_MAP::remove); // Remove entries for empty times
         if (PLUGIN.isEnabled())
-            emptyTimes.forEach(InterestEventScheduler::unscheduleRepeatingPayment); // Unschedule empty times' payout tasks
+            emptyTimes.forEach(InterestEventScheduler::unscheduleRepeatingEventAt); // Unschedule empty times' payout tasks
 
     }
 
@@ -104,7 +104,7 @@ public class InterestEventScheduler {
         });
         emptyTimes.forEach(TIME_BANK_MAP::remove);
         if (PLUGIN.isEnabled())
-            emptyTimes.forEach(InterestEventScheduler::unscheduleRepeatingPayment);
+            emptyTimes.forEach(InterestEventScheduler::unscheduleRepeatingEventAt);
     }
 
     public static void unscheduleAll() {
@@ -121,7 +121,7 @@ public class InterestEventScheduler {
      * @param time the time to be scheduled
      * @return the ID of the scheduled task, or -1 if the task was not scheduled
      */
-    private static int scheduleRepeatingPayment(LocalTime time) {
+    private static int scheduleRepeatingEventAt(LocalTime time) {
         // 24 hours/day * 60 minutes/hour * 60 seconds/minute *  20 ticks/second = 1728000 ticks/day
         final long ticksInADay = 1728000L;
 
@@ -149,7 +149,7 @@ public class InterestEventScheduler {
      * Unschedules a repeating task which is no longer being used by any bank.
      * @param time the time to unschedule
      */
-    private static void unscheduleRepeatingPayment(LocalTime time) {
+    private static void unscheduleRepeatingEventAt(LocalTime time) {
         if (!PAYOUT_TASK_IDS.containsKey(time))
             return;
         Bukkit.getScheduler().cancelTask(PAYOUT_TASK_IDS.get(time));

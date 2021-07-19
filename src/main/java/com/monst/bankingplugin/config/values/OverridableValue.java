@@ -28,7 +28,7 @@ abstract class OverridableValue<V, T> extends ConfigValue<V, T> {
         PLUGIN.getBankRepository().getAll().forEach(Bank::notifyObservers);
     }
 
-    public OverriddenValue<T> override(Bank bank, T value) {
+    public final OverriddenValue<T> override(T value) {
         return new OverriddenValue<>(this, value);
     }
 
