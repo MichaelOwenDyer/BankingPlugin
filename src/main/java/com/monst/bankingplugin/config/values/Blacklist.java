@@ -1,14 +1,16 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.parse.MaterialParseException;
+import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.EnumSet;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class Blacklist extends SimpleSet<Material> {
+public class Blacklist extends ConfigValue<List<String>, Set<Material>> implements ConfigCollection<Material, Set<Material>> {
 
     public Blacklist() {
         super("blacklist", EnumSet.noneOf(Material.class));
@@ -21,7 +23,12 @@ public class Blacklist extends SimpleSet<Material> {
 
     @Override
     public Material parseSingle(String input) throws MaterialParseException {
-        return Optional.ofNullable(Material.getMaterial(input)).orElseThrow(() -> new MaterialParseException(input));
+        return Parser.parseMaterial(input);
+    }
+
+    @Override
+    public Object convertToStorableType(Set<Material> set) {
+        return set.stream().map(Material::toString).collect(Collectors.toList()); // must cast to List<String> in order to set
     }
 
     public boolean contains(ItemStack item) {

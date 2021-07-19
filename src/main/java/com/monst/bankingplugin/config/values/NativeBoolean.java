@@ -11,7 +11,7 @@ interface NativeBoolean extends NativeValue<Boolean> {
     }
 
     @Override
-    default Boolean convert(Object o) {
+    default Boolean cast(Object o) {
         return (Boolean) o;
     }
 

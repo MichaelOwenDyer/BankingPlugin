@@ -18,12 +18,12 @@ public class NameRegex extends ConfigValue<String, Pattern> implements NonNative
     }
 
     @Override
-    public String convert(Object o) {
+    public String cast(Object o) {
         return (String) o;
     }
 
     @Override
-    public Pattern convertToActualType(String s) throws CorruptedValueException {
+    public Pattern translate(String s) throws CorruptedValueException {
         try {
             return parse(s);
         } catch (PatternParseException e) {

@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.InvalidValueException;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import org.bukkit.configuration.MemoryConfiguration;
 
@@ -9,11 +10,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * A collection of objects stored in the config as a {@link List<String>}.
+ * A collection of objects stored in the config.yml file as a {@link List<String>}.
  * @param <T> the type of object
  * @param <C> the type of collection
  */
-interface IConfigCollection<T, C extends Collection<T>> extends NonNativeValue<List<String>, C> {
+interface ConfigCollection<T, C extends Collection<T>> extends NonNativeValue<List<String>, C> {
 
     @Override
     default C parse(String input) throws ArgumentParseException {
@@ -30,25 +31,28 @@ interface IConfigCollection<T, C extends Collection<T>> extends NonNativeValue<L
 
     @Override
     @SuppressWarnings("unchecked")
-    default List<String> convert(Object o) {
+    default List<String> cast(Object o) {
         return (List<String>) o;
     }
 
     @Override
-    default C convertToActualType(List<String> vs) throws CorruptedValueException {
+    default C translate(List<String> vs) throws InvalidValueException, CorruptedValueException {
         C collection = getEmptyCollection();
         boolean isCorrupted = false;
-        for (String v : vs)
+        for (String v : vs) {
             try {
-                if (!collection.add(parseSingle(v)))
-                    isCorrupted = true; // if object could not be added because it violated a collection constraint
-            } catch (ArgumentParseException e) {
-                isCorrupted = true; // if object could not be parsed
+                T t = parseSingle(v);
+                ensureValidSingle(t);
+                if (!collection.add(t))
+                    isCorrupted = true; // if object could not be added because it violated a constraint
+            } catch (ArgumentParseException | InvalidValueException e) {
+                isCorrupted = true;
             }
+        }
         if (isCorrupted) {
             if (collection.isEmpty())
-                collection = null;
-            throw new CorruptedValueException(collection); // Suggest replacement value for config
+                throw new CorruptedValueException();
+            throw new InvalidValueException(collection); // Suggest replacement value for config
         }
         return collection;
     }
@@ -57,16 +61,13 @@ interface IConfigCollection<T, C extends Collection<T>> extends NonNativeValue<L
 
     T parseSingle(String input) throws ArgumentParseException;
 
+    default void ensureValidSingle(T t) throws InvalidValueException {}
+
     @Override
     default String format(C collection) {
         if (collection.isEmpty())
             return "[]";
         return collection.stream().map(String::valueOf).collect(Collectors.joining(", ")); // do not include [ ]
-    }
-
-    @Override
-    default Object convertToConfigType(C ts) {
-        return ts;
     }
 
 }

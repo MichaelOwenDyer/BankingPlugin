@@ -2,6 +2,7 @@ package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.InvalidValueException;
 import com.monst.bankingplugin.exceptions.MissingValueException;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 
@@ -16,28 +17,16 @@ import java.util.List;
  */
 public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
 
-    protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
+    static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
 
-    protected final String path;
-    protected final T defaultConfiguration;
-    protected T lastSeenValue;
+    private final String path;
+    private final T defaultConfiguration;
+    private T lastSeenValue;
 
-    protected ConfigValue(String path, T defaultConfiguration) {
+    ConfigValue(String path, T defaultConfiguration) {
         this.path = path;
         this.defaultConfiguration = defaultConfiguration;
         get(); // Initialize value in memory
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public final String getFormatted() {
-        return format(get());
-    }
-
-    public List<String> getTabCompletions() {
-        return Collections.singletonList(getFormatted());
     }
 
     @Override
@@ -50,57 +39,62 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
             setDefault();
             PLUGIN.getLogger().info(String.format("Missing config value \"%s\" was added to the config.yml file.", path));
             return lastSeenValue = defaultConfiguration;
+        } catch (InvalidValueException e) {
+            convertAndWriteToFile(e.getReplacement());
+            PLUGIN.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
+            return lastSeenValue = e.getReplacement();
         } catch (CorruptedValueException e) {
-            if (e.hasReplacement()) {
-                setT(e.getReplacement());
-                PLUGIN.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
-                return lastSeenValue = e.getReplacement();
-            } else {
-                setDefault();
-                PLUGIN.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
-                return lastSeenValue = defaultConfiguration;
-            }
+            setDefault();
+            PLUGIN.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
+            return lastSeenValue = defaultConfiguration;
         }
     }
 
     public final T set(@Nonnull String input) throws ArgumentParseException {
         T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
         beforeSet(newValue);
-        setT(newValue);
-        forgetLastSeen();
+        convertAndWriteToFile(newValue);
         afterSet(newValue);
-        return newValue;
+        return lastSeenValue = newValue;
     }
 
-    protected void beforeSet(T newValue) {}
-    protected void afterSet(T newValue) {}
+    void beforeSet(T newValue) {}
+    void afterSet(T newValue) {}
 
     public final void reload() {
-        forgetLastSeen();
-        get();
-    }
-
-    private void forgetLastSeen() {
         lastSeenValue = null;
+        get();
     }
 
     public boolean isHotSwappable() {
         return true;
     }
 
+    public final String getFormatted() {
+        return format(get());
+    }
+
+    public List<String> getTabCompletions() {
+        return Collections.singletonList(getFormatted());
+    }
+
+    public String getPath() {
+        return path;
+    }
+
     private void setDefault() {
-        setT(defaultConfiguration);
+        convertAndWriteToFile(defaultConfiguration);
     }
 
-    private void setT(T t) {
-        setObject(convertToConfigType(t));
+    private void convertAndWriteToFile(T t) {
+        writeToFile(convertToStorableType(t));
     }
 
-    private void setObject(Object o) {
-        PLUGIN.getConfig().set(path, o);
+    private void writeToFile(Object o) {
+        write(PLUGIN.getConfig(), path, o);
     }
 
-    private T readFromFile() throws MissingValueException, CorruptedValueException {
+    private T readFromFile() throws MissingValueException, InvalidValueException, CorruptedValueException {
         return read(PLUGIN.getConfig(), path);
     }
 

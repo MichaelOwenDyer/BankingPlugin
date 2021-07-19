@@ -14,7 +14,7 @@ public class LanguageFile extends ConfigValue<String, String> implements NativeS
     }
 
     @Override
-    protected void afterSet(String newValue) {
+    void afterSet(String newValue) {
         PLUGIN.reloadLanguageConfig();
     }
 

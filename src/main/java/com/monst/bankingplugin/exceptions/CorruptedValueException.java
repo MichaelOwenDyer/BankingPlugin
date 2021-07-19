@@ -1,25 +1,8 @@
 package com.monst.bankingplugin.exceptions;
 
+/**
+ * Thrown when a configuration value in the config.yml file is unreadable and must be reset to its default.
+ */
 public class CorruptedValueException extends Exception {
-
-    private final Object replacement;
-
-    public CorruptedValueException() {
-        super();
-        replacement = null;
-    }
-
-    public CorruptedValueException(Object replacement) {
-        this.replacement = replacement;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getReplacement() {
-        return (T) replacement;
-    }
-
-    public boolean hasReplacement() {
-        return replacement != null;
-    }
 
 }

@@ -15,13 +15,8 @@ interface NativeString extends NativeValue<String> {
     }
 
     @Override
-    default String convert(Object o) {
+    default String cast(Object o) {
         return (String) o;
-    }
-
-    @Override
-    default String format(String value) {
-        return value;
     }
 
 }

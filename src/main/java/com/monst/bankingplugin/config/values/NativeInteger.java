@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
-import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.InvalidValueException;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.utils.Parser;
 
@@ -12,19 +12,17 @@ interface NativeInteger extends NativeValue<Integer> {
     }
 
     @Override
-    default Integer convert(Object o) throws CorruptedValueException {
-        if (!(o instanceof Number))
-            throw new CorruptedValueException();
-        if (!(o instanceof Integer)) // Value is a number, but not an integer
-            throw new CorruptedValueException(((Number) o).intValue()); // Repair it
+    default Integer cast(Object o) throws InvalidValueException {
+        if (!(o instanceof Integer))
+            throw new InvalidValueException(((Number) o).intValue());
         return (Integer) o;
     }
 
     interface Absolute extends NativeInteger {
         @Override
-        default void ensureValid(Integer i) throws CorruptedValueException {
+        default void ensureValid(Integer i) throws InvalidValueException {
             if (i < 0)
-                throw new CorruptedValueException(Math.abs(i));
+                throw new InvalidValueException(Math.abs(i));
         }
     }
 

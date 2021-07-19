@@ -1,23 +1,27 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.InvalidValueException;
 import com.monst.bankingplugin.exceptions.MissingValueException;
 import org.bukkit.configuration.MemoryConfiguration;
 
+/**
+ * A configuration value stored non-natively in the config.yml file.
+ * The value must be stored in a different type than its own and then reconstructed.
+ * @param <V> the stored type of the value
+ * @param <T> the actual type of the value
+ */
 interface NonNativeValue<V, T> extends ConfigurationValue<V, T> {
 
-    default T read(MemoryConfiguration config, String path) throws MissingValueException, CorruptedValueException {
+    default T read(MemoryConfiguration config, String path) throws MissingValueException, InvalidValueException, CorruptedValueException {
         Object o = get(config, path);
-        if (o == null)
-            throw new MissingValueException();
-        return convertToActualType(attemptConversion(o));
+        ensurePresent(o);
+        V v = reconstructFromYaml(o);
+        T t = translate(v);
+        ensureValid(t);
+        return t;
     }
 
-    T convertToActualType(V v) throws CorruptedValueException;
-
-    @Override
-    default Object convertToConfigType(T t) {
-        return format(t);
-    }
+    T translate(V v) throws InvalidValueException, CorruptedValueException;
 
 }

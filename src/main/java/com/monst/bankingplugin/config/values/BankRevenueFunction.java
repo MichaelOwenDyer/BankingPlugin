@@ -31,12 +31,12 @@ public class BankRevenueFunction extends ConfigValue<String, Expression> impleme
     }
 
     @Override
-    public String convert(Object o) {
+    public String cast(Object o) {
         return (String) o;
     }
 
     @Override
-    public Expression convertToActualType(String s) throws CorruptedValueException {
+    public Expression translate(String s) throws CorruptedValueException {
         try {
             return parse(s);
         } catch (ExpressionParseException e) {

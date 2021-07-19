@@ -53,6 +53,6 @@ public class OverriddenValue<T> {
         return overrideCompliant;
     }
 
-    protected void afterSet() {}
+    void afterSet() {}
 
 }

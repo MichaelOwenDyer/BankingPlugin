@@ -8,19 +8,21 @@ import com.monst.bankingplugin.utils.Parser;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * An ordered set of times of the day.
  */
-public class InterestPayoutTimes extends OverridableSet<LocalTime> {
+public class InterestPayoutTimes extends OverridableValue<List<String>, Set<LocalTime>> implements ConfigCollection<LocalTime, Set<LocalTime>> {
 
     public InterestPayoutTimes() {
         super("interest-payout-times", Collections.emptySet());
     }
 
     @Override
-    protected void afterSet(Set<LocalTime> newValue) {
+    void afterSet(Set<LocalTime> newValue) {
         super.afterSet(newValue);
         if (PLUGIN.isEnabled())
             InterestEventScheduler.scheduleAllBanks();
@@ -37,10 +39,15 @@ public class InterestPayoutTimes extends OverridableSet<LocalTime> {
     }
 
     @Override
+    public Object convertToStorableType(Set<LocalTime> set) {
+        return set.stream().map(LocalTime::toString).collect(Collectors.toList()); // must cast to List<String> in order to set
+    }
+
+    @Override
     public OverriddenValue<Set<LocalTime>> override(Bank bank, Set<LocalTime> value) {
         return new OverriddenValue<Set<LocalTime>>(this, value) {
             @Override
-            protected void afterSet() {
+            void afterSet() {
                 InterestEventScheduler.scheduleBank(bank);
             }
         };

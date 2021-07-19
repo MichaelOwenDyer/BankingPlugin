@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
-import com.monst.bankingplugin.exceptions.CorruptedValueException;
+import com.monst.bankingplugin.exceptions.InvalidValueException;
 import com.monst.bankingplugin.exceptions.parse.DoubleParseException;
 import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.QuickMath;
@@ -14,9 +14,7 @@ interface NativeDouble extends NativeValue<Double> {
     }
 
     @Override
-    default Double convert(Object o) throws CorruptedValueException {
-        if (!(o instanceof Number))
-            throw new CorruptedValueException();
+    default Double cast(Object o) {
         return ((Number) o).doubleValue();
     }
 
@@ -27,9 +25,9 @@ interface NativeDouble extends NativeValue<Double> {
 
     interface Absolute extends NativeDouble {
         @Override
-        default void ensureValid(Double d) throws CorruptedValueException {
+        default void ensureValid(Double d) throws InvalidValueException {
             if (d < 0)
-                throw new CorruptedValueException(Math.abs(d));
+                throw new InvalidValueException(Math.abs(d));
         }
     }
 
