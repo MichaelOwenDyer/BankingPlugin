@@ -41,8 +41,8 @@ public class WorldGuardListener extends BankingPluginListener {
 		if (!plugin.isWorldGuardIntegrated() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
-		for (Block block : e.getBank().getRegion().getCorners())
-			if (isBankCreationBlockedByWorldGuard((Player) e.getExecutor(), block.getLocation())) {
+		for (Location loc : e.getBank().getRegion().getCorners())
+			if (isBankCreationBlockedByWorldGuard((Player) e.getExecutor(), loc)) {
 				e.setCancelled(true);
 				plugin.debug("Bank create event cancelled by WorldGuard");
 				return;
@@ -54,8 +54,8 @@ public class WorldGuardListener extends BankingPluginListener {
 		if (!plugin.isWorldGuardIntegrated() || e.getExecutor().hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS))
 			return;
 
-		for (Block block : e.getNewRegion().getCorners())
-			if (isBankCreationBlockedByWorldGuard((Player) e.getExecutor(), block.getLocation())) {
+		for (Location loc : e.getNewRegion().getCorners())
+			if (isBankCreationBlockedByWorldGuard((Player) e.getExecutor(), loc)) {
 				e.setCancelled(true);
 				plugin.debug("Bank resize event cancelled by WorldGuard");
 				return;

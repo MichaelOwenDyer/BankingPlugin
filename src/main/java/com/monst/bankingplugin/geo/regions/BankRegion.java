@@ -174,11 +174,11 @@ public abstract class BankRegion {
 	 *
 	 * @return a {@link List<Block>} representing all corner {@link Block}s.
 	 */
-	public List<Block> getCorners() {
-		List<Block> vertices = new LinkedList<>();
+	public List<Location> getCorners() {
+		List<Location> vertices = new LinkedList<>();
 		for (BlockVector2D bv : getVertices()) {
-			vertices.add(world.getBlockAt(bv.getX(), getMinY(), bv.getZ()));
-			vertices.add(world.getBlockAt(bv.getX(), getMaxY(), bv.getZ()));
+			vertices.add(new Location(world, bv.getX(), getMinY(), bv.getZ()));
+			vertices.add(new Location(world, bv.getX(), getMaxY(), bv.getZ()));
 		}
 		return vertices;
 	}

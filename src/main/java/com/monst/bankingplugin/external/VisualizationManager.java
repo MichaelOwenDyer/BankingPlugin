@@ -48,12 +48,13 @@ public class VisualizationManager {
         Utils.bukkitRunnable(() -> {
             Visualization visualization = new Visualization();
             for (BankRegion region : bankRegions)
-                visualization.elements.addAll(getRegionElements(region, p.getLocation(), type));
+                visualization.elements.addAll(getRegionElements(region, type));
+            visualization.elements.removeIf(element -> outOfRange(p.getLocation(), element.location));
             Callback.callSyncResult(callback, visualization);
         }).runTaskAsynchronously(BankingPlugin.getInstance());
     }
 
-    private static List<VisualizationElement> getRegionElements(BankRegion sel, Location playerLoc, VisualizationType type) {
+    private static List<VisualizationElement> getRegionElements(BankRegion sel, VisualizationType type) {
         final int step = 10;
         final World world = sel.getWorld();
         List<VisualizationElement> newElements = new ArrayList<>();
@@ -61,7 +62,6 @@ public class VisualizationManager {
         if (sel.isCuboid()) {
             // Add blocks at vertices
             sel.getCorners().stream()
-                    .map(Block::getLocation)
                     .map(location -> new VisualizationElement(location, type.cornerBlockData, null))
                     .forEach(newElements::add);
 
@@ -109,7 +109,6 @@ public class VisualizationManager {
         } else {
             // Add blocks at vertices
             sel.getCorners().stream()
-                    .map(Block::getLocation)
                     .map(loc -> new VisualizationElement(loc, type.cornerBlockData, null))
                     .forEach(newElements::add);
 
@@ -180,9 +179,6 @@ public class VisualizationManager {
                 }
             }
         }
-
-        // Remove elements that are too far away (>100 blocks) from player
-        newElements.removeIf(e -> outOfRange(playerLoc, e.location));
 
         return newElements;
     }
