@@ -99,9 +99,9 @@ public class BankCommand extends BankingPluginCommand<BankCommand.SubCommand> {
 		static String getCoordLookingAt(Player p, int argLength) {
 			Location loc = p.getTargetBlock(null, 150).getLocation();
 			switch (argLength % 3) {
-				case 0: return "" + loc.getBlockX();
-				case 1: return "" + loc.getBlockY();
-				case 2: return "" + loc.getBlockZ();
+				case 0: return "" + loc.getBlockY();
+				case 1: return "" + loc.getBlockZ();
+				case 2: return "" + loc.getBlockX();
 			}
 			return "";
 		}

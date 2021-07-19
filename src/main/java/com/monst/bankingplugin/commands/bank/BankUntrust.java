@@ -93,21 +93,21 @@ public class BankUntrust extends BankCommand.SubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        if (args.length == 2) {
+        if (args.length == 1) {
             return bankRepo.getAll().stream()
                     .filter(bank -> bank.isOwner(p)
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRUST_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRUST_ADMIN)))
                     .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
-        } else if (args.length == 3) {
+        } else if (args.length == 2) {
             Bank bank = PLUGIN.getBankRepository().getByIdentifier(args[1]);
             if (bank == null)
                 return Collections.emptyList();
             List<String> coowners = bank.getCoOwners().stream().map(OfflinePlayer::getName).collect(Collectors.toList());
-            return Utils.filter(coowners, name -> Utils.startsWithIgnoreCase(name, args[2]));
+            return Utils.filter(coowners, name -> Utils.startsWithIgnoreCase(name, args[1]));
         }
         return Collections.emptyList();
     }

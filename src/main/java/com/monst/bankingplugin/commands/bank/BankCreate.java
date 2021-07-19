@@ -184,21 +184,21 @@ public class BankCreate extends BankCommand.SubCommand {
         Player p = ((Player) sender);
         ArrayList<String> returnCompletions = new ArrayList<>();
 
-        if (args.length == 1 || Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase("admin")))
+        if (args.length == 0 || Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase("admin")))
             return Collections.emptyList();
 
-        if (args.length == 2)
+        if (args.length == 1)
             return Collections.singletonList("<name>");
 
-        if (args.length % 3 == 0 && p.hasPermission(Permissions.BANK_CREATE_ADMIN))
+        if (args.length % 3 == 2 && p.hasPermission(Permissions.BANK_CREATE_ADMIN))
             returnCompletions.add("admin");
 
-        if (args.length >= 9)
+        if (args.length >= 8)
             return returnCompletions;
 
         String coord = getCoordLookingAt(p, args.length);
         if (coord.startsWith(args[args.length - 1]))
-            returnCompletions.add("" + coord);
+            returnCompletions.add(coord);
         return returnCompletions;
     }
 

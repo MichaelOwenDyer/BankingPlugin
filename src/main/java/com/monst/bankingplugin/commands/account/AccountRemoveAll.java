@@ -101,7 +101,7 @@ public class AccountRemoveAll extends AccountCommand.SubCommand implements Confi
         if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
-        return Utils.filter(Utils.getOnlinePlayerNames(PLUGIN), name -> !argList.contains(name));
+        return Utils.filter(Utils.getOnlinePlayerNames(), name -> !argList.contains(name));
     }
 
 }

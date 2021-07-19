@@ -102,24 +102,24 @@ public class BankConfigure extends BankCommand.SubCommand {
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length == 2)
+        if (args.length == 1)
             return bankRepo.getAll().stream()
                     .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
                     .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
-        else if (args.length == 3 && bankRepo.getByIdentifier(args[1]) != null) {
+        else if (args.length == 2 && bankRepo.getByIdentifier(args[0]) != null) {
             return BankField.streamConfigurable()
                     .map(BankField::toString)
-                    .filter(name -> Utils.containsIgnoreCase(name, args[2]))
+                    .filter(name -> Utils.containsIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
-        } else if (args.length == 4) {
-            Bank bank = bankRepo.getByIdentifier(args[1]);
-            BankField field = BankField.getByName(args[2]);
+        } else if (args.length == 3) {
+            Bank bank = bankRepo.getByIdentifier(args[0]);
+            BankField field = BankField.getByName(args[1]);
             if (bank != null && field != null)
                 return Collections.singletonList(bank.get(field).getFormatted());
         }

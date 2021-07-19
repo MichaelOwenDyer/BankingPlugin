@@ -72,7 +72,7 @@ public class AccountList extends AccountCommand.SubCommand {
         if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
-        return Utils.filter(Utils.getOnlinePlayerNames(PLUGIN), name -> !argList.contains(name));
+        return Utils.filter(Utils.getOnlinePlayerNames(), name -> !argList.contains(name));
     }
 
 }

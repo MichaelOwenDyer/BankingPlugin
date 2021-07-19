@@ -5,6 +5,7 @@ import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
@@ -69,24 +70,18 @@ public abstract class BankingPluginSubCommand {
      * @return The help message for the command.
      */
     String getHelpMessage(CommandSender sender, String commandName) {
-        return hasPermission(sender, getPermission()) ?
-                LangUtils.getMessage(getUsageMessage(), new Replacement(Placeholder.COMMAND, commandName)) : "";
+        if (hasPermission(sender, getPermission()))
+            return LangUtils.getMessage(getUsageMessage(), new Replacement(Placeholder.COMMAND, commandName));
+        return "";
     }
 
     protected boolean hasPermission(CommandSender sender, String permission) {
-        if (permission == null || permission.isEmpty() || sender == null)
+        if (permission == null || sender == null || permission.isEmpty() || sender.hasPermission(permission))
             return true;
-        boolean hasPermission = sender.hasPermission(permission);
-        if (!hasPermission) {
-            for (PermissionAttachmentInfo permInfo : sender.getEffectivePermissions()) {
-                String perm = permInfo.getPermission();
-                if (perm.startsWith(permission) && sender.hasPermission(perm)) {
-                    hasPermission = true;
-                    break;
-                }
-            }
-        }
-        return hasPermission;
+        for (PermissionAttachmentInfo permInfo : sender.getEffectivePermissions())
+            if (Utils.startsWithIgnoreCase(permInfo.getPermission(), permission) && permInfo.getValue())
+                return true;
+        return false;
     }
 
 }

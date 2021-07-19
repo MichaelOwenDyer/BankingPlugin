@@ -76,7 +76,7 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
     }
 
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length == 3)
+        if (args.length == 2)
             return Collections.singletonList(getFormatted());
         return Collections.emptyList();
     }

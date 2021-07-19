@@ -23,7 +23,7 @@ public class LanguageFile extends ConfigValue<String, String> implements NativeS
 
     @Override
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length > 3)
+        if (args.length > 2)
             return Collections.emptyList();
         Stream.Builder<String> tabCompletions = Stream.builder();
         tabCompletions.accept(getFormatted());

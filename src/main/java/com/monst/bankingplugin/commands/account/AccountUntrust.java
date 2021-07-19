@@ -68,10 +68,10 @@ public class AccountUntrust extends AccountCommand.SubCommand {
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length != 2)
+        if (args.length != 1)
             return Collections.emptyList();
-        return Utils.filter(Utils.getOnlinePlayerNames(PLUGIN),
-                name -> Utils.startsWithIgnoreCase(name, args[1]));
+        return Utils.filter(Utils.getOnlinePlayerNames(),
+                name -> Utils.startsWithIgnoreCase(name, args[0]));
     }
 
     public static void untrust(Player executor, Account account, OfflinePlayer playerToUntrust) {

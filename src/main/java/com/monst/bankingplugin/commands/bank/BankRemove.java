@@ -101,13 +101,13 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length == 2) {
+        if (args.length == 1) {
             return bankRepo.getAll().stream()
                     .filter(bank -> (sender instanceof Player && bank.isOwner((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)))
                     .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         }

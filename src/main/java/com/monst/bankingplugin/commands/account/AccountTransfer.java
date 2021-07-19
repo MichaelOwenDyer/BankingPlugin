@@ -74,13 +74,13 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length != 2)
+        if (args.length != 1)
             return Collections.emptyList();
 
-        List<String> returnCompletions = Utils.getOnlinePlayerNames(PLUGIN);
+        List<String> returnCompletions = Utils.getOnlinePlayerNames();
         if (!sender.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
             returnCompletions.remove(sender.getName());
-        return Utils.filter(returnCompletions, string -> Utils.startsWithIgnoreCase(string, args[1]));
+        return Utils.filter(returnCompletions, string -> Utils.startsWithIgnoreCase(string, args[0]));
     }
 
     public void transfer(Player p, Account account, OfflinePlayer newOwner) {

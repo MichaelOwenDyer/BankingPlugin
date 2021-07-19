@@ -13,6 +13,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -128,15 +129,18 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 				return Collections.emptyList();
 			if (args.length == 0)
 				return Collections.emptyList();
+
+			String subCommandName = args[0];
 			if (args.length == 1)
 				return subCommands.stream()
 						.map(BankingPluginSubCommand::getName)
-						.filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+						.filter(name -> Utils.startsWithIgnoreCase(name, subCommandName))
 						.collect(Collectors.toList());
 
+			String[] arguments = Arrays.copyOfRange(args, 1, args.length);
 			for (SubCommand subCommand : subCommands)
-				if (subCommand.getName().equalsIgnoreCase(args[0]))
-					return subCommand.getTabCompletions(sender, args);
+				if (subCommand.getName().equalsIgnoreCase(subCommandName))
+					return subCommand.getTabCompletions(sender, arguments);
 
 			return Collections.emptyList();
 		}

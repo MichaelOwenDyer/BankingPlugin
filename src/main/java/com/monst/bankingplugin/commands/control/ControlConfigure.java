@@ -94,10 +94,10 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         if (!sender.hasPermission(Permissions.CONFIG))
             return Collections.emptyList();
 
-        if (args.length == 2)
-            return Config.matchPath(args[1]);
+        if (args.length == 1)
+            return Config.matchPath(args[0]);
 
-        ConfigValue<?, ?> configValue = Config.getByPath(args[1]);
+        ConfigValue<?, ?> configValue = Config.getByPath(args[0]);
         if (configValue == null)
             return Collections.emptyList();
         return configValue.getTabCompletions(sender, args);

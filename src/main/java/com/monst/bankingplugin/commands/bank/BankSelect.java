@@ -87,11 +87,11 @@ public class BankSelect extends BankCommand.SubCommand {
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length == 2 && sender.hasPermission(Permissions.BANK_SELECT)) {
+        if (args.length == 1 && sender.hasPermission(Permissions.BANK_SELECT)) {
             return bankRepo.getAll().stream()
                     .map(Bank::getName)
                     .sorted()
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();

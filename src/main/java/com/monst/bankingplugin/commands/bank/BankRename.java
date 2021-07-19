@@ -108,9 +108,9 @@ public class BankRename extends BankCommand.SubCommand {
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length == 2) {
+        if (args.length == 1) {
             Bank bank = sender instanceof Player ? bankRepo.getAt(((Player) sender).getLocation().getBlock()) : null;
-            if (args[1].isEmpty() && bank != null)
+            if (args[0].isEmpty() && bank != null)
                 return Collections.singletonList(bank.getName());
 
             return bankRepo.getAll().stream()
@@ -118,7 +118,7 @@ public class BankRename extends BankCommand.SubCommand {
                             || (b.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (b.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))
                     .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         }

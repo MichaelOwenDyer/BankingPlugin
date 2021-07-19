@@ -122,11 +122,11 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length != 2 || !sender.hasPermission(Permissions.ACCOUNT_CONFIGURE))
+        if (args.length != 1 || !sender.hasPermission(Permissions.ACCOUNT_CONFIGURE))
             return Collections.emptyList();
         return Stream.of(AccountField.MULTIPLIER_STAGE, AccountField.DELAY_UNTIL_NEXT_PAYOUT, AccountField.REMAINING_OFFLINE_PAYOUTS)
                 .map(AccountField::toString)
-                .filter(field -> Utils.containsIgnoreCase(field, args[1]))
+                .filter(field -> Utils.containsIgnoreCase(field, args[0]))
                 .collect(Collectors.toList());
     }
 

@@ -40,10 +40,10 @@ public class BankInfo extends BankCommand.SubCommand {
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length == 2)
+        if (args.length == 1)
             return bankRepo.getAll().stream()
                     .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         return Collections.emptyList();

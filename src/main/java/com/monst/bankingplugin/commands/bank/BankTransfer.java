@@ -132,23 +132,23 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        if (args.length == 2) {
+        if (args.length == 1) {
             return bankRepo.getAll().stream()
                     .filter(bank -> bank.isOwner(p)
                             || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRANSFER_OTHER))
                             || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
                     .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
-        } else if (args.length == 3) {
-            List<String> onlinePlayers = Utils.getOnlinePlayerNames(PLUGIN);
+        } else if (args.length == 2) {
+            List<String> onlinePlayers = Utils.getOnlinePlayerNames();
             if (!p.hasPermission(Permissions.BANK_TRANSFER_OTHER) && !p.hasPermission(Permissions.BANK_TRANSFER_ADMIN))
                 onlinePlayers.remove(p.getName());
-            Bank bank = bankRepo.getByIdentifier(args[1]);
+            Bank bank = bankRepo.getByIdentifier(args[0]);
             if (bank != null && bank.isPlayerBank())
                 onlinePlayers.remove(bank.getOwner().getName());
-            return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[2]));
+            return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[1]));
         }
         return Collections.emptyList();
     }

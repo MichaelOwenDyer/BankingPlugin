@@ -194,8 +194,8 @@ public class Utils {
 		return Bukkit.getOfflinePlayer(uuid);
 	}
 
-	public static List<String> getOnlinePlayerNames(BankingPlugin plugin) {
-		return plugin.getServer().getOnlinePlayers().stream()
+	public static List<String> getOnlinePlayerNames() {
+		return Bukkit.getServer().getOnlinePlayers().stream()
 				.map(HumanEntity::getName)
 				.sorted()
 				.collect(Collectors.toList());

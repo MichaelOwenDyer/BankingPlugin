@@ -165,17 +165,16 @@ public class BankResize extends BankCommand.SubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        if (args.length == 2) {
+        if (args.length == 1) {
             return bankRepo.getAll().stream()
                     .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[1]))
+                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
-        } else if (args.length > 2) {
-            String coord = getCoordLookingAt(p, args.length);
-            if (coord.startsWith(args[args.length - 1]))
-                return Collections.singletonList("" + coord);
         }
+        String coord = getCoordLookingAt(p, args.length);
+        if (coord.startsWith(args[args.length - 1]))
+            return Collections.singletonList(coord);
         return Collections.emptyList();
     }
 
