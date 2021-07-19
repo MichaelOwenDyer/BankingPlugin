@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public interface IConfigSet<T> extends IConfigCollection<T, Set<T>> {
+interface IConfigSet<T> extends IConfigCollection<T, Set<T>> {
 
     @Override
     default Set<T> getEmptyCollection() {

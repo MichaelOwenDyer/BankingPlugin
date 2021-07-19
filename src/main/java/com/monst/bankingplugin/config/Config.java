@@ -1,9 +1,7 @@
 package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.config.values.ConfigValue;
-import com.monst.bankingplugin.config.values.overridable.*;
-import com.monst.bankingplugin.config.values.simple.*;
+import com.monst.bankingplugin.config.values.*;
 import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.utils.Utils;

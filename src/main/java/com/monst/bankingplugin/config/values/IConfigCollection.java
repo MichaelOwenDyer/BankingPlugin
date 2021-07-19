@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * @param <T> the type of object
  * @param <C> the type of collection
  */
-public interface IConfigCollection<T, C extends Collection<T>> extends IBinaryConfigValue<List<String>, C> {
+interface IConfigCollection<T, C extends Collection<T>> extends IBinaryConfigValue<List<String>, C> {
 
     @Override
     default C parse(String input) throws ArgumentParseException {

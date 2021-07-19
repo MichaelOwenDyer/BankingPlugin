@@ -6,7 +6,7 @@ import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 
-public interface IConfigDouble extends IUnaryConfigValue<Double> {
+interface IConfigDouble extends IUnaryConfigValue<Double> {
 
     @Override
     default Double parse(String input) throws DoubleParseException {

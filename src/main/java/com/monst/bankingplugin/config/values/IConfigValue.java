@@ -7,7 +7,7 @@ import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.function.Supplier;
 
-public interface IConfigValue<V, T> extends Supplier<T> {
+interface IConfigValue<V, T> extends Supplier<T> {
 
     T parse(String input) throws ArgumentParseException;
 

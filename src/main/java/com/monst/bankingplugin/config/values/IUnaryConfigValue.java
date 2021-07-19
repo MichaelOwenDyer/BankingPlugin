@@ -4,7 +4,7 @@ import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.MissingValueException;
 import org.bukkit.configuration.MemoryConfiguration;
 
-public interface IUnaryConfigValue<T> extends IConfigValue<T, T> {
+interface IUnaryConfigValue<T> extends IConfigValue<T, T> {
 
     @Override
     default T read(MemoryConfiguration config, String path) throws MissingValueException, CorruptedValueException {

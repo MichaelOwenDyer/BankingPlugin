@@ -4,7 +4,7 @@ import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.utils.Parser;
 
-public interface IConfigInteger extends IUnaryConfigValue<Integer> {
+interface IConfigInteger extends IUnaryConfigValue<Integer> {
 
     @Override
     default Integer parse(String input) throws IntegerParseException {
