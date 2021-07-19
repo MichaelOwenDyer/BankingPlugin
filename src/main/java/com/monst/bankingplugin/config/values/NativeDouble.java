@@ -6,7 +6,7 @@ import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 
-interface IConfigDouble extends IUnaryConfigValue<Double> {
+interface NativeDouble extends NativeValue<Double> {
 
     @Override
     default Double parse(String input) throws DoubleParseException {
@@ -14,7 +14,7 @@ interface IConfigDouble extends IUnaryConfigValue<Double> {
     }
 
     @Override
-    default Double cast(Object o) throws CorruptedValueException {
+    default Double convert(Object o) throws CorruptedValueException {
         if (!(o instanceof Number))
             throw new CorruptedValueException();
         return ((Number) o).doubleValue();
@@ -25,7 +25,7 @@ interface IConfigDouble extends IUnaryConfigValue<Double> {
         return Utils.format(value);
     }
 
-    interface Absolute extends IConfigDouble {
+    interface Absolute extends NativeDouble {
         @Override
         default void ensureValid(Double d) throws CorruptedValueException {
             if (d < 0)

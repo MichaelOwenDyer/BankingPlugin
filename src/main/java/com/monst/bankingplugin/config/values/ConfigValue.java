@@ -14,7 +14,7 @@ import java.util.List;
  * @param <V> the type the value is stored as in the file
  * @param <T> the real type of the config value
  */
-public abstract class ConfigValue<V, T> implements IConfigValue<V, T> {
+public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
 
     protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
 

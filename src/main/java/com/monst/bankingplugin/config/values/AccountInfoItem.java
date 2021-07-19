@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class AccountInfoItem extends ConfigValue<String, ItemStack> implements IBinaryConfigValue<String, ItemStack> {
+public class AccountInfoItem extends ConfigValue<String, ItemStack> implements NonNativeValue<String, ItemStack> {
 
     public AccountInfoItem() {
         super("account-info-item", new ItemStack(Material.STICK));
@@ -20,7 +20,7 @@ public class AccountInfoItem extends ConfigValue<String, ItemStack> implements I
     }
 
     @Override
-    public String cast(Object o) {
+    public String convert(Object o) {
         return (String) o;
     }
 

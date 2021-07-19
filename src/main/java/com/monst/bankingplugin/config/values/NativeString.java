@@ -2,7 +2,7 @@ package com.monst.bankingplugin.config.values;
 
 import org.bukkit.configuration.MemoryConfiguration;
 
-interface IConfigString extends IUnaryConfigValue<String> {
+interface NativeString extends NativeValue<String> {
 
     @Override
     default String parse(String input) {
@@ -15,7 +15,7 @@ interface IConfigString extends IUnaryConfigValue<String> {
     }
 
     @Override
-    default String cast(Object o) {
+    default String convert(Object o) {
         return (String) o;
     }
 

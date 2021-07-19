@@ -4,7 +4,7 @@ import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.utils.Parser;
 
-interface IConfigInteger extends IUnaryConfigValue<Integer> {
+interface NativeInteger extends NativeValue<Integer> {
 
     @Override
     default Integer parse(String input) throws IntegerParseException {
@@ -12,7 +12,7 @@ interface IConfigInteger extends IUnaryConfigValue<Integer> {
     }
 
     @Override
-    default Integer cast(Object o) throws CorruptedValueException {
+    default Integer convert(Object o) throws CorruptedValueException {
         if (!(o instanceof Number))
             throw new CorruptedValueException();
         if (!(o instanceof Integer)) // Value is a number, but not an integer
@@ -20,7 +20,7 @@ interface IConfigInteger extends IUnaryConfigValue<Integer> {
         return (Integer) o;
     }
 
-    interface Absolute extends IConfigInteger {
+    interface Absolute extends NativeInteger {
         @Override
         default void ensureValid(Integer i) throws CorruptedValueException {
             if (i < 0)

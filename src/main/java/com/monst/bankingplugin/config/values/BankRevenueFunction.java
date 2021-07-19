@@ -8,7 +8,7 @@ import org.mariuszgromada.math.mxparser.Expression;
 
 import java.math.BigDecimal;
 
-public class BankRevenueFunction extends ConfigValue<String, Expression> implements IBinaryConfigValue<String, Expression> {
+public class BankRevenueFunction extends ConfigValue<String, Expression> implements NonNativeValue<String, Expression> {
 
     private static final Argument[] ARGS = new Argument[] {
             new Argument("x"), // Total value of bank
@@ -31,7 +31,7 @@ public class BankRevenueFunction extends ConfigValue<String, Expression> impleme
     }
 
     @Override
-    public String cast(Object o) {
+    public String convert(Object o) {
         return (String) o;
     }
 

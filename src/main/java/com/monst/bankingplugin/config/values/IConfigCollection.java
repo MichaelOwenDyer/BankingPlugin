@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * @param <T> the type of object
  * @param <C> the type of collection
  */
-interface IConfigCollection<T, C extends Collection<T>> extends IBinaryConfigValue<List<String>, C> {
+interface IConfigCollection<T, C extends Collection<T>> extends NonNativeValue<List<String>, C> {
 
     @Override
     default C parse(String input) throws ArgumentParseException {
@@ -30,7 +30,7 @@ interface IConfigCollection<T, C extends Collection<T>> extends IBinaryConfigVal
 
     @Override
     @SuppressWarnings("unchecked")
-    default List<String> cast(Object o) {
+    default List<String> convert(Object o) {
         return (List<String>) o;
     }
 

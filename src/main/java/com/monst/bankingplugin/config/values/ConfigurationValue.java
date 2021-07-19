@@ -7,7 +7,7 @@ import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.function.Supplier;
 
-interface IConfigValue<V, T> extends Supplier<T> {
+interface ConfigurationValue<V, T> extends Supplier<T> {
 
     T parse(String input) throws ArgumentParseException;
 
@@ -20,9 +20,9 @@ interface IConfigValue<V, T> extends Supplier<T> {
         return config.get(path, null); // Use generic method get() to preserve nullability and ensure value presence
     }
 
-    default V tryCast(Object o) throws CorruptedValueException {
+    default V attemptConversion(Object o) throws CorruptedValueException {
         try {
-            return cast(o);
+            return convert(o);
         } catch (ClassCastException e) {
             throw new CorruptedValueException();
         }
@@ -34,7 +34,7 @@ interface IConfigValue<V, T> extends Supplier<T> {
      * @throws ClassCastException if the object is of an unrelated type - the entry will be reset.
      * @throws CorruptedValueException if the object is of a related (but still incorrect) type - the entry will be repaired.
      */
-    V cast(Object o) throws CorruptedValueException;
+    V convert(Object o) throws CorruptedValueException;
 
     default String format(T t) {
         return String.valueOf(t);

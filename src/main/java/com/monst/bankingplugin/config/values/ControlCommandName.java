@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
-public class ControlCommandName extends SimpleString {
+public class ControlCommandName extends ConfigValue<String, String> implements NativeString {
 
     public ControlCommandName() {
         super("command-name-control", "bp");

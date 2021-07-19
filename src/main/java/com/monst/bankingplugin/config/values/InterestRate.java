@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 
-public class InterestRate extends OverridableDouble {
+public class InterestRate extends OverridableValue<Double, Double> implements NativeDouble {
 
     private static final NumberFormat FORMATTER = NumberFormat.getInstance();
     static {

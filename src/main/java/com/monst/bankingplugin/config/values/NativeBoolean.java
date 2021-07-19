@@ -3,7 +3,7 @@ package com.monst.bankingplugin.config.values;
 import com.monst.bankingplugin.exceptions.parse.BooleanParseException;
 import com.monst.bankingplugin.utils.Parser;
 
-interface IConfigBoolean extends IUnaryConfigValue<Boolean> {
+interface NativeBoolean extends NativeValue<Boolean> {
 
     @Override
     default Boolean parse(String input) throws BooleanParseException {
@@ -11,7 +11,7 @@ interface IConfigBoolean extends IUnaryConfigValue<Boolean> {
     }
 
     @Override
-    default Boolean cast(Object o) {
+    default Boolean convert(Object o) {
         return (Boolean) o;
     }
 

@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
-public class EnableDebugLog extends SimpleBoolean {
+public class EnableDebugLog extends ConfigValue<Boolean, Boolean> implements NativeBoolean {
 
     public EnableDebugLog() {
         super("enable-debug-log", false);

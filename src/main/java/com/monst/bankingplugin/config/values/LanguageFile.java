@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class LanguageFile extends SimpleString {
+public class LanguageFile extends ConfigValue<String, String> implements NativeString {
 
     public LanguageFile() {
         super("language-file", "en_US");

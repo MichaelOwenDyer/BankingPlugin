@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
-public class AllowedOfflinePayouts extends OverridableInteger implements IConfigInteger.Absolute {
+public class AllowedOfflinePayouts extends OverridableValue<Integer, Integer> implements NativeInteger.Absolute {
 
     public AllowedOfflinePayouts() {
         super("allowed-offline-payouts", 1);

@@ -6,7 +6,7 @@ import com.monst.bankingplugin.utils.Parser;
 
 import java.util.regex.Pattern;
 
-public class NameRegex extends ConfigValue<String, Pattern> implements IBinaryConfigValue<String, Pattern> {
+public class NameRegex extends ConfigValue<String, Pattern> implements NonNativeValue<String, Pattern> {
 
     public NameRegex() {
         super("name-regex", Pattern.compile(".*"));
@@ -18,7 +18,7 @@ public class NameRegex extends ConfigValue<String, Pattern> implements IBinaryCo
     }
 
     @Override
-    public String cast(Object o) {
+    public String convert(Object o) {
         return (String) o;
     }
 
