@@ -19,8 +19,15 @@ interface ConfigCollection<T, C extends Collection<T>> extends NonNativeValue<Li
     @Override
     default C parse(String input) throws ArgumentParseException {
         C collection = getEmptyCollection();
-        for (String string : input.split("\\s*(,|\\s)\\s*")) // the entered list may be separated by commas or spaces or both
-            collection.add(parseSingle(string));
+        for (String s : input.split("\\s*(,|\\s)\\s*")) { // the entered list may be separated by commas or spaces or both
+            try {
+                T t = parseSingle(s);
+                ensureValidSingle(t);
+                collection.add(t);
+            } catch (InvalidValueException e) {
+                collection.add(e.getReplacement());
+            }
+        }
         return collection;
     }
 
@@ -45,8 +52,11 @@ interface ConfigCollection<T, C extends Collection<T>> extends NonNativeValue<Li
                 ensureValidSingle(t);
                 if (!collection.add(t))
                     isCorrupted = true; // if object could not be added because it violated a constraint
-            } catch (ArgumentParseException | InvalidValueException e) {
+            } catch (ArgumentParseException e) {
                 isCorrupted = true;
+            } catch (InvalidValueException e) {
+                if (!collection.add(e.getReplacement()))
+                    isCorrupted = true;
             }
         }
         if (isCorrupted) {
