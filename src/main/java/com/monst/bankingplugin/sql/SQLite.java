@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.sql;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -10,6 +11,10 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class SQLite extends Database {
+
+    public SQLite(BankingPlugin plugin) {
+        super(plugin);
+    }
 
     @Override
     HikariDataSource getDataSource() {

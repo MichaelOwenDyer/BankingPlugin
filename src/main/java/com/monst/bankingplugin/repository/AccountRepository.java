@@ -20,12 +20,11 @@ import java.util.*;
 
 public class AccountRepository extends Observable implements Repository<Account, AccountField> {
 
-	private final BankingPlugin plugin;
 	private final Map<AccountLocation, Account> accountLocationMap = new HashMap<>();
 	private final Set<Account> notFoundAccounts = new HashSet<>();
 
     public AccountRepository(BankingPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
 	/**

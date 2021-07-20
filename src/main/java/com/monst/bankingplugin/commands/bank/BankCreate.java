@@ -163,7 +163,7 @@ public class BankCreate extends BankCommand.SubCommand {
                 return true;
         }
 
-        Bank bank = Bank.mint(name, isAdminBank ? null : p, bankRegion);
+        Bank bank = Bank.open(name, isAdminBank ? null : p, bankRegion);
 
         BankCreateEvent event = new BankCreateEvent(p, bank);
         event.fire();

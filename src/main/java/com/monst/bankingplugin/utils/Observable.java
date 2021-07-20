@@ -8,8 +8,14 @@ import java.util.Set;
 
 public abstract class Observable {
 
-    private final Set<GUI<?>> observers = new HashSet<>();
+    protected final BankingPlugin plugin;
+    private final Set<GUI<?>> observers;
     private int queuedUpdates = 0;
+
+    public Observable(BankingPlugin plugin) {
+        this.plugin = plugin;
+        observers = new HashSet<>();
+    }
 
     public void addObserver(GUI<?> observer) {
         observers.add(observer);
@@ -20,10 +26,10 @@ public abstract class Observable {
     }
 
     public void notifyObservers() {
-        if (!BankingPlugin.getInstance().isEnabled())
+        if (!plugin.isEnabled())
             return;
         queuedUpdates++;
-        Utils.runTaskLater(this::executeIfLast, 1);
+        plugin.runLater(this::executeIfLast, 1);
     }
 
     private void executeIfLast() {

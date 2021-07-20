@@ -57,7 +57,7 @@ public abstract class Database {
 		Logger.getLogger("com.zaxxer.hikari.util.DriverDataSource").setLevel(Level.OFF);
 	}
 
-	protected final BankingPlugin plugin = BankingPlugin.getInstance();
+	final BankingPlugin plugin;
 	private final Set<String> unknownWorldNames = new HashSet<>();
 	private final int DATABASE_VERSION = 1;
 	private final ObjectMappers objectMappers = ObjectMappers.builder().build();
@@ -73,6 +73,10 @@ public abstract class Database {
 	final String tableFields = "Fields";
 
 	Query query;
+
+	public Database(BankingPlugin plugin) {
+		this.plugin = plugin;
+	}
 
 	abstract HikariDataSource getDataSource();
 
@@ -103,23 +107,6 @@ public abstract class Database {
 			throw e;
 		};
 	}
-
-	final AfterQueryListener queryLogger = execution -> {
-		if(execution.success()) {
-			plugin.debugf(
-					"Query took %s ms to execute: '%s'",
-					execution.executionTimeMs(),
-					execution.sql()
-			);
-		} else
-			plugin.debug(execution.sqlException().orElseThrow(IllegalStateException::new));
-	};
-
-	final SqlErrorHandler handler = (e, query) -> {
-		plugin.debugf("Encountered a database error while executing query '%s'", query.orElse("null"));
-		plugin.debug(e);
-		throw e;
-	};
 
 	private int getDatabaseVersion() {
 		return query
@@ -164,7 +151,7 @@ public abstract class Database {
 	 *                 that were found (as {@code int[]})
 	 */
 	public void connect(Callback<int[]> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			disconnect();
 
 			ParamSetter<UUID> uuidParamSetter = (uuid, ps, i) -> ps.setString(i, uuid.toString());
@@ -172,6 +159,21 @@ public abstract class Database {
 			paramSetters.put(UUID.class, uuidParamSetter);
 
 			FluentJdbc fluentJdbc;
+			SqlErrorHandler handler = (e, query) -> {
+				plugin.debugf("Encountered a database error while executing query '%s'", query.orElse("null"));
+				plugin.debug(e);
+				throw e;
+			};
+			AfterQueryListener queryLogger = execution -> {
+				if(execution.success()) {
+					plugin.debugf(
+							"Query took %s ms to execute: '%s'",
+							execution.executionTimeMs(),
+							execution.sql()
+					);
+				} else
+					plugin.debug(execution.sqlException().orElseThrow(IllegalStateException::new));
+			};
 			try {
 				dataSource = getDataSource();
 				fluentJdbc = new FluentJdbcBuilder()
@@ -255,7 +257,7 @@ public abstract class Database {
 	 * @param callback Callback that returns the new account ID
 	 */
 	public void addAccount(Account account, Callback<Integer> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Adding account to the database.");
 			final String replaceQuery = "REPLACE INTO " + tableAccounts + "(" + (account.hasID() ? "AccountID, " : "") +
 					"BankID, Nickname, OwnerUUID, Balance, PreviousBalance, MultiplierStage, DelayUntilNextPayout, " +
@@ -288,7 +290,7 @@ public abstract class Database {
 	 * @param callback callback which return returns null on success
 	 */
 	public void updateAccount(Account account, EnumSet<AccountField> fields, Callback<Void> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			String attributes = fields.stream()
 					.map(f -> f.getDatabaseAttribute() + " = ?")
 					.collect(Collectors.joining(", "));
@@ -313,7 +315,7 @@ public abstract class Database {
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
 	public void removeAccount(Account account, Callback<Void> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Removing account #%d from the database.", account.getID());
 
 			long removedCoowners = query.transaction().in(() -> {
@@ -343,7 +345,7 @@ public abstract class Database {
 	 *                 given (as {@code int})
 	 */
 	public void addBank(Bank bank, Callback<Integer> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Adding bank to the database.", bank.getID());
 			final String replaceQuery = "REPLACE INTO " + tableBanks + "(" + (bank.hasID() ? "BankID, " : "") +
 					"Name, OwnerUUID, CountInterestDelayOffline, ReimburseAccountCreation, PayOnLowBalance, " +
@@ -379,7 +381,7 @@ public abstract class Database {
 	 * @param callback callback which return returns null on success
 	 */
 	public void updateBank(Bank bank, EnumSet<BankField> fields, Callback<Void> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			String attributes = fields.stream()
 					.map(a -> a.getDatabaseAttribute() + " = ?")
 					.collect(Collectors.joining(", "));
@@ -404,7 +406,7 @@ public abstract class Database {
 	 * @param callback Callback that - if succeeded - returns {@code null}
 	 */
 	public void removeBank(Bank bank, Callback<Void> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Removing bank #%d from the database.", bank.getID());
 			long removedCoowners = query.transaction().in(
 					() -> {
@@ -435,7 +437,7 @@ public abstract class Database {
 	 *                            {@code Map<Bank, Set<Account>>})
 	 */
 	public void getBanksAndAccounts(Callback<Map<Bank, Set<Account>>> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			Map<Bank, Set<Account>> banksAndAccounts = getBanks(callback).stream()
 					.collect(Collectors.toMap(
 							bank -> bank,
@@ -553,7 +555,7 @@ public abstract class Database {
 			plugin.debugf("Found %d bank coowner%s.", coowners.size(), coowners.size() == 1 ? "" : "s");
 
 			plugin.debugf("Initializing bank #%d (\"%s\")...", bankID, ChatColor.stripColor(name));
-			return Bank.recreate(
+			return Bank.reopen(
 					bankID,
 					name,
 					owner,
@@ -646,7 +648,7 @@ public abstract class Database {
 	}
 
 	private void addCoOwner(String table, String idAttribute, UUID coownerUUID, int entityID, Callback<Void> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			query
 					.update("REPLACE INTO " + table + "(CoOwnerUUID, " + idAttribute + ") VALUES(?,?)")
 					.params(coownerUUID, entityID)
@@ -677,7 +679,7 @@ public abstract class Database {
 	}
 
 	private void removeCoOwner(String table, String idAttribute, int entityID, UUID coownerUUID, Callback<Void> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			long affectedRows = query
 					.update("DELETE FROM " + table + " WHERE " + idAttribute + " = ? AND CoOwnerUUID = ?")
 					.params(entityID, coownerUUID)
@@ -698,7 +700,7 @@ public abstract class Database {
 	public void logAccountTransaction(AccountTransaction transaction) {
 		if (!Config.enableAccountTransactionLog.get())
 			return;
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Logging account transaction of %s at account #%d.",
 					Utils.format(transaction.getAmount()), transaction.getAccountID());
 			List<Object> params = Arrays.asList(
@@ -728,7 +730,7 @@ public abstract class Database {
 	public void logAccountInterest(AccountInterest interest) {
 		if (!Config.enableAccountInterestLog.get())
 			return;
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Logging %s in interest, %s in fees to account #%d.",
 					Utils.format(interest.getInterest()), Utils.format(interest.getLowBalanceFee()), interest.getAccountID());
 			List<Object> params = Arrays.asList(
@@ -756,7 +758,7 @@ public abstract class Database {
 	public void logBankIncome(BankIncome income) {
 		if (!Config.enableBankIncomeLog.get())
 			return;
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Logging %s in revenue, %s in interest, %s in fees to bank #%d.",
 					Utils.format(income.getRevenue()), Utils.format(income.getInterest()),
 					Utils.format(income.getLowBalanceFees()), income.getBankID());
@@ -784,7 +786,7 @@ public abstract class Database {
 	 * @param player    Player who logged out
 	 */
 	public void logLastSeen(Player player) {
-		async(() -> {
+		plugin.async(() -> {
 			List<Object> params = Arrays.asList(
 					player.getUniqueId(),
 					player.getName(),
@@ -798,7 +800,7 @@ public abstract class Database {
 	}
 
 	public void logLastSeen(Collection<Player> players) {
-		async(() -> {
+		plugin.async(() -> {
 			Stream<List<?>> params = players.stream()
 					.map(p -> Arrays.asList(
 							p.getUniqueId(),
@@ -816,7 +818,7 @@ public abstract class Database {
 	 * Cleans up the log to reduce file size
 	 */
 	public void cleanUpLogs() {
-		run(() -> {
+		plugin.sync(() -> {
 			final long time = System.currentTimeMillis() - Config.cleanupLogDays.get() * 86400000L;
 
 			long transactions = query.update("DELETE FROM " + tableAccountTransactions +
@@ -831,7 +833,7 @@ public abstract class Database {
 			plugin.getLogger().info("Cleaned up banking logs.");
 			plugin.debugf("Cleaned up banking logs (%d transactions, %d interests, %d revenues, %d players).",
 					transactions, interest, revenue, players);
-		}, false); // TODO: Make async?
+		}); // TODO: Make async?
 	}
 
 	private static final int LOG_FETCH_SIZE = 50;
@@ -839,7 +841,7 @@ public abstract class Database {
 	final Mapper<AccountTransaction> transactionMapper = objectMappers.forClass(AccountTransaction.class);
 
 	public void getTransactionsAtAccount(Account account, Callback<Collection<AccountTransaction>> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Fetching transactions at account #%d.", account.getID());
 			List<AccountTransaction> result = query
 					.select("SELECT * " +
@@ -856,7 +858,7 @@ public abstract class Database {
 	}
 
 	public void getTransactionsAtBank(Bank bank, Callback<Collection<AccountTransaction>> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Fetching transactions at bank #%d.", bank.getID());
 			List<AccountTransaction> result = query
 					.select("SELECT * " +
@@ -875,7 +877,7 @@ public abstract class Database {
 	final Mapper<AccountInterest> interestMapper = objectMappers.forClass(AccountInterest.class);
 
 	public void getInterestPaymentsAtAccount(Account account, Callback<Collection<AccountInterest>> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Fetching account interest payments at account #%d.", account.getID());
 			List<AccountInterest> result = query
 					.select("SELECT * " +
@@ -892,7 +894,7 @@ public abstract class Database {
 	}
 
 	public void getInterestPaymentsAtBank(Bank bank, Callback<Collection<AccountInterest>> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Fetching account interest payments at bank #%d.", bank.getID());
 			List<AccountInterest> result = query
 					.select("SELECT * " +
@@ -911,7 +913,7 @@ public abstract class Database {
 	final Mapper<BankIncome> revenueMapper = objectMappers.forClass(BankIncome.class);
 
 	public void getIncomesAtBank(Bank bank, Callback<Collection<BankIncome>> callback) {
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Fetching income at bank #%d.", bank.getID());
 			List<BankIncome> result = query
 					.select("SELECT * " +
@@ -936,7 +938,7 @@ public abstract class Database {
 	 */
 	public void getInterestEarnedByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Fetching account interest for %s since last logout at %s.", playerName, Utils.timestamp(time));
 			BigDecimal interest = query
 					.select("SELECT SUM(FinalPayment) " +
@@ -961,7 +963,7 @@ public abstract class Database {
 	 */
 	public void getLowBalanceFeesPaidByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Fetching low balance fees paid by %s since last logout at %s.", playerName, Utils.timestamp(time));
 			BigDecimal fees = query
 					.select("SELECT SUM(LowBalanceFee) " +
@@ -986,7 +988,7 @@ public abstract class Database {
 	 */
 	public void getBankProfitEarnedByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Fetching bank profit earned by %s since last logout at %s.", playerName, Utils.timestamp(time));
 			BigDecimal revenue = query
 					.select("SELECT SUM(Profit) " +
@@ -1012,7 +1014,7 @@ public abstract class Database {
 	 */
 	public void getLastLogout(Player player, Callback<Long> callback) {
 		String playerName = player.getName();
-		async(() -> {
+		plugin.async(() -> {
 			plugin.debugf("Fetching last logout for %s.", playerName);
 			long lastLogout = query
 					.select("SELECT LastSeen FROM " + tablePlayers + " WHERE PlayerUUID = ?")
@@ -1152,17 +1154,6 @@ public abstract class Database {
 				region.getMaxZ(),
 				region.isCuboid() ? null : region.getVertices()
 		));
-	}
-
-	private void async(Runnable runnable) {
-		run(runnable, true);
-	}
-
-	private void run(Runnable runnable, boolean async) {
-		if (async)
-			Utils.bukkitRunnable(runnable).runTaskAsynchronously(plugin);
-		else
-			runnable.run();
 	}
 
 }

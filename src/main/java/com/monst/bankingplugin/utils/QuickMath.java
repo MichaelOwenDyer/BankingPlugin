@@ -1,8 +1,5 @@
 package com.monst.bankingplugin.utils;
 
-import com.monst.bankingplugin.geo.BlockVector2D;
-import com.monst.bankingplugin.geo.BlockVector3D;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -42,32 +39,6 @@ public class QuickMath {
 
     public static BigDecimal scale(BigDecimal bd, int scale) {
         return bd.setScale(scale, RoundingMode.HALF_EVEN);
-    }
-
-    public static double vectorMagnitude(int x1, int x2, int... xs) {
-        double squaredSum = Math.pow(x1, 2) + Math.pow(x2, 2);
-        for (int x : xs)
-            squaredSum += Math.pow(x, 2);
-        return Math.sqrt(squaredSum);
-    }
-
-    public static float[] unitVector(BlockVector2D from, BlockVector2D to) {
-        BlockVector2D diff = new BlockVector2D(to.getX() - from.getX(), to.getZ() - from.getZ());
-        double magnitude = vectorMagnitude(diff.getX(), diff.getZ());
-        return new float[] {
-                (float) (diff.getX() / magnitude),
-                (float) (diff.getZ() / magnitude)
-        };
-    }
-
-    public static float[] unitVector(BlockVector3D from, BlockVector3D to) {
-        BlockVector3D diff = new BlockVector3D(to.getX() - from.getX(), to.getY() - from.getY(), to.getZ() - from.getZ());
-        double magnitude = vectorMagnitude(diff.getX(), diff.getY(), diff.getZ());
-        return new float[] {
-                (float) (diff.getX() / magnitude),
-                (float) (diff.getY() / magnitude),
-                (float) (diff.getZ() / magnitude)
-        };
     }
 
 }

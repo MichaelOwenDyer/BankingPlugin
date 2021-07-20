@@ -12,14 +12,13 @@ import java.util.*;
  */
 public abstract class BankingEntity extends Observable implements Ownable, Nameable, Persistable<Integer> {
 
-	protected static final BankingPlugin plugin = BankingPlugin.getInstance();
-
 	protected int id;
 	protected String name;
 	protected OfflinePlayer owner;
 	protected Set<OfflinePlayer> coowners;
 
 	protected BankingEntity(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners) {
+		super(BankingPlugin.getInstance());
 		this.id = id;
 		this.name = name;
 		this.owner = owner;

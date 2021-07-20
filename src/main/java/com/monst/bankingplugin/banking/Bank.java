@@ -3,6 +3,7 @@ package com.monst.bankingplugin.banking;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.OverriddenValue;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
+import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
@@ -20,9 +21,9 @@ import java.util.stream.Stream;
 public class Bank extends BankingEntity {
 
 	/**
-	 * Creates a new bank.
+	 * Opens a new bank.
 	 */
-	public static Bank mint(String name, OfflinePlayer owner, BankRegion region) {
+	public static Bank open(String name, OfflinePlayer owner, BankRegion region) {
 		return new Bank(
 				-1,
 				name,
@@ -47,14 +48,14 @@ public class Bank extends BankingEntity {
 	}
 
 	/**
-	 * Re-creates a bank that was stored in the database.
+	 * Reopens a bank that was stored in the database.
 	 */
-	public static Bank recreate(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-								BankRegion region, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
-								Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
-								Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer offlineMultiplierDecrement,
-								Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
-								List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
+	public static Bank reopen(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+							  BankRegion region, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
+							  Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
+							  Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer offlineMultiplierDecrement,
+							  Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
+							  List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 		return new Bank(
 				id,
 				name,
@@ -102,7 +103,6 @@ public class Bank extends BankingEntity {
 	 * @param owner the owner of the bank {@link BankingEntity}
 	 * @param coowners the co-owners of the bank {@link BankingEntity}
 	 * @param region the {@link BankRegion} representing the bounds of the bank
-	 *
 	 */
 	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners, BankRegion region,
 				 Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
@@ -145,6 +145,10 @@ public class Bank extends BankingEntity {
 	 */
 	public Set<Account> getAccounts(Predicate<? super Account> filter) {
 		return Utils.filter(getAccounts(), filter);
+	}
+
+	public Account openAccount(OfflinePlayer holder, AccountLocation loc) {
+		return Account.open(this, holder, loc);
 	}
 
 	/**

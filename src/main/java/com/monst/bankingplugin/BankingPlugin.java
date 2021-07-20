@@ -224,7 +224,7 @@ public class BankingPlugin extends JavaPlugin {
             return;
         }
 
-        Utils.bukkitRunnable(() -> {
+        async(() -> {
 			UpdateChecker uc = new UpdateChecker(BankingPlugin.this);
 			Result result = uc.check();
 
@@ -251,7 +251,7 @@ public class BankingPlugin extends JavaPlugin {
 					getLogger().severe("An error occurred while checking for updates.");
 					break;
 			}
-        }).runTaskAsynchronously(this);
+        });
     }
 
 	/**
@@ -291,7 +291,7 @@ public class BankingPlugin extends JavaPlugin {
 	 * @see SQLite
 	 */
 	private void initializeDatabase() {
-		database = new SQLite();
+		database = new SQLite(this);
 		debug("Database initialized.");
 	}
 
@@ -463,6 +463,21 @@ public class BankingPlugin extends JavaPlugin {
 			getLogger().info("Failed to instantiate FileWriter.");
 			e.printStackTrace();
 		}
+	}
+
+	public void async(Runnable runnable) {
+		if (isEnabled())
+			Utils.bukkitRunnable(runnable).runTaskAsynchronously(this);
+	}
+
+	public void sync(Runnable runnable) {
+		if (isEnabled())
+			Utils.bukkitRunnable(runnable).runTask(this);
+	}
+
+	public void runLater(Runnable runnable, long delay) {
+		if (isEnabled())
+			Utils.bukkitRunnable(runnable).runTaskLater(this, delay);
 	}
 
 	/**

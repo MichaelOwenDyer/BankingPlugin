@@ -15,11 +15,10 @@ import java.util.*;
 
 public class BankRepository extends Observable implements Repository<Bank, BankField> {
 
-	private final BankingPlugin plugin;
 	private final Map<BankRegion, Bank> bankRegionMap = new HashMap<>();
 
     public BankRepository(BankingPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
 	/**

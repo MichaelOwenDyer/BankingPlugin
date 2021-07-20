@@ -29,12 +29,9 @@ public class Account extends BankingEntity {
 	private static final String DEFAULT_CHEST_NAME = DEFAULT_NAME + ChatColor.GRAY + " (#%d)";
 
 	/**
-	 * Creates a new account.
-	 *
-	 * @return the new account
+	 * Opens a new account.
 	 */
-	public static Account mint(OfflinePlayer owner, AccountLocation loc) {
-		Bank bank = plugin.getBankRepository().getAt(loc);
+	public static Account open(Bank bank, OfflinePlayer owner, AccountLocation loc) {
 		return new Account(
 				-1,
 				owner,
@@ -51,40 +48,7 @@ public class Account extends BankingEntity {
 	}
 
 	/**
-	 * Creates a clone of an already-existing account.
-	 *
-	 * @param account the account to clone
-	 * @return an identical account object
-	 */
-	public static Account clone(Account account) {
-		return new Account(
-				account.getID(),
-				account.getOwner(),
-				account.getCoOwners(),
-				account.getBank(),
-				account.getLocation(),
-				account.getRawName(),
-				account.getBalance(),
-				account.getPrevBalance(),
-				account.getMultiplierStage(),
-				account.getDelayUntilNextPayout(),
-				account.getRemainingOfflinePayouts()
-		);
-	}
-
-	/**
-	 * Re-creates an account that was stored in the database.
-	 *  @param id the account ID {@link BankingEntity}
-	 * @param owner the owner of the account {@link BankingEntity}
-	 * @param coowners the co-owners of the account {@link BankingEntity}
-	 * @param bank the {@link Bank} the account is registered at
-	 * @param loc the {@link AccountLocation} of the account chest
-	 * @param name the account name {@link Nameable}
-	 * @param balance the current account balance {@link #getBalance()}
-	 * @param prevBalance the previous account balance {@link #getPrevBalance()}
-	 * @param multiplierStage the multiplier stage of this account
-	 * @param delayUntilNextPayout the number of payments this account will wait before generating interest
-	 * @param remainingOfflinePayouts the number of remaining offline interest payments this account will generate
+	 * Reopens an account that was stored in the database.
 	 */
 	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, AccountLocation loc,
 								 String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
@@ -118,6 +82,19 @@ public class Account extends BankingEntity {
 	int delayUntilNextPayout;
 	int remainingOfflinePayouts;
 
+	/**
+	 * @param id the account ID {@link BankingEntity}
+	 * @param owner the owner of the account {@link BankingEntity}
+	 * @param coowners the co-owners of the account {@link BankingEntity}
+	 * @param bank the {@link Bank} the account is registered at
+	 * @param loc the {@link AccountLocation} of the account chest
+	 * @param name the account name {@link Nameable}
+	 * @param balance the current account balance {@link #getBalance()}
+	 * @param prevBalance the previous account balance {@link #getPrevBalance()}
+	 * @param multiplierStage the multiplier stage of this account
+	 * @param delayUntilNextPayout the number of payments this account will wait before generating interest
+	 * @param remainingOfflinePayouts the number of remaining offline interest payments this account will generate
+	 */
 	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, AccountLocation loc,
 					String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
 					int delayUntilNextPayout, int remainingOfflinePayouts) {

@@ -113,7 +113,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             return;
         }
 
-        Account account = Account.mint(p, accountLocation);
+        Account account = bank.openAccount(p, accountLocation);
 
         AccountCreateEvent event = new AccountCreateEvent(p, account);
         event.fire();
