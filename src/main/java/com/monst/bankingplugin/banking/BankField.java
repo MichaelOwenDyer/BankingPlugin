@@ -29,7 +29,7 @@ public enum BankField implements BankingEntityField<Bank> {
     MAX_Y ("MaxY", b -> b.getRegion().getMaxY()),
     MIN_Z ("MinZ", b -> b.getRegion().getMinZ()),
     MAX_Z ("MaxZ", b -> b.getRegion().getMaxZ()),
-    VERTICES("PolygonVertices", b -> b.getRegion().getVertices()),
+    VERTICES ("PolygonVertices", b -> b.getRegion().getVertices()),
     REGION ("", null); // Meant as a placeholder for the previous 7
 
     private static final BankField[] VALUES = values();

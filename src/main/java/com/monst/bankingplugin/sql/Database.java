@@ -537,7 +537,7 @@ public abstract class Database {
 			String vertices = values.getNextString();
 			BankRegion bankRegion;
 			if (vertices != null) {
-				List<BlockVector2D> points = Arrays.stream(vertices.split("\\|"))
+				List<BlockVector2D> points = Arrays.stream(vertices.split("\\)\\s*[,.;:|]\\s*\\("))
 						.map(BlockVector2D::parse)
 						.collect(Collectors.toList());
 				bankRegion = PolygonalBankRegion.of(world, points, minY, maxY);
@@ -1150,7 +1150,7 @@ public abstract class Database {
 				region.getMaxY(),
 				region.getMinZ(),
 				region.getMaxZ(),
-				region.isCuboid() ? null : region.getVertices().stream().map(String::valueOf).collect(Collectors.joining("|"))
+				region.isCuboid() ? null : region.getVertices()
 		));
 	}
 
