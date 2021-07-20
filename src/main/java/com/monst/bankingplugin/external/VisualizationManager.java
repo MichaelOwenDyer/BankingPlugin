@@ -140,14 +140,16 @@ public class VisualizationManager {
                 // Get the vertex after the current one; will eventually loop back to the first vertex
                 BlockVector2D next = points.get((i + 1) % points.size());
 
-                float[] unitVector = QuickMath.unitVector(current, next);
+                int diffX = next.getX() - current.getX();
+                int diffZ = next.getZ() - current.getZ();
+                double distanceToNext = QuickMath.vectorMagnitude(diffX, diffZ);
+
                 // These two doubles store the direction from the current vertex to the next. Through vector addition they form a diagonal of length 1
-                float unitX = unitVector[0];
-                float unitZ = unitVector[1];
+                float unitX = (float) (diffX / distanceToNext);
+                float unitZ = (float) (diffZ / distanceToNext);
 
                 // The following blocks are placed at both minY and maxY
                 for (int y : new int[] { sel.getMinY(), sel.getMaxY() }) {
-
                     // Add the block that is immediately adjacent to the current vertex and pointing in the direction of the next vertex
                     Location unitAway = new Location(world, current.getX() + 0.5 + unitX, y, current.getZ() + 0.5 + unitZ);
                     newElements.add(new VisualizationElement(
@@ -163,19 +165,26 @@ public class VisualizationManager {
                             type.accentBlockData,
                             null
                     ));
+                }
 
-                    // Add blocks that form the lines between the vertices in intervals of the integer "step"
-                    double increaseX = unitX * step;
-                    double increaseZ = unitZ * step;
-                    Location nextAccent = new Location(world, current.getX() + 0.5 + increaseX, y, current.getZ() + 0.5 + increaseZ);
-                    while (Math.sqrt(Math.pow(next.getX() - nextAccent.getX(), 2) + Math.pow(next.getZ() - nextAccent.getZ(), 2)) > step / 2.0) {
+                final double stopAt = distanceToNext - step / 2.0;
+                if (step > stopAt)
+                    continue;
+
+                // Add blocks that form the lines between the vertices in intervals of the integer "step"
+                final double stepX = step * unitX;
+                final double stepZ = step * unitZ;
+                double nextX = current.getX() + 0.5 + stepX;
+                double nextZ = current.getZ() + 0.5 + stepZ;
+                for (int hop = step; hop < stopAt; hop += step) {
+                    for (int y : new int[] { sel.getMinY(), sel.getMaxY() })
                         newElements.add(new VisualizationElement(
-                                new Location(nextAccent.getWorld(), nextAccent.getBlockX(), nextAccent.getBlockY(), nextAccent.getBlockZ()),
+                                new Location(world, (int) nextX, y, (int) nextZ),
                                 type.accentBlockData,
                                 null
                         ));
-                        nextAccent = nextAccent.add(increaseX, 0, increaseZ);
-                    }
+                    nextX += stepX;
+                    nextZ += stepZ;
                 }
             }
         }
