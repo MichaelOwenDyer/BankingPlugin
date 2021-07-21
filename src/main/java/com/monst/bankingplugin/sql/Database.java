@@ -539,13 +539,13 @@ public abstract class Database {
 			String vertices = values.getNextString();
 			BankRegion bankRegion;
 			if (vertices != null) {
-				List<BlockVector2D> points = Arrays.stream(vertices.split("\\)\\s*[,.;:|]\\s*\\("))
+				BlockVector2D[] points =
+						Arrays.stream(vertices.split("\\)\\s*[,.;:|]\\s*\\("))
 						.map(BlockVector2D::parse)
-						.collect(Collectors.toList());
+						.toArray(BlockVector2D[]::new);
 				bankRegion = PolygonalBankRegion.of(world, points, minY, maxY);
-			} else {
+			} else
 				bankRegion = CuboidBankRegion.of(world, new BlockVector3D(minX, minY, minZ), new BlockVector3D(maxX, maxY, maxZ));
-			}
 
 			Set<OfflinePlayer> coowners = query
 					.select("SELECT CoOwnerUUID FROM " + tableCoOwnsBank + " WHERE BankID = ?")

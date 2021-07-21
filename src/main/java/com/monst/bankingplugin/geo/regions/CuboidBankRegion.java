@@ -107,11 +107,12 @@ public class CuboidBankRegion extends BankRegion {
 	}
 
 	@Override
-	public List<BlockVector2D> getVertices() {
-		List<BlockVector2D> vertices = new LinkedList<>();
+	public BlockVector2D[] getVertices() {
+		BlockVector2D[] vertices = new BlockVector2D[4];
+		int i = 0;
 		for (int x : new int[] { getMinX(), getMaxX() })
 			for (int z : new int[] { getMinZ(), getMaxZ() })
-				vertices.add(new BlockVector2D(x, z));
+				vertices[i++] = new BlockVector2D(x, z);
 		return vertices;
 	}
 

@@ -3,9 +3,9 @@ package com.monst.bankingplugin.external;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.geo.BlockVector2D;
 import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.geo.regions.PolygonalBankRegion;
-import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -21,6 +21,7 @@ import com.sk89q.worldedit.regions.selector.Polygonal2DRegionSelector;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,24 +36,26 @@ public class WorldEditReader {
 			if (session == null)
 				return null;
 			region = session.getSelection(BukkitAdapter.adapt(p.getWorld()));
-
-			if (region instanceof CuboidRegion) {
-				CuboidRegion cuboid = (CuboidRegion) region;
-				BlockVector3 vector1 = cuboid.getPos1();
-				BlockVector3 vector2 = cuboid.getPos2();
-				BlockVector3D loc1 = new BlockVector3D(vector1.getBlockX(), vector1.getBlockY(), vector1.getBlockZ());
-				BlockVector3D loc2 = new BlockVector3D(vector2.getBlockX(), vector2.getBlockY(), vector2.getBlockZ());
-				return CuboidBankRegion.of(Optional.ofNullable(cuboid.getWorld()).map(BukkitAdapter::adapt).orElse(null), loc1, loc2);
-			} else if (region instanceof Polygonal2DRegion) {
-				Polygonal2DRegion polygon = (Polygonal2DRegion) region;
-				int minY = polygon.getMinimumY();
-				int maxY = polygon.getMaximumY();
-				World world = Optional.ofNullable(polygon.getWorld()).map(BukkitAdapter::adapt).orElse(null);
-				List<BlockVector2D> points = polygon.getPoints().stream()
-						.map(point -> new BlockVector2D(point.getBlockX(), point.getBlockZ())).collect(Collectors.toList());
-				return PolygonalBankRegion.of(world, points, minY, maxY);
-			}
-		} catch (IncompleteRegionException ignored) {}
+		} catch (IncompleteRegionException ignored) {
+			return null;
+		}
+		World world = Optional.ofNullable(region.getWorld()).map(BukkitAdapter::adapt).orElse(null);
+		if (world == null)
+			return null;
+		if (region instanceof CuboidRegion) {
+			CuboidRegion cuboid = (CuboidRegion) region;
+			BlockVector3 vector1 = cuboid.getPos1();
+			BlockVector3 vector2 = cuboid.getPos2();
+			BlockVector3D loc1 = new BlockVector3D(vector1.getBlockX(), vector1.getBlockY(), vector1.getBlockZ());
+			BlockVector3D loc2 = new BlockVector3D(vector2.getBlockX(), vector2.getBlockY(), vector2.getBlockZ());
+			return CuboidBankRegion.of(world, loc1, loc2);
+		} else if (region instanceof Polygonal2DRegion) {
+			Polygonal2DRegion polygon = (Polygonal2DRegion) region;
+			int minY = polygon.getMinimumY();
+			int maxY = polygon.getMaximumY();
+			BlockVector2D[] points = polygon.getPoints().stream().map(pt -> new BlockVector2D(pt.getBlockX(), pt.getBlockZ())).toArray(BlockVector2D[]::new);
+			return PolygonalBankRegion.of(world, points, minY, maxY);
+		}
 		return null;
 	}
 
@@ -65,7 +68,7 @@ public class WorldEditReader {
 			BlockVector3 max = BlockVector3.at(reg.getMaximumBlock().getX(), reg.getMaximumBlock().getY(), reg.getMaximumBlock().getZ());
 			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(reg.getWorld()), min, max);
 		} else if (reg.isPolygonal()) {
-			List<BlockVector2> points = reg.getVertices().stream()
+			List<BlockVector2> points = Arrays.stream(reg.getVertices())
 					.map(point -> BlockVector2.at(point.getX(), point.getZ())).collect(Collectors.toList());
 			int minY = reg.getMinimumBlock().getY();
 			int maxY = reg.getMaximumBlock().getY();

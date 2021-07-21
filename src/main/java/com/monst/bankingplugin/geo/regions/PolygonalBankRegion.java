@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class PolygonalBankRegion extends BankRegion {
 
-	private final List<BlockVector2D> vertices;
+	private final BlockVector2D[] vertices;
 	private final int minY;
 	private final int maxY;
 
@@ -28,7 +28,7 @@ public class PolygonalBankRegion extends BankRegion {
 	 * @param y2 the other y-coordinate bound
 	 * @return a new PolygonalBankRegion
 	 */
-	public static PolygonalBankRegion of(World world, List<BlockVector2D> points, int y1, int y2) {
+	public static PolygonalBankRegion of(World world, BlockVector2D[] points, int y1, int y2) {
 		y1 = Math.min(Math.max(0, y1), world.getMaxHeight()); // Ensure y1 is between 0 and world.getMaxHeight()
 		y2 = Math.min(Math.max(0, y2), world.getMaxHeight()); // Ensure y2 is between 0 and world.getMaxHeight()
 		return new PolygonalBankRegion(
@@ -39,9 +39,9 @@ public class PolygonalBankRegion extends BankRegion {
 		);
 	}
 
-	private PolygonalBankRegion(World world, List<BlockVector2D> vertices, int minY, int maxY) {
+	private PolygonalBankRegion(World world, BlockVector2D[] vertices, int minY, int maxY) {
 		super(world);
-		if (vertices == null || vertices.size() < 3)
+		if (vertices == null || vertices.length < 3)
 			throw new IllegalArgumentException("Vertices cannot be fewer than 3!");
 		this.vertices = vertices;
 		this.minY = minY;
@@ -56,27 +56,21 @@ public class PolygonalBankRegion extends BankRegion {
 	 */
 	@Override
 	public Block getCenterPoint() {
-		Integer[][][] polygon = new Integer[1][vertices.size()][2];
-		for (int i = 0; i < vertices.size(); i++) {
-			BlockVector2D point = vertices.get(i);
-			polygon[0][i] = new Integer[] { point.getX(), point.getZ() };
-		}
+		Integer[][][] polygon = new Integer[1][vertices.length][2];
+		for (int i = 0; i < vertices.length; i++)
+			polygon[0][i] = new Integer[] { vertices[i].getX(), vertices[i].getZ() };
 		PolyLabel result = PolyLabel.polyLabel(polygon);
 		return world.getBlockAt((int) Math.round(result.getX()), (maxY + minY) / 2, (int) Math.round(result.getY()));
 	}
 
 	@Override
 	public int getMinX() {
-		if (vertices.isEmpty())
-			throw new IllegalStateException("No vertices in PolygonalBankRegion!");
-		return vertices.stream().mapToInt(BlockVector2D::getX).min().getAsInt();
+		return Arrays.stream(vertices).mapToInt(BlockVector2D::getX).min().orElseThrow(IllegalStateException::new);
 	}
 
 	@Override
 	public int getMaxX() {
-		if (vertices.isEmpty())
-			throw new IllegalStateException("No vertices in PolygonalBankRegion!");
-		return vertices.stream().mapToInt(BlockVector2D::getX).max().getAsInt();
+		return Arrays.stream(vertices).mapToInt(BlockVector2D::getX).max().orElseThrow(IllegalStateException::new);
 	}
 
 	@Override
@@ -91,28 +85,23 @@ public class PolygonalBankRegion extends BankRegion {
 
 	@Override
 	public int getMinZ() {
-		if (vertices.isEmpty())
-			throw new IllegalStateException("No vertices in PolygonalBankRegion!");
-		return vertices.stream().mapToInt(BlockVector2D::getZ).min().getAsInt();
+		return Arrays.stream(vertices).mapToInt(BlockVector2D::getZ).min().orElseThrow(IllegalStateException::new);
 	}
 
 	@Override
 	public int getMaxZ() {
-		if (vertices.isEmpty())
-			throw new IllegalStateException("No vertices in PolygonalBankRegion!");
-		return vertices.stream().mapToInt(BlockVector2D::getZ).max().getAsInt();
+		return Arrays.stream(vertices).mapToInt(BlockVector2D::getZ).max().orElseThrow(IllegalStateException::new);
 	}
 
 	@Override
 	public String getCoordinates() {
 		StringBuilder sb = new StringBuilder(64);
-		List<BlockVector2D> vertices = getVertices();
-		sb.append(vertices.stream()
+		sb.append(Arrays.stream(vertices)
 				.limit(8)
 				.map(vertex -> "(" + vertex.getX() + ", " + vertex.getZ() + ")")
 				.collect(Collectors.joining(", "))
 		);
-		if (vertices.size() > 8)
+		if (vertices.length > 8)
 			sb.append(", ...");
 		sb.append(" at ").append(minY).append(" ≤ y ≤ ").append(maxY);
 		return sb.toString();
@@ -149,15 +138,15 @@ public class PolygonalBankRegion extends BankRegion {
 	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalBankRegion}
 	 */
 	@Override
-	public List<BlockVector2D> getVertices() {
+	public BlockVector2D[] getVertices() {
 		return vertices;
 	}
 
 	@Override
 	public boolean contains(int pointX, int pointZ) {
 		int nextX, nextZ, x1, z1, x2, z2;
-		int prevX = vertices.get(vertices.size() - 1).getX();
-		int prevZ = vertices.get(vertices.size() - 1).getZ();
+		int prevX = vertices[vertices.length - 1].getX();
+		int prevZ = vertices[vertices.length - 1].getZ();
 
 		long crossProduct;
 		boolean inside = false;
@@ -206,12 +195,12 @@ public class PolygonalBankRegion extends BankRegion {
 		PolygonalBankRegion other = (PolygonalBankRegion) o;
 		return getMinY() == other.getMinY() && getMaxY() == other.getMaxY()
 			&& Objects.equals(getWorld(), other.getWorld())
-			&& Objects.equals(getVertices(), other.getVertices());
+			&& Arrays.equals(getVertices(), other.getVertices());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getWorld(), getMinY(), getMaxY(), vertices);
+		return Objects.hash(getWorld(), getMinY(), getMaxY(), Arrays.hashCode(vertices));
 	}
 
 }

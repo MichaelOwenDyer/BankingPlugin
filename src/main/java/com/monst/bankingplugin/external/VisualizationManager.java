@@ -96,10 +96,10 @@ public class VisualizationManager {
                 yBuilder.accept(y);
             final int[] allYs = yBuilder.build().toArray();
 
-            List<BlockVector2D> points = sel.getVertices();
-            for (int vertex = 0; vertex < points.size(); vertex++) {
+            BlockVector2D[] points = sel.getVertices();
+            for (int vertex = 0; vertex < points.length; vertex++) {
 
-                BlockVector2D current = points.get(vertex);
+                BlockVector2D current = points[vertex];
 
                 for (int y : allYs) {
                     // Add blocks that are immediately vertically adjacent to corner blocks
@@ -109,7 +109,7 @@ public class VisualizationManager {
                 }
 
                 // Get the vertex after the current one; will eventually loop back to the first vertex
-                BlockVector2D next = points.get((vertex + 1) % points.size());
+                BlockVector2D next = points[(vertex + 1) % points.length];
 
                 int diffX = next.getX() - current.getX();
                 int diffZ = next.getZ() - current.getZ();

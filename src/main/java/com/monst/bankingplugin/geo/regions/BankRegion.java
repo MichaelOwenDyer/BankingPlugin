@@ -165,7 +165,7 @@ public abstract class BankRegion {
 	 * The order of the elements is region-specific.
 	 * @return a {@link List<BlockVector2D>} of all vertices of the region.
 	 */
-	public abstract List<BlockVector2D> getVertices();
+	public abstract BlockVector2D[] getVertices();
 
 	/**
 	 * Get all (upper and lower) corner {@link Block}s of this region.
