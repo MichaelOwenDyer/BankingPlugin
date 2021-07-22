@@ -13,12 +13,13 @@ import org.bukkit.block.Block;
 
 import java.util.*;
 
-public class BankRepository extends Observable implements Repository<Bank, BankField> {
+public class BankRepository implements Repository<Bank, BankField> {
 
+	private final BankingPlugin plugin;
 	private final Map<BankRegion, Bank> bankRegionMap = new HashMap<>();
 
     public BankRepository(BankingPlugin plugin) {
-        super(plugin);
+        this.plugin = plugin;
     }
 
 	/**

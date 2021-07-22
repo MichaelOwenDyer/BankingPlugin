@@ -34,12 +34,12 @@ public class AccountRecover extends AccountCommand.SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         PLUGIN.debug(sender.getName() + " wants to recover invalid accounts");
 
-        if (accountRepo.getNotFoundAccounts().isEmpty()) {
+        if (accountRepo.getMissingAccounts().isEmpty()) {
             sender.sendMessage(LangUtils.getMessage(Message.ACCOUNTS_NOT_FOUND));
             return true;
         }
 
-        new AccountRecoveryGUI(accountRepo::getNotFoundAccounts).open((Player) sender);
+        new AccountRecoveryGUI(accountRepo::getMissingAccounts).open((Player) sender);
         return true;
     }
 
@@ -77,7 +77,7 @@ public class AccountRecover extends AccountCommand.SubCommand {
         PLUGIN.debugf("Account recovered (#%d)", toRecover.getID());
         toRecover.setLocation(accountLocation);
         toRecover.setBank(bank);
-        accountRepo.removeInvalidAccount(toRecover);
+        accountRepo.removeMissingAccount(toRecover);
         accountRepo.update(toRecover, toRecover.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
         p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_RECOVERED));
     }

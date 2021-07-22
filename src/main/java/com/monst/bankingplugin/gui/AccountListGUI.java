@@ -51,7 +51,7 @@ public class AccountListGUI extends MultiPageGUI<Account> {
 
     @Override
     Observable getSubject() {
-        return BankingPlugin.getInstance().getAccountRepository();
+        return BankingPlugin.getInstance().getAccountRepository().getAccountMap();
     }
 
     @Override

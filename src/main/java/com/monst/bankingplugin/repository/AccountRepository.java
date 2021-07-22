@@ -1,30 +1,27 @@
 package com.monst.bankingplugin.repository;
 
+import com.google.common.collect.HashBiMap;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
-import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
+import com.monst.bankingplugin.gui.GUI;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Observable;
-import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.block.Block;
-import org.bukkit.block.ShulkerBox;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BlockStateMeta;
 
-import java.math.BigDecimal;
 import java.util.*;
 
-public class AccountRepository extends Observable implements Repository<Account, AccountField> {
+public class AccountRepository implements Repository<Account, AccountField> {
 
-	private final Map<AccountLocation, Account> accountLocationMap = new HashMap<>();
-	private final Set<Account> notFoundAccounts = new HashSet<>();
+	private final BankingPlugin plugin;
+	private final AccountMap accountMap = new AccountMap();
+	private final MissingAccounts missingAccounts = new MissingAccounts();
 
     public AccountRepository(BankingPlugin plugin) {
-        super(plugin);
+        this.plugin = plugin;
     }
 
 	/**
@@ -34,7 +31,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 	public boolean isAccount(Block block) {
     	if (!Utils.isChest(block))
     		return false;
-    	for (AccountLocation chest : accountLocationMap.keySet())
+    	for (AccountLocation chest : accountMap.keySet())
     		if (chest.contains(block))
     			return true;
 		return false;
@@ -48,7 +45,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 	 */
 	@Override
 	public Set<Account> getAll() {
-		return new HashSet<>(accountLocationMap.values());
+		return new HashSet<>(accountMap.values());
 	}
 
     /**
@@ -61,7 +58,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 	public Account getAt(AccountLocation accountLocation) {
     	if (accountLocation == null)
     		return null;
-    	return accountLocationMap.get(accountLocation);
+    	return accountMap.get(accountLocation);
     }
 
 	/**
@@ -74,7 +71,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 	public Account getAt(Block block) {
 		if (!Utils.isChest(block))
 			return null;
-		for (Map.Entry<AccountLocation, Account> entry : accountLocationMap.entrySet())
+		for (Map.Entry<AccountLocation, Account> entry : accountMap.entrySet())
 			if (entry.getKey().contains(block))
 				return entry.getValue();
 		return null;
@@ -95,7 +92,7 @@ public class AccountRepository extends Observable implements Repository<Account,
 		}
 
         plugin.debugf("Adding account #%d to the session...", account.getID());
-		accountLocationMap.put(account.getLocation(), account);
+		accountMap.put(account.getLocation(), account);
 
         if (addToDatabase) {
 			plugin.getDatabase().addAccount(account, callback);
@@ -103,7 +100,6 @@ public class AccountRepository extends Observable implements Repository<Account,
 			account.getBank().addAccount(account); // Account is otherwise added to the bank in Database
 			Callback.callResult(callback, account.getID());
         }
-        notifyObservers();
     }
 
     @Override
@@ -120,14 +116,13 @@ public class AccountRepository extends Observable implements Repository<Account,
 			fields.add(AccountField.Z1);
 			fields.add(AccountField.X2);
 			fields.add(AccountField.Z2);
-			accountLocationMap.put(account.getLocation(), account);
+			accountMap.put(account.getLocation(), account);
 		}
 		plugin.debugf("Updating the following fields of account #%d in the database: " + fields, account.getID());
 
 		plugin.getDatabase().updateAccount(account, fields, callback);
 
-		notifyObservers();
-		account.notifyObservers();
+		account.notifyObservers(); // TODO: Move
 		account.getBank().notifyObservers();
 	}
 
@@ -144,63 +139,90 @@ public class AccountRepository extends Observable implements Repository<Account,
 		account.clearChestName();
 		account.getBank().removeAccount(account);
 
-		accountLocationMap.remove(account.getLocation());
+		accountMap.remove(account.getLocation());
 
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);
         } else
         	Callback.callResult(callback);
-        notifyObservers();
     }
 
-	public Set<Account> getNotFoundAccounts() {
-		return new HashSet<>(notFoundAccounts);
+	public Set<Account> getMissingAccounts() {
+		return new HashSet<>(missingAccounts);
 	}
 
-	public void addInvalidAccount(Account account) {
+	public void addMissingAccount(Account account) {
     	if (account == null)
     		return;
-		notFoundAccounts.add(account);
-    	notifyObservers();
+		missingAccounts.add(account);
 	}
 
-	public void removeInvalidAccount(Account account) {
+	public void removeMissingAccount(Account account) {
 		if (account == null)
 			return;
-		notFoundAccounts.remove(account);
-		notifyObservers();
+		missingAccounts.remove(account);
 	}
 
-	public BigDecimal appraise(ItemStack[] contents) {
-		BigDecimal sum = BigDecimal.ZERO;
-		for (ItemStack item : contents) {
-			if (Config.blacklist.contains(item))
-				continue;
-			BigDecimal itemValue = getWorth(item);
-			if (item.getItemMeta() instanceof BlockStateMeta) {
-				BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
-                if (im.getBlockState() instanceof ShulkerBox) {
-                	ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
-                	for (ItemStack innerItem : shulkerBox.getInventory().getContents()) {
-                		if (Config.blacklist.contains(innerItem))
-							continue;
-						BigDecimal innerItemValue = getWorth(innerItem);
-						if (innerItemValue.signum() != 0)
-            				innerItemValue = QuickMath.multiply(innerItemValue, innerItem.getAmount());
-						itemValue = itemValue.add(innerItemValue);
-                	}
-                }
-			}
-			if (itemValue.signum() != 0)
-				itemValue = QuickMath.multiply(itemValue, item.getAmount());
-			sum = sum.add(itemValue);
+	private static class AccountMap implements Observable {
+
+    	private final HashBiMap<AccountLocation, Account> biMap;
+		private final Set<GUI<?>> observers;
+
+		public AccountMap() {
+			this.biMap = HashBiMap.create();
+			this.observers = new HashSet<>();
 		}
-		return QuickMath.scale(sum);
+
+		public void put(AccountLocation key, Account value) {
+			Account a = biMap.forcePut(key, value);
+			if (a != null)
+				notifyObservers();
+		}
+
+		public void remove(AccountLocation key) {
+			Account a = biMap.remove(key);
+			if (a != null)
+				notifyObservers();
+		}
+
+		public Set<AccountLocation> keySet() {
+			return biMap.keySet();
+		}
+
+		public Set<Account> values() {
+			return biMap.values();
+		}
+
+		public Account get(AccountLocation key) {
+			return biMap.get(key);
+		}
+
+		public Set<Map.Entry<AccountLocation, Account>> entrySet() {
+			return biMap.entrySet();
+		}
+
+		@Override
+		public Set<GUI<?>> getObservers() {
+			return observers;
+		}
 	}
 
-	private BigDecimal getWorth(ItemStack item) {
-    	BigDecimal worth = plugin.getEssentials().getWorth().getPrice(plugin.getEssentials(), item);
-		return worth != null ? worth : BigDecimal.ZERO;
+	private static class MissingAccounts extends HashSet<Account> implements Observable {
+
+    	private final Set<GUI<?>> observers;
+
+		public MissingAccounts() {
+			this.observers = new HashSet<>();
+		}
+
+		@Override
+		public Set<GUI<?>> getObservers() {
+			return observers;
+		}
+	}
+
+	public AccountMap getAccountMap() {
+    	return accountMap;
 	}
 
 }

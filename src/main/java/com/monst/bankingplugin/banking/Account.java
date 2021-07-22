@@ -13,7 +13,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -133,7 +136,7 @@ public class Account extends BankingEntity {
 		} catch (ChestNotFoundException | ChestBlockedException e) {
 			plugin.getAccountRepository().remove(this, Config.removeAccountOnError.get());
 			if (!Config.removeAccountOnError.get())
-				plugin.getAccountRepository().addInvalidAccount(this);
+				plugin.getAccountRepository().addMissingAccount(this);
 
 			plugin.getLogger().severe(e.getMessage());
 			plugin.debug("Failed to create account (#" + getID() + ")");
@@ -375,7 +378,36 @@ public class Account extends BankingEntity {
 		InventoryHolder ih = getInventoryHolder(true);
 		if (ih == null)
 			return BigDecimal.ZERO;
-		return plugin.getAccountRepository().appraise(ih.getInventory().getContents());
+		BigDecimal sum = BigDecimal.ZERO;
+		ItemStack[] contents = ih.getInventory().getContents();
+		for (ItemStack item : contents) {
+			if (Config.blacklist.contains(item))
+				continue;
+			BigDecimal itemValue = getWorth(item);
+			if (item.getItemMeta() instanceof BlockStateMeta) {
+				BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
+				if (im.getBlockState() instanceof ShulkerBox) {
+					ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
+					for (ItemStack innerItem : shulkerBox.getInventory().getContents()) {
+						if (Config.blacklist.contains(innerItem))
+							continue;
+						BigDecimal innerItemValue = getWorth(innerItem);
+						if (innerItemValue.signum() != 0)
+							innerItemValue = QuickMath.multiply(innerItemValue, innerItem.getAmount());
+						itemValue = itemValue.add(innerItemValue);
+					}
+				}
+			}
+			if (itemValue.signum() != 0)
+				itemValue = QuickMath.multiply(itemValue, item.getAmount());
+			sum = sum.add(itemValue);
+		}
+		return QuickMath.scale(sum);
+	}
+
+	private BigDecimal getWorth(ItemStack item) {
+		BigDecimal worth = plugin.getEssentials().getWorth().getPrice(plugin.getEssentials(), item);
+		return worth != null ? worth : BigDecimal.ZERO;
 	}
 
 	/**

@@ -1,41 +1,23 @@
 package com.monst.bankingplugin.utils;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.gui.GUI;
 
-import java.util.HashSet;
 import java.util.Set;
 
-public abstract class Observable {
+public interface Observable {
 
-    protected final BankingPlugin plugin;
-    private final Set<GUI<?>> observers;
-    private int queuedUpdates = 0;
+    Set<GUI<?>> getObservers();
 
-    public Observable(BankingPlugin plugin) {
-        this.plugin = plugin;
-        observers = new HashSet<>();
+    default void addObserver(GUI<?> observer) {
+        getObservers().add(observer);
     }
 
-    public void addObserver(GUI<?> observer) {
-        observers.add(observer);
+    default void removeObserver(GUI<?> observer) {
+        getObservers().remove(observer);
     }
 
-    public void removeObserver(GUI<?> observer) {
-        observers.remove(observer);
-    }
-
-    public void notifyObservers() {
-        if (!plugin.isEnabled())
-            return;
-        queuedUpdates++;
-        plugin.runLater(this::executeIfLast, 1);
-    }
-
-    private void executeIfLast() {
-        if (queuedUpdates-- > 1)
-            return;
-        observers.forEach(GUI::update);
+    default void notifyObservers() {
+        getObservers().forEach(GUI::update);
     }
 
 }

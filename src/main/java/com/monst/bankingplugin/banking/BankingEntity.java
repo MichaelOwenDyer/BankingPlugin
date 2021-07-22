@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.banking;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.gui.GUI;
 import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -10,19 +11,22 @@ import java.util.*;
 /**
  * This class represents either a {@link Bank} or an {@link Account}.
  */
-public abstract class BankingEntity extends Observable implements Ownable, Nameable, Persistable<Integer> {
+public abstract class BankingEntity implements Ownable, Nameable, Persistable<Integer>, Observable {
 
-	protected int id;
-	protected String name;
-	protected OfflinePlayer owner;
-	protected Set<OfflinePlayer> coowners;
+	static BankingPlugin plugin = BankingPlugin.getInstance();
+	int id;
+	String name;
+	OfflinePlayer owner;
+	Set<OfflinePlayer> coowners;
+	Set<GUI<?>> observers;
 
-	protected BankingEntity(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners) {
-		super(BankingPlugin.getInstance());
+	BankingEntity(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners) {
+		super();
 		this.id = id;
 		this.name = name;
 		this.owner = owner;
 		this.coowners = coowners;
+		this.observers = new HashSet<>();
 	}
 
 	public OfflinePlayer getOwner() {
@@ -32,6 +36,11 @@ public abstract class BankingEntity extends Observable implements Ownable, Namea
 	public Set<OfflinePlayer> getCoOwners() {
 		coowners.removeIf(Objects::isNull);
 		return new HashSet<>(coowners);
+	}
+
+	@Override
+	public Set<GUI<?>> getObservers() {
+		return observers;
 	}
 
 	public void trustPlayer(OfflinePlayer p) {

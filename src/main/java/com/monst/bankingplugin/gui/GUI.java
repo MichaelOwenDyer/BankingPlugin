@@ -126,10 +126,9 @@ public abstract class GUI<T> {
 	private void shortenGUIChain(GUI<?> gui, EnumSet<GUIType> types) {
 		if (gui == null)
 			return;
-		if (!types.contains(gui.getType())) {
-			types.add(gui.getType());
+		if (types.add(gui.getType()))
 			shortenGUIChain(gui.parentGUI, types);
-		} else
+		else
 			gui.parentGUI = null;
 	}
 
