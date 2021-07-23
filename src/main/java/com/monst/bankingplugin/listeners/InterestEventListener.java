@@ -207,7 +207,7 @@ public class InterestEventListener extends BankingPluginListener {
 
 	private void notifyAll(PaymentCounter<OfflinePlayer> map, Message message) {
 		map.forEach((player, counter) ->
-				Mailman.notify(player, LangUtils.getMessage(message,
+				Mailman.notify(player, Messages.get(message,
 						new Replacement(Placeholder.AMOUNT, counter.getTotalMoney()),
 						new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, counter.getNumberOfPayments()),
 						new Replacement(Placeholder.NUMBER_OF_BANKS, counter.getNumberOfPayments())

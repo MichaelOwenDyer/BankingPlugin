@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.lang.*;
@@ -15,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankConfigure extends BankCommand.SubCommand {
+public class BankConfigure extends SubCommand.BankSubCommand {
 
     BankConfigure() {
         super("configure", false);
@@ -44,25 +45,25 @@ public class BankConfigure extends BankCommand.SubCommand {
 
         if (bank == null) {
             PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
-            sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            sender.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
             PLUGIN.debug(sender.getName() + " does not have permission to configure another player's bank");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_OTHER));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_OTHER));
             return true;
         }
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
             PLUGIN.debug(sender.getName() + " does not have permission to configure an admin bank");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_ADMIN));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_ADMIN));
             return true;
         }
 
         BankField field = BankField.getByName(fieldName);
         if (field == null) {
             PLUGIN.debug("No bank config field could be found with name " + fieldName);
-            sender.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.INPUT, fieldName)));
+            sender.sendMessage(Messages.get(Message.NOT_A_PROPERTY, new Replacement(Placeholder.INPUT, fieldName)));
             return true;
         }
 
@@ -70,7 +71,7 @@ public class BankConfigure extends BankCommand.SubCommand {
 
         try {
             if (!bank.set(field, value))
-                sender.sendMessage(LangUtils.getMessage(Message.BANK_PROPERTY_NOT_OVERRIDABLE,
+                sender.sendMessage(Messages.get(Message.BANK_PROPERTY_NOT_OVERRIDABLE,
                         new Replacement(Placeholder.PROPERTY, field::toString)
                 ));
         } catch (ArgumentParseException e) {
@@ -83,7 +84,7 @@ public class BankConfigure extends BankCommand.SubCommand {
 
         PLUGIN.debugf( "%s has changed %s at %s from %s to %s.",
                 sender.getName(), field.toString(), bank.getName(), previousValue, newValue);
-        MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_PROPERTY_SET,
+        MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.BANK_PROPERTY_SET,
                 new Replacement(Placeholder.PROPERTY, field::toString),
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                 new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),

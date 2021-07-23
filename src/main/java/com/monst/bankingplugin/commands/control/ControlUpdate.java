@@ -1,13 +1,14 @@
 package com.monst.bankingplugin.commands.control;
 
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.commands.SubCommand;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.UpdateChecker;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class ControlUpdate extends ControlCommand.SubCommand {
+public class ControlUpdate extends SubCommand.ControlSubCommand {
 
     ControlUpdate() {
         super("update", false);
@@ -29,7 +30,7 @@ public class ControlUpdate extends ControlCommand.SubCommand {
 
         if (!sender.hasPermission(Permissions.UPDATE)) {
             PLUGIN.debug(sender.getName() + " does not have permission to update the plugin");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_UPDATE));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_UPDATE));
             return true;
         }
 

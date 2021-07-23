@@ -1,9 +1,10 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountTrustCommandEvent;
 import com.monst.bankingplugin.events.account.AccountTrustEvent;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -17,7 +18,7 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 
-public class AccountTrust extends AccountCommand.SubCommand {
+public class AccountTrust extends SubCommand.AccountSubCommand {
 
     AccountTrust() {
         super("trust", true);
@@ -38,7 +39,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
         PLUGIN.debug(sender.getName() + " wants to trust a player to an account");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRUST));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_TRUST));
             return true;
         }
 
@@ -47,7 +48,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
 
         OfflinePlayer playerToTrust = Utils.getPlayer(args[1]);
         if (playerToTrust == null) {
-            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            sender.sendMessage(Messages.get(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
 
@@ -59,7 +60,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
             return true;
         }
 
-        sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_TRUST, new Replacement(Placeholder.PLAYER, playerToTrust::getName)));
+        sender.sendMessage(Messages.get(Message.CLICK_ACCOUNT_TRUST, new Replacement(Placeholder.PLAYER, playerToTrust::getName)));
         ClickType.setTrustClickType(p, playerToTrust);
         PLUGIN.debug(sender.getName() + " is trusting " + playerToTrust.getName() + " to an account");
         return true;
@@ -80,16 +81,16 @@ public class AccountTrust extends AccountCommand.SubCommand {
 
         if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
             if (account.isTrusted(executor)) {
-                executor.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+                executor.sendMessage(Messages.get(Message.MUST_BE_OWNER));
                 return;
             }
-            executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRUST_OTHER));
+            executor.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_TRUST_OTHER));
             return;
         }
 
         if (account.isTrusted(playerToTrust)) {
             PLUGIN.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
-            executor.sendMessage(LangUtils.getMessage(account.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER,
+            executor.sendMessage(Messages.get(account.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER,
                     new Replacement(Placeholder.PLAYER, playerToTrust::getName)
             ));
             return;
@@ -104,7 +105,7 @@ public class AccountTrust extends AccountCommand.SubCommand {
 
         PLUGIN.debugf("%s has trusted %s to %s account (#%d)", executor.getName(), playerToTrust.getName(),
                 (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"), account.getID());
-        executor.sendMessage(LangUtils.getMessage(Message.ADDED_COOWNER,
+        executor.sendMessage(Messages.get(Message.ADDED_COOWNER,
                 new Replacement(Placeholder.PLAYER, playerToTrust::getName)
         ));
         account.trustPlayer(playerToTrust);

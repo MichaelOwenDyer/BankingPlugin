@@ -7,7 +7,7 @@ import org.bukkit.ChatColor;
 import java.util.EnumMap;
 import java.util.EnumSet;
 
-public class LangUtils {
+public class Messages {
 
     private static final BankingPlugin plugin = BankingPlugin.getInstance();
     private static final EnumMap<Message, String> messages = new EnumMap<>(Message.class);
@@ -21,7 +21,7 @@ public class LangUtils {
      * @param replacements Replacements of placeholders which might be required to be replaced in the message
      * @return Localized Message
      */
-    public static String getMessage(Message message, Replacement... replacements) {
+    public static String get(Message message, Replacement... replacements) {
         String finalMessage = messages.get(message);
         if (finalMessage == null)
             return ChatColor.RED + "An error occurred: Message not found: " + message.toString();

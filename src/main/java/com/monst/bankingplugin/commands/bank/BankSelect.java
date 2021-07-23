@@ -1,9 +1,10 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.bank.BankSelectEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -16,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankSelect extends BankCommand.SubCommand {
+public class BankSelect extends SubCommand.BankSubCommand {
 
     BankSelect() {
         super("select", true);
@@ -39,13 +40,13 @@ public class BankSelect extends BankCommand.SubCommand {
 
         if (!PLUGIN.isWorldEditIntegrated() && !PLUGIN.isGriefPreventionIntegrated()) {
             PLUGIN.debug("Cannot select bank. Neither WorldEdit nor GriefPrevention is enabled.");
-            p.sendMessage(LangUtils.getMessage(Message.CANT_SELECT_BANK));
+            p.sendMessage(Messages.get(Message.CANT_SELECT_BANK));
             return true;
         }
 
         if (!p.hasPermission(Permissions.BANK_SELECT)) {
             PLUGIN.debug(p.getName() + " does not have permission to select a bank");
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SELECT));
+            p.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SELECT));
             return true;
         }
 
@@ -54,14 +55,14 @@ public class BankSelect extends BankCommand.SubCommand {
             bank = bankRepo.getAt(p.getLocation().getBlock());
             if (bank == null) {
                 PLUGIN.debug(p.getName() + " wasn't standing in a bank");
-                p.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
+                p.sendMessage(Messages.get(Message.MUST_STAND_IN_BANK));
                 return true;
             }
         } else {
             bank = bankRepo.getByIdentifier(args[1]);
             if (bank == null) {
                 PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
-                p.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+                p.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                 return true;
             }
         }
@@ -76,7 +77,7 @@ public class BankSelect extends BankCommand.SubCommand {
         if (PLUGIN.isWorldEditIntegrated())
             WorldEditReader.setSelection(PLUGIN, bank.getRegion(), p);
         PLUGIN.debug(p.getName() + " has selected a bank");
-        p.sendMessage(LangUtils.getMessage(Message.BANK_SELECTED,
+        p.sendMessage(Messages.get(Message.BANK_SELECTED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
         ));
         return true;

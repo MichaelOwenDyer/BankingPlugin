@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.Account;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.ClickType;
 import org.bukkit.ChatColor;
@@ -32,7 +32,7 @@ public class AccountRecoveryGUI extends AccountListGUI {
                 ChatColor.DARK_RED + "Invalid Account", getRecoveryLore(account));
         ItemStackTemplate template = new StaticItemTemplate(item);
         Slot.ClickHandler clickHandler = (player, info) -> {
-            player.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_RECOVER));
+            player.sendMessage(Messages.get(Message.CLICK_CHEST_RECOVER));
             ClickType.setRecoverClickType(player, account);
             exit(player);
         };

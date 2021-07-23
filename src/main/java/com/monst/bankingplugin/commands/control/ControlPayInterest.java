@@ -1,8 +1,9 @@
 package com.monst.bankingplugin.commands.control;
 
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.control.InterestEvent;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -13,7 +14,7 @@ import org.bukkit.command.CommandSender;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ControlPayInterest extends ControlCommand.SubCommand {
+public class ControlPayInterest extends SubCommand.ControlSubCommand {
 
     ControlPayInterest() {
         super("payinterest", false);
@@ -35,7 +36,7 @@ public class ControlPayInterest extends ControlCommand.SubCommand {
 
         if (!sender.hasPermission(Permissions.PAY_INTEREST)) {
             PLUGIN.debug(sender.getName() + " does not have permission to trigger an interest payout");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_PAY_INTEREST));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_PAY_INTEREST));
             return true;
         }
 
@@ -50,7 +51,7 @@ public class ControlPayInterest extends ControlCommand.SubCommand {
                     .collect(Collectors.toSet());
 
         PLUGIN.debugf("%s has triggered an interest payment at %s", sender.getName(), Utils.map(banks, Bank::getName));
-        sender.sendMessage(LangUtils.getMessage(Message.INTEREST_PAYOUT_TRIGGERED, new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size)));
+        sender.sendMessage(Messages.get(Message.INTEREST_PAYOUT_TRIGGERED, new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size)));
 
         InterestEvent event = new InterestEvent(sender, banks);
         event.fire();

@@ -1,6 +1,8 @@
 package com.monst.bankingplugin.commands;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,27 +19,45 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a major command for this plugin, e.g. /account. This class creates and registers each major command,
  * along with all subcommands, on startup, and also provides a basic {@link CommandExecutor} and {@link TabCompleter}
  * which delegate to the concrete implementations in the subcommand classes themselves.
  */
-public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCommand> {
+public abstract class BankingPluginCommand<SC extends SubCommand> {
 
-	private final BankingPlugin plugin;
+	protected final BankingPlugin plugin;
 
-	protected String name;
-	protected String desc;
-	protected PluginCommand pluginCommand;
+	private final String name;
+	private final String desc;
+	private final PluginCommand pluginCommand;
+	private final List<SC> subCommands;
 
-	private final List<SubCommand> subCommands = new ArrayList<>();
-
-	protected BankingPluginCommand(final BankingPlugin plugin) {
+	protected BankingPluginCommand(BankingPlugin plugin, String name, Message desc) throws IllegalStateException {
+		if (isCreated()) {
+			IllegalStateException e = new IllegalStateException("Command \"" + name + "\" has already been registered!");
+			plugin.debug(e);
+			throw e;
+		}
 		this.plugin = plugin;
+		this.name = name;
+		this.desc = Messages.get(desc);
+		this.subCommands = new ArrayList<>();
+		this.pluginCommand = createPluginCommand();
+		getSubCommands().forEach(this::addSubCommand);
+		register();
+		setCreated();
 	}
 
-	protected PluginCommand createPluginCommand() {
+	protected abstract Stream<SC> getSubCommands();
+
+	protected abstract boolean isCreated();
+
+	protected abstract void setCreated();
+
+	private PluginCommand createPluginCommand() {
 		plugin.debug("Creating plugin command \"" + name + "\"");
 		try {
 			Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
@@ -52,14 +72,13 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 			return cmd;
 		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
 			plugin.getLogger().severe("Failed to create command \"" + name + "\"!");
-			plugin.debug("Failed to create plugin command \"" + name + "\"!");
+			plugin.debug("Failed to create command \"" + name + "\"!");
 			plugin.debug(e);
 		}
-
 		return null;
 	}
 
-	protected void register() {
+	private void register() {
 		if (pluginCommand == null)
 			return;
 
@@ -75,8 +94,8 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 				commandMap.register(plugin.getName(), pluginCommand);
 			}
 		} catch (NoSuchFieldException | IllegalAccessException e) {
-			plugin.getLogger().severe("Failed to register plugin command!");
-			plugin.debug("Failed to register plugin command!");
+			plugin.getLogger().severe("Failed to register command \"" + name + "\"!");
+			plugin.debug("Failed to register command \"" + name + "\"!");
 			plugin.debug(e);
 		}
 	}
@@ -86,9 +105,9 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 	 *
 	 * @param sender {@link CommandSender} who will receive the message
 	 */
-	protected void sendBasicHelpMessage(CommandSender sender) {
+	private void sendBasicHelpMessage(CommandSender sender) {
 		plugin.debug("Sending basic help message to " + sender.getName());
-		for (SubCommand subCommand : subCommands) {
+		for (SC subCommand : subCommands) {
 			String msg = subCommand.getHelpMessage(sender, name);
 			if (msg != null && !msg.isEmpty())
 				sender.sendMessage(msg);
@@ -98,9 +117,9 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 	private class BaseCommandExecutor implements CommandExecutor {
 
 		@Override
-		public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, String[] args) {
+		public boolean onCommand(@Nonnull CommandSender sender, @Nonnull org.bukkit.command.Command command, @Nonnull String label, String[] args) {
 			if (args.length > 0) {
-				for (SubCommand subCommand : subCommands) {
+				for (SC subCommand : subCommands) {
 					if (subCommand.getName().equalsIgnoreCase(args[0])) {
 						if (subCommand.isPlayerCommand() && !(sender instanceof Player)) {
 							sender.sendMessage(ChatColor.RED + "Only players can use this command.");
@@ -123,7 +142,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 	private class BaseTabCompleter implements TabCompleter {
 
 		@Override
-		public List<String> onTabComplete(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {
+		public List<String> onTabComplete(@Nonnull CommandSender sender, @Nonnull org.bukkit.command.Command command, @Nonnull String label, @Nonnull String[] args) {
 
 			if (!(sender instanceof Player))
 				return Collections.emptyList();
@@ -133,12 +152,12 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 			String subCommandName = args[0];
 			if (args.length == 1)
 				return subCommands.stream()
-						.map(BankingPluginSubCommand::getName)
+						.map(SubCommand::getName)
 						.filter(name -> Utils.startsWithIgnoreCase(name, subCommandName))
 						.collect(Collectors.toList());
 
 			String[] arguments = Arrays.copyOfRange(args, 1, args.length);
-			for (SubCommand subCommand : subCommands)
+			for (SC subCommand : subCommands)
 				if (subCommand.getName().equalsIgnoreCase(subCommandName))
 					return subCommand.getTabCompletions(sender, arguments);
 
@@ -146,7 +165,7 @@ public abstract class BankingPluginCommand<SubCommand extends BankingPluginSubCo
 		}
 	}
 
-	protected void addSubCommand(SubCommand subCommand) {
+	private void addSubCommand(SC subCommand) {
 		plugin.debug("Adding " + name + " subcommand \"" + subCommand.getName() + "\"");
 		subCommands.add(subCommand);
 	}

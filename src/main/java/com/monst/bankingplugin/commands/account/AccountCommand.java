@@ -2,33 +2,23 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.BankingPluginCommand;
-import com.monst.bankingplugin.commands.BankingPluginSubCommand;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.lang.LangUtils;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.repository.AccountRepository;
 
 import java.util.stream.Stream;
 
-public class AccountCommand extends BankingPluginCommand<AccountCommand.SubCommand> {
+public class AccountCommand extends BankingPluginCommand<SubCommand.AccountSubCommand> {
 
 	private static boolean commandCreated = false;
 
 	public AccountCommand(final BankingPlugin plugin) {
+		super(plugin, Config.accountCommandName.get(), Message.ACCOUNT_COMMAND_DESC);
+	}
 
-		super(plugin);
-
-		if (commandCreated) {
-			IllegalStateException e = new IllegalStateException("Command \"" + name + "\" has already been registered!");
-			plugin.debug(e);
-			throw e;
-		}
-
-		this.name = Config.accountCommandName.get();
-		this.desc = LangUtils.getMessage(Message.ACCOUNT_COMMAND_DESC);
-		this.pluginCommand = super.createPluginCommand();
-
-		Stream.of(
+	@Override
+	protected Stream<SubCommand.AccountSubCommand> getSubCommands() {
+		return Stream.of(
 				new AccountCreate(),
 				new AccountInfo(),
 				new AccountLimits(),
@@ -42,21 +32,17 @@ public class AccountCommand extends BankingPluginCommand<AccountCommand.SubComma
 				new AccountTransfer(),
 				new AccountTrust(),
 				new AccountUntrust()
-		).forEach(this::addSubCommand);
-
-		register();
-		commandCreated = true;
-
+		);
 	}
 
-	abstract static class SubCommand extends BankingPluginSubCommand {
+	@Override
+	protected boolean isCreated() {
+		return commandCreated;
+	}
 
-		static final AccountRepository accountRepo = PLUGIN.getAccountRepository();
-
-		SubCommand(String name, boolean playerCommand) {
-			super(name, playerCommand);
-		}
-
+	@Override
+	protected void setCreated() {
+		commandCreated = true;
 	}
 
 }

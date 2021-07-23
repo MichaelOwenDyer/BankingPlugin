@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -33,21 +33,21 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
             database.getBankProfitEarnedByPlayerSince(p, logoutTime, Callback.of(profit -> {
                 if (profit.signum() == 0)
                     return;
-                p.sendMessage(LangUtils.getMessage(profit.signum() > 0 ? Message.BANK_PROFIT_OFFLINE : Message.BANK_LOSS_OFFLINE,
+                p.sendMessage(Messages.get(profit.signum() > 0 ? Message.BANK_PROFIT_OFFLINE : Message.BANK_LOSS_OFFLINE,
                         new Replacement(Placeholder.AMOUNT, profit.abs())
                 ));
             }));
 
             database.getInterestEarnedByPlayerSince(p, logoutTime, Callback.of(interest -> {
                 if (interest.signum() > 0)
-                    p.sendMessage(LangUtils.getMessage(Message.OFFLINE_ACCOUNT_INTEREST,
+                    p.sendMessage(Messages.get(Message.OFFLINE_ACCOUNT_INTEREST,
                             new Replacement(Placeholder.AMOUNT, interest)
                     ));
             }));
 
             database.getLowBalanceFeesPaidByPlayerSince(p, logoutTime, Callback.of(fees -> {
                 if (fees.signum() > 0)
-                    p.sendMessage(LangUtils.getMessage(Message.OFFLINE_LOW_BALANCE_FEES_PAID,
+                    p.sendMessage(Messages.get(Message.OFFLINE_LOW_BALANCE_FEES_PAID,
                             new Replacement(Placeholder.AMOUNT, fees)
                     ));
             }));

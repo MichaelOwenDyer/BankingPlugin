@@ -1,14 +1,11 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
-import com.monst.bankingplugin.lang.LangUtils;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
-import com.monst.bankingplugin.lang.MailingRoom;
+import com.monst.bankingplugin.lang.*;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
@@ -17,7 +14,7 @@ import org.bukkit.entity.Player;
 import java.util.Collection;
 import java.util.Set;
 
-public class BankRemoveAll extends BankCommand.SubCommand implements ConfirmableSubCommand {
+public class BankRemoveAll extends SubCommand.BankSubCommand implements ConfirmableSubCommand {
 
     BankRemoveAll() {
         super("removeall", false);
@@ -39,20 +36,20 @@ public class BankRemoveAll extends BankCommand.SubCommand implements Confirmable
 
         if (!sender.hasPermission(Permissions.BANK_REMOVEALL)) {
             PLUGIN.debug(sender.getName() + " does not have permission to remove all banks");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_REMOVEALL));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_REMOVEALL));
             return true;
         }
 
         Set<Bank> banks = bankRepo.getAll();
 
         if (banks.isEmpty()) {
-            sender.sendMessage(LangUtils.getMessage(Message.BANKS_NOT_FOUND));
+            sender.sendMessage(Messages.get(Message.BANKS_NOT_FOUND));
             return true;
         }
 
         int affectedAccounts = banks.stream().map(Bank::getAccounts).mapToInt(Collection::size).sum();
         if (sender instanceof Player && Config.confirmOnRemoveAll.get() && !isConfirmed((Player) sender, args)) {
-            sender.sendMessage(LangUtils.getMessage(Message.BANK_CONFIRM_REMOVE,
+            sender.sendMessage(Messages.get(Message.BANK_CONFIRM_REMOVE,
                     new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size),
                     new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, affectedAccounts)
             ));
@@ -66,12 +63,12 @@ public class BankRemoveAll extends BankCommand.SubCommand implements Confirmable
             return true;
         }
 
-        sender.sendMessage(LangUtils.getMessage(Message.ALL_BANKS_REMOVED,
+        sender.sendMessage(Messages.get(Message.ALL_BANKS_REMOVED,
                 new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size),
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, affectedAccounts)
         ));
         for (Bank bank : banks) {
-            MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_REMOVED,
+            MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.BANK_REMOVED,
                     new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                     new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, () -> bank.getAccounts().size())
             ));

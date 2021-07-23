@@ -52,7 +52,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		plugin.debugf("%s tries to break %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
 		if (!(p.isSneaking() && Utils.hasAxeInHand(p)) || (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER))) {
 			e.setCancelled(true);
-			e.getPlayer().sendMessage(LangUtils.getMessage(Message.CANNOT_BREAK_ACCOUNT));
+			e.getPlayer().sendMessage(Messages.get(Message.CANNOT_BREAK_ACCOUNT));
 			return;
 		}
 
@@ -61,12 +61,12 @@ public class AccountProtectListener extends BankingPluginListener {
 			double creationPrice = bank.getAccountCreationPrice().get();
 			// Account owner is reimbursed for the part of the chest that was broken
 			if (PayrollOffice.deposit(p, creationPrice))
-				p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
+				p.sendMessage(Messages.get(Message.REIMBURSEMENT_RECEIVED,
 						new Replacement(Placeholder.AMOUNT, creationPrice)
 				));
 			// Bank owner reimburses the customer
 			if (bank.isPlayerBank() && PayrollOffice.withdraw(bank.getOwner(), creationPrice)) {
-				Mailman.notify(bank.getOwner(), LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+				Mailman.notify(bank.getOwner(), Messages.get(Message.REIMBURSEMENT_PAID,
 						new Replacement(Placeholder.PLAYER, p.getName()),
 						new Replacement(Placeholder.AMOUNT, creationPrice)
 				));
@@ -82,7 +82,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		} else {
 			accountRepo.remove(account, true);
 			plugin.debugf("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
-			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
+			p.sendMessage(Messages.get(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
 			new AccountRemoveEvent(p, account).fire();
 		}
 	}
@@ -144,7 +144,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		if (bank == null) {
 			plugin.debugf("%s tried to extend %s's account (#%d), but new chest was not in a bank.",
 					p.getName(), account.getOwner().getName(), account.getID());
-			p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
+			p.sendMessage(Messages.get(Message.CHEST_NOT_IN_BANK));
 			e.setCancelled(true);
 			return;
 		}
@@ -155,26 +155,26 @@ public class AccountProtectListener extends BankingPluginListener {
         event.fire();
 		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             e.setCancelled(true);
-			p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED));
+			p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED));
             return;
         }
 
 		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)) {
             e.setCancelled(true);
-			p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_OTHER));
+			p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_EXTEND_OTHER));
             return;
         }
 
 		if (newLoc.isBlocked()) {
             e.setCancelled(true);
-			p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
+			p.sendMessage(Messages.get(Message.CHEST_BLOCKED));
             return;
 		}
 
 		double creationPrice = bank.getAccountCreationPrice().get();
 		if (!PayrollOffice.allowPayment(p, creationPrice * -1)) {
 			double balance = plugin.getEconomy().getBalance(p);
-			p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_INSUFFICIENT_FUNDS,
+			p.sendMessage(Messages.get(Message.ACCOUNT_EXTEND_INSUFFICIENT_FUNDS,
 					new Replacement(Placeholder.PRICE, creationPrice),
 					new Replacement(Placeholder.AMOUNT_REMAINING, creationPrice - balance),
 					new Replacement(Placeholder.PLAYER_BALANCE, balance)
@@ -184,7 +184,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		}
 		if (creationPrice > 0 && !bank.isOwner(p)) {
 			if (PayrollOffice.withdraw(p, creationPrice))
-				p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_PAID,
+				p.sendMessage(Messages.get(Message.ACCOUNT_EXTEND_FEE_PAID,
 						new Replacement(Placeholder.PRICE, creationPrice),
 						new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
 				));
@@ -193,7 +193,7 @@ public class AccountProtectListener extends BankingPluginListener {
 				return;
 			}
 			if (bank.isPlayerBank() && PayrollOffice.deposit(bank.getOwner(), creationPrice)) {
-				Mailman.notify(bank.getOwner(), LangUtils.getMessage(Message.ACCOUNT_EXTEND_FEE_RECEIVED,
+				Mailman.notify(bank.getOwner(), Messages.get(Message.ACCOUNT_EXTEND_FEE_RECEIVED,
 						new Replacement(Placeholder.PLAYER, account::getOwnerName),
 						new Replacement(Placeholder.AMOUNT, creationPrice),
 						new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
@@ -233,7 +233,7 @@ public class AccountProtectListener extends BankingPluginListener {
 			return;
 		Player executor = (Player) e.getWhoClicked();
 		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
-			executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_EDIT_OTHER));
+			executor.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_EDIT_OTHER));
 			e.setCancelled(true);
 		}
 	}

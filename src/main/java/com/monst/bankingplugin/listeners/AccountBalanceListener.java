@@ -5,7 +5,7 @@ import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -61,14 +61,14 @@ public class AccountBalanceListener extends BankingPluginListener {
 		plugin.debugf("Appraised balance of account #d: %s, difference to previous: %s", account.getID(),
 				Utils.format(appraisal), Utils.format(difference));
 
-		executor.sendMessage(LangUtils.getMessage(difference.signum() > 0 ? Message.ACCOUNT_DEPOSIT : Message.ACCOUNT_WITHDRAWAL,
+		executor.sendMessage(Messages.get(difference.signum() > 0 ? Message.ACCOUNT_DEPOSIT : Message.ACCOUNT_WITHDRAWAL,
 				new Replacement(Placeholder.AMOUNT, difference::abs),
 				new Replacement(Placeholder.ACCOUNT_BALANCE, appraisal)
 		));
 
 		if (difference.signum() < 0 && appraisal.compareTo(account.getPrevBalance()) < 0)
 			if (account.getMultiplierStage() != account.processWithdrawal())
-				executor.sendMessage(LangUtils.getMessage(Message.MULTIPLIER_DECREASED,
+				executor.sendMessage(Messages.get(Message.MULTIPLIER_DECREASED,
 						new Replacement(Placeholder.NUMBER, account::getRealMultiplier)
 				));
 

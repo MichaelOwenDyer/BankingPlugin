@@ -92,7 +92,7 @@ public class AccountRepository implements Repository<Account, AccountField> {
 		}
 
         plugin.debugf("Adding account #%d to the session...", account.getID());
-		accountMap.put(account.getLocation(), account);
+		accountMap.put(account);
 
         if (addToDatabase) {
 			plugin.getDatabase().addAccount(account, callback);
@@ -116,7 +116,7 @@ public class AccountRepository implements Repository<Account, AccountField> {
 			fields.add(AccountField.Z1);
 			fields.add(AccountField.X2);
 			fields.add(AccountField.Z2);
-			accountMap.put(account.getLocation(), account);
+			accountMap.put(account);
 		}
 		plugin.debugf("Updating the following fields of account #%d in the database: " + fields, account.getID());
 
@@ -139,7 +139,7 @@ public class AccountRepository implements Repository<Account, AccountField> {
 		account.clearChestName();
 		account.getBank().removeAccount(account);
 
-		accountMap.remove(account.getLocation());
+		accountMap.remove(account);
 
         if (removeFromDatabase) {
 			plugin.getDatabase().removeAccount(account, callback);
@@ -168,36 +168,42 @@ public class AccountRepository implements Repository<Account, AccountField> {
     	private final HashBiMap<AccountLocation, Account> biMap;
 		private final Set<GUI<?>> observers;
 
-		public AccountMap() {
+		private AccountMap() {
 			this.biMap = HashBiMap.create();
 			this.observers = new HashSet<>();
 		}
 
-		public void put(AccountLocation key, Account value) {
-			Account a = biMap.forcePut(key, value);
+		void put(Account account) {
+			Account a = biMap.forcePut(account.getLocation(), account);
 			if (a != null)
 				notifyObservers();
 		}
 
-		public void remove(AccountLocation key) {
+		void remove(Account key) {
+			Account a = biMap.remove(key.getLocation());
+			if (a != null)
+				notifyObservers();
+		}
+
+		void remove(AccountLocation key) {
 			Account a = biMap.remove(key);
 			if (a != null)
 				notifyObservers();
 		}
 
-		public Set<AccountLocation> keySet() {
+		Set<AccountLocation> keySet() {
 			return biMap.keySet();
 		}
 
-		public Set<Account> values() {
+		Set<Account> values() {
 			return biMap.values();
 		}
 
-		public Account get(AccountLocation key) {
+		Account get(AccountLocation key) {
 			return biMap.get(key);
 		}
 
-		public Set<Map.Entry<AccountLocation, Account>> entrySet() {
+		Set<Map.Entry<AccountLocation, Account>> entrySet() {
 			return biMap.entrySet();
 		}
 

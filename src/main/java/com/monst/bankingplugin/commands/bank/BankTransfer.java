@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankTransferEvent;
@@ -16,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankTransfer extends BankCommand.SubCommand implements ConfirmableSubCommand {
+public class BankTransfer extends SubCommand.BankSubCommand implements ConfirmableSubCommand {
 
     BankTransfer() {
         super("transfer", false);
@@ -38,7 +39,7 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
 
         if (!sender.hasPermission(Permissions.BANK_TRANSFER)) {
             PLUGIN.debug(sender.getName() + " does not have permission to transfer bank ownership");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRANSFER));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_TRANSFER));
             return true;
         }
 
@@ -48,58 +49,58 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
         Bank bank = bankRepo.getByIdentifier(args[1]);
         if (bank == null) {
             PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
-            sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            sender.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
         OfflinePlayer newOwner = null;
         if (args.length > 2) {
             newOwner = Utils.getPlayer(args[2]);
             if (newOwner == null) {
-                sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+                sender.sendMessage(Messages.get(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                 return true;
             }
         }
 
         if (newOwner != null && bank.isOwner(newOwner)) {
             PLUGIN.debug(newOwner.getName() + " is already owner of that bank");
-            sender.sendMessage(LangUtils.getMessage(Message.ALREADY_OWNER,
+            sender.sendMessage(Messages.get(Message.ALREADY_OWNER,
                     new Replacement(Placeholder.PLAYER, newOwner::getName)
             ));
             return true;
         }
         if (newOwner == null && bank.isAdminBank()) {
             PLUGIN.debug("Bank is already an admin bank");
-            sender.sendMessage(LangUtils.getMessage(Message.BANK_ALREADY_ADMIN, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
+            sender.sendMessage(Messages.get(Message.BANK_ALREADY_ADMIN, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
             return true;
         }
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRANSFER_ADMIN)) {
             PLUGIN.debug(sender.getName() + " does not have permission to transfer an admin bank");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRANSFER_ADMIN));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_TRANSFER_ADMIN));
             return true;
         }
         if (newOwner == null && !sender.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
             PLUGIN.debug(sender.getName() + " does not have permission to transfer a bank to the admins");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_CREATE_ADMIN));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_CREATE_ADMIN));
             return true;
         }
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isOwner((Player) sender))
                 || sender.hasPermission(Permissions.BANK_TRANSFER_OTHER))) {
             if (sender instanceof Player && bank.isTrusted((Player) sender)) {
                 PLUGIN.debug(sender.getName() + " does not have permission to transfer ownership as a co-owner");
-                sender.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+                sender.sendMessage(Messages.get(Message.MUST_BE_OWNER));
                 return true;
             }
             PLUGIN.debug(sender.getName() + " does not have permission to transfer ownership of another player's bank");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_TRANSFER_OTHER));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_TRANSFER_OTHER));
             return true;
         }
 
         if (sender instanceof Player && Config.confirmOnTransfer.get() && isConfirmed((Player) sender, args)) {
-            sender.sendMessage(LangUtils.getMessage(Message.BANK_CONFIRM_TRANSFER,
+            sender.sendMessage(Messages.get(Message.BANK_CONFIRM_TRANSFER,
                     new Replacement(Placeholder.PLAYER, newOwner != null ? newOwner.getName() : "ADMIN"),
                     new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
             ));
-            sender.sendMessage(LangUtils.getMessage(Message.EXECUTE_AGAIN_TO_CONFIRM));
+            sender.sendMessage(Messages.get(Message.EXECUTE_AGAIN_TO_CONFIRM));
             return true;
         }
 
@@ -110,13 +111,13 @@ public class BankTransfer extends BankCommand.SubCommand implements ConfirmableS
             return true;
         }
 
-        MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_TRANSFERRED,
+        MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.BANK_TRANSFERRED,
                 new Replacement(Placeholder.PLAYER, newOwner != null ? newOwner.getName() : "ADMIN"),
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
         ));
         mailingRoom.addRecipient(sender);
         mailingRoom.send();
-        mailingRoom.newMessage(LangUtils.getMessage(Message.BANK_TRANSFERRED_TO_YOU,
+        mailingRoom.newMessage(Messages.get(Message.BANK_TRANSFERRED_TO_YOU,
                 new Replacement(Placeholder.PLAYER, sender::getName),
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
         ));

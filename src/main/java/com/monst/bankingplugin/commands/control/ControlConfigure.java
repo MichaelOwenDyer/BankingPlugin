@@ -1,10 +1,11 @@
 package com.monst.bankingplugin.commands.control;
 
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.ConfigValue;
 import com.monst.bankingplugin.events.control.PluginConfigureCommandEvent;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -16,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ControlConfigure extends ControlCommand.SubCommand {
+public class ControlConfigure extends SubCommand.ControlSubCommand {
 
     ControlConfigure() {
         super("configure", false);
@@ -38,7 +39,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
 
         if (!sender.hasPermission(Permissions.CONFIG)) {
             PLUGIN.debug(sender.getName() + " does not have permission to configure the config");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_CONFIG));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_CONFIG));
             return true;
         }
 
@@ -48,7 +49,7 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         String path = args[1];
         ConfigValue<?, ?> configValue = Config.getByPath(path);
         if (configValue == null) {
-            sender.sendMessage(LangUtils.getMessage(Message.NOT_A_CONFIG_VALUE,
+            sender.sendMessage(Messages.get(Message.NOT_A_CONFIG_VALUE,
                     new Replacement(Placeholder.INPUT, path)
             ));
             return true;
@@ -76,13 +77,13 @@ public class ControlConfigure extends ControlCommand.SubCommand {
         String newValue = configValue.getFormatted();
 
         PLUGIN.debugf("%s has set %s from %s to %s", sender.getName(), configValue.getPath(), previousValue, newValue);
-        sender.sendMessage(LangUtils.getMessage(Message.CONFIG_VALUE_SET,
+        sender.sendMessage(Messages.get(Message.CONFIG_VALUE_SET,
                 new Replacement(Placeholder.PROPERTY, path),
                 new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
                 new Replacement(Placeholder.VALUE, newValue)
         ));
         if (!configValue.isHotSwappable()) {
-            sender.sendMessage(LangUtils.getMessage(Message.RESTART_REQUIRED,
+            sender.sendMessage(Messages.get(Message.RESTART_REQUIRED,
                     new Replacement(Placeholder.PROPERTY, path)
             ));
         }

@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
@@ -18,7 +19,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 
-public class AccountCreate extends AccountCommand.SubCommand {
+public class AccountCreate extends SubCommand.AccountSubCommand {
 
     AccountCreate() {
         super("create", true);
@@ -40,14 +41,14 @@ public class AccountCreate extends AccountCommand.SubCommand {
         PLUGIN.debug(p.getName() + " wants to create an account");
 
         if (!hasPermission(p, Permissions.ACCOUNT_CREATE)) {
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE));
+            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CREATE));
             PLUGIN.debug(p.getName() + " is not permitted to create an account");
             return true;
         }
 
         int limit = Utils.getAccountLimit(p);
         if (limit != -1 && accountRepo.getOwnedBy(p).size() >= limit) {
-            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
+            p.sendMessage(Messages.get(Message.ACCOUNT_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
             PLUGIN.debug(p.getName() + " has reached their account limit");
             return true;
         }
@@ -60,7 +61,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         }
 
         PLUGIN.debug(p.getName() + " can now click a chest to create an account");
-        p.sendMessage(LangUtils.getMessage(Message.CLICK_CHEST_CREATE));
+        p.sendMessage(Messages.get(Message.CLICK_CHEST_CREATE));
         ClickType.setCreateClickType(p);
         return true;
     }
@@ -76,7 +77,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         ClickType.removeClickType(p);
 
         if (PLUGIN.getAccountRepository().isAccount(b)) {
-            p.sendMessage(LangUtils.getMessage(Message.CHEST_ALREADY_ACCOUNT));
+            p.sendMessage(Messages.get(Message.CHEST_ALREADY_ACCOUNT));
             PLUGIN.debug("Chest is already an account.");
             return;
         }
@@ -86,26 +87,26 @@ public class AccountCreate extends AccountCommand.SubCommand {
         AccountLocation accountLocation = AccountLocation.from(ih);
 
         if (accountLocation.isBlocked()) {
-            p.sendMessage(LangUtils.getMessage(Message.CHEST_BLOCKED));
+            p.sendMessage(Messages.get(Message.CHEST_BLOCKED));
             PLUGIN.debug("Chest is blocked.");
             return;
         }
 
         Bank bank = accountLocation.getBank();
         if (bank == null) {
-            p.sendMessage(LangUtils.getMessage(Message.CHEST_NOT_IN_BANK));
+            p.sendMessage(Messages.get(Message.CHEST_NOT_IN_BANK));
             PLUGIN.debug("Chest is not in a bank.");
             return;
         }
 
         if (!Config.allowSelfBanking.get() && bank.isOwner(p)) {
-            p.sendMessage(LangUtils.getMessage(Message.NO_SELF_BANKING, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
+            p.sendMessage(Messages.get(Message.NO_SELF_BANKING, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
             PLUGIN.debug(p.getName() + " is not permitted to create an account at their own bank");
             return;
         }
         int playerAccountLimit = bank.getPlayerBankAccountLimit().get();
         if (playerAccountLimit > 0 && bank.getAccounts(account -> account.isOwner(p)).size() >= playerAccountLimit) {
-            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_LIMIT_AT_BANK_REACHED,
+            p.sendMessage(Messages.get(Message.ACCOUNT_LIMIT_AT_BANK_REACHED,
                     new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                     new Replacement(Placeholder.LIMIT, playerAccountLimit)
             ));
@@ -119,7 +120,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             PLUGIN.debug("No permission to create account on a protected chest.");
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
+            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
             return;
         }
 
@@ -130,7 +131,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
         if (creationPrice > 0) {
             double balance = PLUGIN.getEconomy().getBalance(p);
             if (creationPrice > balance) {
-                p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS,
+                p.sendMessage(Messages.get(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS,
                         new Replacement(Placeholder.PRICE, creationPrice),
                         new Replacement(Placeholder.PLAYER_BALANCE, balance),
                         new Replacement(Placeholder.AMOUNT_REMAINING, creationPrice - balance)
@@ -139,7 +140,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             }
             // Account owner pays the bank owner the creation fee
             if (PayrollOffice.withdraw(p, creationPrice))
-                p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_PAID,
+                p.sendMessage(Messages.get(Message.ACCOUNT_CREATE_FEE_PAID,
                         new Replacement(Placeholder.PRICE, creationPrice),
                         new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
                 ));
@@ -149,7 +150,7 @@ public class AccountCreate extends AccountCommand.SubCommand {
             if (bank.isPlayerBank()) {
                 OfflinePlayer bankOwner = account.getBank().getOwner();
                 if (PayrollOffice.deposit(bankOwner, creationPrice))
-                    Mailman.notify(bankOwner, LangUtils.getMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED,
+                    Mailman.notify(bankOwner, Messages.get(Message.ACCOUNT_CREATE_FEE_RECEIVED,
                             new Replacement(Placeholder.PLAYER, p::getName),
                             new Replacement(Placeholder.AMOUNT, creationPrice),
                             new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
@@ -160,10 +161,10 @@ public class AccountCreate extends AccountCommand.SubCommand {
         if (account.create()) {
             PLUGIN.debug("Account created");
             accountRepo.add(account, true, account.callUpdateChestName());
-            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
+            p.sendMessage(Messages.get(Message.ACCOUNT_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         } else {
             PLUGIN.debugf("Could not create account");
-            p.sendMessage(LangUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, "Could not create account")));
+            p.sendMessage(Messages.get(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, "Could not create account")));
         }
     }
 }

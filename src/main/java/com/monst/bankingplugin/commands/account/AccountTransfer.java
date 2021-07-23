@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountTransferCommandEvent;
 import com.monst.bankingplugin.events.account.AccountTransferEvent;
@@ -16,7 +17,7 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 
-public class AccountTransfer extends AccountCommand.SubCommand implements ConfirmableAccountAction {
+public class AccountTransfer extends SubCommand.AccountSubCommand implements ConfirmableAccountAction {
 
     private static AccountTransfer instance;
 
@@ -46,7 +47,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
         if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER)) {
             PLUGIN.debug(p.getName() + " does not have permission to transfer ownership of an account");
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER));
+            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_TRANSFER));
             return true;
         }
 
@@ -55,7 +56,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
         OfflinePlayer newOwner = Utils.getPlayer(args[1]);
         if (newOwner == null) {
-            p.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            p.sendMessage(Messages.get(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
 
@@ -66,7 +67,7 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
             return true;
         }
 
-        p.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_TRANSFER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
+        p.sendMessage(Messages.get(Message.CLICK_ACCOUNT_TRANSFER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
         ClickType.setTransferClickType(p, newOwner);
         PLUGIN.debug(p.getName() + " is transferring ownership of an account to " + newOwner.getName());
         return true;
@@ -89,23 +90,23 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
             PLUGIN.debug(p.getName() + " does not have permission to transfer the account.");
             if (account.isTrusted(p))
-                p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+                p.sendMessage(Messages.get(Message.MUST_BE_OWNER));
             else
-                p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER));
+                p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER));
             ClickType.removeClickType(p);
             return;
         }
 
         if (account.isOwner(newOwner)) {
             PLUGIN.debug(p.getName() + " is already owner of account");
-            p.sendMessage(LangUtils.getMessage(Message.ALREADY_OWNER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
+            p.sendMessage(Messages.get(Message.ALREADY_OWNER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
             ClickType.removeClickType(p);
             return;
         }
 
         if (Config.confirmOnTransfer.get() && !isConfirmed(p, account.getID())) {
             PLUGIN.debug("Needs confirmation");
-            p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_CONFIRM_TRANSFER,
+            p.sendMessage(Messages.get(Message.ACCOUNT_CONFIRM_TRANSFER,
                     new Replacement(Placeholder.PLAYER, newOwner::getName)
             ));
             return;
@@ -120,12 +121,12 @@ public class AccountTransfer extends AccountCommand.SubCommand implements Confir
 
         boolean hasCustomName = account.hasCustomName();
 
-        MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED,
+        MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.ACCOUNT_TRANSFERRED,
                 new Replacement(Placeholder.PLAYER, newOwner::getName)
         ));
         mailingRoom.addRecipient(p);
         mailingRoom.send();
-        mailingRoom.newMessage(LangUtils.getMessage(Message.ACCOUNT_TRANSFERRED_TO_YOU,
+        mailingRoom.newMessage(Messages.get(Message.ACCOUNT_TRANSFERRED_TO_YOU,
                 new Replacement(Placeholder.PLAYER, p::getName)
         ));
         mailingRoom.addOfflineRecipient(newOwner);

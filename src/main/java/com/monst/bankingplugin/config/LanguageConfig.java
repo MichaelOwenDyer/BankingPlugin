@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -77,7 +77,7 @@ public class LanguageConfig extends FileConfiguration {
             }
         }
         for (Message message : Message.VALUES)
-            LangUtils.setTranslation(message, findTranslation(message));
+            Messages.setTranslation(message, findTranslation(message));
     }
 
     @Nonnull

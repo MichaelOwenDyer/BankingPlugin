@@ -52,7 +52,7 @@ public class PayrollOffice {
         EconomyResponse result = transactor.transact(ECONOMY, player, Math.abs(amount));
         if (result.transactionSuccess())
             return true;
-        Mailman.notify(player, LangUtils.getMessage(Message.ERROR_OCCURRED,
+        Mailman.notify(player, Messages.get(Message.ERROR_OCCURRED,
                 new Replacement(Placeholder.ERROR, result.errorMessage)
         ));
         return false;

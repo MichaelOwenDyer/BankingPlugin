@@ -1,10 +1,11 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.Account;
-import com.monst.bankingplugin.events.account.AccountInfoEvent;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountInfoCommandEvent;
+import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.gui.AccountGUI;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -12,7 +13,7 @@ import com.monst.bankingplugin.utils.ClickType;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class AccountInfo extends AccountCommand.SubCommand {
+public class AccountInfo extends SubCommand.AccountSubCommand {
 
     AccountInfo() {
         super("info", false);
@@ -32,7 +33,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
                 int id = Integer.parseInt(args[1]);
                 Account account = accountRepo.getByID(id);
                 if (account == null) {
-                    sender.sendMessage(LangUtils.getMessage(Message.ACCOUNT_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+                    sender.sendMessage(Messages.get(Message.ACCOUNT_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                     return true;
                 }
 
@@ -55,7 +56,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
 
         if (!(sender instanceof Player)) {
             PLUGIN.debug(sender.getName() + " is not a player");
-            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
+            sender.sendMessage(Messages.get(Message.PLAYER_COMMAND_ONLY));
             return true;
         }
 
@@ -67,7 +68,7 @@ public class AccountInfo extends AccountCommand.SubCommand {
         }
 
         PLUGIN.debug(sender.getName() + " can now click an account to get info");
-        sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_INFO));
+        sender.sendMessage(Messages.get(Message.CLICK_ACCOUNT_INFO));
         ClickType.setInfoClickType((Player) sender);
         return true;
     }

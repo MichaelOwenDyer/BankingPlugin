@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
@@ -15,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankRemove extends BankCommand.SubCommand implements ConfirmableSubCommand {
+public class BankRemove extends SubCommand.BankSubCommand implements ConfirmableSubCommand {
 
     BankRemove() {
         super("remove", false);
@@ -44,24 +45,24 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
                 || sender.hasPermission(Permissions.BANK_REMOVE_OTHER))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
                 PLUGIN.debug(sender.getName() + " does not have permission to remove another player's bank as a co-owner");
-                sender.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+                sender.sendMessage(Messages.get(Message.MUST_BE_OWNER));
                 return true;
             }
             PLUGIN.debug(sender.getName() + " does not have permission to remove another player's bank");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_REMOVE_OTHER));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_REMOVE_OTHER));
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)) {
             PLUGIN.debug(sender.getName() + " does not have permission to remove an admin bank");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_REMOVE_ADMIN));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_REMOVE_ADMIN));
             return true;
         }
 
         if (sender instanceof Player) {
             Player executor = (Player) sender;
             if (Config.confirmOnRemove.get() && !isConfirmed(executor, args)) {
-                sender.sendMessage(LangUtils.getMessage(Message.BANK_CONFIRM_REMOVE,
+                sender.sendMessage(Messages.get(Message.BANK_CONFIRM_REMOVE,
                         new Replacement(Placeholder.NUMBER_OF_BANKS, 1),
                         new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, bank.getAccounts().size())
                 ));
@@ -71,7 +72,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
                 double reimbursement = Config.bankCreationPrice.get();
                 if (reimbursement > 0) {
                     if (PayrollOffice.deposit(executor, reimbursement))
-                        executor.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
+                        executor.sendMessage(Messages.get(Message.REIMBURSEMENT_RECEIVED,
                                 new Replacement(Placeholder.AMOUNT, reimbursement)
                         ));
                 }
@@ -88,7 +89,7 @@ public class BankRemove extends BankCommand.SubCommand implements ConfirmableSub
         int accountsRemoved = bank.getAccounts().size();
         bankRepo.remove(bank, true);
         PLUGIN.debugf("Bank #%d and %d accounts removed from the database.", bank.getID(), accountsRemoved);
-        MailingRoom mailingRoom = new MailingRoom(LangUtils.getMessage(Message.BANK_REMOVED,
+        MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.BANK_REMOVED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accountsRemoved)
         ));

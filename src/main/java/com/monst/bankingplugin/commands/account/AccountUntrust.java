@@ -1,9 +1,10 @@
 package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountUntrustCommandEvent;
 import com.monst.bankingplugin.events.account.AccountUntrustEvent;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -17,7 +18,7 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 
-public class AccountUntrust extends AccountCommand.SubCommand {
+public class AccountUntrust extends SubCommand.AccountSubCommand {
 
     AccountUntrust() {
         super("untrust", true);
@@ -39,7 +40,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
         PLUGIN.debug(sender.getName() + " wants to untrust a player from an account");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_UNTRUST));
             return true;
         }
 
@@ -48,7 +49,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
 
         OfflinePlayer playerToUntrust = Utils.getPlayer(args[1]);
         if (playerToUntrust == null) {
-            sender.sendMessage(LangUtils.getMessage(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            sender.sendMessage(Messages.get(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
 
@@ -60,7 +61,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
             return true;
         }
 
-        sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_UNTRUST, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
+        sender.sendMessage(Messages.get(Message.CLICK_ACCOUNT_UNTRUST, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
         ClickType.setUntrustClickType(p, playerToUntrust);
         PLUGIN.debug(sender.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
         return true;
@@ -79,17 +80,17 @@ public class AccountUntrust extends AccountCommand.SubCommand {
 
         if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
             if (account.isTrusted(executor)) {
-                executor.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+                executor.sendMessage(Messages.get(Message.MUST_BE_OWNER));
                 return;
             }
-            executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER));
+            executor.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER));
             return;
         }
 
         if (!account.isCoOwner(playerToUntrust)) {
             PLUGIN.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
                     playerToUntrust.getName(), account.getID());
-            executor.sendMessage(LangUtils.getMessage(Message.NOT_A_COOWNER,
+            executor.sendMessage(Messages.get(Message.NOT_A_COOWNER,
                     new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
             ));
             return;
@@ -104,7 +105,7 @@ public class AccountUntrust extends AccountCommand.SubCommand {
 
         PLUGIN.debugf("%s has untrusted %s from %s account (#%d)", executor.getName(),	playerToUntrust.getName(),
                 (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"), account.getID());
-        executor.sendMessage(LangUtils.getMessage(Message.REMOVED_COOWNER,
+        executor.sendMessage(Messages.get(Message.REMOVED_COOWNER,
                 new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
         ));
         account.untrustPlayer(playerToUntrust);

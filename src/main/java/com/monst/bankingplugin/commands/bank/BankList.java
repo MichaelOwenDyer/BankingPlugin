@@ -1,14 +1,15 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.gui.BankListGUI;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class BankList extends BankCommand.SubCommand {
+public class BankList extends SubCommand.BankSubCommand {
 
     BankList() {
         super("list", false);
@@ -26,7 +27,7 @@ public class BankList extends BankCommand.SubCommand {
         // TODO: Allow for more specific bank searching
 
         if (bankRepo.getAll().isEmpty()) {
-            sender.sendMessage(LangUtils.getMessage(Message.BANKS_NOT_FOUND));
+            sender.sendMessage(Messages.get(Message.BANKS_NOT_FOUND));
             return true;
         }
 

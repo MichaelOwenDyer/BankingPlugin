@@ -2,9 +2,10 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountConfigureEvent;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AccountConfigure extends AccountCommand.SubCommand {
+public class AccountConfigure extends SubCommand.AccountSubCommand {
 
     AccountConfigure() {
         super("configure", true);
@@ -45,7 +46,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
         if (!executor.hasPermission(Permissions.ACCOUNT_CONFIGURE)) {
             PLUGIN.debug(executor.getName() + " does not have permission to configure an account");
-            executor.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_CONFIGURE));
+            executor.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CONFIGURE));
             return true;
         }
 
@@ -55,7 +56,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
         String property = args[1];
         AccountField field = AccountField.getByName(property);
         if (field == null) {
-            executor.sendMessage(LangUtils.getMessage(Message.NOT_A_PROPERTY, new Replacement(Placeholder.INPUT, args[1])));
+            executor.sendMessage(Messages.get(Message.NOT_A_PROPERTY, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
 
@@ -68,7 +69,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
         }
 
         ClickType.setConfigureClickType(executor, field, value);
-        executor.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_CONFIGURE,
+        executor.sendMessage(Messages.get(Message.CLICK_ACCOUNT_CONFIGURE,
                 new Replacement(Placeholder.PROPERTY, property),
                 new Replacement(Placeholder.VALUE, value)
         ));
@@ -84,7 +85,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
                 account.setMultiplierStage(value);
 
-                executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_MULTIPLIER,
+                executor.sendMessage(Messages.get(Message.ACCOUNT_SET_MULTIPLIER,
                         new Replacement(Placeholder.MULTIPLIER, account::getRealMultiplier),
                         new Replacement(Placeholder.MULTIPLIER_STAGE, account::getMultiplierStage)
                 ));
@@ -98,7 +99,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
                 PLUGIN.debugf("%s has set the interest delay of account #%d to %d.",
                         executor.getName(), account.getID(), account.getDelayUntilNextPayout());
-                executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_INTEREST_DELAY,
+                executor.sendMessage(Messages.get(Message.ACCOUNT_SET_INTEREST_DELAY,
                         new Replacement(Placeholder.NUMBER, account::getDelayUntilNextPayout)
                 ));
                 break;
@@ -109,7 +110,7 @@ public class AccountConfigure extends AccountCommand.SubCommand {
 
                 PLUGIN.debugf("%s has set the remaining offline payouts of account #%d to %d.",
                         executor.getName(), account.getID(), account.getRemainingOfflinePayouts());
-                executor.sendMessage(LangUtils.getMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE,
+                executor.sendMessage(Messages.get(Message.ACCOUNT_SET_REMAINING_OFFLINE,
                         new Replacement(Placeholder.NUMBER, account::getRemainingOfflinePayouts)
                 ));
                 break;

@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveCommandEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
@@ -12,7 +13,7 @@ import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class AccountRemove extends AccountCommand.SubCommand implements ConfirmableAccountAction {
+public class AccountRemove extends SubCommand.AccountSubCommand implements ConfirmableAccountAction {
 
     private static AccountRemove instance;
 
@@ -47,7 +48,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         }
 
         PLUGIN.debug(sender.getName() + " can now click a chest to remove an account");
-        sender.sendMessage(LangUtils.getMessage(Message.CLICK_ACCOUNT_REMOVE));
+        sender.sendMessage(Messages.get(Message.CLICK_ACCOUNT_REMOVE));
         ClickType.setRemoveClickType((Player) sender);
         return true;
     }
@@ -62,9 +63,9 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
 
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(p)) {
             if (account.isTrusted(p))
-                p.sendMessage(LangUtils.getMessage(Message.MUST_BE_OWNER));
+                p.sendMessage(Messages.get(Message.MUST_BE_OWNER));
             else
-                p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER));
+                p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER));
             if (!hasEntry(p))
                 ClickType.removeClickType(p);
             return;
@@ -74,11 +75,11 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
             if (!isConfirmed(p, account.getID())) {
                 PLUGIN.debug("Needs confirmation");
                 if (account.getBalance().signum() > 0) {
-                    p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_BALANCE_NOT_ZERO,
+                    p.sendMessage(Messages.get(Message.ACCOUNT_BALANCE_NOT_ZERO,
                             new Replacement(Placeholder.ACCOUNT_BALANCE, account::getBalance)
                     ));
                 }
-                p.sendMessage(LangUtils.getMessage(Message.CLICK_AGAIN_TO_CONFIRM));
+                p.sendMessage(Messages.get(Message.CLICK_AGAIN_TO_CONFIRM));
                 return;
             }
         }
@@ -92,7 +93,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
             PLUGIN.debug("Remove event cancelled (#" + account.getID() + ")");
-            p.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED));
+            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED));
             return;
         }
 
@@ -104,11 +105,11 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
 
             if (reimbursement > 0) {
                 if (PayrollOffice.deposit(p, reimbursement))
-                    p.sendMessage(LangUtils.getMessage(Message.REIMBURSEMENT_RECEIVED,
+                    p.sendMessage(Messages.get(Message.REIMBURSEMENT_RECEIVED,
                             new Replacement(Placeholder.AMOUNT, reimbursement)
                     ));
                 if (bank.isPlayerBank() && PayrollOffice.withdraw(bank.getOwner(), reimbursement)) {
-                    Mailman.notify(bank.getOwner(), LangUtils.getMessage(Message.REIMBURSEMENT_PAID,
+                    Mailman.notify(bank.getOwner(), Messages.get(Message.REIMBURSEMENT_PAID,
                             new Replacement(Placeholder.PLAYER, account.getOwnerName()),
                             new Replacement(Placeholder.AMOUNT, reimbursement)
                     ));
@@ -116,7 +117,7 @@ public class AccountRemove extends AccountCommand.SubCommand implements Confirma
             }
         }
 
-        p.sendMessage(LangUtils.getMessage(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
+        p.sendMessage(Messages.get(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
         PLUGIN.getAccountRepository().remove(account, true);
         PLUGIN.debug("Removed account (#" + account.getID() + ")");
     }

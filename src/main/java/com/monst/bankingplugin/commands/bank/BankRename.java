@@ -2,8 +2,9 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.lang.LangUtils;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
@@ -16,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankRename extends BankCommand.SubCommand {
+public class BankRename extends SubCommand.BankSubCommand {
 
     BankRename() {
         super("rename", false);
@@ -45,13 +46,13 @@ public class BankRename extends BankCommand.SubCommand {
         if (args.length == 2) {
             if (!(sender instanceof Player)) {
                 PLUGIN.debug("Must be player");
-                sender.sendMessage(LangUtils.getMessage(Message.PLAYER_COMMAND_ONLY));
+                sender.sendMessage(Messages.get(Message.PLAYER_COMMAND_ONLY));
                 return true;
             }
             bank = bankRepo.getAt(((Player) sender).getLocation().getBlock());
             if (bank == null) {
                 PLUGIN.debug(sender.getName() + " was not standing in a bank");
-                sender.sendMessage(LangUtils.getMessage(Message.MUST_STAND_IN_BANK));
+                sender.sendMessage(Messages.get(Message.MUST_STAND_IN_BANK));
                 return true;
             }
             newName = args[1];
@@ -59,7 +60,7 @@ public class BankRename extends BankCommand.SubCommand {
             bank = bankRepo.getByIdentifier(args[1]);
             if (bank == null) {
                 PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
-                sender.sendMessage(LangUtils.getMessage(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+                sender.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                 return true;
             }
             sb = new StringBuilder(args[2]);
@@ -70,29 +71,29 @@ public class BankRename extends BankCommand.SubCommand {
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
             PLUGIN.debug(sender.getName() + " does not have permission to change the name of an admin bank");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_ADMIN));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_ADMIN));
             return true;
         }
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
             PLUGIN.debug(sender.getName() + " does not have permission to change the name of another player's bank");
-            sender.sendMessage(LangUtils.getMessage(Message.NO_PERMISSION_BANK_SET_OTHER));
+            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_OTHER));
             return true;
         }
         if (bank.getRawName().contentEquals(newName)) {
             PLUGIN.debug("Same name");
-            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_CHANGED, new Replacement(Placeholder.NAME, newName)));
+            sender.sendMessage(Messages.get(Message.NAME_NOT_CHANGED, new Replacement(Placeholder.NAME, newName)));
             return true;
         }
         Bank bankWithSameName = bankRepo.getByName(newName);
         if (bankWithSameName != null && !bankWithSameName.equals(bank)) {
             PLUGIN.debug("Name is not unique");
-            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.NAME, newName)));
+            sender.sendMessage(Messages.get(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.NAME, newName)));
             return true;
         }
         if (!Config.nameRegex.matches(newName)) {
             PLUGIN.debug("Name is not allowed");
-            sender.sendMessage(LangUtils.getMessage(Message.NAME_NOT_ALLOWED,
+            sender.sendMessage(Messages.get(Message.NAME_NOT_ALLOWED,
                     new Replacement(Placeholder.NAME, newName),
                     new Replacement(Placeholder.PATTERN, Config.nameRegex)
             ));
@@ -100,7 +101,7 @@ public class BankRename extends BankCommand.SubCommand {
         }
 
         PLUGIN.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
-        sender.sendMessage(LangUtils.getMessage(Message.NAME_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
+        sender.sendMessage(Messages.get(Message.NAME_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
         bank.setName(newName);
         PLUGIN.getBankRepository().update(bank, BankField.NAME); // Update bank in database
         return true;
