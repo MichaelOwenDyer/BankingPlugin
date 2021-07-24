@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.bank;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.commands.SubCommand;
@@ -9,8 +10,8 @@ import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.geo.regions.BankRegion;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
@@ -26,8 +27,8 @@ import java.util.stream.Collectors;
 
 public class BankResize extends SubCommand.BankSubCommand {
 
-    BankResize() {
-        super("resize", true);
+    BankResize(BankingPlugin plugin) {
+		super(plugin, "resize", true);
     }
 
     @Override
@@ -43,10 +44,10 @@ public class BankResize extends SubCommand.BankSubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        PLUGIN.debug(p.getName() + " wants to resize a bank");
+        plugin.debug(p.getName() + " wants to resize a bank");
 
         if (!p.hasPermission(Permissions.BANK_RESIZE)) {
-            PLUGIN.debug(p.getName() + " does not have permission to resize a bank");
+            plugin.debug(p.getName() + " does not have permission to resize a bank");
             p.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_RESIZE));
             return true;
         }
@@ -58,15 +59,15 @@ public class BankResize extends SubCommand.BankSubCommand {
             return false;
 
         else if (args.length == 2) {
-            if (PLUGIN.isWorldEditIntegrated()) {
-                bankRegion = WorldEditReader.getBankRegion(PLUGIN, p);
+            if (plugin.isWorldEditIntegrated()) {
+                bankRegion = WorldEditReader.getBankRegion(plugin, p);
                 if (bankRegion == null) {
-                    PLUGIN.debug(p.getName() + " tried to resize a bank with no WorldEdit selection");
+                    plugin.debug(p.getName() + " tried to resize a bank with no WorldEdit selection");
                     p.sendMessage(Messages.get(Message.BANK_SELECT_REGION));
                     return true;
                 }
             } else {
-                PLUGIN.debug("WorldEdit is not enabled");
+                plugin.debug("WorldEdit is not enabled");
                 p.sendMessage(Messages.get(Message.WORLDEDIT_NOT_ENABLED));
                 return true;
             }
@@ -75,7 +76,7 @@ public class BankResize extends SubCommand.BankSubCommand {
                 bankRegion = parseCoordinates(args, p.getLocation().getBlock());
             } catch (IntegerParseException e) {
                 p.sendMessage(e.getLocalizedMessage());
-                PLUGIN.debugf("Could not parse coordinate: \"%s\"", e.getLocalizedMessage());
+                plugin.debugf("Could not parse coordinate: \"%s\"", e.getLocalizedMessage());
                 return false;
             }
         }
@@ -83,31 +84,31 @@ public class BankResize extends SubCommand.BankSubCommand {
         if (bankRegion == null)
             return false;
 
-        bank = bankRepo.getByIdentifier(args[1]);
+        bank = plugin.getBankRepository().getByIdentifier(args[1]);
         if (bank == null) {
-            PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
+            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
             p.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
         if (bank.isPlayerBank() && !bank.isOwner(p) && !p.hasPermission(Permissions.BANK_RESIZE_OTHER)) {
-            PLUGIN.debug(p.getName() + " does not have permission to resize another player's bank");
+            plugin.debug(p.getName() + " does not have permission to resize another player's bank");
             p.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_RESIZE_OTHER));
             return true;
         }
         if (bank.isAdminBank() && !p.hasPermission(Permissions.BANK_RESIZE_ADMIN)) {
-            PLUGIN.debug(p.getName() + " does not have permission to resize an admin bank");
+            plugin.debug(p.getName() + " does not have permission to resize an admin bank");
             p.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_RESIZE_ADMIN));
             return true;
         }
         if (Config.disabledWorlds.get().contains(bankRegion.getWorld())) {
-            PLUGIN.debug("BankingPlugin is disabled in world " + bankRegion.getWorld().getName());
+            plugin.debug("BankingPlugin is disabled in world " + bankRegion.getWorld().getName());
             p.sendMessage(Messages.get(Message.WORLD_DISABLED, new Replacement(Placeholder.WORLD, bankRegion.getWorld().getName())));
             return true;
         }
         long volume = bankRegion.getVolume();
         long volumeLimit = Utils.getBankVolumeLimit(p);
         if (bank.isPlayerBank() && volumeLimit >= 0 && volume > volumeLimit) {
-            PLUGIN.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
+            plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
             p.sendMessage(Messages.get(Message.BANK_SELECTION_TOO_LARGE,
                     new Replacement(Placeholder.BANK_SIZE, volume),
                     new Replacement(Placeholder.MAXIMUM, volumeLimit),
@@ -116,7 +117,7 @@ public class BankResize extends SubCommand.BankSubCommand {
             return true;
         }
         if (bank.isPlayerBank() && volume < Config.minimumBankVolume.get()) {
-            PLUGIN.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume.get() + ")");
+            plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume.get() + ")");
             p.sendMessage(Messages.get(Message.BANK_SELECTION_TOO_SMALL,
                     new Replacement(Placeholder.BANK_SIZE, volume),
                     new Replacement(Placeholder.MINIMUM, Config.minimumBankVolume),
@@ -124,20 +125,20 @@ public class BankResize extends SubCommand.BankSubCommand {
             ));
             return true;
         }
-        Set<BankRegion> overlappingBankRegions = bankRepo.getOverlappingRegions(bankRegion);
+        Set<BankRegion> overlappingBankRegions = plugin.getBankRepository().getOverlappingRegions(bankRegion);
         overlappingBankRegions.remove(bank.getRegion());
         if (!overlappingBankRegions.isEmpty()) {
-            PLUGIN.debug("New region overlaps with an existing bank region");
+            plugin.debug("New region overlaps with an existing bank region");
             p.sendMessage(Messages.get(Message.BANK_SELECTION_OVERLAPS_EXISTING,
                     new Replacement(Placeholder.NUMBER_OF_BANKS, overlappingBankRegions::size)
             ));
-            if (PLUGIN.isGriefPreventionIntegrated())
+            if (plugin.isGriefPreventionIntegrated())
                 VisualizationManager.visualizeOverlap(p, overlappingBankRegions);
             return true;
         }
         long cutAccounts = bank.getAccounts(account -> !bankRegion.contains(account.getLocation())).size();
         if (cutAccounts > 0) {
-            PLUGIN.debug("New region does not contain all accounts");
+            plugin.debug("New region does not contain all accounts");
             p.sendMessage(Messages.get(Message.BANK_SELECTION_CUTS_ACCOUNTS, new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, cutAccounts)));
             return true;
         }
@@ -145,15 +146,14 @@ public class BankResize extends SubCommand.BankSubCommand {
         BankResizeEvent event = new BankResizeEvent(p, bank, bankRegion);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Bank resize event cancelled");
+            plugin.debug("Bank resize event cancelled");
             return true;
         }
 
-        bankRepo.remove(bank, false);
         bank.setRegion(bankRegion);
-        bankRepo.update(bank, Callback.of(
+        plugin.getBankRepository().update(bank, Callback.of(
                 result -> {
-                    PLUGIN.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
+                    plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
                     p.sendMessage(Messages.get(Message.BANK_RESIZED, new Replacement(Placeholder.BANK_SIZE, volume)));
                 },
                 error -> p.sendMessage(Messages.get(Message.ERROR_OCCURRED,
@@ -167,13 +167,13 @@ public class BankResize extends SubCommand.BankSubCommand {
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
         if (args.length == 1) {
-            return bankRepo.getAll().stream()
+            return plugin.getBankRepository().getAll().stream()
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         }
-        String coord = getCoordLookingAt(p, args.length);
+        String coord = "" + getCoordLookingAt(p, args.length);
         if (coord.startsWith(args[args.length - 1]))
             return Collections.singletonList(coord);
         return Collections.emptyList();

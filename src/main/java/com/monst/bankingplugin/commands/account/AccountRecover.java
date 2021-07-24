@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.account;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.banking.Bank;
@@ -7,8 +8,9 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.gui.AccountRecoveryGUI;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
+import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -17,8 +19,8 @@ import org.bukkit.entity.Player;
 
 public class AccountRecover extends SubCommand.AccountSubCommand {
 
-    AccountRecover() {
-        super("recover", true);
+    AccountRecover(BankingPlugin plugin) {
+        super(plugin, "recover", true);
     }
 
     @Override
@@ -33,20 +35,14 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " wants to recover invalid accounts");
-
-        if (accountRepo.getMissingAccounts().isEmpty()) {
-            sender.sendMessage(Messages.get(Message.ACCOUNTS_NOT_FOUND));
-            return true;
-        }
-
-        new AccountRecoveryGUI(accountRepo::getMissingAccounts).open((Player) sender);
+        plugin.debug(sender.getName() + " wants to recover invalid accounts");
+        new AccountRecoveryGUI(plugin.getAccountRepository()::getMissingAccounts).open((Player) sender);
         return true;
     }
 
     public static void recover(Player p, Account toRecover, Block b) {
-        if (accountRepo.isAccount(b)) {
-            PLUGIN.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
+        if (ACCOUNT_REPO.isAccount(b)) {
+            plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
             p.sendMessage(Messages.get(Message.CHEST_ALREADY_ACCOUNT));
             return;
         }
@@ -56,30 +52,30 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
 
         if (accountLocation.isBlocked()) {
             p.sendMessage(Messages.get(Message.CHEST_BLOCKED));
-            PLUGIN.debug("Chest is blocked.");
+            plugin.debug("Chest is blocked.");
             return;
         }
 
         Bank bank = accountLocation.getBank();
         if (bank == null) {
             p.sendMessage(Messages.get(Message.CHEST_NOT_IN_BANK));
-            PLUGIN.debug("Chest is not in a bank.");
+            plugin.debug("Chest is not in a bank.");
             return;
         }
 
         AccountRecoverEvent event = new AccountRecoverEvent(p, toRecover, accountLocation);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
-            PLUGIN.debug("No permission to recover an account to a protected chest.");
+            plugin.debug("No permission to recover an account to a protected chest.");
             p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
             return;
         }
 
-        PLUGIN.debugf("Account recovered (#%d)", toRecover.getID());
+        plugin.debugf("Account recovered (#%d)", toRecover.getID());
         toRecover.setLocation(accountLocation);
         toRecover.setBank(bank);
-        accountRepo.removeMissingAccount(toRecover);
-        accountRepo.update(toRecover, toRecover.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
+        ACCOUNT_REPO.removeMissingAccount(toRecover);
+        ACCOUNT_REPO.update(toRecover, toRecover.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
         p.sendMessage(Messages.get(Message.ACCOUNT_RECOVERED));
     }
 }

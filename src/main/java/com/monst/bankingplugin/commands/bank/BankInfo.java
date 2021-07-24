@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.bank;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.gui.BankGUI;
@@ -14,8 +15,8 @@ import java.util.stream.Collectors;
 
 public class BankInfo extends SubCommand.BankSubCommand {
 
-    BankInfo() {
-        super("info", false);
+    BankInfo(BankingPlugin plugin) {
+		super(plugin, "info", false);
     }
 
     @Override
@@ -25,13 +26,13 @@ public class BankInfo extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " wants to show bank info");
+        plugin.debug(sender.getName() + " wants to show bank info");
 
         Bank bank = getBank(sender, args);
         if (bank == null)
             return true;
 
-        PLUGIN.debug(sender.getName() + " is displaying bank info");
+        plugin.debug(sender.getName() + " is displaying bank info");
         if (sender instanceof Player)
             new BankGUI(bank).open((Player) sender);
         else
@@ -42,7 +43,7 @@ public class BankInfo extends SubCommand.BankSubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 1)
-            return bankRepo.getAll().stream()
+            return BANK_REPO.getAll().stream()
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()

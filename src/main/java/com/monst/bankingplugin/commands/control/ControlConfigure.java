@@ -1,12 +1,13 @@
 package com.monst.bankingplugin.commands.control;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.ConfigValue;
 import com.monst.bankingplugin.events.control.PluginConfigureCommandEvent;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
@@ -19,8 +20,8 @@ import java.util.stream.Collectors;
 
 public class ControlConfigure extends SubCommand.ControlSubCommand {
 
-    ControlConfigure() {
-        super("configure", false);
+    ControlConfigure(BankingPlugin plugin) {
+		super(plugin, "configure", false);
     }
 
     @Override
@@ -35,10 +36,10 @@ public class ControlConfigure extends SubCommand.ControlSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debugf("%s wants to configure the plugin: '%s'", sender.getName(), String.join(" ", args));
+        plugin.debugf("%s wants to configure the plugin: '%s'", sender.getName(), String.join(" ", args));
 
         if (!sender.hasPermission(Permissions.CONFIG)) {
-            PLUGIN.debug(sender.getName() + " does not have permission to configure the config");
+            plugin.debug(sender.getName() + " does not have permission to configure the config");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_CONFIG));
             return true;
         }
@@ -60,7 +61,7 @@ public class ControlConfigure extends SubCommand.ControlSubCommand {
         PluginConfigureCommandEvent event = new PluginConfigureCommandEvent(sender, configValue, input);
         event.fire();
         if (event.isCancelled() && !sender.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS)) {
-            PLUGIN.debug("Plugin configure event cancelled");
+            plugin.debug("Plugin configure event cancelled");
             return true;
         }
 
@@ -70,13 +71,13 @@ public class ControlConfigure extends SubCommand.ControlSubCommand {
             Config.set(configValue, input);
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
-            PLUGIN.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());
+            plugin.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());
             return true;
         }
 
         String newValue = configValue.getFormatted();
 
-        PLUGIN.debugf("%s has set %s from %s to %s", sender.getName(), configValue.getPath(), previousValue, newValue);
+        plugin.debugf("%s has set %s from %s to %s", sender.getName(), configValue.getPath(), previousValue, newValue);
         sender.sendMessage(Messages.get(Message.CONFIG_VALUE_SET,
                 new Replacement(Placeholder.PROPERTY, path),
                 new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),

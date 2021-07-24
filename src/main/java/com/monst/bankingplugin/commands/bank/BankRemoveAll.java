@@ -1,8 +1,9 @@
 package com.monst.bankingplugin.commands.bank;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
 import com.monst.bankingplugin.lang.*;
@@ -16,8 +17,8 @@ import java.util.Set;
 
 public class BankRemoveAll extends SubCommand.BankSubCommand implements ConfirmableSubCommand {
 
-    BankRemoveAll() {
-        super("removeall", false);
+    BankRemoveAll(BankingPlugin plugin) {
+		super(plugin, "removeall", false);
     }
 
     @Override
@@ -32,15 +33,15 @@ public class BankRemoveAll extends SubCommand.BankSubCommand implements Confirma
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " wants to remove all banks");
+        plugin.debug(sender.getName() + " wants to remove all banks");
 
         if (!sender.hasPermission(Permissions.BANK_REMOVEALL)) {
-            PLUGIN.debug(sender.getName() + " does not have permission to remove all banks");
+            plugin.debug(sender.getName() + " does not have permission to remove all banks");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_REMOVEALL));
             return true;
         }
 
-        Set<Bank> banks = bankRepo.getAll();
+        Set<Bank> banks = plugin.getBankRepository().getAll();
 
         if (banks.isEmpty()) {
             sender.sendMessage(Messages.get(Message.BANKS_NOT_FOUND));
@@ -59,7 +60,7 @@ public class BankRemoveAll extends SubCommand.BankSubCommand implements Confirma
         BankRemoveAllEvent event = new BankRemoveAllEvent(sender, banks);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Bank remove all event cancelled");
+            plugin.debug("Bank remove all event cancelled");
             return true;
         }
 
@@ -76,8 +77,8 @@ public class BankRemoveAll extends SubCommand.BankSubCommand implements Confirma
             mailingRoom.removeRecipient(sender);
             mailingRoom.send();
         }
-        banks.forEach(bank -> bankRepo.remove(bank, true));
-        PLUGIN.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
+        banks.forEach(bank -> plugin.getBankRepository().remove(bank, true));
+        plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
         return true;
     }
 

@@ -19,11 +19,11 @@ public class ControlCommand extends BankingPluginCommand<SubCommand.ControlSubCo
     @Override
     protected Stream<SubCommand.ControlSubCommand> getSubCommands() {
         return Stream.of(
-                new ControlConfigure(),
-                new ControlPayInterest(),
-                new ControlReload(),
-                new ControlUpdate(),
-                new ControlVersion()
+                new ControlConfigure(plugin),
+                new ControlPayInterest(plugin),
+                new ControlReload(plugin),
+                new ControlUpdate(plugin),
+                new ControlVersion(plugin)
         );
     }
 

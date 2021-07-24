@@ -29,7 +29,7 @@ public class AccountInteractListener extends BankingPluginListener {
 	 * Checks every block interact event for an account action attempt, and
 	 * handles the action.
 	 */
-	@SuppressWarnings({"unused"})
+	@SuppressWarnings("unused")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onAccountInteract(PlayerInteractEvent e) {
 		Player p = e.getPlayer();
@@ -52,7 +52,7 @@ public class AccountInteractListener extends BankingPluginListener {
 
 			if (action == Action.LEFT_CLICK_BLOCK)
 				return;
-			if (account == null && !clickType.canClickedBlockNotBeAccount())
+			if (account == null && clickType.mustClickedBlockBeAccount())
 				return;
 
 			e.setCancelled(true);
@@ -91,25 +91,24 @@ public class AccountInteractListener extends BankingPluginListener {
 						return;
 					}
 
-			if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !p.isSneaking()) {
-				if (!account.isTrusted(p) && !account.getBank().isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
-					e.setCancelled(true);
-					p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_VIEW_OTHER));
-					plugin.debug(p.getName() + " does not have permission to open " + account.getOwner().getName()
-							+ "'s account chest.");
-					return;
-				}
+			if (action != Action.RIGHT_CLICK_BLOCK || p.isSneaking())
+				return;
 
-				e.setCancelled(false);
-				if (!account.isTrusted(p))
-					p.sendMessage(Messages.get(Message.ACCOUNT_OPENED,
-							new Replacement(Placeholder.PLAYER, account.getOwnerDisplayName())
-					));
-
-				plugin.debugf("%s is opening %s account%s (#%d)",
-						p.getName(), (account.isOwner(p) ? "their" : account.getOwner().getName() + "'s"),
-						(account.isCoOwner(p) ? " (is co-owner)" : ""), account.getID());
+			if (!account.isTrusted(p) && !account.getBank().isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
+				e.setCancelled(true);
+				p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_VIEW_OTHER));
+				plugin.debug(p.getName() + " does not have permission to open " + account.getOwner().getName()
+						+ "'s account chest.");
+				return;
 			}
+
+			e.setCancelled(false);
+			if (!account.isTrusted(p))
+				p.sendMessage(Messages.get(Message.ACCOUNT_OPENED,
+						new Replacement(Placeholder.PLAYER, account.getOwnerDisplayName())
+				));
+
+			plugin.debugf("%s is opening account (#%d)", p.getName(), account.getID());
 		}
 	}
 }

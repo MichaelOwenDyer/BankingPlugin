@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.account;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
@@ -21,8 +22,8 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
         return instance;
     }
 
-    AccountRemove() {
-        super("remove", true);
+    AccountRemove(BankingPlugin plugin) {
+		super(plugin, "remove", true);
         instance = this;
     }
 
@@ -38,16 +39,16 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " wants to remove an account");
+        plugin.debug(sender.getName() + " wants to remove an account");
 
         AccountRemoveCommandEvent event = new AccountRemoveCommandEvent((Player) sender, args);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account remove command event cancelled");
+            plugin.debug("Account remove command event cancelled");
             return true;
         }
 
-        PLUGIN.debug(sender.getName() + " can now click a chest to remove an account");
+        plugin.debug(sender.getName() + " can now click a chest to remove an account");
         sender.sendMessage(Messages.get(Message.CLICK_ACCOUNT_REMOVE));
         ClickType.setRemoveClickType((Player) sender);
         return true;
@@ -73,7 +74,7 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
 
         if (account.getBalance().signum() > 0 || Config.confirmOnRemove.get()) {
             if (!isConfirmed(p, account.getID())) {
-                PLUGIN.debug("Needs confirmation");
+                plugin.debug("Needs confirmation");
                 if (account.getBalance().signum() > 0) {
                     p.sendMessage(Messages.get(Message.ACCOUNT_BALANCE_NOT_ZERO,
                             new Replacement(Placeholder.ACCOUNT_BALANCE, account::getBalance)
@@ -84,7 +85,7 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
             }
         }
 
-        PLUGIN.debugf("%s is removing %s account (#%d)",
+        plugin.debugf("%s is removing %s account (#%d)",
                 p.getName(),
                 account.isOwner(p) ? "their" : account.getOwner().getName() + "'s",
                 account.getID());
@@ -92,7 +93,7 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
         AccountRemoveEvent event = new AccountRemoveEvent(p, account);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
-            PLUGIN.debug("Remove event cancelled (#" + account.getID() + ")");
+            plugin.debug("Remove event cancelled (#" + account.getID() + ")");
             p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED));
             return;
         }
@@ -118,8 +119,8 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
         }
 
         p.sendMessage(Messages.get(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
-        PLUGIN.getAccountRepository().remove(account, true);
-        PLUGIN.debug("Removed account (#" + account.getID() + ")");
+        plugin.getAccountRepository().remove(account, true);
+        plugin.debug("Removed account (#" + account.getID() + ")");
     }
 
 }

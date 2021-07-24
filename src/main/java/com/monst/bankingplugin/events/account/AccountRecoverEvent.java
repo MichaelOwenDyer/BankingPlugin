@@ -1,13 +1,14 @@
 package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
 /**
  * This event is fired when a player clicks a chest with a
- * {@link com.monst.bankingplugin.utils.ClickType} of type <b>recover</b>.
+ * {@link ClickType} of type <b>recover</b>.
  */
 public class AccountRecoverEvent extends SingleAccountEvent implements Cancellable {
 

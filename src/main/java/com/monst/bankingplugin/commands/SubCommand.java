@@ -24,12 +24,12 @@ import java.util.List;
 
 public abstract class SubCommand {
 
-    protected static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
-
+    protected final BankingPlugin plugin;
 	private final String name;
 	private final boolean playerCommand;
 
-    protected SubCommand(String name, boolean playerCommand) {
+    protected SubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
+        this.plugin = plugin;
     	this.name = name;
         this.playerCommand = playerCommand;
     }
@@ -48,14 +48,14 @@ public abstract class SubCommand {
     /**
      * Execute the sub command
      * @param sender Sender of the command
-     * @param args Arguments of the command ({@code args[0]} is the sub command's name)
+     * @param args Arguments of the command
      * @return Whether the command syntax was correct
      */
     protected abstract boolean execute(CommandSender sender, String[] args);
 
     /**
      * @param sender Sender of the command
-     * @param args Arguments of the command ({@code args[0]} is the sub command's name)
+     * @param args Arguments of the command
      * @return A list of tab completions for the sub command (may be an empty list)
      */
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
@@ -79,7 +79,7 @@ public abstract class SubCommand {
      * @param sender Sender to receive the help message
      * @return The help message for the command.
      */
-    String getHelpMessage(CommandSender sender, String commandName) {
+    String getUsageMessage(CommandSender sender, String commandName) {
         if (hasPermission(sender, getPermission()))
             return Messages.get(getUsageMessage(), new Replacement(Placeholder.COMMAND, commandName));
         return "";
@@ -96,20 +96,20 @@ public abstract class SubCommand {
 
     public abstract static class AccountSubCommand extends SubCommand {
 
-        protected static final AccountRepository accountRepo = PLUGIN.getAccountRepository();
+        protected static final AccountRepository ACCOUNT_REPO = BankingPlugin.getInstance().getAccountRepository();
 
-        protected AccountSubCommand(String name, boolean playerCommand) {
-            super(name, playerCommand);
+        protected AccountSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
+            super(plugin, name, playerCommand);
         }
 
     }
 
     public abstract static class BankSubCommand extends SubCommand {
 
-        protected static final BankRepository bankRepo = PLUGIN.getBankRepository();
+        protected static final BankRepository BANK_REPO = BankingPlugin.getInstance().getBankRepository();
 
-        protected BankSubCommand(String name, boolean playerCommand) {
-            super(name, playerCommand);
+        protected BankSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
+            super(plugin, name, playerCommand);
         }
 
         protected static Bank getBank(CommandSender sender, String[] args) {
@@ -117,32 +117,33 @@ public abstract class SubCommand {
             if (args.length == 1) {
                 if (sender instanceof Player) {
                     Player p = (Player) sender;
-                    bank = bankRepo.getAt(p.getLocation().getBlock());
+                    bank = BANK_REPO.getAt(p.getLocation().getBlock());
                     if (bank == null) {
-                        PLUGIN.debug(p.getName() + " wasn't standing in a bank");
+                        plugin.debug(p.getName() + " wasn't standing in a bank");
                         p.sendMessage(Messages.get(Message.MUST_STAND_IN_BANK));
                     }
                 } else {
                     sender.sendMessage(Messages.get(Message.PLAYER_COMMAND_ONLY));
                 }
             } else {
-                bank = bankRepo.getByIdentifier(args[1]);
+                bank = BANK_REPO.getByIdentifier(args[1]);
                 if (bank == null) {
-                    PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
+                    plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
                     sender.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                 }
             }
             return bank;
         }
 
-        protected static String getCoordLookingAt(Player p, int argLength) {
+        protected static int getCoordLookingAt(Player p, int argLength) {
             Location loc = p.getTargetBlock(null, 150).getLocation();
             switch (argLength % 3) {
-                case 0: return "" + loc.getBlockY();
-                case 1: return "" + loc.getBlockZ();
-                case 2: return "" + loc.getBlockX();
+                case 0: return loc.getBlockY();
+                case 1: return loc.getBlockZ();
+                case 2: return loc.getBlockX();
+                default:
+                    throw new IllegalStateException();
             }
-            return "";
         }
 
         /**
@@ -180,8 +181,8 @@ public abstract class SubCommand {
 
     public abstract static class ControlSubCommand extends SubCommand {
 
-        protected ControlSubCommand(String name, boolean playerCommand) {
-            super(name, playerCommand);
+        protected ControlSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
+            super(plugin, name, playerCommand);
         }
 
     }

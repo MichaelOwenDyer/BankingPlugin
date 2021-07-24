@@ -82,7 +82,7 @@ public class WorldGuardListener extends BankingPluginListener {
 
 	private boolean isChestInteractAllowed(Player player, Block block) {
 		ClickType clickType = ClickType.getPlayerClickType(player);
-		if (clickType != null && clickType.canClickedBlockNotBeAccount()) {
+		if (clickType != null && !clickType.mustClickedBlockBeAccount()) {
 			// If the player is about to create an account, but does not have
 			// access to the chest, show the 'permission denied' message
 			// (if not previously set to allowed by another plugin).

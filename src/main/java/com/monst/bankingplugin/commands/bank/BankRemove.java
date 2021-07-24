@@ -1,8 +1,9 @@
 package com.monst.bankingplugin.commands.bank;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.lang.*;
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
 
 public class BankRemove extends SubCommand.BankSubCommand implements ConfirmableSubCommand {
 
-    BankRemove() {
-        super("remove", false);
+    BankRemove(BankingPlugin plugin) {
+		super(plugin, "remove", false);
     }
 
     @Override
@@ -35,7 +36,7 @@ public class BankRemove extends SubCommand.BankSubCommand implements Confirmable
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
 
-        PLUGIN.debug(sender.getName() + " wants to remove a bank");
+        plugin.debug(sender.getName() + " wants to remove a bank");
 
         Bank bank = getBank(sender, args);
         if (bank == null)
@@ -44,17 +45,17 @@ public class BankRemove extends SubCommand.BankSubCommand implements Confirmable
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
                 || sender.hasPermission(Permissions.BANK_REMOVE_OTHER))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
-                PLUGIN.debug(sender.getName() + " does not have permission to remove another player's bank as a co-owner");
+                plugin.debug(sender.getName() + " does not have permission to remove another player's bank as a co-owner");
                 sender.sendMessage(Messages.get(Message.MUST_BE_OWNER));
                 return true;
             }
-            PLUGIN.debug(sender.getName() + " does not have permission to remove another player's bank");
+            plugin.debug(sender.getName() + " does not have permission to remove another player's bank");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_REMOVE_OTHER));
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)) {
-            PLUGIN.debug(sender.getName() + " does not have permission to remove an admin bank");
+            plugin.debug(sender.getName() + " does not have permission to remove an admin bank");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_REMOVE_ADMIN));
             return true;
         }
@@ -82,13 +83,13 @@ public class BankRemove extends SubCommand.BankSubCommand implements Confirmable
         BankRemoveEvent event = new BankRemoveEvent(sender, bank);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Bank remove event cancelled");
+            plugin.debug("Bank remove event cancelled");
             return true;
         }
 
         int accountsRemoved = bank.getAccounts().size();
-        bankRepo.remove(bank, true);
-        PLUGIN.debugf("Bank #%d and %d accounts removed from the database.", bank.getID(), accountsRemoved);
+        plugin.getBankRepository().remove(bank, true);
+        plugin.debugf("Bank #%d and %d accounts removed from the database.", bank.getID(), accountsRemoved);
         MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.BANK_REMOVED,
                 new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accountsRemoved)
@@ -103,7 +104,7 @@ public class BankRemove extends SubCommand.BankSubCommand implements Confirmable
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            return bankRepo.getAll().stream()
+            return BANK_REPO.getAll().stream()
                     .filter(bank -> (sender instanceof Player && bank.isOwner((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_REMOVE_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)))

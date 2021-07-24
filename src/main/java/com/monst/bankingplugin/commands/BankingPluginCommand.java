@@ -105,10 +105,10 @@ public abstract class BankingPluginCommand<SC extends SubCommand> {
 	 *
 	 * @param sender {@link CommandSender} who will receive the message
 	 */
-	private void sendBasicHelpMessage(CommandSender sender) {
+	private void sendCommandUsageMessage(CommandSender sender) {
 		plugin.debug("Sending basic help message to " + sender.getName());
 		for (SC subCommand : subCommands) {
-			String msg = subCommand.getHelpMessage(sender, name);
+			String msg = subCommand.getUsageMessage(sender, name);
 			if (msg != null && !msg.isEmpty())
 				sender.sendMessage(msg);
 		}
@@ -117,24 +117,24 @@ public abstract class BankingPluginCommand<SC extends SubCommand> {
 	private class BaseCommandExecutor implements CommandExecutor {
 
 		@Override
-		public boolean onCommand(@Nonnull CommandSender sender, @Nonnull org.bukkit.command.Command command, @Nonnull String label, String[] args) {
+		public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, String[] args) {
 			if (args.length > 0) {
 				for (SC subCommand : subCommands) {
-					if (subCommand.getName().equalsIgnoreCase(args[0])) {
-						if (subCommand.isPlayerCommand() && !(sender instanceof Player)) {
-							sender.sendMessage(ChatColor.RED + "Only players can use this command.");
-							return true;
-						}
-						if (!subCommand.execute(sender, args)) {
-							String helpMessage = subCommand.getHelpMessage(sender, name);
-							if (helpMessage != null && !helpMessage.isEmpty())
-								sender.sendMessage(helpMessage);
-						}
+					if (!subCommand.getName().equalsIgnoreCase(args[0]))
+						continue;
+					if (subCommand.isPlayerCommand() && !(sender instanceof Player)) {
+						sender.sendMessage(ChatColor.RED + "Only players can use this command.");
 						return true;
 					}
+					if (!subCommand.execute(sender, args)) {
+						String usageMessage = subCommand.getUsageMessage(sender, name);
+						if (usageMessage != null && !usageMessage.isEmpty())
+							sender.sendMessage(usageMessage);
+					}
+					return true;
 				}
 			}
-			sendBasicHelpMessage(sender);
+			sendCommandUsageMessage(sender);
 			return true;
 		}
 	}
@@ -142,7 +142,7 @@ public abstract class BankingPluginCommand<SC extends SubCommand> {
 	private class BaseTabCompleter implements TabCompleter {
 
 		@Override
-		public List<String> onTabComplete(@Nonnull CommandSender sender, @Nonnull org.bukkit.command.Command command, @Nonnull String label, @Nonnull String[] args) {
+		public List<String> onTabComplete(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {
 
 			if (!(sender instanceof Player))
 				return Collections.emptyList();

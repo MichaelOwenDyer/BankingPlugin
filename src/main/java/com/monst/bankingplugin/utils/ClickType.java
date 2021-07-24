@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.utils;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.commands.account.*;
@@ -18,14 +19,20 @@ public abstract class ClickType {
 	private static final Map<UUID, ClickType> playerClickTypes = new HashMap<>();
 	private static final Map<UUID, BukkitTask> playerTimers = new HashMap<>();
 
+	private BankingPlugin plugin;
 	private final EClickType eClickType;
 
-    private ClickType(EClickType eClickType) {
+    ClickType(BankingPlugin plugin, EClickType eClickType) {
+    	this.plugin = plugin;
         this.eClickType = eClickType;
     }
 
-	public boolean canClickedBlockNotBeAccount() {
-		return false;
+    ClickType(EClickType eClickType) {
+        this.eClickType = eClickType;
+    }
+
+	public boolean mustClickedBlockBeAccount() {
+		return true;
 	}
 
 	public void execute(Player p, Account account, Block block) {
@@ -148,7 +155,8 @@ public abstract class ClickType {
 	}
 
 	private static class CreateClickType extends ClickType {
-		private CreateClickType() {
+
+    	private CreateClickType() {
 			super(EClickType.CREATE);
 		}
 
@@ -158,13 +166,14 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public boolean canClickedBlockNotBeAccount() {
-			return true;
+		public boolean mustClickedBlockBeAccount() {
+			return false;
 		}
 	}
 
 	private static class InfoClickType extends ClickType {
-		private InfoClickType() {
+
+    	private InfoClickType() {
     		super(EClickType.INFO);
 		}
 
@@ -201,8 +210,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public boolean canClickedBlockNotBeAccount() {
-			return true;
+		public boolean mustClickedBlockBeAccount() {
+			return false;
 		}
 	}
 
@@ -221,8 +230,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public boolean canClickedBlockNotBeAccount() {
-			return true;
+		public boolean mustClickedBlockBeAccount() {
+			return false;
 		}
 	}
 

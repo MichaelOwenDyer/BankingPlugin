@@ -19,19 +19,19 @@ public class BankCommand extends BankingPluginCommand<SubCommand.BankSubCommand>
 	@Override
 	protected Stream<SubCommand.BankSubCommand> getSubCommands() {
 		return Stream.of(
-				new BankCreate(),
-				new BankInfo(),
-				new BankLimits(),
-				new BankList(),
-				new BankRemove(),
-				new BankRemoveAll(),
-				new BankRename(),
-				new BankResize(),
-				new BankSelect(),
-				new BankConfigure(),
-				new BankTransfer(),
-				new BankTrust(),
-				new BankUntrust()
+				new BankCreate(plugin),
+				new BankInfo(plugin),
+				new BankLimits(plugin),
+				new BankList(plugin),
+				new BankRemove(plugin),
+				new BankRemoveAll(plugin),
+				new BankRename(plugin),
+				new BankResize(plugin),
+				new BankSelect(plugin),
+				new BankConfigure(plugin),
+				new BankTransfer(plugin),
+				new BankTrust(plugin),
+				new BankUntrust(plugin)
 		);
 	}
 

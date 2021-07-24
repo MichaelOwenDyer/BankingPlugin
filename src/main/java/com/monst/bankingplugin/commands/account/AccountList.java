@@ -1,11 +1,12 @@
 package com.monst.bankingplugin.commands.account;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountListEvent;
 import com.monst.bankingplugin.gui.AccountListGUI;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -17,8 +18,8 @@ import java.util.stream.Collectors;
 
 public class AccountList extends SubCommand.AccountSubCommand {
 
-    AccountList() {
-        super("list", false);
+    AccountList(BankingPlugin plugin) {
+		super(plugin, "list", false);
     }
 
     @Override
@@ -28,20 +29,18 @@ public class AccountList extends SubCommand.AccountSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " wants to list accounts");
+        plugin.debug(sender.getName() + " wants to list accounts");
 
-        if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER)) {
-            if (!(sender instanceof Player)) {
-                PLUGIN.debug("Only players can list their own accounts");
-                sender.sendMessage(Messages.get(Message.PLAYER_COMMAND_ONLY));
-                return true;
-            }
+        if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER) && !(sender instanceof Player)) {
+            plugin.debug("Only players can list their own accounts");
+            sender.sendMessage(Messages.get(Message.PLAYER_COMMAND_ONLY));
+            return true;
         }
 
         AccountListEvent event = new AccountListEvent(sender, Collections.emptyList()); // FIXME: Pass accounts being listed
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account list event cancelled");
+            plugin.debug("Account list event cancelled");
             return true;
         }
 
@@ -50,7 +49,7 @@ public class AccountList extends SubCommand.AccountSubCommand {
             new AccountListGUI(() -> getVisibleAccounts(player, args)).open(player);
         } else {
             int i = 0;
-            for (Account account : accountRepo.getAll())
+            for (Account account : plugin.getAccountRepository().getAll())
                 sender.sendMessage(Utils.colorize("&b" + ++i + ". &7" + account.getRawName() + "&7(#" + account.getID() + ")"));
         }
         return true;
@@ -58,14 +57,14 @@ public class AccountList extends SubCommand.AccountSubCommand {
 
     private static Set<Account> getVisibleAccounts(Player player, String[] args) {
         if (!player.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
-            return accountRepo.getMatching(account -> account.isTrusted(player));
+            return ACCOUNT_REPO.getMatching(account -> account.isTrusted(player));
         else if (args.length == 1)
-            return accountRepo.getAll();
+            return ACCOUNT_REPO.getAll();
         Set<OfflinePlayer> players = Arrays.stream(args)
                 .map(Utils::getPlayer)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        return accountRepo.getMatching(account -> players.contains(account.getOwner()));
+        return ACCOUNT_REPO.getMatching(account -> players.contains(account.getOwner()));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.control;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.lang.Message;
 import org.bukkit.ChatColor;
@@ -8,8 +9,8 @@ import org.bukkit.entity.Player;
 
 public class ControlVersion extends SubCommand.ControlSubCommand {
 
-    ControlVersion() {
-        super("version", false);
+    ControlVersion(BankingPlugin plugin) {
+		super(plugin, "version", false);
     }
 
     @Override
@@ -21,10 +22,10 @@ public class ControlVersion extends SubCommand.ControlSubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         if (sender instanceof Player) {
             sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Banking" + ChatColor.DARK_GREEN + ChatColor.BOLD + "Plugin" + ChatColor.RESET
-                    + ChatColor.AQUA + " v" + PLUGIN.getDescription().getVersion()
+                    + ChatColor.AQUA + " v" + plugin.getDescription().getVersion()
                     + ChatColor.DARK_GRAY + "\n         by monst");
         } else
-            sender.sendMessage(PLUGIN.STARTUP_MESSAGE);
+            sender.sendMessage(plugin.STARTUP_MESSAGE);
         return true;
     }
 

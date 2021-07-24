@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.account;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.commands.SubCommand;
@@ -25,8 +26,8 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
         return instance;
     }
 
-    AccountTransfer() {
-        super("transfer", true);
+    AccountTransfer(BankingPlugin plugin) {
+		super(plugin, "transfer", true);
         instance = this;
     }
 
@@ -43,10 +44,10 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        PLUGIN.debug(p.getName() + " wants to transfer ownership of an account");
+        plugin.debug(p.getName() + " wants to transfer ownership of an account");
 
         if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER)) {
-            PLUGIN.debug(p.getName() + " does not have permission to transfer ownership of an account");
+            plugin.debug(p.getName() + " does not have permission to transfer ownership of an account");
             p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_TRANSFER));
             return true;
         }
@@ -63,32 +64,21 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
         AccountTransferCommandEvent event = new AccountTransferCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account transfer command event cancelled");
+            plugin.debug("Account transfer command event cancelled");
             return true;
         }
 
         p.sendMessage(Messages.get(Message.CLICK_ACCOUNT_TRANSFER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
         ClickType.setTransferClickType(p, newOwner);
-        PLUGIN.debug(p.getName() + " is transferring ownership of an account to " + newOwner.getName());
+        plugin.debug(p.getName() + " is transferring ownership of an account to " + newOwner.getName());
         return true;
     }
 
-    @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length != 1)
-            return Collections.emptyList();
-
-        List<String> returnCompletions = Utils.getOnlinePlayerNames();
-        if (!sender.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
-            returnCompletions.remove(sender.getName());
-        return Utils.filter(returnCompletions, string -> Utils.startsWithIgnoreCase(string, args[0]));
-    }
-
     public void transfer(Player p, Account account, OfflinePlayer newOwner) {
-        PLUGIN.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
+        plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
 
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
-            PLUGIN.debug(p.getName() + " does not have permission to transfer the account.");
+            plugin.debug(p.getName() + " does not have permission to transfer the account.");
             if (account.isTrusted(p))
                 p.sendMessage(Messages.get(Message.MUST_BE_OWNER));
             else
@@ -98,14 +88,14 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
         }
 
         if (account.isOwner(newOwner)) {
-            PLUGIN.debug(p.getName() + " is already owner of account");
+            plugin.debug(p.getName() + " is already owner of account");
             p.sendMessage(Messages.get(Message.ALREADY_OWNER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
             ClickType.removeClickType(p);
             return;
         }
 
         if (Config.confirmOnTransfer.get() && !isConfirmed(p, account.getID())) {
-            PLUGIN.debug("Needs confirmation");
+            plugin.debug("Needs confirmation");
             p.sendMessage(Messages.get(Message.ACCOUNT_CONFIRM_TRANSFER,
                     new Replacement(Placeholder.PLAYER, newOwner::getName)
             ));
@@ -115,7 +105,7 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
         AccountTransferEvent event = new AccountTransferEvent(p, account, newOwner);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account transfer event cancelled");
+            plugin.debug("Account transfer event cancelled");
             return;
         }
 
@@ -136,8 +126,19 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
         account.setOwner(newOwner);
         if (!hasCustomName)
             account.resetName();
-        PLUGIN.getAccountRepository().update(account, AccountField.OWNER);
+        plugin.getAccountRepository().update(account, AccountField.OWNER);
         ClickType.removeClickType(p);
+    }
+
+    @Override
+    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+        if (args.length != 1)
+            return Collections.emptyList();
+
+        List<String> returnCompletions = Utils.getOnlinePlayerNames();
+        if (!sender.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
+            returnCompletions.remove(sender.getName());
+        return Utils.filter(returnCompletions, string -> Utils.startsWithIgnoreCase(string, args[0]));
     }
 
 }

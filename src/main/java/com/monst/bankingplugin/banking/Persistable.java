@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.banking;
 
-public interface Persistable<ID> {
+public interface Persistable {
 
     /**
      * @return whether or not this persistable entity has an ID.
@@ -10,11 +10,11 @@ public interface Persistable<ID> {
     /**
      * Sets the ID of this persistable entity, if it does not have one already.
      */
-    void setID(ID id);
+    void setID(int id);
 
     /**
      * @return the ID of this persistable entity, or a placeholder value if it does not exist.
      */
-    ID getID();
+    int getID();
 
 }

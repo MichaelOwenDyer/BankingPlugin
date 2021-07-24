@@ -1,12 +1,13 @@
 package com.monst.bankingplugin.commands.account;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountConfigureEvent;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
@@ -23,8 +24,8 @@ import java.util.stream.Stream;
 
 public class AccountConfigure extends SubCommand.AccountSubCommand {
 
-    AccountConfigure() {
-        super("configure", true);
+    AccountConfigure(BankingPlugin plugin) {
+		super(plugin, "configure", true);
     }
 
     @Override
@@ -42,10 +43,10 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
         if (!(sender instanceof Player))
             return true;
         Player executor = (Player) sender;
-        PLUGIN.debug(executor.getName() + " wants to configure an account");
+        plugin.debug(executor.getName() + " wants to configure an account");
 
         if (!executor.hasPermission(Permissions.ACCOUNT_CONFIGURE)) {
-            PLUGIN.debug(executor.getName() + " does not have permission to configure an account");
+            plugin.debug(executor.getName() + " does not have permission to configure an account");
             executor.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CONFIGURE));
             return true;
         }

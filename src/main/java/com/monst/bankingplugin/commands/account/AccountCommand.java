@@ -19,19 +19,19 @@ public class AccountCommand extends BankingPluginCommand<SubCommand.AccountSubCo
 	@Override
 	protected Stream<SubCommand.AccountSubCommand> getSubCommands() {
 		return Stream.of(
-				new AccountCreate(),
-				new AccountInfo(),
-				new AccountLimits(),
-				new AccountList(),
-				new AccountMigrate(),
-				new AccountRecover(),
-				new AccountRemove(),
-				new AccountRemoveAll(),
-				new AccountRename(),
-				new AccountConfigure(),
-				new AccountTransfer(),
-				new AccountTrust(),
-				new AccountUntrust()
+				new AccountCreate(plugin),
+				new AccountInfo(plugin),
+				new AccountLimits(plugin),
+				new AccountList(plugin),
+				new AccountMigrate(plugin),
+				new AccountRecover(plugin),
+				new AccountRemove(plugin),
+				new AccountRemoveAll(plugin),
+				new AccountRename(plugin),
+				new AccountConfigure(plugin),
+				new AccountTransfer(plugin),
+				new AccountTrust(plugin),
+				new AccountUntrust(plugin)
 		);
 	}
 

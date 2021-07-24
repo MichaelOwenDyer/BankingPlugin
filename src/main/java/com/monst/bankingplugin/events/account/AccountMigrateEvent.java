@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -8,7 +9,7 @@ import org.bukkit.event.Cancellable;
 import javax.annotation.Nonnull;
 
 /**
- * This account is fired when a player with a {@link com.monst.bankingplugin.utils.ClickType} of type <b>migrate</b>
+ * This account is fired when a player with a {@link ClickType} of type <b>migrate</b>
  * clicks an empty chest to migrate an account to.
  */
 public class AccountMigrateEvent extends SingleAccountEvent implements Cancellable {

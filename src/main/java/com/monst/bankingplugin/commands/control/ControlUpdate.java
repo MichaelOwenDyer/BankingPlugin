@@ -1,8 +1,9 @@
 package com.monst.bankingplugin.commands.control;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.SubCommand;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.UpdateChecker;
 import org.bukkit.command.CommandSender;
@@ -10,8 +11,8 @@ import org.bukkit.entity.Player;
 
 public class ControlUpdate extends SubCommand.ControlSubCommand {
 
-    ControlUpdate() {
-        super("update", false);
+    ControlUpdate(BankingPlugin plugin) {
+		super(plugin, "update", false);
     }
 
     @Override
@@ -26,17 +27,17 @@ public class ControlUpdate extends SubCommand.ControlSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " is checking for updates");
+        plugin.debug(sender.getName() + " is checking for updates");
 
         if (!sender.hasPermission(Permissions.UPDATE)) {
-            PLUGIN.debug(sender.getName() + " does not have permission to update the plugin");
+            plugin.debug(sender.getName() + " does not have permission to update the plugin");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_UPDATE));
             return true;
         }
 
         // sender.sendMessage(Messages.UPDATE_CHECKING);
 
-        UpdateChecker uc = new UpdateChecker(PLUGIN);
+        UpdateChecker uc = new UpdateChecker(plugin);
         UpdateChecker.Result result = uc.check();
 
         if (result == UpdateChecker.Result.TRUE) {

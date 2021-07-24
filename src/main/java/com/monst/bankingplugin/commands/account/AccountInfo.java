@@ -1,12 +1,13 @@
 package com.monst.bankingplugin.commands.account;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountInfoCommandEvent;
 import com.monst.bankingplugin.events.account.AccountInfoEvent;
 import com.monst.bankingplugin.gui.AccountGUI;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
@@ -15,8 +16,8 @@ import org.bukkit.entity.Player;
 
 public class AccountInfo extends SubCommand.AccountSubCommand {
 
-    AccountInfo() {
-        super("info", false);
+    AccountInfo(BankingPlugin plugin) {
+		super(plugin, "info", false);
     }
 
     @Override
@@ -26,23 +27,23 @@ public class AccountInfo extends SubCommand.AccountSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " wants to retrieve account info");
+        plugin.debug(sender.getName() + " wants to retrieve account info");
 
         if (args.length > 1) {
             try {
                 int id = Integer.parseInt(args[1]);
-                Account account = accountRepo.getByID(id);
+                Account account = plugin.getAccountRepository().getByID(id);
                 if (account == null) {
                     sender.sendMessage(Messages.get(Message.ACCOUNT_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                     return true;
                 }
 
-                PLUGIN.debugf("%s is displaying info for account #%d", sender.getName(), id);
+                plugin.debugf("%s is displaying info for account #%d", sender.getName(), id);
 
                 AccountInfoEvent event = new AccountInfoEvent(sender, account);
                 event.fire();
                 if (event.isCancelled()) {
-                    PLUGIN.debug("Account info event cancelled");
+                    plugin.debug("Account info event cancelled");
                     return true;
                 }
 
@@ -55,7 +56,7 @@ public class AccountInfo extends SubCommand.AccountSubCommand {
         }
 
         if (!(sender instanceof Player)) {
-            PLUGIN.debug(sender.getName() + " is not a player");
+            plugin.debug(sender.getName() + " is not a player");
             sender.sendMessage(Messages.get(Message.PLAYER_COMMAND_ONLY));
             return true;
         }
@@ -63,33 +64,26 @@ public class AccountInfo extends SubCommand.AccountSubCommand {
         AccountInfoCommandEvent event = new AccountInfoCommandEvent((Player) sender, args);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Account info command event cancelled");
+            plugin.debug("Account info command event cancelled");
             return true;
         }
 
-        PLUGIN.debug(sender.getName() + " can now click an account to get info");
+        plugin.debug(sender.getName() + " can now click an account to get info");
         sender.sendMessage(Messages.get(Message.CLICK_ACCOUNT_INFO));
         ClickType.setInfoClickType((Player) sender);
         return true;
     }
 
-    /**
-     * @param player  Player who executed the command and will retrieve the
-     *                information
-     * @param account Account from which the information will be retrieved
-     */
-    public static void info(Player player, Account account) {
-        ClickType.removeClickType(player);
-        PLUGIN.debugf("%s is retrieving %s account info%s (#%d)",
-                player.getName(), (account.isOwner(player) ? "their" : account.getOwner().getName() + "'s"),
-                (account.isCoOwner(player) ? " (is co-owner)" : ""), account.getID());
-        AccountInfoEvent event = new AccountInfoEvent(player, account);
+    public static void info(Player p, Account account) {
+        ClickType.removeClickType(p);
+        plugin.debugf("%s is viewing account info (#%d)", p.getName(), account.getID());
+        AccountInfoEvent event = new AccountInfoEvent(p, account);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debugf("Account info event cancelled (#%d)", account.getID());
+            plugin.debugf("Account info event cancelled (#%d)", account.getID());
             return;
         }
-        new AccountGUI(account).open(player);
+        new AccountGUI(account).open(p);
     }
 
 }

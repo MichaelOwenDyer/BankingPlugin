@@ -1,11 +1,12 @@
 package com.monst.bankingplugin.commands.bank;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
@@ -19,8 +20,8 @@ import java.util.stream.Collectors;
 
 public class BankRename extends SubCommand.BankSubCommand {
 
-    BankRename() {
-        super("rename", false);
+    BankRename(BankingPlugin plugin) {
+		super(plugin, "rename", false);
     }
 
     @Override
@@ -35,7 +36,7 @@ public class BankRename extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " is renaming a bank");
+        plugin.debug(sender.getName() + " is renaming a bank");
 
         if (args.length < 2)
             return false;
@@ -45,21 +46,21 @@ public class BankRename extends SubCommand.BankSubCommand {
         String newName;
         if (args.length == 2) {
             if (!(sender instanceof Player)) {
-                PLUGIN.debug("Must be player");
+                plugin.debug("Must be player");
                 sender.sendMessage(Messages.get(Message.PLAYER_COMMAND_ONLY));
                 return true;
             }
-            bank = bankRepo.getAt(((Player) sender).getLocation().getBlock());
+            bank = plugin.getBankRepository().getAt(((Player) sender).getLocation().getBlock());
             if (bank == null) {
-                PLUGIN.debug(sender.getName() + " was not standing in a bank");
+                plugin.debug(sender.getName() + " was not standing in a bank");
                 sender.sendMessage(Messages.get(Message.MUST_STAND_IN_BANK));
                 return true;
             }
             newName = args[1];
         } else {
-            bank = bankRepo.getByIdentifier(args[1]);
+            bank = plugin.getBankRepository().getByIdentifier(args[1]);
             if (bank == null) {
-                PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
+                plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
                 sender.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
                 return true;
             }
@@ -70,29 +71,29 @@ public class BankRename extends SubCommand.BankSubCommand {
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
-            PLUGIN.debug(sender.getName() + " does not have permission to change the name of an admin bank");
+            plugin.debug(sender.getName() + " does not have permission to change the name of an admin bank");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_ADMIN));
             return true;
         }
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
-            PLUGIN.debug(sender.getName() + " does not have permission to change the name of another player's bank");
+            plugin.debug(sender.getName() + " does not have permission to change the name of another player's bank");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_OTHER));
             return true;
         }
         if (bank.getRawName().contentEquals(newName)) {
-            PLUGIN.debug("Same name");
+            plugin.debug("Same name");
             sender.sendMessage(Messages.get(Message.NAME_NOT_CHANGED, new Replacement(Placeholder.NAME, newName)));
             return true;
         }
-        Bank bankWithSameName = bankRepo.getByName(newName);
+        Bank bankWithSameName = plugin.getBankRepository().getByName(newName);
         if (bankWithSameName != null && !bankWithSameName.equals(bank)) {
-            PLUGIN.debug("Name is not unique");
+            plugin.debug("Name is not unique");
             sender.sendMessage(Messages.get(Message.NAME_NOT_UNIQUE, new Replacement(Placeholder.NAME, newName)));
             return true;
         }
         if (!Config.nameRegex.matches(newName)) {
-            PLUGIN.debug("Name is not allowed");
+            plugin.debug("Name is not allowed");
             sender.sendMessage(Messages.get(Message.NAME_NOT_ALLOWED,
                     new Replacement(Placeholder.NAME, newName),
                     new Replacement(Placeholder.PATTERN, Config.nameRegex)
@@ -100,21 +101,21 @@ public class BankRename extends SubCommand.BankSubCommand {
             return true;
         }
 
-        PLUGIN.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
+        plugin.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
         sender.sendMessage(Messages.get(Message.NAME_CHANGED, new Replacement(Placeholder.BANK_NAME, newName)));
         bank.setName(newName);
-        PLUGIN.getBankRepository().update(bank, BankField.NAME); // Update bank in database
+        plugin.getBankRepository().update(bank, BankField.NAME); // Update bank in database
         return true;
     }
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            Bank bank = sender instanceof Player ? bankRepo.getAt(((Player) sender).getLocation().getBlock()) : null;
+            Bank bank = sender instanceof Player ? BANK_REPO.getAt(((Player) sender).getLocation().getBlock()) : null;
             if (args[0].isEmpty() && bank != null)
                 return Collections.singletonList(bank.getName());
 
-            return bankRepo.getAll().stream()
+            return BANK_REPO.getAll().stream()
                     .filter(b -> ((sender instanceof Player && b.isTrusted((Player) sender))
                             || (b.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (b.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))

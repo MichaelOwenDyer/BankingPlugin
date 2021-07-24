@@ -1,12 +1,13 @@
 package com.monst.bankingplugin.commands.account;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
-import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.commands.ConfirmableSubCommand;
+import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
@@ -21,8 +22,8 @@ import java.util.stream.Collectors;
 
 public class AccountRemoveAll extends SubCommand.AccountSubCommand implements ConfirmableSubCommand {
 
-    AccountRemoveAll() {
-        super("removeall", false);
+    AccountRemoveAll(BankingPlugin plugin) {
+		super(plugin, "removeall", false);
     }
 
     @Override
@@ -38,10 +39,10 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
 
-        PLUGIN.debug(sender.getName() + " wants to remove all accounts");
+        plugin.debug(sender.getName() + " wants to remove all accounts");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL)) {
-            PLUGIN.debug(sender.getName() + " does not have permission to remove all accounts");
+            plugin.debug(sender.getName() + " does not have permission to remove all accounts");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_REMOVEALL));
             return true;
         }
@@ -49,9 +50,9 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
         Set<Account> accounts;
 
         if (args.length == 1) {
-            accounts = accountRepo.getAll();
+            accounts = plugin.getAccountRepository().getAll();
         } else {
-            Map<String, Player> namePlayerMap = PLUGIN.getServer().getOnlinePlayers().stream().collect(
+            Map<String, Player> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
                     Collectors.toMap(
                             HumanEntity::getName,
                             e -> e
@@ -67,7 +68,7 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
                         owners.add(player);
                 }
             }
-            accounts = accountRepo.getMatching(a -> owners.contains(a.getOwner()));
+            accounts = plugin.getAccountRepository().getMatching(a -> owners.contains(a.getOwner()));
         }
 
         if (accounts == null || accounts.isEmpty()) {
@@ -86,14 +87,14 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
         AccountRemoveAllEvent event = new AccountRemoveAllEvent(sender, accounts);
         event.fire();
         if (event.isCancelled()) {
-            PLUGIN.debug("Removeall event cancelled");
+            plugin.debug("Removeall event cancelled");
             return true;
         }
-        PLUGIN.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
+        plugin.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
         sender.sendMessage(Messages.get(Message.ALL_ACCOUNTS_REMOVED,
                 new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
         ));
-        accounts.forEach(a -> accountRepo.remove(a, true));
+        accounts.forEach(a -> plugin.getAccountRepository().remove(a, true));
         return true;
     }
 

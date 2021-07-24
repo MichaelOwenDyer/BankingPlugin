@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.commands.bank;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.commands.SubCommand;
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
 
 public class BankConfigure extends SubCommand.BankSubCommand {
 
-    BankConfigure() {
-        super("configure", false);
+    BankConfigure(BankingPlugin plugin) {
+		super(plugin, "configure", false);
     }
 
     @Override
@@ -34,35 +35,35 @@ public class BankConfigure extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        PLUGIN.debug(sender.getName() + " wants to configure a bank");
+        plugin.debug(sender.getName() + " wants to configure a bank");
 
         if (args.length < 3)
             return false;
 
-        Bank bank = bankRepo.getByIdentifier(args[1]);
+        Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
         String fieldName = args[2];
         String value = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
 
         if (bank == null) {
-            PLUGIN.debugf("Couldn't find bank with name or ID %s", args[1]);
+            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
             sender.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
             return true;
         }
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
-            PLUGIN.debug(sender.getName() + " does not have permission to configure another player's bank");
+            plugin.debug(sender.getName() + " does not have permission to configure another player's bank");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_OTHER));
             return true;
         }
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
-            PLUGIN.debug(sender.getName() + " does not have permission to configure an admin bank");
+            plugin.debug(sender.getName() + " does not have permission to configure an admin bank");
             sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_ADMIN));
             return true;
         }
 
         BankField field = BankField.getByName(fieldName);
         if (field == null) {
-            PLUGIN.debug("No bank config field could be found with name " + fieldName);
+            plugin.debug("No bank config field could be found with name " + fieldName);
             sender.sendMessage(Messages.get(Message.NOT_A_PROPERTY, new Replacement(Placeholder.INPUT, fieldName)));
             return true;
         }
@@ -76,13 +77,13 @@ public class BankConfigure extends SubCommand.BankSubCommand {
                 ));
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
-            PLUGIN.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());
+            plugin.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());
             return true;
         }
 
         String newValue = bank.get(field).getFormatted(true);
 
-        PLUGIN.debugf( "%s has changed %s at %s from %s to %s.",
+        plugin.debugf( "%s has changed %s at %s from %s to %s.",
                 sender.getName(), field.toString(), bank.getName(), previousValue, newValue);
         MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.BANK_PROPERTY_SET,
                 new Replacement(Placeholder.PROPERTY, field::toString),
@@ -97,14 +98,14 @@ public class BankConfigure extends SubCommand.BankSubCommand {
 
         new BankConfigureEvent(sender, bank, field, value, previousValue).fire();
 
-        bankRepo.update(bank, field);
+        plugin.getBankRepository().update(bank, field);
         return true;
     }
 
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 1)
-            return bankRepo.getAll().stream()
+            return BANK_REPO.getAll().stream()
                     .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
@@ -112,14 +113,14 @@ public class BankConfigure extends SubCommand.BankSubCommand {
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
-        else if (args.length == 2 && bankRepo.getByIdentifier(args[0]) != null) {
+        else if (args.length == 2 && BANK_REPO.getByIdentifier(args[0]) != null) {
             return BankField.streamConfigurable()
                     .map(BankField::toString)
                     .filter(name -> Utils.containsIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 3) {
-            Bank bank = bankRepo.getByIdentifier(args[0]);
+            Bank bank = BANK_REPO.getByIdentifier(args[0]);
             BankField field = BankField.getByName(args[1]);
             if (bank != null && field != null)
                 return Collections.singletonList(bank.get(field).getFormatted());

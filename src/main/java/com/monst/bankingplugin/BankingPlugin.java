@@ -4,6 +4,7 @@ import com.earth2me.essentials.Essentials;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.account.AccountCommand;
+import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.commands.bank.BankCommand;
 import com.monst.bankingplugin.commands.control.ControlCommand;
 import com.monst.bankingplugin.config.Config;

@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * This class represents either a {@link Bank} or an {@link Account}.
  */
-public abstract class BankingEntity implements Ownable, Nameable, Persistable<Integer>, Observable {
+public abstract class BankingEntity implements Ownable, Nameable, Persistable, Observable {
 
 	static BankingPlugin plugin = BankingPlugin.getInstance();
 	int id;
@@ -86,12 +86,12 @@ public abstract class BankingEntity implements Ownable, Nameable, Persistable<In
 	}
 
 	@Override
-	public Integer getID() {
+	public int getID() {
 		return id;
 	}
 
 	@Override
-	public void setID(Integer id) {
+	public void setID(int id) {
 		if (!hasID())
 			this.id = id;
 	}

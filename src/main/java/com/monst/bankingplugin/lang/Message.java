@@ -71,7 +71,7 @@ public enum Message {
             Placeholder.INPUT
     ),
     ACCOUNTS_NOT_FOUND (
-            "A player attempts to list the accounts of a player who does not have any accounts.",
+            "A player attempts to remove all accounts but there are no accounts to remove.",
             "&cNo accounts found."
     ),
     ACCOUNT_BALANCE_NOT_ZERO (
