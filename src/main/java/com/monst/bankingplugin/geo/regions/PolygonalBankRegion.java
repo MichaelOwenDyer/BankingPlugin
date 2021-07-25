@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.geo.regions;
 
-import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.Vector2D;
 import com.monst.polylabel.PolyLabel;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 
 /**
  * This class represents a region of space in the shape of a polygonal prism. It is defined by a {@link World},
- * a minimum and a maximum y-coordinate, and an ordered list of {@link BlockVector2D} (x,z) coordinate pairs to
+ * a minimum and a maximum y-coordinate, and an ordered list of {@link Vector2D} (x,z) coordinate pairs to
  * represent the vertices. An edge of this region is a line formed between two neighboring coordinate pairs on the list.
  */
 public class PolygonalBankRegion extends BankRegion {
 
-	private final BlockVector2D[] vertices;
+	private final Vector2D[] vertices;
 	private final int minY;
 	private final int maxY;
 
@@ -31,7 +31,7 @@ public class PolygonalBankRegion extends BankRegion {
 	 * @param y2 the other y-coordinate bound
 	 * @return a new PolygonalBankRegion
 	 */
-	public static PolygonalBankRegion of(World world, BlockVector2D[] points, int y1, int y2) {
+	public static PolygonalBankRegion of(World world, Vector2D[] points, int y1, int y2) {
 		y1 = Math.min(Math.max(0, y1), world.getMaxHeight()); // Ensure y1 is between 0 and world.getMaxHeight()
 		y2 = Math.min(Math.max(0, y2), world.getMaxHeight()); // Ensure y2 is between 0 and world.getMaxHeight()
 		return new PolygonalBankRegion(
@@ -42,7 +42,7 @@ public class PolygonalBankRegion extends BankRegion {
 		);
 	}
 
-	private PolygonalBankRegion(World world, BlockVector2D[] vertices, int minY, int maxY) {
+	private PolygonalBankRegion(World world, Vector2D[] vertices, int minY, int maxY) {
 		super(world);
 		if (vertices == null || vertices.length < 3)
 			throw new IllegalArgumentException("Vertices cannot be fewer than 3!");
@@ -68,12 +68,12 @@ public class PolygonalBankRegion extends BankRegion {
 
 	@Override
 	public int getMinX() {
-		return Arrays.stream(vertices).mapToInt(BlockVector2D::getX).min().orElseThrow(IllegalStateException::new);
+		return Arrays.stream(vertices).mapToInt(Vector2D::getX).min().orElseThrow(IllegalStateException::new);
 	}
 
 	@Override
 	public int getMaxX() {
-		return Arrays.stream(vertices).mapToInt(BlockVector2D::getX).max().orElseThrow(IllegalStateException::new);
+		return Arrays.stream(vertices).mapToInt(Vector2D::getX).max().orElseThrow(IllegalStateException::new);
 	}
 
 	@Override
@@ -88,12 +88,12 @@ public class PolygonalBankRegion extends BankRegion {
 
 	@Override
 	public int getMinZ() {
-		return Arrays.stream(vertices).mapToInt(BlockVector2D::getZ).min().orElseThrow(IllegalStateException::new);
+		return Arrays.stream(vertices).mapToInt(Vector2D::getZ).min().orElseThrow(IllegalStateException::new);
 	}
 
 	@Override
 	public int getMaxZ() {
-		return Arrays.stream(vertices).mapToInt(BlockVector2D::getZ).max().orElseThrow(IllegalStateException::new);
+		return Arrays.stream(vertices).mapToInt(Vector2D::getZ).max().orElseThrow(IllegalStateException::new);
 	}
 
 	@Override
@@ -119,20 +119,20 @@ public class PolygonalBankRegion extends BankRegion {
 	public boolean overlaps(BankRegion region) {
 		if (isDisjunct(region))
 			return false;
-		Set<BlockVector2D> blocks = region.getFootprint();
+		Set<Vector2D> blocks = region.getFootprint();
 		return getFootprint().stream().anyMatch(blocks::contains);
 	}
 
 	// TODO: Worthy of improvement
 	@Override
-	public Set<BlockVector2D> getFootprint() {
-		Set<BlockVector2D> blocks = new HashSet<>();
+	public Set<Vector2D> getFootprint() {
+		Set<Vector2D> blocks = new HashSet<>();
 		Block min = getMinimumBlock();
 		Block max = getMaximumBlock();
 		for (int x = min.getX(); x <= max.getX(); x++)
 			for (int z = min.getZ(); z <= max.getZ(); z++) {
 				if (contains(x, z))
-					blocks.add(new BlockVector2D(x, z));
+					blocks.add(new Vector2D(x, z));
 			}
 		return blocks;
 	}
@@ -141,7 +141,7 @@ public class PolygonalBankRegion extends BankRegion {
 	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalBankRegion}
 	 */
 	@Override
-	public BlockVector2D[] getVertices() {
+	public Vector2D[] getVertices() {
 		return vertices;
 	}
 
@@ -153,7 +153,7 @@ public class PolygonalBankRegion extends BankRegion {
 
 		long crossProduct;
 		boolean inside = false;
-		for (BlockVector2D point : vertices) {
+		for (Vector2D point : vertices) {
 			nextX = point.getX();
 			nextZ = point.getZ();
 			if (nextX == pointX && nextZ == pointZ) // Location is on a vertex

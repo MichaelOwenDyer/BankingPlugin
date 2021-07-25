@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.geo.BlockVector2D;
-import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.Vector2D;
+import com.monst.bankingplugin.geo.Vector3D;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.geo.regions.PolygonalBankRegion;
@@ -46,14 +46,14 @@ public class WorldEditReader {
 			CuboidRegion cuboid = (CuboidRegion) region;
 			BlockVector3 vector1 = cuboid.getPos1();
 			BlockVector3 vector2 = cuboid.getPos2();
-			BlockVector3D loc1 = new BlockVector3D(vector1.getBlockX(), vector1.getBlockY(), vector1.getBlockZ());
-			BlockVector3D loc2 = new BlockVector3D(vector2.getBlockX(), vector2.getBlockY(), vector2.getBlockZ());
+			Vector3D loc1 = new Vector3D(vector1.getBlockX(), vector1.getBlockY(), vector1.getBlockZ());
+			Vector3D loc2 = new Vector3D(vector2.getBlockX(), vector2.getBlockY(), vector2.getBlockZ());
 			return CuboidBankRegion.of(world, loc1, loc2);
 		} else if (region instanceof Polygonal2DRegion) {
 			Polygonal2DRegion polygon = (Polygonal2DRegion) region;
 			int minY = polygon.getMinimumY();
 			int maxY = polygon.getMaximumY();
-			BlockVector2D[] points = polygon.getPoints().stream().map(pt -> new BlockVector2D(pt.getBlockX(), pt.getBlockZ())).toArray(BlockVector2D[]::new);
+			Vector2D[] points = polygon.getPoints().stream().map(pt -> new Vector2D(pt.getBlockX(), pt.getBlockZ())).toArray(Vector2D[]::new);
 			return PolygonalBankRegion.of(world, points, minY, maxY);
 		}
 		return null;

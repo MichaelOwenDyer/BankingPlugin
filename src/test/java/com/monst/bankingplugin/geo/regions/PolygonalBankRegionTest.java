@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.geo.regions;
 
-import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.Vector2D;
 import org.bukkit.World;
 import org.junit.jupiter.api.Test;
 
@@ -22,9 +22,9 @@ public class PolygonalBankRegionTest {
 
     static PolygonalBankRegion newSel(int... args) {
         assertEquals(0, args.length % 2);
-        List<BlockVector2D> points = new ArrayList<>();
+        List<Vector2D> points = new ArrayList<>();
         for (int i = 0; i < args.length; i += 2) {
-            points.add(new BlockVector2D(args[i], args[i + 1]));
+            points.add(new Vector2D(args[i], args[i + 1]));
         }
         try {
             return constructor.newInstance(null, points, 5, 5);

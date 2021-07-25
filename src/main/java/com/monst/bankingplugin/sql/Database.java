@@ -9,8 +9,8 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.WorldNotFoundException;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.exceptions.parse.TimeParseException;
-import com.monst.bankingplugin.geo.BlockVector2D;
-import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.Vector2D;
+import com.monst.bankingplugin.geo.Vector3D;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
@@ -539,13 +539,13 @@ public abstract class Database {
 			String vertices = values.getNextString();
 			BankRegion bankRegion;
 			if (vertices != null) {
-				BlockVector2D[] points =
+				Vector2D[] points =
 						Arrays.stream(vertices.split("\\)\\s*[,.;:|]\\s*\\("))
-						.map(BlockVector2D::parse)
-						.toArray(BlockVector2D[]::new);
+						.map(Vector2D::parse)
+						.toArray(Vector2D[]::new);
 				bankRegion = PolygonalBankRegion.of(world, points, minY, maxY);
 			} else
-				bankRegion = CuboidBankRegion.of(world, new BlockVector3D(minX, minY, minZ), new BlockVector3D(maxX, maxY, maxZ));
+				bankRegion = CuboidBankRegion.of(world, new Vector3D(minX, minY, minZ), new Vector3D(maxX, maxY, maxZ));
 
 			Set<OfflinePlayer> coowners = query
 					.select("SELECT CoOwnerUUID FROM " + tableCoOwnsBank + " WHERE BankID = ?")

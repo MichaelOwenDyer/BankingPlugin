@@ -3,7 +3,7 @@ package com.monst.bankingplugin.commands;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
-import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.Vector3D;
 import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -166,8 +166,8 @@ public abstract class SubCommand {
                 z2 = parseCoordinate(args[7], loc.getZ());
             } else
                 return null;
-            BlockVector3D loc1 = new BlockVector3D(x1, y1, z1);
-            BlockVector3D loc2 = new BlockVector3D(x2, y2, z2);
+            Vector3D loc1 = new Vector3D(x1, y1, z1);
+            Vector3D loc2 = new Vector3D(x2, y2, z2);
             return CuboidBankRegion.of(loc.getWorld(), loc1, loc2);
         }
 

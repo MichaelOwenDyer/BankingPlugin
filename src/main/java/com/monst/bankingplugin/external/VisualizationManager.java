@@ -2,7 +2,7 @@ package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.Vector2D;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
@@ -96,10 +96,10 @@ public class VisualizationManager {
                 yBuilder.accept(y);
             final int[] allYs = yBuilder.build().toArray();
 
-            BlockVector2D[] points = sel.getVertices();
+            Vector2D[] points = sel.getVertices();
             for (int vertex = 0; vertex < points.length; vertex++) {
 
-                BlockVector2D current = points[vertex];
+                Vector2D current = points[vertex];
 
                 for (int y : allYs) {
                     // Add blocks that are immediately vertically adjacent to corner blocks
@@ -109,7 +109,7 @@ public class VisualizationManager {
                 }
 
                 // Get the vertex after the current one; will eventually loop back to the first vertex
-                BlockVector2D next = points[(vertex + 1) % points.length];
+                Vector2D next = points[(vertex + 1) % points.length];
 
                 int diffX = next.getX() - current.getX();
                 int diffZ = next.getZ() - current.getZ();

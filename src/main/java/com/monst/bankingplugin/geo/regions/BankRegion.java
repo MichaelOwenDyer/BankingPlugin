@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.geo.regions;
 
-import com.monst.bankingplugin.geo.BlockVector2D;
+import com.monst.bankingplugin.geo.Vector2D;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
@@ -153,30 +153,30 @@ public abstract class BankRegion {
 	public abstract boolean contains(int x, int z);
 
 	/**
-	 * Gets a {@link Set<BlockVector2D>} containing a horizontal cross-section
+	 * Gets a {@link Set<Vector2D>} containing a horizontal cross-section
 	 * of this region and no y-coordinate.
 	 *
-	 * @return a set and every {@link BlockVector2D} in this region
+	 * @return a set and every {@link Vector2D} in this region
 	 */
-	public abstract Set<BlockVector2D> getFootprint();
+	public abstract Set<Vector2D> getFootprint();
 
 	/**
-	 * Gets an ordered list of {@link BlockVector2D}s containing each vertex of this region.
+	 * Gets an ordered list of {@link Vector2D}s containing each vertex of this region.
 	 * The order of the elements is region-specific.
-	 * @return a {@link List<BlockVector2D>} of all vertices of the region.
+	 * @return a {@link List<Vector2D>} of all vertices of the region.
 	 */
-	public abstract BlockVector2D[] getVertices();
+	public abstract Vector2D[] getVertices();
 
 	/**
 	 * Get all (upper and lower) corner {@link Block}s of this region.
-	 * This will return two blocks per {@link BlockVector2D} from {@link #getVertices()},
+	 * This will return two blocks per {@link Vector2D} from {@link #getVertices()},
 	 * one at {@link #getMinY()} and the other at {@link #getMaxY()}.
 	 *
 	 * @return a {@link List<Block>} representing all corner {@link Block}s.
 	 */
 	public List<Location> getCorners() {
 		List<Location> vertices = new LinkedList<>();
-		for (BlockVector2D bv : getVertices()) {
+		for (Vector2D bv : getVertices()) {
 			vertices.add(new Location(world, bv.getX(), getMinY(), bv.getZ()));
 			vertices.add(new Location(world, bv.getX(), getMaxY(), bv.getZ()));
 		}

@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.geo.regions;
 
-import com.monst.bankingplugin.geo.BlockVector2D;
-import com.monst.bankingplugin.geo.BlockVector3D;
+import com.monst.bankingplugin.geo.Vector2D;
+import com.monst.bankingplugin.geo.Vector3D;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
@@ -11,7 +11,7 @@ import java.util.Set;
 
 /**
  * This class represents a region of space in the shape of a rectangular prism. It is defined by a {@link World} and
- * a minimum and a maximum {@link BlockVector3D} point in space.
+ * a minimum and a maximum {@link Vector3D} point in space.
  */
 public class CuboidBankRegion extends BankRegion {
 
@@ -26,7 +26,7 @@ public class CuboidBankRegion extends BankRegion {
 	 * @param loc2 the other corner bound
 	 * @return a new CuboidBankRegion
 	 */
-	public static CuboidBankRegion of(World world, BlockVector3D loc1, BlockVector3D loc2) {
+	public static CuboidBankRegion of(World world, Vector3D loc1, Vector3D loc2) {
 		Block min = world.getBlockAt(
 				Math.min(loc1.getX(), loc2.getX()),
 				Math.min(loc1.getY(), loc2.getY()),
@@ -95,26 +95,26 @@ public class CuboidBankRegion extends BankRegion {
 	public boolean overlaps(BankRegion region) {
 		if (isDisjunct(region))
 			return false;
-		Set<BlockVector2D> blocks = getFootprint();
+		Set<Vector2D> blocks = getFootprint();
 		return region.getFootprint().stream().anyMatch(blocks::contains);
 	}
 
 	@Override
-	public Set<BlockVector2D> getFootprint() {
-		Set<BlockVector2D> blocks = new HashSet<>();
+	public Set<Vector2D> getFootprint() {
+		Set<Vector2D> blocks = new HashSet<>();
 		for (int x = getMinX(); x <= getMaxX(); x++)
 			for (int z = getMinZ(); z <= getMaxZ(); z++)
-				blocks.add(new BlockVector2D(x, z));
+				blocks.add(new Vector2D(x, z));
 		return blocks;
 	}
 
 	@Override
-	public BlockVector2D[] getVertices() {
-		BlockVector2D[] vertices = new BlockVector2D[4];
+	public Vector2D[] getVertices() {
+		Vector2D[] vertices = new Vector2D[4];
 		int i = 0;
 		for (int x : new int[] { getMinX(), getMaxX() })
 			for (int z : new int[] { getMinZ(), getMaxZ() })
-				vertices[i++] = new BlockVector2D(x, z);
+				vertices[i++] = new Vector2D(x, z);
 		return vertices;
 	}
 
