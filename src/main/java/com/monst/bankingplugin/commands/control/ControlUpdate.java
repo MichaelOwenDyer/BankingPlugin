@@ -3,7 +3,6 @@ package com.monst.bankingplugin.commands.control;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.UpdateChecker;
 import org.bukkit.command.CommandSender;
@@ -31,7 +30,7 @@ public class ControlUpdate extends SubCommand.ControlSubCommand {
 
         if (!sender.hasPermission(Permissions.UPDATE)) {
             plugin.debug(sender.getName() + " does not have permission to update the plugin");
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_UPDATE));
+            sender.sendMessage(Message.NO_PERMISSION_UPDATE.translate());
             return true;
         }
 

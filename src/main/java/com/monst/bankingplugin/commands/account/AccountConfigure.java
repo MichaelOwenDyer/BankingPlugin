@@ -7,9 +7,7 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountConfigureEvent;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.Permissions;
@@ -47,7 +45,7 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
 
         if (!executor.hasPermission(Permissions.ACCOUNT_CONFIGURE)) {
             plugin.debug(executor.getName() + " does not have permission to configure an account");
-            executor.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CONFIGURE));
+            executor.sendMessage(Message.NO_PERMISSION_ACCOUNT_CONFIGURE.translate());
             return true;
         }
 
@@ -57,7 +55,7 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
         String property = args[1];
         AccountField field = AccountField.getByName(property);
         if (field == null) {
-            executor.sendMessage(Messages.get(Message.NOT_A_PROPERTY, new Replacement(Placeholder.INPUT, args[1])));
+            executor.sendMessage(Message.NOT_A_PROPERTY.with(Placeholder.INPUT).as(args[1]).translate());
             return true;
         }
 
@@ -70,10 +68,10 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
         }
 
         ClickType.setConfigureClickType(executor, field, value);
-        executor.sendMessage(Messages.get(Message.CLICK_ACCOUNT_CONFIGURE,
-                new Replacement(Placeholder.PROPERTY, property),
-                new Replacement(Placeholder.VALUE, value)
-        ));
+        executor.sendMessage(Message.CLICK_ACCOUNT_CONFIGURE
+                .with(Placeholder.PROPERTY).as(property)
+                .and(Placeholder.VALUE).as(value)
+                .translate());
         return true;
     }
 
@@ -86,10 +84,10 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
 
                 account.setMultiplierStage(value);
 
-                executor.sendMessage(Messages.get(Message.ACCOUNT_SET_MULTIPLIER,
-                        new Replacement(Placeholder.MULTIPLIER, account::getRealMultiplier),
-                        new Replacement(Placeholder.MULTIPLIER_STAGE, account::getMultiplierStage)
-                ));
+                executor.sendMessage(Message.ACCOUNT_SET_MULTIPLIER
+                        .with(Placeholder.MULTIPLIER).as(account.getRealMultiplier())
+                        .and(Placeholder.MULTIPLIER_STAGE).as(account.getMultiplierStage())
+                        .translate());
                 PLUGIN.debugf("%s has set the multiplier stage of account #%d to %d",
                         executor.getName(), account.getID(), account.getMultiplierStage());
                 break;
@@ -100,9 +98,9 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
 
                 PLUGIN.debugf("%s has set the interest delay of account #%d to %d.",
                         executor.getName(), account.getID(), account.getDelayUntilNextPayout());
-                executor.sendMessage(Messages.get(Message.ACCOUNT_SET_INTEREST_DELAY,
-                        new Replacement(Placeholder.NUMBER, account::getDelayUntilNextPayout)
-                ));
+                executor.sendMessage(Message.ACCOUNT_SET_INTEREST_DELAY
+                        .with(Placeholder.NUMBER).as(account.getDelayUntilNextPayout())
+                        .translate());
                 break;
 
             case REMAINING_OFFLINE_PAYOUTS:
@@ -111,9 +109,9 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
 
                 PLUGIN.debugf("%s has set the remaining offline payouts of account #%d to %d.",
                         executor.getName(), account.getID(), account.getRemainingOfflinePayouts());
-                executor.sendMessage(Messages.get(Message.ACCOUNT_SET_REMAINING_OFFLINE,
-                        new Replacement(Placeholder.NUMBER, account::getRemainingOfflinePayouts)
-                ));
+                executor.sendMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE
+                        .with(Placeholder.NUMBER).as(account.getRemainingOfflinePayouts())
+                        .translate());
                 break;
 
         }

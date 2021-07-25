@@ -8,7 +8,9 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
-import com.monst.bankingplugin.lang.*;
+import com.monst.bankingplugin.lang.Mailman;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
@@ -42,7 +44,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
 
         if (!p.hasPermission(Permissions.ACCOUNT_MIGRATE)) {
             plugin.debug(p.getName() + " does not have permission to migrate an account");
-            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_MIGRATE));
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE.translate());
             return true;
         }
 
@@ -53,7 +55,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
             return true;
         }
 
-        p.sendMessage(Messages.get(Message.CLICK_ACCOUNT_MIGRATE));
+        p.sendMessage(Message.CLICK_ACCOUNT_MIGRATE.translate());
         ClickType.setMigrateClickType(p);
         plugin.debug(p.getName() + " is migrating an account");
         return true;
@@ -64,17 +66,17 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         if (!accountToMove.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_OTHER)) {
             if (accountToMove.isTrusted(p)) {
                 plugin.debugf("%s cannot migrate account #%d as a co-owner", p.getName(), accountToMove.getID());
-                p.sendMessage(Messages.get(Message.MUST_BE_OWNER));
+                p.sendMessage(Message.MUST_BE_OWNER.translate());
                 return;
             }
             plugin.debugf("%s does not have permission to migrate account #%d", p.getName(), accountToMove.getID());
-            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER));
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER.translate());
             return;
         }
 
         plugin.debugf("%s wants to migrate account #%d", p.getName(), accountToMove.getID());
         ClickType.setMigrateClickType(p, accountToMove);
-        p.sendMessage(Messages.get(Message.CLICK_CHEST_MIGRATE));
+        p.sendMessage(Message.CLICK_CHEST_MIGRATE.translate());
 
     }
 
@@ -83,10 +85,10 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         if (clickedAccount != null) {
             if (Objects.equals(accountToMove, clickedAccount)) {
                 plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
-                p.sendMessage(Messages.get(Message.SAME_CHEST));
+                p.sendMessage(Message.SAME_CHEST.translate());
             } else {
                 plugin.debugf("%s clicked an already existing account chest to migrate to", p.getName());
-                p.sendMessage(Messages.get(Message.CHEST_ALREADY_ACCOUNT));
+                p.sendMessage(Message.CHEST_ALREADY_ACCOUNT.translate());
             }
             return;
         }
@@ -95,20 +97,20 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         AccountLocation newAccountLocation = AccountLocation.from(c.getInventory().getHolder());
 
         if (newAccountLocation.isBlocked()) {
-            p.sendMessage(Messages.get(Message.CHEST_BLOCKED));
+            p.sendMessage(Message.CHEST_BLOCKED.translate());
             plugin.debug("Chest is blocked.");
             return;
         }
 
         Bank newBank = newAccountLocation.getBank();
         if (newBank == null) {
-            p.sendMessage(Messages.get(Message.CHEST_NOT_IN_BANK));
+            p.sendMessage(Message.CHEST_NOT_IN_BANK.translate());
             plugin.debug("Chest is not in a bank.");
             return;
         }
 
         if (!Objects.equals(accountToMove.getBank(), newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
-            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_MIGRATE_BANK));
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_BANK.translate());
             plugin.debugf("%s does not have permission to migrate their account to another bank.", p.getName());
             return;
         }
@@ -117,7 +119,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             plugin.debug("No permission to create account on a protected chest.");
-            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED.translate());
             return;
         }
 
@@ -136,51 +138,49 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         double net = reimbursement - creationPrice;
         if (!PayrollOffice.allowPayment(p, net)) {
             double balance = plugin.getEconomy().getBalance(p);
-            p.sendMessage(Messages.get(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS,
-                    new Replacement(Placeholder.PRICE, net),
-                    new Replacement(Placeholder.PLAYER_BALANCE, balance),
-                    new Replacement(Placeholder.AMOUNT_REMAINING, net - balance)
-            ));
+            p.sendMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS
+                    .with(Placeholder.PRICE).as(net)
+                    .and(Placeholder.PLAYER_BALANCE).as(balance)
+                    .and(Placeholder.AMOUNT_REMAINING).as(net - balance)
+                    .translate());
             return;
         }
 
         if (reimbursement > 0) {
             // Customer receives reimbursement for old account
             if (PayrollOffice.deposit(p, reimbursement))
-                p.sendMessage(Messages.get(Message.REIMBURSEMENT_RECEIVED,
-                        new Replacement(Placeholder.AMOUNT, reimbursement)
-                ));
+                p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate();
             // Bank owner of old account pays reimbursement
             if (oldBank.isPlayerBank() && PayrollOffice.withdraw(oldBank.getOwner(), reimbursement))
-                Mailman.notify(oldBank.getOwner(), Messages.get(Message.REIMBURSEMENT_PAID,
-                        new Replacement(Placeholder.PLAYER, p::getName),
-                        new Replacement(Placeholder.AMOUNT, reimbursement)
-                ));
+                Mailman.notify(oldBank.getOwner(), Message.REIMBURSEMENT_PAID
+                        .with(Placeholder.PLAYER).as(p.getName())
+                        .and(Placeholder.AMOUNT).as(reimbursement)
+                        .translate());
         }
 
         if (creationPrice > 0) {
             // Account owner pays creation fee for new account
             if (PayrollOffice.withdraw(p, creationPrice))
-                p.sendMessage(Messages.get(Message.ACCOUNT_CREATE_FEE_PAID,
-                        new Replacement(Placeholder.PRICE, creationPrice),
-                        new Replacement(Placeholder.BANK_NAME, newBank::getColorizedName)
-                ));
+                p.sendMessage(Message.ACCOUNT_CREATE_FEE_PAID
+                        .with(Placeholder.PRICE).as(creationPrice)
+                        .and(Placeholder.BANK_NAME).as(newBank.getColorizedName())
+                        .translate());
             else
                 return;
             // Bank owner of new account receives account creation fee
             if (newBank.isPlayerBank() && PayrollOffice.deposit(newBank.getOwner(), creationPrice))
-                Mailman.notify(newBank.getOwner(), Messages.get(Message.ACCOUNT_CREATE_FEE_RECEIVED,
-                        new Replacement(Placeholder.PLAYER, p::getName),
-                        new Replacement(Placeholder.AMOUNT, creationPrice),
-                        new Replacement(Placeholder.BANK_NAME, newBank::getColorizedName)
-                ));
+                Mailman.notify(newBank.getOwner(), Message.ACCOUNT_CREATE_FEE_RECEIVED
+                        .with(Placeholder.PLAYER).as(p.getName())
+                        .and(Placeholder.AMOUNT).as(creationPrice)
+                        .and(Placeholder.BANK_NAME).as(newBank.getColorizedName())
+                        .translate());
         }
 
         accountToMove.clearChestName();
         accountToMove.setLocation(newAccountLocation);
         accountToMove.setBank(newBank);
         ACCOUNT_REPO.update(accountToMove, accountToMove.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
-        p.sendMessage(Messages.get(Message.ACCOUNT_MIGRATED));
+        p.sendMessage(Message.ACCOUNT_MIGRATED.translate());
         plugin.debugf("Account migrated (#%d)", accountToMove.getID());
     }
 

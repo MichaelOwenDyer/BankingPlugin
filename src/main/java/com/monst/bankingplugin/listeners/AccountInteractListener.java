@@ -4,10 +4,8 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.commands.account.AccountInfo;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -96,7 +94,7 @@ public class AccountInteractListener extends BankingPluginListener {
 
 			if (!account.isTrusted(p) && !account.getBank().isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
 				e.setCancelled(true);
-				p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_VIEW_OTHER));
+				p.sendMessage(Message.NO_PERMISSION_ACCOUNT_VIEW_OTHER.translate());
 				plugin.debug(p.getName() + " does not have permission to open " + account.getOwner().getName()
 						+ "'s account chest.");
 				return;
@@ -104,9 +102,7 @@ public class AccountInteractListener extends BankingPluginListener {
 
 			e.setCancelled(false);
 			if (!account.isTrusted(p))
-				p.sendMessage(Messages.get(Message.ACCOUNT_OPENED,
-						new Replacement(Placeholder.PLAYER, account.getOwnerDisplayName())
-				));
+				p.sendMessage(Message.ACCOUNT_OPENED.with(Placeholder.PLAYER).as(account.getOwnerDisplayName()).translate());
 
 			plugin.debugf("%s is opening account (#%d)", p.getName(), account.getID());
 		}

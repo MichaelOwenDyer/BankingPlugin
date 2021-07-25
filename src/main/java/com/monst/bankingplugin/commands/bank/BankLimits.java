@@ -3,9 +3,7 @@ package com.monst.bankingplugin.commands.bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
@@ -36,11 +34,11 @@ public class BankLimits extends SubCommand.BankSubCommand {
         String bankLimit = allowedBanks < 0 ? "∞" : "" + allowedBanks;
         String volumeLimit = allowedVolume < 0 ? "∞" : "" + allowedVolume;
         plugin.debugf("%s is viewing their bank limits: %d / %s, max volume: %d", p.getName(), banksUsed, bankLimit, allowedVolume);
-        p.sendMessage(Messages.get(Message.BANK_LIMIT,
-                new Replacement(Placeholder.NUMBER_OF_BANKS, banksUsed),
-                new Replacement(Placeholder.LIMIT, bankLimit),
-                new Replacement(Placeholder.BANK_SIZE, volumeLimit)
-        ));
+        p.sendMessage(Message.BANK_LIMIT
+                .with(Placeholder.NUMBER_OF_BANKS).as(banksUsed)
+                .and(Placeholder.LIMIT).as(bankLimit)
+                .and(Placeholder.BANK_SIZE).as(volumeLimit)
+                .translate());
         return true;
     }
 

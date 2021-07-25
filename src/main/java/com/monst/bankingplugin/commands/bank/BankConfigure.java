@@ -6,7 +6,9 @@ import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.bank.BankConfigureEvent;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
-import com.monst.bankingplugin.lang.*;
+import com.monst.bankingplugin.lang.MailingRoom;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
@@ -46,25 +48,25 @@ public class BankConfigure extends SubCommand.BankSubCommand {
 
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-            sender.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
             return true;
         }
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
             plugin.debug(sender.getName() + " does not have permission to configure another player's bank");
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_OTHER));
+            sender.sendMessage(Message.NO_PERMISSION_BANK_SET_OTHER.translate());
             return true;
         }
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
             plugin.debug(sender.getName() + " does not have permission to configure an admin bank");
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_SET_ADMIN));
+            sender.sendMessage(Message.NO_PERMISSION_BANK_SET_ADMIN.translate());
             return true;
         }
 
         BankField field = BankField.getByName(fieldName);
         if (field == null) {
             plugin.debug("No bank config field could be found with name " + fieldName);
-            sender.sendMessage(Messages.get(Message.NOT_A_PROPERTY, new Replacement(Placeholder.INPUT, fieldName)));
+            sender.sendMessage(Message.NOT_A_PROPERTY.with(Placeholder.INPUT).as(fieldName).translate());
             return true;
         }
 
@@ -72,9 +74,9 @@ public class BankConfigure extends SubCommand.BankSubCommand {
 
         try {
             if (!bank.set(field, value))
-                sender.sendMessage(Messages.get(Message.BANK_PROPERTY_NOT_OVERRIDABLE,
-                        new Replacement(Placeholder.PROPERTY, field::toString)
-                ));
+                sender.sendMessage(Message.BANK_PROPERTY_NOT_OVERRIDABLE
+                        .with(Placeholder.PROPERTY).as(field.toString())
+                        .translate());
         } catch (ArgumentParseException e) {
             sender.sendMessage(e.getLocalizedMessage());
             plugin.debugf("Could not parse argument: \"%s\"", e.getLocalizedMessage());
@@ -85,12 +87,13 @@ public class BankConfigure extends SubCommand.BankSubCommand {
 
         plugin.debugf( "%s has changed %s at %s from %s to %s.",
                 sender.getName(), field.toString(), bank.getName(), previousValue, newValue);
-        MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.BANK_PROPERTY_SET,
-                new Replacement(Placeholder.PROPERTY, field::toString),
-                new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
-                new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
-                new Replacement(Placeholder.VALUE, newValue)
-        ));
+        MailingRoom mailingRoom = new MailingRoom(Message.BANK_PROPERTY_SET
+                .with(Placeholder.PROPERTY).as(field.toString())
+                .and(Placeholder.BANK_NAME).as(bank.getColorizedName())
+                .and(Placeholder.PREVIOUS_VALUE).as(previousValue)
+                .and(Placeholder.VALUE).as(newValue)
+                .translate()
+        );
         mailingRoom.addOfflineRecipient(bank.getTrustedPlayers());
         mailingRoom.addOfflineRecipient(bank.getCustomers());
         mailingRoom.addRecipient(sender);

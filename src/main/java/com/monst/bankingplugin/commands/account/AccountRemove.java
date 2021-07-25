@@ -7,7 +7,9 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveCommandEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
-import com.monst.bankingplugin.lang.*;
+import com.monst.bankingplugin.lang.Mailman;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
@@ -49,7 +51,7 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
         }
 
         plugin.debug(sender.getName() + " can now click a chest to remove an account");
-        sender.sendMessage(Messages.get(Message.CLICK_ACCOUNT_REMOVE));
+        sender.sendMessage(Message.CLICK_ACCOUNT_REMOVE.translate());
         ClickType.setRemoveClickType((Player) sender);
         return true;
     }
@@ -64,9 +66,9 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
 
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(p)) {
             if (account.isTrusted(p))
-                p.sendMessage(Messages.get(Message.MUST_BE_OWNER));
+                p.sendMessage(Message.MUST_BE_OWNER.translate());
             else
-                p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER));
+                p.sendMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER.translate());
             if (!hasEntry(p))
                 ClickType.removeClickType(p);
             return;
@@ -75,26 +77,22 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
         if (account.getBalance().signum() > 0 || Config.confirmOnRemove.get()) {
             if (!isConfirmed(p, account.getID())) {
                 plugin.debug("Needs confirmation");
-                if (account.getBalance().signum() > 0) {
-                    p.sendMessage(Messages.get(Message.ACCOUNT_BALANCE_NOT_ZERO,
-                            new Replacement(Placeholder.ACCOUNT_BALANCE, account::getBalance)
-                    ));
-                }
-                p.sendMessage(Messages.get(Message.CLICK_AGAIN_TO_CONFIRM));
+                if (account.getBalance().signum() > 0)
+                    p.sendMessage(Message.ACCOUNT_BALANCE_NOT_ZERO
+                            .with(Placeholder.ACCOUNT_BALANCE).as(account.getBalance())
+                            .translate());
+                p.sendMessage(Message.CLICK_AGAIN_TO_CONFIRM.translate());
                 return;
             }
         }
 
-        plugin.debugf("%s is removing %s account (#%d)",
-                p.getName(),
-                account.isOwner(p) ? "their" : account.getOwner().getName() + "'s",
-                account.getID());
+        plugin.debugf("%s is removing account #%d", p.getName(), account.getID());
 
         AccountRemoveEvent event = new AccountRemoveEvent(p, account);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
             plugin.debug("Remove event cancelled (#" + account.getID() + ")");
-            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED));
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED.translate());
             return;
         }
 
@@ -106,19 +104,17 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
 
             if (reimbursement > 0) {
                 if (PayrollOffice.deposit(p, reimbursement))
-                    p.sendMessage(Messages.get(Message.REIMBURSEMENT_RECEIVED,
-                            new Replacement(Placeholder.AMOUNT, reimbursement)
-                    ));
+                    p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate());
                 if (bank.isPlayerBank() && PayrollOffice.withdraw(bank.getOwner(), reimbursement)) {
-                    Mailman.notify(bank.getOwner(), Messages.get(Message.REIMBURSEMENT_PAID,
-                            new Replacement(Placeholder.PLAYER, account.getOwnerName()),
-                            new Replacement(Placeholder.AMOUNT, reimbursement)
-                    ));
+                    Mailman.notify(bank.getOwner(), Message.REIMBURSEMENT_PAID
+                            .with(Placeholder.PLAYER).as(account.getOwnerName())
+                            .and(Placeholder.AMOUNT).as(reimbursement)
+                            .translate());
                 }
             }
         }
 
-        p.sendMessage(Messages.get(Message.ACCOUNT_REMOVED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
+        p.sendMessage(Message.ACCOUNT_REMOVED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
         plugin.getAccountRepository().remove(account, true);
         plugin.debug("Removed account (#" + account.getID() + ")");
     }

@@ -1,7 +1,9 @@
 package com.monst.bankingplugin.utils;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.lang.*;
+import com.monst.bankingplugin.lang.Mailman;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
@@ -52,9 +54,7 @@ public class PayrollOffice {
         EconomyResponse result = transactor.transact(ECONOMY, player, Math.abs(amount));
         if (result.transactionSuccess())
             return true;
-        Mailman.notify(player, Messages.get(Message.ERROR_OCCURRED,
-                new Replacement(Placeholder.ERROR, result.errorMessage)
-        ));
+        Mailman.notify(player, Message.ERROR_OCCURRED.with(Placeholder.ERROR).as(result.errorMessage).translate());
         return false;
     }
 

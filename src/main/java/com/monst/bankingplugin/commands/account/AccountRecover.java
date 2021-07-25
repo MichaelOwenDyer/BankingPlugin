@@ -9,8 +9,6 @@ import com.monst.bankingplugin.events.account.AccountRecoverEvent;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.gui.AccountRecoveryGUI;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
-import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -43,7 +41,7 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
     public static void recover(Player p, Account toRecover, Block b) {
         if (ACCOUNT_REPO.isAccount(b)) {
             plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
-            p.sendMessage(Messages.get(Message.CHEST_ALREADY_ACCOUNT));
+            p.sendMessage(Message.CHEST_ALREADY_ACCOUNT.translate());
             return;
         }
 
@@ -51,14 +49,14 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
         AccountLocation accountLocation = AccountLocation.from(c.getInventory().getHolder());
 
         if (accountLocation.isBlocked()) {
-            p.sendMessage(Messages.get(Message.CHEST_BLOCKED));
+            p.sendMessage(Message.CHEST_BLOCKED.translate());
             plugin.debug("Chest is blocked.");
             return;
         }
 
         Bank bank = accountLocation.getBank();
         if (bank == null) {
-            p.sendMessage(Messages.get(Message.CHEST_NOT_IN_BANK));
+            p.sendMessage(Message.CHEST_NOT_IN_BANK.translate());
             plugin.debug("Chest is not in a bank.");
             return;
         }
@@ -67,7 +65,7 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             plugin.debug("No permission to recover an account to a protected chest.");
-            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED.translate());
             return;
         }
 
@@ -76,6 +74,6 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
         toRecover.setBank(bank);
         ACCOUNT_REPO.removeMissingAccount(toRecover);
         ACCOUNT_REPO.update(toRecover, toRecover.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
-        p.sendMessage(Messages.get(Message.ACCOUNT_RECOVERED));
+        p.sendMessage(Message.ACCOUNT_RECOVERED.translate());
     }
 }

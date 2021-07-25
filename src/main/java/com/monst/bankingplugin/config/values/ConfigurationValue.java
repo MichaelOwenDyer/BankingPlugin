@@ -41,7 +41,7 @@ interface ConfigurationValue<V, T> extends Supplier<T> {
      * This method is overridden where sensible.
      */
     default Object get(MemoryConfiguration config, String path) {
-        return config.get(path, null); // Use generic method get() to preserve nullability and ensure value presence
+        return config.get(path, null); // Use generic method translate() to preserve nullability and ensure value presence
     }
 
     /**
@@ -58,7 +58,7 @@ interface ConfigurationValue<V, T> extends Supplier<T> {
      * Casts the object from the configuration file to the stored type of this value.
      * If a {@link ClassCastException} is thrown, it is wrapped in a {@link CorruptedValueException}.
      * @param o the object from the configuration file
-     * @return the object with the correct stored type
+     * @return the object and the correct stored type
      * @throws InvalidValueException if the object was of a related type and repairable
      * @throws CorruptedValueException if the object was of an unrelated type and not able to be interpreted
      */

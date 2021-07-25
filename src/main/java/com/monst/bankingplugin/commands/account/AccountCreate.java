@@ -4,12 +4,14 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
-import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
-import com.monst.bankingplugin.lang.*;
+import com.monst.bankingplugin.lang.Mailman;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -42,14 +44,14 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
         plugin.debug(p.getName() + " wants to create an account");
 
         if (!hasPermission(p, Permissions.ACCOUNT_CREATE)) {
-            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CREATE));
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE.translate());
             plugin.debug(p.getName() + " is not permitted to create an account");
             return true;
         }
 
         int limit = Utils.getAccountLimit(p);
         if (limit != -1 && plugin.getAccountRepository().getOwnedBy(p).size() >= limit) {
-            p.sendMessage(Messages.get(Message.ACCOUNT_LIMIT_REACHED, new Replacement(Placeholder.LIMIT, limit)));
+            p.sendMessage(Message.ACCOUNT_LIMIT_REACHED.with(Placeholder.LIMIT).as(limit).translate());
             plugin.debug(p.getName() + " has reached their account limit");
             return true;
         }
@@ -62,7 +64,7 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
         }
 
         plugin.debug(p.getName() + " can now click a chest to create an account");
-        p.sendMessage(Messages.get(Message.CLICK_CHEST_CREATE));
+        p.sendMessage(Message.CLICK_CHEST_CREATE.translate());
         ClickType.setCreateClickType(p);
         return true;
     }
@@ -78,7 +80,7 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
         ClickType.removeClickType(p);
 
         if (plugin.getAccountRepository().isAccount(b)) {
-            p.sendMessage(Messages.get(Message.CHEST_ALREADY_ACCOUNT));
+            p.sendMessage(Message.CHEST_ALREADY_ACCOUNT.translate());
             plugin.debug("Chest is already an account.");
             return;
         }
@@ -88,29 +90,29 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
         AccountLocation accountLocation = AccountLocation.from(ih);
 
         if (accountLocation.isBlocked()) {
-            p.sendMessage(Messages.get(Message.CHEST_BLOCKED));
+            p.sendMessage(Message.CHEST_BLOCKED.translate());
             plugin.debug("Chest is blocked.");
             return;
         }
 
         Bank bank = accountLocation.getBank();
         if (bank == null) {
-            p.sendMessage(Messages.get(Message.CHEST_NOT_IN_BANK));
+            p.sendMessage(Message.CHEST_NOT_IN_BANK.translate());
             plugin.debug("Chest is not in a bank.");
             return;
         }
 
         if (!Config.allowSelfBanking.get() && bank.isOwner(p)) {
-            p.sendMessage(Messages.get(Message.NO_SELF_BANKING, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
+            p.sendMessage(Message.NO_SELF_BANKING.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
             plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
             return;
         }
         int playerAccountLimit = bank.getPlayerBankAccountLimit().get();
         if (playerAccountLimit > 0 && bank.getAccounts(account -> account.isOwner(p)).size() >= playerAccountLimit) {
-            p.sendMessage(Messages.get(Message.ACCOUNT_LIMIT_AT_BANK_REACHED,
-                    new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
-                    new Replacement(Placeholder.LIMIT, playerAccountLimit)
-            ));
+            p.sendMessage(Message.ACCOUNT_LIMIT_AT_BANK_REACHED
+                    .with(Placeholder.BANK_NAME).as(bank.getColorizedName())
+                    .and(Placeholder.LIMIT).as(playerAccountLimit)
+                    .translate());
             plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
             return;
         }
@@ -121,7 +123,7 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
             plugin.debug("No permission to create account on a protected chest.");
-            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED));
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED.translate());
             return;
         }
 
@@ -132,40 +134,40 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
         if (creationPrice > 0) {
             double balance = plugin.getEconomy().getBalance(p);
             if (creationPrice > balance) {
-                p.sendMessage(Messages.get(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS,
-                        new Replacement(Placeholder.PRICE, creationPrice),
-                        new Replacement(Placeholder.PLAYER_BALANCE, balance),
-                        new Replacement(Placeholder.AMOUNT_REMAINING, creationPrice - balance)
-                ));
+                p.sendMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS
+                        .with(Placeholder.PRICE).as(creationPrice)
+                        .and(Placeholder.PLAYER_BALANCE).as(balance)
+                        .and(Placeholder.AMOUNT_REMAINING).as(creationPrice - balance)
+                        .translate());
                 return;
             }
             // Account owner pays the bank owner the creation fee
             if (PayrollOffice.withdraw(p, creationPrice))
-                p.sendMessage(Messages.get(Message.ACCOUNT_CREATE_FEE_PAID,
-                        new Replacement(Placeholder.PRICE, creationPrice),
-                        new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
-                ));
+                p.sendMessage(Message.ACCOUNT_CREATE_FEE_PAID
+                        .with(Placeholder.PRICE).as(creationPrice)
+                        .and(Placeholder.BANK_NAME).as(bank.getColorizedName())
+                        .translate());
             else
                 return;
             // Bank owner receives the payment from the customer
             if (bank.isPlayerBank()) {
                 OfflinePlayer bankOwner = account.getBank().getOwner();
                 if (PayrollOffice.deposit(bankOwner, creationPrice))
-                    Mailman.notify(bankOwner, Messages.get(Message.ACCOUNT_CREATE_FEE_RECEIVED,
-                            new Replacement(Placeholder.PLAYER, p::getName),
-                            new Replacement(Placeholder.AMOUNT, creationPrice),
-                            new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)
-                    ));
+                    Mailman.notify(bankOwner, Message.ACCOUNT_CREATE_FEE_RECEIVED
+                            .with(Placeholder.PLAYER).as(p.getName())
+                            .and(Placeholder.AMOUNT).as(creationPrice)
+                            .and(Placeholder.BANK_NAME).as(bank.getColorizedName())
+                            .translate());
             }
         }
 
         if (account.create()) {
             plugin.debug("Account created");
             plugin.getAccountRepository().add(account, true, account.callUpdateChestName());
-            p.sendMessage(Messages.get(Message.ACCOUNT_CREATED, new Replacement(Placeholder.BANK_NAME, bank::getColorizedName)));
+            p.sendMessage(Message.ACCOUNT_CREATED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
         } else {
             plugin.debugf("Could not create account");
-            p.sendMessage(Messages.get(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, "Could not create account")));
+            p.sendMessage(Message.ERROR_OCCURRED.with(Placeholder.ERROR).as("Could not create account").translate());
         }
     }
 }

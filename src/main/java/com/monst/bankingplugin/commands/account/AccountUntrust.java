@@ -6,9 +6,7 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountUntrustCommandEvent;
 import com.monst.bankingplugin.events.account.AccountUntrustEvent;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -41,7 +39,7 @@ public class AccountUntrust extends SubCommand.AccountSubCommand {
         plugin.debug(sender.getName() + " wants to untrust a player from an account");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_UNTRUST));
+            sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST.translate());
             return true;
         }
 
@@ -50,7 +48,7 @@ public class AccountUntrust extends SubCommand.AccountSubCommand {
 
         OfflinePlayer playerToUntrust = Utils.getPlayer(args[1]);
         if (playerToUntrust == null) {
-            sender.sendMessage(Messages.get(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
             return true;
         }
 
@@ -62,7 +60,7 @@ public class AccountUntrust extends SubCommand.AccountSubCommand {
             return true;
         }
 
-        sender.sendMessage(Messages.get(Message.CLICK_ACCOUNT_UNTRUST, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
+        sender.sendMessage(Message.CLICK_ACCOUNT_UNTRUST.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
         ClickType.setUntrustClickType(p, playerToUntrust);
         plugin.debug(sender.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
         return true;
@@ -73,19 +71,17 @@ public class AccountUntrust extends SubCommand.AccountSubCommand {
 
         if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
             if (account.isTrusted(executor)) {
-                executor.sendMessage(Messages.get(Message.MUST_BE_OWNER));
+                executor.sendMessage(Message.MUST_BE_OWNER.translate());
                 return;
             }
-            executor.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER));
+            executor.sendMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER.translate());
             return;
         }
 
         if (!account.isCoOwner(playerToUntrust)) {
             plugin.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
                     playerToUntrust.getName(), account.getID());
-            executor.sendMessage(Messages.get(Message.NOT_A_COOWNER,
-                    new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
-            ));
+            executor.sendMessage(Message.NOT_A_COOWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
             return;
         }
 
@@ -96,11 +92,8 @@ public class AccountUntrust extends SubCommand.AccountSubCommand {
             return;
         }
 
-        plugin.debugf("%s has untrusted %s from %s account (#%d)", executor.getName(),	playerToUntrust.getName(),
-                (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"), account.getID());
-        executor.sendMessage(Messages.get(Message.REMOVED_COOWNER,
-                new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
-        ));
+        plugin.debugf("%s has untrusted %s from account #%d", executor.getName(), playerToUntrust.getName(), account.getID());
+        executor.sendMessage(Message.REMOVED_COOWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
         account.untrustPlayer(playerToUntrust);
         plugin.getDatabase().removeCoOwner(account, playerToUntrust, null);
     }

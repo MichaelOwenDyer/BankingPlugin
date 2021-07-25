@@ -8,7 +8,7 @@ import org.bukkit.event.Cancellable;
 import java.util.Collection;
 
 /**
- * This event is fired when multiple accounts are removed at once with the
+ * This event is fired when multiple accounts are removed at once and the
  * {@link AccountRemoveAll} command.
  */
 public class AccountRemoveAllEvent extends MultiAccountEvent implements Cancellable {

@@ -1,9 +1,8 @@
 package com.monst.bankingplugin.config;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.lang.Messages;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import javax.annotation.Nonnull;
@@ -11,7 +10,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LanguageConfig extends FileConfiguration {
@@ -76,32 +74,30 @@ public class LanguageConfig extends FileConfiguration {
                 }
             }
         }
-        for (Message message : Message.VALUES)
+        for (Message message : Message.values())
             Messages.setTranslation(message, findTranslation(message));
     }
 
     @Nonnull
     private String findTranslation(@Nonnull Message message) {
-        String path = message.getPath();
-        String finalMessage = getString(path);
-        if (finalMessage != null)
-            return finalMessage;
+        String messagePath = message.getPath();
+        String translation = getString(messagePath);
+        if (translation != null)
+            return translation;
         // Value was missing
         String defaultMessage = message.getDefaultMessage();
-        configFilePathValues.put(path, defaultMessage);
+        configFilePathValues.put(messagePath, defaultMessage);
         if (file != null) {
             // Append missing entry to loaded language file
             try (FileWriter writer = new FileWriter(file, true)) {
                 writer.write("\n# Scenario: " + message.getDescription());
-                writer.write("\n# Available placeholders: " +
-                        message.getAvailablePlaceholders().stream()
-                        .map(Placeholder::toString).collect(Collectors.joining(", ")));
-                writer.write("\n" + path + "=" + defaultMessage + "\n");
-                plugin.getLogger().info("Missing translation for \"" + path + "\" has been added as \"" + defaultMessage + "\" to the selected language file.");
+                writer.write("\n# Available placeholders: " + message.getFormattedPlaceholdersList());
+                writer.write("\n" + messagePath + "=" + defaultMessage + "\n");
+                plugin.getLogger().info("Missing translation for \"" + messagePath + "\" has been added as \"" + defaultMessage + "\" to the selected language file.");
             } catch (IOException e) {
                 plugin.debug("Failed to add language entry");
                 plugin.debug(e);
-                plugin.getLogger().severe("Failed to add missing translation for \"" + path + "\".");
+                plugin.getLogger().severe("Failed to add missing translation for \"" + messagePath + "\".");
             }
         }
         return defaultMessage;

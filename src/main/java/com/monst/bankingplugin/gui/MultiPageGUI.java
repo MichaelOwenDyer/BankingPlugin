@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * A GUI with multiple pages.
+ * A GUI and multiple pages.
  * @param <T> the type of the many objects represented in this GUI.
  */
 abstract class MultiPageGUI<T> extends GUI<Collection<T>> {

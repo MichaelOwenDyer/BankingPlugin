@@ -6,9 +6,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.control.ReloadEvent;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
@@ -37,7 +35,7 @@ public class ControlReload extends SubCommand.ControlSubCommand {
 
         if (!sender.hasPermission(Permissions.RELOAD)) {
             plugin.debug(sender.getName() + " does not have permission to reload the plugin");
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_RELOAD));
+            sender.sendMessage(Message.NO_PERMISSION_RELOAD.translate());
             return true;
         }
 
@@ -51,15 +49,14 @@ public class ControlReload extends SubCommand.ControlSubCommand {
         plugin.reload(Callback.of(result -> {
             Set<Bank> banks = result.getBanks();
             Set<Account> accounts = result.getAccounts();
-            sender.sendMessage(Messages.get(Message.RELOADED_PLUGIN,
-                    new Replacement(Placeholder.NUMBER_OF_BANKS, banks::size),
-                    new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
-            ));
+            sender.sendMessage(Message.RELOADED_PLUGIN
+                    .with(Placeholder.NUMBER_OF_BANKS).as(banks.size())
+                    .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size())
+                    .translate());
             plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
-        }, error ->
-                sender.sendMessage(Messages.get(Message.ERROR_OCCURRED,
-                    new Replacement(Placeholder.ERROR, "Fatal error while loading banks and accounts from the database.")
-                ))
+        }, error -> sender.sendMessage(Message.ERROR_OCCURRED.with(Placeholder.ERROR)
+                .as("Fatal error while loading banks and accounts from the database.")
+                .translate())
         ));
         return true;
     }

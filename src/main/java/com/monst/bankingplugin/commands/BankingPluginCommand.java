@@ -2,7 +2,6 @@ package com.monst.bankingplugin.commands;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -43,7 +42,7 @@ public abstract class BankingPluginCommand<SC extends SubCommand> {
 		}
 		this.plugin = plugin;
 		this.name = name;
-		this.desc = Messages.get(desc);
+		this.desc = desc.translate();
 		this.subCommands = new ArrayList<>();
 		this.pluginCommand = createPluginCommand();
 		getSubCommands().forEach(this::addSubCommand);

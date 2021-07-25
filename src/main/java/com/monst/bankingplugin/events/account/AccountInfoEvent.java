@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * This event is fired when info about an {@link Account} is fetched.
  * This can be either a player opening an {@link AccountGUI} or the console printing out
- * an info dump with the command "account info [id]".
+ * an info dump and the command "account info [id]".
  */
 public class AccountInfoEvent extends SingleAccountEvent implements Cancellable {
 

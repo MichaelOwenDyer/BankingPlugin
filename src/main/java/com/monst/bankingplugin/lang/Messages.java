@@ -1,19 +1,18 @@
 package com.monst.bankingplugin.lang;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.List;
 
 public class Messages {
 
-    private static final BankingPlugin plugin = BankingPlugin.getInstance();
-    private static final EnumMap<Message, String> messages = new EnumMap<>(Message.class);
+    private static final EnumMap<Message, String> TRANSLATIONS = new EnumMap<>(Message.class);
 
     public static void setTranslation(Message message, String translation) {
-        messages.put(message, translation);
+        TRANSLATIONS.put(message, translation);
     }
 
     /**
@@ -21,24 +20,28 @@ public class Messages {
      * @param replacements Replacements of placeholders which might be required to be replaced in the message
      * @return Localized Message
      */
-    public static String get(Message message, Replacement... replacements) {
-        String finalMessage = messages.get(message);
-        if (finalMessage == null)
-            return ChatColor.RED + "An error occurred: Message not found: " + message.toString();
+    public static String translate(Message message, List<Replacement> replacements) {
+        String translation = TRANSLATIONS.get(message);
+        if (translation == null)
+            return ChatColor.RED + "An error occurred: Translation not found: " + message.toString();
 
-        EnumSet<Placeholder> allowedPlaceholders = message.getAvailablePlaceholders().clone();
+        EnumSet<Placeholder> remainingPlaceholders = message.getAvailablePlaceholders();
 
         for (Replacement replacement : replacements) {
             Placeholder placeholder = replacement.getPlaceholder();
-            if (!allowedPlaceholders.remove(placeholder) || !finalMessage.contains(placeholder.toString()))
+            if (!remainingPlaceholders.remove(placeholder) || !translation.contains(placeholder.toString()))
                 continue;
-            finalMessage = finalMessage.replace(placeholder.toString(), replacement.getReplacement());
+            translation = translation.replace(placeholder.toString(), replacement.getReplacement());
         }
 
-        for (Placeholder placeholder : allowedPlaceholders)
-            plugin.debugf("Placeholder missing from message call! Message: %s, Placeholder: %s", message.toString(), placeholder.toString());
+        return Utils.colorize(translation);
+    }
 
-        return Utils.colorize(finalMessage);
+    public static String translate(Message message) {
+        String translation = TRANSLATIONS.get(message);
+        if (translation == null)
+            return ChatColor.RED + "An error occurred: Translation not found: " + message.toString();
+        return Utils.colorize(translation);
     }
 
 }

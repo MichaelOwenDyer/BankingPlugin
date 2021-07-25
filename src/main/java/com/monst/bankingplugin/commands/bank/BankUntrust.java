@@ -4,9 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -41,18 +39,18 @@ public class BankUntrust extends SubCommand.BankSubCommand {
         plugin.debug(sender.getName() + " wants to untrust a player from a bank");
 
         if (!sender.hasPermission(Permissions.BANK_TRUST)) {
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_UNTRUST));
+            sender.sendMessage(Message.NO_PERMISSION_BANK_UNTRUST.translate());
             return true;
         }
         Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-            sender.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
             return true;
         }
         OfflinePlayer playerToUntrust = Utils.getPlayer(args[2]);
         if (playerToUntrust == null) {
-            sender.sendMessage(Messages.get(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
             return true;
         }
 
@@ -61,31 +59,29 @@ public class BankUntrust extends SubCommand.BankSubCommand {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
                 plugin.debugf("%s does not have permission to untrust a player from bank %s as a co-owner",
                         sender.getName(), bank.getName());
-                sender.sendMessage(Messages.get(Message.MUST_BE_OWNER));
+                sender.sendMessage(Message.MUST_BE_OWNER.translate());
                 return true;
             }
             plugin.debugf("%s does not have permission to untrust a player from bank %s", sender.getName(), bank.getName());
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_UNTRUST_OTHER));
+            sender.sendMessage(Message.NO_PERMISSION_BANK_UNTRUST_OTHER.translate());
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRUST_ADMIN)) {
             plugin.debugf("%s does not have permission to untrust a player from admin bank %s", sender.getName(), bank.getName());
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_UNTRUST_ADMIN));
+            sender.sendMessage(Message.NO_PERMISSION_BANK_UNTRUST_ADMIN.translate());
             return true;
         }
 
         if (!bank.isTrusted(playerToUntrust)) {
             plugin.debugf("%s was not trusted at bank %s (#%d)", playerToUntrust.getName(), bank.getName(), bank.getID());
-            sender.sendMessage(Messages.get(Message.NOT_A_COOWNER, new Replacement(Placeholder.PLAYER, playerToUntrust::getName)));
+            sender.sendMessage(Message.NOT_A_COOWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
             return true;
         }
 
         plugin.debugf("%s has untrusted %s from bank %s (#%d)",
                 sender.getName(), playerToUntrust.getName(), bank.getName(), bank.getID());
-        sender.sendMessage(Messages.get(Message.REMOVED_COOWNER,
-                new Replacement(Placeholder.PLAYER, playerToUntrust::getName)
-        ));
+        sender.sendMessage(Message.REMOVED_COOWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
         bank.untrustPlayer(playerToUntrust);
         plugin.getDatabase().removeCoOwner(bank, playerToUntrust, null);
         return true;

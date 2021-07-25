@@ -5,10 +5,8 @@ import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.sql.logging.AccountTransaction;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
@@ -61,21 +59,20 @@ public class AccountBalanceListener extends BankingPluginListener {
 		plugin.debugf("Appraised balance of account #d: %s, difference to previous: %s", account.getID(),
 				Utils.format(appraisal), Utils.format(difference));
 
-		executor.sendMessage(Messages.get(difference.signum() > 0 ? Message.ACCOUNT_DEPOSIT : Message.ACCOUNT_WITHDRAWAL,
-				new Replacement(Placeholder.AMOUNT, difference::abs),
-				new Replacement(Placeholder.ACCOUNT_BALANCE, appraisal)
-		));
+		Message message = difference.signum() > 0 ? Message.ACCOUNT_DEPOSIT : Message.ACCOUNT_WITHDRAWAL;
+		executor.sendMessage(message
+				.with(Placeholder.AMOUNT).as(difference.abs())
+				.and(Placeholder.ACCOUNT_BALANCE).as(appraisal)
+				.translate());
 
 		if (difference.signum() < 0 && appraisal.compareTo(account.getPrevBalance()) < 0)
 			if (account.getMultiplierStage() != account.processWithdrawal())
-				executor.sendMessage(Messages.get(Message.MULTIPLIER_DECREASED,
-						new Replacement(Placeholder.NUMBER, account::getRealMultiplier)
-				));
+				executor.sendMessage(Message.MULTIPLIER_DECREASED.with(Placeholder.NUMBER).as(account.getRealMultiplier()).translate());
 
 		account.setBalance(appraisal);
 		accountRepo.update(account, AccountField.BALANCE);
 
-		plugin.debugf("Account #%d has been updated with a new balance of %s", account.getID(), Utils.format(appraisal));
+		plugin.debugf("Account #%d has been updated and a new balance of %s", account.getID(), Utils.format(appraisal));
 		new AccountTransactionEvent(executor, account, difference, appraisal).fire();
 
 		if (account.getOwner().isOnline())

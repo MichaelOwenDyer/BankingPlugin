@@ -7,9 +7,7 @@ import com.monst.bankingplugin.config.values.ConfigValue;
 import com.monst.bankingplugin.events.control.PluginConfigureCommandEvent;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
 
@@ -40,7 +38,7 @@ public class ControlConfigure extends SubCommand.ControlSubCommand {
 
         if (!sender.hasPermission(Permissions.CONFIG)) {
             plugin.debug(sender.getName() + " does not have permission to configure the config");
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_CONFIG));
+            sender.sendMessage(Message.NO_PERMISSION_CONFIG.translate());
             return true;
         }
 
@@ -50,9 +48,7 @@ public class ControlConfigure extends SubCommand.ControlSubCommand {
         String path = args[1];
         ConfigValue<?, ?> configValue = Config.getByPath(path);
         if (configValue == null) {
-            sender.sendMessage(Messages.get(Message.NOT_A_CONFIG_VALUE,
-                    new Replacement(Placeholder.INPUT, path)
-            ));
+            sender.sendMessage(Message.NOT_A_CONFIG_VALUE.with(Placeholder.INPUT).as(path).translate());
             return true;
         }
 
@@ -78,16 +74,13 @@ public class ControlConfigure extends SubCommand.ControlSubCommand {
         String newValue = configValue.getFormatted();
 
         plugin.debugf("%s has set %s from %s to %s", sender.getName(), configValue.getPath(), previousValue, newValue);
-        sender.sendMessage(Messages.get(Message.CONFIG_VALUE_SET,
-                new Replacement(Placeholder.PROPERTY, path),
-                new Replacement(Placeholder.PREVIOUS_VALUE, previousValue),
-                new Replacement(Placeholder.VALUE, newValue)
-        ));
-        if (!configValue.isHotSwappable()) {
-            sender.sendMessage(Messages.get(Message.RESTART_REQUIRED,
-                    new Replacement(Placeholder.PROPERTY, path)
-            ));
-        }
+        sender.sendMessage(Message.CONFIG_VALUE_SET
+                .with(Placeholder.PROPERTY).as(path)
+                .and(Placeholder.PREVIOUS_VALUE).as(previousValue)
+                .and(Placeholder.VALUE).as(newValue)
+                .translate());
+        if (!configValue.isHotSwappable())
+            sender.sendMessage(Message.RESTART_REQUIRED.with(Placeholder.PROPERTY).as(path).translate());
         return true;
     }
 

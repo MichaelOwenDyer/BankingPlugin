@@ -6,7 +6,6 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountListEvent;
 import com.monst.bankingplugin.gui.AccountListGUI;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -33,7 +32,7 @@ public class AccountList extends SubCommand.AccountSubCommand {
 
         if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER) && !(sender instanceof Player)) {
             plugin.debug("Only players can list their own accounts");
-            sender.sendMessage(Messages.get(Message.PLAYER_COMMAND_ONLY));
+            sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
             return true;
         }
 

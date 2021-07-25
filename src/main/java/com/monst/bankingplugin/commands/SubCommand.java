@@ -5,10 +5,8 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.geo.BlockVector3D;
 import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.repository.BankRepository;
 import com.monst.bankingplugin.utils.Parser;
@@ -81,7 +79,7 @@ public abstract class SubCommand {
      */
     String getUsageMessage(CommandSender sender, String commandName) {
         if (hasPermission(sender, getPermission()))
-            return Messages.get(getUsageMessage(), new Replacement(Placeholder.COMMAND, commandName));
+            return getUsageMessage().with(Placeholder.COMMAND).as(commandName).translate();
         return "";
     }
 
@@ -120,16 +118,16 @@ public abstract class SubCommand {
                     bank = BANK_REPO.getAt(p.getLocation().getBlock());
                     if (bank == null) {
                         plugin.debug(p.getName() + " wasn't standing in a bank");
-                        p.sendMessage(Messages.get(Message.MUST_STAND_IN_BANK));
+                        p.sendMessage(Message.MUST_STAND_IN_BANK.translate());
                     }
                 } else {
-                    sender.sendMessage(Messages.get(Message.PLAYER_COMMAND_ONLY));
+                    sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
                 }
             } else {
                 bank = BANK_REPO.getByIdentifier(args[1]);
                 if (bank == null) {
                     plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-                    sender.sendMessage(Messages.get(Message.BANK_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+                    sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
                 }
             }
             return bank;

@@ -6,7 +6,9 @@ import com.monst.bankingplugin.commands.ConfirmableSubCommand;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
-import com.monst.bankingplugin.lang.*;
+import com.monst.bankingplugin.lang.MailingRoom;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -46,36 +48,34 @@ public class BankRemove extends SubCommand.BankSubCommand implements Confirmable
                 || sender.hasPermission(Permissions.BANK_REMOVE_OTHER))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
                 plugin.debug(sender.getName() + " does not have permission to remove another player's bank as a co-owner");
-                sender.sendMessage(Messages.get(Message.MUST_BE_OWNER));
+                sender.sendMessage(Message.MUST_BE_OWNER.translate());
                 return true;
             }
             plugin.debug(sender.getName() + " does not have permission to remove another player's bank");
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_REMOVE_OTHER));
+            sender.sendMessage(Message.NO_PERMISSION_BANK_REMOVE_OTHER.translate());
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)) {
             plugin.debug(sender.getName() + " does not have permission to remove an admin bank");
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_BANK_REMOVE_ADMIN));
+            sender.sendMessage(Message.NO_PERMISSION_BANK_REMOVE_ADMIN.translate());
             return true;
         }
 
         if (sender instanceof Player) {
             Player executor = (Player) sender;
             if (Config.confirmOnRemove.get() && !isConfirmed(executor, args)) {
-                sender.sendMessage(Messages.get(Message.BANK_CONFIRM_REMOVE,
-                        new Replacement(Placeholder.NUMBER_OF_BANKS, 1),
-                        new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, bank.getAccounts().size())
-                ));
+                sender.sendMessage(Message.BANK_CONFIRM_REMOVE
+                        .with(Placeholder.NUMBER_OF_BANKS).as(1)
+                        .and(Placeholder.NUMBER_OF_ACCOUNTS).as(bank.getAccounts().size())
+                        .translate());
                 return true;
             }
             if (bank.isPlayerBank() && Config.reimburseBankCreation.get() && bank.isOwner(executor)) {
                 double reimbursement = Config.bankCreationPrice.get();
                 if (reimbursement > 0) {
                     if (PayrollOffice.deposit(executor, reimbursement))
-                        executor.sendMessage(Messages.get(Message.REIMBURSEMENT_RECEIVED,
-                                new Replacement(Placeholder.AMOUNT, reimbursement)
-                        ));
+                        executor.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate());
                 }
             }
         }
@@ -90,10 +90,10 @@ public class BankRemove extends SubCommand.BankSubCommand implements Confirmable
         int accountsRemoved = bank.getAccounts().size();
         plugin.getBankRepository().remove(bank, true);
         plugin.debugf("Bank #%d and %d accounts removed from the database.", bank.getID(), accountsRemoved);
-        MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.BANK_REMOVED,
-                new Replacement(Placeholder.BANK_NAME, bank::getColorizedName),
-                new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accountsRemoved)
-        ));
+        MailingRoom mailingRoom = new MailingRoom(Message.BANK_REMOVED
+                .with(Placeholder.BANK_NAME).as(bank.getColorizedName())
+                .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accountsRemoved)
+                .translate());
         mailingRoom.addOfflineRecipient(bank.getTrustedPlayers());
         mailingRoom.addOfflineRecipient(bank.getCustomers());
         mailingRoom.addRecipient(sender);

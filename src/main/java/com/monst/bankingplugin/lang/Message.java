@@ -1,7 +1,11 @@
 package com.monst.bankingplugin.lang;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Contains every message that this plugin can send to players.
@@ -66,8 +70,8 @@ public enum Message {
             Placeholder.NUMBER_OF_ACCOUNTS
     ),
     ACCOUNT_NOT_FOUND (
-            "A player attempts to open a GUI of an account with a specific ID, but there is no account with that ID.",
-            "&cCould not find account with ID &b%INPUT%&c.",
+            "A player attempts to open a GUI of an account and a specific ID, but there is no account and that ID.",
+            "&cCould not find account and ID &b%INPUT%&c.",
             Placeholder.INPUT
     ),
     ACCOUNTS_NOT_FOUND (
@@ -221,18 +225,18 @@ public enum Message {
             Placeholder.WORLD
     ),
     BANK_SELECTION_TOO_LARGE (
-            "A player attempts to create a bank with a size that is greater than the maximum defined in the config.",
+            "A player attempts to create a bank and a size that is greater than the maximum defined in the config.",
             "&cThat selection is too large. It exceeds the maximum bank size by &b%DIFFERENCE% &cblocks.",
             Placeholder.BANK_SIZE, Placeholder.MAXIMUM, Placeholder.DIFFERENCE
     ),
     BANK_SELECTION_TOO_SMALL (
-            "A player attempts to create a bank with a size that is smaller than the minimum defined in the config.",
+            "A player attempts to create a bank and a size that is smaller than the minimum defined in the config.",
             "&cThat selection is too small. It falls short of the minimum bank size by &b%DIFFERENCE% &cblocks.",
             Placeholder.BANK_SIZE, Placeholder.MINIMUM, Placeholder.DIFFERENCE
     ),
     BANK_SELECTION_OVERLAPS_EXISTING (
-            "A player attempts to create a bank that overlaps with at least one existing bank.",
-            "&cThat selection overlaps with &b%NUMBER_OF_BANKS% &cexisting bank(s).",
+            "A player attempts to create a bank that overlaps and at least one existing bank.",
+            "&cThat selection overlaps and &b%NUMBER_OF_BANKS% &cexisting bank(s).",
             Placeholder.NUMBER_OF_BANKS
     ),
     BANK_SELECTION_CUTS_ACCOUNTS (
@@ -251,8 +255,8 @@ public enum Message {
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     BANK_NOT_FOUND (
-            "A player attempts to open a GUI of a bank with a specified name or ID, but no bank could be found.",
-            "&cCould not find bank with the name or ID \"%INPUT%\".",
+            "A player attempts to open a GUI of a bank and a specified name or ID, but no bank could be found.",
+            "&cCould not find bank and the name or ID \"%INPUT%\".",
             Placeholder.INPUT
     ),
     BANKS_NOT_FOUND (
@@ -314,8 +318,8 @@ public enum Message {
             Placeholder.PROPERTY
     ),
     BANK_SELECTED (
-            "A player selects a bank with WorldEdit.",
-            "&6Bank &7%BANK_NAME% &6was selected with WorldEdit.",
+            "A player selects a bank and WorldEdit.",
+            "&6Bank &7%BANK_NAME% &6was selected and WorldEdit.",
             Placeholder.BANK_NAME
     ),
     NOT_A_NUMBER (
@@ -364,12 +368,12 @@ public enum Message {
             Placeholder.INPUT
     ),
     NAME_NOT_UNIQUE (
-            "A player attempts to create or rename a bank with a name already in use by another bank.",
-            "&cA bank with that name already exists.",
+            "A player attempts to create or rename a bank and a name already in use by another bank.",
+            "&cA bank and that name already exists.",
             Placeholder.NAME
     ),
     NAME_NOT_ALLOWED (
-            "A player attempts to create or rename a bank or account with a name that does not match the name-regex pattern in the config.",
+            "A player attempts to create or rename a bank or account and a name that does not match the name-regex pattern in the config.",
             "&cThat name is not allowed.",
             Placeholder.NAME, Placeholder.PATTERN
     ),
@@ -459,7 +463,7 @@ public enum Message {
     ),
     PLAYER_NOT_FOUND (
             "A player references another player in command arguments who either does not exist or who has never played on the server before.",
-            "&cNo player was found with the name \"%INPUT%\".",
+            "&cNo player was found and the name \"%INPUT%\".",
             Placeholder.INPUT
     ),
     ACCOUNT_LIMIT_AT_BANK_REACHED (
@@ -845,7 +849,7 @@ public enum Message {
     ),
     COMMAND_USAGE_BANK_SELECT (
             "",
-            "&a/%COMMAND% select &6- Select a bank with WorldEdit.",
+            "&a/%COMMAND% select &6- Select a bank and WorldEdit.",
             Placeholder.COMMAND
     ),
     COMMAND_USAGE_BANK_TRANSFER (
@@ -947,8 +951,6 @@ public enum Message {
             "&c&lError while checking for updates."
     );
 
-    public static final Message[] VALUES = values();
-
     private final String description;
     private final String defaultMessage;
     private final EnumSet<Placeholder> placeholders = EnumSet.noneOf(Placeholder.class);
@@ -969,11 +971,59 @@ public enum Message {
     }
 
     public EnumSet<Placeholder> getAvailablePlaceholders() {
-        return placeholders;
+        return EnumSet.copyOf(placeholders);
+    }
+
+    public String getFormattedPlaceholdersList() {
+        return placeholders.stream().map(Placeholder::toString).collect(Collectors.joining(", "));
     }
 
     public String getPath() {
         return path != null ? path : (path = "message." + toString().toLowerCase().replace("_", "-"));
     }
 
+    public Builder.ReplacementBuilder with(Placeholder placeholder) {
+        return new Builder().and(placeholder);
+    }
+
+    public String translate() {
+        if (!placeholders.isEmpty())
+            throw new IllegalStateException("Missing replacement(s)! " + placeholders);
+        return Messages.translate(this);
+    }
+
+    public class Builder {
+
+        private final List<Replacement> replacements = new ArrayList<>();
+
+        public ReplacementBuilder and(Placeholder placeholder) {
+            return new ReplacementBuilder(placeholder);
+        }
+
+        public String translate() {
+            EnumSet<Placeholder> remainingPlaceholders = placeholders.clone();
+            replacements.stream().map(Replacement::getPlaceholder).forEach(remainingPlaceholders::remove);
+            if (!remainingPlaceholders.isEmpty())
+                throw new IllegalStateException("Missing replacement(s)! " + remainingPlaceholders);
+            return Messages.translate(Message.this, replacements);
+        }
+
+        public class ReplacementBuilder {
+
+            private final Placeholder placeholder;
+
+            private ReplacementBuilder(Placeholder placeholder) {
+                this.placeholder = placeholder;
+            }
+
+            public Builder as(Object replacement) {
+                replacements.add(new Replacement(placeholder, replacement));
+                return Builder.this;
+            }
+
+            public Builder as(Supplier<Object> o) {
+
+            }
+        }
+    }
 }

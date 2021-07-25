@@ -6,9 +6,7 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountTrustCommandEvent;
 import com.monst.bankingplugin.events.account.AccountTrustEvent;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -40,7 +38,7 @@ public class AccountTrust extends SubCommand.AccountSubCommand {
         plugin.debug(sender.getName() + " wants to trust a player to an account");
 
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_TRUST));
+            sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRUST.translate());
             return true;
         }
 
@@ -49,7 +47,7 @@ public class AccountTrust extends SubCommand.AccountSubCommand {
 
         OfflinePlayer playerToTrust = Utils.getPlayer(args[1]);
         if (playerToTrust == null) {
-            sender.sendMessage(Messages.get(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
             return true;
         }
 
@@ -61,7 +59,7 @@ public class AccountTrust extends SubCommand.AccountSubCommand {
             return true;
         }
 
-        sender.sendMessage(Messages.get(Message.CLICK_ACCOUNT_TRUST, new Replacement(Placeholder.PLAYER, playerToTrust::getName)));
+        sender.sendMessage(Message.CLICK_ACCOUNT_TRUST.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate());
         ClickType.setTrustClickType(p, playerToTrust);
         plugin.debug(sender.getName() + " is trusting " + playerToTrust.getName() + " to an account");
         return true;
@@ -72,18 +70,17 @@ public class AccountTrust extends SubCommand.AccountSubCommand {
 
         if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
             if (account.isTrusted(executor)) {
-                executor.sendMessage(Messages.get(Message.MUST_BE_OWNER));
+                executor.sendMessage(Message.MUST_BE_OWNER.translate());
                 return;
             }
-            executor.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_TRUST_OTHER));
+            executor.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRUST_OTHER.translate());
             return;
         }
 
         if (account.isTrusted(playerToTrust)) {
             plugin.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
-            executor.sendMessage(Messages.get(account.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER,
-                    new Replacement(Placeholder.PLAYER, playerToTrust::getName)
-            ));
+            Message message = account.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER;
+            executor.sendMessage(message.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate());
             return;
         }
 
@@ -94,11 +91,8 @@ public class AccountTrust extends SubCommand.AccountSubCommand {
             return;
         }
 
-        plugin.debugf("%s has trusted %s to %s account (#%d)", executor.getName(), playerToTrust.getName(),
-                (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"), account.getID());
-        executor.sendMessage(Messages.get(Message.ADDED_COOWNER,
-                new Replacement(Placeholder.PLAYER, playerToTrust::getName)
-        ));
+        plugin.debugf("%s has trusted %s to account #%d", executor.getName(), playerToTrust.getName(), account.getID());
+        executor.sendMessage(Message.ADDED_COOWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate());
         account.trustPlayer(playerToTrust);
         plugin.getDatabase().addCoOwner(account, playerToTrust, null);
     }

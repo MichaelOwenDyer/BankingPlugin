@@ -21,14 +21,14 @@ public abstract class BankRegion {
 	}
 
 	/**
-	 * @return the point on the bounding box of this {@link BankRegion} with the lowest x, y, and z values.
+	 * @return the point on the bounding box of this {@link BankRegion} and the lowest x, y, and z values.
 	 */
     public Block getMinimumBlock() {
 		return world.getBlockAt(getMinX(), getMinY(), getMinZ());
 	}
 
 	/**
-	 * @return the point on the bounding box of this {@link BankRegion} with the highest x, y, and z values.
+	 * @return the point on the bounding box of this {@link BankRegion} and the highest x, y, and z values.
 	 */
 	public Block getMaximumBlock() {
 		return world.getBlockAt(getMaxX(), getMaxY(), getMaxZ());
@@ -98,13 +98,13 @@ public abstract class BankRegion {
 
 	/**
 	 * @param region The other region
-	 * @return whether or not this region overlaps with another one
+	 * @return whether or not this region overlaps and another one
 	 */
 	public abstract boolean overlaps(BankRegion region);
 
 	/**
 	 * @param region The other region
-	 * @return whether this region *cannot* overlap with the other region
+	 * @return whether this region *cannot* overlap and the other region
 	 */
 	public final boolean isDisjunct(BankRegion region) {
 		return getMinX() > region.getMaxX() || getMaxX() < region.getMinX() ||
@@ -154,9 +154,9 @@ public abstract class BankRegion {
 
 	/**
 	 * Gets a {@link Set<BlockVector2D>} containing a horizontal cross-section
-	 * of this region with no y-coordinate.
+	 * of this region and no y-coordinate.
 	 *
-	 * @return a set with every {@link BlockVector2D} in this region
+	 * @return a set and every {@link BlockVector2D} in this region
 	 */
 	public abstract Set<BlockVector2D> getFootprint();
 

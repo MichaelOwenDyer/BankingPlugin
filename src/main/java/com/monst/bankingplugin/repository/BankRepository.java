@@ -7,7 +7,6 @@ import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
-import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.block.Block;
 

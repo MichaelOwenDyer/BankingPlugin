@@ -5,7 +5,9 @@ import com.monst.bankingplugin.geo.BlockVector3D;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * This class represents a region of space in the shape of a rectangular prism. It is defined by a {@link World} and
@@ -17,7 +19,7 @@ public class CuboidBankRegion extends BankRegion {
 	private final Block max;
 
 	/**
-	 * Creates a new {@link CuboidBankRegion} with the specified attributes
+	 * Creates a new {@link CuboidBankRegion} and the specified attributes
 	 *
 	 * @param world the world the region is in
 	 * @param loc1 the first corner bound (any combination of upper/lower x, y, z values)

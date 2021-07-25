@@ -8,7 +8,7 @@ import org.bukkit.event.Cancellable;
 import javax.annotation.Nonnull;
 
 /**
- * This event is fired when a {@link Player} with a {@link ClickType} of type <b>create</b>
+ * This event is fired when a {@link Player} and a {@link ClickType} of type <b>create</b>
  * clicks on a chest and creates an account.
  */
 public class AccountCreateEvent extends SingleAccountEvent implements Cancellable {

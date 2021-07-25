@@ -7,9 +7,7 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Messages;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.lang.Replacement;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -43,7 +41,7 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
 
         if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL)) {
             plugin.debug(sender.getName() + " does not have permission to remove all accounts");
-            sender.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_REMOVEALL));
+            sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_REMOVEALL.translate());
             return true;
         }
 
@@ -72,15 +70,15 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
         }
 
         if (accounts == null || accounts.isEmpty()) {
-            sender.sendMessage(Messages.get(Message.ACCOUNTS_NOT_FOUND));
+            sender.sendMessage(Message.ACCOUNTS_NOT_FOUND.translate());
             return true;
         }
 
         if (sender instanceof Player && Config.confirmOnRemoveAll.get() && !isConfirmed((Player) sender, args)) {
-            sender.sendMessage(Messages.get(Message.ACCOUNT_CONFIRM_REMOVE_ALL,
-                    new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
-            ));
-            sender.sendMessage(Messages.get(Message.EXECUTE_AGAIN_TO_CONFIRM));
+            sender.sendMessage(Message.ACCOUNT_CONFIRM_REMOVE_ALL
+                    .with(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size())
+                    .translate());
+            sender.sendMessage(Message.EXECUTE_AGAIN_TO_CONFIRM.translate());
             return true;
         }
 
@@ -91,9 +89,7 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
             return true;
         }
         plugin.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
-        sender.sendMessage(Messages.get(Message.ALL_ACCOUNTS_REMOVED,
-                new Replacement(Placeholder.NUMBER_OF_ACCOUNTS, accounts::size)
-        ));
+        sender.sendMessage(Message.ALL_ACCOUNTS_REMOVED.with(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size()).translate());
         accounts.forEach(a -> plugin.getAccountRepository().remove(a, true));
         return true;
     }

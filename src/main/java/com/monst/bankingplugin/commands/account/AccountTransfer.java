@@ -7,7 +7,9 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountTransferCommandEvent;
 import com.monst.bankingplugin.events.account.AccountTransferEvent;
-import com.monst.bankingplugin.lang.*;
+import com.monst.bankingplugin.lang.MailingRoom;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
@@ -48,7 +50,7 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
 
         if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER)) {
             plugin.debug(p.getName() + " does not have permission to transfer ownership of an account");
-            p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_TRANSFER));
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER.translate());
             return true;
         }
 
@@ -57,7 +59,7 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
 
         OfflinePlayer newOwner = Utils.getPlayer(args[1]);
         if (newOwner == null) {
-            p.sendMessage(Messages.get(Message.PLAYER_NOT_FOUND, new Replacement(Placeholder.INPUT, args[1])));
+            p.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
             return true;
         }
 
@@ -68,7 +70,7 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
             return true;
         }
 
-        p.sendMessage(Messages.get(Message.CLICK_ACCOUNT_TRANSFER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
+        p.sendMessage(Message.CLICK_ACCOUNT_TRANSFER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
         ClickType.setTransferClickType(p, newOwner);
         plugin.debug(p.getName() + " is transferring ownership of an account to " + newOwner.getName());
         return true;
@@ -80,25 +82,23 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
             plugin.debug(p.getName() + " does not have permission to transfer the account.");
             if (account.isTrusted(p))
-                p.sendMessage(Messages.get(Message.MUST_BE_OWNER));
+                p.sendMessage(Message.MUST_BE_OWNER.translate());
             else
-                p.sendMessage(Messages.get(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER));
+                p.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER.translate());
             ClickType.removeClickType(p);
             return;
         }
 
         if (account.isOwner(newOwner)) {
             plugin.debug(p.getName() + " is already owner of account");
-            p.sendMessage(Messages.get(Message.ALREADY_OWNER, new Replacement(Placeholder.PLAYER, newOwner::getName)));
+            p.sendMessage(Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
             ClickType.removeClickType(p);
             return;
         }
 
         if (Config.confirmOnTransfer.get() && !isConfirmed(p, account.getID())) {
             plugin.debug("Needs confirmation");
-            p.sendMessage(Messages.get(Message.ACCOUNT_CONFIRM_TRANSFER,
-                    new Replacement(Placeholder.PLAYER, newOwner::getName)
-            ));
+            p.sendMessage(Message.ACCOUNT_CONFIRM_TRANSFER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
             return;
         }
 
@@ -111,14 +111,14 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
 
         boolean hasCustomName = account.hasCustomName();
 
-        MailingRoom mailingRoom = new MailingRoom(Messages.get(Message.ACCOUNT_TRANSFERRED,
-                new Replacement(Placeholder.PLAYER, newOwner::getName)
-        ));
+        MailingRoom mailingRoom = new MailingRoom(Message.ACCOUNT_TRANSFERRED
+                .with(Placeholder.PLAYER).as(newOwner.getName())
+                .translate());
         mailingRoom.addRecipient(p);
         mailingRoom.send();
-        mailingRoom.newMessage(Messages.get(Message.ACCOUNT_TRANSFERRED_TO_YOU,
-                new Replacement(Placeholder.PLAYER, p::getName)
-        ));
+        mailingRoom.newMessage(Message.ACCOUNT_TRANSFERRED_TO_YOU
+                .with(Placeholder.PLAYER).as(p.getName())
+                .translate());
         mailingRoom.addOfflineRecipient(newOwner);
         mailingRoom.removeRecipient(p);
         mailingRoom.send();
