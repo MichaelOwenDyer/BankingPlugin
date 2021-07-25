@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -1019,10 +1018,6 @@ public enum Message {
             public Builder as(Object replacement) {
                 replacements.add(new Replacement(placeholder, replacement));
                 return Builder.this;
-            }
-
-            public Builder as(Supplier<Object> o) {
-
             }
         }
     }

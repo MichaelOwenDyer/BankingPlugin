@@ -14,8 +14,19 @@ import java.util.*;
 
 public class BankRepository implements Repository<Bank, BankField> {
 
+	private static class BankMap extends EntityMap<BankRegion, Bank> {
+		@Override
+		BankRegion getLocation(Bank bank) {
+			return bank.getRegion();
+		}
+	}
+
 	private final BankingPlugin plugin;
-	private final Map<BankRegion, Bank> bankRegionMap = new HashMap<>();
+	private final BankMap bankMap = new BankMap();
+
+	public BankMap getBankMap() {
+		return bankMap;
+	}
 
     public BankRepository(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -28,7 +39,7 @@ public class BankRepository implements Repository<Bank, BankField> {
 	 */
 	@Override
 	public Set<Bank> getAll() {
-		return new HashSet<>(bankRegionMap.values());
+		return new HashSet<>(bankMap.values());
 	}
 
 	/**
@@ -39,7 +50,7 @@ public class BankRepository implements Repository<Bank, BankField> {
 	 */
     @Override
     public Bank getAt(AccountLocation accountLocation) {
-		for (Map.Entry<BankRegion, Bank> entry : bankRegionMap.entrySet())
+		for (Map.Entry<BankRegion, Bank> entry : bankMap.entrySet())
 			if (entry.getKey().contains(accountLocation))
 				return entry.getValue();
 		return null;
@@ -53,7 +64,7 @@ public class BankRepository implements Repository<Bank, BankField> {
 	 */
     @Override
 	public Bank getAt(Block block) {
-		for (Map.Entry<BankRegion, Bank> entry : bankRegionMap.entrySet())
+		for (Map.Entry<BankRegion, Bank> entry : bankMap.entrySet())
 			if (entry.getKey().contains(block))
 				return entry.getValue();
 		return null;
@@ -66,7 +77,7 @@ public class BankRepository implements Repository<Bank, BankField> {
 	 * @return Bank in the given region or <b>null</b> if no bank is found there
 	 */
 	public Bank getAt(BankRegion region) {
-		return bankRegionMap.get(region);
+		return bankMap.get(region);
 	}
 
     /**
@@ -80,14 +91,13 @@ public class BankRepository implements Repository<Bank, BankField> {
 	public void add(Bank bank, boolean addToDatabase, Callback<Integer> callback) {
 		plugin.debug("Adding/updating bank... (#" + bank.getID() + ")");
 
-		bankRegionMap.put(bank.getRegion(), bank);
+		bankMap.put(bank);
 		InterestEventScheduler.scheduleBank(bank);
 
         if (addToDatabase)
 			plugin.getDatabase().addBank(bank, callback);
         else
 			Callback.callResult(callback, bank.getID());
-
     }
 
 	/**
@@ -112,13 +122,12 @@ public class BankRepository implements Repository<Bank, BankField> {
 			fields.add(BankField.MIN_Z);
 			fields.add(BankField.MAX_Z);
 			fields.add(BankField.VERTICES);
-			bankRegionMap.put(bank.getRegion(), bank);
+			bankMap.put(bank);
 		}
 		plugin.debugf("Updating the following fields of bank #%d in the database: " + fields, bank.getID());
 
 		plugin.getDatabase().updateBank(bank, fields, callback);
 
-		notifyObservers();
 		bank.notifyAccountObservers();
 	}
 
@@ -136,8 +145,7 @@ public class BankRepository implements Repository<Bank, BankField> {
 		// Accounts will be deleted from the database automatically if the bank is
 		bank.getAccounts().forEach(account -> plugin.getAccountRepository().remove(account, false));
 
-		bankRegionMap.remove(bank.getRegion());
-		plugin.getBankRepository().notifyObservers();
+		bankMap.remove(bank);
 
 		InterestEventScheduler.unscheduleAll(bank);
 
@@ -152,7 +160,7 @@ public class BankRepository implements Repository<Bank, BankField> {
 	 * @return a {@link Set} of {@link BankRegion}s which overlap with the specified region.
 	 */
 	public Set<BankRegion> getOverlappingRegions(BankRegion sel) {
-		return Utils.filter(bankRegionMap.keySet(), s -> s.overlaps(sel));
+		return Utils.filter(bankMap.keySet(), s -> s.overlaps(sel));
 	}
 
 }

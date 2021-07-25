@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.repository;
 
-import com.google.common.collect.HashBiMap;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
@@ -16,9 +15,20 @@ import java.util.*;
 
 public class AccountRepository implements Repository<Account, AccountField> {
 
+	private static class AccountMap extends EntityMap<AccountLocation, Account> {
+		@Override
+		AccountLocation getLocation(Account account) {
+			return account.getLocation();
+		}
+	}
+
 	private final BankingPlugin plugin;
 	private final AccountMap accountMap = new AccountMap();
 	private final MissingAccounts missingAccounts = new MissingAccounts();
+
+	public AccountMap getAccountMap() {
+		return accountMap;
+	}
 
     public AccountRepository(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -163,56 +173,6 @@ public class AccountRepository implements Repository<Account, AccountField> {
 		missingAccounts.remove(account);
 	}
 
-	private static class AccountMap implements Observable {
-
-    	private final HashBiMap<AccountLocation, Account> biMap;
-		private final Set<GUI<?>> observers;
-
-		private AccountMap() {
-			this.biMap = HashBiMap.create();
-			this.observers = new HashSet<>();
-		}
-
-		void put(Account account) {
-			Account a = biMap.forcePut(account.getLocation(), account);
-			if (a != null)
-				notifyObservers();
-		}
-
-		void remove(Account key) {
-			Account a = biMap.remove(key.getLocation());
-			if (a != null)
-				notifyObservers();
-		}
-
-		void remove(AccountLocation key) {
-			Account a = biMap.remove(key);
-			if (a != null)
-				notifyObservers();
-		}
-
-		Set<AccountLocation> keySet() {
-			return biMap.keySet();
-		}
-
-		Set<Account> values() {
-			return biMap.values();
-		}
-
-		Account get(AccountLocation key) {
-			return biMap.get(key);
-		}
-
-		Set<Map.Entry<AccountLocation, Account>> entrySet() {
-			return biMap.entrySet();
-		}
-
-		@Override
-		public Set<GUI<?>> getObservers() {
-			return observers;
-		}
-	}
-
 	private static class MissingAccounts extends HashSet<Account> implements Observable {
 
     	private final Set<GUI<?>> observers;
@@ -225,10 +185,6 @@ public class AccountRepository implements Repository<Account, AccountField> {
 		public Set<GUI<?>> getObservers() {
 			return observers;
 		}
-	}
-
-	public AccountMap getAccountMap() {
-    	return accountMap;
 	}
 
 }
