@@ -16,8 +16,8 @@ import java.util.UUID;
 
 public abstract class ClickType {
 
-	private static final Map<UUID, ClickType> playerClickTypes = new HashMap<>();
-	private static final Map<UUID, BukkitTask> playerTimers = new HashMap<>();
+	private static final Map<UUID, ClickType> PLAYER_CLICK_TYPES = new HashMap<>();
+	private static final Map<UUID, BukkitTask> PLAYER_TIMERS = new HashMap<>();
 
 	private final EClickType eClickType;
 
@@ -45,9 +45,9 @@ public abstract class ClickType {
      * Clear all click types, cancel timers
      */
     public static void clear() {
-    	playerClickTypes.clear();
-        playerTimers.values().forEach(BukkitTask::cancel);
-        playerTimers.clear();
+    	PLAYER_CLICK_TYPES.clear();
+        PLAYER_TIMERS.values().forEach(BukkitTask::cancel);
+        PLAYER_TIMERS.clear();
     }
 
     /**
@@ -57,7 +57,7 @@ public abstract class ClickType {
 	 * @return The Player's click type or <b>null</b> if they don't have one
 	 */
     public static ClickType getPlayerClickType(OfflinePlayer player) {
-        return playerClickTypes.get(player.getUniqueId());
+        return PLAYER_CLICK_TYPES.get(player.getUniqueId());
     }
 
     /**
@@ -67,11 +67,11 @@ public abstract class ClickType {
      */
 	public static void removeClickType(OfflinePlayer player) {
         UUID uuid = player.getUniqueId();
-        playerClickTypes.remove(uuid);
+        PLAYER_CLICK_TYPES.remove(uuid);
 
         // If a timer is still running, cancel it
-		Optional.ofNullable(playerTimers.get(uuid)).ifPresent(BukkitTask::cancel);
-		playerTimers.remove(uuid);
+		Optional.ofNullable(PLAYER_TIMERS.get(uuid)).ifPresent(BukkitTask::cancel);
+		PLAYER_TIMERS.remove(uuid);
     }
 
     /**
@@ -83,13 +83,13 @@ public abstract class ClickType {
     private static void setClickType(OfflinePlayer player, ClickType clickType) {
 
 		UUID uuid = player.getUniqueId();
-        playerClickTypes.put(uuid, clickType);
+        PLAYER_CLICK_TYPES.put(uuid, clickType);
 
         // If a timer is already running, cancel it
-        Optional.ofNullable(playerTimers.get(uuid)).ifPresent(BukkitTask::cancel);
+        Optional.ofNullable(PLAYER_TIMERS.get(uuid)).ifPresent(BukkitTask::cancel);
 
         // Remove ClickType after 15 seconds if player has not clicked a chest
-        playerTimers.put(uuid, Utils.runTaskLater(() -> playerClickTypes.remove(uuid), 300));
+        PLAYER_TIMERS.put(uuid, Utils.runTaskLater(() -> PLAYER_CLICK_TYPES.remove(uuid), 300));
 
     }
 
