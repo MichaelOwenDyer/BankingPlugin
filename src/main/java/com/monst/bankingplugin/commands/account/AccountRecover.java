@@ -39,7 +39,7 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
     }
 
     public static void recover(BankingPlugin plugin, Player p, Account toRecover, Block b) {
-        if (ACCOUNT_REPO.isAccount(b)) {
+        if (plugin.getAccountRepository().isAccount(b)) {
             plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
             p.sendMessage(Message.CHEST_ALREADY_ACCOUNT.translate());
             return;
@@ -72,8 +72,8 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
         plugin.debugf("Account recovered (#%d)", toRecover.getID());
         toRecover.setLocation(accountLocation);
         toRecover.setBank(bank);
-        ACCOUNT_REPO.removeMissingAccount(toRecover);
-        ACCOUNT_REPO.update(toRecover, toRecover.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
+        plugin.getAccountRepository().removeMissingAccount(toRecover);
+        plugin.getAccountRepository().update(toRecover, toRecover.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
         p.sendMessage(Message.ACCOUNT_RECOVERED.translate());
     }
 }

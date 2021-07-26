@@ -148,6 +148,12 @@ public abstract class ClickType {
     	ClickType.setClickType(p, new UntrustClickType(playerToUntrust));
 	}
 
+	public static void confirmClickType(Player p) {
+    	ClickType type = ClickType.getPlayerClickType(p);
+    	if (type instanceof Confirmable)
+			((Confirmable) type).confirm();
+	}
+
 	private static class CreateClickType extends ClickType {
 
     	private CreateClickType() {
@@ -156,6 +162,7 @@ public abstract class ClickType {
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Block block) {
+    		removeClickType(p);
 			AccountCreate.create(plugin, p, block);
 		}
 
@@ -173,6 +180,7 @@ public abstract class ClickType {
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Account account) {
+    		removeClickType(p);
 			AccountInfo.info(plugin, p, account);
 		}
 	}
@@ -185,6 +193,7 @@ public abstract class ClickType {
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Account accountToMove) {
+			removeClickType(p);
 			AccountMigrate.selectAccount(plugin, p, accountToMove);
 		}
 	}
@@ -200,6 +209,7 @@ public abstract class ClickType {
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Account accountToMove, Block targetBlock) {
+			removeClickType(p);
 			AccountMigrate.selectNewChest(plugin, p, selectedAccount, targetBlock);
 		}
 
@@ -220,6 +230,7 @@ public abstract class ClickType {
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Block block) {
+			removeClickType(p);
 			AccountRecover.recover(plugin, p, accountToRecover, block);
 		}
 
@@ -229,14 +240,23 @@ public abstract class ClickType {
 		}
 	}
 
-	private static class RemoveClickType extends ClickType {
+	private static class RemoveClickType extends ClickType implements Confirmable {
+
+    	private boolean confirmed;
+
 		private RemoveClickType() {
 			super(EClickType.REMOVE);
+			this.confirmed = false;
 		}
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Account account) {
-			AccountRemove.getInstance().remove(p, account);
+			removeClickType(p);
+			AccountRemove.remove(plugin, p, account, confirmed);
+		}
+
+		public void confirm() {
+			confirmed = true;
 		}
 	}
 
@@ -272,18 +292,25 @@ public abstract class ClickType {
 		}
 	}
 
-	private static class TransferClickType extends ClickType {
+	private static class TransferClickType extends ClickType implements Confirmable {
 
     	private final OfflinePlayer newOwner;
+    	private boolean confirmed;
 
 		private TransferClickType(OfflinePlayer newOwner) {
 			super(EClickType.TRANSFER);
 			this.newOwner = newOwner;
+			this.confirmed = false;
 		}
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Account account) {
-			AccountTransfer.getInstance().transfer(p, account, newOwner);
+			AccountTransfer.transfer(plugin, p, account, newOwner, confirmed);
+		}
+
+		@Override
+		public void confirm() {
+			confirmed = true;
 		}
 	}
 
@@ -315,6 +342,10 @@ public abstract class ClickType {
 		public void execute(BankingPlugin plugin, Player p, Account account) {
 			AccountUntrust.untrust(plugin, p, account, playerToUntrust);
 		}
+	}
+
+	private interface Confirmable {
+    	void confirm();
 	}
 
 }

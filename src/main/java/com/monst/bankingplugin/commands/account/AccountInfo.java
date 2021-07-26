@@ -73,7 +73,6 @@ public class AccountInfo extends SubCommand.AccountSubCommand {
     }
 
     public static void info(BankingPlugin plugin, Player p, Account account) {
-        ClickType.removeClickType(p);
         plugin.debugf("%s is viewing account info (#%d)", p.getName(), account.getID());
         AccountInfoEvent event = new AccountInfoEvent(p, account);
         event.fire();

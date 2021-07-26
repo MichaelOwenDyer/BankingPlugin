@@ -62,7 +62,6 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
     }
 
     public static void selectAccount(BankingPlugin plugin, Player p, Account accountToMove) {
-
         if (!accountToMove.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_OTHER)) {
             if (accountToMove.isTrusted(p)) {
                 plugin.debugf("%s cannot migrate account #%d as a co-owner", p.getName(), accountToMove.getID());
@@ -77,11 +76,10 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         plugin.debugf("%s wants to migrate account #%d", p.getName(), accountToMove.getID());
         ClickType.setMigrateClickType(p, accountToMove);
         p.sendMessage(Message.CLICK_CHEST_MIGRATE.translate());
-
     }
 
     public static void selectNewChest(BankingPlugin plugin, Player p, Account accountToMove, Block targetBlock) {
-        Account clickedAccount = ACCOUNT_REPO.getAt(targetBlock);
+        Account clickedAccount = plugin.getAccountRepository().getAt(targetBlock);
         if (clickedAccount != null) {
             if (Objects.equals(accountToMove, clickedAccount)) {
                 plugin.debugf("%s clicked the same chest to migrate to.", p.getName());
@@ -179,7 +177,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         accountToMove.clearChestName();
         accountToMove.setLocation(newAccountLocation);
         accountToMove.setBank(newBank);
-        ACCOUNT_REPO.update(accountToMove, accountToMove.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
+        plugin.getAccountRepository().update(accountToMove, accountToMove.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
         p.sendMessage(Message.ACCOUNT_MIGRATED.translate());
         plugin.debugf("Account migrated (#%d)", accountToMove.getID());
     }

@@ -20,17 +20,10 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 
-public class AccountTransfer extends SubCommand.AccountSubCommand implements ConfirmableAccountAction {
-
-    private static AccountTransfer instance;
-
-    public static AccountTransfer getInstance() {
-        return instance;
-    }
+public class AccountTransfer extends SubCommand.AccountSubCommand {
 
     AccountTransfer(BankingPlugin plugin) {
 		super(plugin, "transfer", true);
-        instance = this;
     }
 
     @Override
@@ -76,15 +69,13 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
         return true;
     }
 
-    public void transfer(Player p, Account account, OfflinePlayer newOwner) {
+    public static void transfer(BankingPlugin plugin, Player p, Account account, OfflinePlayer newOwner, boolean confirmed) {
         plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
 
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
             plugin.debug(p.getName() + " does not have permission to transfer the account.");
-            if (account.isTrusted(p))
-                p.sendMessage(Message.MUST_BE_OWNER.translate());
-            else
-                p.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER.translate());
+            Message message = account.isTrusted(p) ? Message.MUST_BE_OWNER : Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER;
+            p.sendMessage(message.translate());
             ClickType.removeClickType(p);
             return;
         }
@@ -96,9 +87,10 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
             return;
         }
 
-        if (Config.confirmOnTransfer.get() && !isConfirmed(p, account.getID())) {
+        if (Config.confirmOnTransfer.get() && !confirmed) {
             plugin.debug("Needs confirmation");
             p.sendMessage(Message.ACCOUNT_CONFIRM_TRANSFER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
+            ClickType.confirmClickType(p);
             return;
         }
 

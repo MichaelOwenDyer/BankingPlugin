@@ -4,7 +4,6 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -122,7 +121,7 @@ public abstract class BankingPluginCommand<SC extends SubCommand> {
 					if (!subCommand.getName().equalsIgnoreCase(args[0]))
 						continue;
 					if (subCommand.isPlayerCommand() && !(sender instanceof Player)) {
-						sender.sendMessage(ChatColor.RED + "Only players can use this command.");
+						sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
 						return true;
 					}
 					if (!subCommand.execute(sender, args)) {

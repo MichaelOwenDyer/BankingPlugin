@@ -12,7 +12,7 @@ public class BankCommand extends BankingPluginCommand<SubCommand.BankSubCommand>
 
 	private static boolean commandCreated = false;
 
-    public BankCommand(final BankingPlugin plugin) {
+    public BankCommand(BankingPlugin plugin) {
         super(plugin, Config.bankCommandName.get(), Message.BANK_COMMAND_DESC);
     }
 

@@ -12,7 +12,7 @@ public class AccountCommand extends BankingPluginCommand<SubCommand.AccountSubCo
 
 	private static boolean commandCreated = false;
 
-	public AccountCommand(final BankingPlugin plugin) {
+	public AccountCommand(BankingPlugin plugin) {
 		super(plugin, Config.accountCommandName.get(), Message.ACCOUNT_COMMAND_DESC);
 	}
 

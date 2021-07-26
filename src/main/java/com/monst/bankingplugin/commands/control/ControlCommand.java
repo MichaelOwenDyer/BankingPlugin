@@ -12,7 +12,7 @@ public class ControlCommand extends BankingPluginCommand<SubCommand.ControlSubCo
 
 	private static boolean commandCreated = false;
 
-    public ControlCommand(final BankingPlugin plugin) {
+    public ControlCommand(BankingPlugin plugin) {
         super(plugin, Config.controlCommandName.get(), Message.CONTROL_COMMAND_DESC);
     }
 

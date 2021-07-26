@@ -16,17 +16,10 @@ import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class AccountRemove extends SubCommand.AccountSubCommand implements ConfirmableAccountAction {
-
-    private static AccountRemove instance;
-
-    public static AccountRemove getInstance() {
-        return instance;
-    }
+public class AccountRemove extends SubCommand.AccountSubCommand {
 
     AccountRemove(BankingPlugin plugin) {
 		super(plugin, "remove", true);
-        instance = this;
     }
 
     @Override
@@ -57,31 +50,29 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
     }
 
     /**
-     * Remove an account
-     *
-     * @param p Player who executed the command and will receive the message
+     * Removes an account
+     * @param p Player who executed the command
      * @param account  Account to be removed
+     * @param confirmed Whether this action has been confirmed (if it needs to be)
      */
-    public void remove(Player p, Account account) {
-
+    public static void remove(BankingPlugin plugin, Player p, Account account, boolean confirmed) {
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(p)) {
-            if (account.isTrusted(p))
-                p.sendMessage(Message.MUST_BE_OWNER.translate());
-            else
-                p.sendMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER.translate());
-            if (!hasEntry(p))
-                ClickType.removeClickType(p);
+            Message message = account.isTrusted(p) ? Message.MUST_BE_OWNER : Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER;
+            p.sendMessage(message.translate());
+            ClickType.removeClickType(p);
             return;
         }
 
-        if (account.getBalance().signum() > 0 || Config.confirmOnRemove.get()) {
-            if (!isConfirmed(p, account.getID())) {
+        boolean balanceRemaining = account.getBalance().signum() > 0;
+        if (balanceRemaining || Config.confirmOnRemove.get()) {
+            if (!confirmed) {
                 plugin.debug("Needs confirmation");
-                if (account.getBalance().signum() > 0)
+                if (balanceRemaining)
                     p.sendMessage(Message.ACCOUNT_BALANCE_NOT_ZERO
                             .with(Placeholder.ACCOUNT_BALANCE).as(account.getBalance())
                             .translate());
                 p.sendMessage(Message.CLICK_AGAIN_TO_CONFIRM.translate());
+                ClickType.confirmClickType(p);
                 return;
             }
         }
@@ -116,7 +107,7 @@ public class AccountRemove extends SubCommand.AccountSubCommand implements Confi
 
         p.sendMessage(Message.ACCOUNT_REMOVED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
         plugin.getAccountRepository().remove(account, true);
-        plugin.debug("Removed account (#" + account.getID() + ")");
+        plugin.debugf("Removed account (#%d)", account.getID());
     }
 
 }

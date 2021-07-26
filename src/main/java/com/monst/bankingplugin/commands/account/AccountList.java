@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class AccountList extends SubCommand.AccountSubCommand {
@@ -45,25 +46,24 @@ public class AccountList extends SubCommand.AccountSubCommand {
 
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            new AccountListGUI(() -> getVisibleAccounts(player, args)).open(player);
+            Supplier<Collection<Account>> getVisibleAccounts = () -> {
+                if (!player.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
+                    return plugin.getAccountRepository().getMatching(account -> account.isTrusted(player));
+                else if (args.length == 1)
+                    return plugin.getAccountRepository().getAll();
+                Set<OfflinePlayer> players = Arrays.stream(args)
+                        .map(Utils::getPlayer)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
+                return plugin.getAccountRepository().getMatching(account -> players.contains(account.getOwner()));
+            };
+            new AccountListGUI(getVisibleAccounts).open(player);
         } else {
             int i = 0;
             for (Account account : plugin.getAccountRepository().getAll())
                 sender.sendMessage(Utils.colorize("&b" + ++i + ". &7" + account.getRawName() + "&7(#" + account.getID() + ")"));
         }
         return true;
-    }
-
-    private static Set<Account> getVisibleAccounts(Player player, String[] args) {
-        if (!player.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
-            return ACCOUNT_REPO.getMatching(account -> account.isTrusted(player));
-        else if (args.length == 1)
-            return ACCOUNT_REPO.getAll();
-        Set<OfflinePlayer> players = Arrays.stream(args)
-                .map(Utils::getPlayer)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        return ACCOUNT_REPO.getMatching(account -> players.contains(account.getOwner()));
     }
 
     @Override

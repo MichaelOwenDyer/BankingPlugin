@@ -7,7 +7,6 @@ import com.monst.bankingplugin.geo.Vector3D;
 import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
@@ -72,9 +71,9 @@ public abstract class SubCommand {
     protected abstract Message getUsageMessage();
 
     /**
-     * Sends a message to the command sender describing how to use this subcommand
+     * Gets a message describing how to use this subcommand
      * @param sender Sender to receive the help message
-     * @return The help message for the command.
+     * @return The help message for this subcommand.
      */
     String getUsageMessage(CommandSender sender, String commandName) {
         if (hasPermission(sender, getPermission()))
@@ -92,13 +91,15 @@ public abstract class SubCommand {
     }
 
     public abstract static class AccountSubCommand extends SubCommand {
-
-        protected static final AccountRepository ACCOUNT_REPO = BankingPlugin.getInstance().getAccountRepository();
-
         protected AccountSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
             super(plugin, name, playerCommand);
         }
+    }
 
+    public abstract static class ControlSubCommand extends SubCommand {
+        protected ControlSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
+            super(plugin, name, playerCommand);
+        }
     }
 
     public abstract static class BankSubCommand extends SubCommand {
@@ -117,9 +118,8 @@ public abstract class SubCommand {
                         plugin.debug(p.getName() + " wasn't standing in a bank");
                         p.sendMessage(Message.MUST_STAND_IN_BANK.translate());
                     }
-                } else {
+                } else
                     sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
-                }
             } else {
                 bank = plugin.getBankRepository().getByIdentifier(args[1]);
                 if (bank == null) {
@@ -170,14 +170,6 @@ public abstract class SubCommand {
 
         private static int parseCoordinate(String arg, int relativeTo) throws IntegerParseException {
             return arg.startsWith("~") ? Parser.parseInt(arg.substring(1)) + relativeTo : Parser.parseInt(arg);
-        }
-
-    }
-
-    public abstract static class ControlSubCommand extends SubCommand {
-
-        protected ControlSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
-            super(plugin, name, playerCommand);
         }
 
     }

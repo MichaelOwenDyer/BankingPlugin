@@ -472,7 +472,7 @@ public enum Message {
     ),
     PLAYER_COMMAND_ONLY (
             "An admin attempts to execute a player-only command from the console.",
-            "&cPlayer command only."
+            "&cYou must be a player to do that."
     ),
     SAME_CHEST (
             "A player attempts to migrate an account to the same chest.",
