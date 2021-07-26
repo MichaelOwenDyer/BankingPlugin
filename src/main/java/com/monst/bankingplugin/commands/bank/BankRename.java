@@ -109,11 +109,11 @@ public class BankRename extends SubCommand.BankSubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            Bank bank = sender instanceof Player ? BANK_REPO.getAt(((Player) sender).getLocation().getBlock()) : null;
+            Bank bank = sender instanceof Player ? plugin.getBankRepository().getAt(((Player) sender).getLocation().getBlock()) : null;
             if (args[0].isEmpty() && bank != null)
                 return Collections.singletonList(bank.getName());
 
-            return BANK_REPO.getAll().stream()
+            return plugin.getBankRepository().getAll().stream()
                     .filter(b -> ((sender instanceof Player && b.isTrusted((Player) sender))
                             || (b.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (b.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))

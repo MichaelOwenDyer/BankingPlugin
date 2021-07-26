@@ -15,7 +15,7 @@ import java.util.*;
 
 public class AccountRepository implements Repository<Account, AccountField> {
 
-	private static class AccountMap extends EntityMap<AccountLocation, Account> {
+	public static class AccountMap extends EntityMap<AccountLocation, Account> {
 		@Override
 		AccountLocation getLocation(Account account) {
 			return account.getLocation();
@@ -128,12 +128,9 @@ public class AccountRepository implements Repository<Account, AccountField> {
 			fields.add(AccountField.Z2);
 			accountMap.put(account);
 		}
+
 		plugin.debugf("Updating the following fields of account #%d in the database: " + fields, account.getID());
-
 		plugin.getDatabase().updateAccount(account, fields, callback);
-
-		account.notifyObservers(); // TODO: Move
-		account.getBank().notifyObservers();
 	}
 
     /**

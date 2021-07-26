@@ -65,7 +65,7 @@ public class AccountTrust extends SubCommand.AccountSubCommand {
         return true;
     }
 
-    public static void trust(Player executor, Account account, OfflinePlayer playerToTrust) {
+    public static void trust(BankingPlugin plugin, Player executor, Account account, OfflinePlayer playerToTrust) {
         ClickType.removeClickType(executor);
 
         if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {

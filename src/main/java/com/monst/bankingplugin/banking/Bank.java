@@ -160,7 +160,6 @@ public class Bank extends BankingEntity {
 			return;
 		accounts.add(account);
 		notifyObservers();
-		plugin.getAccountRepository().notifyObservers();
 	}
 
 	/**
@@ -172,7 +171,6 @@ public class Bank extends BankingEntity {
 			return;
 		accounts.remove(account);
 		notifyObservers();
-		plugin.getAccountRepository().notifyObservers();
 	}
 
 	/**
@@ -397,7 +395,6 @@ public class Bank extends BankingEntity {
 		this.name = name;
 		notifyObservers();
 		notifyAccountObservers();
-		plugin.getBankRepository().notifyObservers();
 	}
 
 	@Override

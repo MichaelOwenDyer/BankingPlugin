@@ -99,7 +99,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
                 return true;
             }
         }
-        Set<BankRegion> overlappingRegions = BANK_REPO.getOverlappingRegions(bankRegion);
+        Set<BankRegion> overlappingRegions = plugin.getBankRepository().getOverlappingRegions(bankRegion);
         if (!overlappingRegions.isEmpty()) {
             plugin.debug("Region is not exclusive");
             p.sendMessage(Message.BANK_SELECTION_OVERLAPS_EXISTING

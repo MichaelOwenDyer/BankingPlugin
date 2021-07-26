@@ -60,7 +60,7 @@ public class AccountRename extends SubCommand.AccountSubCommand {
         return true;
     }
 
-    public static void rename(Player executor, Account account, String value) {
+    public static void rename(BankingPlugin plugin, Player executor, Account account, String value) {
         ClickType.removeClickType(executor);
         if (!(account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_RENAME_OTHER))) {
             plugin.debugf("%s does not have permission to rename another player's account", executor.getName());

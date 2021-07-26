@@ -43,7 +43,7 @@ public class BankInfo extends SubCommand.BankSubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 1)
-            return BANK_REPO.getAll().stream()
+            return plugin.getBankRepository().getAll().stream()
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()

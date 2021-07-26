@@ -151,7 +151,7 @@ public class BankResize extends SubCommand.BankSubCommand {
         bank.setRegion(bankRegion);
         plugin.getBankRepository().update(bank, Callback.of(
                 result -> {
-                    plugin.debug(p.getName() + " has resized bank \"" + bank.getName() + "\" (#" + bank.getID() + ")");
+                    plugin.debugf("%s has resized bank \"%s\" (#%d)", p.getName(), bank.getName(), bank.getID());
                     p.sendMessage(Message.BANK_RESIZED.with(Placeholder.BANK_SIZE).as(volume).translate());
                 },
                 error -> p.sendMessage(Message.ERROR_OCCURRED.with(Placeholder.ERROR).as(error.getLocalizedMessage()).translate())

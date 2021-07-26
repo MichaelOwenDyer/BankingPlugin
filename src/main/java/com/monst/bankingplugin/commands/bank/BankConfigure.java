@@ -108,7 +108,7 @@ public class BankConfigure extends SubCommand.BankSubCommand {
     @Override
     protected List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 1)
-            return BANK_REPO.getAll().stream()
+            return plugin.getBankRepository().getAll().stream()
                     .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
                             || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
                             || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
@@ -116,14 +116,14 @@ public class BankConfigure extends SubCommand.BankSubCommand {
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
-        else if (args.length == 2 && BANK_REPO.getByIdentifier(args[0]) != null) {
+        else if (args.length == 2 && plugin.getBankRepository().getByIdentifier(args[0]) != null) {
             return BankField.streamConfigurable()
                     .map(BankField::toString)
                     .filter(name -> Utils.containsIgnoreCase(name, args[1]))
                     .sorted()
                     .collect(Collectors.toList());
         } else if (args.length == 3) {
-            Bank bank = BANK_REPO.getByIdentifier(args[0]);
+            Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
             BankField field = BankField.getByName(args[1]);
             if (bank != null && field != null)
                 return Collections.singletonList(bank.get(field).getFormatted());

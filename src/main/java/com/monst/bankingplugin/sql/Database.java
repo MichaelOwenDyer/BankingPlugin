@@ -58,8 +58,8 @@ public abstract class Database {
 	}
 
 	final BankingPlugin plugin;
-	private final Set<String> unknownWorldNames = new HashSet<>();
 	private final int DATABASE_VERSION = 1;
+	private final Set<String> unknownWorldNames = new HashSet<>();
 	private final ObjectMappers objectMappers = ObjectMappers.builder().build();
 
 	final String tableBanks = "Banks";
@@ -182,6 +182,7 @@ public abstract class Database {
 						.defaultSqlHandler(() -> handler)
 						.paramSetters(paramSetters)
 						.defaultTransactionIsolation(Transaction.Isolation.SERIALIZABLE)
+						.defaultFetchSize(0)
 						.build();
 			} catch (RuntimeException e) {
 				callback.onError(e);
@@ -207,7 +208,7 @@ public abstract class Database {
 					getQueryCreateTableCoOwnsAccount(), // Create co_owns_account table
 					getQueryCreateTableAccountTransactions(), // Create account transaction log table
 					getQueryCreateTableAccountInterest(), // Create account interest log table
-					getQueryCreateTableBankIncome(), // Create bank revenue log table
+					getQueryCreateTableBankIncome(), // Create bank income log table
 					getQueryCreateTablePlayers(), // Create players table
 					getQueryCreateTableFields() // Create fields table
 			)
@@ -383,7 +384,7 @@ public abstract class Database {
 	public void updateBank(Bank bank, EnumSet<BankField> fields, Callback<Void> callback) {
 		plugin.async(() -> {
 			String attributes = fields.stream()
-					.map(a -> a.getDatabaseAttribute() + " = ?")
+					.map(f -> f.getDatabaseAttribute() + " = ?")
 					.collect(Collectors.joining(", "));
 			List<Object> params = fields.stream()
 					.map(f -> f.getFrom(bank))
@@ -850,7 +851,6 @@ public abstract class Database {
 							"ORDER BY TransactionID DESC")
 					.params(account.getID())
 					.errorHandler(forwardError(callback))
-					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(transactionMapper);
 			plugin.debugf("Found %d transactions at account #%d.", result.size(), account.getID());
 			Callback.callSyncResult(callback, result);
@@ -867,7 +867,6 @@ public abstract class Database {
 							"ORDER BY TransactionID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
-					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(transactionMapper);
 			plugin.debugf("Found %d transactions at bank #%d.", result.size(), bank.getID());
 			Callback.callSyncResult(callback, result);
@@ -886,7 +885,6 @@ public abstract class Database {
 							"ORDER BY InterestID DESC")
 					.params(account.getID())
 					.errorHandler(forwardError(callback))
-					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(interestMapper);
 			plugin.debugf("Found %d interest payments at account #%d.", result.size(), account.getID());
 			Callback.callSyncResult(callback, result);
@@ -903,7 +901,6 @@ public abstract class Database {
 							"ORDER BY InterestID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
-					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(interestMapper);
 			plugin.debugf("Found %d interest payments at bank #%d.", result.size(), bank.getID());
 			Callback.callSyncResult(callback, result);
@@ -922,7 +919,6 @@ public abstract class Database {
 							"ORDER BY IncomeID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
-					.fetchSize(LOG_FETCH_SIZE)
 					.listResult(revenueMapper);
 			plugin.debugf("Found %d income entries at bank #%d.", result.size(), bank.getID());
 			Callback.callSyncResult(callback, result);
@@ -946,8 +942,7 @@ public abstract class Database {
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getDouble(1))
-					.map(BigDecimal::new)
+					.firstResult(Mappers.singleBigDecimal())
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in account interest for %s.", Utils.format(interest), playerName);
 			Callback.callSyncResult(callback, QuickMath.scale(interest));
@@ -971,8 +966,7 @@ public abstract class Database {
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getDouble(1))
-					.map(BigDecimal::new)
+					.firstResult(Mappers.singleBigDecimal())
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in low balance fees paid by %s.", Utils.format(fees), playerName);
 			Callback.callSyncResult(callback, QuickMath.scale(fees));
@@ -996,8 +990,7 @@ public abstract class Database {
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getDouble(1))
-					.map(BigDecimal::new)
+					.firstResult(Mappers.singleBigDecimal())
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in bank profit earned by %s.", Utils.format(revenue), playerName);
 			Callback.callSyncResult(callback, QuickMath.scale(revenue));
@@ -1020,7 +1013,7 @@ public abstract class Database {
 					.select("SELECT LastSeen FROM " + tablePlayers + " WHERE PlayerUUID = ?")
 					.params(player.getUniqueId())
 					.errorHandler(forwardError(callback))
-					.firstResult(rs -> rs.getLong(1))
+					.firstResult(Mappers.singleLong())
 					.orElse(-1L);
 			plugin.debugf("Found last logout for %s at %d.", playerName, lastLogout);
 			Callback.callSyncResult(callback, lastLogout);
@@ -1039,11 +1032,6 @@ public abstract class Database {
 			this.rs = rs;
 		}
 
-		boolean next() throws SQLException {
-			index = 1;
-			return rs.next();
-		}
-
 		String getNextString() throws SQLException {
 			return rs.getString(index++);
 		}
@@ -1054,20 +1042,7 @@ public abstract class Database {
 
 		Integer getNextInteger() throws SQLException {
 			int result = getNextInt();
-			if (result == 0 && rs.wasNull())
-				return null;
-			return result;
-		}
-
-		long getNextLong() throws SQLException {
-			return rs.getLong(index++);
-		}
-
-		Long getNextLongNullable() throws SQLException {
-			long result = getNextLong();
-			if (result == 0 && rs.wasNull())
-				return null;
-			return result;
+			return rs.wasNull() ? null : result;
 		}
 
 		double getNextDouble() throws SQLException {
@@ -1076,9 +1051,7 @@ public abstract class Database {
 
 		Double getNextDoubleNullable() throws SQLException {
 			double result = getNextDouble();
-			if (result == 0 && rs.wasNull())
-				return null;
-			return result;
+			return rs.wasNull() ? null : result;
 		}
 
 		boolean getNextBoolean() throws SQLException {
@@ -1087,9 +1060,7 @@ public abstract class Database {
 
 		Boolean getNextBooleanNullable() throws SQLException {
 			boolean result = getNextBoolean();
-			if (!result && rs.wasNull())
-				return null;
-			return result;
+			return rs.wasNull() ? null : result;
 		}
 
 		BigDecimal getNextBigDecimal() throws SQLException {

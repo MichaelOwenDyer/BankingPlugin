@@ -58,10 +58,10 @@ public class AccountInteractListener extends BankingPluginListener {
 			switch (clickType.getType()) {
 				case CREATE:
 				case RECOVER:
-					clickType.execute(p, block); // Operations on a block
+					clickType.execute(plugin, p, block); // Operations on a block
 					break;
 				case MIGRATE_SELECT_NEW_CHEST:
-					clickType.execute(p, account, block); // Operations on an account and a block
+					clickType.execute(plugin, p, account, block); // Operations on an account and a block
 					break;
 				case INFO:
 				case RENAME:
@@ -71,7 +71,7 @@ public class AccountInteractListener extends BankingPluginListener {
 				case MIGRATE_SELECT_ACCOUNT:
 				case TRANSFER:
 				case CONFIGURE:
-					clickType.execute(p, account); // Operations on an account
+					clickType.execute(plugin, p, account); // Operations on an account
 			}
 
 		} else {
@@ -85,7 +85,7 @@ public class AccountInteractListener extends BankingPluginListener {
 				for (ItemStack item : new ItemStack[] { Utils.getItemInMainHand(p), Utils.getItemInOffHand(p) })
 					if (item != null && infoItem.getType() == item.getType()) {
 						e.setCancelled(true);
-						AccountInfo.info(p, account);
+						AccountInfo.info(plugin, p, account);
 						return;
 					}
 

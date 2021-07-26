@@ -38,7 +38,7 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
         return true;
     }
 
-    public static void recover(Player p, Account toRecover, Block b) {
+    public static void recover(BankingPlugin plugin, Player p, Account toRecover, Block b) {
         if (ACCOUNT_REPO.isAccount(b)) {
             plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
             p.sendMessage(Message.CHEST_ALREADY_ACCOUNT.translate());

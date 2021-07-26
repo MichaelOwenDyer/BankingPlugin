@@ -72,11 +72,12 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
     /**
      * Creates a new account at the specified block.
      *
+     * @param plugin
      * @param p  Player who executed the command will receive the message
      *                          and become the owner of the account
      * @param b  Clicked chest block to create the account at
      */
-    public static void create(Player p, Block b) {
+    public static void create(BankingPlugin plugin, Player p, Block b) {
         ClickType.removeClickType(p);
 
         if (plugin.getAccountRepository().isAccount(b)) {

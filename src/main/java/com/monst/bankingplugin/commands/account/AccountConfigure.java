@@ -75,7 +75,7 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
         return true;
     }
 
-    public static void configure(Player executor, Account account, AccountField field, int value) {
+    public static void configure(BankingPlugin plugin, Player executor, Account account, AccountField field, int value) {
         ClickType.removeClickType(executor);
 
         switch (field) {
@@ -88,7 +88,7 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
                         .with(Placeholder.MULTIPLIER).as(account.getRealMultiplier())
                         .and(Placeholder.MULTIPLIER_STAGE).as(account.getMultiplierStage())
                         .translate());
-                PLUGIN.debugf("%s has set the multiplier stage of account #%d to %d",
+                plugin.debugf("%s has set the multiplier stage of account #%d to %d",
                         executor.getName(), account.getID(), account.getMultiplierStage());
                 break;
 
@@ -96,7 +96,7 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
 
                 account.setDelayUntilNextPayout(value);
 
-                PLUGIN.debugf("%s has set the interest delay of account #%d to %d.",
+                plugin.debugf("%s has set the interest delay of account #%d to %d.",
                         executor.getName(), account.getID(), account.getDelayUntilNextPayout());
                 executor.sendMessage(Message.ACCOUNT_SET_INTEREST_DELAY
                         .with(Placeholder.NUMBER).as(account.getDelayUntilNextPayout())
@@ -107,7 +107,7 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
 
                 account.setRemainingOfflinePayouts(value);
 
-                PLUGIN.debugf("%s has set the remaining offline payouts of account #%d to %d.",
+                plugin.debugf("%s has set the remaining offline payouts of account #%d to %d.",
                         executor.getName(), account.getID(), account.getRemainingOfflinePayouts());
                 executor.sendMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE
                         .with(Placeholder.NUMBER).as(account.getRemainingOfflinePayouts())
@@ -116,7 +116,7 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
 
         }
 
-        PLUGIN.getAccountRepository().update(account, field);
+        plugin.getAccountRepository().update(account, field);
         new AccountConfigureEvent(executor, account, field, value).fire();
     }
 

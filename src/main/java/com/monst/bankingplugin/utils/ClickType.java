@@ -19,13 +19,7 @@ public abstract class ClickType {
 	private static final Map<UUID, ClickType> playerClickTypes = new HashMap<>();
 	private static final Map<UUID, BukkitTask> playerTimers = new HashMap<>();
 
-	private BankingPlugin plugin;
 	private final EClickType eClickType;
-
-    ClickType(BankingPlugin plugin, EClickType eClickType) {
-    	this.plugin = plugin;
-        this.eClickType = eClickType;
-    }
 
     ClickType(EClickType eClickType) {
         this.eClickType = eClickType;
@@ -35,15 +29,15 @@ public abstract class ClickType {
 		return true;
 	}
 
-	public void execute(Player p, Account account, Block block) {
+	public void execute(BankingPlugin plugin, Player p, Account account, Block block) {
 		throw new UnsupportedOperationException("This operation is not supported for this ClickType!");
 	}
 
-	public void execute(Player p, Account account) {
+	public void execute(BankingPlugin plugin, Player p, Account account) {
 		throw new UnsupportedOperationException("This operation is not supported for this ClickType!");
 	}
 
-	public void execute(Player p, Block block) {
+	public void execute(BankingPlugin plugin, Player p, Block block) {
 		throw new UnsupportedOperationException("This operation is not supported for this ClickType!");
 	}
 
@@ -161,8 +155,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Block block) {
-			AccountCreate.create(p, block);
+		public void execute(BankingPlugin plugin, Player p, Block block) {
+			AccountCreate.create(plugin, p, block);
 		}
 
 		@Override
@@ -178,8 +172,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Account account) {
-			AccountInfo.info(p, account);
+		public void execute(BankingPlugin plugin, Player p, Account account) {
+			AccountInfo.info(plugin, p, account);
 		}
 	}
 
@@ -190,8 +184,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Account accountToMove) {
-			AccountMigrate.selectAccount(p, accountToMove);
+		public void execute(BankingPlugin plugin, Player p, Account accountToMove) {
+			AccountMigrate.selectAccount(plugin, p, accountToMove);
 		}
 	}
 
@@ -205,8 +199,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Account accountToMove, Block targetBlock) {
-			AccountMigrate.selectNewChest(p, this.selectedAccount, targetBlock);
+		public void execute(BankingPlugin plugin, Player p, Account accountToMove, Block targetBlock) {
+			AccountMigrate.selectNewChest(plugin, p, selectedAccount, targetBlock);
 		}
 
 		@Override
@@ -225,8 +219,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Block block) {
-			AccountRecover.recover(p, accountToRecover, block);
+		public void execute(BankingPlugin plugin, Player p, Block block) {
+			AccountRecover.recover(plugin, p, accountToRecover, block);
 		}
 
 		@Override
@@ -241,7 +235,7 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Account account) {
+		public void execute(BankingPlugin plugin, Player p, Account account) {
 			AccountRemove.getInstance().remove(p, account);
 		}
 	}
@@ -256,8 +250,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Account account) {
-			AccountRename.rename(p, account, newName);
+		public void execute(BankingPlugin plugin, Player p, Account account) {
+			AccountRename.rename(plugin, p, account, newName);
 		}
 	}
 
@@ -273,8 +267,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Account account) {
-			AccountConfigure.configure(p, account, field, value);
+		public void execute(BankingPlugin plugin, Player p, Account account) {
+			AccountConfigure.configure(plugin, p, account, field, value);
 		}
 	}
 
@@ -288,7 +282,7 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Account account) {
+		public void execute(BankingPlugin plugin, Player p, Account account) {
 			AccountTransfer.getInstance().transfer(p, account, newOwner);
 		}
 	}
@@ -303,8 +297,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Account account) {
-			AccountTrust.trust(p, account, playerToTrust);
+		public void execute(BankingPlugin plugin, Player p, Account account) {
+			AccountTrust.trust(plugin, p, account, playerToTrust);
 		}
 	}
 
@@ -318,8 +312,8 @@ public abstract class ClickType {
 		}
 
 		@Override
-		public void execute(Player p, Account account) {
-			AccountUntrust.untrust(p, account, playerToUntrust);
+		public void execute(BankingPlugin plugin, Player p, Account account) {
+			AccountUntrust.untrust(plugin, p, account, playerToUntrust);
 		}
 	}
 

@@ -14,7 +14,7 @@ import java.util.*;
 
 public class BankRepository implements Repository<Bank, BankField> {
 
-	private static class BankMap extends EntityMap<BankRegion, Bank> {
+	public static class BankMap extends EntityMap<BankRegion, Bank> {
 		@Override
 		BankRegion getLocation(Bank bank) {
 			return bank.getRegion();
@@ -125,9 +125,7 @@ public class BankRepository implements Repository<Bank, BankField> {
 			bankMap.put(bank);
 		}
 		plugin.debugf("Updating the following fields of bank #%d in the database: " + fields, bank.getID());
-
 		plugin.getDatabase().updateBank(bank, fields, callback);
-
 		bank.notifyAccountObservers();
 	}
 
@@ -142,11 +140,9 @@ public class BankRepository implements Repository<Bank, BankField> {
 	public void remove(Bank bank, boolean removeFromDatabase, Callback<Void> callback) {
 		plugin.debugf("Removing bank #%d", bank.getID());
 
+		bankMap.remove(bank);
 		// Accounts will be deleted from the database automatically if the bank is
 		bank.getAccounts().forEach(account -> plugin.getAccountRepository().remove(account, false));
-
-		bankMap.remove(bank);
-
 		InterestEventScheduler.unscheduleAll(bank);
 
         if (removeFromDatabase)

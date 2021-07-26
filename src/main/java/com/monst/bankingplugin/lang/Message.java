@@ -993,7 +993,11 @@ public enum Message {
 
     public class Builder {
 
-        private final List<Replacement> replacements = new ArrayList<>();
+        private final List<Replacement> replacements;
+
+        private Builder() {
+            replacements = new ArrayList<>();
+        }
 
         public ReplacementBuilder and(Placeholder placeholder) {
             return new ReplacementBuilder(placeholder);

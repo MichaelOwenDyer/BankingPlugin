@@ -61,7 +61,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         return true;
     }
 
-    public static void selectAccount(Player p, Account accountToMove) {
+    public static void selectAccount(BankingPlugin plugin, Player p, Account accountToMove) {
 
         if (!accountToMove.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_OTHER)) {
             if (accountToMove.isTrusted(p)) {
@@ -80,7 +80,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
 
     }
 
-    public static void selectNewChest(Player p, Account accountToMove, Block targetBlock) {
+    public static void selectNewChest(BankingPlugin plugin, Player p, Account accountToMove, Block targetBlock) {
         Account clickedAccount = ACCOUNT_REPO.getAt(targetBlock);
         if (clickedAccount != null) {
             if (Objects.equals(accountToMove, clickedAccount)) {
@@ -149,7 +149,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         if (reimbursement > 0) {
             // Customer receives reimbursement for old account
             if (PayrollOffice.deposit(p, reimbursement))
-                p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate();
+                p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate());
             // Bank owner of old account pays reimbursement
             if (oldBank.isPlayerBank() && PayrollOffice.withdraw(oldBank.getOwner(), reimbursement))
                 Mailman.notify(oldBank.getOwner(), Message.REIMBURSEMENT_PAID

@@ -86,14 +86,14 @@ public class Account extends BankingEntity {
 	int remainingOfflinePayouts;
 
 	/**
-	 * @param id the account ID {@link BankingEntity}
-	 * @param owner the owner of the account {@link BankingEntity}
-	 * @param coowners the co-owners of the account {@link BankingEntity}
+	 * @param id the account ID
+	 * @param owner the owner of the account
+	 * @param coowners the co-owners of the account
 	 * @param bank the {@link Bank} the account is registered at
 	 * @param loc the {@link AccountLocation} of the account chest
-	 * @param name the account name {@link Nameable}
-	 * @param balance the current account balance {@link #getBalance()}
-	 * @param prevBalance the previous account balance {@link #getPrevBalance()}
+	 * @param name the account name
+	 * @param balance the current account balance
+	 * @param prevBalance the previous account balance
 	 * @param multiplierStage the multiplier stage of this account
 	 * @param delayUntilNextPayout the number of payments this account will wait before generating interest
 	 * @param remainingOfflinePayouts the number of remaining offline interest payments this account will generate
@@ -178,12 +178,9 @@ public class Account extends BankingEntity {
 	 */
 	public void setBank(Bank bank) {
 		getBank().removeAccount(this);
-		getBank().notifyObservers();
 		this.bank = bank;
 		getBank().addAccount(this);
 		notifyObservers();
-		getBank().notifyObservers();
-		plugin.getAccountRepository().notifyObservers();
 	}
 
 	/**
@@ -209,7 +206,7 @@ public class Account extends BankingEntity {
 		balance = QuickMath.scale(newBalance);
 		notifyObservers();
 		getBank().notifyObservers();
-		plugin.getAccountRepository().notifyObservers();
+		plugin.getAccountRepository().getAccountMap().notifyObservers();
 	}
 
 	/**
@@ -334,7 +331,6 @@ public class Account extends BankingEntity {
 			chest.update();
 		}
 		notifyObservers();
-		plugin.getAccountRepository().notifyObservers();
 	}
 
 	public String getChestName() {
@@ -531,7 +527,6 @@ public class Account extends BankingEntity {
 			coowners.add(previousOwner);
 		untrustPlayer(owner); // Remove from co-owners if new owner was a co-owner
 		notifyObservers();
-		plugin.getAccountRepository().notifyObservers();
 	}
 
 	@Override

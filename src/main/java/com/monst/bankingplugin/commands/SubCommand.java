@@ -8,7 +8,6 @@ import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.repository.AccountRepository;
-import com.monst.bankingplugin.repository.BankRepository;
 import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
@@ -104,18 +103,16 @@ public abstract class SubCommand {
 
     public abstract static class BankSubCommand extends SubCommand {
 
-        protected static final BankRepository BANK_REPO = BankingPlugin.getInstance().getBankRepository();
-
         protected BankSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
             super(plugin, name, playerCommand);
         }
 
-        protected static Bank getBank(CommandSender sender, String[] args) {
+        protected Bank getBank(CommandSender sender, String[] args) {
             Bank bank = null;
             if (args.length == 1) {
                 if (sender instanceof Player) {
                     Player p = (Player) sender;
-                    bank = BANK_REPO.getAt(p.getLocation().getBlock());
+                    bank = plugin.getBankRepository().getAt(p.getLocation().getBlock());
                     if (bank == null) {
                         plugin.debug(p.getName() + " wasn't standing in a bank");
                         p.sendMessage(Message.MUST_STAND_IN_BANK.translate());
@@ -124,7 +121,7 @@ public abstract class SubCommand {
                     sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
                 }
             } else {
-                bank = BANK_REPO.getByIdentifier(args[1]);
+                bank = plugin.getBankRepository().getByIdentifier(args[1]);
                 if (bank == null) {
                     plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
                     sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
