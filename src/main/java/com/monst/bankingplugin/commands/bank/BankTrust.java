@@ -88,21 +88,20 @@ public class BankTrust extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
-        if (args.length == 1) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
+        if (args.length == 1)
             return plugin.getBankRepository().getAll().stream()
-                    .filter(bank -> bank.isOwner(p)
-                            || (bank.isPlayerBank() && p.hasPermission(Permissions.BANK_TRUST_OTHER))
-                            || (bank.isAdminBank() && p.hasPermission(Permissions.BANK_TRUST_ADMIN)))
+                    .filter(bank -> bank.isOwner(player)
+                            || (bank.isPlayerBank() && player.hasPermission(Permissions.BANK_TRUST_OTHER))
+                            || (bank.isAdminBank() && player.hasPermission(Permissions.BANK_TRUST_ADMIN)))
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
-        } else if (args.length == 2) {
+        else if (args.length == 2) {
             List<String> onlinePlayers = Utils.getOnlinePlayerNames();
-            if (!p.hasPermission(Permissions.BANK_TRUST_OTHER) && !p.hasPermission(Permissions.BANK_TRUST_ADMIN))
-                onlinePlayers.remove(p.getName());
+            if (!player.hasPermission(Permissions.BANK_TRUST_OTHER) && !player.hasPermission(Permissions.BANK_TRUST_ADMIN))
+                onlinePlayers.remove(player.getName());
             return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[1]));
         }
         return Collections.emptyList();

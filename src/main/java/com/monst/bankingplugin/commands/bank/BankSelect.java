@@ -81,14 +81,13 @@ public class BankSelect extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length == 1 && sender.hasPermission(Permissions.BANK_SELECT)) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
+        if (args.length == 1 && player.hasPermission(Permissions.BANK_SELECT))
             return plugin.getBankRepository().getAll().stream()
                     .map(Bank::getName)
                     .sorted()
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .collect(Collectors.toList());
-        }
         return Collections.emptyList();
     }
 

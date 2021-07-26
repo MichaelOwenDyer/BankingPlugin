@@ -158,7 +158,7 @@ public abstract class BankingPluginCommand<SC extends SubCommand> {
 			String[] arguments = Arrays.copyOfRange(args, 1, args.length);
 			for (SC subCommand : subCommands)
 				if (subCommand.getName().equalsIgnoreCase(subCommandName))
-					return subCommand.getTabCompletions(sender, arguments);
+					return subCommand.getTabCompletions((Player) sender, arguments);
 
 			return Collections.emptyList();
 		}

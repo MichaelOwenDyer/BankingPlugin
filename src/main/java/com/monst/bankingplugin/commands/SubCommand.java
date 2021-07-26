@@ -51,11 +51,11 @@ public abstract class SubCommand {
     protected abstract boolean execute(CommandSender sender, String[] args);
 
     /**
-     * @param sender Sender of the command
+     * @param player Sender of the command
      * @param args Arguments of the command
      * @return A list of tab completions for the sub command (may be an empty list)
      */
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
 		return Collections.emptyList();
     }
 

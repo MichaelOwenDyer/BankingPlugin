@@ -99,11 +99,10 @@ public class AccountUntrust extends SubCommand.AccountSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length != 1)
             return Collections.emptyList();
-        return Utils.filter(Utils.getOnlinePlayerNames(),
-                name -> Utils.startsWithIgnoreCase(name, args[0]));
+        return Utils.filter(Utils.getOnlinePlayerNames(), name -> Utils.startsWithIgnoreCase(name, args[0]));
     }
 
 }

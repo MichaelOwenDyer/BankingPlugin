@@ -41,7 +41,7 @@ public class BankInfo extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length == 1)
             return plugin.getBankRepository().getAll().stream()
                     .map(Bank::getName)

@@ -121,8 +121,8 @@ public class AccountConfigure extends SubCommand.AccountSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (args.length != 1 || !sender.hasPermission(Permissions.ACCOUNT_CONFIGURE))
+    protected List<String> getTabCompletions(Player player, String[] args) {
+        if (args.length != 1 || !player.hasPermission(Permissions.ACCOUNT_CONFIGURE))
             return Collections.emptyList();
         return Stream.of(AccountField.MULTIPLIER_STAGE, AccountField.DELAY_UNTIL_NEXT_PAYOUT, AccountField.REMAINING_OFFLINE_PAYOUTS)
                 .map(AccountField::toString)

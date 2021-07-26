@@ -9,6 +9,7 @@ import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,8 +61,8 @@ public class ControlPayInterest extends SubCommand.ControlSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(Permissions.PAY_INTEREST))
+    protected List<String> getTabCompletions(Player player, String[] args) {
+        if (!player.hasPermission(Permissions.PAY_INTEREST))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
         return plugin.getBankRepository().getAll().stream()

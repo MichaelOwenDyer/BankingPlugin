@@ -10,6 +10,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,17 +86,15 @@ public class ControlConfigure extends SubCommand.ControlSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(Permissions.CONFIG))
+    protected List<String> getTabCompletions(Player player, String[] args) {
+        if (!player.hasPermission(Permissions.CONFIG))
             return Collections.emptyList();
-
         if (args.length == 1)
             return Config.matchPath(args[0]);
-
         ConfigValue<?, ?> configValue = Config.getByPath(args[0]);
         if (configValue == null)
             return Collections.emptyList();
-        return configValue.getTabCompletions(sender, args);
+        return configValue.getTabCompletions(player, args);
     }
 
 }

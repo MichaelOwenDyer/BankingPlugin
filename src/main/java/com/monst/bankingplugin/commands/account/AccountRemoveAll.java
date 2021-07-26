@@ -95,8 +95,8 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL))
+    protected List<String> getTabCompletions(Player player, String[] args) {
+        if (!player.hasPermission(Permissions.ACCOUNT_REMOVEALL))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
         return Utils.filter(Utils.getOnlinePlayerNames(), name -> !argList.contains(name));

@@ -98,12 +98,12 @@ public class AccountTrust extends SubCommand.AccountSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length != 1)
             return Collections.emptyList();
         List<String> onlinePlayers = Utils.getOnlinePlayerNames();
-        if (!sender.hasPermission(Permissions.ACCOUNT_TRUST_OTHER))
-            onlinePlayers.remove(sender.getName());
+        if (!player.hasPermission(Permissions.ACCOUNT_TRUST_OTHER))
+            onlinePlayers.remove(player.getName());
         return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[0]));
     }
 

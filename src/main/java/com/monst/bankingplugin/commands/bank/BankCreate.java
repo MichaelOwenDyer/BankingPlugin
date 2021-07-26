@@ -178,8 +178,8 @@ public class BankCreate extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+    protected List<String> getTabCompletions(Player player, String[] args) {
+        Player p = ((Player) player);
         ArrayList<String> returnCompletions = new ArrayList<>();
 
         if (args.length == 0 || Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase("admin")))

@@ -84,7 +84,7 @@ public class AccountRename extends SubCommand.AccountSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length == 1 && args[0].isEmpty())
             return Collections.singletonList("[name]");
         return Collections.emptyList();

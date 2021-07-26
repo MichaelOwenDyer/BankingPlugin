@@ -107,16 +107,16 @@ public class BankRename extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length == 1) {
-            Bank bank = sender instanceof Player ? plugin.getBankRepository().getAt(((Player) sender).getLocation().getBlock()) : null;
+            Bank bank = plugin.getBankRepository().getAt((player).getLocation().getBlock());
             if (args[0].isEmpty() && bank != null)
                 return Collections.singletonList(bank.getName());
 
             return plugin.getBankRepository().getAll().stream()
-                    .filter(b -> ((sender instanceof Player && b.isTrusted((Player) sender))
-                            || (b.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
-                            || (b.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN))))
+                    .filter(b -> b.isTrusted(player)
+                            || (b.isPlayerBank() && player.hasPermission(Permissions.BANK_SET_OTHER))
+                            || (b.isAdminBank() && player.hasPermission(Permissions.BANK_SET_ADMIN)))
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()

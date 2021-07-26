@@ -67,8 +67,8 @@ public class AccountList extends SubCommand.AccountSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
+    protected List<String> getTabCompletions(Player player, String[] args) {
+        if (!player.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
         return Utils.filter(Utils.getOnlinePlayerNames(), name -> !argList.contains(name));

@@ -131,13 +131,12 @@ public class AccountTransfer extends SubCommand.AccountSubCommand implements Con
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length != 1)
             return Collections.emptyList();
-
         List<String> returnCompletions = Utils.getOnlinePlayerNames();
-        if (!sender.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
-            returnCompletions.remove(sender.getName());
+        if (!player.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
+            returnCompletions.remove(player.getName());
         return Utils.filter(returnCompletions, string -> Utils.startsWithIgnoreCase(string, args[0]));
     }
 

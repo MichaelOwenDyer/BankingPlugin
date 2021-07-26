@@ -106,12 +106,12 @@ public class BankConfigure extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected List<String> getTabCompletions(CommandSender sender, String[] args) {
+    protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length == 1)
             return plugin.getBankRepository().getAll().stream()
-                    .filter(bank -> (sender instanceof Player && bank.isTrusted((Player) sender))
-                            || (bank.isPlayerBank() && sender.hasPermission(Permissions.BANK_SET_OTHER))
-                            || (bank.isAdminBank() && sender.hasPermission(Permissions.BANK_SET_ADMIN)))
+                    .filter(bank -> bank.isTrusted(player)
+                            || (bank.isPlayerBank() && player.hasPermission(Permissions.BANK_SET_OTHER))
+                            || (bank.isAdminBank() && player.hasPermission(Permissions.BANK_SET_ADMIN)))
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
