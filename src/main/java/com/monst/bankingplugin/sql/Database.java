@@ -837,8 +837,6 @@ public abstract class Database {
 		}); // TODO: Make async?
 	}
 
-	private static final int LOG_FETCH_SIZE = 50;
-
 	final Mapper<AccountTransaction> transactionMapper = objectMappers.forClass(AccountTransaction.class);
 
 	public void getTransactionsAtAccount(Account account, Callback<Collection<AccountTransaction>> callback) {
@@ -942,7 +940,8 @@ public abstract class Database {
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
-					.firstResult(Mappers.singleBigDecimal())
+					.firstResult(rs -> rs.getDouble(1))
+					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in account interest for %s.", Utils.format(interest), playerName);
 			Callback.callSyncResult(callback, QuickMath.scale(interest));
@@ -966,7 +965,8 @@ public abstract class Database {
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
-					.firstResult(Mappers.singleBigDecimal())
+					.firstResult(rs -> rs.getDouble(1))
+					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in low balance fees paid by %s.", Utils.format(fees), playerName);
 			Callback.callSyncResult(callback, QuickMath.scale(fees));
@@ -990,7 +990,8 @@ public abstract class Database {
 							"WHERE OwnerUUID = ? AND Time > ?")
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
-					.firstResult(Mappers.singleBigDecimal())
+					.firstResult(rs -> rs.getDouble(1))
+					.map(BigDecimal::new)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in bank profit earned by %s.", Utils.format(revenue), playerName);
 			Callback.callSyncResult(callback, QuickMath.scale(revenue));

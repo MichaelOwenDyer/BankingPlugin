@@ -83,7 +83,7 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
         List<List<Integer>> stackedMultipliers = Utils.stackList(multipliers);
 
         int stage = -1;
-        if (highlightStage != -1)
+        if (highlightStage != -1) {
             for (List<Integer> level : stackedMultipliers) {
                 stage++;
                 if (highlightStage < level.size())
@@ -91,6 +91,8 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
                 else
                     highlightStage -= level.size();
             }
+            highlightStage++;
+        }
 
         List<String> lore = new ArrayList<>();
 
@@ -115,30 +117,30 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
         }
 
         for (int i = lower; i < upper; i++) {
-            StringBuilder number = new StringBuilder("" + ChatColor.GOLD + (i == stage ? ChatColor.BOLD : ""));
+            StringBuilder line = new StringBuilder("" + ChatColor.GOLD + (i == stage ? ChatColor.BOLD : ""));
 
-            number.append(" - ").append(stackedMultipliers.get(i).get(0)).append("x" + ChatColor.DARK_GRAY);
+            line.append(" - ").append(stackedMultipliers.get(i).get(0)).append("x" + ChatColor.DARK_GRAY);
 
             int levelSize = stackedMultipliers.get(i).size();
             if (levelSize > 1) {
                 if (stage == -1) {
-                    number.append(" (" + ChatColor.GRAY + "x" + ChatColor.AQUA + levelSize + ChatColor.DARK_GRAY + ")");
+                    line.append(" (" + ChatColor.GRAY + "x" + ChatColor.AQUA + levelSize + ChatColor.DARK_GRAY + ")");
                 } else if (i < stage) {
-                    number.append(" (" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
+                    line.append(" (" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
                 } else if (i > stage) {
-                    number.append(" (" + ChatColor.RED + "0" + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
+                    line.append(" (" + ChatColor.RED + "0" + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
                 } else {
                     ChatColor color;
                     if (highlightStage * 3 >= levelSize * 2)
-                        color = ChatColor.GREEN;
+                        color = ChatColor.GREEN; // Over 2/3rds through the group
                     else if (highlightStage * 3 >= levelSize)
-                        color = ChatColor.GOLD;
+                        color = ChatColor.GOLD; // Between 1/3rd and 2/3rds through the group
                     else
-                        color = ChatColor.RED;
-                    number.append(" (" + color + highlightStage + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
+                        color = ChatColor.RED; // Below 1/3rd through the group
+                    line.append(" (" + color + highlightStage + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
                 }
             }
-            lore.add(number.toString());
+            lore.add(line.toString());
         }
         if (upper < stackedMultipliers.size())
             lore.add("...");

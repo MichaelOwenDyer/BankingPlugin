@@ -53,8 +53,8 @@ public abstract class ClickType {
     /**
 	 * Gets the click type of a player
 	 *
-	 * @param player Player whose click type should be gotten
-	 * @return The Player's click type or <b>null</b> if they don't have one
+	 * @param player Player whose click type to get
+	 * @return The player's click type or <b>null</b> if none
 	 */
     public static ClickType getPlayerClickType(OfflinePlayer player) {
         return PLAYER_CLICK_TYPES.get(player.getUniqueId());

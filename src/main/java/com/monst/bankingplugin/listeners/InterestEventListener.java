@@ -96,6 +96,7 @@ public class InterestEventListener extends BankingPluginListener {
 
 				account.incrementMultiplier();
 				account.updatePrevBalance();
+				account.notifyObservers();
 
 				plugin.getDatabase().logAccountInterest(new AccountInterest(
 						account.getID(),

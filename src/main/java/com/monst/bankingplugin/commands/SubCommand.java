@@ -62,7 +62,7 @@ public abstract class SubCommand {
      * @return the permission node required to see and execute this command.
      */
     protected String getPermission() {
-        return null;
+        return "";
     }
 
     /**
