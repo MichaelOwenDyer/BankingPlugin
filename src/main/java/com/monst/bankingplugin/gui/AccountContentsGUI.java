@@ -63,7 +63,7 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
         return GUIType.ACCOUNT_CONTENTS;
     }
 
-    static class ShulkerContentsGUI extends AccountContentsGUI {
+    private static class ShulkerContentsGUI extends AccountContentsGUI {
 
         private final ShulkerBox shulkerBox;
 

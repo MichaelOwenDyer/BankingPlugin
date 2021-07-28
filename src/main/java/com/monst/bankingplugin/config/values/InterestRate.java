@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.parse.DoubleParseException;
+import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.QuickMath;
-import com.monst.bankingplugin.utils.Utils;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
@@ -23,14 +23,8 @@ public class InterestRate extends OverridableValue<Double, Double> implements Na
 
     @Override
     public Double parse(@Nonnull String input) throws DoubleParseException {
-        BigDecimal bd;
-        try {
-            bd = new BigDecimal(Utils.removePunctuation(input, '.')).abs();
-        } catch (NumberFormatException e) {
-            throw new DoubleParseException(input);
-        }
-        bd = QuickMath.scale(bd, 4);
-        if (input.charAt(input.length() - 1) == '%')
+        BigDecimal bd = QuickMath.scale(BigDecimal.valueOf(Parser.parseDouble(input)).abs(), 4);
+        if (input.endsWith("%"))
             bd = QuickMath.divide(bd, 100);
         return bd.doubleValue();
     }

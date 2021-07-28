@@ -251,7 +251,6 @@ public abstract class ClickType {
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Account account) {
-			removeClickType(p);
 			AccountRemove.remove(plugin, p, account, confirmed);
 		}
 

@@ -4,7 +4,6 @@ import com.earth2me.essentials.Essentials;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.account.AccountCommand;
-import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.commands.bank.BankCommand;
 import com.monst.bankingplugin.commands.control.ControlCommand;
 import com.monst.bankingplugin.config.Config;
@@ -24,6 +23,8 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.AdvancedPie;
+import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
@@ -391,7 +392,7 @@ public class BankingPlugin extends JavaPlugin {
 		debug("Initializing metrics...");
 
 		Metrics metrics = new Metrics(this, 8474);
-		metrics.addCustomChart(new Metrics.AdvancedPie("bank-types", () -> {
+		metrics.addCustomChart(new AdvancedPie("bank-types", () -> {
 			Map<String, Integer> typeFrequency = new HashMap<>();
 			int playerBanks = 0;
 			int adminBanks = 0;
@@ -407,10 +408,10 @@ public class BankingPlugin extends JavaPlugin {
 
 			return typeFrequency;
 		}));
-		metrics.addCustomChart(new Metrics.SimplePie("account-info-item",
+		metrics.addCustomChart(new SimplePie("account-info-item",
 				() -> Optional.ofNullable(Config.accountInfoItem.get()).map(m -> m.getType().toString()).orElse("none")
 		));
-		metrics.addCustomChart(new Metrics.SimplePie("self-banking",
+		metrics.addCustomChart(new SimplePie("self-banking",
 				() -> Config.allowSelfBanking.get() ? "Enabled" : "Disabled"));
 	}
 

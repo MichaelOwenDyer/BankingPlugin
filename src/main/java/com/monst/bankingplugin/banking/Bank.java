@@ -418,7 +418,7 @@ public class Bank extends BankingEntity {
 				"Owner: " + getOwnerDisplayName(),
 				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName).toString(),
 				"Interest rate: " + ChatColor.GREEN + getInterestRate().getFormatted(),
-				"Multipliers: " + Utils.map(Utils.stackList(getMultipliers().get()),
+				"Multipliers: " + Utils.map(Utils.collapseList(getMultipliers().get()),
 						list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString(),
 				"Account creation price: " + ChatColor.GREEN + getAccountCreationPrice().getFormatted(),
 				"Offline payouts: " + ChatColor.AQUA + getAllowedOfflinePayouts().getFormatted(),

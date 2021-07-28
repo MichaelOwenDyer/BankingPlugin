@@ -76,6 +76,7 @@ public class AccountRemove extends SubCommand.AccountSubCommand {
                 return;
             }
         }
+        ClickType.removeClickType(p);
 
         plugin.debugf("%s is removing account #%d", p.getName(), account.getID());
 

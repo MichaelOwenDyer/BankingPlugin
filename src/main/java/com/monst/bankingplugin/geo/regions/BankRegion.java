@@ -42,7 +42,7 @@ public abstract class BankRegion {
 	public abstract Block getCenterPoint();
 
 	public Location getTeleportLocation() {
-		return Utils.getSafeLocation(getCenterPoint());
+		return Utils.getSafeBlock(getCenterPoint()).getLocation().add(0.5, 0,0.5);
 	}
 
 	/**

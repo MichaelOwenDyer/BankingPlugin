@@ -14,12 +14,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
+public abstract class SinglePageGUI<Entity extends BankingEntity> extends GUI<Entity> {
 
-    final T guiSubject;
+    final Entity guiSubject;
     Menu menu;
 
-    SinglePageGUI(T guiSubject) {
+    SinglePageGUI(Entity guiSubject) {
         this.guiSubject = guiSubject;
     }
 
@@ -80,11 +80,11 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
         if (multipliers.isEmpty())
             return Collections.singletonList(ChatColor.GREEN + "1x");
 
-        List<List<Integer>> stackedMultipliers = Utils.stackList(multipliers);
+        List<List<Integer>> collapsedMultipliers = Utils.collapseList(multipliers);
 
         int stage = -1;
         if (highlightStage != -1) {
-            for (List<Integer> level : stackedMultipliers) {
+            for (List<Integer> level : collapsedMultipliers) {
                 stage++;
                 if (highlightStage < level.size())
                     break;
@@ -98,16 +98,16 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
 
         final int listSize = 5;
         int lower = 0;
-        int upper = stackedMultipliers.size();
+        int upper = collapsedMultipliers.size();
 
-        if (stage != -1 && stackedMultipliers.size() > listSize) {
+        if (stage != -1 && collapsedMultipliers.size() > listSize) {
             lower = stage - (listSize / 2);
             upper = stage + (listSize / 2) + 1;
             while (lower < 0) {
                 lower++;
                 upper++;
             }
-            while (upper > stackedMultipliers.size()) {
+            while (upper > collapsedMultipliers.size()) {
                 lower--;
                 upper--;
             }
@@ -119,9 +119,9 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
         for (int i = lower; i < upper; i++) {
             StringBuilder line = new StringBuilder("" + ChatColor.GOLD + (i == stage ? ChatColor.BOLD : ""));
 
-            line.append(" - ").append(stackedMultipliers.get(i).get(0)).append("x" + ChatColor.DARK_GRAY);
+            line.append(" - ").append(collapsedMultipliers.get(i).get(0)).append("x" + ChatColor.DARK_GRAY);
 
-            int levelSize = stackedMultipliers.get(i).size();
+            int levelSize = collapsedMultipliers.get(i).size();
             if (levelSize > 1) {
                 if (stage == -1) {
                     line.append(" (" + ChatColor.GRAY + "x" + ChatColor.AQUA + levelSize + ChatColor.DARK_GRAY + ")");
@@ -142,7 +142,7 @@ public abstract class SinglePageGUI<T extends BankingEntity> extends GUI<T> {
             }
             lore.add(line.toString());
         }
-        if (upper < stackedMultipliers.size())
+        if (upper < collapsedMultipliers.size())
             lore.add("...");
         return lore;
     }

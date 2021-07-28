@@ -712,7 +712,7 @@ public abstract class Database {
 					transaction.getNewBalance(),
 					transaction.getPreviousBalance(),
 					transaction.getAmount(),
-					Utils.timestamp(transaction.getTime()),
+					Utils.formatTime(transaction.getTime()),
 					transaction.getTime()
 			);
 			query
@@ -740,7 +740,7 @@ public abstract class Database {
 					interest.getInterest(),
 					interest.getLowBalanceFee(),
 					interest.getFinalPayment(),
-					Utils.timestamp(interest.getTime()),
+					Utils.formatTime(interest.getTime()),
 					interest.getTime()
 			);
 			query
@@ -769,7 +769,7 @@ public abstract class Database {
 					income.getInterest(),
 					income.getLowBalanceFees(),
 					income.getProfit(),
-					Utils.timestamp(income.getTime()),
+					Utils.formatTime(income.getTime()),
 					income.getTime()
 			);
 			query
@@ -933,7 +933,7 @@ public abstract class Database {
 	public void getInterestEarnedByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
 		plugin.async(() -> {
-			plugin.debugf("Fetching account interest for %s since last logout at %s.", playerName, Utils.timestamp(time));
+			plugin.debugf("Fetching account interest for %s since last logout at %s.", playerName, Utils.formatTime(time));
 			BigDecimal interest = query
 					.select("SELECT SUM(FinalPayment) " +
 							"FROM " + tableAccountInterest + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
@@ -941,7 +941,7 @@ public abstract class Database {
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
 					.firstResult(rs -> rs.getDouble(1))
-					.map(BigDecimal::new)
+					.map(BigDecimal::valueOf)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in account interest for %s.", Utils.format(interest), playerName);
 			Callback.callSyncResult(callback, QuickMath.scale(interest));
@@ -958,7 +958,7 @@ public abstract class Database {
 	public void getLowBalanceFeesPaidByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
 		plugin.async(() -> {
-			plugin.debugf("Fetching low balance fees paid by %s since last logout at %s.", playerName, Utils.timestamp(time));
+			plugin.debugf("Fetching low balance fees paid by %s since last logout at %s.", playerName, Utils.formatTime(time));
 			BigDecimal fees = query
 					.select("SELECT SUM(LowBalanceFee) " +
 							"FROM " + tableAccountInterest + " INNER JOIN " + tableAccounts + " USING(AccountID) " +
@@ -966,7 +966,7 @@ public abstract class Database {
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
 					.firstResult(rs -> rs.getDouble(1))
-					.map(BigDecimal::new)
+					.map(BigDecimal::valueOf)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in low balance fees paid by %s.", Utils.format(fees), playerName);
 			Callback.callSyncResult(callback, QuickMath.scale(fees));
@@ -983,7 +983,7 @@ public abstract class Database {
 	public void getBankProfitEarnedByPlayerSince(Player player, long time, Callback<BigDecimal> callback) {
 		String playerName = player.getName();
 		plugin.async(() -> {
-			plugin.debugf("Fetching bank profit earned by %s since last logout at %s.", playerName, Utils.timestamp(time));
+			plugin.debugf("Fetching bank profit earned by %s since last logout at %s.", playerName, Utils.formatTime(time));
 			BigDecimal revenue = query
 					.select("SELECT SUM(Profit) " +
 							"FROM " + tableBankIncome + " NATURAL JOIN " + tableBanks + " " +
@@ -991,7 +991,7 @@ public abstract class Database {
 					.params(player.getUniqueId(), time)
 					.errorHandler(forwardError(callback))
 					.firstResult(rs -> rs.getDouble(1))
-					.map(BigDecimal::new)
+					.map(BigDecimal::valueOf)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in bank profit earned by %s.", Utils.format(revenue), playerName);
 			Callback.callSyncResult(callback, QuickMath.scale(revenue));

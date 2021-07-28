@@ -14,14 +14,11 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -30,23 +27,11 @@ public class Utils {
 	private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 	public static String currentTimestamp() {
-		return FORMATTER.format(Calendar.getInstance().getTime());
+		return formatTime(Calendar.getInstance().getTime());
 	}
 
-	public static String timestamp(Object o) {
+	public static String formatTime(Object o) {
 		return FORMATTER.format(o);
-	}
-
-	public static String removePunctuation(String s, char... exclude) {
-		StringBuilder regex = new StringBuilder("[\\p{Punct}");
-		if (exclude.length > 0) {
-			regex.append("&&[^");
-			for (char c : exclude)
-				regex.append(c);
-			regex.append("]");
-		}
-		regex.append("]");
-		return s.replaceAll(regex.toString(), "");
 	}
 
 	public static String colorize(String s) {
@@ -64,16 +49,16 @@ public class Utils {
 	}
 
 	public static String formatAndColorize(BigDecimal bd) {
-		ChatColor color = bd.signum() >= 1 ? ChatColor.GREEN : ChatColor.RED;
+		ChatColor color = bd.signum() >= 0 ? ChatColor.GREEN : ChatColor.RED;
 		return color + format(bd);
 	}
 
 	public static boolean startsWithIgnoreCase(String s1, String s2) {
-		return s1.toLowerCase(Locale.ROOT).startsWith(s2.toLowerCase(Locale.ROOT));
+		return s1.toLowerCase(Locale.getDefault()).startsWith(s2.toLowerCase(Locale.getDefault()));
 	}
 
 	public static boolean containsIgnoreCase(String s1, String s2) {
-		return s1.toLowerCase(Locale.ROOT).contains(s2.toLowerCase(Locale.ROOT));
+		return s1.toLowerCase(Locale.getDefault()).contains(s2.toLowerCase(Locale.getDefault()));
 	}
 
 	public static void teleport(Player player, Location location) {
@@ -81,16 +66,16 @@ public class Utils {
 	}
 
 	/**
-	 * Finds the next lowest safe location at or directly below a certain {@link Block}.
-	 * If no safe block is found then the original location is returned.
+	 * Finds the next lowest safe {@link Block} at or directly below a certain {@link Block}.
+	 * If no safe block is found then the original block is returned.
 	 * @param start the block from which to start searching
-	 * @return a {@link Location} at or directly below the given block that is safe to stand on
+	 * @return a {@link Block} at or directly below the given block that is safe to stand on
 	 */
-	public static Location getSafeLocation(Block start) {
+	public static Block getSafeBlock(Block start) {
 		for (Block block = start; start.getY() > 0; block = block.getRelative(BlockFace.DOWN))
 			if (isSafeBlock(block))
-				return block.getLocation().add(0.5, 0,0.5);
-		return start.getLocation();
+				return block;
+		return start;
 	}
 
 	/**
@@ -101,11 +86,13 @@ public class Utils {
 	 */
 	@SuppressWarnings("deprecation")
 	public static boolean isSafeBlock(Block b) {
-		if (!b.getType().isTransparent() && !b.getLocation().add(0, 1, 0).getBlock().getType().isTransparent())
+		if (!b.getType().isTransparent())
 			return false; // not transparent (standing in block)
-		if (!b.getRelative(BlockFace.UP).getType().isTransparent())
+		Block blockAbove = b.getRelative(BlockFace.UP);
+		if (!blockAbove.getType().isTransparent())
 			return false; // not transparent (will suffocate)
-		return b.getRelative(BlockFace.DOWN).getType().isSolid() || b.getRelative(BlockFace.DOWN).getType() == Material.WATER;
+		Block blockBelow = b.getRelative(BlockFace.DOWN);
+		return blockBelow.getType().isSolid() || blockBelow.getType() == Material.WATER;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -133,16 +120,6 @@ public class Utils {
 		return Utils.bukkitRunnable(runnable).runTaskLater(BankingPlugin.getInstance(), delay);
 	}
 
-	@Nonnull
-	public static <T> T nonNull(@Nullable T ifNotNull, T ifNull) {
-		return ifNotNull != null ? ifNotNull : ifNull;
-	}
-
-	@Nonnull
-	public static <T> T nonNull(@Nullable T ifNotNull, @Nonnull Supplier<T> ifNull) {
-		return ifNotNull != null ? ifNotNull : ifNull.get();
-	}
-
 	/**
 	 * Creates a list of lists of elements where each sub-list contains only equal elements which appeared
 	 * consecutively in the original list. The order of the original list is preserved such that a flatMap
@@ -153,8 +130,10 @@ public class Utils {
 	 * @param <T> the type of the elements of the list
 	 * @return a stacked list
 	 */
-	public static <T> List<List<T>> stackList(List<T> list) {
+	public static <T> List<List<T>> collapseList(List<T> list) {
 		List<List<T>> stackedList = new ArrayList<>();
+		if (list.isEmpty())
+			return stackedList;
 		stackedList.add(new ArrayList<>());
 		stackedList.get(0).add(list.get(0));
 		int level = 0;
@@ -177,21 +156,17 @@ public class Utils {
 
 	@SuppressWarnings("deprecation")
 	public static OfflinePlayer getPlayer(String name) {
-		OfflinePlayer player = nonNull(Bukkit.getPlayerExact(name), () -> Bukkit.getOfflinePlayer(name));
+		OfflinePlayer player = Bukkit.getPlayerExact(name);
+		if (player == null)
+			player = Bukkit.getOfflinePlayer(name);
 		return player.hasPlayedBefore() ? player : null;
 	}
 
 	public static OfflinePlayer getPlayer(UUID uuid) {
-		OfflinePlayer player = nonNull(Bukkit.getPlayer(uuid), () -> Bukkit.getOfflinePlayer(uuid));
+		OfflinePlayer player = Bukkit.getPlayer(uuid);
+		if (player == null)
+			player = Bukkit.getOfflinePlayer(uuid);
 		return player.hasPlayedBefore() ? player : null;
-	}
-
-	public static OfflinePlayer getPlayerFromUUID(String uuid) {
-		return getPlayerFromUUID(UUID.fromString(uuid));
-	}
-
-	public static OfflinePlayer getPlayerFromUUID(UUID uuid) {
-		return Bukkit.getOfflinePlayer(uuid);
 	}
 
 	public static List<String> getOnlinePlayerNames() {
@@ -291,16 +266,8 @@ public class Utils {
 	 */
 	@SuppressWarnings("deprecation")
 	public static ItemStack getItemInMainHand(Player p) {
-		if (getMajorVersion() < 9) {
-			if (p.getItemInHand().getType() == Material.AIR)
-				return null;
-			else
-				return p.getItemInHand();
-		}
-		if (p.getInventory().getItemInMainHand().getType() == Material.AIR)
-			return null;
-		else
-			return p.getInventory().getItemInMainHand();
+		ItemStack item = getMajorVersion() < 9 ? p.getItemInHand() : p.getInventory().getItemInMainHand();
+		return item.getType() == Material.AIR ? null : item;
 	}
 
 	/**
@@ -325,13 +292,11 @@ public class Utils {
 			axes = Arrays.asList("WOOD_AXE", "STONE_AXE", "IRON_AXE", "GOLD_AXE", "DIAMOND_AXE");
 		else
 			axes = Arrays.asList("WOODEN_AXE", "STONE_AXE", "IRON_AXE", "GOLDEN_AXE", "DIAMOND_AXE");
-
-		ItemStack item = getItemInMainHand(p);
-		if (item == null || !axes.contains(item.getType().toString())) {
-			item = getItemInOffHand(p);
-		}
-
-		return item != null && axes.contains(item.getType().toString());
+		return Arrays.stream(new ItemStack[] { getItemInMainHand(p), getItemInOffHand(p) })
+				.filter(Objects::nonNull)
+				.map(ItemStack::getType)
+				.map(Material::toString)
+				.anyMatch(axes::contains);
 	}
 
     /**

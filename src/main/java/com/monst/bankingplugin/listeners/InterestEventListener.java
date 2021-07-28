@@ -201,7 +201,8 @@ public class InterestEventListener extends BankingPluginListener {
 						.collect(Collectors.toSet())
 		);
 
-		finalPayments.forEach((player, payment) -> {
+		finalPayments.forEach((player, finalPayment) -> {
+			double payment = finalPayment.doubleValue();
 			if (PayrollOffice.allowPayment(player, payment))
 				PayrollOffice.deposit(player, payment);
 			// TODO: if payment cannot be made, ...
