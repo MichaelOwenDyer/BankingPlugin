@@ -2,7 +2,7 @@ package com.monst.bankingplugin.commands.account;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
-import com.monst.bankingplugin.commands.ConfirmableSubCommand;
+import com.monst.bankingplugin.commands.PlayerCache;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
@@ -12,16 +12,17 @@ import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AccountRemoveAll extends SubCommand.AccountSubCommand implements ConfirmableSubCommand {
+public class AccountRemoveAll extends SubCommand.AccountSubCommand {
 
     AccountRemoveAll(BankingPlugin plugin) {
-		super(plugin, "removeall", false);
+        super(plugin, "removeall", false);
     }
 
     @Override
@@ -50,23 +51,23 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
         if (args.length == 1) {
             accounts = plugin.getAccountRepository().getAll();
         } else {
-            Map<String, Player> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
+            Map<String, UUID> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
                     Collectors.toMap(
                             HumanEntity::getName,
-                            e -> e
+                            Entity::getUniqueId
                     )
             );
-            Set<OfflinePlayer> owners = new HashSet<>();
+            Set<UUID> owners = new HashSet<>();
             for (String arg : args) {
                 if (namePlayerMap.containsKey(arg))
                     owners.add(namePlayerMap.get(arg));
                 else {
                     OfflinePlayer player = Utils.getPlayer(arg);
                     if (player != null)
-                        owners.add(player);
+                        owners.add(player.getUniqueId());
                 }
             }
-            accounts = plugin.getAccountRepository().getMatching(a -> owners.contains(a.getOwner()));
+            accounts = plugin.getAccountRepository().getMatching(account -> owners.contains(account.getOwner().getUniqueId()));
         }
 
         if (accounts == null || accounts.isEmpty()) {
@@ -74,7 +75,7 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
             return true;
         }
 
-        if (sender instanceof Player && Config.confirmOnRemoveAll.get() && !isConfirmed((Player) sender, args)) {
+        if (sender instanceof Player && Config.confirmOnRemoveAll.get() && !PlayerCache.put((Player) sender, accounts)) {
             sender.sendMessage(Message.ACCOUNT_CONFIRM_REMOVE_ALL
                     .with(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size())
                     .translate());
@@ -85,12 +86,12 @@ public class AccountRemoveAll extends SubCommand.AccountSubCommand implements Co
         AccountRemoveAllEvent event = new AccountRemoveAllEvent(sender, accounts);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debug("Removeall event cancelled");
+            plugin.debug("Remove all event cancelled");
             return true;
         }
         plugin.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
         sender.sendMessage(Message.ALL_ACCOUNTS_REMOVED.with(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size()).translate());
-        accounts.forEach(a -> plugin.getAccountRepository().remove(a, true));
+        accounts.forEach(account -> plugin.getAccountRepository().remove(account, true));
         return true;
     }
 

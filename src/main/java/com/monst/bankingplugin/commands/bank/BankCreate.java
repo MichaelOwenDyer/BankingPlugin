@@ -95,7 +95,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
             int limit = Utils.getBankLimit(p);
             if (limit != -1 && plugin.getBankRepository().getOwnedBy(p).size() >= limit) {
                 p.sendMessage(Message.BANK_LIMIT_REACHED.with(Placeholder.LIMIT).as(limit).translate());
-                plugin.debug(p.getName() + " has reached their bank limit");
+                plugin.debug(p.getName() + " put reached their bank limit");
                 return true;
             }
         }
@@ -172,7 +172,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
         }
 
         plugin.getBankRepository().add(bank, true);
-        plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
+        plugin.debug(p.getName() + " put created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
         p.sendMessage(Message.BANK_CREATED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
         return true;
     }

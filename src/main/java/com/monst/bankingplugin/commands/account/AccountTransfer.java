@@ -69,7 +69,7 @@ public class AccountTransfer extends SubCommand.AccountSubCommand {
         return true;
     }
 
-    public static void transfer(BankingPlugin plugin, Player p, Account account, OfflinePlayer newOwner, boolean confirmed) {
+    public static void transfer(BankingPlugin plugin, Player p, Account account, OfflinePlayer newOwner) {
         plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
 
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
@@ -87,8 +87,8 @@ public class AccountTransfer extends SubCommand.AccountSubCommand {
             return;
         }
 
-        if (Config.confirmOnTransfer.get() && !confirmed) {
-            plugin.debug("Needs confirmation");
+        if (Config.confirmOnTransfer.get() && ClickType.needsConfirmation(p)) {
+            plugin.debug("Account transfer needs confirmation");
             p.sendMessage(Message.ACCOUNT_CONFIRM_TRANSFER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
             ClickType.confirmClickType(p);
             return;

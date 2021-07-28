@@ -47,16 +47,16 @@ public class ControlReload extends SubCommand.ControlSubCommand {
         }
 
         plugin.reload(Callback.of(result -> {
-            Set<Bank> banks = result.getBanks();
-            Set<Account> accounts = result.getAccounts();
-            sender.sendMessage(Message.RELOADED_PLUGIN
-                    .with(Placeholder.NUMBER_OF_BANKS).as(banks.size())
-                    .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size())
-                    .translate());
-            plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
-        }, error -> sender.sendMessage(Message.ERROR_OCCURRED.with(Placeholder.ERROR)
-                .as("Fatal error while loading banks and accounts from the database.")
-                .translate())
+                    Set<Bank> banks = result.getBanks();
+                    Set<Account> accounts = result.getAccounts();
+                    sender.sendMessage(Message.RELOADED_PLUGIN
+                            .with(Placeholder.NUMBER_OF_BANKS).as(banks.size())
+                            .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size())
+                            .translate());
+                    plugin.debugf("%s put reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
+                }, error -> sender.sendMessage(Message.ERROR_OCCURRED.with(Placeholder.ERROR)
+                        .as("Fatal error while loading banks and accounts from the database.")
+                        .translate())
         ));
         return true;
     }

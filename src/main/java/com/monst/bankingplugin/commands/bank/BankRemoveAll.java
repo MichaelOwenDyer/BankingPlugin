@@ -2,7 +2,7 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.commands.ConfirmableSubCommand;
+import com.monst.bankingplugin.commands.PlayerCache;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
@@ -17,10 +17,10 @@ import org.bukkit.entity.Player;
 import java.util.Collection;
 import java.util.Set;
 
-public class BankRemoveAll extends SubCommand.BankSubCommand implements ConfirmableSubCommand {
+public class BankRemoveAll extends SubCommand.BankSubCommand {
 
     BankRemoveAll(BankingPlugin plugin) {
-		super(plugin, "removeall", false);
+        super(plugin, "removeall", false);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class BankRemoveAll extends SubCommand.BankSubCommand implements Confirma
         }
 
         int affectedAccounts = banks.stream().map(Bank::getAccounts).mapToInt(Collection::size).sum();
-        if (sender instanceof Player && Config.confirmOnRemoveAll.get() && !isConfirmed((Player) sender, args)) {
+        if (sender instanceof Player && Config.confirmOnRemoveAll.get() && !PlayerCache.put((Player) sender, banks)) {
             sender.sendMessage(Message.BANK_CONFIRM_REMOVE
                     .with(Placeholder.NUMBER_OF_BANKS).as(banks.size())
                     .and(Placeholder.NUMBER_OF_ACCOUNTS).as(affectedAccounts)

@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.utils;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.AccountField;
@@ -7,26 +9,32 @@ import com.monst.bankingplugin.commands.account.*;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public abstract class ClickType {
 
-	private static final Map<UUID, ClickType> PLAYER_CLICK_TYPES = new HashMap<>();
-	private static final Map<UUID, BukkitTask> PLAYER_TIMERS = new HashMap<>();
+	private static final Cache<UUID, ClickType> PLAYER_CLICK_TYPES = CacheBuilder.newBuilder()
+			.expireAfterWrite(15, TimeUnit.SECONDS)
+			.build();
 
-	private final EClickType eClickType;
+	private final Type type;
 
-    ClickType(EClickType eClickType) {
-        this.eClickType = eClickType;
-    }
+	private ClickType(Type type) {
+		this.type = type;
+	}
 
 	public boolean mustClickedBlockBeAccount() {
 		return true;
+	}
+
+	boolean isConfirmed() {
+		return true;
+	}
+
+	void setConfirmed() {
+
 	}
 
 	public void execute(BankingPlugin plugin, Player p, Account account, Block block) {
@@ -45,71 +53,70 @@ public abstract class ClickType {
      * Clear all click types, cancel timers
      */
     public static void clear() {
-    	PLAYER_CLICK_TYPES.clear();
-        PLAYER_TIMERS.values().forEach(BukkitTask::cancel);
-        PLAYER_TIMERS.clear();
+		PLAYER_CLICK_TYPES.invalidateAll();
     }
 
-    /**
+	/**
 	 * Gets the click type of a player
 	 *
 	 * @param player Player whose click type to get
 	 * @return The player's click type or <b>null</b> if none
 	 */
-    public static ClickType getPlayerClickType(OfflinePlayer player) {
-        return PLAYER_CLICK_TYPES.get(player.getUniqueId());
-    }
+	public static ClickType getPlayerClickType(OfflinePlayer player) {
+		return PLAYER_CLICK_TYPES.asMap().get(player.getUniqueId());
+	}
 
-    /**
-     * Removes the click type from a player and cancels the 15 second timer.
-     *
-     * @param player Player to remove the click type from
-     */
+	/**
+	 * Removes the click type from a player and cancels the 15 second timer.
+	 *
+	 * @param player Player to remove the click type from
+	 */
 	public static void removeClickType(OfflinePlayer player) {
-        UUID uuid = player.getUniqueId();
-        PLAYER_CLICK_TYPES.remove(uuid);
+		PLAYER_CLICK_TYPES.asMap().remove(player.getUniqueId());
+	}
 
-        // If a timer is still running, cancel it
-		Optional.ofNullable(PLAYER_TIMERS.get(uuid)).ifPresent(BukkitTask::cancel);
-		PLAYER_TIMERS.remove(uuid);
-    }
+	public static boolean needsConfirmation(OfflinePlayer player) {
+		ClickType clickType = getPlayerClickType(player);
+		if (clickType == null)
+			return false;
+		return !clickType.isConfirmed();
+	}
 
-    /**
-     * Sets the click type of a player and removes it after 15 seconds
-     *
-     * @param player    Player whose click type should be set
-     * @param clickType Click type to set
-     */
-    private static void setClickType(OfflinePlayer player, ClickType clickType) {
+	public static void confirmClickType(OfflinePlayer player) {
+		ClickType clickType = PLAYER_CLICK_TYPES.asMap().remove(player.getUniqueId());
+		if (clickType == null)
+			return;
+		clickType.setConfirmed();
+		PLAYER_CLICK_TYPES.put(player.getUniqueId(), clickType);
+	}
 
-		UUID uuid = player.getUniqueId();
-        PLAYER_CLICK_TYPES.put(uuid, clickType);
+	/**
+	 * Sets the click type of a player and removes it after 15 seconds
+	 *
+	 * @param player    Player whose click type should be set
+	 * @param clickType Click type to set
+	 */
+	private static void setClickType(OfflinePlayer player, ClickType clickType) {
+		PLAYER_CLICK_TYPES.asMap().put(player.getUniqueId(), clickType);
+	}
 
-        // If a timer is already running, cancel it
-        Optional.ofNullable(PLAYER_TIMERS.get(uuid)).ifPresent(BukkitTask::cancel);
+	/**
+	 * @return Type of the click type
+	 */
+	public Type getType() {
+		return type;
+	}
 
-        // Remove ClickType after 15 seconds if player has not clicked a chest
-        PLAYER_TIMERS.put(uuid, Utils.runTaskLater(() -> PLAYER_CLICK_TYPES.remove(uuid), 300));
-
-    }
-
-    /**
-     * @return Type of the click type
-     */
-    public EClickType getType() {
-        return eClickType;
-    }
-
-    public enum EClickType {
+	public enum Type {
 		CREATE, INFO, MIGRATE_SELECT_ACCOUNT, MIGRATE_SELECT_NEW_CHEST, RECOVER, REMOVE, RENAME, CONFIGURE, TRANSFER, TRUST, UNTRUST
-    }
+	}
 
-    public static void setCreateClickType(Player p) {
-    	ClickType.setClickType(p, new CreateClickType());
+	public static void setCreateClickType(Player p) {
+		ClickType.setClickType(p, new CreateClickType());
 	}
 
 	public static void setInfoClickType(Player p) {
-    	ClickType.setClickType(p, new InfoClickType());
+		ClickType.setClickType(p, new InfoClickType());
 	}
 
 	public static void setMigrateClickType(Player p) {
@@ -148,21 +155,15 @@ public abstract class ClickType {
     	ClickType.setClickType(p, new UntrustClickType(playerToUntrust));
 	}
 
-	public static void confirmClickType(Player p) {
-    	ClickType type = ClickType.getPlayerClickType(p);
-    	if (type instanceof Confirmable)
-			((Confirmable) type).confirm();
-	}
-
 	private static class CreateClickType extends ClickType {
 
-    	private CreateClickType() {
-			super(EClickType.CREATE);
+		private CreateClickType() {
+			super(Type.CREATE);
 		}
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Block block) {
-    		removeClickType(p);
+			removeClickType(p);
 			AccountCreate.create(plugin, p, block);
 		}
 
@@ -174,13 +175,13 @@ public abstract class ClickType {
 
 	private static class InfoClickType extends ClickType {
 
-    	private InfoClickType() {
-    		super(EClickType.INFO);
+		private InfoClickType() {
+			super(Type.INFO);
 		}
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Account account) {
-    		removeClickType(p);
+			removeClickType(p);
 			AccountInfo.info(plugin, p, account);
 		}
 	}
@@ -188,7 +189,7 @@ public abstract class ClickType {
 	private static class SelectAccountMigrateClickType extends ClickType {
 
 		private SelectAccountMigrateClickType() {
-			super(EClickType.MIGRATE_SELECT_ACCOUNT);
+			super(Type.MIGRATE_SELECT_ACCOUNT);
 		}
 
 		@Override
@@ -203,7 +204,7 @@ public abstract class ClickType {
     	private final Account selectedAccount;
 
 		private SelectNewChestMigrateClickType(Account accountToMove) {
-			super(EClickType.MIGRATE_SELECT_NEW_CHEST);
+			super(Type.MIGRATE_SELECT_NEW_CHEST);
 			this.selectedAccount = accountToMove;
 		}
 
@@ -224,7 +225,7 @@ public abstract class ClickType {
     	private final Account accountToRecover;
 
 		private RecoverClickType(Account toRecover) {
-			super(EClickType.RECOVER);
+			super(Type.RECOVER);
 			this.accountToRecover = toRecover;
 		}
 
@@ -240,21 +241,26 @@ public abstract class ClickType {
 		}
 	}
 
-	private static class RemoveClickType extends ClickType implements Confirmable {
+	private static class RemoveClickType extends ClickType {
 
-    	private boolean confirmed;
+		private boolean confirmed;
 
 		private RemoveClickType() {
-			super(EClickType.REMOVE);
+			super(Type.REMOVE);
 			this.confirmed = false;
 		}
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Account account) {
-			AccountRemove.remove(plugin, p, account, confirmed);
+			AccountRemove.remove(plugin, p, account);
 		}
 
-		public void confirm() {
+		@Override
+		boolean isConfirmed() {
+			return confirmed;
+		}
+
+		void setConfirmed() {
 			confirmed = true;
 		}
 	}
@@ -264,7 +270,7 @@ public abstract class ClickType {
     	private final String newName;
 
 		private RenameClickType(String newName) {
-			super(EClickType.RENAME);
+			super(Type.RENAME);
 			this.newName = newName;
 		}
 
@@ -280,7 +286,7 @@ public abstract class ClickType {
     	private final int value;
 
 		private ConfigureClickType(AccountField field, int value) {
-			super(EClickType.CONFIGURE);
+			super(Type.CONFIGURE);
 			this.field = field;
 			this.value = value;
 		}
@@ -291,24 +297,29 @@ public abstract class ClickType {
 		}
 	}
 
-	private static class TransferClickType extends ClickType implements Confirmable {
+	private static class TransferClickType extends ClickType {
 
-    	private final OfflinePlayer newOwner;
-    	private boolean confirmed;
+		private final OfflinePlayer newOwner;
+		private boolean confirmed;
 
 		private TransferClickType(OfflinePlayer newOwner) {
-			super(EClickType.TRANSFER);
+			super(Type.TRANSFER);
 			this.newOwner = newOwner;
 			this.confirmed = false;
 		}
 
 		@Override
 		public void execute(BankingPlugin plugin, Player p, Account account) {
-			AccountTransfer.transfer(plugin, p, account, newOwner, confirmed);
+			AccountTransfer.transfer(plugin, p, account, newOwner);
 		}
 
 		@Override
-		public void confirm() {
+		boolean isConfirmed() {
+			return confirmed;
+		}
+
+		@Override
+		void setConfirmed() {
 			confirmed = true;
 		}
 	}
@@ -318,7 +329,7 @@ public abstract class ClickType {
 		private final OfflinePlayer playerToTrust;
 
 		private TrustClickType(OfflinePlayer playerToTrust) {
-			super(EClickType.TRUST);
+			super(Type.TRUST);
 			this.playerToTrust = playerToTrust;
 		}
 
@@ -333,7 +344,7 @@ public abstract class ClickType {
     	private final OfflinePlayer playerToUntrust;
 
 		private UntrustClickType(OfflinePlayer playerToUntrust) {
-			super(EClickType.UNTRUST);
+			super(Type.UNTRUST);
 			this.playerToUntrust = playerToUntrust;
 		}
 
@@ -341,10 +352,6 @@ public abstract class ClickType {
 		public void execute(BankingPlugin plugin, Player p, Account account) {
 			AccountUntrust.untrust(plugin, p, account, playerToUntrust);
 		}
-	}
-
-	private interface Confirmable {
-    	void confirm();
 	}
 
 }

@@ -51,11 +51,11 @@ public class AccountRemove extends SubCommand.AccountSubCommand {
 
     /**
      * Removes an account
-     * @param p Player who executed the command
-     * @param account  Account to be removed
-     * @param confirmed Whether this action has been confirmed (if it needs to be)
+     *
+     * @param p       Player who executed the command
+     * @param account Account to be removed
      */
-    public static void remove(BankingPlugin plugin, Player p, Account account, boolean confirmed) {
+    public static void remove(BankingPlugin plugin, Player p, Account account) {
         if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(p)) {
             Message message = account.isTrusted(p) ? Message.MUST_BE_OWNER : Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER;
             p.sendMessage(message.translate());
@@ -64,17 +64,15 @@ public class AccountRemove extends SubCommand.AccountSubCommand {
         }
 
         boolean balanceRemaining = account.getBalance().signum() > 0;
-        if (balanceRemaining || Config.confirmOnRemove.get()) {
-            if (!confirmed) {
-                plugin.debug("Needs confirmation");
-                if (balanceRemaining)
-                    p.sendMessage(Message.ACCOUNT_BALANCE_NOT_ZERO
-                            .with(Placeholder.ACCOUNT_BALANCE).as(account.getBalance())
-                            .translate());
-                p.sendMessage(Message.CLICK_AGAIN_TO_CONFIRM.translate());
-                ClickType.confirmClickType(p);
-                return;
-            }
+        if ((balanceRemaining || Config.confirmOnRemove.get()) && ClickType.needsConfirmation(p)) {
+            plugin.debug("Account removal needs confirmation");
+            if (balanceRemaining)
+                p.sendMessage(Message.ACCOUNT_BALANCE_NOT_ZERO
+                        .with(Placeholder.ACCOUNT_BALANCE).as(account.getBalance())
+                        .translate());
+            p.sendMessage(Message.CLICK_AGAIN_TO_CONFIRM.translate());
+            ClickType.confirmClickType(p);
+            return;
         }
         ClickType.removeClickType(p);
 

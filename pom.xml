@@ -243,7 +243,7 @@
 							<shadedPattern>com.monst.bankingplugin.dependencies.hikari</shadedPattern>
 						</relocation>
 						<relocation>
-							<pattern>org.bstats.bukkit</pattern>
+							<pattern>org.bstats</pattern>
 							<shadedPattern>com.monst.bankingplugin.dependencies.bstats</shadedPattern>
 						</relocation>
 						<relocation>

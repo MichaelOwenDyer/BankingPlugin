@@ -3,13 +3,14 @@ package com.monst.bankingplugin.commands.bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
-import com.monst.bankingplugin.commands.ConfirmableSubCommand;
+import com.monst.bankingplugin.commands.PlayerCache;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankTransferEvent;
 import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -20,10 +21,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankTransfer extends SubCommand.BankSubCommand implements ConfirmableSubCommand {
+public class BankTransfer extends SubCommand.BankSubCommand {
 
     BankTransfer(BankingPlugin plugin) {
-		super(plugin, "transfer", false);
+        super(plugin, "transfer", false);
     }
 
     @Override
@@ -59,7 +60,7 @@ public class BankTransfer extends SubCommand.BankSubCommand implements Confirmab
         if (args.length > 2) {
             newOwner = Utils.getPlayer(args[2]);
             if (newOwner == null) {
-                sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+                sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[2]).translate());
                 return true;
             }
         }
@@ -96,7 +97,8 @@ public class BankTransfer extends SubCommand.BankSubCommand implements Confirmab
             return true;
         }
 
-        if (sender instanceof Player && Config.confirmOnTransfer.get() && isConfirmed((Player) sender, args)) {
+        if (sender instanceof Player && Config.confirmOnTransfer.get()
+                && !PlayerCache.put((Player) sender, new BankTransferPair(bank, newOwner))) {
             sender.sendMessage(Message.BANK_CONFIRM_TRANSFER
                     .with(Placeholder.PLAYER).as(newOwner != null ? newOwner.getName() : "ADMIN")
                     .and(Placeholder.BANK_NAME).as(bank.getColorizedName())
@@ -152,6 +154,12 @@ public class BankTransfer extends SubCommand.BankSubCommand implements Confirmab
             return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[1]));
         }
         return Collections.emptyList();
+    }
+
+    private static class BankTransferPair extends Pair<Bank, OfflinePlayer> {
+        public BankTransferPair(Bank bank, OfflinePlayer newOwner) {
+            super(bank, newOwner);
+        }
     }
 
 }

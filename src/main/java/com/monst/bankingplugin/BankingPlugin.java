@@ -3,6 +3,7 @@ package com.monst.bankingplugin;
 import com.earth2me.essentials.Essentials;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.commands.PlayerCache;
 import com.monst.bankingplugin.commands.account.AccountCommand;
 import com.monst.bankingplugin.commands.bank.BankCommand;
 import com.monst.bankingplugin.commands.control.ControlCommand;
@@ -68,9 +69,9 @@ public class BankingPlugin extends JavaPlugin {
 	private GriefPrevention griefPrevention;
 	private WorldEditPlugin worldEdit;
 
-	public final String[] STARTUP_MESSAGE = new String[] {
+	public final String[] STARTUP_MESSAGE = new String[]{
 			ChatColor.GREEN + "   __ " + ChatColor.DARK_GREEN + "  __",
-			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |__)   " + ChatColor.DARK_GREEN + "BankingPlugin" + ChatColor.AQUA + " v" + getDescription().getVersion(),
+			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |__)" + ChatColor.DARK_GREEN + "   BankingPlugin" + ChatColor.AQUA + " v" + getDescription().getVersion(),
 			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY + "        by monst",
 			""
 	};
@@ -154,6 +155,7 @@ public class BankingPlugin extends JavaPlugin {
 		debug("Disabling BankingPlugin...");
 
 		ClickType.clear();
+		PlayerCache.clear();
 		InterestEventScheduler.unscheduleAll();
 
 		if (bankRepository != null)
@@ -475,11 +477,6 @@ public class BankingPlugin extends JavaPlugin {
 	public void sync(Runnable runnable) {
 		if (isEnabled())
 			Utils.bukkitRunnable(runnable).runTask(this);
-	}
-
-	public void runLater(Runnable runnable, long delay) {
-		if (isEnabled())
-			Utils.bukkitRunnable(runnable).runTaskLater(this, delay);
 	}
 
 	/**

@@ -2,7 +2,7 @@ package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.commands.ConfirmableSubCommand;
+import com.monst.bankingplugin.commands.PlayerCache;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
@@ -19,10 +19,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BankRemove extends SubCommand.BankSubCommand implements ConfirmableSubCommand {
+public class BankRemove extends SubCommand.BankSubCommand {
 
     BankRemove(BankingPlugin plugin) {
-		super(plugin, "remove", false);
+        super(plugin, "remove", false);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class BankRemove extends SubCommand.BankSubCommand implements Confirmable
 
         if (sender instanceof Player) {
             Player executor = (Player) sender;
-            if (Config.confirmOnRemove.get() && !isConfirmed(executor, args)) {
+            if (Config.confirmOnRemove.get() && !PlayerCache.put(executor, bank)) {
                 sender.sendMessage(Message.BANK_CONFIRM_REMOVE
                         .with(Placeholder.NUMBER_OF_BANKS).as(1)
                         .and(Placeholder.NUMBER_OF_ACCOUNTS).as(bank.getAccounts().size())

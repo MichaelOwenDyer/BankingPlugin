@@ -52,6 +52,8 @@ public class SQLite extends Database {
      * Vacuums the database to reduce file size
      */
     public void vacuum() {
+        if (query == null)
+            return;
         query.update("VACUUM").run();
         plugin.debug("Vacuumed SQLite database.");
     }
