@@ -155,6 +155,7 @@ public abstract class Database {
 			disconnect();
 
 			ParamSetter<UUID> uuidParamSetter = (uuid, ps, i) -> ps.setString(i, uuid.toString());
+			@SuppressWarnings("rawtypes")
 			Map<Class, ParamSetter> paramSetters = new HashMap<>();
 			paramSetters.put(UUID.class, uuidParamSetter);
 
@@ -634,7 +635,14 @@ public abstract class Database {
 	 */
 	public void addCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback) {
 		plugin.debugf("Adding co-owner %s to bank #%d.", coowner.getName(), bank.getID());
-		addCoOwner(tableCoOwnsBank, "BankID", coowner.getUniqueId(), bank.getID(), callback);
+		plugin.async(() -> {
+			query
+					.update("REPLACE INTO " + tableCoOwnsBank + "(CoOwnerUUID, BankID) VALUES(?,?)")
+					.params(coowner.getUniqueId(), bank.getID())
+					.errorHandler(forwardError(callback))
+					.run();
+			Callback.callSyncResult(callback);
+		});
 	}
 
 
@@ -645,14 +653,10 @@ public abstract class Database {
 	 */
 	public void addCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback) {
 		plugin.debugf("Adding co-owner %s to account #%d.", coowner.getName(), account.getID());
-		addCoOwner(tableCoOwnsAccount, "AccountID", coowner.getUniqueId(), account.getID(), callback);
-	}
-
-	private void addCoOwner(String table, String idAttribute, UUID coownerUUID, int entityID, Callback<Void> callback) {
 		plugin.async(() -> {
 			query
-					.update("REPLACE INTO " + table + "(CoOwnerUUID, " + idAttribute + ") VALUES(?,?)")
-					.params(coownerUUID, entityID)
+					.update("REPLACE INTO " + tableCoOwnsAccount + "(CoOwnerUUID, AccountID) VALUES(?,?)")
+					.params(coowner.getUniqueId(), account.getID())
 					.errorHandler(forwardError(callback))
 					.run();
 			Callback.callSyncResult(callback);
@@ -666,7 +670,17 @@ public abstract class Database {
 	 */
 	public void removeCoOwner(Bank bank, OfflinePlayer coowner, Callback<Void> callback) {
 		plugin.debugf("Removing co-owner %s from bank #%d.", coowner.getName(), bank.getID());
-		removeCoOwner(tableCoOwnsBank, "BankID", bank.getID(), coowner.getUniqueId(), callback);
+		plugin.async(() -> {
+			long affectedRows = query
+					.update("DELETE FROM " + tableCoOwnsBank + " WHERE BankID = ? AND CoOwnerUUID = ?")
+					.params(bank.getID(), coowner.getUniqueId())
+					.errorHandler(forwardError(callback))
+					.run()
+					.affectedRows();
+			if (affectedRows == 0)
+				plugin.debugf("Found no co-owner to remove.");
+			Callback.callSyncResult(callback);
+		});
 	}
 
 	/**
@@ -676,14 +690,10 @@ public abstract class Database {
 	 */
 	public void removeCoOwner(Account account, OfflinePlayer coowner, Callback<Void> callback) {
 		plugin.debugf("Removing co-owner %s from account #%d.", coowner.getName(), account.getID());
-		removeCoOwner(tableCoOwnsAccount, "AccountID", account.getID(), coowner.getUniqueId(), callback);
-	}
-
-	private void removeCoOwner(String table, String idAttribute, int entityID, UUID coownerUUID, Callback<Void> callback) {
 		plugin.async(() -> {
 			long affectedRows = query
-					.update("DELETE FROM " + table + " WHERE " + idAttribute + " = ? AND CoOwnerUUID = ?")
-					.params(entityID, coownerUUID)
+					.update("DELETE FROM " + tableCoOwnsAccount + " WHERE AccountID = ? AND CoOwnerUUID = ?")
+					.params(account.getID(), coowner.getUniqueId())
 					.errorHandler(forwardError(callback))
 					.run()
 					.affectedRows();
