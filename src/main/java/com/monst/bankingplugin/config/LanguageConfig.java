@@ -31,9 +31,6 @@ public class LanguageConfig extends FileConfiguration {
         if (!Files.exists(defaultLangFile))
             plugin.saveResource("lang/en_US.lang", false);
 
-        if (!Files.exists(langFolder.resolve("de_DE.lang")))
-            plugin.saveResource("lang/de_DE.lang", false);
-
         Path specifiedLang = langFolder.resolve(Config.languageFile.get() + ".lang");
         if (Files.exists(specifiedLang)) {
             try {

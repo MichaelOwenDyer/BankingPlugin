@@ -274,6 +274,11 @@ public class Config {
 	 */
 	public static LanguageFile languageFile = new LanguageFile();
 
+	/**
+	 * The path to use for the database file.
+	 */
+	public static DatabaseFile databaseFile = new DatabaseFile();
+
 	static {
 		PLUGIN.saveConfig();
 	}
@@ -340,7 +345,8 @@ public class Config {
 			enableMail,
 			nameRegex,
 			enableStartupMessage,
-			languageFile
+			languageFile,
+			databaseFile
 	};
 
 	public static List<String> matchPath(String input) {

@@ -346,6 +346,11 @@ public enum Message {
             "&c\"%INPUT%\" is not a valid regular expression.",
             Placeholder.INPUT
     ),
+    NOT_A_FILENAME (
+            "A player attempts to set a configuration property to a filename, but provided a string that was not a valid filename.",
+            "&c\"%INPUT%\" is not a valid filename.",
+            Placeholder.INPUT
+    ),
     NOT_A_FUNCTION (
             "A player attempts to set a configuration property to a mathematical function, but provided a string that was not a valid function.",
             "&c\"%INPUT%\" is not a valid function.",

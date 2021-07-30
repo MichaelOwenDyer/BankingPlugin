@@ -24,8 +24,7 @@ public class InterestPayoutTimes extends OverridableValue<List<String>, Set<Loca
     @Override
     void afterSet(Set<LocalTime> newValue) {
         super.afterSet(newValue);
-        if (PLUGIN.isEnabled())
-            InterestEventScheduler.scheduleAllBanks();
+        InterestEventScheduler.scheduleAllBanks();
     }
 
     @Override

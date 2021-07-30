@@ -35,8 +35,8 @@ public class LanguageFile extends ConfigValue<String, String> implements NativeS
                     .map(Path::getFileName)
                     .map(Path::toString)
                     .filter(fileName -> fileName.endsWith(".lang"))
-                    .map(fileName -> fileName.replaceFirst("[.][^.]+$", "")) // Remove extension
-                    .forEach(tabCompletions::accept);
+                    .map(fileName -> fileName.substring(0, fileName.length() - 5)) // Remove extension
+                    .forEach(tabCompletions);
         } catch (IOException ignored) {}
         return tabCompletions.build().distinct().collect(Collectors.toList());
     }

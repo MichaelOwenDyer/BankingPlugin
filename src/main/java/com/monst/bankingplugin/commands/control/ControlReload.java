@@ -1,8 +1,6 @@
 package com.monst.bankingplugin.commands.control;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.Account;
-import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.control.ReloadEvent;
 import com.monst.bankingplugin.lang.Message;
@@ -10,8 +8,6 @@ import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
-
-import java.util.Set;
 
 public class ControlReload extends SubCommand.ControlSubCommand {
 
@@ -46,14 +42,14 @@ public class ControlReload extends SubCommand.ControlSubCommand {
             return true;
         }
 
-        plugin.reload(Callback.of(result -> {
-                    Set<Bank> banks = result.getBanks();
-                    Set<Account> accounts = result.getAccounts();
+        plugin.reload(Callback.of(bankAccountMap -> {
+                    int numberOfBanks = bankAccountMap.keySet().size();
+                    int numberOfAccounts = bankAccountMap.values().size();
                     sender.sendMessage(Message.RELOADED_PLUGIN
-                            .with(Placeholder.NUMBER_OF_BANKS).as(banks.size())
-                            .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size())
+                            .with(Placeholder.NUMBER_OF_BANKS).as(numberOfBanks)
+                            .and(Placeholder.NUMBER_OF_ACCOUNTS).as(numberOfAccounts)
                             .translate());
-                    plugin.debugf("%s put reloaded %d banks and %d accounts.", sender.getName(), banks.size(), accounts.size());
+                    plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), numberOfBanks, numberOfAccounts);
                 }, error -> sender.sendMessage(Message.ERROR_OCCURRED.with(Placeholder.ERROR)
                         .as("Fatal error while loading banks and accounts from the database.")
                         .translate())

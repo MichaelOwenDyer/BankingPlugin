@@ -28,7 +28,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.codejargon.fluentjdbc.api.FluentJdbc;
 import org.codejargon.fluentjdbc.api.FluentJdbcBuilder;
 import org.codejargon.fluentjdbc.api.ParamSetter;
 import org.codejargon.fluentjdbc.api.mapper.Mappers;
@@ -41,26 +40,29 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class Database {
 
-	// Disable log messages from Hikari
+	private static final int DATABASE_VERSION = 1;
+
+	private static final Mapper<AccountTransaction> TRANSACTION_MAPPER;
+	private static final Mapper<AccountInterest> INTEREST_MAPPER;
+	private static final Mapper<BankIncome> INCOME_MAPPER;
 	static {
-		Logger.getLogger("com.zaxxer.hikari.pool.PoolBase").setLevel(Level.OFF);
-		Logger.getLogger("com.zaxxer.hikari.pool.HikariPool").setLevel(Level.OFF);
-		Logger.getLogger("com.zaxxer.hikari.HikariDataSource").setLevel(Level.OFF);
-		Logger.getLogger("com.zaxxer.hikari.HikariConfig").setLevel(Level.OFF);
-		Logger.getLogger("com.zaxxer.hikari.util.DriverDataSource").setLevel(Level.OFF);
+		ObjectMappers objectMappers = ObjectMappers.builder().build();
+		TRANSACTION_MAPPER = objectMappers.forClass(AccountTransaction.class);
+		INTEREST_MAPPER = objectMappers.forClass(AccountInterest.class);
+		INCOME_MAPPER = objectMappers.forClass(BankIncome.class);
 	}
 
-	final BankingPlugin plugin;
-	private final int DATABASE_VERSION = 1;
-	private final Set<String> unknownWorldNames = new HashSet<>();
-	private final ObjectMappers objectMappers = ObjectMappers.builder().build();
+	BankingPlugin plugin;
+	Query query;
+
+	private final Runnable[] updates = new Runnable[] {
+			() -> {} // Updates can be added here in the future
+	};
 
 	final String tableBanks = "Banks";
 	final String tableCoOwnsBank = "co_owns_bank";
@@ -71,8 +73,6 @@ public abstract class Database {
 	final String tableBankIncome = "BankIncome";
 	final String tablePlayers = "Players";
 	final String tableFields = "Fields";
-
-	Query query;
 
 	public Database(BankingPlugin plugin) {
 		this.plugin = plugin;
@@ -112,13 +112,13 @@ public abstract class Database {
 		return query
 				.select("SELECT Value FROM " + tableFields + " WHERE Field = 'Version'")
 				.firstResult(rs -> rs.getInt("Value"))
-				.orElse(0);
+				.orElse(1);
 	}
 
-	private void setDatabaseVersion() {
+	private void setDatabaseVersion(int version) {
 		query
 				.update("REPLACE INTO " + tableFields + " VALUES ('Version', ?)")
-				.params(DATABASE_VERSION)
+				.params(version)
 				.run();
 	}
 
@@ -130,12 +130,9 @@ public abstract class Database {
 		int version = getDatabaseVersion();
 		if (version == DATABASE_VERSION)
 			return false;
-		Runnable[] updates = new Runnable[] { () -> {} }; // Updates can be added here in the future
-		while (version < DATABASE_VERSION && version < updates.length) {
+		for (; version < DATABASE_VERSION; version++)
 			updates[version].run();
-			version++;
-		}
-		setDatabaseVersion();
+		setDatabaseVersion(DATABASE_VERSION);
 		return true;
 	}
 
@@ -154,12 +151,19 @@ public abstract class Database {
 		plugin.async(() -> {
 			disconnect();
 
+			dataSource = getDataSource();
+			if (dataSource == null) {
+				IllegalStateException e = new IllegalStateException("Data source is null");
+				callback.onError(e);
+				plugin.debug(e);
+				return;
+			}
+
 			ParamSetter<UUID> uuidParamSetter = (uuid, ps, i) -> ps.setString(i, uuid.toString());
 			@SuppressWarnings("rawtypes")
 			Map<Class, ParamSetter> paramSetters = new HashMap<>();
 			paramSetters.put(UUID.class, uuidParamSetter);
 
-			FluentJdbc fluentJdbc;
 			SqlErrorHandler handler = (e, query) -> {
 				plugin.debugf("Encountered a database error while executing query '%s'", query.orElse("null"));
 				plugin.debug(e);
@@ -175,30 +179,22 @@ public abstract class Database {
 				} else
 					plugin.debug(execution.sqlException().orElseThrow(IllegalStateException::new));
 			};
+
 			try {
-				dataSource = getDataSource();
-				fluentJdbc = new FluentJdbcBuilder()
+				query = new FluentJdbcBuilder()
 						.connectionProvider(dataSource)
 						.afterQueryListener(queryLogger)
 						.defaultSqlHandler(() -> handler)
 						.paramSetters(paramSetters)
 						.defaultTransactionIsolation(Transaction.Isolation.SERIALIZABLE)
 						.defaultFetchSize(0)
-						.build();
+						.build()
+						.query();
 			} catch (RuntimeException e) {
 				callback.onError(e);
 				plugin.debug(e);
 				return;
 			}
-
-			if (dataSource == null || fluentJdbc == null) {
-				IllegalStateException e = new IllegalStateException("Data source / fluentJdbc is null");
-				callback.onError(e);
-				plugin.debug(e);
-				return;
-			}
-
-			query = fluentJdbc.query();
 
 			plugin.debug("Starting table creation.");
 
@@ -248,8 +244,13 @@ public abstract class Database {
 	public void disconnect() {
 		if (dataSource == null)
 			return;
+		close();
 		dataSource.close();
 		dataSource = null;
+	}
+
+	void close() {
+
 	}
 
 	/**
@@ -479,6 +480,8 @@ public abstract class Database {
 		return Collections.unmodifiableSet(accounts);
 	}
 
+	private final Set<String> unknownWorldNames = new HashSet<>();
+
 	private Mapper<Bank> reconstructBank() {
 		return rs -> {
 			ValueGrabber values = new ValueGrabber(rs);
@@ -490,13 +493,13 @@ public abstract class Database {
 			String ownerUUID = values.getNextString();
 			OfflinePlayer owner = Optional.ofNullable(ownerUUID).map(UUID::fromString).map(Bukkit::getOfflinePlayer).orElse(null);
 
-			Boolean countInterestDelayOffline = values.getNextBooleanNullable();
-			Boolean reimburseAccountCreation = values.getNextBooleanNullable();
-			Boolean payOnLowBalance = values.getNextBooleanNullable();
-			Double interestRate = values.getNextDoubleNullable();
-			Double accountCreationPrice = values.getNextDoubleNullable();
-			Double minimumBalance = values.getNextDoubleNullable();
-			Double lowBalanceFee = values.getNextDoubleNullable();
+			Boolean countInterestDelayOffline = values.getNextBoolean();
+			Boolean reimburseAccountCreation = values.getNextBoolean();
+			Boolean payOnLowBalance = values.getNextBoolean();
+			Double interestRate = values.getNextDouble();
+			Double accountCreationPrice = values.getNextDouble();
+			Double minimumBalance = values.getNextDouble();
+			Double lowBalanceFee = values.getNextDouble();
 			Integer initialInterestDelay = values.getNextInteger();
 			Integer allowedOfflinePayouts = values.getNextInteger();
 			Integer offlineMultiplierDecrement = values.getNextInteger();
@@ -847,8 +850,6 @@ public abstract class Database {
 		}); // TODO: Make async?
 	}
 
-	final Mapper<AccountTransaction> transactionMapper = objectMappers.forClass(AccountTransaction.class);
-
 	public void getTransactionsAtAccount(Account account, Callback<Collection<AccountTransaction>> callback) {
 		plugin.async(() -> {
 			plugin.debugf("Fetching transactions at account #%d.", account.getID());
@@ -859,7 +860,7 @@ public abstract class Database {
 							"ORDER BY TransactionID DESC")
 					.params(account.getID())
 					.errorHandler(forwardError(callback))
-					.listResult(transactionMapper);
+					.listResult(TRANSACTION_MAPPER);
 			plugin.debugf("Found %d transactions at account #%d.", result.size(), account.getID());
 			Callback.callSyncResult(callback, result);
 		});
@@ -875,13 +876,11 @@ public abstract class Database {
 							"ORDER BY TransactionID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
-					.listResult(transactionMapper);
+					.listResult(TRANSACTION_MAPPER);
 			plugin.debugf("Found %d transactions at bank #%d.", result.size(), bank.getID());
 			Callback.callSyncResult(callback, result);
 		});
 	}
-
-	final Mapper<AccountInterest> interestMapper = objectMappers.forClass(AccountInterest.class);
 
 	public void getInterestPaymentsAtAccount(Account account, Callback<Collection<AccountInterest>> callback) {
 		plugin.async(() -> {
@@ -893,7 +892,7 @@ public abstract class Database {
 							"ORDER BY InterestID DESC")
 					.params(account.getID())
 					.errorHandler(forwardError(callback))
-					.listResult(interestMapper);
+					.listResult(INTEREST_MAPPER);
 			plugin.debugf("Found %d interest payments at account #%d.", result.size(), account.getID());
 			Callback.callSyncResult(callback, result);
 		});
@@ -909,13 +908,11 @@ public abstract class Database {
 							"ORDER BY InterestID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
-					.listResult(interestMapper);
+					.listResult(INTEREST_MAPPER);
 			plugin.debugf("Found %d interest payments at bank #%d.", result.size(), bank.getID());
 			Callback.callSyncResult(callback, result);
 		});
 	}
-
-	final Mapper<BankIncome> revenueMapper = objectMappers.forClass(BankIncome.class);
 
 	public void getIncomesAtBank(Bank bank, Callback<Collection<BankIncome>> callback) {
 		plugin.async(() -> {
@@ -927,7 +924,7 @@ public abstract class Database {
 							"ORDER BY IncomeID DESC")
 					.params(bank.getID())
 					.errorHandler(forwardError(callback))
-					.listResult(revenueMapper);
+					.listResult(INCOME_MAPPER);
 			plugin.debugf("Found %d income entries at bank #%d.", result.size(), bank.getID());
 			Callback.callSyncResult(callback, result);
 		});
@@ -1056,21 +1053,13 @@ public abstract class Database {
 			return rs.wasNull() ? null : result;
 		}
 
-		double getNextDouble() throws SQLException {
-			return rs.getDouble(index++);
-		}
-
-		Double getNextDoubleNullable() throws SQLException {
-			double result = getNextDouble();
+		Double getNextDouble() throws SQLException {
+			double result = rs.getDouble(index++);
 			return rs.wasNull() ? null : result;
 		}
 
-		boolean getNextBoolean() throws SQLException {
-			return rs.getBoolean(index++);
-		}
-
-		Boolean getNextBooleanNullable() throws SQLException {
-			boolean result = getNextBoolean();
+		Boolean getNextBoolean() throws SQLException {
+			boolean result = rs.getBoolean(index++);
 			return rs.wasNull() ? null : result;
 		}
 

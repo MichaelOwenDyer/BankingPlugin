@@ -5,6 +5,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.time.LocalTime;
@@ -55,6 +57,10 @@ public class Parser {
 
     public static Pattern parsePattern(String regex) throws PatternParseException {
         return wrapRuntimeException(() -> Pattern.compile(regex), () -> new PatternParseException(regex));
+    }
+
+    public static Path parsePath(String name, String extension) throws PathParseException {
+        return wrapRuntimeException(() -> Paths.get(name + extension), () -> new PathParseException(name));
     }
 
     private static <T, E extends ArgumentParseException> T wrapRuntimeException(Supplier<T> supplier, Supplier<E> exceptionSupplier) throws E {

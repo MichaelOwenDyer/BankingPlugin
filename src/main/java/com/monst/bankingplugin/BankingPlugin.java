@@ -145,7 +145,6 @@ public class BankingPlugin extends JavaPlugin {
         registerListeners();
         registerExternalListeners();
 		initializeDatabase();
-		initializeBankingEntities();
 		enableMetrics();
 
 	}
@@ -162,11 +161,8 @@ public class BankingPlugin extends JavaPlugin {
 			for (Bank bank : bankRepository.getAll())
 				bankRepository.remove(bank, false, null);
 
-		if (database != null) {
-			if (database instanceof SQLite)
-				((SQLite) database).vacuum();
+		if (database != null)
 			database.disconnect();
-		}
 
 		if (debugWriter != null)
 			debugWriter.close();
@@ -297,48 +293,30 @@ public class BankingPlugin extends JavaPlugin {
 	private void initializeDatabase() {
 		database = new SQLite(this);
 		debug("Database initialized.");
-	}
-
-	private void initializeBankingEntities() {
-		fetchBankingEntities(Callback.of(result -> {
-			Set<Bank> banks = result.getBanks();
-			Set<Account> accounts = result.getAccounts();
-
-			new BankInitializedEvent(banks).fire();
-			new AccountInitializedEvent(accounts).fire();
-
-			String message = String.format("Initialized %d bank%s and %d account%s.",
-					banks.size(), banks.size() == 1 ? "" : "s",
-					accounts.size(), accounts.size() == 1 ? "" : "s");
-			getLogger().info(message);
-			debug(message);
-		}));
+		reloadEntities(Callback.doNothing());
 	}
 
 	/**
 	 * Reloads the plugin.
 	 * @param callback            Callback that returns the reloaded banks and accounts.
 	 */
-	public void reload(Callback<FetchResult> callback) {
+	public void reload(Callback<Map<Bank, Set<Account>>> callback) {
 		debug("Reloading...");
 		Config.reload();
 		reloadLanguageConfig();
-		fetchBankingEntities(callback);
+		reloadEntities(callback);
 	}
 
 	/**
 	 * Fetches all banks and accounts from the {@link Database}.
 	 */
-	private void fetchBankingEntities(Callback<FetchResult> callback) {
+	public void reloadEntities(Callback<Map<Bank, Set<Account>>> callback) {
 		getDatabase().connect(Callback.of(
 				result -> {
-					Collection<Bank> banksBeforeReload = bankRepository.getAll();
-					Collection<Account> accountsBeforeReload = accountRepository.getAll();
-
 					Set<Bank> reloadedBanks = new HashSet<>();
 					Set<Account> reloadedAccounts = new HashSet<>();
 
-					for (Bank bank : banksBeforeReload) {
+					for (Bank bank : bankRepository.getAll()) {
 						bankRepository.remove(bank, false);
 						debugf("Removed bank (#%d)", bank.getID());
 					}
@@ -357,16 +335,16 @@ public class BankingPlugin extends JavaPlugin {
 									}
 								});
 
-								if (!banksBeforeReload.isEmpty() && banksBeforeReload.size() != reloadedBanks.size())
-									debugf("Number of banks before load was %d and is now %d.",
-											banksBeforeReload.size(), reloadedBanks.size());
+								new BankInitializedEvent(reloadedBanks).fire();
+								new AccountInitializedEvent(reloadedAccounts).fire();
 
-								if (!accountsBeforeReload.isEmpty() && accountsBeforeReload.size() != reloadedAccounts.size())
-									debugf("Number of accounts before load was %d and is now %d.",
-											accountsBeforeReload.size(), reloadedAccounts.size());
+								String initializedMessage = String.format("Initialized %d bank%s and %d account%s.",
+										reloadedBanks.size(), reloadedBanks.size() == 1 ? "" : "s",
+										reloadedAccounts.size(), reloadedAccounts.size() == 1 ? "" : "s");
+								getLogger().info(initializedMessage);
+								debug(initializedMessage);
 
-								InterestEventScheduler.scheduleAllBanks();
-								Callback.callResult(callback, new FetchResult(reloadedBanks, reloadedAccounts));
+								Callback.callResult(callback, new HashMap<>(bankAccountsMap));
 							},
 							callback::onError
 					));

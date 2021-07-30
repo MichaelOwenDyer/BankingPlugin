@@ -1,10 +1,12 @@
 package com.monst.bankingplugin.sql;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.config.Config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -28,21 +30,31 @@ public class SQLite extends Database {
             return null;
         }
 
-        Path dbFile = plugin.getDataFolder().toPath().resolve("banking.db");
-
-        if (!Files.exists(dbFile)) {
+        Path databaseFolder = plugin.getDataFolder().toPath().resolve("database");
+        Path databaseFile = databaseFolder.resolve(Config.databaseFile.get());
+        while (!Files.exists(databaseFile)) {
             try {
-                Files.createFile(dbFile);
-            } catch (IOException ex) {
+                Files.createDirectories(databaseFile.getParent());
+                Files.createFile(databaseFile);
+                plugin.getLogger().info("Created new database at " + databaseFile + ".");
+            } catch (AccessDeniedException | RuntimeException e) {
+                plugin.getLogger().severe("Failed to create database file at " + databaseFile + ". Reverting to default directory.");
+                plugin.debug("Failed to create database file at " + databaseFile + ". Reverting to default directory.");
+                plugin.debug(e);
+                databaseFile = databaseFolder.resolve("banking.db");
+            } catch (IOException e) {
                 plugin.getLogger().severe("Failed to create database file.");
                 plugin.debug("Failed to create database file.");
-                plugin.debug(ex);
+                plugin.debug(e);
                 return null;
             }
         }
 
+        plugin.getLogger().info("Using database \"" + databaseFile.getFileName() + "\".");
+        plugin.debug("Using database \"" + databaseFile.getFileName() + "\".");
+
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:sqlite:" + dbFile);
+        config.setJdbcUrl("jdbc:sqlite:" + databaseFile);
         config.setConnectionTestQuery("SELECT 1");
 
         return new HikariDataSource(config);
@@ -51,7 +63,8 @@ public class SQLite extends Database {
     /**
      * Vacuums the database to reduce file size
      */
-    public void vacuum() {
+    @Override
+    void close() {
         if (query == null)
             return;
         query.update("VACUUM").run();
