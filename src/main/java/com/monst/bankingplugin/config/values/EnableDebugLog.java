@@ -7,14 +7,14 @@ public class EnableDebugLog extends ConfigValue<Boolean, Boolean> implements Nat
     }
 
     @Override
-    void beforeSet(Boolean newValue) {
-        if (!newValue)
+    void beforeSet() {
+        if (!get())
             PLUGIN.debug("Debug log disabled.");
     }
 
     @Override
-    void afterSet(Boolean newValue) {
-        if (newValue)
+    void afterSet() {
+        if (get())
             PLUGIN.debug("Debug log enabled.");
     }
 

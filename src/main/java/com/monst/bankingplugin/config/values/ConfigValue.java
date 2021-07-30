@@ -53,14 +53,15 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
 
     public final T set(@Nonnull String input) throws ArgumentParseException {
         T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
-        beforeSet(newValue);
+        beforeSet();
         convertAndWriteToFile(newValue);
-        afterSet(newValue);
-        return lastSeenValue = newValue;
+        lastSeenValue = newValue;
+        afterSet();
+        return lastSeenValue;
     }
 
-    void beforeSet(T newValue) {}
-    void afterSet(T newValue) {}
+    void beforeSet() {}
+    void afterSet() {}
 
     public final void reload() {
         lastSeenValue = null;

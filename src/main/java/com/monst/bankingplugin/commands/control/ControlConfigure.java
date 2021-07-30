@@ -38,7 +38,7 @@ public class ControlConfigure extends SubCommand.ControlSubCommand {
         plugin.debugf("%s wants to configure the plugin: '%s'", sender.getName(), String.join(" ", args));
 
         if (!sender.hasPermission(Permissions.CONFIG)) {
-            plugin.debug(sender.getName() + " does not have permission to configure the config");
+            plugin.debug(sender.getName() + " does not have permission to configure the plugin");
             sender.sendMessage(Message.NO_PERMISSION_CONFIG.translate());
             return true;
         }

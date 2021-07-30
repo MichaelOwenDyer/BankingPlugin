@@ -26,6 +26,11 @@ public class DatabaseFile extends ConfigValue<String, Path> implements NonNative
     }
 
     @Override
+    void afterSet() {
+        PLUGIN.reloadEntities(Callback.doNothing());
+    }
+
+    @Override
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length > 2)
             return Collections.emptyList();
@@ -43,11 +48,6 @@ public class DatabaseFile extends ConfigValue<String, Path> implements NonNative
                     .forEach(tabCompletions);
         } catch (IOException ignored) {}
         return tabCompletions.build().distinct().collect(Collectors.toList());
-    }
-
-    @Override
-    void afterSet(Path newValue) {
-        PLUGIN.reloadEntities(Callback.doNothing());
     }
 
     @Override

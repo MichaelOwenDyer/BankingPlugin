@@ -1,23 +1,31 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.exceptions.parse.PathParseException;
+import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.command.CommandSender;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class LanguageFile extends ConfigValue<String, String> implements NativeString {
+public class LanguageFile extends ConfigValue<String, Path> implements NonNativeString<Path> {
 
     public LanguageFile() {
-        super("language-file", "en_US");
+        super("language-file", Paths.get("en_US.lang"));
     }
 
     @Override
-    void afterSet(String newValue) {
+    public Path parse(String input) throws PathParseException {
+        return Parser.parsePath(input, ".lang");
+    }
+
+    @Override
+    void afterSet() {
         PLUGIN.reloadLanguageConfig();
     }
 
@@ -41,4 +49,9 @@ public class LanguageFile extends ConfigValue<String, String> implements NativeS
         return tabCompletions.build().distinct().collect(Collectors.toList());
     }
 
+    @Override
+    public Object convertToStorableType(Path path) {
+        String fileName = path.toString();
+        return fileName.substring(0, fileName.length() - 5); // Remove extension
+    }
 }

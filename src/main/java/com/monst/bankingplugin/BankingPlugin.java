@@ -360,14 +360,6 @@ public class BankingPlugin extends JavaPlugin {
 		));
 	}
 
-	public static class FetchResult extends Pair<Set<Bank>, Set<Account>> {
-		public FetchResult(Set<Bank> banks, Set<Account> accounts) {
-			super(banks, accounts);
-		}
-		public Set<Bank> getBanks() { return super.getFirst(); }
-		public Set<Account> getAccounts() { return super.getSecond(); }
-	}
-
 	private void enableMetrics() {
 		debug("Initializing metrics...");
 

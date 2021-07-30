@@ -24,7 +24,7 @@ abstract class OverridableValue<V, T> extends ConfigValue<V, T> {
     }
 
     @Override
-    void afterSet(T newValue) {
+    void afterSet() {
         PLUGIN.getBankRepository().getAll().forEach(Bank::notifyObservers);
     }
 

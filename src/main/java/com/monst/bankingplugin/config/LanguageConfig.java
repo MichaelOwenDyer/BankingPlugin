@@ -31,7 +31,7 @@ public class LanguageConfig extends FileConfiguration {
         if (!Files.exists(defaultLangFile))
             plugin.saveResource("lang/en_US.lang", false);
 
-        Path specifiedLang = langFolder.resolve(Config.languageFile.get() + ".lang");
+        Path specifiedLang = langFolder.resolve(Config.languageFile.get());
         if (Files.exists(specifiedLang)) {
             try {
                 load(specifiedLang);
@@ -120,6 +120,7 @@ public class LanguageConfig extends FileConfiguration {
     }
 
     private void load(@Nonnull Stream<String> lines) {
+        configFilePathValues.clear();
         lines
                 .filter(l -> !l.isEmpty())
                 .filter(l -> !l.startsWith("#"))

@@ -36,7 +36,8 @@ public class SQLite extends Database {
             try {
                 Files.createDirectories(databaseFile.getParent());
                 Files.createFile(databaseFile);
-                plugin.getLogger().info("Created new database at " + databaseFile + ".");
+                plugin.getLogger().info("Created new database at " + databaseFile);
+                plugin.debug("Created new database at " + databaseFile);
             } catch (AccessDeniedException | RuntimeException e) {
                 plugin.getLogger().severe("Failed to create database file at " + databaseFile + ". Reverting to default directory.");
                 plugin.debug("Failed to create database file at " + databaseFile + ". Reverting to default directory.");
@@ -50,8 +51,8 @@ public class SQLite extends Database {
             }
         }
 
-        plugin.getLogger().info("Using database \"" + databaseFile.getFileName() + "\".");
-        plugin.debug("Using database \"" + databaseFile.getFileName() + "\".");
+        plugin.getLogger().info("Using database \"" + databaseFile.getFileName() + "\"");
+        plugin.debug("Using database \"" + databaseFile.getFileName() + "\"");
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + databaseFile);
