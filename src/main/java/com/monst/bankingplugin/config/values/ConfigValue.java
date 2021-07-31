@@ -10,6 +10,8 @@ import org.bukkit.command.CommandSender;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A value stored in the config.yml file under a certain path.
@@ -78,7 +80,7 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
 
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2)
-            return Collections.singletonList(getFormatted());
+            return Stream.of(getFormatted(), format(defaultConfiguration)).distinct().collect(Collectors.toList());
         return Collections.emptyList();
     }
 

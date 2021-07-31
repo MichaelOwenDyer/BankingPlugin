@@ -31,6 +31,7 @@ public class SQLite extends Database {
         }
 
         Path databaseFolder = plugin.getDataFolder().toPath().resolve("database");
+        Path defaultLocation = databaseFolder.resolve("banking.db");
         Path databaseFile = databaseFolder.resolve(Config.databaseFile.get());
         while (!Files.exists(databaseFile)) {
             try {
@@ -42,7 +43,7 @@ public class SQLite extends Database {
                 plugin.getLogger().severe("Failed to create database file at " + databaseFile + ". Reverting to default directory.");
                 plugin.debug("Failed to create database file at " + databaseFile + ". Reverting to default directory.");
                 plugin.debug(e);
-                databaseFile = databaseFolder.resolve("banking.db");
+                databaseFile = defaultLocation;
             } catch (IOException e) {
                 plugin.getLogger().severe("Failed to create database file.");
                 plugin.debug("Failed to create database file.");
@@ -51,8 +52,10 @@ public class SQLite extends Database {
             }
         }
 
-        plugin.getLogger().info("Using database \"" + databaseFile.getFileName() + "\"");
-        plugin.debug("Using database \"" + databaseFile.getFileName() + "\"");
+        if (!databaseFile.equals(defaultLocation)) {
+            plugin.getLogger().info("Using database \"" + databaseFile.getFileName() + "\"");
+            plugin.debug("Using database \"" + databaseFile.getFileName() + "\"");
+        }
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + databaseFile);
