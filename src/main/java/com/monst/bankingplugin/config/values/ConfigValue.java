@@ -20,13 +20,13 @@ import java.util.stream.Stream;
  */
 public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
 
-    static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
-
+    final BankingPlugin plugin;
     private final String path;
     private final T defaultConfiguration;
     private T lastSeenValue;
 
-    ConfigValue(String path, T defaultConfiguration) {
+    ConfigValue(BankingPlugin plugin, String path, T defaultConfiguration) {
+        this.plugin = plugin;
         this.path = path;
         this.defaultConfiguration = defaultConfiguration;
         get(); // Initialize value in memory
@@ -40,15 +40,15 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
             return lastSeenValue = readFromFile();
         } catch (MissingValueException e) {
             setDefault();
-            PLUGIN.getLogger().info(String.format("Missing config value \"%s\" was added to the config.yml file.", path));
+            plugin.getLogger().info(String.format("Missing config value \"%s\" was added to the config.yml file.", path));
             return lastSeenValue = defaultConfiguration;
         } catch (InvalidValueException e) {
             convertAndWriteToFile(e.getReplacement());
-            PLUGIN.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
+            plugin.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
             return lastSeenValue = e.getReplacement();
         } catch (CorruptedValueException e) {
             setDefault();
-            PLUGIN.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
+            plugin.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
             return lastSeenValue = defaultConfiguration;
         }
     }
@@ -95,11 +95,11 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
     }
 
     private void writeToFile(Object o) {
-        write(PLUGIN.getConfig(), path, o);
+        write(plugin.getConfig(), path, o);
     }
 
     private T readFromFile() throws MissingValueException, InvalidValueException, CorruptedValueException {
-        return read(PLUGIN.getConfig(), path);
+        return read(plugin.getConfig(), path);
     }
 
 }

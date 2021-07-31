@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.parse.ExpressionParseException;
 import com.monst.bankingplugin.utils.QuickMath;
 import org.mariuszgromada.math.mxparser.Argument;
@@ -17,8 +18,8 @@ public class BankRevenueFunction extends ConfigValue<String, Expression> impleme
             new Argument("g"), // Gini coefficient
     };
 
-    public BankRevenueFunction() {
-        super("bank-revenue-function", new Expression("(0.10 * x) * (1 - g) * ln(c)", ARGS));
+    public BankRevenueFunction(BankingPlugin plugin) {
+        super(plugin, "bank-revenue-function", new Expression("(0.10 * x) * (1 - g) * ln(c)", ARGS));
     }
 
     @Override

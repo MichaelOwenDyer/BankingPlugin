@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.parse.WorldParseException;
 import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.Utils;
@@ -12,8 +13,8 @@ import java.util.stream.Collectors;
 
 public class DisabledWorlds extends ConfigValue<List<String>, Set<World>> implements ConfigCollection<World, Set<World>> {
 
-    public DisabledWorlds() {
-        super("disabled-worlds", Collections.emptySet());
+    public DisabledWorlds(BankingPlugin plugin) {
+        super(plugin, "disabled-worlds", Collections.emptySet());
     }
 
     @Override

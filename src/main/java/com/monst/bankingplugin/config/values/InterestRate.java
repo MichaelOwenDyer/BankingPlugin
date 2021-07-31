@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.parse.DoubleParseException;
 import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.QuickMath;
@@ -17,8 +18,8 @@ public class InterestRate extends OverridableValue<Double, Double> implements Na
         FORMATTER.setMaximumFractionDigits(2);
     }
 
-    public InterestRate() {
-        super("interest-rate", 0.01);
+    public InterestRate(BankingPlugin plugin) {
+        super(plugin, "interest-rate", 0.01);
     }
 
     @Override

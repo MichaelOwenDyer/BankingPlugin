@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.parse.PathParseException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -18,8 +19,8 @@ import java.util.stream.Stream;
 
 public class DatabaseFile extends ConfigValue<String, Path> implements NonNativeString<Path> {
 
-    public DatabaseFile() {
-        super("database-file", Paths.get("banking.db"));
+    public DatabaseFile(BankingPlugin plugin) {
+        super(plugin, "database-file", Paths.get("banking.db"));
     }
 
     @Override
@@ -29,7 +30,7 @@ public class DatabaseFile extends ConfigValue<String, Path> implements NonNative
 
     @Override
     public void afterSet(CommandSender executor) {
-        PLUGIN.reloadEntities(Callback.of(banksAndAccounts -> {
+        plugin.reloadEntities(Callback.of(banksAndAccounts -> {
             int numberOfBanks = banksAndAccounts.size();
             int numberOfAccounts = banksAndAccounts.values().size();
             executor.sendMessage(Message.RELOADED_PLUGIN
@@ -46,7 +47,7 @@ public class DatabaseFile extends ConfigValue<String, Path> implements NonNative
         Stream.Builder<String> tabCompletions = Stream.builder();
         tabCompletions.accept(getFormatted());
         tabCompletions.accept("banking.db");
-        Path databaseFolder = PLUGIN.getDataFolder().toPath().resolve("database");
+        Path databaseFolder = plugin.getDataFolder().toPath().resolve("database");
         try {
             Files.walk(databaseFolder)
                     .filter(Files::isRegularFile)

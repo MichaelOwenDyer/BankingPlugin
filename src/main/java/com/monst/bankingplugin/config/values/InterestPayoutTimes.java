@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.exceptions.parse.TimeParseException;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
  */
 public class InterestPayoutTimes extends OverridableValue<List<String>, Set<LocalTime>> implements ConfigCollection<LocalTime, Set<LocalTime>> {
 
-    public InterestPayoutTimes() {
-        super("interest-payout-times", Collections.emptySet());
+    public InterestPayoutTimes(BankingPlugin plugin) {
+        super(plugin, "interest-payout-times", Collections.emptySet());
     }
 
     @Override

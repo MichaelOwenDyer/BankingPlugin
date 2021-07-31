@@ -1,9 +1,11 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
+
 public class MinimumBankVolume extends ConfigValue<Integer, Integer> implements NativeInteger.Absolute {
 
-    public MinimumBankVolume() {
-        super("bank-size-limits.minimum", 125);
+    public MinimumBankVolume(BankingPlugin plugin) {
+        super(plugin, "bank-size-limits.minimum", 125);
     }
 
 }

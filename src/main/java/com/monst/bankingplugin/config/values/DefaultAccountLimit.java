@@ -1,9 +1,11 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
+
 public class DefaultAccountLimit extends ConfigValue<Integer, Integer> implements NativeInteger {
 
-    public DefaultAccountLimit() {
-        super("default-limits.account", 2);
+    public DefaultAccountLimit(BankingPlugin plugin) {
+        super(plugin, "default-limits.account", 2);
     }
 
 }

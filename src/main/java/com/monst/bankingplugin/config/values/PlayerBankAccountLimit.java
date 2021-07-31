@@ -1,9 +1,11 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
+
 public class PlayerBankAccountLimit extends OverridableValue<Integer, Integer> implements NativeInteger {
 
-    public PlayerBankAccountLimit() {
-        super("player-bank-account-limit", 1);
+    public PlayerBankAccountLimit(BankingPlugin plugin) {
+        super(plugin, "player-bank-account-limit", 1);
     }
 
 }

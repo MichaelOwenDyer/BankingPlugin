@@ -1,9 +1,11 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
+
 public class AllowOverride extends ConfigValue<Boolean, Boolean> implements NativeBoolean {
 
-    public AllowOverride(String path) {
-        super(path + ".allow-override", true);
+    public AllowOverride(BankingPlugin plugin, String path) {
+        super(plugin, path + ".allow-override", true);
     }
 
 }

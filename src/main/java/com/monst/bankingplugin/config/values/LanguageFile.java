@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.parse.PathParseException;
 import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.command.CommandSender;
@@ -15,8 +16,8 @@ import java.util.stream.Stream;
 
 public class LanguageFile extends ConfigValue<String, Path> implements NonNativeString<Path> {
 
-    public LanguageFile() {
-        super("language-file", Paths.get("en_US.lang"));
+    public LanguageFile(BankingPlugin plugin) {
+        super(plugin, "language-file", Paths.get("en_US.lang"));
     }
 
     @Override
@@ -26,7 +27,7 @@ public class LanguageFile extends ConfigValue<String, Path> implements NonNative
 
     @Override
     public void afterSet(CommandSender executor) {
-        PLUGIN.reloadLanguageConfig();
+        plugin.reloadLanguageConfig();
     }
 
     @Override
@@ -36,7 +37,7 @@ public class LanguageFile extends ConfigValue<String, Path> implements NonNative
         Stream.Builder<String> tabCompletions = Stream.builder();
         tabCompletions.accept(getFormatted());
         tabCompletions.accept("en_US.lang");
-        Path langFolder = PLUGIN.getDataFolder().toPath().resolve("lang");
+        Path langFolder = plugin.getDataFolder().toPath().resolve("lang");
         try {
             Files.walk(langFolder)
                     .filter(Files::isRegularFile)

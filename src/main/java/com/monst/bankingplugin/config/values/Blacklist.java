@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.parse.MaterialParseException;
 import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.Material;
@@ -12,8 +13,8 @@ import java.util.stream.Collectors;
 
 public class Blacklist extends ConfigValue<List<String>, Set<Material>> implements ConfigCollection<Material, Set<Material>> {
 
-    public Blacklist() {
-        super("blacklist", EnumSet.noneOf(Material.class));
+    public Blacklist(BankingPlugin plugin) {
+        super(plugin, "blacklist", EnumSet.noneOf(Material.class));
     }
 
     @Override

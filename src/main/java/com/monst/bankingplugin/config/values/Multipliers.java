@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.InvalidValueException;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.utils.Parser;
@@ -13,8 +14,8 @@ import java.util.List;
  */
 public class Multipliers extends OverridableValue<List<String>, List<Integer>> implements ConfigCollection<Integer, List<Integer>> {
 
-    public Multipliers() {
-        super("interest-multipliers", Collections.singletonList(1));
+    public Multipliers(BankingPlugin plugin) {
+        super(plugin, "interest-multipliers", Collections.singletonList(1));
     }
 
     @Override
