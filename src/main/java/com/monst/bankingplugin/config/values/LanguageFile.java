@@ -25,7 +25,7 @@ public class LanguageFile extends ConfigValue<String, Path> implements NonNative
     }
 
     @Override
-    void afterSet() {
+    public void afterSet(CommandSender executor) {
         PLUGIN.reloadLanguageConfig();
     }
 
@@ -35,23 +35,17 @@ public class LanguageFile extends ConfigValue<String, Path> implements NonNative
             return Collections.emptyList();
         Stream.Builder<String> tabCompletions = Stream.builder();
         tabCompletions.accept(getFormatted());
-        tabCompletions.accept("en_US");
+        tabCompletions.accept("en_US.lang");
         Path langFolder = PLUGIN.getDataFolder().toPath().resolve("lang");
         try {
-            Files.walk(langFolder, 1)
+            Files.walk(langFolder)
                     .filter(Files::isRegularFile)
-                    .map(Path::getFileName)
+                    .map(langFolder::relativize)
                     .map(Path::toString)
                     .filter(fileName -> fileName.endsWith(".lang"))
-                    .map(fileName -> fileName.substring(0, fileName.length() - 5)) // Remove extension
                     .forEach(tabCompletions);
         } catch (IOException ignored) {}
         return tabCompletions.build().distinct().collect(Collectors.toList());
     }
 
-    @Override
-    public Object convertToStorableType(Path path) {
-        String fileName = path.toString();
-        return fileName.substring(0, fileName.length() - 5); // Remove extension
-    }
 }

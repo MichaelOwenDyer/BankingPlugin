@@ -57,13 +57,11 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
         T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
         beforeSet();
         convertAndWriteToFile(newValue);
-        lastSeenValue = newValue;
-        afterSet();
-        return lastSeenValue;
+        return lastSeenValue = newValue;
     }
 
     void beforeSet() {}
-    void afterSet() {}
+    public void afterSet(CommandSender executor) {}
 
     public final void reload() {
         lastSeenValue = null;

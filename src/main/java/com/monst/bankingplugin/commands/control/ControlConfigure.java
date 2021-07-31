@@ -82,6 +82,7 @@ public class ControlConfigure extends SubCommand.ControlSubCommand {
                 .translate());
         if (!configValue.isHotSwappable())
             sender.sendMessage(Message.RESTART_REQUIRED.with(Placeholder.PROPERTY).as(path).translate());
+        configValue.afterSet(sender);
         return true;
     }
 

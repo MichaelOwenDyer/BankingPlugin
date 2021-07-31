@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.banking.Bank;
+import org.bukkit.command.CommandSender;
 
 abstract class OverridableValue<V, T> extends ConfigValue<V, T> {
 
@@ -24,7 +25,7 @@ abstract class OverridableValue<V, T> extends ConfigValue<V, T> {
     }
 
     @Override
-    void afterSet() {
+    public void afterSet(CommandSender executor) {
         PLUGIN.getBankRepository().getAll().forEach(Bank::notifyObservers);
     }
 

@@ -1,6 +1,8 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.parse.PathParseException;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.command.CommandSender;
@@ -26,8 +28,15 @@ public class DatabaseFile extends ConfigValue<String, Path> implements NonNative
     }
 
     @Override
-    void afterSet() {
-        PLUGIN.reloadEntities(Callback.doNothing());
+    public void afterSet(CommandSender executor) {
+        PLUGIN.reloadEntities(Callback.of(banksAndAccounts -> {
+            int numberOfBanks = banksAndAccounts.size();
+            int numberOfAccounts = banksAndAccounts.values().size();
+            executor.sendMessage(Message.RELOADED_PLUGIN
+                    .with(Placeholder.NUMBER_OF_BANKS).as(numberOfBanks)
+                    .and(Placeholder.NUMBER_OF_ACCOUNTS).as(numberOfAccounts)
+                    .translate());
+        }));
     }
 
     @Override
@@ -36,24 +45,17 @@ public class DatabaseFile extends ConfigValue<String, Path> implements NonNative
             return Collections.emptyList();
         Stream.Builder<String> tabCompletions = Stream.builder();
         tabCompletions.accept(getFormatted());
-        tabCompletions.accept("banking");
+        tabCompletions.accept("banking.db");
         Path databaseFolder = PLUGIN.getDataFolder().toPath().resolve("database");
         try {
-            Files.walk(databaseFolder, 1)
+            Files.walk(databaseFolder)
                     .filter(Files::isRegularFile)
-                    .map(Path::getFileName)
+                    .map(databaseFolder::relativize)
                     .map(Path::toString)
                     .filter(fileName -> fileName.endsWith(".db"))
-                    .map(fileName -> fileName.substring(0, fileName.length() - 3)) // Remove extension
                     .forEach(tabCompletions);
         } catch (IOException ignored) {}
         return tabCompletions.build().distinct().collect(Collectors.toList());
-    }
-
-    @Override
-    public Object convertToStorableType(Path path) {
-        String fileName = path.toString();
-        return fileName.substring(0, fileName.length() - 3); // Remove extension
     }
 
 }

@@ -40,7 +40,7 @@ public class SQLite extends Database {
                 plugin.getLogger().info("Created new database at " + databaseFile);
                 plugin.debug("Created new database at " + databaseFile);
             } catch (AccessDeniedException | RuntimeException e) {
-                plugin.getLogger().severe("Failed to create database file at " + databaseFile + ". Reverting to default directory.");
+                plugin.getLogger().warning("Failed to create database file at " + databaseFile + ". Reverting to default directory.");
                 plugin.debug("Failed to create database file at " + databaseFile + ". Reverting to default directory.");
                 plugin.debug(e);
                 databaseFile = defaultLocation;

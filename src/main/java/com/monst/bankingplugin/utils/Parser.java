@@ -60,7 +60,8 @@ public class Parser {
     }
 
     public static Path parsePath(String name, String extension) throws PathParseException {
-        return wrapRuntimeException(() -> Paths.get(name + extension), () -> new PathParseException(name));
+        String fileName = name.endsWith(extension) ? name : name + extension;
+        return wrapRuntimeException(() -> Paths.get(fileName), () -> new PathParseException(name));
     }
 
     private static <T, E extends ArgumentParseException> T wrapRuntimeException(Supplier<T> supplier, Supplier<E> exceptionSupplier) throws E {

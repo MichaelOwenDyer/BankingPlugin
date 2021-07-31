@@ -4,6 +4,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.exceptions.parse.TimeParseException;
 import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Parser;
+import org.bukkit.command.CommandSender;
 
 import java.time.LocalTime;
 import java.util.Collections;
@@ -22,8 +23,8 @@ public class InterestPayoutTimes extends OverridableValue<List<String>, Set<Loca
     }
 
     @Override
-    void afterSet() {
-        super.afterSet();
+    public void afterSet(CommandSender executor) {
+        super.afterSet(executor);
         InterestEventScheduler.scheduleAllBanks();
     }
 

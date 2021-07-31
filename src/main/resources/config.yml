@@ -329,13 +329,11 @@ name-regex: '.*'
 enable-startup-message: true
 
 # Set the language file to use for plugin messages.
-# This should be the name of the file without the .lang extension.
-# Type: Filename
-# Default: 'en_US'
-language-file: 'en_US'
+# Type: .lang file
+# Default: 'en_US.lang'
+language-file: 'en_US.lang'
 
 # Set the database file to store banks and accounts in.
-# This should be the name of the file without the .db extension.
-# Type: Filename
-# Default: 'banking'
-database-file: 'banking'
+# Type: .db file
+# Default: 'banking.db'
+database-file: 'banking.db'
