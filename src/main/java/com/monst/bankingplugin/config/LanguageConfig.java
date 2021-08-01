@@ -9,66 +9,49 @@ import javax.annotation.Nonnull;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LanguageConfig extends FileConfiguration {
 
-    private final List<String> lines = new ArrayList<>();
-    private final HashMap<String, String> configFilePathValues = new HashMap<>();
-
     private final BankingPlugin plugin;
-    private File file;
+    private final Path langFolder;
+    private final Path defaultLangFile;
+    private Path currentFile;
+    private Map<String, String> filePathValues;
 
     public LanguageConfig(BankingPlugin plugin) {
         this.plugin = plugin;
+        this.filePathValues = new HashMap<>();
+        this.langFolder = plugin.getDataFolder().toPath().resolve("lang");
+        this.defaultLangFile = langFolder.resolve("en_US.lang");
     }
 
     public void reload() {
-        Path langFolder = plugin.getDataFolder().toPath().resolve("lang");
-        Path defaultLangFile = langFolder.resolve("en_US.lang");
+        Path languageFile = langFolder.resolve(Config.languageFile.get());
 
         if (!Files.exists(defaultLangFile))
             plugin.saveResource("lang/en_US.lang", false);
 
-        Path specifiedLang = langFolder.resolve(Config.languageFile.get());
-        if (Files.exists(specifiedLang)) {
+        if (Files.exists(languageFile)) {
             try {
-                load(specifiedLang);
-                plugin.getLogger().info("Using locale \"" + Config.languageFile.get() + "\"");
+                load(languageFile);
+                currentFile = languageFile;
+                plugin.getLogger().info("Using locale \"" + removeExtension(languageFile) + "\"");
             } catch (IOException e) {
                 plugin.getLogger().warning("Using default language values.");
                 plugin.debug("Using default language values (#1)");
                 plugin.debug(e);
             }
         } else {
-            if (Files.exists(defaultLangFile)) {
-                try {
-                    load(defaultLangFile);
-                    plugin.getLogger().info("Using locale \"en_US\"");
-                } catch (IOException e) {
-                    plugin.getLogger().warning("Using default language values.");
-                    plugin.debug("Using default language values (#2)");
-                    plugin.debug(e);
-                }
-            } else {
-                String fileName;
-                Reader reader = plugin.getTextResourceMirror(fileName = specifiedLang.toString());
-                if (reader == null)
-                    reader = plugin.getTextResourceMirror(fileName = defaultLangFile.toString());
-
-                if (reader != null) {
-                    try (BufferedReader br = new BufferedReader(reader)) {
-                        load(br.lines());
-                        plugin.getLogger().info("Using lang file \"" + fileName + "\" (Streamed from .jar)");
-                    } catch (IOException e) {
-                        plugin.getLogger().warning("Using default language values.");
-                        plugin.debug("Using default language values (#3)");
-                    }
-                } else {
-                    plugin.getLogger().warning("Using default language values.");
-                    plugin.debug("Using default language values (#4, Reader is null)");
-                }
+            try {
+                load(defaultLangFile);
+                currentFile = defaultLangFile;
+                plugin.getLogger().info("Using locale \"en_US\"");
+            } catch (IOException e) {
+                streamFromJar();
             }
         }
         for (Message message : Message.values())
@@ -83,14 +66,15 @@ public class LanguageConfig extends FileConfiguration {
             return translation;
         // Value was missing
         String defaultMessage = message.getDefaultMessage();
-        configFilePathValues.put(messagePath, defaultMessage);
-        if (file != null) {
+        filePathValues.put(messagePath, defaultMessage);
+        if (currentFile != null && Files.exists(currentFile)) {
             // Append missing entry to loaded language file
-            try (FileWriter writer = new FileWriter(file, true)) {
+            try (BufferedWriter writer = Files.newBufferedWriter(currentFile, StandardOpenOption.APPEND)) {
                 writer.write("\n# Scenario: " + message.getDescription());
                 writer.write("\n# Available placeholders: " + message.getFormattedPlaceholdersList());
                 writer.write("\n" + messagePath + "=" + defaultMessage + "\n");
-                plugin.getLogger().info("Missing translation for \"" + messagePath + "\" has been added as \"" + defaultMessage + "\" to the selected language file.");
+                plugin.getLogger().info("Missing translation for \"" + messagePath + "\" has been added as \"" +
+                        defaultMessage + "\" to the selected language file.");
             } catch (IOException e) {
                 plugin.debug("Failed to add language entry");
                 plugin.debug(e);
@@ -102,46 +86,60 @@ public class LanguageConfig extends FileConfiguration {
 
     @Override
     public String getString(@Nonnull String path) {
-        for (Map.Entry<String, String> entry : configFilePathValues.entrySet())
-            if (entry.getKey().equals(path))
-                return entry.getValue();
-        return null;
+        return filePathValues.get(path);
     }
 
     public void load(Path path) throws IOException {
-        this.file = path.toFile();
-        load(Files.lines(path));
+        readInLines(Files.lines(path));
+    }
+
+    private void readInLines(@Nonnull Stream<String> lines) {
+        filePathValues = lines
+                .filter(l -> !l.isEmpty())
+                .filter(l -> !l.startsWith("#"))
+                .filter(l -> l.contains("="))
+                .map(l -> l.split("=", 2))
+                .collect(Collectors.toMap(s -> s[0], s -> s[1], (existing, replacement) -> replacement));
+    }
+
+    @Override
+    public void loadFromString(@Nonnull String s) {
+        readInLines(Arrays.stream(s.split("\n")));
     }
 
     @Override
     @Nonnull
     public String saveToString() {
-        return String.join("\n", lines);
-    }
-
-    private void load(@Nonnull Stream<String> lines) {
-        configFilePathValues.clear();
-        lines
-                .filter(l -> !l.isEmpty())
-                .filter(l -> !l.startsWith("#"))
-                .filter(l -> l.contains("="))
-                .forEach(line -> {
-                    String[] pair = line.split("=", 2);
-                    String path = pair[0];
-                    String value = pair[1];
-                    configFilePathValues.put(path, value == null ? "" : value);
-                });
-    }
-
-    @Override
-    public void loadFromString(@Nonnull String s) {
-        load(Arrays.stream(s.split("\n")));
+        return filePathValues.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining("\n"));
     }
 
     @Override
     @Nonnull
     protected String buildHeader() {
         return "";
+    }
+
+    private void streamFromJar() {
+        Reader reader = plugin.getTextResourceMirror(defaultLangFile.toString());
+        if (reader != null) {
+            try (BufferedReader br = new BufferedReader(reader)) {
+                readInLines(br.lines());
+                plugin.getLogger().info("Using lang file \"" + defaultLangFile.getFileName() + "\" (Streamed from .jar)");
+            } catch (IOException e) {
+                plugin.getLogger().warning("Using default language values.");
+                plugin.debug("Using default language values (#3)");
+            }
+        } else {
+            plugin.getLogger().warning("Using default language values.");
+            plugin.debug("Using default language values (#4, Reader is null)");
+        }
+    }
+
+    private static String removeExtension(Path path) {
+        String fileName = path.getFileName().toString();
+        return fileName.substring(0, fileName.length() - 5);
     }
 
 }
