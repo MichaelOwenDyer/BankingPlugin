@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.lang;
 
+import com.monst.bankingplugin.utils.Utils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -955,27 +957,24 @@ public enum Message {
             "&c&lError while checking for updates."
     );
 
-    private final String description;
+    private final String scenario;
     private final String defaultMessage;
     private final EnumSet<Placeholder> placeholders = EnumSet.noneOf(Placeholder.class);
     private String path = null;
+    private String translation = null;
 
-    Message(String description, String defaultMsg, Placeholder... placeholders) {
-        this.description = description;
-        this.defaultMessage = defaultMsg;
+    Message(String scenario, String defaultMessage, Placeholder... placeholders) {
+        this.scenario = scenario;
+        this.defaultMessage = defaultMessage;
         this.placeholders.addAll(Arrays.asList(placeholders));
     }
 
-    public String getDescription() {
-        return description;
+    public String getExampleScenario() {
+        return scenario;
     }
 
     public String getDefaultMessage() {
         return defaultMessage;
-    }
-
-    public EnumSet<Placeholder> getAvailablePlaceholders() {
-        return EnumSet.copyOf(placeholders);
     }
 
     public String getFormattedPlaceholdersList() {
@@ -983,7 +982,19 @@ public enum Message {
     }
 
     public String getPath() {
-        return path != null ? path : (path = "message." + toString().toLowerCase().replace("_", "-"));
+        if (path == null)
+            path = "message." + toString().toLowerCase().replace("_", "-");
+        return path;
+    }
+
+    public String getTranslation() {
+        if (translation != null)
+            return translation;
+        return defaultMessage;
+    }
+
+    public void setTranslation(String translation) {
+        this.translation = translation;
     }
 
     public Builder.ReplacementBuilder with(Placeholder placeholder) {
@@ -993,7 +1004,7 @@ public enum Message {
     public String translate() {
         if (!placeholders.isEmpty())
             throw new IllegalStateException("Missing replacement(s)! " + placeholders);
-        return Messages.translate(this);
+        return Utils.colorize(getTranslation());
     }
 
     public class Builder {
@@ -1010,10 +1021,16 @@ public enum Message {
 
         public String translate() {
             EnumSet<Placeholder> remainingPlaceholders = placeholders.clone();
-            replacements.stream().map(Replacement::getPlaceholder).forEach(remainingPlaceholders::remove);
+            String translation = getTranslation();
+            for (Replacement replacement : replacements) {
+                Placeholder placeholder = replacement.getPlaceholder();
+                if (!remainingPlaceholders.remove(placeholder))
+                    continue;
+                translation = translation.replace(placeholder.toString(), replacement.getReplacement());
+            }
             if (!remainingPlaceholders.isEmpty())
                 throw new IllegalStateException("Missing replacement(s)! " + remainingPlaceholders);
-            return Messages.translate(Message.this, replacements);
+            return Utils.colorize(translation);
         }
 
         public class ReplacementBuilder {
