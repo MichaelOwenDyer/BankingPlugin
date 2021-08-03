@@ -28,6 +28,7 @@ import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -377,7 +378,7 @@ public class BankingPlugin extends JavaPlugin {
 			return typeFrequency;
 		}));
 		metrics.addCustomChart(new SimplePie("account-info-item",
-				() -> Optional.ofNullable(Config.accountInfoItem.get()).map(m -> m.getType().toString()).orElse("none")
+				() -> Config.accountInfoItem.get().map(ItemStack::getType).map(String::valueOf).orElse("none")
 		));
 		metrics.addCustomChart(new SimplePie("self-banking",
 				() -> Config.allowSelfBanking.get() ? "Enabled" : "Disabled"));

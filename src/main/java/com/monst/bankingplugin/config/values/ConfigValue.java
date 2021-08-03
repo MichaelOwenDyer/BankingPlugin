@@ -54,10 +54,14 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
     }
 
     public final T set(@Nonnull String input) throws ArgumentParseException {
-        T newValue = input.isEmpty() ? defaultConfiguration : parse(input);
+        T newValue = input.isEmpty() && nonOptional() ? defaultConfiguration : parse(input);
         beforeSet();
         convertAndWriteToFile(newValue);
         return lastSeenValue = newValue;
+    }
+
+    boolean nonOptional() {
+        return true;
     }
 
     void beforeSet() {}

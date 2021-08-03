@@ -31,7 +31,7 @@ interest-payout-times:
 # Default: 0.01 (for 1% interest)
 interest-rate:
     default: 0.01
-    allow-override: true # This boolean determines whether or not individual banks have permission to override the default value.
+    allow-override: true # This boolean determines whether individual banks have permission to override the default value.
 
 # Set the consecutive interest multipliers that are applied per-player to the baseline multiplier.
 # Each value represents a "stage" to be progressed through in consecutive order.

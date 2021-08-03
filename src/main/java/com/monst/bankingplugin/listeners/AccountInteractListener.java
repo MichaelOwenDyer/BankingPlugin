@@ -80,14 +80,14 @@ public class AccountInteractListener extends BankingPluginListener {
 				return;
 
 			// The account info item will allow account info requests with no ClickType
-			ItemStack infoItem = Config.accountInfoItem.get();
-			if (infoItem != null)
+			Config.accountInfoItem.get().ifPresent(infoItem -> {
 				for (ItemStack item : new ItemStack[] { Utils.getItemInMainHand(p), Utils.getItemInOffHand(p) })
 					if (item != null && infoItem.getType() == item.getType()) {
 						e.setCancelled(true);
 						AccountInfo.info(plugin, p, account);
 						return;
 					}
+			});
 
 			if (action != Action.RIGHT_CLICK_BLOCK || p.isSneaking())
 				return;

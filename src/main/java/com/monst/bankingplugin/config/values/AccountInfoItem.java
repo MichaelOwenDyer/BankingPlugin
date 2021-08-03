@@ -6,20 +6,29 @@ import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-public class AccountInfoItem extends ConfigValue<String, ItemStack> implements NonNativeString<ItemStack> {
+import java.util.Optional;
+
+public class AccountInfoItem extends ConfigValue<String, Optional<ItemStack>> implements NonNativeString<Optional<ItemStack>> {
 
     public AccountInfoItem(BankingPlugin plugin) {
-        super(plugin, "account-info-item", new ItemStack(Material.STICK));
+        super(plugin, "account-info-item", Optional.of(new ItemStack(Material.STICK)));
     }
 
     @Override
-    public ItemStack parse(String input) throws MaterialParseException {
-        return new ItemStack(Parser.parseMaterial(input));
+    public Optional<ItemStack> parse(String input) throws MaterialParseException {
+        if (input.isEmpty())
+            return Optional.empty();
+        return Optional.ofNullable(Parser.parseMaterial(input)).map(ItemStack::new);
     }
 
     @Override
-    public String format(ItemStack itemStack) {
-        return itemStack.getType().toString();
+    public String format(Optional<ItemStack> itemStack) {
+        return itemStack.map(ItemStack::getType).map(Material::toString).orElse("");
+    }
+
+    @Override
+    boolean nonOptional() {
+        return false;
     }
 
 }
