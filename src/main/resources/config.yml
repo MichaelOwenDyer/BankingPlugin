@@ -311,12 +311,6 @@ disabled-worlds: []
 # - "world_nether"
 # - "world_the_end"
 
-# Set whether or not this plugin should send players missed notification messages
-# per Essentials mail while they are offline.
-# Type: boolean
-# Default: true
-enable-mail: true
-
 # Set the regex pattern that bank names and account nicknames should be matched against.
 # Players will not be allowed to set names that fail to match with this pattern.
 # Type: String

@@ -10,7 +10,6 @@ import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.locations.DoubleAccountLocation;
 import com.monst.bankingplugin.geo.locations.SingleAccountLocation;
-import com.monst.bankingplugin.lang.Mailman;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.PayrollOffice;
@@ -66,7 +65,7 @@ public class AccountProtectListener extends BankingPluginListener {
 				p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(creationPrice).translate());
 			// Bank owner reimburses the customer
 			if (bank.isPlayerBank() && PayrollOffice.withdraw(bank.getOwner(), creationPrice)) {
-				Mailman.notify(bank.getOwner(), Message.REIMBURSEMENT_PAID
+				Utils.notify(bank.getOwner(), Message.REIMBURSEMENT_PAID
 						.with(Placeholder.PLAYER).as(p.getName())
 						.and(Placeholder.AMOUNT).as(creationPrice)
 						.translate());
@@ -193,7 +192,7 @@ public class AccountProtectListener extends BankingPluginListener {
 				return;
 			}
 			if (bank.isPlayerBank() && PayrollOffice.deposit(bank.getOwner(), creationPrice)) {
-				Mailman.notify(bank.getOwner(), Message.ACCOUNT_EXTEND_FEE_RECEIVED
+				Utils.notify(bank.getOwner(), Message.ACCOUNT_EXTEND_FEE_RECEIVED
 						.with(Placeholder.PLAYER).as(account.getOwnerName())
 						.and(Placeholder.AMOUNT).as(creationPrice)
 						.and(Placeholder.BANK_NAME).as(bank.getColorizedName())

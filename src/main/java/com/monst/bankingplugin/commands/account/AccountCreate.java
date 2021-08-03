@@ -8,7 +8,6 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
-import com.monst.bankingplugin.lang.Mailman;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
@@ -150,7 +149,7 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
             if (bank.isPlayerBank()) {
                 OfflinePlayer bankOwner = account.getBank().getOwner();
                 if (PayrollOffice.deposit(bankOwner, creationPrice))
-                    Mailman.notify(bankOwner, Message.ACCOUNT_CREATE_FEE_RECEIVED
+                    Utils.notify(bankOwner, Message.ACCOUNT_CREATE_FEE_RECEIVED
                             .with(Placeholder.PLAYER).as(p.getName())
                             .and(Placeholder.AMOUNT).as(creationPrice)
                             .and(Placeholder.BANK_NAME).as(bank.getColorizedName())

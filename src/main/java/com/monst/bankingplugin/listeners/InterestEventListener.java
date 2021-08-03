@@ -6,7 +6,6 @@ import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.control.InterestEvent;
-import com.monst.bankingplugin.lang.Mailman;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.sql.logging.AccountInterest;
@@ -210,7 +209,7 @@ public class InterestEventListener extends BankingPluginListener {
 	}
 
 	private void notifyAll(PaymentCounter<OfflinePlayer> map, Message message) {
-		map.forEach((player, counter) -> Mailman.notify(player, message
+		map.forEach((player, counter) -> Utils.notify(player, message
 				.with(Placeholder.AMOUNT).as(counter.getTotalMoney())
 				.and(Placeholder.NUMBER_OF_ACCOUNTS).as(counter.getNumberOfPayments())
 				.and(Placeholder.NUMBER_OF_BANKS).as(counter.getNumberOfPayments())

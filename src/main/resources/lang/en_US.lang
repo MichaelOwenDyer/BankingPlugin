@@ -299,6 +299,10 @@ message.not-a-material=&c"%INPUT%" is not a material.
 # Available placeholders: %INPUT%
 message.not-a-pattern=&c"%INPUT%" is not a valid regular expression.
 
+# Example Scenario: A player attempts to set a configuration property to a filename, but provided a string that was not a valid filename.
+# Available placeholders: %INPUT%
+message.not-a-filename=&c"%INPUT%" is not a valid filename.
+
 # Scenario: A player attempts to set a configuration property to a mathematical function, but provided a string that was not a valid function.
 # Available placeholders: %INPUT%
 message.not-a-function=&c"%INPUT%" is not a valid function.

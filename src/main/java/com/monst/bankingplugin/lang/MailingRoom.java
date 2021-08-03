@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.lang;
 
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
@@ -23,14 +24,10 @@ public class MailingRoom {
     }
 
     public void send() {
-        send(false);
-    }
-
-    public void send(boolean mailIfOffline) {
         if (message == null)
             return;
         recipients.forEach(p -> p.sendMessage(message));
-        offlineRecipients.forEach(p -> Mailman.notify(p, message, mailIfOffline));
+        offlineRecipients.forEach(p -> Utils.notify(p, message));
     }
 
     public void newMessage(String message) {
@@ -42,7 +39,7 @@ public class MailingRoom {
             recipients.add(sender);
     }
 
-    public void addRecipient(Collection<CommandSender> senders) {
+    public void addRecipients(Collection<CommandSender> senders) {
         senders.forEach(this::addRecipient);
     }
 
@@ -55,7 +52,7 @@ public class MailingRoom {
             offlineRecipients.add(player);
     }
 
-    public void addOfflineRecipient(Collection<OfflinePlayer> players) {
+    public void addOfflineRecipients(Collection<OfflinePlayer> players) {
         players.forEach(this::addOfflineRecipient);
     }
 

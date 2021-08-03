@@ -94,8 +94,8 @@ public class BankConfigure extends SubCommand.BankSubCommand {
                 .and(Placeholder.VALUE).as(newValue)
                 .translate()
         );
-        mailingRoom.addOfflineRecipient(bank.getTrustedPlayers());
-        mailingRoom.addOfflineRecipient(bank.getCustomers());
+        mailingRoom.addOfflineRecipients(bank.getTrustedPlayers());
+        mailingRoom.addOfflineRecipients(bank.getCustomers());
         mailingRoom.addRecipient(sender);
         mailingRoom.send(); // TODO: Mail as well?
 

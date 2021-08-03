@@ -254,11 +254,6 @@ public class Config {
 	public static DisabledWorlds disabledWorlds = new DisabledWorlds(PLUGIN);
 
 	/**
-	 * Whether to enable in-game mail from the plugin.
-	 */
-	public static EnableMail enableMail = new EnableMail(PLUGIN);
-
-	/**
 	 * The regex pattern that bank names and account nicknames should be matched
 	 * against.
 	 */
@@ -342,7 +337,6 @@ public class Config {
 			blacklist,
 			bankRevenueFunction,
 			disabledWorlds,
-			enableMail,
 			nameRegex,
 			enableStartupMessage,
 			languageFile,

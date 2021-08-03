@@ -94,8 +94,8 @@ public class BankRemove extends SubCommand.BankSubCommand {
                 .with(Placeholder.BANK_NAME).as(bank.getColorizedName())
                 .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accountsRemoved)
                 .translate());
-        mailingRoom.addOfflineRecipient(bank.getTrustedPlayers());
-        mailingRoom.addOfflineRecipient(bank.getCustomers());
+        mailingRoom.addOfflineRecipients(bank.getTrustedPlayers());
+        mailingRoom.addOfflineRecipients(bank.getCustomers());
         mailingRoom.addRecipient(sender);
         mailingRoom.send();
         return true;

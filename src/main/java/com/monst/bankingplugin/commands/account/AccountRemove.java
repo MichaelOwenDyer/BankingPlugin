@@ -7,12 +7,12 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveCommandEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
-import com.monst.bankingplugin.lang.Mailman;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -96,7 +96,7 @@ public class AccountRemove extends SubCommand.AccountSubCommand {
                 if (PayrollOffice.deposit(p, reimbursement))
                     p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate());
                 if (bank.isPlayerBank() && PayrollOffice.withdraw(bank.getOwner(), reimbursement)) {
-                    Mailman.notify(bank.getOwner(), Message.REIMBURSEMENT_PAID
+                    Utils.notify(bank.getOwner(), Message.REIMBURSEMENT_PAID
                             .with(Placeholder.PLAYER).as(account.getOwnerName())
                             .and(Placeholder.AMOUNT).as(reimbursement)
                             .translate());

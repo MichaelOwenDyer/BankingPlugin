@@ -65,6 +65,11 @@ public class Utils {
 		player.teleport(location.setDirection(player.getLocation().getDirection()));
 	}
 
+	public static void notify(OfflinePlayer player, String message) {
+		if (player.isOnline())
+			player.getPlayer().sendMessage(message);
+	}
+
 	/**
 	 * Finds the next lowest safe {@link Block} at or directly below a certain {@link Block}.
 	 * If no safe block is found then the original block is returned.

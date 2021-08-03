@@ -8,12 +8,12 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
-import com.monst.bankingplugin.lang.Mailman;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
@@ -150,7 +150,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
                 p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate());
             // Bank owner of old account pays reimbursement
             if (oldBank.isPlayerBank() && PayrollOffice.withdraw(oldBank.getOwner(), reimbursement))
-                Mailman.notify(oldBank.getOwner(), Message.REIMBURSEMENT_PAID
+                Utils.notify(oldBank.getOwner(), Message.REIMBURSEMENT_PAID
                         .with(Placeholder.PLAYER).as(p.getName())
                         .and(Placeholder.AMOUNT).as(reimbursement)
                         .translate());
@@ -167,7 +167,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
                 return;
             // Bank owner of new account receives account creation fee
             if (newBank.isPlayerBank() && PayrollOffice.deposit(newBank.getOwner(), creationPrice))
-                Mailman.notify(newBank.getOwner(), Message.ACCOUNT_CREATE_FEE_RECEIVED
+                Utils.notify(newBank.getOwner(), Message.ACCOUNT_CREATE_FEE_RECEIVED
                         .with(Placeholder.PLAYER).as(p.getName())
                         .and(Placeholder.AMOUNT).as(creationPrice)
                         .and(Placeholder.BANK_NAME).as(newBank.getColorizedName())
