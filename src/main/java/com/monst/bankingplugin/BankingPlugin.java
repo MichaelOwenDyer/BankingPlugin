@@ -49,10 +49,6 @@ public class BankingPlugin extends JavaPlugin {
 
 	private LanguageConfig languageConfig;
 
-	private AccountCommand accountCommand;
-	private BankCommand bankCommand;
-	private ControlCommand controlCommand;
-
 	private AccountRepository accountRepository;
 	private BankRepository bankRepository;
 
@@ -190,9 +186,9 @@ public class BankingPlugin extends JavaPlugin {
 	}
 
     private void initializeCommands() {
-		accountCommand = new AccountCommand(this);
-		bankCommand = new BankCommand(this);
-		controlCommand = new ControlCommand(this);
+		new AccountCommand(this);
+		new BankCommand(this);
+		new ControlCommand(this);
 	}
 
 	/**
