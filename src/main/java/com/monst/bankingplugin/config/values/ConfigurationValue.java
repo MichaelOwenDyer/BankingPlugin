@@ -32,7 +32,8 @@ interface ConfigurationValue<V, T> extends Supplier<T> {
      * @throws InvalidValueException if the value is invalid but still readable
      * @throws CorruptedValueException if the value is invalid and not readable
      */
-    T read(MemoryConfiguration config, String path) throws MissingValueException, InvalidValueException, CorruptedValueException;
+    T read(MemoryConfiguration config, String path)
+            throws MissingValueException, InvalidValueException, CorruptedValueException;
 
     /**
      * Retrieves the raw object from the {@link MemoryConfiguration}.
@@ -41,7 +42,7 @@ interface ConfigurationValue<V, T> extends Supplier<T> {
      * This method is overridden where sensible.
      */
     default Object get(MemoryConfiguration config, String path) {
-        return config.get(path, null); // Use generic method translate() to preserve nullability and ensure value presence
+        return config.get(path, null); // Use generic method get() to preserve nullability and ensure value presence
     }
 
     /**

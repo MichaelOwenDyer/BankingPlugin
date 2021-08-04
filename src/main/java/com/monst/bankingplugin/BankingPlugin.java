@@ -39,7 +39,6 @@ import org.ipvp.canvas.MenuFunctionListener;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -514,10 +513,6 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public GriefPrevention getGriefPrevention() {
 		return griefPrevention;
-	}
-
-	public Reader getTextResourceMirror(String file) {
-		return super.getTextResource(file);
 	}
 
 }

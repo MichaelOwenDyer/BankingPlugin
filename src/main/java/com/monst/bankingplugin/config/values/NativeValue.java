@@ -12,7 +12,8 @@ import org.bukkit.configuration.MemoryConfiguration;
 interface NativeValue<T> extends ConfigurationValue<T, T> {
 
     @Override
-    default T read(MemoryConfiguration config, String path) throws MissingValueException, InvalidValueException, CorruptedValueException {
+    default T read(MemoryConfiguration config, String path)
+            throws MissingValueException, InvalidValueException, CorruptedValueException {
         Object o = get(config, path);
         ensurePresent(o);
         T t = reconstructFromYaml(o);

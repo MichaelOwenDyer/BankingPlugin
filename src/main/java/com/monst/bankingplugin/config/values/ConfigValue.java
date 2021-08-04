@@ -39,15 +39,15 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
         try {
             return lastSeenValue = readFromFile();
         } catch (MissingValueException e) {
-            setDefault();
+            writeToFile(defaultConfiguration);
             plugin.getLogger().info(String.format("Missing config value \"%s\" was added to the config.yml file.", path));
             return lastSeenValue = defaultConfiguration;
         } catch (InvalidValueException e) {
-            convertAndWriteToFile(e.getReplacement());
+            writeToFile(e.getReplacement());
             plugin.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
             return lastSeenValue = e.getReplacement();
         } catch (CorruptedValueException e) {
-            setDefault();
+            writeToFile(defaultConfiguration);
             plugin.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
             return lastSeenValue = defaultConfiguration;
         }
@@ -56,7 +56,7 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
     public final T set(@Nonnull String input) throws ArgumentParseException {
         T newValue = input.isEmpty() && nonOptional() ? defaultConfiguration : parse(input);
         beforeSet();
-        convertAndWriteToFile(newValue);
+        writeToFile(newValue);
         return lastSeenValue = newValue;
     }
 
@@ -90,16 +90,8 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
         return path;
     }
 
-    private void setDefault() {
-        convertAndWriteToFile(defaultConfiguration);
-    }
-
-    private void convertAndWriteToFile(T t) {
-        writeToFile(convertToStorableType(t));
-    }
-
-    private void writeToFile(Object o) {
-        write(plugin.getConfig(), path, o);
+    private void writeToFile(T t) {
+        write(plugin.getConfig(), path, convertToStorableType(t));
     }
 
     private T readFromFile() throws MissingValueException, InvalidValueException, CorruptedValueException {

@@ -6,11 +6,11 @@ import java.math.RoundingMode;
 public class QuickMath {
 
     public static BigDecimal divide(BigDecimal dividend, double divisor) {
-        return divide(dividend, BigDecimal.valueOf(divisor));
+        return dividend.divide(BigDecimal.valueOf(divisor), RoundingMode.HALF_EVEN);
     }
 
     public static BigDecimal divide(BigDecimal dividend, long divisor) {
-        return divide(dividend, BigDecimal.valueOf(divisor));
+        return dividend.divide(BigDecimal.valueOf(divisor), RoundingMode.HALF_EVEN);
     }
 
     public static BigDecimal divide(BigDecimal dividend, BigDecimal divisor) {

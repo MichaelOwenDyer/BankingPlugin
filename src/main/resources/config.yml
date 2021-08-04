@@ -249,8 +249,8 @@ enable-debug-log: false
 # All log entries older than this will be deleted on server start.
 # Set this to 0 to disable this feature.
 # Type: int
-# Default: 30
-cleanup-log-days: 30
+# Default: 90
+cleanup-log-days: 90
 
 # Set whether various protection plugins should be hooked into (if installed)
 # in order to allow or deny bank or account creation in certain locations.

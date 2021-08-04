@@ -193,25 +193,10 @@ public class Bank extends BankingEntity {
 
 	/**
 	 * @return a {@link Map<OfflinePlayer>} containing
-	 * all accounts at this bank grouped by owner
-	 */
-	public Map<OfflinePlayer, List<Account>> getAccountsByOwner() {
-		return accounts.stream().collect(Collectors.groupingBy(Account::getOwner));
-	}
-
-	/**
-	 * @return a {@link Map<OfflinePlayer>} containing
 	 * all account owners at this bank and their total account balances
 	 */
 	public Map<OfflinePlayer, BigDecimal> getBalancesByOwner() {
-		return getAccountsByOwner().entrySet().stream().collect(
-				Collectors.toMap(
-						Map.Entry::getKey,
-						entry -> entry.getValue().stream()
-								.map(Account::getBalance)
-								.reduce(BigDecimal.ZERO, BigDecimal::add)
-				)
-		);
+		return accounts.stream().collect(Collectors.toMap(Account::getOwner, Account::getBalance, BigDecimal::add));
 	}
 
 	/**
@@ -366,16 +351,13 @@ public class Bank extends BankingEntity {
 	 * @return G = ( 2 * (sum(i...n) i * n[i].getBalance()) / n * (sum(i...n) n[i].getBalance()) ) - ( n + 1 / n )
 	 */
 	public double getGiniCoefficient() {
-		if (accounts.isEmpty())
+		if (getAccountHolders().size() <= 1)
 			return 0;
 		BigDecimal totalValue = getTotalValue();
 		if (totalValue.signum() == 0)
 			return 0;
-		List<BigDecimal> orderedBalances = getBalancesByOwner()
-				.values()
-				.stream()
-				.sorted()
-				.collect(Collectors.toCollection(ArrayList::new));
+		List<BigDecimal> orderedBalances = getBalancesByOwner().values().stream()
+				.sorted().collect(Collectors.toList());
 		totalValue = QuickMath.multiply(totalValue, orderedBalances.size());
 		BigDecimal weightedValueSum = BigDecimal.ZERO;
 		for (int i = 0; i < orderedBalances.size(); i++)

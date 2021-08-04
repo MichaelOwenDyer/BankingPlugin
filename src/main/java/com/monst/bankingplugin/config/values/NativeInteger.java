@@ -13,9 +13,10 @@ interface NativeInteger extends NativeValue<Integer> {
 
     @Override
     default Integer cast(Object o) throws InvalidValueException {
-        if (!(o instanceof Integer))
-            throw new InvalidValueException(((Number) o).intValue());
-        return (Integer) o;
+        Number n = (Number) o;
+        if (!(n instanceof Integer))
+            throw new InvalidValueException(n.intValue());
+        return (Integer) n;
     }
 
     interface Absolute extends NativeInteger {
