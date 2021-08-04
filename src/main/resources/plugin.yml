@@ -1,6 +1,6 @@
 # If you edit this file your face might melt off.
 
-name: ${project.name}
+name: BankingPlugin
 main: com.monst.bankingplugin.BankingPlugin
 version: ${project.version}
 api-version: 1.15
