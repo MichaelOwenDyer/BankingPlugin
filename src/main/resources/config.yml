@@ -1,8 +1,6 @@
 # ===================================================
 # ====== Configuration File of 'BankingPlugin' ======
 # ===================================================
-#
-#
 
 # Set the command names to be used for account management, bank management, and plugin control.
 # Type: String
@@ -18,12 +16,12 @@ command-name-control: bp
 # Type: List of times
 # Default: [09:00, 12:00, 15:00, 18:00]
 interest-payout-times:
-  default:
-  - '09:00'
-  - '12:00'
-  - '15:00'
-  - '18:00'
-  allow-override: false
+    default:
+    - '09:00'
+    - '12:00'
+    - '15:00'
+    - '18:00'
+    allow-override: true # This boolean determines whether individual banks have permission to override the default value.
 
 # Set the base interest rate for all bank accounts on the server.
 # Value should be a floating point number greater than 0.
@@ -31,7 +29,7 @@ interest-payout-times:
 # Default: 0.01 (for 1% interest)
 interest-rate:
     default: 0.01
-    allow-override: true # This boolean determines whether individual banks have permission to override the default value.
+    allow-override: true
 
 # Set the consecutive interest multipliers that are applied per-player to the baseline multiplier.
 # Each value represents a "stage" to be progressed through in consecutive order.
@@ -67,7 +65,7 @@ initial-interest-delay:
 # Default: false
 count-interest-delay-offline:
     default: false
-    allow-override: false
+    allow-override: true
 
 # Set the number of consecutive times a player may collect interest on their accounts while offline.
 # Set this to 0 for no interest while offline.
@@ -175,11 +173,11 @@ player-bank-account-limit:
 # Type: int, int
 # Default: 1, 2
 default-limits:
-  # Set the amount of accounts that anyone who doesn't have a
-  # specific permission may have.
-  # If you don't want players to have a limit by default set the value to -1.
-  bank: 1
-  account: 2
+    # Set the amount of accounts that anyone who doesn't have a
+    # specific permission may have.
+    # If you don't want players to have a limit by default set the value to -1.
+    bank: 1
+    account: 2
 
 # Bank volume limits are handled with permissions.
 # A player with permission "bankingplugin.bank.size.X" can create banks with a volume of up to X.
@@ -190,8 +188,8 @@ default-limits:
 # Type: int, long
 # Default: 125, 100000
 bank-size-limits:
-  minimum: 125
-  maximum: 100000
+    minimum: 125
+    maximum: 100000
 
 # Determines how bank configurations should behave when the server defaults change.
 # This concerns only non-custom configuration values which are inherited from this config on bank creation.
@@ -282,7 +280,7 @@ remove-account-on-error: false
 # Type: List of material names
 # Default: [] (empty)
 blacklist: []
-# - "DIORITE"
+    # - "DIORITE"
 
 # Set this value to customize how much revenue banks owners should earn, considering a variety of variables.
 # The available variables are as follows:
@@ -307,9 +305,9 @@ bank-revenue-function: '(0.10 * x) * (1 - g) * ln(c)'
 # Type: List of world names
 # Default: [] (empty)
 disabled-worlds: []
-# - "world"
-# - "world_nether"
-# - "world_the_end"
+    # - "world"
+    # - "world_nether"
+    # - "world_the_end"
 
 # Set the regex pattern that bank names and account nicknames should be matched against.
 # Players will not be allowed to set names that fail to match with this pattern.
