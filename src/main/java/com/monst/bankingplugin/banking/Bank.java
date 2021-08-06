@@ -11,7 +11,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Predicate;
@@ -136,6 +135,10 @@ public class Bank extends BankingEntity {
 	 */
 	public Set<Account> getAccounts() {
 		return new HashSet<>(accounts);
+	}
+
+	public boolean hasAccounts() {
+		return !accounts.isEmpty();
 	}
 
 	/**
@@ -363,7 +366,7 @@ public class Bank extends BankingEntity {
 		for (int i = 0; i < orderedBalances.size(); i++)
 			weightedValueSum = weightedValueSum.add(QuickMath.multiply(orderedBalances.get(i), i + 1));
 		weightedValueSum = QuickMath.multiply(weightedValueSum, 2);
-		BigDecimal leftSide = weightedValueSum.divide(totalValue, 10, RoundingMode.HALF_EVEN);
+		BigDecimal leftSide = QuickMath.divide(weightedValueSum, totalValue, 10);
 		BigDecimal rightSide = BigDecimal.valueOf((orderedBalances.size() + 1) / orderedBalances.size());
 		return QuickMath.scale(leftSide.subtract(rightSide)).doubleValue();
 	}

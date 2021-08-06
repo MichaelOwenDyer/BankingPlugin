@@ -17,14 +17,12 @@ import java.util.regex.Pattern;
 
 public class Parser {
 
-    private static final NumberFormat LOCAL_FORMAT = NumberFormat.getNumberInstance(Locale.getDefault());
-
     public static int parseInt(String s) throws IntegerParseException {
         return wrapRuntimeException(() -> Integer.parseInt(s), () -> new IntegerParseException(s));
     }
 
+    private static final NumberFormat LOCAL_FORMAT = NumberFormat.getNumberInstance(Locale.getDefault());
     public static double parseDouble(String input) throws DoubleParseException {
-        input = input.replace("$", "");
         ParsePosition parsePosition = new ParsePosition(0);
         Number number = LOCAL_FORMAT.parse(input, parsePosition);
         if (parsePosition.getIndex() != input.length()) {

@@ -10,6 +10,7 @@ interface NativeDouble extends NativeValue<Double> {
 
     @Override
     default Double parse(String input) throws DoubleParseException {
+        input = input.startsWith("$") ? input.substring(1) : input;
         return QuickMath.scale(Parser.parseDouble(input));
     }
 

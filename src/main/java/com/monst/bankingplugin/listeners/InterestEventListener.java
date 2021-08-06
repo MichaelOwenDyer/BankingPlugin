@@ -18,7 +18,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -42,18 +41,16 @@ public class InterestEventListener extends BankingPluginListener {
 			return;
 
 		plugin.debugf("Interest payout event occurring now at bank(s) %s.",
-				Utils.map(e.getBanks(), b -> "#" + b.getID()).toString());
+				Utils.map(e.getBanks(), bank -> "#" + bank.getID()));
 
 		Map<Bank, Set<Account>> banksAndAccounts = e.getBanks().stream()
-				.map(Bank::getAccounts)
-				.flatMap(Collection::stream)
-				.collect(Collectors.groupingBy(Account::getBank, Collectors.toSet()));
+				.collect(Collectors.toMap(bank -> bank, Bank::getAccounts));
 
 		if (banksAndAccounts.isEmpty())
 			return;
 
-		HashMap<Account, BigDecimal> accountInterest = new HashMap<>(); // Interest by account
-		HashMap<Account, BigDecimal> accountFees = new HashMap<>(); // Low balance fees by account
+		HashMap<Account, BigDecimal> accountInterest = new HashMap<>(); // Interest per account
+		HashMap<Account, BigDecimal> accountFees = new HashMap<>(); // Low balance fees per account
 
 		banksAndAccounts.forEach((bank, accounts) -> {
 			for (Account account : accounts) {
@@ -65,8 +62,8 @@ public class InterestEventListener extends BankingPluginListener {
 					continue;
 				}
 
-				BigDecimal lowBalanceFee = BigDecimal.ZERO;
 				BigDecimal interest = BigDecimal.ZERO;
+				BigDecimal lowBalanceFee = BigDecimal.ZERO;
 
 				// See if account balance is below the bank minimum
 				if (account.getBalance().doubleValue() < bank.getMinimumBalance().get()) {
@@ -87,7 +84,7 @@ public class InterestEventListener extends BankingPluginListener {
 					}
 				}
 
-				BigDecimal baseInterest = QuickMath.scale(QuickMath.multiply(account.getBalance(), bank.getInterestRate().get()));
+				BigDecimal baseInterest = QuickMath.multiply(account.getBalance(), bank.getInterestRate().get());
 				interest = QuickMath.multiply(baseInterest, account.getRealMultiplier());
 
 				if (interest.signum() != 0)

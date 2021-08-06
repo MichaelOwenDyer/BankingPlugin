@@ -56,8 +56,8 @@ public class BankGUI extends SinglePageGUI<Bank> {
 			case 8:
 				if (canListAccounts)
 					return createSlotItem(Material.CHEST, "Account List",
-							Collections.singletonList(guiSubject.getAccounts().isEmpty() ?
-									"There are no accounts at this bank." : "Click here to view accounts."));
+							Collections.singletonList(guiSubject.hasAccounts() ?
+									"Click here to view accounts." : "There are no accounts at this bank."));
 				return createSlotItem(Material.CHEST, "Account List", NO_PERMISSION);
 			case 9:
 				return createSlotItem(Material.ENCHANTED_BOOK, "Account Creation", getCreationLore());
@@ -101,7 +101,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 				if (canListAccounts)
 					return (player, info) -> new BankIncomeGUI(guiSubject).setParentGUI(this).open(player);
 			case 8:
-				if (canListAccounts && !guiSubject.getAccounts().isEmpty())
+				if (canListAccounts && guiSubject.hasAccounts())
 					return (player, info) -> new AccountListGUI(guiSubject::getAccounts).setParentGUI(this).open(player);
 		}
 		return null;

@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * An ordered set of times of the day.
@@ -37,11 +36,6 @@ public class InterestPayoutTimes extends OverridableValue<List<String>, Set<Loca
     @Override
     public LocalTime parseSingle(String input) throws TimeParseException {
         return Parser.parseLocalTime(input);
-    }
-
-    @Override
-    public Object convertToStorableType(Set<LocalTime> set) {
-        return set.stream().map(LocalTime::toString).collect(Collectors.toList()); // must cast to List<String> in order to set
     }
 
     public OverriddenValue<Set<LocalTime>> override(Bank bank, Set<LocalTime> value) {

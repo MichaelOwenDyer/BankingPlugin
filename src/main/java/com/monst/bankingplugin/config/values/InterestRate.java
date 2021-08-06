@@ -13,9 +13,9 @@ public class InterestRate extends OverridableValue<Double, Double> implements Na
 
     private static final NumberFormat FORMATTER = NumberFormat.getInstance();
     static {
-        FORMATTER.setMinimumIntegerDigits(1);
-        FORMATTER.setMinimumFractionDigits(1);
-        FORMATTER.setMaximumFractionDigits(2);
+        FORMATTER.setMinimumIntegerDigits(1); // The 0 before the decimal will not disappear
+        FORMATTER.setMinimumFractionDigits(1); // 3% will display as 3.0%
+        FORMATTER.setMaximumFractionDigits(2); // 3.123% will display as 3.12%
     }
 
     public InterestRate(BankingPlugin plugin) {
@@ -24,9 +24,13 @@ public class InterestRate extends OverridableValue<Double, Double> implements Na
 
     @Override
     public Double parse(@Nonnull String input) throws DoubleParseException {
-        BigDecimal bd = QuickMath.scale(BigDecimal.valueOf(Parser.parseDouble(input)).abs(), 4);
-        if (input.endsWith("%"))
-            bd = QuickMath.divide(bd, 100);
+        boolean percentage = input.endsWith("%");
+        if (percentage)
+            input = input.substring(0, input.length() - 1);
+        BigDecimal bd = BigDecimal.valueOf(Parser.parseDouble(input)).abs();
+        bd = QuickMath.scale(bd, 4);
+        if (percentage)
+            bd = QuickMath.divide(bd, 100, 4);
         return bd.doubleValue();
     }
 

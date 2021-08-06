@@ -6,27 +6,55 @@ import java.math.RoundingMode;
 public class QuickMath {
 
     public static BigDecimal divide(BigDecimal dividend, double divisor) {
-        return dividend.divide(BigDecimal.valueOf(divisor), RoundingMode.HALF_EVEN);
+        return divide(dividend, divisor, 2);
+    }
+
+    public static BigDecimal divide(BigDecimal dividend, double divisor, int scale) {
+        return dividend.divide(BigDecimal.valueOf(divisor), scale, RoundingMode.HALF_EVEN);
     }
 
     public static BigDecimal divide(BigDecimal dividend, long divisor) {
-        return dividend.divide(BigDecimal.valueOf(divisor), RoundingMode.HALF_EVEN);
+        return divide(dividend, divisor, 2);
+    }
+
+    public static BigDecimal divide(BigDecimal dividend, long divisor, int scale) {
+        return dividend.divide(BigDecimal.valueOf(divisor), scale, RoundingMode.HALF_EVEN);
     }
 
     public static BigDecimal divide(BigDecimal dividend, BigDecimal divisor) {
-        return dividend.divide(divisor, RoundingMode.HALF_EVEN);
+        return divide(dividend, divisor, 2);
+    }
+
+    public static BigDecimal divide(BigDecimal dividend, BigDecimal divisor, int scale) {
+        return dividend.divide(divisor, scale, RoundingMode.HALF_EVEN);
     }
 
     public static BigDecimal multiply(BigDecimal multiplicand, double factor) {
-        return multiplicand.multiply(BigDecimal.valueOf(factor));
+        return multiply(multiplicand, factor, 2);
+    }
+
+    public static BigDecimal multiply(BigDecimal multiplicand, double factor, int scale) {
+        return multiplicand.multiply(BigDecimal.valueOf(factor)).setScale(scale, RoundingMode.HALF_EVEN);
     }
 
     public static BigDecimal multiply(BigDecimal multiplicand, long factor) {
-        return multiplicand.multiply(BigDecimal.valueOf(factor));
+        return multiply(multiplicand, factor, 2);
+    }
+
+    public static BigDecimal multiply(BigDecimal multiplicand, long factor, int scale) {
+        return multiplicand.multiply(BigDecimal.valueOf(factor)).setScale(scale, RoundingMode.HALF_EVEN);
+    }
+
+    public static BigDecimal multiply(BigDecimal multiplicand, BigDecimal factor) {
+        return multiply(multiplicand, factor, 2);
+    }
+
+    public static BigDecimal multiply(BigDecimal multiplicand, BigDecimal factor, int scale) {
+        return multiplicand.multiply(factor).setScale(scale, RoundingMode.HALF_EVEN);
     }
 
     public static double scale(double d) {
-        return scale(d, 2);
+        return scale(BigDecimal.valueOf(d)).doubleValue();
     }
 
     public static double scale(double d, int scale) {

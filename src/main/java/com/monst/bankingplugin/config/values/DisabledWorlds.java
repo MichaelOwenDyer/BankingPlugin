@@ -28,8 +28,8 @@ public class DisabledWorlds extends ConfigValue<List<String>, Set<World>> implem
     }
 
     @Override
-    public Object convertToStorableType(Set<World> set) {
-        return set.stream().map(World::getName).collect(Collectors.toList()); // must cast to List<String> in order to set
+    public String formatSingle(World world) {
+        return world.getName();
     }
 
     @Override

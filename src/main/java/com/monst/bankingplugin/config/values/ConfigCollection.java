@@ -43,12 +43,12 @@ interface ConfigCollection<T, C extends Collection<T>> extends NonNativeValue<Li
     }
 
     @Override
-    default C translate(List<String> vs) throws InvalidValueException, CorruptedValueException {
+    default C translate(List<String> strings) throws InvalidValueException, CorruptedValueException {
         C collection = getEmptyCollection();
         boolean isCorrupted = false;
-        for (String v : vs) {
+        for (String s : strings) {
             try {
-                T t = parseSingle(v);
+                T t = parseSingle(s);
                 ensureValidSingle(t);
                 if (!collection.add(t))
                     isCorrupted = true; // if object could not be added because it violated a constraint
@@ -73,11 +73,20 @@ interface ConfigCollection<T, C extends Collection<T>> extends NonNativeValue<Li
 
     default void ensureValidSingle(T t) throws InvalidValueException {}
 
+    default String formatSingle(T t) {
+        return String.valueOf(t);
+    }
+
     @Override
     default String format(C collection) {
         if (collection.isEmpty())
             return "[]";
-        return collection.stream().map(String::valueOf).collect(Collectors.joining(", ")); // do not include [ ]
+        return collection.stream().map(this::formatSingle).collect(Collectors.joining(", ")); // do not include [ ]
+    }
+
+    @Override
+    default Object convertToStorableType(C collection) {
+        return collection.stream().map(this::formatSingle).collect(Collectors.toList());
     }
 
 }

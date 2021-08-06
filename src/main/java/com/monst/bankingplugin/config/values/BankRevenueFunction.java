@@ -42,10 +42,10 @@ public class BankRevenueFunction extends ConfigValue<String, Expression> impleme
         expression.setArgumentValue("n", accounts);
         expression.setArgumentValue("c", accountHolders);
         expression.setArgumentValue("g", giniCoefficient);
-        double result = expression.calculate();
-        if (Double.isInfinite(result) || Double.isNaN(result))
+        double revenue = expression.calculate();
+        if (Double.isInfinite(revenue) || Double.isNaN(revenue))
             return BigDecimal.ZERO;
-        return QuickMath.scale(BigDecimal.valueOf(result));
+        return QuickMath.scale(BigDecimal.valueOf(revenue));
     }
 
 }
