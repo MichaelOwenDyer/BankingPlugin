@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
-import com.monst.bankingplugin.exceptions.InvalidValueException;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 
 /**
@@ -11,8 +10,8 @@ import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 interface NonNativeString<T> extends NonNativeValue<String, T> {
 
     @Override
-    default String cast(Object o) throws InvalidValueException {
-        return (String) o;
+    default String cast(Object o) {
+        return o.toString();
     }
 
     default T translate(String s) throws CorruptedValueException {
