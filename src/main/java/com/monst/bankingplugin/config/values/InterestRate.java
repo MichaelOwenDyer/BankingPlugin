@@ -1,15 +1,14 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.exceptions.parse.DoubleParseException;
+import com.monst.bankingplugin.exceptions.parse.DecimalParseException;
 import com.monst.bankingplugin.utils.Parser;
-import com.monst.bankingplugin.utils.QuickMath;
 
-import javax.annotation.Nonnull;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 
-public class InterestRate extends OverridableValue<Double, Double> implements NativeDouble {
+public class InterestRate extends OverridableValue<Double, BigDecimal> implements NonNativeBigDecimal {
 
     private static final NumberFormat FORMATTER = NumberFormat.getInstance();
     static {
@@ -19,24 +18,23 @@ public class InterestRate extends OverridableValue<Double, Double> implements Na
     }
 
     public InterestRate(BankingPlugin plugin) {
-        super(plugin, "interest-rate", 0.01);
+        super(plugin, "interest-rate", BigDecimal.ONE.scaleByPowerOfTen(-2));
     }
 
     @Override
-    public Double parse(@Nonnull String input) throws DoubleParseException {
+    public BigDecimal parse(String input) throws DecimalParseException {
         boolean percentage = input.endsWith("%");
         if (percentage)
             input = input.substring(0, input.length() - 1);
-        BigDecimal bd = BigDecimal.valueOf(Parser.parseDouble(input)).abs();
-        bd = QuickMath.scale(bd, 4);
+        BigDecimal bd = Parser.parseBigDecimal(input).abs();
         if (percentage)
-            bd = QuickMath.divide(bd, 100, 4);
-        return bd.doubleValue();
+            bd = bd.scaleByPowerOfTen(-2);
+        return bd.setScale(4, RoundingMode.HALF_EVEN);
     }
 
     @Override
-    public String format(Double value) {
-        return FORMATTER.format(value * 100) + "%";
+    public String format(BigDecimal value) {
+        return FORMATTER.format(value.scaleByPowerOfTen(2)) + "%";
     }
 
 }

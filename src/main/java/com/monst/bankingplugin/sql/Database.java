@@ -19,7 +19,6 @@ import com.monst.bankingplugin.sql.logging.AccountInterest;
 import com.monst.bankingplugin.sql.logging.AccountTransaction;
 import com.monst.bankingplugin.sql.logging.BankIncome;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.Bukkit;
@@ -36,6 +35,7 @@ import org.codejargon.fluentjdbc.api.query.*;
 import org.codejargon.fluentjdbc.api.query.listen.AfterQueryListener;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalTime;
@@ -496,10 +496,10 @@ public abstract class Database {
 			Boolean countInterestDelayOffline = values.getNextBoolean();
 			Boolean reimburseAccountCreation = values.getNextBoolean();
 			Boolean payOnLowBalance = values.getNextBoolean();
-			Double interestRate = values.getNextDouble();
-			Double accountCreationPrice = values.getNextDouble();
-			Double minimumBalance = values.getNextDouble();
-			Double lowBalanceFee = values.getNextDouble();
+			BigDecimal interestRate = values.getNextBigDecimal();
+			BigDecimal accountCreationPrice = values.getNextBigDecimal();
+			BigDecimal minimumBalance = values.getNextBigDecimal();
+			BigDecimal lowBalanceFee = values.getNextBigDecimal();
 			Integer initialInterestDelay = values.getNextInteger();
 			Integer allowedOfflinePayouts = values.getNextInteger();
 			Integer offlineMultiplierDecrement = values.getNextInteger();
@@ -951,7 +951,7 @@ public abstract class Database {
 					.map(BigDecimal::valueOf)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in account interest for %s.", Utils.format(interest), playerName);
-			Callback.callSyncResult(callback, QuickMath.scale(interest));
+			Callback.callSyncResult(callback, interest.setScale(2, RoundingMode.HALF_EVEN));
 		});
 	}
 
@@ -976,7 +976,7 @@ public abstract class Database {
 					.map(BigDecimal::valueOf)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in low balance fees paid by %s.", Utils.format(fees), playerName);
-			Callback.callSyncResult(callback, QuickMath.scale(fees));
+			Callback.callSyncResult(callback, fees.setScale(2, RoundingMode.HALF_EVEN));
 		});
 	}
 
@@ -1001,7 +1001,7 @@ public abstract class Database {
 					.map(BigDecimal::valueOf)
 					.orElse(BigDecimal.ZERO);
 			plugin.debugf("Found %s in bank profit earned by %s.", Utils.format(revenue), playerName);
-			Callback.callSyncResult(callback, QuickMath.scale(revenue));
+			Callback.callSyncResult(callback, revenue.setScale(2, RoundingMode.HALF_EVEN));
 		});
 	}
 

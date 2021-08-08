@@ -14,7 +14,7 @@ public class InvalidValueException extends Exception {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getReplacement() {
+    public <T> T getValidatedValue() {
         return (T) replacement;
     }
 

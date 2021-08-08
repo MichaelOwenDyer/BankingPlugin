@@ -28,7 +28,6 @@ import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -42,6 +41,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BankingPlugin extends JavaPlugin {
 
@@ -347,10 +347,8 @@ public class BankingPlugin extends JavaPlugin {
 				},
 				error -> {
 					callback.onError(error);
-					// Database connection probably failed => disable plugin to prevent more errors
 					getLogger().severe("No database access! Disabling BankingPlugin.");
-					if (error != null)
-						getLogger().severe(error.getMessage());
+					getLogger().severe(error.getMessage());
 					getServer().getPluginManager().disablePlugin(BankingPlugin.this);
 				}
 		));
@@ -360,27 +358,17 @@ public class BankingPlugin extends JavaPlugin {
 		debug("Initializing metrics...");
 
 		Metrics metrics = new Metrics(this, 8474);
-		metrics.addCustomChart(new AdvancedPie("bank-types", () -> {
-			Map<String, Integer> typeFrequency = new HashMap<>();
-			int playerBanks = 0;
-			int adminBanks = 0;
-
-			for (Bank bank : bankRepository.getAll())
-				if (bank.isPlayerBank())
-					playerBanks++;
-				else
-					adminBanks++;
-
-			typeFrequency.put("Admin", adminBanks);
-			typeFrequency.put("Player", playerBanks);
-
-			return typeFrequency;
-		}));
-		metrics.addCustomChart(new SimplePie("account-info-item",
-				() -> Config.accountInfoItem.get().map(ItemStack::getType).map(String::valueOf).orElse("none")
+		metrics.addCustomChart(new AdvancedPie("bank_types",
+				() -> bankRepository.getAll().stream().collect(
+						Collectors.toMap(bank -> bank.isPlayerBank() ? "Player" : "Admin", bank -> 1, Integer::sum))
 		));
-		metrics.addCustomChart(new SimplePie("self-banking",
-				() -> Config.allowSelfBanking.get() ? "Enabled" : "Disabled"));
+		metrics.addCustomChart(new SimplePie("account_info_item",
+				() -> Config.accountInfoItem.get().map(String::valueOf).orElse("none")
+		));
+		metrics.addCustomChart(new SimplePie("self_banking",
+				() -> Config.allowSelfBanking.get() ? "Enabled" : "Disabled"
+		));
+		metrics.addCustomChart(new SimplePie("language_file", Config.languageFile::getFormatted));
 	}
 
 	/**

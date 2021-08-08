@@ -27,6 +27,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 
+import java.math.BigDecimal;
+
 /**
  * This listener is intended to prevent all physical damage to {@link Account} chests,
  * as well as to ensure accounts always correspond with the size of the chest they reside in.
@@ -59,7 +61,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 		Bank bank = account.getBank();
 		if (bank.getReimburseAccountCreation().get() && account.isOwner(p) && !bank.isOwner(p)) {
-			double creationPrice = bank.getAccountCreationPrice().get();
+			BigDecimal creationPrice = bank.getAccountCreationPrice().get();
 			// Account owner is reimbursed for the part of the chest that was broken
 			if (PayrollOffice.deposit(p, creationPrice))
 				p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(creationPrice).translate());
@@ -84,18 +86,6 @@ public class AccountProtectListener extends BankingPluginListener {
 			p.sendMessage(Message.ACCOUNT_REMOVED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
 			new AccountRemoveEvent(p, account).fire();
 		}
-	}
-
-	/**
-	 * Converts a large account chest to a small account chest by removing the account and creating
-	 * an identical small account in the remaining chest. Also removes accounts entirely when the
-	 * broken account was already a small chest.
-	 * @param account the account whose chest was broken
-	 * @param b the block where the account is located
-	 * @param p the player who broke the account chest
-	 */
-	private void removeAndCreateSmaller(Account account, Block b, Player p) {
-
 	}
 
 	/**
@@ -170,24 +160,24 @@ public class AccountProtectListener extends BankingPluginListener {
             return;
 		}
 
-		double creationPrice = bank.getAccountCreationPrice().get();
-		if (!PayrollOffice.allowPayment(p, creationPrice * -1)) {
-			double balance = plugin.getEconomy().getBalance(p);
+		BigDecimal creationPrice = bank.getAccountCreationPrice().get();
+		if (!PayrollOffice.allowPayment(p, creationPrice.negate())) {
+			BigDecimal balance = BigDecimal.valueOf(plugin.getEconomy().getBalance(p));
 			p.sendMessage(Message.ACCOUNT_EXTEND_INSUFFICIENT_FUNDS
 					.with(Placeholder.PRICE).as(creationPrice)
 					.and(Placeholder.PLAYER_BALANCE).as(balance)
-					.and(Placeholder.AMOUNT_REMAINING).as(creationPrice - balance)
+					.and(Placeholder.AMOUNT_REMAINING).as(creationPrice.subtract(balance))
 					.translate());
 			e.setCancelled(true);
 			return;
 		}
-		if (creationPrice > 0 && !bank.isOwner(p)) {
-			if (PayrollOffice.withdraw(p, creationPrice))
+		if (creationPrice.signum() > 0 && !bank.isOwner(p)) {
+			if (PayrollOffice.withdraw(p, creationPrice)) {
 				p.sendMessage(Message.ACCOUNT_EXTEND_FEE_PAID
 						.with(Placeholder.PRICE).as(creationPrice)
 						.and(Placeholder.BANK_NAME).as(bank.getColorizedName())
 						.translate());
-			else {
+			} else {
 				e.setCancelled(true);
 				return;
 			}

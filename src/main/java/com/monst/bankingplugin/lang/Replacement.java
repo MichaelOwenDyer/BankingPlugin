@@ -23,12 +23,8 @@ class Replacement {
      * @return String which will replace the placeholder
      */
     public String getReplacement() {
-        if (placeholder.isMoney())
-            return Utils.format(Double.parseDouble(getFormatted()));
-        return getFormatted();
-    }
-
-    private String getFormatted() {
+        if (placeholder.isMoney() && replacement instanceof Number)
+            return Utils.format(((Number) replacement).doubleValue());
         return String.valueOf(replacement);
     }
 

@@ -5,12 +5,12 @@ import com.monst.bankingplugin.config.values.OverriddenValue;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.regions.BankRegion;
-import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Predicate;
@@ -50,9 +50,10 @@ public class Bank extends BankingEntity {
 	 * Reopens a bank that was stored in the database.
 	 */
 	public static Bank reopen(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
-							  BankRegion region, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
-							  Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
-							  Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer offlineMultiplierDecrement,
+							  BankRegion region, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation,
+							  Boolean payOnLowBalance, BigDecimal interestRate, BigDecimal accountCreationPrice,
+							  BigDecimal minimumBalance, BigDecimal lowBalanceFee, Integer initialInterestDelay,
+							  Integer allowedOfflinePayouts, Integer offlineMultiplierDecrement,
 							  Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
 							  List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 		return new Bank(
@@ -84,10 +85,10 @@ public class Bank extends BankingEntity {
 	private final OverriddenValue<Boolean> countInterestDelayOffline;
 	private final OverriddenValue<Boolean> reimburseAccountCreation;
 	private final OverriddenValue<Boolean> payOnLowBalance;
-	private final OverriddenValue<Double> interestRate;
-	private final OverriddenValue<Double> accountCreationPrice;
-	private final OverriddenValue<Double> minimumBalance;
-	private final OverriddenValue<Double> lowBalanceFee;
+	private final OverriddenValue<BigDecimal> interestRate;
+	private final OverriddenValue<BigDecimal> accountCreationPrice;
+	private final OverriddenValue<BigDecimal> minimumBalance;
+	private final OverriddenValue<BigDecimal> lowBalanceFee;
 	private final OverriddenValue<Integer> initialInterestDelay;
 	private final OverriddenValue<Integer> allowedOfflinePayouts;
 	private final OverriddenValue<Integer> offlineMultiplierDecrement;
@@ -105,10 +106,10 @@ public class Bank extends BankingEntity {
 	 */
 	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners, BankRegion region,
 				 Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
-				 Double interestRate, Double accountCreationPrice, Double minimumBalance, Double lowBalanceFee,
-				 Integer initialInterestDelay, Integer allowedOfflinePayouts, Integer offlineMultiplierDecrement,
-				 Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
-				 List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
+				 BigDecimal interestRate, BigDecimal accountCreationPrice, BigDecimal minimumBalance,
+				 BigDecimal lowBalanceFee, Integer initialInterestDelay, Integer allowedOfflinePayouts,
+				 Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement,
+				 Integer playerBankAccountLimit, List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 
 		super(id, name, owner, coowners);
 		this.region = region;
@@ -191,7 +192,9 @@ public class Bank extends BankingEntity {
 	 * @see Account#getBalance()
 	 */
 	public BigDecimal getAverageValue() {
-		return accounts.isEmpty() ? BigDecimal.ZERO : QuickMath.divide(getTotalValue(), accounts.size());
+		if (accounts.isEmpty())
+			return BigDecimal.ZERO;
+		return getTotalValue().divide(BigDecimal.valueOf(accounts.size()), RoundingMode.HALF_EVEN);
 	}
 
 	/**
@@ -247,19 +250,19 @@ public class Bank extends BankingEntity {
 		return payOnLowBalance;
 	}
 
-	public OverriddenValue<Double> getInterestRate() {
+	public OverriddenValue<BigDecimal> getInterestRate() {
 		return interestRate;
 	}
 
-	public OverriddenValue<Double> getAccountCreationPrice() {
+	public OverriddenValue<BigDecimal> getAccountCreationPrice() {
 		return accountCreationPrice;
 	}
 
-	public OverriddenValue<Double> getMinimumBalance() {
+	public OverriddenValue<BigDecimal> getMinimumBalance() {
 		return minimumBalance;
 	}
 
-	public OverriddenValue<Double> getLowBalanceFee() {
+	public OverriddenValue<BigDecimal> getLowBalanceFee() {
 		return lowBalanceFee;
 	}
 
@@ -361,14 +364,14 @@ public class Bank extends BankingEntity {
 			return 0;
 		List<BigDecimal> orderedBalances = getBalancesByOwner().values().stream()
 				.sorted().collect(Collectors.toList());
-		totalValue = QuickMath.multiply(totalValue, orderedBalances.size());
+		totalValue = totalValue.multiply(BigDecimal.valueOf(orderedBalances.size()));
 		BigDecimal weightedValueSum = BigDecimal.ZERO;
 		for (int i = 0; i < orderedBalances.size(); i++)
-			weightedValueSum = weightedValueSum.add(QuickMath.multiply(orderedBalances.get(i), i + 1));
-		weightedValueSum = QuickMath.multiply(weightedValueSum, 2);
-		BigDecimal leftSide = QuickMath.divide(weightedValueSum, totalValue, 10);
+			weightedValueSum = weightedValueSum.add(orderedBalances.get(i).multiply(BigDecimal.valueOf(i + 1)));
+		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
+		BigDecimal leftSide = weightedValueSum.divide(totalValue, RoundingMode.HALF_EVEN);
 		BigDecimal rightSide = BigDecimal.valueOf((orderedBalances.size() + 1) / orderedBalances.size());
-		return QuickMath.scale(leftSide.subtract(rightSide)).doubleValue();
+		return leftSide.subtract(rightSide).setScale(2, RoundingMode.HALF_EVEN).doubleValue();
 	}
 
 	/**
@@ -401,7 +404,7 @@ public class Bank extends BankingEntity {
 		return Stream.of(
 				"\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")",
 				"Owner: " + getOwnerDisplayName(),
-				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName).toString(),
+				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName),
 				"Interest rate: " + ChatColor.GREEN + getInterestRate().getFormatted(),
 				"Multipliers: " + Utils.map(Utils.collapseList(getMultipliers().get()),
 						list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString(),

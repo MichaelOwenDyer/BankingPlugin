@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
@@ -22,13 +23,13 @@ public class Parser {
     }
 
     private static final NumberFormat LOCAL_FORMAT = NumberFormat.getNumberInstance(Locale.getDefault());
-    public static double parseDouble(String input) throws DoubleParseException {
+    public static BigDecimal parseBigDecimal(String input) throws DecimalParseException {
         ParsePosition parsePosition = new ParsePosition(0);
         Number number = LOCAL_FORMAT.parse(input, parsePosition);
         if (parsePosition.getIndex() != input.length()) {
-            throw new DoubleParseException(input);
+            throw new DecimalParseException(input);
         }
-        return number.doubleValue();
+        return BigDecimal.valueOf(number.doubleValue());
     }
 
     public static boolean parseBoolean(String s) throws BooleanParseException {

@@ -26,17 +26,19 @@ public class PolygonalBankRegion extends BankRegion {
 	 * Creates a new {@link PolygonalBankRegion} and the specified attributes
 	 *
 	 * @param world the world the region is in
-	 * @param points the vertices of the region
+	 * @param vertices the vertices of the region
 	 * @param y1 the first y-coordinate bound (upper or lower)
 	 * @param y2 the other y-coordinate bound
 	 * @return a new PolygonalBankRegion
 	 */
-	public static PolygonalBankRegion of(World world, Vector2D[] points, int y1, int y2) {
+	public static PolygonalBankRegion of(World world, Vector2D[] vertices, int y1, int y2) {
+		if (vertices == null || vertices.length < 3)
+			throw new IllegalArgumentException("Vertices cannot be fewer than 3!");
 		y1 = Math.min(Math.max(0, y1), world.getMaxHeight()); // Ensure y1 is between 0 and world.getMaxHeight()
 		y2 = Math.min(Math.max(0, y2), world.getMaxHeight()); // Ensure y2 is between 0 and world.getMaxHeight()
 		return new PolygonalBankRegion(
 				world,
-				points,
+				vertices,
 				Math.min(y1, y2), // Take the lower of the two y-values to be minY
 				Math.max(y1, y2) // Take the higher of the two y-values to be maxY
 		);
@@ -44,8 +46,6 @@ public class PolygonalBankRegion extends BankRegion {
 
 	private PolygonalBankRegion(World world, Vector2D[] vertices, int minY, int maxY) {
 		super(world);
-		if (vertices == null || vertices.length < 3)
-			throw new IllegalArgumentException("Vertices cannot be fewer than 3!");
 		this.vertices = vertices;
 		this.minY = minY;
 		this.maxY = maxY;
@@ -66,14 +66,20 @@ public class PolygonalBankRegion extends BankRegion {
 		return world.getBlockAt((int) Math.round(result.getX()), (maxY + minY) / 2, (int) Math.round(result.getY()));
 	}
 
+	private Integer minX = null;
 	@Override
 	public int getMinX() {
-		return Arrays.stream(vertices).mapToInt(Vector2D::getX).min().orElseThrow(IllegalStateException::new);
+		if (minX == null)
+			minX = Arrays.stream(vertices).mapToInt(Vector2D::getX).min().orElseThrow(IllegalStateException::new);
+		return minX;
 	}
 
+	private Integer maxX = null;
 	@Override
 	public int getMaxX() {
-		return Arrays.stream(vertices).mapToInt(Vector2D::getX).max().orElseThrow(IllegalStateException::new);
+		if (maxX == null)
+			maxX = Arrays.stream(vertices).mapToInt(Vector2D::getX).max().orElseThrow(IllegalStateException::new);
+		return maxX;
 	}
 
 	@Override
@@ -86,14 +92,20 @@ public class PolygonalBankRegion extends BankRegion {
 		return maxY;
 	}
 
+	private Integer minZ = null;
 	@Override
 	public int getMinZ() {
-		return Arrays.stream(vertices).mapToInt(Vector2D::getZ).min().orElseThrow(IllegalStateException::new);
+		if (minZ == null)
+			minZ = Arrays.stream(vertices).mapToInt(Vector2D::getZ).min().orElseThrow(IllegalStateException::new);
+		return minZ;
 	}
 
+	private Integer maxZ = null;
 	@Override
 	public int getMaxZ() {
-		return Arrays.stream(vertices).mapToInt(Vector2D::getZ).max().orElseThrow(IllegalStateException::new);
+		if (maxZ == null)
+			maxZ = Arrays.stream(vertices).mapToInt(Vector2D::getZ).max().orElseThrow(IllegalStateException::new);
+		return maxZ;
 	}
 
 	@Override

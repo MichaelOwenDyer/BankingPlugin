@@ -12,6 +12,7 @@ import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -91,10 +92,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 						if (info.getClickType().isLeftClick())
 							Utils.teleport(player, guiSubject.getRegion().getTeleportLocation());
 						else if (info.getClickType().isRightClick())
-							Utils.teleport(player, guiSubject.getRegion()
-									.getWorld()
-									.getHighestBlockAt(guiSubject.getRegion().getTeleportLocation())
-									.getLocation().add(0.5, 1, 0.5));
+							Utils.teleport(player, guiSubject.getRegion().getHighestTeleportLocation());
 						exit(player);
 					};
 			case 7:
@@ -180,9 +178,9 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getBalanceRestrictionLore() {
-		double minBalance = guiSubject.getMinimumBalance().get();
-		double lowBalanceFee = guiSubject.getLowBalanceFee().get();
-		boolean strikethrough = minBalance == 0;
+		BigDecimal minBalance = guiSubject.getMinimumBalance().get();
+		BigDecimal lowBalanceFee = guiSubject.getLowBalanceFee().get();
+		boolean strikethrough = minBalance.signum() == 0;
 		boolean payOnLowBalance = guiSubject.getPayOnLowBalance().get();
 		Stream.Builder<String> lore = Stream.builder();
 		lore.add("Minimum balance: " + ChatColor.GREEN + Utils.format(minBalance));

@@ -80,7 +80,7 @@ interface ConfigurationValue<V, T> extends Supplier<T> {
     V cast(Object o) throws InvalidValueException;
 
     /**
-     * Throws an {@link InvalidValueException} if the reconstructed object is somehow outside of its bounds, e.g.
+     * Throws an {@link InvalidValueException} if the reconstructed object is somehow outside its bounds, e.g.
      * an integer that should only be positive but is negative.
      * @param t the reconstructed object
      * @throws InvalidValueException if the object is outside its bounds

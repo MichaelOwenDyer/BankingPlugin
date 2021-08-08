@@ -9,12 +9,11 @@ import com.monst.bankingplugin.events.account.AccountRemoveCommandEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.PayrollOffice;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.utils.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.math.BigDecimal;
 
 public class AccountRemove extends SubCommand.AccountSubCommand {
 
@@ -88,11 +87,13 @@ public class AccountRemove extends SubCommand.AccountSubCommand {
 
         Bank bank = account.getBank();
         if (account.isOwner(p) && bank.getReimburseAccountCreation().get()) {
-            double reimbursement = bank.getAccountCreationPrice().get();
-            reimbursement *= account.getSize();
-            reimbursement *= bank.isOwner(p) ? 0 : 1;
+            BigDecimal reimbursement;
+            if (bank.isOwner(p))
+                reimbursement = BigDecimal.ZERO;
+            else
+                reimbursement = bank.getAccountCreationPrice().get().multiply(BigDecimal.valueOf(account.getSize()));
 
-            if (reimbursement > 0) {
+            if (reimbursement.signum() > 0) {
                 if (PayrollOffice.deposit(p, reimbursement))
                     p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate());
                 if (bank.isPlayerBank() && PayrollOffice.withdraw(bank.getOwner(), reimbursement)) {

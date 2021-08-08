@@ -12,12 +12,12 @@ import com.monst.bankingplugin.sql.logging.AccountInterest;
 import com.monst.bankingplugin.sql.logging.BankIncome;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.PayrollOffice;
-import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -46,9 +46,6 @@ public class InterestEventListener extends BankingPluginListener {
 		Map<Bank, Set<Account>> banksAndAccounts = e.getBanks().stream()
 				.collect(Collectors.toMap(bank -> bank, Bank::getAccounts));
 
-		if (banksAndAccounts.isEmpty())
-			return;
-
 		HashMap<Account, BigDecimal> accountInterest = new HashMap<>(); // Interest per account
 		HashMap<Account, BigDecimal> accountFees = new HashMap<>(); // Low balance fees per account
 
@@ -66,9 +63,9 @@ public class InterestEventListener extends BankingPluginListener {
 				BigDecimal lowBalanceFee = BigDecimal.ZERO;
 
 				// See if account balance is below the bank minimum
-				if (account.getBalance().doubleValue() < bank.getMinimumBalance().get()) {
+				if (account.getBalance().compareTo(bank.getMinimumBalance().get()) < 0) {
 
-					lowBalanceFee = BigDecimal.valueOf(bank.getLowBalanceFee().get());
+					lowBalanceFee = bank.getLowBalanceFee().get();
 					if (lowBalanceFee.signum() != 0)
 						accountFees.put(account, lowBalanceFee); // Account must pay fee
 
@@ -84,8 +81,8 @@ public class InterestEventListener extends BankingPluginListener {
 					}
 				}
 
-				BigDecimal baseInterest = QuickMath.multiply(account.getBalance(), bank.getInterestRate().get());
-				interest = QuickMath.multiply(baseInterest, account.getRealMultiplier());
+				BigDecimal multipliedInterestRate = bank.getInterestRate().get().multiply(BigDecimal.valueOf(account.getRealMultiplier()));
+				interest = account.getBalance().multiply(multipliedInterestRate).setScale(2, RoundingMode.HALF_EVEN);
 
 				if (interest.signum() != 0)
 					accountInterest.put(account, interest); // Account receives interest
@@ -146,7 +143,7 @@ public class InterestEventListener extends BankingPluginListener {
 		});
 
 		// Sum of all profits/losses, grouped by player
-		PaymentMap<OfflinePlayer> finalPayments = new PaymentMap<>();
+		Payroll finalPayments = new Payroll();
 
 		// Total account interest + number of accounts, grouped by player
 		PaymentCounter<OfflinePlayer> totalInterestReceivableByPlayer = new PaymentCounter<>();
@@ -197,8 +194,7 @@ public class InterestEventListener extends BankingPluginListener {
 						.collect(Collectors.toSet())
 		);
 
-		finalPayments.forEach((player, finalPayment) -> {
-			double payment = finalPayment.doubleValue();
+		finalPayments.forEach((player, payment) -> {
 			if (PayrollOffice.allowPayment(player, payment))
 				PayrollOffice.deposit(player, payment);
 			// TODO: if payment cannot be made, ...
@@ -214,16 +210,16 @@ public class InterestEventListener extends BankingPluginListener {
 		);
 	}
 
-	private static class PaymentMap<T> extends HashMap<T, BigDecimal> {
-		private void add(T key, BigDecimal amount) {
-			if (key == null)
+	private static class Payroll extends HashMap<OfflinePlayer, BigDecimal> {
+		private void add(OfflinePlayer player, BigDecimal amount) {
+			if (player == null)
 				return;
-			merge(key, amount, BigDecimal::add);
+			merge(player, amount, BigDecimal::add);
 		}
-		private void subtract(T key, BigDecimal amount) {
-			if (key == null)
+		private void subtract(OfflinePlayer player, BigDecimal amount) {
+			if (player == null)
 				return;
-			merge(key, amount, BigDecimal::subtract);
+			merge(player, amount, BigDecimal::subtract);
 		}
 	}
 

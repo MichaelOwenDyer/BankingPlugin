@@ -5,7 +5,6 @@ import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.QuickMath;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -19,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -63,8 +63,8 @@ public class Account extends BankingEntity {
 				bank,
 				loc,
 				name,
-				QuickMath.scale(balance),
-				QuickMath.scale(prevBalance),
+				balance.setScale(2, RoundingMode.HALF_EVEN),
+				prevBalance.setScale(2, RoundingMode.HALF_EVEN),
 				multiplierStage,
 				delayUntilNextPayout,
 				remainingOfflinePayouts
@@ -203,7 +203,7 @@ public class Account extends BankingEntity {
 	public void setBalance(BigDecimal newBalance) {
 		if (newBalance == null || newBalance.signum() < 0)
 			return;
-		balance = QuickMath.scale(newBalance);
+		balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
 		notifyObservers();
 		getBank().notifyObservers();
 		plugin.getAccountRepository().getAccountMap().notifyObservers();
@@ -389,16 +389,16 @@ public class Account extends BankingEntity {
 							continue;
 						BigDecimal innerItemValue = getWorth(innerItem);
 						if (innerItemValue.signum() != 0)
-							innerItemValue = QuickMath.multiply(innerItemValue, innerItem.getAmount());
+							innerItemValue = innerItemValue.multiply(BigDecimal.valueOf(innerItem.getAmount()));
 						itemValue = itemValue.add(innerItemValue);
 					}
 				}
 			}
 			if (itemValue.signum() != 0)
-				itemValue = QuickMath.multiply(itemValue, item.getAmount());
+				itemValue = itemValue.multiply(BigDecimal.valueOf(item.getAmount()));
 			sum = sum.add(itemValue);
 		}
-		return QuickMath.scale(sum);
+		return sum.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
 	private BigDecimal getWorth(ItemStack item) {
@@ -531,7 +531,9 @@ public class Account extends BankingEntity {
 
 	@Override
 	public String toConsolePrintout() {
-		double interestR = getBank().getInterestRate().get();
+		BigDecimal rate = getBank().getInterestRate().get();
+		int multiplier = getRealMultiplier();
+		BigDecimal percentage = rate.multiply(BigDecimal.valueOf(multiplier)).scaleByPowerOfTen(2).setScale(2, RoundingMode.HALF_EVEN);
 		return Stream.of(
 				"\"" + Utils.colorize(getRawName()) + ChatColor.GRAY + "\"",
 				"Bank: " + ChatColor.RED + getBank().getColorizedName(),
@@ -539,8 +541,7 @@ public class Account extends BankingEntity {
 				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName).toString(),
 				"Balance: " + Utils.formatAndColorize(getBalance()),
 				"Multiplier: " + ChatColor.AQUA + getRealMultiplier() + ChatColor.GRAY + " (Stage " + getMultiplierStage() + ")",
-				"Interest rate: " + BigDecimal.valueOf(interestR * getRealMultiplier() * 100).setScale(1, BigDecimal.ROUND_HALF_EVEN) + "% " +
-						ChatColor.GRAY + "(" + interestR + " x " + getRealMultiplier() + ")",
+				"Interest rate: " + percentage + "% " + ChatColor.GRAY + "(" + rate + " x " + multiplier + ")",
 				"Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")"
 		).map(s -> ChatColor.GRAY + s).collect(Collectors.joining(", ", "", ""));
 	}

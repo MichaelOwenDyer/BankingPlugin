@@ -29,7 +29,7 @@ public class OverriddenValue<T> {
                 return customValue = configValue.getDefault();
             return configValue.getDefault();
         }
-        return (configValue.isOverridable() | ignoreNonOverridable) ? customValue : configValue.getDefault();
+        return (ignoreNonOverridable || configValue.isOverridable()) ? customValue : configValue.getDefault();
     }
 
     public String getFormatted() {

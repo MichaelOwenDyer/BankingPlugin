@@ -25,7 +25,7 @@ interface ConfigCollection<T, C extends Collection<T>> extends NonNativeValue<Li
                 ensureValidSingle(t);
                 collection.add(t);
             } catch (InvalidValueException e) {
-                collection.add(e.getReplacement());
+                collection.add(e.getValidatedValue());
             }
         }
         return collection;
@@ -55,7 +55,7 @@ interface ConfigCollection<T, C extends Collection<T>> extends NonNativeValue<Li
             } catch (ArgumentParseException e) {
                 isCorrupted = true;
             } catch (InvalidValueException e) {
-                if (!collection.add(e.getReplacement()))
+                if (!collection.add(e.getValidatedValue()))
                     isCorrupted = true;
             }
         }

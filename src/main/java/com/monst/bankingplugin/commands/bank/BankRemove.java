@@ -15,6 +15,7 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,8 +73,8 @@ public class BankRemove extends SubCommand.BankSubCommand {
                 return true;
             }
             if (bank.isPlayerBank() && Config.reimburseBankCreation.get() && bank.isOwner(executor)) {
-                double reimbursement = Config.bankCreationPrice.get();
-                if (reimbursement > 0) {
+                BigDecimal reimbursement = Config.bankCreationPrice.get();
+                if (reimbursement.signum() > 0) {
                     if (PayrollOffice.deposit(executor, reimbursement))
                         executor.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate());
                 }

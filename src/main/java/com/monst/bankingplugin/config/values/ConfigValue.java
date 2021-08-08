@@ -7,7 +7,6 @@ import com.monst.bankingplugin.exceptions.MissingValueException;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import org.bukkit.command.CommandSender;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,9 +42,9 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
             plugin.getLogger().info(String.format("Missing config value \"%s\" was added to the config.yml file.", path));
             return lastSeenValue = defaultConfiguration;
         } catch (InvalidValueException e) {
-            writeToFile(e.getReplacement());
+            writeToFile(e.getValidatedValue());
             plugin.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
-            return lastSeenValue = e.getReplacement();
+            return lastSeenValue = e.getValidatedValue();
         } catch (CorruptedValueException e) {
             writeToFile(defaultConfiguration);
             plugin.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
@@ -53,7 +52,7 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
         }
     }
 
-    public final T set(@Nonnull String input) throws ArgumentParseException {
+    public final T set(String input) throws ArgumentParseException {
         T newValue = input.isEmpty() && nonOptional() ? defaultConfiguration : parse(input);
         beforeSet();
         writeToFile(newValue);

@@ -45,6 +45,10 @@ public abstract class BankRegion {
 		return Utils.getSafeBlock(getCenterPoint()).getLocation().add(0.5, 0,0.5);
 	}
 
+	public Location getHighestTeleportLocation() {
+		return world.getHighestBlockAt(getCenterPoint().getLocation()).getLocation().add(0.5, 1.0, 0.5);
+	}
+
 	/**
 	 * @return the minimum x-coordinate of this {@link BankRegion}
 	 */

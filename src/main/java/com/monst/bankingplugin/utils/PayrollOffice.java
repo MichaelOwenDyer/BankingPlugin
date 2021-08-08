@@ -7,33 +7,34 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
+import java.math.BigDecimal;
+
 public class PayrollOffice {
 
     private static final Economy ECONOMY = BankingPlugin.getInstance().getEconomy();
 
-    public static boolean allowPayment(OfflinePlayer player, double amount) {
-        if (amount >= 0)
+    public static boolean allowPayment(OfflinePlayer player, BigDecimal amount) {
+        if (amount.signum() >= 0)
             return true;
-        return ECONOMY.getBalance(player) >= amount;
+        return BigDecimal.valueOf(ECONOMY.getBalance(player)).compareTo(amount) >= 0;
     }
 
-    public static boolean withdraw(OfflinePlayer player, double amount) {
-        return deposit(player, amount * -1);
+    public static boolean withdraw(OfflinePlayer player, BigDecimal amount) {
+        return deposit(player, amount.negate());
     }
 
-    public static boolean deposit(OfflinePlayer player, double amount) {
-        if (amount == 0)
+    public static boolean deposit(OfflinePlayer player, BigDecimal amount) {
+        if (amount.signum() == 0)
             return true;
-        Transactor transactor = amount > 0 ? Economy::depositPlayer : Economy::withdrawPlayer;
-        EconomyResponse result = transactor.transact(ECONOMY, player, Math.abs(amount));
-        if (result.transactionSuccess())
+        EconomyResponse response;
+        if (amount.signum() > 0)
+            response = ECONOMY.depositPlayer(player, amount.doubleValue());
+        else
+            response = ECONOMY.withdrawPlayer(player, amount.abs().doubleValue());
+        if (response.transactionSuccess())
             return true;
-        Utils.notify(player, Message.ERROR_OCCURRED.with(Placeholder.ERROR).as(result.errorMessage).translate());
+        Utils.notify(player, Message.ERROR_OCCURRED.with(Placeholder.ERROR).as(response.errorMessage).translate());
         return false;
-    }
-
-    private interface Transactor {
-        EconomyResponse transact(Economy economy, OfflinePlayer player, double amount);
     }
 
 }

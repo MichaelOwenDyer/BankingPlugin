@@ -17,6 +17,7 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 public class BankCreate extends SubCommand.BankSubCommand {
@@ -144,14 +145,14 @@ public class BankCreate extends SubCommand.BankSubCommand {
         }
 
         if (!isAdminBank) {
-            double creationPrice = Config.bankCreationPrice.get();
-            if (!PayrollOffice.allowPayment(p, creationPrice * -1)) {
+            BigDecimal creationPrice = Config.bankCreationPrice.get();
+            if (!PayrollOffice.allowPayment(p, creationPrice.negate())) {
                 plugin.debug(p.getName() + " does not have enough money to create a bank");
-                double balance = plugin.getEconomy().getBalance(p);
+                BigDecimal balance = BigDecimal.valueOf(plugin.getEconomy().getBalance(p));
                 p.sendMessage(Message.BANK_CREATE_INSUFFICIENT_FUNDS
                         .with(Placeholder.PRICE).as(creationPrice)
                         .and(Placeholder.PLAYER_BALANCE).as(balance)
-                        .and(Placeholder.AMOUNT_REMAINING).as(creationPrice - balance)
+                        .and(Placeholder.AMOUNT_REMAINING).as(creationPrice.subtract(balance))
                         .translate());
                 return true;
             }

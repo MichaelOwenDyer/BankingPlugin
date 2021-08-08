@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -21,6 +20,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utils {
 
@@ -121,10 +121,6 @@ public class Utils {
 		};
 	}
 
-	public static BukkitTask runTaskLater(Runnable runnable, long delay) {
-		return Utils.bukkitRunnable(runnable).runTaskLater(BankingPlugin.getInstance(), delay);
-	}
-
 	/**
 	 * Creates a list of lists of elements where each sub-list contains only equal elements which appeared
 	 * consecutively in the original list. The order of the original list is preserved such that a flatMap
@@ -136,21 +132,21 @@ public class Utils {
 	 * @return a stacked list
 	 */
 	public static <T> List<List<T>> collapseList(List<T> list) {
-		List<List<T>> stackedList = new ArrayList<>();
+		List<List<T>> collapsedList = new ArrayList<>();
 		if (list.isEmpty())
-			return stackedList;
-		stackedList.add(new ArrayList<>());
-		stackedList.get(0).add(list.get(0));
+			return collapsedList;
+		collapsedList.add(new ArrayList<>());
+		collapsedList.get(0).add(list.get(0));
 		int level = 0;
 		for (int i = 1; i < list.size(); i++) {
-			if (Objects.equals(list.get(i), stackedList.get(level).get(0)))
-				stackedList.get(level).add(list.get(i));
+			if (Objects.equals(list.get(i), collapsedList.get(level).get(0)))
+				collapsedList.get(level).add(list.get(i));
 			else {
-				stackedList.add(new ArrayList<>());
-				stackedList.get(++level).add(list.get(i));
+				collapsedList.add(new ArrayList<>());
+				collapsedList.get(++level).add(list.get(i));
 			}
 		}
-		return stackedList;
+		return collapsedList;
 	}
 
 	public static boolean samePlayer(OfflinePlayer p1, OfflinePlayer p2) {
@@ -277,7 +273,7 @@ public class Utils {
 
 	/**
 	 * @param p Player whose secondary held item should be returned
-	 * @return the {@link ItemStack} in the player's off hand, or {@code null} if they player isn't holding anything
+	 * @return the {@link ItemStack} in the player's off hand, or {@code null} if the player isn't holding anything
 	 * in their off hand or the server version is below 1.9
 	 */
 	public static ItemStack getItemInOffHand(Player p) {
@@ -285,6 +281,10 @@ public class Utils {
 			return null;
 		ItemStack item = p.getInventory().getItemInOffHand();
 		return item.getType() == Material.AIR ? null : item;
+	}
+
+	public static ItemStack[] getItemsInHands(Player p) {
+		return Stream.of(getItemInMainHand(p), getItemInOffHand(p)).filter(Objects::nonNull).toArray(ItemStack[]::new);
 	}
 
 	/**
@@ -297,8 +297,7 @@ public class Utils {
 			axes = Arrays.asList("WOOD_AXE", "STONE_AXE", "IRON_AXE", "GOLD_AXE", "DIAMOND_AXE");
 		else
 			axes = Arrays.asList("WOODEN_AXE", "STONE_AXE", "IRON_AXE", "GOLDEN_AXE", "DIAMOND_AXE");
-		return Arrays.stream(new ItemStack[] { getItemInMainHand(p), getItemInOffHand(p) })
-				.filter(Objects::nonNull)
+		return Arrays.stream(getItemsInHands(p))
 				.map(ItemStack::getType)
 				.map(Material::toString)
 				.anyMatch(axes::contains);

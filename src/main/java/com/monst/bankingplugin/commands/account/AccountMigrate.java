@@ -10,15 +10,13 @@ import com.monst.bankingplugin.events.account.AccountMigrateEvent;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.PayrollOffice;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.utils.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class AccountMigrate extends SubCommand.AccountSubCommand {
@@ -123,28 +121,30 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
 
         Bank oldBank = accountToMove.getBank();
 
-        double creationPrice = newBank.getAccountCreationPrice().get();
-        creationPrice *= (newBank.isOwner(p) ? 0 : 1);
-        creationPrice *= newAccountLocation.getSize();
+        BigDecimal creationPrice;
+        if (newBank.isOwner(p))
+            creationPrice = BigDecimal.ZERO;
+        else
+            creationPrice = newBank.getAccountCreationPrice().get().multiply(BigDecimal.valueOf(newAccountLocation.getSize()));
 
-        double reimbursement = oldBank.getReimburseAccountCreation().get() ?
-                oldBank.getAccountCreationPrice().get() :
-                0.0d;
-        reimbursement *= (oldBank.isOwner(p) ? 0 : 1); // Free if owner
-        reimbursement *= accountToMove.getSize(); // Double chest is worth twice as much
+        BigDecimal reimbursement;
+        if (oldBank.isOwner(p) || !oldBank.getReimburseAccountCreation().get())
+            reimbursement = BigDecimal.ZERO;
+        else
+            reimbursement = oldBank.getAccountCreationPrice().get().multiply(BigDecimal.valueOf(accountToMove.getSize()));
 
-        double net = reimbursement - creationPrice;
+        BigDecimal net = reimbursement.subtract(creationPrice);
         if (!PayrollOffice.allowPayment(p, net)) {
-            double balance = plugin.getEconomy().getBalance(p);
+            BigDecimal balance = BigDecimal.valueOf(plugin.getEconomy().getBalance(p));
             p.sendMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS
                     .with(Placeholder.PRICE).as(net)
                     .and(Placeholder.PLAYER_BALANCE).as(balance)
-                    .and(Placeholder.AMOUNT_REMAINING).as(net - balance)
+                    .and(Placeholder.AMOUNT_REMAINING).as(net.subtract(balance))
                     .translate());
             return;
         }
 
-        if (reimbursement > 0) {
+        if (reimbursement.signum() > 0) {
             // Customer receives reimbursement for old account
             if (PayrollOffice.deposit(p, reimbursement))
                 p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate());
@@ -156,7 +156,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
                         .translate());
         }
 
-        if (creationPrice > 0) {
+        if (creationPrice.signum() > 0) {
             // Account owner pays creation fee for new account
             if (PayrollOffice.withdraw(p, creationPrice))
                 p.sendMessage(Message.ACCOUNT_CREATE_FEE_PAID

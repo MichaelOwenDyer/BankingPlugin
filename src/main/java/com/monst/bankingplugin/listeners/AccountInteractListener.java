@@ -9,6 +9,7 @@ import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -80,10 +81,10 @@ public class AccountInteractListener extends BankingPluginListener {
 				return;
 
 			// The account info item will allow account info requests with no ClickType
-			ItemStack infoItem = Config.accountInfoItem.get().orElse(null);
-			if (infoItem != null)
-				for (ItemStack item : new ItemStack[] { Utils.getItemInMainHand(p), Utils.getItemInOffHand(p) })
-					if (item != null && infoItem.getType() == item.getType()) {
+			Material infoMaterial = Config.accountInfoItem.get().orElse(null);
+			if (infoMaterial != null)
+				for (ItemStack item : Utils.getItemsInHands(p))
+					if (item.getType() == infoMaterial) {
 						e.setCancelled(true);
 						AccountInfo.info(plugin, p, account);
 						return;

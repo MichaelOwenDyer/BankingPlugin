@@ -10,16 +10,15 @@ import com.monst.bankingplugin.events.account.AccountCreateEvent;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.PayrollOffice;
-import com.monst.bankingplugin.utils.Permissions;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.utils.*;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
+
+import java.math.BigDecimal;
 
 public class AccountCreate extends SubCommand.AccountSubCommand {
 
@@ -123,17 +122,19 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
             return;
         }
 
-        double creationPrice = bank.getAccountCreationPrice().get();
-        creationPrice *= accountLocation.getSize();
-        creationPrice *= bank.isOwner(p) ? 0 : 1;
+        BigDecimal creationPrice;
+        if (bank.isOwner(p))
+            creationPrice = BigDecimal.ZERO;
+        else
+            creationPrice = bank.getAccountCreationPrice().get().multiply(BigDecimal.valueOf(accountLocation.getSize()));
 
-        if (creationPrice > 0) {
-            double balance = plugin.getEconomy().getBalance(p);
-            if (creationPrice > balance) {
+        if (creationPrice.signum() > 0) {
+            BigDecimal balance = BigDecimal.valueOf(plugin.getEconomy().getBalance(p));
+            if (creationPrice.compareTo(balance) > 0) {
                 p.sendMessage(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS
                         .with(Placeholder.PRICE).as(creationPrice)
                         .and(Placeholder.PLAYER_BALANCE).as(balance)
-                        .and(Placeholder.AMOUNT_REMAINING).as(creationPrice - balance)
+                        .and(Placeholder.AMOUNT_REMAINING).as(creationPrice.subtract(balance))
                         .translate());
                 return;
             }

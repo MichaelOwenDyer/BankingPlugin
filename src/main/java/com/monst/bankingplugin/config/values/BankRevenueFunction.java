@@ -2,11 +2,11 @@ package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exceptions.parse.ExpressionParseException;
-import com.monst.bankingplugin.utils.QuickMath;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class BankRevenueFunction extends ConfigValue<String, Expression> implements NonNativeString<Expression> {
 
@@ -45,7 +45,7 @@ public class BankRevenueFunction extends ConfigValue<String, Expression> impleme
         double revenue = expression.calculate();
         if (Double.isInfinite(revenue) || Double.isNaN(revenue))
             return BigDecimal.ZERO;
-        return QuickMath.scale(BigDecimal.valueOf(revenue));
+        return BigDecimal.valueOf(revenue).setScale(2, RoundingMode.HALF_EVEN);
     }
 
 }

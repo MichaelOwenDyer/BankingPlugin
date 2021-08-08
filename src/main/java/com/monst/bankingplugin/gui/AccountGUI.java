@@ -14,6 +14,7 @@ import org.ipvp.canvas.slot.Slot.ClickHandler;
 import org.ipvp.canvas.type.ChestMenu;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -134,23 +135,30 @@ public class AccountGUI extends SinglePageGUI<Account> {
 
 	private List<String> getBalanceLore() {
 		Bank bank = guiSubject.getBank();
-		double minBalance = bank.getMinimumBalance().get();
-		boolean isLowBalance = guiSubject.getBalance().doubleValue() < minBalance;
-		boolean payOnLowBalance = bank.getPayOnLowBalance().get();
-		double interestRate = bank.getInterestRate().get();
+		BigDecimal interestRate = bank.getInterestRate().get();
 		int multiplier = guiSubject.getRealMultiplier();
-		double fullPayout = (isLowBalance && !payOnLowBalance) ?
-				0.0 : guiSubject.getBalance().doubleValue() * interestRate * multiplier;
-		double lowBalanceFee = isLowBalance && bank.getLowBalanceFee().get() > 0 ?
-				bank.getLowBalanceFee().get() : 0.0;
-		double nextPayout = fullPayout - lowBalanceFee;
+		BigDecimal multipliedInterestRate = interestRate.multiply(BigDecimal.valueOf(multiplier));
+		BigDecimal minBalance = bank.getMinimumBalance().get();
+		boolean isLowBalance = guiSubject.getBalance().compareTo(minBalance) < 0;
+		boolean payOnLowBalance = bank.getPayOnLowBalance().get();
+		BigDecimal fullPayout;
+		if (isLowBalance && !payOnLowBalance)
+			fullPayout = BigDecimal.ZERO;
+		else
+			fullPayout = guiSubject.getBalance().multiply(multipliedInterestRate).setScale(2, RoundingMode.HALF_EVEN);
+		BigDecimal lowBalanceFee;
+		if (isLowBalance)
+			lowBalanceFee = bank.getLowBalanceFee().get();
+		else
+			lowBalanceFee = BigDecimal.ZERO;
+		BigDecimal nextPayout = fullPayout.subtract(lowBalanceFee);
 		return Arrays.asList(
 				"Balance: " + Utils.formatAndColorize(guiSubject.getBalance()) + (isLowBalance ?
-						ChatColor.RED + " (" + Utils.format(minBalance - guiSubject.getBalance().doubleValue()) + " below minimum)" :
+						ChatColor.RED + " (" + Utils.format(minBalance.subtract(guiSubject.getBalance())) + " below minimum)" :
 						""),
-				"Interest rate: " + ChatColor.GREEN + BigDecimal.valueOf(interestRate * multiplier * 100).setScale(1, BigDecimal.ROUND_HALF_EVEN)
-						+ "% " + ChatColor.GRAY + "(" + interestRate + " x " + multiplier + ")",
-				"Next payout: " + (nextPayout > 0 ? ChatColor.GREEN : ChatColor.RED) + Utils.format(nextPayout)
+				"Interest rate: " + ChatColor.GREEN + multipliedInterestRate.scaleByPowerOfTen(2) + "% "
+						+ ChatColor.GRAY + "(" + interestRate + " x " + multiplier + ")",
+				"Next payout: " + (nextPayout.signum() > 0 ? ChatColor.GREEN : ChatColor.RED) + Utils.format(nextPayout)
 						+ (isLowBalance && payOnLowBalance ? ChatColor.GRAY + " (" + ChatColor.GREEN + Utils.format(fullPayout)
 						+ ChatColor.GRAY + " - " + ChatColor.RED + Utils.format(lowBalanceFee) + ChatColor.GRAY + ")" : "")
 		);
