@@ -17,7 +17,7 @@ interface NonNativeBigDecimal extends NonNativeValue<Double, BigDecimal> {
     @Override
     default BigDecimal parse(String input) throws DecimalParseException {
         input = input.startsWith("$") ? input.substring(1) : input;
-        return Parser.parseBigDecimal(input).setScale(2, RoundingMode.HALF_EVEN);
+        return Parser.parseBigDecimal(input).abs().setScale(2, RoundingMode.HALF_EVEN);
     }
 
     @Override
