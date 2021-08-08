@@ -198,14 +198,6 @@ public class Bank extends BankingEntity {
 	}
 
 	/**
-	 * @return a {@link Map<OfflinePlayer>} containing
-	 * all account owners at this bank and their total account balances
-	 */
-	public Map<OfflinePlayer, BigDecimal> getBalancesByOwner() {
-		return accounts.stream().collect(Collectors.toMap(Account::getOwner, Account::getBalance, BigDecimal::add));
-	}
-
-	/**
 	 * @return a {@link Set<OfflinePlayer>} containing all account holders at this bank.
 	 */
 	public Set<OfflinePlayer> getAccountHolders() {
@@ -353,25 +345,24 @@ public class Bank extends BankingEntity {
 	/**
 	 * Calculates Gini coefficient of this bank. This is a measurement of wealth
 	 * (in)equality among all n accounts at the bank.
-	 *
-	 * @return G = ( 2 * (sum(i...n) i * n[i].getBalance()) / n * (sum(i...n) n[i].getBalance()) ) - ( n + 1 / n )
+	 * @return the Gini coefficient
 	 */
 	public double getGiniCoefficient() {
 		if (getAccountHolders().size() <= 1)
-			return 0;
+			return 0.0;
 		BigDecimal totalValue = getTotalValue();
 		if (totalValue.signum() == 0)
-			return 0;
-		List<BigDecimal> orderedBalances = getBalancesByOwner().values().stream()
-				.sorted().collect(Collectors.toList());
-		totalValue = totalValue.multiply(BigDecimal.valueOf(orderedBalances.size()));
-		BigDecimal weightedValueSum = BigDecimal.ZERO;
-		for (int i = 0; i < orderedBalances.size(); i++)
-			weightedValueSum = weightedValueSum.add(orderedBalances.get(i).multiply(BigDecimal.valueOf(i + 1)));
-		weightedValueSum = weightedValueSum.multiply(BigDecimal.valueOf(2));
-		BigDecimal leftSide = weightedValueSum.divide(totalValue, RoundingMode.HALF_EVEN);
-		BigDecimal rightSide = BigDecimal.valueOf((orderedBalances.size() + 1) / orderedBalances.size());
-		return leftSide.subtract(rightSide).setScale(2, RoundingMode.HALF_EVEN).doubleValue();
+			return 0.0;
+		BigDecimal[] balances = accounts.stream()
+				.collect(Collectors.toMap(Account::getOwner, Account::getBalance, BigDecimal::add))
+				.values().stream().sorted().toArray(BigDecimal[]::new);
+		BigDecimal topSum = BigDecimal.ZERO;
+		for (int i = 1; i <= balances.length; i++) {
+			BigDecimal weight = BigDecimal.valueOf((i * 2L) - balances.length - 1);
+			topSum = topSum.add(balances[i - 1].multiply(weight));
+		}
+		BigDecimal bottomSum = totalValue.multiply(BigDecimal.valueOf(balances.length));
+		return topSum.divide(bottomSum, RoundingMode.HALF_EVEN).doubleValue();
 	}
 
 	/**
