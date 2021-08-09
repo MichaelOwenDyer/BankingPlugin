@@ -63,13 +63,13 @@ public class InterestEventListener extends BankingPluginListener {
 				BigDecimal lowBalanceFee = BigDecimal.ZERO;
 
 				// See if account balance is below the bank minimum
-				if (account.getBalance().compareTo(bank.getMinimumBalance().get()) < 0) {
+				if (account.getBalance().compareTo(bank.minimumBalance().get()) < 0) {
 
-					lowBalanceFee = bank.getLowBalanceFee().get();
+					lowBalanceFee = bank.lowBalanceFee().get();
 					if (lowBalanceFee.signum() != 0)
 						accountFees.put(account, lowBalanceFee); // Account must pay fee
 
-					if (!bank.getPayOnLowBalance().get()) { // Bank will not pay interest since balance low
+					if (!bank.payOnLowBalance().get()) { // Bank will not pay interest since balance low
 						plugin.getDatabase().logAccountInterest(new AccountInterest(
 								account.getID(),
 								bank.getID(),
@@ -81,7 +81,7 @@ public class InterestEventListener extends BankingPluginListener {
 					}
 				}
 
-				BigDecimal multipliedInterestRate = bank.getInterestRate().get().multiply(BigDecimal.valueOf(account.getRealMultiplier()));
+				BigDecimal multipliedInterestRate = bank.interestRate().get().multiply(BigDecimal.valueOf(account.getRealMultiplier()));
 				interest = account.getBalance().multiply(multipliedInterestRate).setScale(2, RoundingMode.HALF_EVEN);
 
 				if (interest.signum() != 0)

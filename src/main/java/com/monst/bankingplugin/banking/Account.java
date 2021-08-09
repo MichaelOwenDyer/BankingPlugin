@@ -45,8 +45,8 @@ public class Account extends BankingEntity {
 				BigDecimal.ZERO,
 				BigDecimal.ZERO,
 				0,
-				bank.getInitialInterestDelay().get(),
-				bank.getAllowedOfflinePayouts().get()
+				bank.initialInterestDelay().get(),
+				bank.allowedOfflinePayouts().get()
 		);
 	}
 
@@ -440,12 +440,12 @@ public class Account extends BankingEntity {
 	public boolean allowNextPayout() {
 		boolean online = isTrustedPlayerOnline();
 		if (delayUntilNextPayout > 0) {
-			if (online || bank.getCountInterestDelayOffline().get())
+			if (online || bank.countInterestDelayOffline().get())
 				delayUntilNextPayout--;
 			return false;
 		}
 		if (online) {
-			remainingOfflinePayouts = Math.max(remainingOfflinePayouts, bank.getAllowedOfflinePayouts().get());
+			remainingOfflinePayouts = Math.max(remainingOfflinePayouts, bank.allowedOfflinePayouts().get());
 			return true;
 		}
 		return remainingOfflinePayouts-- > 0;
@@ -459,7 +459,7 @@ public class Account extends BankingEntity {
 	 * @return the new multiplier stage of this account
 	 */
 	public int processWithdrawal() {
-		int decrement = bank.getWithdrawalMultiplierDecrement().get();
+		int decrement = bank.withdrawalMultiplierDecrement().get();
 		if (decrement < 0) {
 			return setMultiplierStage(0);
 		}
@@ -473,7 +473,7 @@ public class Account extends BankingEntity {
 		if (isTrustedPlayerOnline())
 			setMultiplierStage(++multiplierStage);
 		else
-			setMultiplierStage(multiplierStage - bank.getOfflineMultiplierDecrement().get());
+			setMultiplierStage(multiplierStage - bank.offlineMultiplierDecrement().get());
 	}
 
 	/**
@@ -482,7 +482,7 @@ public class Account extends BankingEntity {
 	 * @return the corresponding multiplier, or 1x by default in case of an error.
 	 */
 	public int getRealMultiplier() {
-		List<Integer> multipliers = bank.getMultipliers().get();
+		List<Integer> multipliers = bank.multipliers().get();
 		if (multipliers == null || multipliers.isEmpty())
 			return 1;
 		return multipliers.get(setMultiplierStage(multiplierStage));
@@ -496,7 +496,7 @@ public class Account extends BankingEntity {
 	public int setMultiplierStage(int stage) {
 		if (stage == 0)
 			return multiplierStage = 0;
-		return multiplierStage = Math.max(0, Math.min(stage, bank.getMultipliers().get().size() - 1));
+		return multiplierStage = Math.max(0, Math.min(stage, bank.multipliers().get().size() - 1));
 	}
 
 	/**
@@ -531,7 +531,7 @@ public class Account extends BankingEntity {
 
 	@Override
 	public String toConsolePrintout() {
-		BigDecimal rate = getBank().getInterestRate().get();
+		BigDecimal rate = getBank().interestRate().get();
 		int multiplier = getRealMultiplier();
 		BigDecimal percentage = rate.multiply(BigDecimal.valueOf(multiplier)).scaleByPowerOfTen(2).setScale(2, RoundingMode.HALF_EVEN);
 		return Stream.of(

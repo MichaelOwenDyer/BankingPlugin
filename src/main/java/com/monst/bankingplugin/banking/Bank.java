@@ -230,59 +230,59 @@ public class Bank extends BankingEntity {
 		notifyObservers();
 	}
 
-	public OverriddenValue<Boolean> getCountInterestDelayOffline() {
+	public OverriddenValue<Boolean> countInterestDelayOffline() {
 		return countInterestDelayOffline;
 	}
 
-	public OverriddenValue<Boolean> getReimburseAccountCreation() {
+	public OverriddenValue<Boolean> reimburseAccountCreation() {
 		return reimburseAccountCreation;
 	}
 
-	public OverriddenValue<Boolean> getPayOnLowBalance() {
+	public OverriddenValue<Boolean> payOnLowBalance() {
 		return payOnLowBalance;
 	}
 
-	public OverriddenValue<BigDecimal> getInterestRate() {
+	public OverriddenValue<BigDecimal> interestRate() {
 		return interestRate;
 	}
 
-	public OverriddenValue<BigDecimal> getAccountCreationPrice() {
+	public OverriddenValue<BigDecimal> accountCreationPrice() {
 		return accountCreationPrice;
 	}
 
-	public OverriddenValue<BigDecimal> getMinimumBalance() {
+	public OverriddenValue<BigDecimal> minimumBalance() {
 		return minimumBalance;
 	}
 
-	public OverriddenValue<BigDecimal> getLowBalanceFee() {
+	public OverriddenValue<BigDecimal> lowBalanceFee() {
 		return lowBalanceFee;
 	}
 
-	public OverriddenValue<Integer> getInitialInterestDelay() {
+	public OverriddenValue<Integer> initialInterestDelay() {
 		return initialInterestDelay;
 	}
 
-	public OverriddenValue<Integer> getAllowedOfflinePayouts() {
+	public OverriddenValue<Integer> allowedOfflinePayouts() {
 		return allowedOfflinePayouts;
 	}
 
-	public OverriddenValue<Integer> getOfflineMultiplierDecrement() {
+	public OverriddenValue<Integer> offlineMultiplierDecrement() {
 		return offlineMultiplierDecrement;
 	}
 
-	public OverriddenValue<Integer> getWithdrawalMultiplierDecrement() {
+	public OverriddenValue<Integer> withdrawalMultiplierDecrement() {
 		return withdrawalMultiplierDecrement;
 	}
 
-	public OverriddenValue<Integer> getPlayerBankAccountLimit() {
+	public OverriddenValue<Integer> playerBankAccountLimit() {
 		return playerBankAccountLimit;
 	}
 
-	public OverriddenValue<List<Integer>> getMultipliers() {
+	public OverriddenValue<List<Integer>> multipliers() {
 		return multipliers;
 	}
 
-	public OverriddenValue<Set<LocalTime>> getInterestPayoutTimes() {
+	public OverriddenValue<Set<LocalTime>> interestPayoutTimes() {
 		return interestPayoutTimes;
 	}
 
@@ -396,14 +396,14 @@ public class Bank extends BankingEntity {
 				"\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")",
 				"Owner: " + getOwnerDisplayName(),
 				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName),
-				"Interest rate: " + ChatColor.GREEN + getInterestRate().getFormatted(),
-				"Multipliers: " + Utils.map(Utils.collapseList(getMultipliers().get()),
+				"Interest rate: " + ChatColor.GREEN + interestRate().getFormatted(),
+				"Multipliers: " + Utils.map(Utils.collapseList(multipliers().get()),
 						list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString(),
-				"Account creation price: " + ChatColor.GREEN + getAccountCreationPrice().getFormatted(),
-				"Offline payouts: " + ChatColor.AQUA + getAllowedOfflinePayouts().getFormatted(),
-				"Initial payout delay: " + ChatColor.AQUA + getInitialInterestDelay().getFormatted(),
-				"Minimum balance: " + ChatColor.GREEN + getMinimumBalance().getFormatted(),
-						" (" + ChatColor.RED + getLowBalanceFee().getFormatted() + ChatColor.GRAY + " fee)",
+				"Account creation price: " + ChatColor.GREEN + accountCreationPrice().getFormatted(),
+				"Offline payouts: " + ChatColor.AQUA + allowedOfflinePayouts().getFormatted(),
+				"Initial payout delay: " + ChatColor.AQUA + initialInterestDelay().getFormatted(),
+				"Minimum balance: " + ChatColor.GREEN + minimumBalance().getFormatted(),
+						" (" + ChatColor.RED + lowBalanceFee().getFormatted() + ChatColor.GRAY + " fee)",
 				"Accounts: " + ChatColor.AQUA + accounts.size(),
 				"Total account value: " + Utils.formatAndColorize(getTotalValue()),
 				"Average account value: " + Utils.formatAndColorize(getAverageValue()),

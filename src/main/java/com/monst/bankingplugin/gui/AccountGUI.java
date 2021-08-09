@@ -135,12 +135,12 @@ public class AccountGUI extends SinglePageGUI<Account> {
 
 	private List<String> getBalanceLore() {
 		Bank bank = guiSubject.getBank();
-		BigDecimal interestRate = bank.getInterestRate().get();
+		BigDecimal interestRate = bank.interestRate().get();
 		int multiplier = guiSubject.getRealMultiplier();
 		BigDecimal multipliedInterestRate = interestRate.multiply(BigDecimal.valueOf(multiplier));
-		BigDecimal minBalance = bank.getMinimumBalance().get();
+		BigDecimal minBalance = bank.minimumBalance().get();
 		boolean isLowBalance = guiSubject.getBalance().compareTo(minBalance) < 0;
-		boolean payOnLowBalance = bank.getPayOnLowBalance().get();
+		boolean payOnLowBalance = bank.payOnLowBalance().get();
 		BigDecimal fullPayout;
 		if (isLowBalance && !payOnLowBalance)
 			fullPayout = BigDecimal.ZERO;
@@ -148,7 +148,7 @@ public class AccountGUI extends SinglePageGUI<Account> {
 			fullPayout = guiSubject.getBalance().multiply(multipliedInterestRate).setScale(2, RoundingMode.HALF_EVEN);
 		BigDecimal lowBalanceFee;
 		if (isLowBalance)
-			lowBalanceFee = bank.getLowBalanceFee().get();
+			lowBalanceFee = bank.lowBalanceFee().get();
 		else
 			lowBalanceFee = BigDecimal.ZERO;
 		BigDecimal nextPayout = fullPayout.subtract(lowBalanceFee);
@@ -165,13 +165,13 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	}
 
 	List<String> getMultiplierLore() {
-		return getMultiplierLore(guiSubject.getBank().getMultipliers().get(), guiSubject.getMultiplierStage());
+		return getMultiplierLore(guiSubject.getBank().multipliers().get(), guiSubject.getMultiplierStage());
 	}
 
 	private List<String> getAccountRestrictionsLore() {
 		int delay = guiSubject.getDelayUntilNextPayout();
 		int remainingOffline = guiSubject.getRemainingOfflinePayouts();
-		int offlineDecrement = guiSubject.getBank().getOfflineMultiplierDecrement().get();
+		int offlineDecrement = guiSubject.getBank().offlineMultiplierDecrement().get();
 		return wordWrapAll(
 				(delay == 0 ?
 						"This account will generate interest in the next payout cycle." :

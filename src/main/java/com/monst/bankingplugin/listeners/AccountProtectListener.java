@@ -60,8 +60,8 @@ public class AccountProtectListener extends BankingPluginListener {
 		}
 
 		Bank bank = account.getBank();
-		if (bank.getReimburseAccountCreation().get() && account.isOwner(p) && !bank.isOwner(p)) {
-			BigDecimal creationPrice = bank.getAccountCreationPrice().get();
+		if (bank.reimburseAccountCreation().get() && account.isOwner(p) && !bank.isOwner(p)) {
+			BigDecimal creationPrice = bank.accountCreationPrice().get();
 			// Account owner is reimbursed for the part of the chest that was broken
 			if (PayrollOffice.deposit(p, creationPrice))
 				p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(creationPrice).translate());
@@ -160,7 +160,7 @@ public class AccountProtectListener extends BankingPluginListener {
             return;
 		}
 
-		BigDecimal creationPrice = bank.getAccountCreationPrice().get();
+		BigDecimal creationPrice = bank.accountCreationPrice().get();
 		if (!PayrollOffice.allowPayment(p, creationPrice.negate())) {
 			BigDecimal balance = BigDecimal.valueOf(plugin.getEconomy().getBalance(p));
 			p.sendMessage(Message.ACCOUNT_EXTEND_INSUFFICIENT_FUNDS

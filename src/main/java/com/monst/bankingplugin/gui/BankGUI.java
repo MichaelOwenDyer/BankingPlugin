@@ -166,22 +166,22 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getCreationLore() {
-		boolean reimburse = guiSubject.getReimburseAccountCreation().get();
+		boolean reimburse = guiSubject.reimburseAccountCreation().get();
 		return Arrays.asList(
-				"Fee per chest: " + ChatColor.GREEN + guiSubject.getAccountCreationPrice().getFormatted(),
+				"Fee per chest: " + ChatColor.GREEN + guiSubject.accountCreationPrice().getFormatted(),
 				"Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
 		);
 	}
 
 	private List<String> getMultiplierLore() {
-		return getMultiplierLore(guiSubject.getMultipliers().get(), -1);
+		return getMultiplierLore(guiSubject.multipliers().get(), -1);
 	}
 
 	private List<String> getBalanceRestrictionLore() {
-		BigDecimal minBalance = guiSubject.getMinimumBalance().get();
-		BigDecimal lowBalanceFee = guiSubject.getLowBalanceFee().get();
+		BigDecimal minBalance = guiSubject.minimumBalance().get();
+		BigDecimal lowBalanceFee = guiSubject.lowBalanceFee().get();
 		boolean strikethrough = minBalance.signum() == 0;
-		boolean payOnLowBalance = guiSubject.getPayOnLowBalance().get();
+		boolean payOnLowBalance = guiSubject.payOnLowBalance().get();
 		Stream.Builder<String> lore = Stream.builder();
 		lore.add("Minimum balance: " + ChatColor.GREEN + Utils.format(minBalance));
 		lore.add("Low balance fee: " + ChatColor.RED + (strikethrough ? ChatColor.STRIKETHROUGH : "") + Utils.format(lowBalanceFee));
@@ -194,8 +194,8 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getOfflinePayoutsLore() {
-		int offlinePayouts = guiSubject.getAllowedOfflinePayouts().get();
-		int offlineDecrement = guiSubject.getOfflineMultiplierDecrement().get();
+		int offlinePayouts = guiSubject.allowedOfflinePayouts().get();
+		int offlineDecrement = guiSubject.offlineMultiplierDecrement().get();
 		Stream.Builder<String> lore = Stream.builder();
 		lore.add("Accounts will " + (offlinePayouts == 0 ? ChatColor.RED + "not generate interest" + ChatColor.GRAY
 				: "generate interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
@@ -211,13 +211,13 @@ public class BankGUI extends SinglePageGUI<Bank> {
 
 	private List<String> getInterestRateLore() {
 		return wordWrapAll(
-			ChatColor.GREEN + guiSubject.getInterestRate().getFormatted()
+			ChatColor.GREEN + guiSubject.interestRate().getFormatted()
 		);
 	}
 
 	private List<String> getInterestDelayLore() {
-		int interestDelay = guiSubject.getInitialInterestDelay().get();
-		boolean countOffline = guiSubject.getCountInterestDelayOffline().get();
+		int interestDelay = guiSubject.initialInterestDelay().get();
+		boolean countOffline = guiSubject.countInterestDelayOffline().get();
 		Stream.Builder<String> lore = Stream.builder();
 		lore.add("New accounts will begin to generate interest " + (interestDelay == 0
 				? ChatColor.GREEN + "immediately" + ChatColor.GRAY + " after creation."
@@ -234,7 +234,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getWithdrawalPolicyLore() {
-		int withdrawalDecrement = guiSubject.getWithdrawalMultiplierDecrement().get();
+		int withdrawalDecrement = guiSubject.withdrawalMultiplierDecrement().get();
 		return wordWrapAll(
 				"Account multipliers will " + (withdrawalDecrement == 0
 						? ChatColor.GREEN + "not be affected on" + ChatColor.GRAY
@@ -244,7 +244,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getAccountLimitLore() {
-		int accountLimit = guiSubject.getPlayerBankAccountLimit().get();
+		int accountLimit = guiSubject.playerBankAccountLimit().get();
 		return wordWrapAll(
 				(accountLimit == 0
 						? "Account creation is currently " + ChatColor.RED + "disabled" + ChatColor.GRAY
@@ -256,7 +256,7 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	}
 
 	private List<String> getPayoutTimeLore() {
-		Set<LocalTime> times = guiSubject.getInterestPayoutTimes().get();
+		Set<LocalTime> times = guiSubject.interestPayoutTimes().get();
 		Stream.Builder<String> lore = Stream.builder();
 		if (!times.isEmpty()) {
 			lore.add("Accounts will generate interest every day at: ");

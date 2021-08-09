@@ -102,7 +102,7 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
             plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
             return;
         }
-        int playerAccountLimit = bank.getPlayerBankAccountLimit().get();
+        int playerAccountLimit = bank.playerBankAccountLimit().get();
         if (playerAccountLimit > 0 && bank.getAccounts(account -> account.isOwner(p)).size() >= playerAccountLimit) {
             p.sendMessage(Message.ACCOUNT_LIMIT_AT_BANK_REACHED
                     .with(Placeholder.BANK_NAME).as(bank.getColorizedName())
@@ -126,7 +126,7 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
         if (bank.isOwner(p))
             creationPrice = BigDecimal.ZERO;
         else
-            creationPrice = bank.getAccountCreationPrice().get().multiply(BigDecimal.valueOf(accountLocation.getSize()));
+            creationPrice = bank.accountCreationPrice().get().multiply(BigDecimal.valueOf(accountLocation.getSize()));
 
         if (creationPrice.signum() > 0) {
             BigDecimal balance = BigDecimal.valueOf(plugin.getEconomy().getBalance(p));

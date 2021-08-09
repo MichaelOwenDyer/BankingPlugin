@@ -125,13 +125,13 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         if (newBank.isOwner(p))
             creationPrice = BigDecimal.ZERO;
         else
-            creationPrice = newBank.getAccountCreationPrice().get().multiply(BigDecimal.valueOf(newAccountLocation.getSize()));
+            creationPrice = newBank.accountCreationPrice().get().multiply(BigDecimal.valueOf(newAccountLocation.getSize()));
 
         BigDecimal reimbursement;
-        if (oldBank.isOwner(p) || !oldBank.getReimburseAccountCreation().get())
+        if (oldBank.isOwner(p) || !oldBank.reimburseAccountCreation().get())
             reimbursement = BigDecimal.ZERO;
         else
-            reimbursement = oldBank.getAccountCreationPrice().get().multiply(BigDecimal.valueOf(accountToMove.getSize()));
+            reimbursement = oldBank.accountCreationPrice().get().multiply(BigDecimal.valueOf(accountToMove.getSize()));
 
         BigDecimal net = reimbursement.subtract(creationPrice);
         if (!PayrollOffice.allowPayment(p, net)) {

@@ -51,7 +51,7 @@ public class InterestEventScheduler {
             return;
         PLUGIN.debugf("Scheduling interest payments of bank #%d.", bank.getID());
 
-        Set<LocalTime> bankPayoutTimes = bank.getInterestPayoutTimes().get(); // Get times at which bank pays out
+        Set<LocalTime> bankPayoutTimes = bank.interestPayoutTimes().get(); // Get times at which bank pays out
         BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>()); // Ensure the bank has a time set
         BANK_TIME_MAP.get(bank).addAll(bankPayoutTimes); // Add all payout times to the bank's time set
 

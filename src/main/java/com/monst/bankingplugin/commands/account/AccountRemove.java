@@ -86,12 +86,12 @@ public class AccountRemove extends SubCommand.AccountSubCommand {
         }
 
         Bank bank = account.getBank();
-        if (account.isOwner(p) && bank.getReimburseAccountCreation().get()) {
+        if (account.isOwner(p) && bank.reimburseAccountCreation().get()) {
             BigDecimal reimbursement;
             if (bank.isOwner(p))
                 reimbursement = BigDecimal.ZERO;
             else
-                reimbursement = bank.getAccountCreationPrice().get().multiply(BigDecimal.valueOf(account.getSize()));
+                reimbursement = bank.accountCreationPrice().get().multiply(BigDecimal.valueOf(account.getSize()));
 
             if (reimbursement.signum() > 0) {
                 if (PayrollOffice.deposit(p, reimbursement))
