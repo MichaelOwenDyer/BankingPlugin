@@ -7,6 +7,8 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
+import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.locations.DoubleAccountLocation;
 import com.monst.bankingplugin.geo.locations.SingleAccountLocation;
@@ -106,39 +108,49 @@ public class AccountProtectListener extends BankingPluginListener {
 			return;
 
 		BlockFace neighborFacing;
+		boolean leftSide = data.getType() == org.bukkit.block.data.type.Chest.Type.LEFT;
 		switch (data.getFacing()) {
 			case NORTH:
-				neighborFacing = data.getType() == org.bukkit.block.data.type.Chest.Type.LEFT ? BlockFace.EAST : BlockFace.WEST;
+				neighborFacing = leftSide ? BlockFace.EAST : BlockFace.WEST;
 				break;
 			case EAST:
-				neighborFacing = data.getType() == org.bukkit.block.data.type.Chest.Type.LEFT ? BlockFace.SOUTH : BlockFace.NORTH;
+				neighborFacing = leftSide ? BlockFace.SOUTH : BlockFace.NORTH;
 				break;
 			case SOUTH:
-				neighborFacing = data.getType() == org.bukkit.block.data.type.Chest.Type.LEFT ? BlockFace.WEST : BlockFace.EAST;
+				neighborFacing = leftSide ? BlockFace.WEST : BlockFace.EAST;
 				break;
 			case WEST:
-				neighborFacing = data.getType() == org.bukkit.block.data.type.Chest.Type.LEFT ? BlockFace.NORTH : BlockFace.SOUTH;
+				neighborFacing = leftSide ? BlockFace.NORTH : BlockFace.SOUTH;
 				break;
 			default:
 				return;
 		}
 
-        Block firstChest = b.getRelative(neighborFacing);
-		Account account = accountRepo.getAt(firstChest);
+        Block existingChest = b.getRelative(neighborFacing);
+		Account account = accountRepo.getAt(existingChest);
 		if (account == null)
 			return;
 
-		AccountLocation newLoc = new DoubleAccountLocation(firstChest, neighborFacing.getOppositeFace());
-		Bank bank = newLoc.getBank();
-		if (bank == null) {
-			plugin.debugf("%s tried to extend %s's account (#%d), but new chest was not in a bank.",
-					p.getName(), account.getOwner().getName(), account.getID());
-			p.sendMessage(Message.CHEST_NOT_IN_BANK.translate());
+		AccountLocation newLoc = new DoubleAccountLocation(existingChest, neighborFacing.getOppositeFace());
+
+		Bank bank;
+		try {
+			newLoc.checkSpaceAbove();
+			bank = newLoc.findBank();
+		} catch (ChestBlockedException | BankNotFoundException ex) {
+			plugin.debug(ex);
+			p.sendMessage(ex.getMessage());
 			e.setCancelled(true);
 			return;
 		}
 
 		plugin.debugf("%s tries to extend %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
+
+		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)) {
+			e.setCancelled(true);
+			p.sendMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_OTHER.translate());
+			return;
+		}
 
 		AccountExtendEvent event = new AccountExtendEvent(p, account, newLoc);
         event.fire();
@@ -147,18 +159,6 @@ public class AccountProtectListener extends BankingPluginListener {
 			p.sendMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED.translate());
             return;
         }
-
-		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)) {
-            e.setCancelled(true);
-			p.sendMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_OTHER.translate());
-            return;
-        }
-
-		if (newLoc.isBlocked()) {
-            e.setCancelled(true);
-			p.sendMessage(Message.CHEST_BLOCKED.translate());
-            return;
-		}
 
 		BigDecimal creationPrice = bank.accountCreationPrice().get();
 		if (!PayrollOffice.allowPayment(p, creationPrice.negate())) {

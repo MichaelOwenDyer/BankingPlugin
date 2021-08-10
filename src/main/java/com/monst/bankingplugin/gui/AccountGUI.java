@@ -2,6 +2,7 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.utils.Permissions;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -98,7 +99,11 @@ public class AccountGUI extends SinglePageGUI<Account> {
 					};
 			case 8:
 				if (isTrusted)
-					return (player, info) -> new AccountContentsGUI(guiSubject).setParentGUI(this).open(player);
+					return (player, info) -> {
+						try {
+							new AccountContentsGUI(guiSubject).setParentGUI(this).open(player);
+						} catch (ChestNotFoundException ignored) {}
+					};
 		}
 		return null;
 	}

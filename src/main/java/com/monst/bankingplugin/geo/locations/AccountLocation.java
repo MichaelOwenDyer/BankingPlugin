@@ -1,11 +1,10 @@
 package com.monst.bankingplugin.geo.locations;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
+import com.monst.bankingplugin.exceptions.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
-import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.repository.BankRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
@@ -23,14 +22,13 @@ import java.util.Optional;
 public abstract class AccountLocation implements Iterable<Block> {
 
     private static final BankRepository BANK_REPO = BankingPlugin.getInstance().getBankRepository();
-    private static final AccountRepository ACCOUNT_REPO = BankingPlugin.getInstance().getAccountRepository();
 
     public static AccountLocation from(InventoryHolder ih) {
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
-            Block leftLoc = ((Chest) dc.getLeftSide()).getBlock();
-            Block rightLoc = ((Chest) dc.getRightSide()).getBlock();
-            return new DoubleAccountLocation(leftLoc, leftLoc.getFace(rightLoc));
+            Block left = ((Chest) dc.getLeftSide()).getBlock();
+            Block right = ((Chest) dc.getRightSide()).getBlock();
+            return new DoubleAccountLocation(left, left.getFace(right));
         } else if (ih instanceof Chest)
             return new SingleAccountLocation(((Chest) ih).getBlock());
         throw new IllegalArgumentException("InventoryHolder must be a chest!");
@@ -58,29 +56,16 @@ public abstract class AccountLocation implements Iterable<Block> {
         return b1.getWorld();
     }
 
-    public Bank getBank() {
-        return Optional.ofNullable(BANK_REPO.getAt(this)).orElse(null);
-    }
+    public abstract InventoryHolder findChest() throws ChestNotFoundException;
 
-    public Account getAccount() {
-        return ACCOUNT_REPO.getAt(this);
-    }
-
-    /**
-     * Checks to see if the chest is blocked
-     *
-     * @return true if the chest is blocked and cannot be opened.
-     * @see Utils#isTransparent(Block)
-     */
-    public boolean isBlocked() {
-        for (Block chestSide : this)
-            if (!Utils.isTransparent(chestSide.getRelative(BlockFace.UP)))
-                return true;
-        return false;
+    InventoryHolder getChestAt(Block b) {
+        if (!Utils.isChest(b))
+            return null;
+        return ((Chest) b.getState()).getInventory().getHolder();
     }
 
     /**
-     * Ensures that the account chest is able to be opened.
+     * Ensures that the account chest is openable.
      *
      * @throws ChestBlockedException if the chest cannot be opened.
      * @see Utils#isTransparent(Block)
@@ -88,15 +73,11 @@ public abstract class AccountLocation implements Iterable<Block> {
     public void checkSpaceAbove() throws ChestBlockedException {
         for (Block chestSide : this)
             if (!Utils.isTransparent(chestSide.getRelative(BlockFace.UP)))
-                throw new ChestBlockedException(chestSide);
+                throw new ChestBlockedException();
     }
 
-    public abstract InventoryHolder findInventoryHolder() throws ChestNotFoundException;
-
-    public static InventoryHolder getInventoryHolderAt(Block b) {
-        if (!Utils.isChest(b))
-            return null;
-        return ((Chest) b.getState()).getInventory().getHolder();
+    public Bank findBank() throws BankNotFoundException {
+        return Optional.ofNullable(BANK_REPO.getAt(this)).orElseThrow(BankNotFoundException::new);
     }
 
     public boolean contains(Block b) {

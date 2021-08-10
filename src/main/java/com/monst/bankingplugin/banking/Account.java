@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.banking;
 
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.Callback;
@@ -9,7 +8,6 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
@@ -43,7 +41,6 @@ public class Account extends BankingEntity {
 				loc,
 				String.format(DEFAULT_NAME, owner.getName()),
 				BigDecimal.ZERO,
-				BigDecimal.ZERO,
 				0,
 				bank.initialInterestDelay().get(),
 				bank.allowedOfflinePayouts().get()
@@ -53,33 +50,30 @@ public class Account extends BankingEntity {
 	/**
 	 * Reopens an account that was stored in the database.
 	 */
-	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, AccountLocation loc,
-								 String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
-								 int delayUntilNextPayout, int remainingOfflinePayouts) {
+	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank,
+								 AccountLocation location, String name, BigDecimal previousBalance,
+								 int multiplierStage, int delayUntilNextPayout, int remainingOfflinePayouts) {
 		return new Account(
 				id,
 				owner,
 				new HashSet<>(coowners),
 				bank,
-				loc,
+				location,
 				name,
-				balance.setScale(2, RoundingMode.HALF_EVEN),
-				prevBalance.setScale(2, RoundingMode.HALF_EVEN),
+				previousBalance.setScale(2, RoundingMode.HALF_EVEN),
 				multiplierStage,
 				delayUntilNextPayout,
 				remainingOfflinePayouts
 		);
 	}
 
-	private boolean created;
-	private boolean hasCustomName;
-
 	private Bank bank;
 	private AccountLocation accountLocation;
-	private InventoryHolder inventoryHolder;
 
 	private BigDecimal balance;
-	private BigDecimal prevBalance;
+	private BigDecimal previousBalance;
+
+	private boolean hasCustomName;
 
 	int multiplierStage;
 	int delayUntilNextPayout;
@@ -92,74 +86,24 @@ public class Account extends BankingEntity {
 	 * @param bank the {@link Bank} the account is registered at
 	 * @param loc the {@link AccountLocation} of the account chest
 	 * @param name the account name
-	 * @param balance the current account balance
-	 * @param prevBalance the previous account balance
+	 * @param previousBalance the previous account balance
 	 * @param multiplierStage the multiplier stage of this account
 	 * @param delayUntilNextPayout the number of payments this account will wait before generating interest
 	 * @param remainingOfflinePayouts the number of remaining offline interest payments this account will generate
 	 */
 	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, AccountLocation loc,
-					String name, BigDecimal balance, BigDecimal prevBalance, int multiplierStage,
+					String name, BigDecimal previousBalance, int multiplierStage,
 					int delayUntilNextPayout, int remainingOfflinePayouts) {
 
 		super(id, name, owner, coowners);
 		this.bank = bank;
 		this.accountLocation = loc;
+		this.previousBalance = previousBalance;
 		this.hasCustomName = !Objects.equals(getRawName(), getDefaultName());
-		this.balance = balance;
-		this.prevBalance = prevBalance;
 		this.multiplierStage = multiplierStage;
 		this.delayUntilNextPayout = delayUntilNextPayout;
 		this.remainingOfflinePayouts = remainingOfflinePayouts;
 
-	}
-
-	/**
-	 * Attempts to create this account. This method will ensure that the chest exists at
-	 * the specified {@link Location} and is able to be opened.
-	 *
-	 * @return whether this account was successfully created
-	 * @see Utils#isTransparent(Block)
-	 */
-	public boolean create() {
-
-		if (created) {
-			plugin.debugf("Account was already created! (#%d)", getID());
-			return false;
-		}
-		plugin.debugf("Creating account (#%d)", getID());
-
-		try {
-			inventoryHolder = getLocation().findInventoryHolder();
-			accountLocation = AccountLocation.from(inventoryHolder);
-			getLocation().checkSpaceAbove();
-		} catch (ChestNotFoundException | ChestBlockedException e) {
-			plugin.getAccountRepository().remove(this, Config.removeAccountOnError.get());
-			if (!Config.removeAccountOnError.get())
-				plugin.getAccountRepository().addMissingAccount(this);
-
-			plugin.getLogger().severe(e.getMessage());
-			plugin.debug("Failed to create account (#" + getID() + ")");
-			plugin.debug(e);
-			return false;
-		}
-
-		final BigDecimal checkedBalance = calculateBalance();
-		final int diff = checkedBalance.compareTo(getBalance());
-		if (diff > 0) {
-			if (getBalance().signum() == 0)
-				plugin.debugf("Cool! Account #%d was created with a balance of %s already inside.",
-						getID(), Utils.format(checkedBalance));
-			else
-				plugin.debugf("Value of account #%d was found higher than expected. Expected: %s but was: %s.",
-						getID(), Utils.format(getBalance()), Utils.format(checkedBalance));
-		} else if (diff < 0)
-			plugin.debugf("Value of account #%d was found lower than expected. Expected: %s but was: %s.",
-					getID(), Utils.format(getBalance()), Utils.format(checkedBalance));
-		setBalance(checkedBalance);
-
-		created = true;
-		return true;
 	}
 
 	/**
@@ -191,19 +135,17 @@ public class Account extends BankingEntity {
 	 * @see #calculateBalance()
 	 */
 	public BigDecimal getBalance() {
+		if (balance == null)
+			reloadBalance();
 		return balance;
 	}
 
 	/**
 	 * Updates the current balance of this account.
-	 * Called every time the account chest is <b>closed</b> and the value of the contents has changed.
-	 *
-	 * @param newBalance the new (positive) balance of the account.
+	 * Called every time the account chest is <b>closed</b>.
 	 */
-	public void setBalance(BigDecimal newBalance) {
-		if (newBalance == null || newBalance.signum() < 0)
-			return;
-		balance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
+	public void reloadBalance() {
+		balance = calculateBalance();
 		notifyObservers();
 		getBank().notifyObservers();
 		plugin.getAccountRepository().getAccountMap().notifyObservers();
@@ -214,19 +156,18 @@ public class Account extends BankingEntity {
 	 *
 	 * @return the previous account balance.
 	 */
-	public BigDecimal getPrevBalance() {
-		return prevBalance;
+	public BigDecimal getPreviousBalance() {
+		return previousBalance;
 	}
 
 	/**
 	 * Saves the current balance of this account into the previous balance.
 	 * Used only at interest payout events.
 	 *
-	 * @see #calculateBalance()
 	 * @see com.monst.bankingplugin.listeners.InterestEventListener
 	 */
-	public void updatePrevBalance() {
-		prevBalance = balance;
+	public void updatePreviousBalance() {
+		previousBalance = balance;
 	}
 
 	/**
@@ -255,21 +196,6 @@ public class Account extends BankingEntity {
 	 */
 	public String getCoordinates() {
 		return accountLocation.toString();
-	}
-
-	/**
-	 * Gets the {@link InventoryHolder} of this account chest.
-	 *
-	 * @return the account inventory.
-	 */
-	public InventoryHolder getInventoryHolder(boolean update) {
-		if (!update)
-			return inventoryHolder;
-		try {
-			return inventoryHolder = getLocation().findInventoryHolder();
-		} catch (ChestNotFoundException e) {
-			return null;
-		}
 	}
 
 	/**
@@ -310,9 +236,12 @@ public class Account extends BankingEntity {
 	}
 
 	private void setChestName(String name) {
-		InventoryHolder ih = getInventoryHolder(true);
-		if (ih == null)
+		InventoryHolder ih;
+		try {
+			ih = getLocation().findChest();
+		} catch (ChestNotFoundException e) {
 			return;
+		}
 		if (isDoubleChest()) {
 			DoubleChest dc = (DoubleChest) ih;
 			Chest left = (Chest) dc.getLeftSide();
@@ -371,10 +300,13 @@ public class Account extends BankingEntity {
 	 */
 	public BigDecimal calculateBalance() {
 		plugin.debugf("Appraising account... (#%d)", getID());
-		InventoryHolder ih = getInventoryHolder(true);
-		if (ih == null)
-			return BigDecimal.ZERO;
+		InventoryHolder ih;
 		BigDecimal sum = BigDecimal.ZERO;
+		try {
+			ih = getLocation().findChest();
+		} catch (ChestNotFoundException e) {
+			return sum;
+		}
 		ItemStack[] contents = ih.getInventory().getContents();
 		for (ItemStack item : contents) {
 			if (Config.blacklist.contains(item))

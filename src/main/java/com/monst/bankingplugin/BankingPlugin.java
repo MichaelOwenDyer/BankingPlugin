@@ -11,6 +11,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.LanguageConfig;
 import com.monst.bankingplugin.events.account.AccountInitializedEvent;
 import com.monst.bankingplugin.events.bank.BankInitializedEvent;
+import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardListener;
 import com.monst.bankingplugin.listeners.*;
@@ -323,11 +324,17 @@ public class BankingPlugin extends JavaPlugin {
 									bankRepository.add(bank, false);
 									reloadedBanks.add(bank);
 									for (Account account : bankAccounts) {
-										if (account.create()) {
+										try {
+											account.getLocation().findChest();
 											accountRepository.add(account, false, account.callUpdateChestName());
 											reloadedAccounts.add(account);
-										} else
-											debug("Could not re-create account from database! (#" + account.getID() + ")");
+										} catch (ChestNotFoundException e) {
+											debugf("Account #%d could not be located.");
+											if (Config.removeAccountOnError.get())
+												accountRepository.remove(account, true);
+											else
+												accountRepository.addMissingAccount(account);
+										}
 									}
 								});
 

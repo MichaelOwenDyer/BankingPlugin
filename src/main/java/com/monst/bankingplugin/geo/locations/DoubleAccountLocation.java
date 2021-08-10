@@ -49,9 +49,9 @@ public class DoubleAccountLocation extends AccountLocation {
     }
 
     @Override
-    public InventoryHolder findInventoryHolder() throws ChestNotFoundException {
-        InventoryHolder ih1 = getInventoryHolderAt(b1);
-        InventoryHolder ih2 = getInventoryHolderAt(b2);
+    public InventoryHolder findChest() throws ChestNotFoundException {
+        InventoryHolder ih1 = getChestAt(b1);
+        InventoryHolder ih2 = getChestAt(b2);
         if (ih1 != null && ih2 != null && isSameChest(ih1, ih2))
             return ih1;
         throw new ChestNotFoundException(this);
@@ -60,7 +60,7 @@ public class DoubleAccountLocation extends AccountLocation {
     private boolean isSameChest(InventoryHolder ih1, InventoryHolder ih2) {
         Location loc1 = ih1.getInventory().getLocation();
         Location loc2 = ih2.getInventory().getLocation();
-        return loc1 != null && loc2 != null && Objects.equals(loc1.getBlock(), loc2.getBlock());
+        return Objects.equals(loc1.getBlock(), loc2.getBlock());
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.bukkit.inventory.InventoryHolder;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class SingleAccountLocation extends AccountLocation {
 
@@ -27,11 +28,8 @@ public class SingleAccountLocation extends AccountLocation {
     }
 
     @Override
-    public InventoryHolder findInventoryHolder() throws ChestNotFoundException {
-        InventoryHolder ih = getInventoryHolderAt(b1);
-        if (ih != null)
-            return ih;
-        throw new ChestNotFoundException(this);
+    public InventoryHolder findChest() throws ChestNotFoundException {
+        return Optional.ofNullable(getChestAt(b1)).orElseThrow(() -> new ChestNotFoundException(this));
     }
 
     @Override

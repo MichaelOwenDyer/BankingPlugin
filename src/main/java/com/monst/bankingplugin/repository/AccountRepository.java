@@ -9,7 +9,6 @@ import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.block.Block;
-import org.bukkit.inventory.InventoryHolder;
 
 import java.util.*;
 
@@ -95,11 +94,6 @@ public class AccountRepository implements Repository<Account, AccountField> {
      */
 	@Override
     public void add(Account account, boolean addToDatabase, Callback<Integer> callback) {
-    	InventoryHolder ih = account.getInventoryHolder(true);
-    	if (ih == null) {
-    		plugin.debugf("Could not add account #%d because its inventory could not be found!", account.getID());
-			return;
-		}
 
         plugin.debugf("Adding account #%d to the session...", account.getID());
 		accountMap.put(account);

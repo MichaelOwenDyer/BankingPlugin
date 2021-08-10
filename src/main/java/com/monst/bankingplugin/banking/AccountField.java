@@ -17,7 +17,7 @@ public enum AccountField implements BankingEntityField<Account> {
     LOCATION ("", null), // Meant as a placeholder for the previous 6
     NICKNAME ("Nickname", Account::getRawName),
     BALANCE ("Balance", Account::getBalance),
-    PREVIOUS_BALANCE ("PreviousBalance", Account::getPrevBalance),
+    PREVIOUS_BALANCE ("PreviousBalance", Account::getPreviousBalance),
     MULTIPLIER_STAGE ("MultiplierStage", Account::getMultiplierStage),
     DELAY_UNTIL_NEXT_PAYOUT ("DelayUntilNextPayout", Account::getDelayUntilNextPayout),
     REMAINING_OFFLINE_PAYOUTS ("RemainingOfflinePayouts", Account::getRemainingOfflinePayouts);

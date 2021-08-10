@@ -70,16 +70,6 @@ public class BankRepository implements Repository<Bank, BankField> {
 		return null;
     }
 
-	/**
-	 * Gets the {@link Bank} with a given region
-	 *
-	 * @param region {@link BankRegion} of the bank
-	 * @return Bank in the given region or <b>null</b> if no bank is found there
-	 */
-	public Bank getAt(BankRegion region) {
-		return bankMap.get(region);
-	}
-
     /**
 	 * Adds a bank to this repository and returns the bank's ID to the {@link Callback}.
 	 *

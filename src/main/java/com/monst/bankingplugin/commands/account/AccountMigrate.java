@@ -7,6 +7,8 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
+import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -92,16 +94,13 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         Chest c = (Chest) targetBlock.getState();
         AccountLocation newAccountLocation = AccountLocation.from(c.getInventory().getHolder());
 
-        if (newAccountLocation.isBlocked()) {
-            p.sendMessage(Message.CHEST_BLOCKED.translate());
-            plugin.debug("Chest is blocked.");
-            return;
-        }
-
-        Bank newBank = newAccountLocation.getBank();
-        if (newBank == null) {
-            p.sendMessage(Message.CHEST_NOT_IN_BANK.translate());
-            plugin.debug("Chest is not in a bank.");
+        Bank newBank;
+        try {
+            newAccountLocation.checkSpaceAbove();
+            newBank = newAccountLocation.findBank();
+        } catch (ChestBlockedException | BankNotFoundException e) {
+            p.sendMessage(e.getMessage());
+            plugin.debug(e);
             return;
         }
 
@@ -179,7 +178,7 @@ public class AccountMigrate extends SubCommand.AccountSubCommand {
         accountToMove.setBank(newBank);
         plugin.getAccountRepository().update(accountToMove, accountToMove.callUpdateChestName(), AccountField.BANK, AccountField.LOCATION);
         p.sendMessage(Message.ACCOUNT_MIGRATED.translate());
-        plugin.debugf("Account migrated (#%d)", accountToMove.getID());
+        plugin.debugf("Migrated account #%d", accountToMove.getID());
     }
 
 }

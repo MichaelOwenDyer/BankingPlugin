@@ -593,8 +593,8 @@ public abstract class Database {
 			String nickname = values.getNextString();
 			OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(values.getNextString()));
 
-			BigDecimal balance = values.getNextBigDecimal();
-			BigDecimal prevBalance = values.getNextBigDecimal();
+			values.skip(); // Skip Balance
+			BigDecimal previousBalance = values.getNextBigDecimal();
 
 			int multiplierStage = values.getNextInt();
 			int delayUntilNextPayout = values.getNextInt();
@@ -626,7 +626,7 @@ public abstract class Database {
 			plugin.debugf("Found %d account coowner%s.", coowners.size(), coowners.size() == 1 ? "" : "s");
 
 			plugin.debugf("Initializing account #%d at bank #%d (\"%s\")", accountID, bank.getID(), bank.getName());
-			return Account.reopen(accountID, owner, coowners, bank, accountLocation, nickname, balance, prevBalance,
+			return Account.reopen(accountID, owner, coowners, bank, accountLocation, nickname, previousBalance,
 					multiplierStage, delayUntilNextPayout, remainingOfflinePayouts);
 		};
 	}
@@ -1083,7 +1083,7 @@ public abstract class Database {
 				account.getRawName(),
 				account.getOwner().getUniqueId(),
 				account.getBalance(),
-				account.getPrevBalance(),
+				account.getPreviousBalance(),
 				account.getMultiplierStage(),
 				account.getDelayUntilNextPayout(),
 				account.getRemainingOfflinePayouts(),

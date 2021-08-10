@@ -7,10 +7,15 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
+import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.PayrollOffice;
+import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -80,20 +85,16 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
             return;
         }
 
-        Chest c = (Chest) b.getState();
-        InventoryHolder ih = c.getInventory().getHolder();
+        InventoryHolder ih = ((Chest) b.getState()).getInventory().getHolder();
         AccountLocation accountLocation = AccountLocation.from(ih);
 
-        if (accountLocation.isBlocked()) {
-            p.sendMessage(Message.CHEST_BLOCKED.translate());
-            plugin.debug("Chest is blocked.");
-            return;
-        }
-
-        Bank bank = accountLocation.getBank();
-        if (bank == null) {
-            p.sendMessage(Message.CHEST_NOT_IN_BANK.translate());
-            plugin.debug("Chest is not in a bank.");
+        Bank bank;
+        try {
+            accountLocation.checkSpaceAbove();
+            bank = accountLocation.findBank();
+        } catch (ChestBlockedException | BankNotFoundException e) {
+            p.sendMessage(e.getMessage());
+            plugin.debug(e);
             return;
         }
 
@@ -102,6 +103,7 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
             plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
             return;
         }
+
         int playerAccountLimit = bank.playerBankAccountLimit().get();
         if (playerAccountLimit > 0 && bank.getAccounts(account -> account.isOwner(p)).size() >= playerAccountLimit) {
             p.sendMessage(Message.ACCOUNT_LIMIT_AT_BANK_REACHED
@@ -158,13 +160,8 @@ public class AccountCreate extends SubCommand.AccountSubCommand {
             }
         }
 
-        if (account.create()) {
-            plugin.debug("Account created");
-            plugin.getAccountRepository().add(account, true, account.callUpdateChestName());
-            p.sendMessage(Message.ACCOUNT_CREATED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
-        } else {
-            plugin.debugf("Could not create account");
-            p.sendMessage(Message.ERROR_OCCURRED.with(Placeholder.ERROR).as("Could not create account").translate());
-        }
+        plugin.debug("Account created");
+        p.sendMessage(Message.ACCOUNT_CREATED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
+        plugin.getAccountRepository().add(account, true, account.callUpdateChestName());
     }
 }

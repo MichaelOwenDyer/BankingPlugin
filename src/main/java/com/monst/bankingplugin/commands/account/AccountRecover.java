@@ -6,6 +6,8 @@ import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
+import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.gui.AccountRecoveryGUI;
 import com.monst.bankingplugin.lang.Message;
@@ -14,6 +16,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 
 public class AccountRecover extends SubCommand.AccountSubCommand {
 
@@ -40,24 +43,21 @@ public class AccountRecover extends SubCommand.AccountSubCommand {
 
     public static void recover(BankingPlugin plugin, Player p, Account toRecover, Block b) {
         if (plugin.getAccountRepository().isAccount(b)) {
-            plugin.debugf("%s clicked an already existing account chest to recover the account to", p.getName());
             p.sendMessage(Message.CHEST_ALREADY_ACCOUNT.translate());
+            plugin.debug("Chest is already an account.");
             return;
         }
 
-        Chest c = (Chest) b.getState();
-        AccountLocation accountLocation = AccountLocation.from(c.getInventory().getHolder());
+        InventoryHolder ih = ((Chest) b.getState()).getInventory().getHolder();
+        AccountLocation accountLocation = AccountLocation.from(ih);
 
-        if (accountLocation.isBlocked()) {
-            p.sendMessage(Message.CHEST_BLOCKED.translate());
-            plugin.debug("Chest is blocked.");
-            return;
-        }
-
-        Bank bank = accountLocation.getBank();
-        if (bank == null) {
-            p.sendMessage(Message.CHEST_NOT_IN_BANK.translate());
-            plugin.debug("Chest is not in a bank.");
+        Bank bank;
+        try {
+            accountLocation.checkSpaceAbove();
+            bank = accountLocation.findBank();
+        } catch (ChestBlockedException | BankNotFoundException e) {
+            p.sendMessage(e.getMessage());
+            plugin.debug(e);
             return;
         }
 

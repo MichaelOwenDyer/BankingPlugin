@@ -49,38 +49,38 @@ public class AccountBalanceListener extends BankingPluginListener {
 
 	private void evaluateAccountTransaction(Player executor, Account account) {
 
-		BigDecimal appraisal = account.calculateBalance();
-		BigDecimal balance = account.getBalance();
-		BigDecimal difference = appraisal.subtract(balance);
+		BigDecimal oldBalance = account.getBalance();
+		account.reloadBalance();
+		BigDecimal newBalance = account.getBalance();
+		BigDecimal difference = newBalance.subtract(oldBalance);
 
 		if (difference.signum() == 0)
 			return;
 
 		plugin.debugf("Appraised balance of account #d: %s, difference to previous: %s", account.getID(),
-				Utils.format(appraisal), Utils.format(difference));
+				Utils.format(newBalance), Utils.format(difference));
 
 		Message message = difference.signum() > 0 ? Message.ACCOUNT_DEPOSIT : Message.ACCOUNT_WITHDRAWAL;
 		executor.sendMessage(message
 				.with(Placeholder.AMOUNT).as(difference.abs())
-				.and(Placeholder.ACCOUNT_BALANCE).as(appraisal)
+				.and(Placeholder.ACCOUNT_BALANCE).as(newBalance)
 				.translate());
 
-		if (difference.signum() < 0 && appraisal.compareTo(account.getPrevBalance()) < 0)
+		if (difference.signum() < 0 && newBalance.compareTo(account.getPreviousBalance()) < 0)
 			if (account.getMultiplierStage() != account.processWithdrawal())
 				executor.sendMessage(Message.MULTIPLIER_DECREASED.with(Placeholder.NUMBER).as(account.getRealMultiplier()).translate());
 
-		account.setBalance(appraisal);
 		accountRepo.update(account, AccountField.BALANCE);
 
-		plugin.debugf("Account #%d has been updated and a new balance of %s", account.getID(), Utils.format(appraisal));
-		new AccountTransactionEvent(executor, account, difference, appraisal).fire();
+		plugin.debugf("Account #%d has been updated and a new balance of %s", account.getID(), Utils.format(newBalance));
+		new AccountTransactionEvent(executor, account, difference, newBalance).fire();
 
 		if (account.getOwner().isOnline())
 			plugin.getDatabase().logLastSeen(account.getOwner().getPlayer());
 
 		plugin.getDatabase().logAccountTransaction(new AccountTransaction(
 				account.getID(), account.getBank().getID(), executor.getUniqueId(), executor.getName(),
-				account.getBalance(), balance, difference, System.currentTimeMillis()
+				newBalance, oldBalance, difference, System.currentTimeMillis()
 		));
 	}
 
