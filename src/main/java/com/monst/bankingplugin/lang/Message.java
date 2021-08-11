@@ -957,16 +957,21 @@ public enum Message {
             "&c&lError while checking for updates."
     );
 
+    private final String path;
     private final String scenario;
     private final String defaultMessage;
     private final EnumSet<Placeholder> placeholders = EnumSet.noneOf(Placeholder.class);
-    private String path = null;
     private String translation = null;
 
     Message(String scenario, String defaultMessage, Placeholder... placeholders) {
+        this.path = "message." + toString().toLowerCase().replace("_", "-");
         this.scenario = scenario;
         this.defaultMessage = defaultMessage;
         this.placeholders.addAll(Arrays.asList(placeholders));
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public String getExampleScenario() {
@@ -979,12 +984,6 @@ public enum Message {
 
     public String getFormattedPlaceholdersList() {
         return placeholders.stream().map(Placeholder::toString).collect(Collectors.joining(", "));
-    }
-
-    public String getPath() {
-        if (path == null)
-            path = "message." + toString().toLowerCase().replace("_", "-");
-        return path;
     }
 
     public String getTranslation() {
