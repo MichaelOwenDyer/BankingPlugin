@@ -44,10 +44,11 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BankingPlugin extends JavaPlugin {
+public final class BankingPlugin extends JavaPlugin {
 
 	private static BankingPlugin instance;
 
+	private Config config;
 	private LanguageConfig languageConfig;
 
 	private AccountRepository accountRepository;
@@ -69,7 +70,7 @@ public class BankingPlugin extends JavaPlugin {
 	public final String[] STARTUP_MESSAGE = new String[]{
 			ChatColor.GREEN + "   __ " + ChatColor.DARK_GREEN + "  __",
 			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |__)" + ChatColor.DARK_GREEN + "   BankingPlugin" + ChatColor.AQUA + " v" + getDescription().getVersion(),
-			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY + "        by monst",
+			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY  + "        by monst",
 			""
 	};
 
@@ -84,7 +85,7 @@ public class BankingPlugin extends JavaPlugin {
     public void onLoad() {
         instance = this;
 
-		saveDefaultConfig();
+		config = new Config(this);
         languageConfig = new LanguageConfig(this);
 
         if (Config.enableDebugLog.get())
@@ -135,7 +136,6 @@ public class BankingPlugin extends JavaPlugin {
 		}
 
 		initializeRepositories();
-		reloadLanguageConfig();
 		loadExternalPlugins();
 		initializeCommands();
 		// checkForUpdates();
@@ -180,10 +180,6 @@ public class BankingPlugin extends JavaPlugin {
     private void initializeRepositories() {
 		accountRepository = new AccountRepository(this);
 		bankRepository = new BankRepository(this);
-	}
-
-	public void reloadLanguageConfig() {
-		languageConfig.reload();
 	}
 
     private void initializeCommands() {
@@ -299,9 +295,19 @@ public class BankingPlugin extends JavaPlugin {
 	 */
 	public void reload(Callback<Map<Bank, Set<Account>>> callback) {
 		debug("Reloading...");
-		Config.reload();
+		reloadPluginConfig();
 		reloadLanguageConfig();
 		reloadEntities(callback);
+	}
+
+	public void reloadPluginConfig() {
+		reloadConfig();
+		config.reload();
+		saveConfig();
+	}
+
+	public void reloadLanguageConfig() {
+		languageConfig.reload();
 	}
 
 	/**

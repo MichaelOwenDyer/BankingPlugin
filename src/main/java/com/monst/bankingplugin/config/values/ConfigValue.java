@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.config.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.events.control.PluginConfigureEvent;
 import com.monst.bankingplugin.exceptions.CorruptedValueException;
 import com.monst.bankingplugin.exceptions.InvalidValueException;
 import com.monst.bankingplugin.exceptions.MissingValueException;
@@ -52,11 +53,14 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
         }
     }
 
-    public final T set(String input) throws ArgumentParseException {
+    public final void set(String input) throws ArgumentParseException {
+        plugin.reloadConfig();
         T newValue = input.isEmpty() && nonOptional() ? defaultConfiguration : parse(input);
         beforeSet();
         writeToFile(newValue);
-        return lastSeenValue = newValue;
+        lastSeenValue = newValue;
+        new PluginConfigureEvent(this, newValue).fire();
+        plugin.saveConfig();
     }
 
     boolean nonOptional() {

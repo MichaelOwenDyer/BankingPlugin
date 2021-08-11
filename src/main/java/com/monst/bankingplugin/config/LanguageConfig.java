@@ -23,6 +23,7 @@ public class LanguageConfig extends FileConfiguration {
     public LanguageConfig(BankingPlugin plugin) {
         this.plugin = plugin;
         this.defaultLangFile = plugin.getDataFolder().toPath().resolve("lang").resolve("en_US.lang");
+        reload();
     }
 
     public void reload() {
