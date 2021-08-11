@@ -1,72 +1,104 @@
 package com.monst.bankingplugin.lang;
 
-import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
- * Ideal for sending messages en masse to both online and offline players at once
+ * Ideal for sending messages en masse to many players at once
  */
 public class MailingRoom {
 
-    private String message;
-    private final Set<CommandSender> recipients;
-    private final Set<OfflinePlayer> offlineRecipients;
+    public static Builder draft(String message) {
+        return new MailingRoom(message).new Builder();
+    }
 
-    public MailingRoom(String message) {
-        this.message = message;
+    private final String message;
+    private final Set<CommandSender> recipients;
+
+    private MailingRoom(String message) {
+        this.message = Objects.requireNonNull(message);
         this.recipients = new HashSet<>();
-        this.offlineRecipients = new HashSet<>();
+    }
+
+    public MailingRoom and(CommandSender sender) {
+        if (sender != null)
+            recipients.add(sender);
+        return this;
+    }
+
+    public MailingRoom and(Player player) {
+        if (player != null)
+            recipients.add(player);
+        return this;
+    }
+
+    public MailingRoom and(OfflinePlayer player) {
+        if (player != null && player.isOnline())
+            recipients.add(player.getPlayer());
+        return this;
+    }
+
+    public MailingRoom and(Collection<OfflinePlayer> players) {
+        for (OfflinePlayer player : players)
+            if (player != null && player.isOnline())
+                recipients.add(player.getPlayer());
+        return this;
+    }
+
+    public MailingRoom butNotTo(CommandSender sender) {
+        if (sender != null)
+            recipients.remove(sender);
+        return this;
+    }
+
+    public MailingRoom butNotTo(Player player) {
+        if (player != null)
+            recipients.remove(player);
+        return this;
+    }
+
+    public MailingRoom butNotTo(OfflinePlayer player) {
+        if (player != null && player.isOnline())
+            recipients.remove(player.getPlayer());
+        return this;
+    }
+
+    public MailingRoom butNotTo(Collection<OfflinePlayer> players) {
+        for (OfflinePlayer player : players)
+            if (player != null && player.isOnline())
+                recipients.remove(player.getPlayer());
+        return this;
+    }
+
+    public class Builder {
+
+        public MailingRoom to(CommandSender sender) {
+            return and(sender);
+        }
+
+        public MailingRoom to(Player player) {
+            return and(player);
+        }
+
+        public MailingRoom to(OfflinePlayer player) {
+            return and(player);
+        }
+
+        public MailingRoom to(Collection<OfflinePlayer> players) {
+            return and(players);
+        }
+
     }
 
     public void send() {
-        if (message == null)
-            return;
-        recipients.forEach(p -> p.sendMessage(message));
-        offlineRecipients.forEach(p -> Utils.notify(p, message));
-    }
-
-    public void newMessage(String message) {
-        this.message = message;
-    }
-
-    public void addRecipient(CommandSender sender) {
-        if (sender != null)
-            recipients.add(sender);
-    }
-
-    public void addRecipients(Collection<CommandSender> senders) {
-        senders.forEach(this::addRecipient);
-    }
-
-    public void addOfflineRecipient(OfflinePlayer player) {
-        if (player == null)
-            return;
-        if (player.isOnline())
-            recipients.add(player.getPlayer());
-        else
-            offlineRecipients.add(player);
-    }
-
-    public void addOfflineRecipients(Collection<OfflinePlayer> players) {
-        players.forEach(this::addOfflineRecipient);
-    }
-
-    public void removeRecipient(CommandSender sender) {
-        if (sender != null)
-            recipients.remove(sender);
-    }
-
-    public void removeOfflineRecipient(OfflinePlayer player) {
-        if (player == null)
-            return;
-        offlineRecipients.remove(player);
-        if (player.isOnline())
-            removeRecipient(player.getPlayer());
+        for (CommandSender recipient : recipients)
+            recipient.sendMessage(message);
     }
 
 }

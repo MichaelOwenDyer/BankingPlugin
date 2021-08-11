@@ -91,14 +91,11 @@ public class BankRemove extends SubCommand.BankSubCommand {
         int accountsRemoved = bank.getAccounts().size();
         plugin.getBankRepository().remove(bank, true);
         plugin.debugf("Bank #%d and %d accounts removed from the database.", bank.getID(), accountsRemoved);
-        MailingRoom mailingRoom = new MailingRoom(Message.BANK_REMOVED
+        String message = Message.BANK_REMOVED
                 .with(Placeholder.BANK_NAME).as(bank.getColorizedName())
                 .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accountsRemoved)
-                .translate());
-        mailingRoom.addOfflineRecipients(bank.getTrustedPlayers());
-        mailingRoom.addOfflineRecipients(bank.getCustomers());
-        mailingRoom.addRecipient(sender);
-        mailingRoom.send();
+                .translate();
+        MailingRoom.draft(message).to(bank.getTrustedPlayers()).and(bank.getCustomers()).and(sender).send();
         return true;
     }
 

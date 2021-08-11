@@ -17,9 +17,6 @@ public abstract class PlayerCache {
 
 	}
 
-	/**
-	 * Clear all click types, cancel timers
-	 */
 	public static void clear() {
 		PLAYER_CACHE.invalidateAll();
 	}

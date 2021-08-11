@@ -69,32 +69,32 @@ public class AccountTransfer extends SubCommand {
         return true;
     }
 
-    public static void transfer(BankingPlugin plugin, Player p, Account account, OfflinePlayer newOwner) {
-        plugin.debug(p.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
+    public static void transfer(BankingPlugin plugin, Player player, Account account, OfflinePlayer newOwner) {
+        plugin.debug(player.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
 
-        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
-            plugin.debug(p.getName() + " does not have permission to transfer the account.");
-            Message message = account.isTrusted(p) ? Message.MUST_BE_OWNER : Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER;
-            p.sendMessage(message.translate());
-            ClickType.removeClickType(p);
+        if (!account.isOwner(player) && !player.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
+            plugin.debug(player.getName() + " does not have permission to transfer the account.");
+            Message message = account.isTrusted(player) ? Message.MUST_BE_OWNER : Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER;
+            player.sendMessage(message.translate());
+            ClickType.removeClickType(player);
             return;
         }
 
         if (account.isOwner(newOwner)) {
-            plugin.debug(p.getName() + " is already owner of account");
-            p.sendMessage(Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
-            ClickType.removeClickType(p);
+            plugin.debug(player.getName() + " is already owner of account");
+            player.sendMessage(Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
+            ClickType.removeClickType(player);
             return;
         }
 
-        if (Config.confirmOnTransfer.get() && ClickType.needsConfirmation(p)) {
+        if (Config.confirmOnTransfer.get() && ClickType.needsConfirmation(player)) {
             plugin.debug("Account transfer needs confirmation");
-            p.sendMessage(Message.ACCOUNT_CONFIRM_TRANSFER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
-            ClickType.confirmClickType(p);
+            player.sendMessage(Message.ACCOUNT_CONFIRM_TRANSFER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
+            ClickType.confirmClickType(player);
             return;
         }
 
-        AccountTransferEvent event = new AccountTransferEvent(p, account, newOwner);
+        AccountTransferEvent event = new AccountTransferEvent(player, account, newOwner);
         event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account transfer event cancelled");
@@ -103,23 +103,16 @@ public class AccountTransfer extends SubCommand {
 
         boolean hasCustomName = account.hasCustomName();
 
-        MailingRoom mailingRoom = new MailingRoom(Message.ACCOUNT_TRANSFERRED
-                .with(Placeholder.PLAYER).as(newOwner.getName())
-                .translate());
-        mailingRoom.addRecipient(p);
-        mailingRoom.send();
-        mailingRoom.newMessage(Message.ACCOUNT_TRANSFERRED_TO_YOU
-                .with(Placeholder.PLAYER).as(p.getName())
-                .translate());
-        mailingRoom.addOfflineRecipient(newOwner);
-        mailingRoom.removeRecipient(p);
-        mailingRoom.send();
+        String message = Message.ACCOUNT_TRANSFERRED.with(Placeholder.PLAYER).as(newOwner.getName()).translate();
+        MailingRoom.draft(message).to(player).send();
+        message = Message.ACCOUNT_TRANSFERRED_TO_YOU.with(Placeholder.PLAYER).as(player.getName()).translate();
+        MailingRoom.draft(message).to(newOwner).butNotTo(player).send();
 
         account.setOwner(newOwner);
         if (!hasCustomName)
             account.resetName();
         plugin.getAccountRepository().update(account, AccountField.OWNER);
-        ClickType.removeClickType(p);
+        ClickType.removeClickType(player);
     }
 
     @Override

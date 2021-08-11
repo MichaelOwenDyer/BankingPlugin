@@ -114,21 +114,18 @@ public class BankTransfer extends SubCommand.BankSubCommand {
             return true;
         }
 
-        MailingRoom mailingRoom = new MailingRoom(Message.BANK_TRANSFERRED
-                .with(Placeholder.PLAYER).as(newOwner != null ? newOwner.getName() : "ADMIN")
+        bank.setOwner(newOwner);
+        String message = Message.BANK_TRANSFERRED
+                .with(Placeholder.PLAYER).as(bank.getOwnerName())
                 .and(Placeholder.BANK_NAME).as(bank.getColorizedName())
-                .translate());
-        mailingRoom.addRecipient(sender);
-        mailingRoom.send();
-        mailingRoom.newMessage(Message.BANK_TRANSFERRED_TO_YOU
+                .translate();
+        MailingRoom.draft(message).to(sender).send();
+        message = Message.BANK_TRANSFERRED_TO_YOU
                 .with(Placeholder.PLAYER).as(sender.getName())
                 .and(Placeholder.BANK_NAME).as(bank.getColorizedName())
-                .translate());
-        mailingRoom.addOfflineRecipient(newOwner);
-        mailingRoom.removeRecipient(sender);
-        mailingRoom.send();
+                .translate();
+        MailingRoom.draft(message).to(newOwner).butNotTo(sender).send();
 
-        bank.setOwner(newOwner);
         plugin.getBankRepository().update(bank, BankField.OWNER);
         return true;
     }

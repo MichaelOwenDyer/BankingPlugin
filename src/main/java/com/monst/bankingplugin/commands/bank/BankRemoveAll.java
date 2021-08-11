@@ -71,13 +71,11 @@ public class BankRemoveAll extends SubCommand.BankSubCommand {
                 .and(Placeholder.NUMBER_OF_ACCOUNTS).as(affectedAccounts)
                 .translate());
         for (Bank bank : banks) {
-            MailingRoom mailingRoom = new MailingRoom(Message.BANK_REMOVED
+            String message = Message.BANK_REMOVED
                     .with(Placeholder.BANK_NAME).as(bank.getColorizedName())
                     .and(Placeholder.NUMBER_OF_ACCOUNTS).as(bank.getAccounts().size())
-                    .translate());
-            mailingRoom.addOfflineRecipients(bank.getTrustedPlayers());
-            mailingRoom.removeRecipient(sender);
-            mailingRoom.send();
+                    .translate();
+            MailingRoom.draft(message).to(bank.getTrustedPlayers()).and(sender).send();
         }
         banks.forEach(bank -> plugin.getBankRepository().remove(bank, true));
         plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");

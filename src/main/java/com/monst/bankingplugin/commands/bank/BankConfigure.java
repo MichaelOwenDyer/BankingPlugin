@@ -87,17 +87,13 @@ public class BankConfigure extends SubCommand.BankSubCommand {
 
         plugin.debugf( "%s has changed %s at %s from %s to %s.",
                 sender.getName(), field.toString(), bank.getName(), previousValue, newValue);
-        MailingRoom mailingRoom = new MailingRoom(Message.BANK_PROPERTY_SET
+        String message = Message.BANK_PROPERTY_SET
                 .with(Placeholder.PROPERTY).as(field.toString())
                 .and(Placeholder.BANK_NAME).as(bank.getColorizedName())
                 .and(Placeholder.PREVIOUS_VALUE).as(previousValue)
                 .and(Placeholder.VALUE).as(newValue)
-                .translate()
-        );
-        mailingRoom.addOfflineRecipients(bank.getTrustedPlayers());
-        mailingRoom.addOfflineRecipients(bank.getCustomers());
-        mailingRoom.addRecipient(sender);
-        mailingRoom.send(); // TODO: Mail as well?
+                .translate();
+        MailingRoom.draft(message).to(bank.getTrustedPlayers()).and(bank.getCustomers()).and(sender).send();
 
         new BankConfigureEvent(sender, bank, field, value, previousValue).fire();
 
