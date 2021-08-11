@@ -513,7 +513,7 @@ public abstract class Database {
 					multipliers.add(Config.multipliers.parseSingle(s));
 				} catch (IntegerParseException ignored) {}
 			if (multipliers.isEmpty())
-				multipliers = Config.multipliers.getDefault();
+				multipliers = Config.multipliers.get();
 
 			Set<LocalTime> interestPayoutTimes = new LinkedHashSet<>();
 			String payoutTimesList = Optional.ofNullable(values.getNextString()).map(s -> s.replaceAll("[\\[\\]]", "")).orElse("");

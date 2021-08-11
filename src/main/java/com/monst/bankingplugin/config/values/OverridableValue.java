@@ -6,23 +6,15 @@ import org.bukkit.command.CommandSender;
 
 abstract class OverridableValue<V, T> extends ConfigValue<V, T> {
 
-    private final AllowOverride allowOverride;
+    public final AllowOverride allowOverride;
 
     OverridableValue(BankingPlugin plugin, String path, T defaultValue) {
         super(plugin, path + ".default", defaultValue);
         this.allowOverride = new AllowOverride(plugin, path);
     }
 
-    public AllowOverride getAllowOverride() {
-        return allowOverride;
-    }
-
     boolean isOverridable() {
-        return getAllowOverride().get();
-    }
-
-    public T getDefault() {
-        return get();
+        return allowOverride.get();
     }
 
     @Override
@@ -32,6 +24,12 @@ abstract class OverridableValue<V, T> extends ConfigValue<V, T> {
 
     public final OverriddenValue<T> override(T value) {
         return new OverriddenValue<>(this, value);
+    }
+
+    public static class AllowOverride extends ConfigValue<Boolean, Boolean> implements NativeBoolean {
+        AllowOverride(BankingPlugin plugin, String path) {
+            super(plugin, path + ".allow-override", true);
+        }
     }
 
 }
