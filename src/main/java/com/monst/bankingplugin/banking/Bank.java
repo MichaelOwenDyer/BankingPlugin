@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.banking;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.values.OverriddenValue;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
@@ -22,8 +23,9 @@ public class Bank extends BankingEntity {
 	/**
 	 * Opens a new bank.
 	 */
-	public static Bank open(String name, OfflinePlayer owner, BankRegion region) {
+	public static Bank open(BankingPlugin plugin, String name, OfflinePlayer owner, BankRegion region) {
 		return new Bank(
+				plugin,
 				-1,
 				name,
 				owner,
@@ -49,7 +51,7 @@ public class Bank extends BankingEntity {
 	/**
 	 * Reopens a bank that was stored in the database.
 	 */
-	public static Bank reopen(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+	public static Bank reopen(BankingPlugin plugin, int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners,
 							  BankRegion region, Boolean countInterestDelayOffline, Boolean reimburseAccountCreation,
 							  Boolean payOnLowBalance, BigDecimal interestRate, BigDecimal accountCreationPrice,
 							  BigDecimal minimumBalance, BigDecimal lowBalanceFee, Integer initialInterestDelay,
@@ -57,6 +59,7 @@ public class Bank extends BankingEntity {
 							  Integer withdrawalMultiplierDecrement, Integer playerBankAccountLimit,
 							  List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 		return new Bank(
+				plugin,
 				id,
 				name,
 				owner,
@@ -104,14 +107,14 @@ public class Bank extends BankingEntity {
 	 * @param coowners the co-owners of the bank {@link BankingEntity}
 	 * @param region the {@link BankRegion} representing the bounds of the bank
 	 */
-	private Bank(int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners, BankRegion region,
+	private Bank(BankingPlugin plugin, int id, String name, OfflinePlayer owner, Set<OfflinePlayer> coowners, BankRegion region,
 				 Boolean countInterestDelayOffline, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
 				 BigDecimal interestRate, BigDecimal accountCreationPrice, BigDecimal minimumBalance,
 				 BigDecimal lowBalanceFee, Integer initialInterestDelay, Integer allowedOfflinePayouts,
 				 Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement,
 				 Integer playerBankAccountLimit, List<Integer> multipliers, Set<LocalTime> interestPayoutTimes) {
 
-		super(id, name, owner, coowners);
+		super(plugin, id, name, owner, coowners);
 		this.region = region;
 		this.accounts = new HashSet<>();
 		this.countInterestDelayOffline = Config.countInterestDelayOffline.override(countInterestDelayOffline);
@@ -152,7 +155,7 @@ public class Bank extends BankingEntity {
 	}
 
 	public Account openAccount(OfflinePlayer holder, AccountLocation loc) {
-		return Account.open(this, holder, loc);
+		return Account.open(plugin, this, holder, loc);
 	}
 
 	/**

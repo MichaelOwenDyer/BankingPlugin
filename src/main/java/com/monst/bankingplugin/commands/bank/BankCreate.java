@@ -162,7 +162,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
                 return true;
         }
 
-        Bank bank = Bank.open(name, isAdminBank ? null : p, bankRegion);
+        Bank bank = Bank.open(plugin, name, isAdminBank ? null : p, bankRegion);
 
         BankCreateEvent event = new BankCreateEvent(p, bank);
         event.fire();

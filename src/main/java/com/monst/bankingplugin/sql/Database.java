@@ -561,6 +561,7 @@ public abstract class Database {
 
 			plugin.debugf("Initializing bank #%d (\"%s\")...", bankID, ChatColor.stripColor(name));
 			return Bank.reopen(
+					plugin,
 					bankID,
 					name,
 					owner,
@@ -626,7 +627,7 @@ public abstract class Database {
 			plugin.debugf("Found %d account coowner%s.", coowners.size(), coowners.size() == 1 ? "" : "s");
 
 			plugin.debugf("Initializing account #%d at bank #%d (\"%s\")", accountID, bank.getID(), bank.getName());
-			return Account.reopen(accountID, owner, coowners, bank, accountLocation, nickname, previousBalance,
+			return Account.reopen(plugin, accountID, owner, coowners, bank, accountLocation, nickname, previousBalance,
 					multiplierStage, delayUntilNextPayout, remainingOfflinePayouts);
 		};
 	}

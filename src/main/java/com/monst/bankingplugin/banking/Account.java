@@ -1,5 +1,6 @@
 package com.monst.bankingplugin.banking;
 
+import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.exceptions.ChestNotFoundException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
@@ -32,8 +33,9 @@ public class Account extends BankingEntity {
 	/**
 	 * Opens a new account.
 	 */
-	public static Account open(Bank bank, OfflinePlayer owner, AccountLocation loc) {
+	public static Account open(BankingPlugin plugin, Bank bank, OfflinePlayer owner, AccountLocation loc) {
 		return new Account(
+				plugin,
 				-1,
 				owner,
 				new HashSet<>(),
@@ -50,10 +52,11 @@ public class Account extends BankingEntity {
 	/**
 	 * Reopens an account that was stored in the database.
 	 */
-	public static Account reopen(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank,
-								 AccountLocation location, String name, BigDecimal previousBalance,
+	public static Account reopen(BankingPlugin plugin, int id, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+								 Bank bank, AccountLocation location, String name, BigDecimal previousBalance,
 								 int multiplierStage, int delayUntilNextPayout, int remainingOfflinePayouts) {
 		return new Account(
+				plugin,
 				id,
 				owner,
 				new HashSet<>(coowners),
@@ -91,11 +94,11 @@ public class Account extends BankingEntity {
 	 * @param delayUntilNextPayout the number of payments this account will wait before generating interest
 	 * @param remainingOfflinePayouts the number of remaining offline interest payments this account will generate
 	 */
-	private Account(int id, OfflinePlayer owner, Set<OfflinePlayer> coowners, Bank bank, AccountLocation loc,
-					String name, BigDecimal previousBalance, int multiplierStage,
-					int delayUntilNextPayout, int remainingOfflinePayouts) {
+	private Account(BankingPlugin plugin, int id, OfflinePlayer owner, Set<OfflinePlayer> coowners,
+					Bank bank, AccountLocation loc, String name, BigDecimal previousBalance,
+					int multiplierStage, int delayUntilNextPayout, int remainingOfflinePayouts) {
 
-		super(id, name, owner, coowners);
+		super(plugin, id, name, owner, coowners);
 		this.bank = bank;
 		this.accountLocation = loc;
 		this.previousBalance = previousBalance;
