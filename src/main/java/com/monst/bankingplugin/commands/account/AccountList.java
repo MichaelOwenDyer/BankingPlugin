@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class AccountList extends SubCommand.AccountSubCommand {
+public class AccountList extends SubCommand {
 
     AccountList(BankingPlugin plugin) {
 		super(plugin, "list", false);

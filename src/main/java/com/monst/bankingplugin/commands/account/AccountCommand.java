@@ -6,9 +6,10 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.Message;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.List;
 
-public class AccountCommand extends BankingPluginCommand<SubCommand.AccountSubCommand> {
+public class AccountCommand extends BankingPluginCommand {
 
 	private static boolean commandCreated = false;
 
@@ -17,8 +18,8 @@ public class AccountCommand extends BankingPluginCommand<SubCommand.AccountSubCo
 	}
 
 	@Override
-	protected Stream<SubCommand.AccountSubCommand> getSubCommands() {
-		return Stream.of(
+	protected List<SubCommand> getSubCommands() {
+		return Arrays.asList(
 				new AccountCreate(plugin),
 				new AccountInfo(plugin),
 				new AccountLimits(plugin),

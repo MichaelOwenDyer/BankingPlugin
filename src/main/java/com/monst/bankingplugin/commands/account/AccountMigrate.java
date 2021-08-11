@@ -21,7 +21,7 @@ import org.bukkit.entity.Player;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class AccountMigrate extends SubCommand.AccountSubCommand {
+public class AccountMigrate extends SubCommand {
 
     AccountMigrate(BankingPlugin plugin) {
 		super(plugin, "migrate", true);

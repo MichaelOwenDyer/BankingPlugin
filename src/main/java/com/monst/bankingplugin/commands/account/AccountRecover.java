@@ -18,7 +18,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 
-public class AccountRecover extends SubCommand.AccountSubCommand {
+public class AccountRecover extends SubCommand {
 
     AccountRecover(BankingPlugin plugin) {
         super(plugin, "recover", true);

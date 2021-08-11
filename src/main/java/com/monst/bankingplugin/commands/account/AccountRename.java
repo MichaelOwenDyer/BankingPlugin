@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 
-public class AccountRename extends SubCommand.AccountSubCommand {
+public class AccountRename extends SubCommand {
 
     AccountRename(BankingPlugin plugin) {
 		super(plugin, "rename", true);

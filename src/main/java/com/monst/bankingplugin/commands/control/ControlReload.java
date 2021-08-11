@@ -9,7 +9,7 @@ import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.command.CommandSender;
 
-public class ControlReload extends SubCommand.ControlSubCommand {
+public class ControlReload extends SubCommand {
 
     ControlReload(BankingPlugin plugin) {
 		super(plugin, "reload", false);

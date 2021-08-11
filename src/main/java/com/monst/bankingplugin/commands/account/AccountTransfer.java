@@ -20,7 +20,7 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 
-public class AccountTransfer extends SubCommand.AccountSubCommand {
+public class AccountTransfer extends SubCommand {
 
     AccountTransfer(BankingPlugin plugin) {
 		super(plugin, "transfer", true);

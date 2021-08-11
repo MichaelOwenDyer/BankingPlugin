@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AccountConfigure extends SubCommand.AccountSubCommand {
+public class AccountConfigure extends SubCommand {
 
     AccountConfigure(BankingPlugin plugin) {
 		super(plugin, "configure", true);

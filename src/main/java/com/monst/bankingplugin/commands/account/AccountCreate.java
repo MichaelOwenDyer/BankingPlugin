@@ -25,7 +25,7 @@ import org.bukkit.inventory.InventoryHolder;
 
 import java.math.BigDecimal;
 
-public class AccountCreate extends SubCommand.AccountSubCommand {
+public class AccountCreate extends SubCommand {
 
     AccountCreate(BankingPlugin plugin) {
 		super(plugin, "create", true);

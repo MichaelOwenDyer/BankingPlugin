@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
 
-public class AccountRemove extends SubCommand.AccountSubCommand {
+public class AccountRemove extends SubCommand {
 
     AccountRemove(BankingPlugin plugin) {
 		super(plugin, "remove", true);

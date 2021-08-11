@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 
-public class AccountTrust extends SubCommand.AccountSubCommand {
+public class AccountTrust extends SubCommand {
 
     AccountTrust(BankingPlugin plugin) {
 		super(plugin, "trust", true);

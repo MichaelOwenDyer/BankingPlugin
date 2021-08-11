@@ -9,7 +9,7 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class AccountLimits extends SubCommand.AccountSubCommand {
+public class AccountLimits extends SubCommand {
 
     AccountLimits(BankingPlugin plugin) {
 		super(plugin, "limits", true);

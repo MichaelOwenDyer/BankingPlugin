@@ -7,7 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class ControlVersion extends SubCommand.ControlSubCommand {
+public class ControlVersion extends SubCommand {
 
     ControlVersion(BankingPlugin plugin) {
 		super(plugin, "version", false);

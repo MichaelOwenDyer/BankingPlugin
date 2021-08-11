@@ -7,7 +7,7 @@ import com.monst.bankingplugin.utils.Permissions;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-public class ControlUpdate extends SubCommand.ControlSubCommand {
+public class ControlUpdate extends SubCommand {
 
     ControlUpdate(BankingPlugin plugin) {
 		super(plugin, "update", false);

@@ -12,7 +12,7 @@ import com.monst.bankingplugin.utils.ClickType;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class AccountInfo extends SubCommand.AccountSubCommand {
+public class AccountInfo extends SubCommand {
 
     AccountInfo(BankingPlugin plugin) {
 		super(plugin, "info", false);

@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ControlPayInterest extends SubCommand.ControlSubCommand {
+public class ControlPayInterest extends SubCommand {
 
     ControlPayInterest(BankingPlugin plugin) {
 		super(plugin, "payinterest", false);

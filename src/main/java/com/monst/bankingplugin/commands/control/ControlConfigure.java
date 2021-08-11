@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ControlConfigure extends SubCommand.ControlSubCommand {
+public class ControlConfigure extends SubCommand {
 
     ControlConfigure(BankingPlugin plugin) {
 		super(plugin, "configure", false);

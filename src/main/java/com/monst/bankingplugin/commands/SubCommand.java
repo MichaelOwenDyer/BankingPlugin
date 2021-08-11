@@ -9,7 +9,6 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Parser;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -90,18 +89,6 @@ public abstract class SubCommand {
         return false;
     }
 
-    public abstract static class AccountSubCommand extends SubCommand {
-        protected AccountSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
-            super(plugin, name, playerCommand);
-        }
-    }
-
-    public abstract static class ControlSubCommand extends SubCommand {
-        protected ControlSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
-            super(plugin, name, playerCommand);
-        }
-    }
-
     public abstract static class BankSubCommand extends SubCommand {
 
         protected BankSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {
@@ -131,14 +118,14 @@ public abstract class SubCommand {
         }
 
         protected static int getCoordLookingAt(Player p, int argLength) {
-            Location loc = p.getTargetBlock(null, 150).getLocation();
+            Block lookingAt = p.getTargetBlock(null, 150);
+            int coordinate = 0;
             switch (argLength % 3) {
-                case 0: return loc.getBlockY();
-                case 1: return loc.getBlockZ();
-                case 2: return loc.getBlockX();
-                default:
-                    throw new IllegalStateException();
+                case 2: coordinate = lookingAt.getX();
+                case 0: coordinate = lookingAt.getY();
+                case 1: coordinate = lookingAt.getZ();
             }
+            return coordinate;
         }
 
         /**

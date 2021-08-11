@@ -19,7 +19,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AccountRemoveAll extends SubCommand.AccountSubCommand {
+public class AccountRemoveAll extends SubCommand {
 
     AccountRemoveAll(BankingPlugin plugin) {
         super(plugin, "removeall", false);
