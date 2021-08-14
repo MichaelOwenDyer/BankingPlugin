@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class CylindricalBankRegion extends BankRegion {
 
-    public static CylindricalBankRegion of(World world, Vector2D center, int y1, int y2, int radius) {
+    public static CylindricalBankRegion of(World world, Vector2D center, int y1, int y2, double radiusX, double radiusZ) {
         y1 = Math.min(Math.max(0, y1), world.getMaxHeight()); // Ensure y1 is between 0 and world.getMaxHeight()
         y2 = Math.min(Math.max(0, y2), world.getMaxHeight()); // Ensure y2 is between 0 and world.getMaxHeight()
         return new CylindricalBankRegion(
@@ -17,21 +17,24 @@ public class CylindricalBankRegion extends BankRegion {
                 center,
                 Math.min(y1, y2),
                 Math.max(y1, y2),
-                Math.abs(radius)
+                Math.abs(radiusX),
+                Math.abs(radiusZ)
         );
     }
 
     private final Vector2D center;
     private final int minY;
     private final int maxY;
-    private final int radius;
+    private final double radiusX;
+    private final double radiusZ;
 
-    private CylindricalBankRegion(World world, Vector2D center, int minY, int maxY, int radius) {
+    private CylindricalBankRegion(World world, Vector2D center, int minY, int maxY, double radiusX, double radiusZ) {
         super(world);
         this.center = center;
         this.minY = minY;
         this.maxY = maxY;
-        this.radius = radius;
+        this.radiusX = radiusX;
+        this.radiusZ = radiusZ;
     }
 
     @Override
@@ -41,12 +44,12 @@ public class CylindricalBankRegion extends BankRegion {
 
     @Override
     public int getMinX() {
-        return center.getX() - radius;
+        return (int) (center.getX() - radiusX);
     }
 
     @Override
     public int getMaxX() {
-        return center.getX() + radius;
+        return (int) (center.getX() + radiusX);
     }
 
     @Override
@@ -61,22 +64,22 @@ public class CylindricalBankRegion extends BankRegion {
 
     @Override
     public int getMinZ() {
-        return center.getZ() - radius;
+        return (int) (center.getZ() - radiusX);
     }
 
     @Override
     public int getMaxZ() {
-        return center.getZ() + radius;
+        return (int) (center.getZ() + radiusX);
     }
 
     @Override
     public String getCoordinates() {
-        return null;
+        return "";
     }
 
     @Override
     public long getVolume() {
-        return (long) Math.PI * radius * radius * (maxY - minY + 1);
+        return (long) (Math.PI * radiusX * radiusZ * getHeight());
     }
 
     @Override
@@ -89,7 +92,7 @@ public class CylindricalBankRegion extends BankRegion {
 
     @Override
     public boolean contains(int x, int z) {
-        return !isDisjunctX(x, x) && !isDisjunctZ(z, z) && Math.hypot(center.getX() - x, center.getZ() - z) < radius;
+        return !isDisjunctX(x, x) && !isDisjunctZ(z, z) && Math.hypot(center.getX() - x, center.getZ() - z) < radiusX;
     }
 
     @Override
@@ -111,14 +114,14 @@ public class CylindricalBankRegion extends BankRegion {
         CylindricalBankRegion other = (CylindricalBankRegion) o;
         return     minY == other.minY
                 && maxY == other.maxY
-                && radius == other.radius
+                && radiusX == other.radiusX
                 && Objects.equals(center, other.center)
                 && Objects.equals(world, other.world);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(center, radius, minY, maxY, world);
+        return Objects.hash(center, radiusX, minY, maxY, world);
     }
 
 }

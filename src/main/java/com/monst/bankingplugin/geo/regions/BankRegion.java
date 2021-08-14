@@ -83,6 +83,10 @@ public abstract class BankRegion {
 		return world;
 	}
 
+	public int getHeight() {
+		return getMaxY() - getMinY() + 1;
+	}
+
 	/**
 	 * Gets a {@link String} that illustrates the location of this region.
 	 *

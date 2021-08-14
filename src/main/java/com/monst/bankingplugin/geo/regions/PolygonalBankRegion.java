@@ -123,7 +123,7 @@ public class PolygonalBankRegion extends BankRegion {
 
 	@Override
 	public long getVolume() {
-		return (long) (maxY - minY + 1) * getFootprint().size();
+		return (long) getFootprint().size() * getHeight();
 	}
 
 	@Override
