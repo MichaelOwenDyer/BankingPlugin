@@ -6,7 +6,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -131,22 +130,8 @@ public class PolygonalBankRegion extends BankRegion {
 	public boolean overlaps(BankRegion region) {
 		if (isDisjunct(region))
 			return false;
-		Set<Vector2D> blocks = region.getFootprint();
-		return getFootprint().stream().anyMatch(blocks::contains);
-	}
-
-	// TODO: Worthy of improvement
-	@Override
-	public Set<Vector2D> getFootprint() {
-		Set<Vector2D> blocks = new HashSet<>();
-		Block min = getMinimumBlock();
-		Block max = getMaximumBlock();
-		for (int x = min.getX(); x <= max.getX(); x++)
-			for (int z = min.getZ(); z <= max.getZ(); z++) {
-				if (contains(x, z))
-					blocks.add(new Vector2D(x, z));
-			}
-		return blocks;
+		Set<Vector2D> footprint = region.getFootprint();
+		return getFootprint().stream().anyMatch(footprint::contains);
 	}
 
 	/**
@@ -208,14 +193,15 @@ public class PolygonalBankRegion extends BankRegion {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		PolygonalBankRegion other = (PolygonalBankRegion) o;
-		return getMinY() == other.getMinY() && getMaxY() == other.getMaxY()
-			&& Objects.equals(getWorld(), other.getWorld())
-			&& Arrays.equals(getVertices(), other.getVertices());
+		return 	   minY == other.minY
+				&& maxY == other.maxY
+				&& Objects.equals(world, other.world)
+				&& Arrays.equals(vertices, other.vertices);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getWorld(), getMinY(), getMaxY(), Arrays.hashCode(vertices));
+		return Objects.hash(minY, maxY, Arrays.hashCode(vertices), world);
 	}
 
 }

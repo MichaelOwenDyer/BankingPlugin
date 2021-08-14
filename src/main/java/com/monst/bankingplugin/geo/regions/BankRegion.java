@@ -7,10 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public abstract class BankRegion {
 
@@ -108,12 +105,24 @@ public abstract class BankRegion {
 
 	/**
 	 * @param region The other region
-	 * @return whether this region *cannot* overlap and the other region
+	 * @return whether this region *cannot* overlap with the other region
 	 */
 	public final boolean isDisjunct(BankRegion region) {
-		return getMinX() > region.getMaxX() || getMaxX() < region.getMinX() ||
-				getMinY() > region.getMaxY() || getMaxY() < region.getMinY() ||
-				getMinZ() > region.getMaxZ() || getMaxZ() < region.getMinZ();
+		return  isDisjunctX(region.getMinX(), region.getMaxX()) ||
+				isDisjunctY(region.getMinY(), region.getMaxY()) ||
+				isDisjunctZ(region.getMinZ(), region.getMaxZ());
+	}
+
+	public final boolean isDisjunctX(int minX, int maxX) {
+		return getMinX() > maxX || getMaxX() < minX;
+	}
+
+	public final boolean isDisjunctY(int minY, int maxY) {
+		return getMinY() > maxY || getMaxY() < minY;
+	}
+
+	public final boolean isDisjunctZ(int minZ, int maxZ) {
+		return getMinZ() > maxZ || getMaxZ() < minZ;
 	}
 
 	public boolean contains(AccountLocation chest) {
@@ -162,7 +171,18 @@ public abstract class BankRegion {
 	 *
 	 * @return a set and every {@link Vector2D} in this region
 	 */
-	public abstract Set<Vector2D> getFootprint();
+	public Set<Vector2D> getFootprint() {
+		Set<Vector2D> blocks = new HashSet<>();
+		int maxX = getMaxX();
+		int maxZ = getMaxZ();
+		for (int x = getMinX(); x <= maxX; x++) {
+			for (int z = getMinZ(); z <= maxZ; z++) {
+				if (contains(x, z))
+					blocks.add(new Vector2D(x, z));
+			}
+		}
+		return blocks;
+	}
 
 	/**
 	 * Gets an ordered list of {@link Vector2D}s containing each vertex of this region.
@@ -192,6 +212,10 @@ public abstract class BankRegion {
 	}
 
 	public boolean isPolygonal() {
+		return false;
+	}
+
+	public boolean isCylindrical() {
 		return false;
 	}
 

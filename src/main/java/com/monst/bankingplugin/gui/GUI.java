@@ -39,7 +39,7 @@ public abstract class GUI<T> {
 	boolean needsUpdate = false;
 
 	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) ->
-			Utils.bukkitRunnable(() -> {
+			Utils.bukkitRunnable(() -> { // TODO: Can remove BukkitRunnable?
 				if (isInForeground() && hasParent()) {
 					parentGUI.inForeground = true;
 					parentGUI.reopen(player);

@@ -102,8 +102,10 @@ public class CuboidBankRegion extends BankRegion {
 	@Override
 	public Set<Vector2D> getFootprint() {
 		Set<Vector2D> blocks = new HashSet<>();
-		for (int x = getMinX(); x <= getMaxX(); x++)
-			for (int z = getMinZ(); z <= getMaxZ(); z++)
+		int maxX = getMaxX();
+		int maxZ = getMaxZ();
+		for (int x = getMinX(); x <= maxX; x++)
+			for (int z = getMinZ(); z <= maxZ; z++)
 				blocks.add(new Vector2D(x, z));
 		return blocks;
 	}
@@ -120,10 +122,7 @@ public class CuboidBankRegion extends BankRegion {
 
 	@Override
 	public boolean contains(int x, int z) {
-		return x <= getMaxX()
-			&& x >= getMinX()
-			&& z <= getMaxZ()
-			&& z >= getMinZ();
+		return !isDisjunctX(x, x) && !isDisjunctZ(z, z);
 	}
 
 	@Override
@@ -138,14 +137,14 @@ public class CuboidBankRegion extends BankRegion {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		CuboidBankRegion otherRegion = (CuboidBankRegion) o;
-		return Objects.equals(getWorld(), otherRegion.getWorld())
-			&& Objects.equals(getMaximumBlock(), otherRegion.getMaximumBlock())
-			&& Objects.equals(getMinimumBlock(), otherRegion.getMinimumBlock());
+		return     Objects.equals(min, otherRegion.min)
+				&& Objects.equals(max, otherRegion.max)
+				&& Objects.equals(world, otherRegion.world);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getWorld(), getMinX(), getMaxX(), getMinY(), getMaxY(), getMinZ(), getMaxZ());
+		return Objects.hash(getMinX(), getMaxX(), getMinY(), getMaxY(), getMinZ(), getMaxZ(), world);
 	}
 
 }
