@@ -73,7 +73,9 @@ public abstract class BankingEntity implements Ownable, Nameable, Persistable, O
 	}
 
 	public UUID getOwnerUUID() {
-		return Optional.ofNullable(owner).map(OfflinePlayer::getUniqueId).orElse(null);
+		if (owner == null)
+			return null;
+		return owner.getUniqueId();
 	}
 
 	@Override
@@ -96,11 +98,5 @@ public abstract class BankingEntity implements Ownable, Nameable, Persistable, O
 		if (!hasID())
 			this.id = id;
 	}
-
-	/**
-	 * Compiles a nicely formatted text-wall of information about this ownable.
-	 * @return a {@link String} with lots of useful information
-	 */
-	public abstract String toConsolePrintout();
 
 }

@@ -10,7 +10,6 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.sql.logging.AccountInterest;
 import com.monst.bankingplugin.sql.logging.BankIncome;
-import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
@@ -27,13 +26,13 @@ import java.util.stream.Collectors;
  * Listens for {@link InterestEvent}s and calculates the incomes and expenses for each
  * {@link OfflinePlayer} on the server.
  */
-@SuppressWarnings("unused")
 public class InterestEventListener extends BankingPluginListener {
 
 	public InterestEventListener(BankingPlugin plugin) {
 		super(plugin);
 	}
 
+	@SuppressWarnings("unused")
 	@EventHandler(ignoreCancelled = true)
 	public void onInterestEvent(InterestEvent e) {
 
@@ -203,9 +202,9 @@ public class InterestEventListener extends BankingPluginListener {
 
 	private void notifyAll(PaymentCounter<OfflinePlayer> map, Message message) {
 		map.forEach((player, counter) -> Utils.notify(player, message
-				.with(Placeholder.AMOUNT).as(counter.getTotalMoney())
-				.and(Placeholder.NUMBER_OF_ACCOUNTS).as(counter.getNumberOfPayments())
-				.and(Placeholder.NUMBER_OF_BANKS).as(counter.getNumberOfPayments())
+				.with(Placeholder.AMOUNT).as(counter.total)
+				.and(Placeholder.NUMBER_OF_ACCOUNTS).as(counter.paymentCount)
+				.and(Placeholder.NUMBER_OF_BANKS).as(counter.paymentCount)
 				.translate())
 		);
 	}
@@ -229,35 +228,19 @@ public class InterestEventListener extends BankingPluginListener {
 				return;
 			merge(key, new Counter(amount), Counter::add);
 		}
-		private void add(T key, Counter counter) {
-			if (key == null)
-				return;
-			merge(key, counter, Counter::add);
-		}
 	}
 
-	private static class Counter extends Pair<BigDecimal, Integer> {
-		private static final Counter EMPTY = new Counter();
-		private Counter() {
-			super(BigDecimal.ZERO, 0);
-		}
+	private static class Counter {
+		private BigDecimal total;
+		private int paymentCount;
 		private Counter(BigDecimal value) {
-			super(value, 1);
-		}
-		private Counter add(double value) {
-			return add(BigDecimal.valueOf(value));
-		}
-		private Counter add(BigDecimal value) {
-			super.setFirst(getTotalMoney().add(value));
-			super.setSecond(getNumberOfPayments() + 1);
-			return this;
+			this.total = value;
+			this.paymentCount = 1;
 		}
 		private Counter add(Counter counter) {
-			super.setFirst(getTotalMoney().add(counter.getTotalMoney()));
-			super.setSecond(getNumberOfPayments() + counter.getNumberOfPayments());
+			total = total.add(counter.total);
+			paymentCount++;
 			return this;
 		}
-		private BigDecimal getTotalMoney() { return super.getFirst(); }
-		private int getNumberOfPayments() { return super.getSecond(); }
 	}
 }

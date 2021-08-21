@@ -2,12 +2,11 @@ package com.monst.bankingplugin.geo.regions;
 
 import com.monst.bankingplugin.geo.Vector2D;
 import com.monst.polylabel.PolyLabel;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -107,6 +106,23 @@ public class PolygonalBankRegion extends BankRegion {
 		return maxZ;
 	}
 
+	/**
+	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalBankRegion}
+	 */
+	public Vector2D[] getVertices() {
+		return vertices;
+	}
+
+	@Override
+	public List<Location> getCorners() {
+		List<Location> vertices = new LinkedList<>();
+		for (Vector2D bv : this.vertices) {
+			vertices.add(new Location(world, bv.getX(), getMinY(), bv.getZ()));
+			vertices.add(new Location(world, bv.getX(), getMaxY(), bv.getZ()));
+		}
+		return vertices;
+	}
+
 	@Override
 	public String getCoordinates() {
 		StringBuilder sb = new StringBuilder(64);
@@ -132,14 +148,6 @@ public class PolygonalBankRegion extends BankRegion {
 			return false;
 		Set<Vector2D> footprint = region.getFootprint();
 		return getFootprint().stream().anyMatch(footprint::contains);
-	}
-
-	/**
-	 * @return the ordered list of (x,y) coordinate pairs representing the vertices of this {@link PolygonalBankRegion}
-	 */
-	@Override
-	public Vector2D[] getVertices() {
-		return vertices;
 	}
 
 	@Override

@@ -261,7 +261,7 @@ public enum Message {
             Placeholder.INPUT
     ),
     BANKS_NOT_FOUND (
-            "A player attempts to list all banks, but there are no banks on the server.",
+            "A player attempts to remove all banks, but there are no banks on the server.",
             "&cNo banks found."
     ),
     BANK_CONFIRM_REMOVE (
@@ -937,12 +937,13 @@ public enum Message {
     ),
     UPDATE_AVAILABLE (
             "An admin is notified that an update to BankingPlugin is available.",
-            "&6&lVersion &c%VERSION% &6of &aBanking&2Plugin &6is available &chere&6.",
+            "&6&lVersion &c%VERSION% &6of &aBanking&2Plugin &6is available.",
             Placeholder.VERSION
     ),
     UPDATE_CLICK_TO_DOWNLOAD (
             "An admin is notified of the download location for the update.",
-            "&6Click to download."
+            "&6Click to download: %LINK%",
+            Placeholder.LINK
     ),
     UPDATE_NO_UPDATE (
             "An admin is notified that no new updates are available.",

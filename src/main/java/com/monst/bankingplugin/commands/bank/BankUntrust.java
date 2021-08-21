@@ -74,13 +74,13 @@ public class BankUntrust extends SubCommand.BankSubCommand {
         }
 
         if (!bank.isTrusted(playerToUntrust)) {
-            plugin.debugf("%s was not trusted at bank %s (#%d)", playerToUntrust.getName(), bank.getName(), bank.getID());
+            plugin.debugf("%s was not trusted at bank #%d", playerToUntrust.getName(), bank.getID());
             sender.sendMessage(Message.NOT_A_COOWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
             return true;
         }
 
-        plugin.debugf("%s has untrusted %s from bank %s (#%d)",
-                sender.getName(), playerToUntrust.getName(), bank.getName(), bank.getID());
+        plugin.debugf("%s has untrusted %s from bank #%d",
+                sender.getName(), playerToUntrust.getName(), bank.getID());
         sender.sendMessage(Message.REMOVED_COOWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
         bank.untrustPlayer(playerToUntrust);
         plugin.getDatabase().removeCoOwner(bank, playerToUntrust, null);

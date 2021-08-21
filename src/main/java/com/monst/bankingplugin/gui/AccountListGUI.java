@@ -2,6 +2,7 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Account;
+import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.utils.Observable;
 import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.slot.Slot;
@@ -15,7 +16,7 @@ import java.util.function.Supplier;
 public class AccountListGUI extends MultiPageGUI<Account> {
 
     private static final Comparator<Account> BY_BALANCE = Comparator.comparing(Account::getBalance);
-    private static final Comparator<Account> BY_OWNER_NAME = Comparator.comparing(account -> account.getOwner().getName());
+    private static final Comparator<Account> BY_OWNER_NAME = Comparator.comparing(BankingEntity::getOwnerName);
     private static final Comparator<Account> BY_BANK_NAME = Comparator.comparing(account -> account.getBank().getName());
 
     static final List<MenuItemSorter<? super Account>> SORTERS = Arrays.asList(

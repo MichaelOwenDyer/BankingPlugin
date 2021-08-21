@@ -33,7 +33,7 @@ public class AccountRemove extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to remove an account");
+        plugin.debugf("%s wants to remove an account", sender.getName());
 
         AccountRemoveCommandEvent event = new AccountRemoveCommandEvent((Player) sender, args);
         event.fire();
@@ -42,7 +42,7 @@ public class AccountRemove extends SubCommand {
             return true;
         }
 
-        plugin.debug(sender.getName() + " can now click a chest to remove an account");
+        plugin.debugf("%s can now click a chest to remove an account", sender.getName());
         sender.sendMessage(Message.CLICK_ACCOUNT_REMOVE.translate());
         ClickType.setRemoveClickType((Player) sender);
         return true;
@@ -80,7 +80,7 @@ public class AccountRemove extends SubCommand {
         AccountRemoveEvent event = new AccountRemoveEvent(p, account);
         event.fire();
         if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
-            plugin.debug("Remove event cancelled (#" + account.getID() + ")");
+            plugin.debugf("Remove event cancelled at account #%d", account.getID());
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED.translate());
             return;
         }
@@ -98,7 +98,7 @@ public class AccountRemove extends SubCommand {
                     p.sendMessage(Message.REIMBURSEMENT_RECEIVED.with(Placeholder.AMOUNT).as(reimbursement).translate());
                 if (bank.isPlayerBank() && PayrollOffice.withdraw(bank.getOwner(), reimbursement)) {
                     Utils.notify(bank.getOwner(), Message.REIMBURSEMENT_PAID
-                            .with(Placeholder.PLAYER).as(account.getOwnerName())
+                            .with(Placeholder.PLAYER).as(account.getOwnerDisplayName())
                             .and(Placeholder.AMOUNT).as(reimbursement)
                             .translate());
                 }
@@ -107,7 +107,7 @@ public class AccountRemove extends SubCommand {
 
         p.sendMessage(Message.ACCOUNT_REMOVED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
         plugin.getAccountRepository().remove(account, true);
-        plugin.debugf("Removed account (#%d)", account.getID());
+        plugin.debugf("Removed account #%d", account.getID());
     }
 
 }

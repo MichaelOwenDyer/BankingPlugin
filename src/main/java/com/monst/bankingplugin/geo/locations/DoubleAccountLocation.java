@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.geo.locations;
 
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.ChestNotFoundException;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;

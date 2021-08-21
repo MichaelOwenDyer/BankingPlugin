@@ -29,7 +29,8 @@ public enum Placeholder {
     PATTERN,
     WORLD,
     COMMAND,
-    VERSION;
+    VERSION,
+    LINK;
 
     private String placeholder = null;
     private final boolean isMoney;

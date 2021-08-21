@@ -7,7 +7,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.locations.DoubleAccountLocation;
@@ -54,7 +54,7 @@ public class AccountProtectListener extends BankingPluginListener {
 			return;
 
 		Player p = e.getPlayer();
-		plugin.debugf("%s tries to break %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
+		plugin.debugf("%s tries to break %s's account #%d", p.getName(), account.getOwnerName(), account.getID());
 		if (!(p.isSneaking() && Utils.hasAxeInHand(p)) || (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER))) {
 			e.setCancelled(true);
 			e.getPlayer().sendMessage(Message.CANNOT_BREAK_ACCOUNT.translate());
@@ -84,7 +84,7 @@ public class AccountProtectListener extends BankingPluginListener {
 			new AccountContractEvent(p, account).fire();
 		} else {
 			accountRepo.remove(account, true);
-			plugin.debugf("%s broke %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
+			plugin.debugf("%s broke %s's account #%d", p.getName(), account.getOwnerName(), account.getID());
 			p.sendMessage(Message.ACCOUNT_REMOVED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
 			new AccountRemoveEvent(p, account).fire();
 		}
@@ -136,7 +136,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		Bank bank;
 		try {
 			newLoc.checkSpaceAbove();
-			bank = newLoc.findBank();
+			bank = newLoc.findBank(plugin.getBankRepository());
 		} catch (ChestBlockedException | BankNotFoundException ex) {
 			plugin.debug(ex);
 			p.sendMessage(ex.getMessage());
@@ -144,7 +144,7 @@ public class AccountProtectListener extends BankingPluginListener {
 			return;
 		}
 
-		plugin.debugf("%s tries to extend %s's account (#%d)", p.getName(), account.getOwner().getName(), account.getID());
+		plugin.debugf("%s tries to extend %s's account #%d", p.getName(), account.getOwnerName(), account.getID());
 
 		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)) {
 			e.setCancelled(true);
@@ -183,7 +183,7 @@ public class AccountProtectListener extends BankingPluginListener {
 			}
 			if (bank.isPlayerBank() && PayrollOffice.deposit(bank.getOwner(), creationPrice)) {
 				Utils.notify(bank.getOwner(), Message.ACCOUNT_EXTEND_FEE_RECEIVED
-						.with(Placeholder.PLAYER).as(account.getOwnerName())
+						.with(Placeholder.PLAYER).as(account.getOwnerDisplayName())
 						.and(Placeholder.AMOUNT).as(creationPrice)
 						.and(Placeholder.BANK_NAME).as(bank.getColorizedName())
 						.translate());

@@ -12,8 +12,8 @@ import java.net.URLConnection;
 public class UpdateChecker {
 
     private final BankingPlugin plugin;
-    private String version;
-    private String link;
+    private String version = "";
+    private String link = "";
 
     public UpdateChecker(BankingPlugin plugin) {
         this.plugin = plugin;
@@ -31,10 +31,10 @@ public class UpdateChecker {
             plugin.debug("Checking for updates...");
 
 			URL url = new URL("");
-            URLConnection conn = url.openConnection();
-			conn.setRequestProperty("", "BankingPlugin/UpdateChecker");
+            URLConnection con = url.openConnection();
+			con.setRequestProperty("", "BankingPlugin/UpdateChecker");
 
-            InputStreamReader reader = new InputStreamReader(conn.getInputStream());
+            InputStreamReader reader = new InputStreamReader(con.getInputStream());
             JsonElement element = new JsonParser().parse(reader);
 
             if (element.isJsonArray()) {
@@ -44,7 +44,7 @@ public class UpdateChecker {
 				link = id;
             } else {
                 plugin.debug("Failed to check for updates");
-                plugin.debug("Result: " + element.toString());
+                plugin.debug("Result: " + element);
                 return Result.ERROR;
             }
 

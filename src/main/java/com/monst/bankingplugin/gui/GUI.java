@@ -14,7 +14,6 @@ import org.bukkit.util.ChatPaginator;
 import org.ipvp.canvas.Menu;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -190,16 +189,16 @@ public abstract class GUI<T> {
 	}
 
 	static List<String> wordWrapAll(String... args) {
-		return wordWrapAll(30, Arrays.stream(args));
+		return wordWrapAll(30, Stream.of(args));
 	}
 
 	static List<String> wordWrapAll(int lineLength, String... args) {
-		return wordWrapAll(lineLength, Arrays.stream(args));
+		return wordWrapAll(lineLength, Stream.of(args));
 	}
 
 	static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
 		return lines.map(s -> ChatPaginator.wordWrap(s, lineLength))
-				.flatMap(Arrays::stream)
+				.flatMap(Stream::of)
 				.map(s -> s.replace("" + ChatColor.WHITE, ""))
 				.collect(Collectors.toList());
 	}

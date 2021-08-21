@@ -68,7 +68,7 @@ public class SQLite extends Database {
      * Vacuums the database to reduce file size
      */
     @Override
-    void close() {
+    void shutdown() {
         if (query == null)
             return;
         query.update("VACUUM").run();
@@ -85,7 +85,7 @@ public class SQLite extends Database {
     String getQueryCreateTableBanks() {
         return getQueryCreateTable(tableBanks,
                 "BankID INTEGER PRIMARY KEY AUTOINCREMENT",
-                "Name TEXT NOT NULL UNIQUE",
+                "Name TEXT",
                 "OwnerUUID TEXT",
 
                 "CountInterestDelayOffline TEXT",
@@ -110,7 +110,11 @@ public class SQLite extends Database {
                 "MaxY INTEGER NOT NULL",
                 "MinZ INTEGER NOT NULL",
                 "MaxZ INTEGER NOT NULL",
-                "PolygonVertices TEXT" // contains list of all vertices if polygonal
+                "PolygonVertices TEXT", // contains list of all vertices if polygonal
+                "CylinderCenterX INTEGER",
+                "CylinderCenterZ INTEGER",
+                "CylinderRadiusX INTEGER",
+                "CylinderRadiusZ INTEGER"
         );
     }
 

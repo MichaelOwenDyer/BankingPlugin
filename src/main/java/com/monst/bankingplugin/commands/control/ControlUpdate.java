@@ -40,24 +40,14 @@ public class ControlUpdate extends SubCommand {
 //    sender.sendMessage(Message.UPDATE_CHECKING.translate());
 //
 //    UpdateChecker uc = new UpdateChecker(plugin);
-//    UpdateChecker.Result result = uc.check();
-//
-//        switch (result) {
+//        switch (uc.check()) {
 //        case TRUE:
-//            plugin.setLatestVersion(uc.getVersion());
-//            plugin.setDownloadLink(uc.getLink());
-//            plugin.setUpdateNeeded(true);
 //            sender.sendMessage(Message.UPDATE_AVAILABLE.with(Placeholder.VERSION).as(uc.getVersion()).translate());
+//            sender.sendMessage(Message.UPDATE_CLICK_TO_DOWNLOAD.with(Placeholder.LINK).as(uc.getLink()).translate());
 //            break;
 //        case FALSE:
-//            plugin.setLatestVersion("");
-//            plugin.setDownloadLink("");
-//            plugin.setUpdateNeeded(false);
 //            sender.sendMessage(Message.UPDATE_NO_UPDATE.translate());
 //        case ERROR:
-//            plugin.setLatestVersion("");
-//            plugin.setDownloadLink("");
-//            plugin.setUpdateNeeded(false);
 //            sender.sendMessage(Message.UPDATE_ERROR.translate());
 //    }
 //        return true;

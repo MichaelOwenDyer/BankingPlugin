@@ -7,7 +7,7 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.Message;
@@ -43,19 +43,19 @@ public class AccountCreate extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
-        plugin.debug(p.getName() + " wants to create an account");
+        Player p = (Player) sender;
+        plugin.debugf("%s wants to create an account", p.getName());
 
         if (!hasPermission(p, Permissions.ACCOUNT_CREATE)) {
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE.translate());
-            plugin.debug(p.getName() + " is not permitted to create an account");
+            plugin.debugf("%s is not permitted to create an account", p.getName());
             return true;
         }
 
         int limit = Utils.getAccountLimit(p);
         if (limit != -1 && plugin.getAccountRepository().getOwnedBy(p).size() >= limit) {
             p.sendMessage(Message.ACCOUNT_LIMIT_REACHED.with(Placeholder.LIMIT).as(limit).translate());
-            plugin.debug(p.getName() + " has reached their account limit");
+            plugin.debugf("%s has reached their account limit", p.getName());
             return true;
         }
 
@@ -66,7 +66,7 @@ public class AccountCreate extends SubCommand {
             return true;
         }
 
-        plugin.debug(p.getName() + " can now click a chest to create an account");
+        plugin.debugf("%s can now click a chest to create an account", p.getName());
         p.sendMessage(Message.CLICK_CHEST_CREATE.translate());
         ClickType.setCreateClickType(p);
         return true;
@@ -91,7 +91,7 @@ public class AccountCreate extends SubCommand {
         Bank bank;
         try {
             accountLocation.checkSpaceAbove();
-            bank = accountLocation.findBank();
+            bank = accountLocation.findBank(plugin.getBankRepository());
         } catch (ChestBlockedException | BankNotFoundException e) {
             p.sendMessage(e.getMessage());
             plugin.debug(e);
@@ -100,7 +100,7 @@ public class AccountCreate extends SubCommand {
 
         if (!Config.allowSelfBanking.get() && bank.isOwner(p)) {
             p.sendMessage(Message.NO_SELF_BANKING.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
-            plugin.debug(p.getName() + " is not permitted to create an account at their own bank");
+            plugin.debugf("%s is not permitted to create an account at their own bank", p.getName());
             return;
         }
 
@@ -110,7 +110,7 @@ public class AccountCreate extends SubCommand {
                     .with(Placeholder.BANK_NAME).as(bank.getColorizedName())
                     .and(Placeholder.LIMIT).as(playerAccountLimit)
                     .translate());
-            plugin.debug(p.getName() + " is not permitted to create another account at bank " + bank.getName());
+            plugin.debugf("%s is not permitted to create another account at bank %s", p.getName(), bank.getName());
             return;
         }
 

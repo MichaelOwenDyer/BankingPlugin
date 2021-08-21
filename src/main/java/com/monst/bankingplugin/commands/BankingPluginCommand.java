@@ -52,7 +52,7 @@ public abstract class BankingPluginCommand {
 	private void register() {
 
 		PluginCommand pluginCommand;
-		plugin.debug("Creating plugin command \"" + name + "\"");
+		plugin.debugf("Creating plugin command \"%s\"", name);
 		try {
 			Constructor<PluginCommand> constructor = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
 			constructor.setAccessible(true);
@@ -65,12 +65,12 @@ public abstract class BankingPluginCommand {
 
 		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
 			plugin.getLogger().severe("Failed to create command \"" + name + "\"!");
-			plugin.debug("Failed to create command \"" + name + "\"!");
+			plugin.debugf("Failed to create command \"%s\"!", name);
 			plugin.debug(e);
 			return;
 		}
 
-		plugin.debug("Registering command \"" + name + "\"");
+		plugin.debugf("Registering command \"%s\"", name);
 		try {
 			Field commandMapField = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
 			commandMapField.setAccessible(true);
@@ -79,7 +79,7 @@ public abstract class BankingPluginCommand {
 			commandMap.register(plugin.getName(), pluginCommand);
 		} catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
 			plugin.getLogger().severe("Failed to register command \"" + name + "\"!");
-			plugin.debug("Failed to register command \"" + name + "\"!");
+			plugin.debugf("Failed to register command \"%s\"!", name);
 			plugin.debug(e);
 		}
 	}
@@ -90,7 +90,7 @@ public abstract class BankingPluginCommand {
 	 * @param sender {@link CommandSender} who will receive the message
 	 */
 	private void sendCommandUsageMessage(CommandSender sender) {
-		plugin.debug("Sending basic help message to " + sender.getName());
+		plugin.debugf("Sending basic help message to %s", sender.getName());
 		for (SubCommand subCommand : subCommands) {
 			String msg = subCommand.getUsageMessage(sender, name);
 			if (msg != null && !msg.isEmpty())

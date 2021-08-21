@@ -78,7 +78,7 @@ public class BankRemoveAll extends SubCommand.BankSubCommand {
             MailingRoom.draft(message).to(bank.getTrustedPlayers()).and(sender).send();
         }
         banks.forEach(bank -> plugin.getBankRepository().remove(bank, true));
-        plugin.debug("Bank(s) " + Utils.map(banks, bank -> "#" + bank.getID()).toString() + " removed from the database.");
+        plugin.debugf("Bank(s) %s removed from the database.", Utils.map(banks, bank -> "#" + bank.getID()));
         return true;
     }
 

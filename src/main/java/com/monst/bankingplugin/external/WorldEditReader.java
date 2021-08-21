@@ -12,10 +12,7 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.regions.CuboidRegion;
-import com.sk89q.worldedit.regions.Polygonal2DRegion;
-import com.sk89q.worldedit.regions.Region;
-import com.sk89q.worldedit.regions.RegionSelector;
+import com.sk89q.worldedit.regions.*;
 import com.sk89q.worldedit.regions.selector.CuboidRegionSelector;
 import com.sk89q.worldedit.regions.selector.Polygonal2DRegionSelector;
 import org.bukkit.World;
@@ -55,31 +52,36 @@ public class WorldEditReader {
 			int maxY = polygon.getMaximumY();
 			Vector2D[] points = polygon.getPoints().stream().map(pt -> new Vector2D(pt.getBlockX(), pt.getBlockZ())).toArray(Vector2D[]::new);
 			return PolygonalBankRegion.of(world, points, minY, maxY);
+		} else if (region instanceof CylinderRegion) {
+			CylinderRegion cylinder = (CylinderRegion) region;
+			double radiusX = cylinder.getRadius().getX();
+			double radiusZ = cylinder.getRadius().getZ();
+			Vector2D center = new Vector2D((int) cylinder.getCenter().getX(), (int) cylinder.getCenter().getZ());
 		}
 		return null;
 	}
 
-	public static void setSelection(BankingPlugin plugin, BankRegion reg, Player p) {
+	public static void setSelection(BankingPlugin plugin, BankRegion region, Player p) {
 
 		WorldEditPlugin worldEdit = plugin.getWorldEdit();
 		RegionSelector regionSelector;
-		if (reg.isCuboid()) {
-			BlockVector3 min = BlockVector3.at(reg.getMinimumBlock().getX(), reg.getMinimumBlock().getY(), reg.getMinimumBlock().getZ());
-			BlockVector3 max = BlockVector3.at(reg.getMaximumBlock().getX(), reg.getMaximumBlock().getY(), reg.getMaximumBlock().getZ());
-			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(reg.getWorld()), min, max);
-		} else if (reg.isPolygonal()) {
-			List<BlockVector2> points = Arrays.stream(reg.getVertices())
+		if (region.isCuboid()) {
+			BlockVector3 min = BlockVector3.at(region.getMinX(), region.getMinY(), region.getMinZ());
+			BlockVector3 max = BlockVector3.at(region.getMaxX(), region.getMaxY(), region.getMaxZ());
+			regionSelector = new CuboidRegionSelector(BukkitAdapter.adapt(region.getWorld()), min, max);
+		} else if (region.isPolygonal()) {
+			List<BlockVector2> points = Arrays.stream(((PolygonalBankRegion) region).getVertices())
 					.map(point -> BlockVector2.at(point.getX(), point.getZ())).collect(Collectors.toList());
-			int minY = reg.getMinimumBlock().getY();
-			int maxY = reg.getMaximumBlock().getY();
-			regionSelector = new Polygonal2DRegionSelector(BukkitAdapter.adapt(reg.getWorld()), points, minY, maxY);
+			int minY = region.getMinY();
+			int maxY = region.getMaxY();
+			regionSelector = new Polygonal2DRegionSelector(BukkitAdapter.adapt(region.getWorld()), points, minY, maxY);
 		} else
 			throw new IllegalStateException();
 
-		plugin.debug(p.getName() + " has selected the bank at " + reg.getCoordinates());
-		regionSelector.setWorld(BukkitAdapter.adapt(reg.getWorld()));
+		plugin.debugf("%s has selected the bank at %s", p.getName(), region.getCoordinates());
+		regionSelector.setWorld(BukkitAdapter.adapt(region.getWorld()));
 		worldEdit.getWorldEdit().getSessionManager().get(BukkitAdapter.adapt(p))
-				.setRegionSelector(BukkitAdapter.adapt(reg.getWorld()), regionSelector);
+				.setRegionSelector(BukkitAdapter.adapt(region.getWorld()), regionSelector);
 	}
 
 }

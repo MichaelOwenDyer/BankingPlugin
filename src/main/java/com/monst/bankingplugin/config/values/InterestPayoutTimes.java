@@ -3,7 +3,6 @@ package com.monst.bankingplugin.config.values;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.exceptions.parse.TimeParseException;
-import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Parser;
 import org.bukkit.command.CommandSender;
 
@@ -25,7 +24,7 @@ public class InterestPayoutTimes extends OverridableValue<List<String>, Set<Loca
     @Override
     public void afterSet(CommandSender executor) {
         super.afterSet(executor);
-        InterestEventScheduler.scheduleAllBanks();
+        plugin.getScheduler().scheduleAllInterestEvents();
     }
 
     @Override
@@ -42,7 +41,7 @@ public class InterestPayoutTimes extends OverridableValue<List<String>, Set<Loca
         return new OverriddenValue<Set<LocalTime>>(this, value) {
             @Override
             void afterSet() {
-                InterestEventScheduler.scheduleBank(bank);
+                plugin.getScheduler().scheduleInterestEvents(bank);
             }
         };
     }

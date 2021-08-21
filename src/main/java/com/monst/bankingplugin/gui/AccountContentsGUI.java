@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.Account;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.ChestNotFoundException;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;

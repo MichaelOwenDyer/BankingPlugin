@@ -47,7 +47,7 @@ public class AccountRename extends SubCommand {
         String nickname = sb.toString();
 
         if (!nickname.trim().isEmpty() && !Config.nameRegex.matches(nickname)) {
-            plugin.debug("Name \"" + nickname + "\" is not allowed");
+            plugin.debugf("Name \"%s\" is not allowed", nickname);
             p.sendMessage(Message.NAME_NOT_ALLOWED
                     .with(Placeholder.NAME).as(nickname)
                     .and(Placeholder.PATTERN).as(Config.nameRegex.get())
@@ -69,13 +69,10 @@ public class AccountRename extends SubCommand {
         }
 
         if (value.isEmpty()) {
-            plugin.debugf("%s has reset %s account nickname%s (#%d)", executor.getName(),
-                    (account.isOwner(executor) ? "their" : account.getOwner().getName() + "'s"),
-                    (account.isCoOwner(executor) ? " (is co-owner)" : ""), account.getID());
+            plugin.debugf("%s has reset nickname of account #%d", executor.getName(), account.getID());
             account.resetName();
         } else {
-            plugin.debugf("%s has renamed their account to \"%s\" (#%d)",
-                    executor.getName(), value, account.getID());
+            plugin.debugf("%s has renamed account #%d to \"%s\"", executor.getName(), account.getID(), value);
             account.setName(value);
         }
         executor.sendMessage(Message.ACCOUNT_RENAMED.with(Placeholder.ACCOUNT_NAME).as(account.getChestName()).translate());

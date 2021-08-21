@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.exceptions;
+package com.monst.bankingplugin.exceptions.notfound;
 
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 

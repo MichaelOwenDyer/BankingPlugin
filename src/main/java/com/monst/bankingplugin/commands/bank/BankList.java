@@ -1,18 +1,16 @@
 package com.monst.bankingplugin.commands.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.gui.BankListGUI;
 import com.monst.bankingplugin.lang.Message;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class BankList extends SubCommand.BankSubCommand {
 
     BankList(BankingPlugin plugin) {
-		super(plugin, "list", false);
+		super(plugin, "list", true);
     }
 
     @Override
@@ -24,20 +22,9 @@ public class BankList extends SubCommand.BankSubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " is listing banks.");
 
-        // TODO: Allow for more specific bank searching
+        // TODO: Allow for specific bank searching
 
-        if (plugin.getBankRepository().getAll().isEmpty()) {
-            sender.sendMessage(Message.BANKS_NOT_FOUND.translate());
-            return true;
-        }
-
-        if (sender instanceof Player)
-            new BankListGUI(plugin.getBankRepository()::getAll).open((Player) sender);
-        else {
-            int i = 0;
-            for (Bank bank : plugin.getBankRepository().getAll())
-                sender.sendMessage(ChatColor.AQUA + "" + ++i + ". " + bank.getColorizedName() + " ");
-        }
+        new BankListGUI(plugin.getBankRepository()::getAll).open((Player) sender);
         return true;
     }
 

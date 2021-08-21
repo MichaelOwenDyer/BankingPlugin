@@ -56,31 +56,30 @@ public class BankTrust extends SubCommand.BankSubCommand {
 
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
                 || sender.hasPermission(Permissions.BANK_TRUST_OTHER))) {
-            if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
-                plugin.debugf("%s does not have permission to trust a player to bank %s as a co-owner", sender.getName(), bank.getName());
+            if (sender instanceof Player && bank.isTrusted((Player) sender)) {
+                plugin.debugf("%s does not have permission to trust a player to bank #%d as a co-owner", sender.getName(), bank.getID());
                 sender.sendMessage(Message.MUST_BE_OWNER.translate());
                 return true;
             }
-            plugin.debugf("%s does not have permission to trust a player to bank %s", sender.getName(), bank.getName());
+            plugin.debugf("%s does not have permission to trust a player to bank #%d", sender.getName(), bank.getID());
             sender.sendMessage(Message.NO_PERMISSION_BANK_TRUST_OTHER.translate());
             return true;
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRUST_ADMIN)) {
-            plugin.debugf("%s does not have permission to trust a player to admin bank %s", sender.getName(), bank.getName());
+            plugin.debugf("%s does not have permission to trust a player to admin bank #%d", sender.getName(), bank.getID());
             sender.sendMessage(Message.NO_PERMISSION_BANK_TRUST_ADMIN.translate());
             return true;
         }
 
         if (bank.isTrusted(playerToTrust)) {
-            plugin.debugf("%s was already trusted at bank %s (#%d)", playerToTrust.getName(), bank.getName(), bank.getID());
+            plugin.debugf("%s was already trusted at bank #%d", playerToTrust.getName(), bank.getID());
             Message message = bank.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER;
             sender.sendMessage(message.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate());
             return true;
         }
 
-        plugin.debugf("%s has trusted %s to bank %s (#%d)",
-                sender.getName(), playerToTrust.getName(), bank.getName(), bank.getID());
+        plugin.debugf("%s has trusted %s to bank #%d", sender.getName(), playerToTrust.getName(), bank.getID());
         sender.sendMessage(Message.ADDED_COOWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate());
         bank.trustPlayer(playerToTrust);
         plugin.getDatabase().addCoOwner(bank, playerToTrust, null);

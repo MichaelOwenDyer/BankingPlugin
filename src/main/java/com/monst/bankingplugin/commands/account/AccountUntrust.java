@@ -36,7 +36,7 @@ public class AccountUntrust extends SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
 
-        plugin.debug(sender.getName() + " wants to untrust a player from an account");
+        plugin.debugf("%s wants to untrust a player from an account", sender.getName());
 
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
             sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST.translate());
@@ -62,7 +62,7 @@ public class AccountUntrust extends SubCommand {
 
         sender.sendMessage(Message.CLICK_ACCOUNT_UNTRUST.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
         ClickType.setUntrustClickType(p, playerToUntrust);
-        plugin.debug(sender.getName() + " is untrusting " + playerToUntrust.getName() + " from an account");
+        plugin.debugf("%s is untrusting %s from an account", sender.getName(), playerToUntrust.getName());
         return true;
     }
 
@@ -79,7 +79,7 @@ public class AccountUntrust extends SubCommand {
         }
 
         if (!account.isCoOwner(playerToUntrust)) {
-            plugin.debugf("%s was not a co-owner of that account and could not be removed (#%d)",
+            plugin.debugf("%s was not a co-owner of account #%d and could not be removed",
                     playerToUntrust.getName(), account.getID());
             executor.sendMessage(Message.NOT_A_COOWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
             return;

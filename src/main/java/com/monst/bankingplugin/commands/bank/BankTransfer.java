@@ -116,7 +116,7 @@ public class BankTransfer extends SubCommand.BankSubCommand {
 
         bank.setOwner(newOwner);
         String message = Message.BANK_TRANSFERRED
-                .with(Placeholder.PLAYER).as(bank.getOwnerName())
+                .with(Placeholder.PLAYER).as(bank.getOwnerDisplayName())
                 .and(Placeholder.BANK_NAME).as(bank.getColorizedName())
                 .translate();
         MailingRoom.draft(message).to(sender).send();
@@ -147,7 +147,7 @@ public class BankTransfer extends SubCommand.BankSubCommand {
                 onlinePlayers.remove(player.getName());
             Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
             if (bank != null && bank.isPlayerBank())
-                onlinePlayers.remove(bank.getOwner().getName());
+                onlinePlayers.remove(bank.getOwnerName());
             return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[1]));
         }
         return Collections.emptyList();

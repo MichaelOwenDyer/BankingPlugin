@@ -3,7 +3,7 @@ package com.monst.bankingplugin.banking;
 public interface Persistable {
 
     /**
-     * @return whether or not this persistable entity has an ID.
+     * @return whether this persistable entity has an ID.
      */
     boolean hasID();
 

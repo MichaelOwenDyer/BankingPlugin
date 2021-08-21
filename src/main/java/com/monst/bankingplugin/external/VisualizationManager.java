@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.geo.Vector2D;
 import com.monst.bankingplugin.geo.regions.BankRegion;
+import com.monst.bankingplugin.geo.regions.PolygonalBankRegion;
 import com.monst.bankingplugin.utils.Pair;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Visualization;
@@ -87,7 +88,7 @@ public class VisualizationManager {
                     }
                 }
             }
-        } else {
+        } else if (sel.isPolygonal()) {
 
             // Construct some helpful arrays of y-values
             final int[] minMaxYs = new int[] { sel.getMinY() + 1, sel.getMaxY() - 1 };
@@ -96,7 +97,7 @@ public class VisualizationManager {
                 yBuilder.accept(y);
             final int[] allYs = yBuilder.build().toArray();
 
-            Vector2D[] points = sel.getVertices();
+            Vector2D[] points = ((PolygonalBankRegion) sel).getVertices();
             for (int vertex = 0; vertex < points.length; vertex++) {
 
                 Vector2D current = points[vertex];

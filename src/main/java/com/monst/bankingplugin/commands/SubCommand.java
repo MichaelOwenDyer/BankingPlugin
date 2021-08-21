@@ -102,7 +102,7 @@ public abstract class SubCommand {
                     Player p = (Player) sender;
                     bank = plugin.getBankRepository().getAt(p.getLocation().getBlock());
                     if (bank == null) {
-                        plugin.debug(p.getName() + " wasn't standing in a bank");
+                        plugin.debugf("%s wasn't standing in a bank", p.getName());
                         p.sendMessage(Message.MUST_STAND_IN_BANK.translate());
                     }
                 } else

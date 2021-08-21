@@ -2,7 +2,7 @@ package com.monst.bankingplugin.banking;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.ChestNotFoundException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Utils;
@@ -22,8 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Account extends BankingEntity {
 
@@ -270,7 +268,7 @@ public class Account extends BankingEntity {
 	}
 
 	public String getDefaultChestName() {
-		return String.format(DEFAULT_CHEST_NAME, getOwner().getName(), getID());
+		return String.format(DEFAULT_CHEST_NAME, getOwnerName(), getID());
 	}
 
 	/**
@@ -279,7 +277,7 @@ public class Account extends BankingEntity {
 	 * @return the default name of this account.
 	 */
 	public String getDefaultName() {
-		return String.format(DEFAULT_NAME, getOwner().getName());
+		return String.format(DEFAULT_NAME, getOwnerName());
 	}
 
 	/**
@@ -302,7 +300,7 @@ public class Account extends BankingEntity {
 	 * @return the current value of the items inside this account's inventory
 	 */
 	public BigDecimal calculateBalance() {
-		plugin.debugf("Appraising account... (#%d)", getID());
+		plugin.debugf("Appraising account #%d...", getID());
 		InventoryHolder ih;
 		BigDecimal sum = BigDecimal.ZERO;
 		try {
@@ -464,28 +462,11 @@ public class Account extends BankingEntity {
 		notifyObservers();
 	}
 
-	@Override
-	public String toConsolePrintout() {
-		BigDecimal rate = getBank().interestRate().get();
-		int multiplier = getRealMultiplier();
-		BigDecimal percentage = rate.multiply(BigDecimal.valueOf(multiplier)).scaleByPowerOfTen(2).setScale(2, RoundingMode.HALF_EVEN);
-		return Stream.of(
-				"\"" + Utils.colorize(getRawName()) + ChatColor.GRAY + "\"",
-				"Bank: " + ChatColor.RED + getBank().getColorizedName(),
-				"Owner: " + ChatColor.GOLD + getOwnerDisplayName(),
-				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName).toString(),
-				"Balance: " + Utils.formatAndColorize(getBalance()),
-				"Multiplier: " + ChatColor.AQUA + getRealMultiplier() + ChatColor.GRAY + " (Stage " + getMultiplierStage() + ")",
-				"Interest rate: " + percentage + "% " + ChatColor.GRAY + "(" + rate + " x " + multiplier + ")",
-				"Location: " + ChatColor.AQUA + "(" + getCoordinates() + ")"
-		).map(s -> ChatColor.GRAY + s).collect(Collectors.joining(", ", "", ""));
-	}
-
-	@Override
+    @Override
 	public String toString() {
 		return String.join(", ",
 				"Account ID: " + getID(),
-				"Owner: " + getOwner().getName(),
+				"Owner: " + getOwnerName(),
 				"Bank: " + getBank().getName(),
 				"Balance: " + Utils.format(getBalance()),
 				"Location: " + getCoordinates()

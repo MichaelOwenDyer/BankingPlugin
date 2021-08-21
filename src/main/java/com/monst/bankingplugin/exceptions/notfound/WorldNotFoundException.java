@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.exceptions;
+package com.monst.bankingplugin.exceptions.notfound;
 
 public class WorldNotFoundException extends NotFoundException {
 

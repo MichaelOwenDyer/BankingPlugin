@@ -96,8 +96,7 @@ public class AccountInteractListener extends BankingPluginListener {
 			if (!account.isTrusted(p) && !account.getBank().isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
 				e.setCancelled(true);
 				p.sendMessage(Message.NO_PERMISSION_ACCOUNT_VIEW_OTHER.translate());
-				plugin.debug(p.getName() + " does not have permission to open " + account.getOwner().getName()
-						+ "'s account chest.");
+				plugin.debugf("%s does not have permission to open %s's account chest.", p.getName(), account.getOwnerName());
 				return;
 			}
 
@@ -105,7 +104,7 @@ public class AccountInteractListener extends BankingPluginListener {
 			if (!account.isTrusted(p))
 				p.sendMessage(Message.ACCOUNT_OPENED.with(Placeholder.PLAYER).as(account.getOwnerDisplayName()).translate());
 
-			plugin.debugf("%s is opening account (#%d)", p.getName(), account.getID());
+			plugin.debugf("%s is opening account #%d", p.getName(), account.getID());
 		}
 	}
 }

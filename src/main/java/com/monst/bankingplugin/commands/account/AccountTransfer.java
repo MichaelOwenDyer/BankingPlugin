@@ -39,10 +39,10 @@ public class AccountTransfer extends SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        plugin.debug(p.getName() + " wants to transfer ownership of an account");
+        plugin.debugf("%s wants to transfer ownership of an account", p.getName());
 
         if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER)) {
-            plugin.debug(p.getName() + " does not have permission to transfer ownership of an account");
+            plugin.debugf("%s does not have permission to transfer ownership of an account", p.getName());
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER.translate());
             return true;
         }
@@ -65,15 +65,15 @@ public class AccountTransfer extends SubCommand {
 
         p.sendMessage(Message.CLICK_ACCOUNT_TRANSFER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
         ClickType.setTransferClickType(p, newOwner);
-        plugin.debug(p.getName() + " is transferring ownership of an account to " + newOwner.getName());
+        plugin.debugf("%s is transferring ownership of an account to %s", p.getName(), newOwner.getName());
         return true;
     }
 
     public static void transfer(BankingPlugin plugin, Player player, Account account, OfflinePlayer newOwner) {
-        plugin.debug(player.getName() + " is transferring account #" + account.getID() + " to the ownership of " + newOwner.getName());
+        plugin.debugf("%s is transferring ownership of account #%d to %s", player.getName(), account.getID(), newOwner.getName());
 
         if (!account.isOwner(player) && !player.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
-            plugin.debug(player.getName() + " does not have permission to transfer the account.");
+            plugin.debugf("%s does not have permission to transfer the account.", player.getName());
             Message message = account.isTrusted(player) ? Message.MUST_BE_OWNER : Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER;
             player.sendMessage(message.translate());
             ClickType.removeClickType(player);
@@ -81,7 +81,7 @@ public class AccountTransfer extends SubCommand {
         }
 
         if (account.isOwner(newOwner)) {
-            plugin.debug(player.getName() + " is already owner of account");
+            plugin.debugf("%s is already owner of account", player.getName());
             player.sendMessage(Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
             ClickType.removeClickType(player);
             return;

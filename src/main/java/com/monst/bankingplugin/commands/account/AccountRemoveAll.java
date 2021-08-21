@@ -38,10 +38,10 @@ public class AccountRemoveAll extends SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
 
-        plugin.debug(sender.getName() + " wants to remove all accounts");
+        plugin.debugf("%s wants to remove all accounts", sender.getName());
 
         if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL)) {
-            plugin.debug(sender.getName() + " does not have permission to remove all accounts");
+            plugin.debugf("%s does not have permission to remove all accounts", sender.getName());
             sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_REMOVEALL.translate());
             return true;
         }
@@ -89,7 +89,7 @@ public class AccountRemoveAll extends SubCommand {
             plugin.debug("Remove all event cancelled");
             return true;
         }
-        plugin.debug(sender.getName() + " removed account(s) " + Utils.map(accounts, a -> "#" + a.getID()).toString());
+        plugin.debugf("%s removed account(s) %s", sender.getName(), Utils.map(accounts, a -> "#" + a.getID()));
         sender.sendMessage(Message.ALL_ACCOUNTS_REMOVED.with(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size()).translate());
         accounts.forEach(account -> plugin.getAccountRepository().remove(account, true));
         return true;

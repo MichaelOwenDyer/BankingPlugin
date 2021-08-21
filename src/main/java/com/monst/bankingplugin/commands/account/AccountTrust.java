@@ -35,7 +35,7 @@ public class AccountTrust extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to trust a player to an account");
+        plugin.debugf("%s wants to trust a player to an account", sender.getName());
 
         if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
             sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRUST.translate());
@@ -61,7 +61,7 @@ public class AccountTrust extends SubCommand {
 
         sender.sendMessage(Message.CLICK_ACCOUNT_TRUST.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate());
         ClickType.setTrustClickType(p, playerToTrust);
-        plugin.debug(sender.getName() + " is trusting " + playerToTrust.getName() + " to an account");
+        plugin.debugf("%s is trusting %s to an account", sender.getName(), playerToTrust.getName());
         return true;
     }
 
@@ -78,7 +78,7 @@ public class AccountTrust extends SubCommand {
         }
 
         if (account.isTrusted(playerToTrust)) {
-            plugin.debugf("%s was already trusted on that account (#%d)", playerToTrust.getName(), account.getID());
+            plugin.debugf("%s was already trusted on account #%d", playerToTrust.getName(), account.getID());
             Message message = account.isOwner(playerToTrust) ? Message.ALREADY_OWNER : Message.ALREADY_COOWNER;
             executor.sendMessage(message.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate());
             return;

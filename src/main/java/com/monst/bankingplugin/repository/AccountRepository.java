@@ -65,8 +65,6 @@ public class AccountRepository implements Repository<Account, AccountField> {
      */
     @Override
 	public Account getAt(AccountLocation accountLocation) {
-    	if (accountLocation == null)
-    		return null;
     	return accountMap.get(accountLocation);
     }
 

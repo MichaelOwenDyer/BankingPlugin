@@ -6,7 +6,7 @@ import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.config.Config;
-import com.monst.bankingplugin.exceptions.WorldNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.WorldNotFoundException;
 import com.monst.bankingplugin.exceptions.parse.IntegerParseException;
 import com.monst.bankingplugin.exceptions.parse.TimeParseException;
 import com.monst.bankingplugin.geo.Vector2D;
@@ -25,7 +25,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.codejargon.fluentjdbc.api.FluentJdbcBuilder;
 import org.codejargon.fluentjdbc.api.ParamSetter;
@@ -132,7 +131,7 @@ public abstract class Database {
 			return false;
 		for (; version < DATABASE_VERSION; version++)
 			updates[version].run();
-		setDatabaseVersion(DATABASE_VERSION);
+		setDatabaseVersion(version);
 		return true;
 	}
 
@@ -244,12 +243,12 @@ public abstract class Database {
 	public void disconnect() {
 		if (dataSource == null)
 			return;
-		close();
+		shutdown();
 		dataSource.close();
 		dataSource = null;
 	}
 
-	void close() {
+	void shutdown() {
 
 	}
 
@@ -267,9 +266,9 @@ public abstract class Database {
 					"RemainingOfflinePayouts, World, Y, X1, Z1, X2, Z2) " +
 					"VALUES(" + (account.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-			final LinkedList<Object> params = getAttributes(account);
-			if (!account.hasID())
-				params.removeFirst();
+			LinkedList<Object> params = AccountField.stream().map(f -> f.getFrom(account)).collect(Collectors.toCollection(LinkedList::new));
+			if (account.hasID())
+				params.addFirst(account.getID());
 
 			int id = query
 					.update(replaceQuery)
@@ -320,22 +319,12 @@ public abstract class Database {
 	public void removeAccount(Account account, Callback<Void> callback) {
 		plugin.async(() -> {
 			plugin.debugf("Removing account #%d from the database.", account.getID());
-
-			long removedCoowners = query.transaction().in(() -> {
-				query
-						.update("DELETE FROM " + tableAccounts + " WHERE AccountID = ?")
-						.params(account.getID())
-						.errorHandler(forwardError(callback))
-						.run();
-				return query
-						.update("DELETE FROM " + tableCoOwnsAccount + " WHERE AccountID = ?")
-						.params(account.getID())
-						.errorHandler(forwardError(callback))
-						.run()
-						.affectedRows();
-			});
-
-			plugin.debugf("Removed account #%d and %d coowners from the database.", account.getID(), removedCoowners);
+			query
+					.update("DELETE FROM " + tableAccounts + " WHERE AccountID = ?")
+					.params(account.getID())
+					.errorHandler(forwardError(callback))
+					.run();
+			plugin.debugf("Removed account #%d from the database.", account.getID());
 			Callback.callSyncResult(callback);
 		});
 	}
@@ -358,9 +347,9 @@ public abstract class Database {
 					"World, MinX, MaxX, MinY, MaxY, MinZ, MaxZ, PolygonVertices) " +
 					"VALUES(" + (bank.hasID() ? "?," : "") + "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-			final LinkedList<Object> params = getAttributes(bank);
-			if (!bank.hasID())
-				params.removeFirst();
+			LinkedList<Object> params = BankField.stream().map(f -> f.getFrom(bank)).collect(Collectors.toCollection(LinkedList::new));
+			if (bank.hasID())
+				params.addFirst(bank.getID());
 
 			int id = query
 					.update(replaceQuery)
@@ -411,23 +400,12 @@ public abstract class Database {
 	public void removeBank(Bank bank, Callback<Void> callback) {
 		plugin.async(() -> {
 			plugin.debugf("Removing bank #%d from the database.", bank.getID());
-			long removedCoowners = query.transaction().in(
-					() -> {
-						query
-								.update("DELETE FROM " + tableBanks + " WHERE BankID = ?")
-								.params(bank.getID())
-								.errorHandler(forwardError(callback))
-								.run();
-						return query
-								.update("DELETE FROM " + tableCoOwnsBank + " WHERE BankID = ?")
-								.params(bank.getID())
-								.errorHandler(forwardError(callback))
-								.run()
-								.affectedRows();
-					}
-			);
-
-			plugin.debugf("Removed bank #%d and %d coowners from the database.", bank.getID(), removedCoowners);
+			query
+					.update("DELETE FROM " + tableBanks + " WHERE BankID = ?")
+					.params(bank.getID())
+					.errorHandler(forwardError(callback))
+					.run();
+			plugin.debugf("Removed bank #%d from the database.", bank.getID());
 			Callback.callSyncResult(callback);
 		});
 	}
@@ -1072,60 +1050,6 @@ public abstract class Database {
 			index++;
 		}
 
-	}
-
-	private LinkedList<Object> getAttributes(Account account) {
-		AccountLocation loc = account.getLocation();
-		Block v1 = loc.getMinimumBlock();
-		Block v2 = loc.getMaximumBlock();
-		return new LinkedList<>(Arrays.asList(
-				account.getID(),
-				account.getBank().getID(),
-				account.getRawName(),
-				account.getOwner().getUniqueId(),
-				account.getBalance(),
-				account.getPreviousBalance(),
-				account.getMultiplierStage(),
-				account.getDelayUntilNextPayout(),
-				account.getRemainingOfflinePayouts(),
-				loc.getWorld().getName(),
-				v1.getY(),
-				v1.getX(),
-				v1.getZ(),
-				v2.getX(),
-				v2.getZ()
-		));
-	}
-
-	private LinkedList<Object> getAttributes(Bank bank) {
-		BankRegion region = bank.getRegion();
-		return new LinkedList<>(Arrays.asList(
-				bank.getID(),
-				bank.getRawName(),
-				bank.getOwnerUUID(),
-				bank.countInterestDelayOffline().getCustomValue(),
-				bank.reimburseAccountCreation().getCustomValue(),
-				bank.payOnLowBalance().getCustomValue(),
-				bank.interestRate().getCustomValue(),
-				bank.accountCreationPrice().getCustomValue(),
-				bank.minimumBalance().getCustomValue(),
-				bank.lowBalanceFee().getCustomValue(),
-				bank.initialInterestDelay().getCustomValue(),
-				bank.allowedOfflinePayouts().getCustomValue(),
-				bank.offlineMultiplierDecrement().getCustomValue(),
-				bank.withdrawalMultiplierDecrement().getCustomValue(),
-				bank.playerBankAccountLimit().getCustomValue(),
-				bank.multipliers().getCustomValue(),
-				bank.interestPayoutTimes().getCustomValue(),
-				region.getWorld().getName(),
-				region.getMinX(),
-				region.getMaxX(),
-				region.getMinY(),
-				region.getMaxY(),
-				region.getMinZ(),
-				region.getMaxZ(),
-				region.isCuboid() ? null : region.getVertices()
-		));
 	}
 
 }

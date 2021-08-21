@@ -6,7 +6,7 @@ import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.gui.AccountRecoveryGUI;
@@ -36,7 +36,7 @@ public class AccountRecover extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to recover invalid accounts");
+        plugin.debugf("%s wants to recover invalid accounts", sender.getName());
         new AccountRecoveryGUI(plugin.getAccountRepository()::getMissingAccounts).open((Player) sender);
         return true;
     }
@@ -54,7 +54,7 @@ public class AccountRecover extends SubCommand {
         Bank bank;
         try {
             accountLocation.checkSpaceAbove();
-            bank = accountLocation.findBank();
+            bank = accountLocation.findBank(plugin.getBankRepository());
         } catch (ChestBlockedException | BankNotFoundException e) {
             p.sendMessage(e.getMessage());
             plugin.debug(e);
@@ -69,7 +69,7 @@ public class AccountRecover extends SubCommand {
             return;
         }
 
-        plugin.debugf("Account recovered (#%d)", toRecover.getID());
+        plugin.debugf("Recovered account #%d", toRecover.getID());
         toRecover.setLocation(accountLocation);
         toRecover.setBank(bank);
         plugin.getAccountRepository().removeMissingAccount(toRecover);

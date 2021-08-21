@@ -5,6 +5,7 @@ import com.monst.bankingplugin.config.values.*;
 import com.monst.bankingplugin.utils.Utils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -325,7 +326,6 @@ public final class Config {
 
 	/**
 	 * Constructs an ordered stream of all configuration values, including allow-override values, in this class.
-	 * Care must be taken not to call this method before the values have been initialized.
 	 * @return an ordered stream of all configuration values
 	 */
 	private static Stream<ConfigValue<?, ?>> stream() {
@@ -392,7 +392,7 @@ public final class Config {
 				enableStartupMessage,
 				languageFile,
 				databaseFile
-		);
+		).filter(Objects::nonNull);
 	}
 
 	public static List<String> matchPath(String input) {

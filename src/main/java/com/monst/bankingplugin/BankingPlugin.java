@@ -11,9 +11,12 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.config.LanguageConfig;
 import com.monst.bankingplugin.events.account.AccountInitializedEvent;
 import com.monst.bankingplugin.events.bank.BankInitializedEvent;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.ChestNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.DependencyNotFoundException;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardListener;
+import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.listeners.*;
 import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.repository.BankRepository;
@@ -28,7 +31,6 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -46,33 +48,30 @@ import java.util.stream.Collectors;
 
 public final class BankingPlugin extends JavaPlugin {
 
+	/*	Static Instance	 */
 	private static BankingPlugin instance;
 
+	/*	Plugin Configuration  */
 	private Config config;
 	private LanguageConfig languageConfig;
 
+	/*	Entity Utils  */
 	private AccountRepository accountRepository;
 	private BankRepository bankRepository;
-
-	private boolean isUpdateNeeded = false;
-	private String latestVersion = "";
-	private String downloadLink = "";
-	private PrintWriter debugWriter;
-
-	private Economy economy;
-	private Essentials essentials;
+	private InterestEventScheduler scheduler;
 	private Database database;
 
+	/*	Hard Dependencies  */
+	private Economy economy;
+	private Essentials essentials;
+
+	/*	Soft Dependencies  */
 	private Plugin worldGuard;
 	private GriefPrevention griefPrevention;
 	private WorldEditPlugin worldEdit;
 
-	public final String[] STARTUP_MESSAGE = new String[]{
-			ChatColor.GREEN + "   __ " + ChatColor.DARK_GREEN + "  __",
-			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |__)" + ChatColor.DARK_GREEN + "   BankingPlugin" + ChatColor.AQUA + " v" + getDescription().getVersion(),
-			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY  + "        by monst",
-			""
-	};
+	/*	Debug  */
+	private PrintWriter debugWriter;
 
 	/**
 	 * @return an instance of BankingPlugin
@@ -103,44 +102,23 @@ public final class BankingPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		if (Config.enableStartupMessage.get())
-			getServer().getConsoleSender().sendMessage(STARTUP_MESSAGE);
+		Config.enableStartupMessage.printIfEnabled();
 
-		if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
-			debug("Could not find plugin \"Vault\".");
-			getLogger().severe("Could not find plugin \"Vault\".");
+		try {
+			checkForDependencies();
+		} catch (DependencyNotFoundException e) {
+			debug(e);
+			getLogger().severe(e.getMessage());
 			getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
 
-		if (!setupEconomy()) {
-			debug("Could not find plugin \"Essentials\".");
-			getLogger().severe("Could not find plugin \"Essentials\".");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-
-		String serverVersion = Utils.getServerVersion();
-		switch (serverVersion) {
-			case "v1_15_R1":
-			case "v1_15_R2":
-			case "v1_16_R1":
-			case "v1_16_R2":
-			case "v1_16_R3":
-			case "v1_17_R1":
-				break;
-			default:
-				debug("Server version not officially supported: " + serverVersion + "!");
-				getLogger().warning("Server version not officially supported: " + serverVersion + "!");
-				getLogger().warning("Plugin may still work, but more errors are expected!");
-		}
-
+		checkServerVersion();
 		initializeRepositories();
 		loadExternalPlugins();
 		initializeCommands();
-		// checkForUpdates();
+//		checkForUpdates();
         registerListeners();
-        registerExternalListeners();
 		initializeDatabase();
 		enableMetrics();
 
@@ -152,7 +130,9 @@ public final class BankingPlugin extends JavaPlugin {
 
 		ClickType.clear();
 		PlayerCache.clear();
-		InterestEventScheduler.unscheduleAll();
+
+		if (scheduler != null)
+			scheduler.unscheduleAllInterestEvents();
 
 		if (bankRepository != null)
 			for (Bank bank : bankRepository.getAll())
@@ -165,21 +145,39 @@ public final class BankingPlugin extends JavaPlugin {
 			debugWriter.close();
 	}
 
-	/**
-     * Set up the Vault economy
-     * @return whether an economy plugin has been registered with Vault
-     */
-    private boolean setupEconomy() {
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-		if (rsp == null)
-            return false;
-		economy = rsp.getProvider();
-		return true;
-    }
+	private void checkForDependencies() throws DependencyNotFoundException {
+		Plugin vault = getServer().getPluginManager().getPlugin("Vault");
+		if (vault == null || !vault.isEnabled())
+			throw new DependencyNotFoundException("Vault");
+		Plugin essentials = getServer().getPluginManager().getPlugin("Essentials");
+		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+		if (essentials == null || rsp == null || !essentials.isEnabled() || !(essentials instanceof Essentials))
+			throw new DependencyNotFoundException("Essentials");
+		this.economy = rsp.getProvider();
+		this.essentials = (Essentials) essentials;
+	}
+
+	private void checkServerVersion() {
+		List<String> testedVersions = Arrays.asList(
+				"v1_15_R1",
+				"v1_15_R2",
+				"v1_16_R1",
+				"v1_16_R2",
+				"v1_16_R3",
+				"v1_17_R1"
+		);
+		String serverVersion = Utils.getServerVersion();
+		if (!testedVersions.contains(serverVersion)) {
+			debugf("Server version not officially supported: %s!", serverVersion);
+			getLogger().warning("Server version not officially supported: " + serverVersion + "!");
+			getLogger().warning("Plugin may still work, but more errors are expected!");
+		}
+	}
 
     private void initializeRepositories() {
 		accountRepository = new AccountRepository(this);
 		bankRepository = new BankRepository(this);
+		scheduler = new InterestEventScheduler(this);
 	}
 
     private void initializeCommands() {
@@ -201,10 +199,6 @@ public final class BankingPlugin extends JavaPlugin {
 		if (worldEditPlugin instanceof WorldEditPlugin)
 			worldEdit = (WorldEditPlugin) worldEditPlugin;
 
-		Plugin essentialsPlugin = Bukkit.getServer().getPluginManager().getPlugin("Essentials");
-		if (essentialsPlugin instanceof Essentials)
-			essentials = (Essentials) essentialsPlugin;
-
 		if (isWorldGuardIntegrated())
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
@@ -213,37 +207,16 @@ public final class BankingPlugin extends JavaPlugin {
     // DO NOT USE
 	@SuppressWarnings("unused")
 	private void checkForUpdates() {
-        if (!Config.enableUpdateChecker.get()) {
+        if (!Config.enableUpdateChecker.get())
             return;
-        }
-
         async(() -> {
 			UpdateChecker uc = new UpdateChecker(BankingPlugin.this);
 			Result result = uc.check();
 
-			switch (result) {
-				case TRUE:
-					latestVersion = uc.getVersion();
-					downloadLink = uc.getLink();
-					isUpdateNeeded = true;
-
-					getLogger().warning(String.format("Version %s is available! You are running version %s.",
-							latestVersion, getDescription().getVersion()));
-					break;
-
-				case FALSE:
-					latestVersion = "";
-					downloadLink = "";
-					isUpdateNeeded = false;
-					break;
-
-				case ERROR:
-					latestVersion = "";
-					downloadLink = "";
-					isUpdateNeeded = false;
-					getLogger().severe("An error occurred while checking for updates.");
-					break;
-			}
+			if (result == Result.TRUE)
+				getLogger().warning(Message.UPDATE_AVAILABLE.with(Placeholder.VERSION).as(uc.getVersion()).translate());
+			else if (result == Result.ERROR)
+				getLogger().severe("An error occurred while checking for updates.");
         });
     }
 
@@ -265,19 +238,12 @@ public final class BankingPlugin extends JavaPlugin {
     	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
 		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
 		getServer().getPluginManager().registerEvents(new MenuFunctionListener(), this); // Third-party GUI listener
-	}
 
-	/**
-	 * Register listeners specific to external plugins that may or may not be enabled.
-	 * @see GriefPreventionListener
-	 * @see WorldGuardListener
-	 */
-	private void registerExternalListeners() {
 		if (isGriefPreventionIntegrated())
 			getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
 		if (isWorldGuardIntegrated())
 			getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);
-    }
+	}
 
 	/**
 	 * Initialize the {@link Database}
@@ -321,7 +287,7 @@ public final class BankingPlugin extends JavaPlugin {
 
 					for (Bank bank : bankRepository.getAll()) {
 						bankRepository.remove(bank, false);
-						debugf("Removed bank (#%d)", bank.getID());
+						debugf("Removed bank #%d", bank.getID());
 					}
 
 					getDatabase().getBanksAndAccounts(Callback.of(
@@ -447,24 +413,31 @@ public final class BankingPlugin extends JavaPlugin {
 	}
 
 	/**
-	 * @return BankingPlugin's {@link Database}
-	 */
-	public Database getDatabase() {
-		return database;
-	}
-
-	/**
-	 * @return the instance of {@link AccountRepository}
+	 * @return the plugin {@link AccountRepository}
 	 */
 	public AccountRepository getAccountRepository() {
 		return accountRepository;
 	}
 
 	/**
-	 * @return the instance of {@link BankRepository}
+	 * @return the plugin {@link BankRepository}
 	 */
 	public BankRepository getBankRepository() {
 		return bankRepository;
+	}
+
+	/**
+	 * @return the plugin {@link InterestEventScheduler}
+	 */
+	public InterestEventScheduler getScheduler() {
+		return scheduler;
+	}
+
+	/**
+	 * @return the plugin {@link Database}
+	 */
+	public Database getDatabase() {
+		return database;
 	}
 
 	/**

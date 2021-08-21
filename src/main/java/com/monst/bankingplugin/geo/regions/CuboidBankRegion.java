@@ -2,12 +2,11 @@ package com.monst.bankingplugin.geo.regions;
 
 import com.monst.bankingplugin.geo.Vector2D;
 import com.monst.bankingplugin.geo.Vector3D;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class represents a region of space in the shape of a rectangular prism. It is defined by a {@link World} and
@@ -86,9 +85,7 @@ public class CuboidBankRegion extends BankRegion {
 
 	@Override
 	public long getVolume() {
-		return (long) (getMaxX() - getMinX() + 1)
-			 		* (getMaxY() - getMinY() + 1)
-			 		* (getMaxZ() - getMinZ() + 1);
+		return (long) getLength() * getWidth() * getHeight();
 	}
 
 	@Override
@@ -111,18 +108,18 @@ public class CuboidBankRegion extends BankRegion {
 	}
 
 	@Override
-	public Vector2D[] getVertices() {
-		Vector2D[] vertices = new Vector2D[4];
-		int i = 0;
+	public List<Location> getCorners() {
+		List<Location> vertices = new ArrayList<>();
 		for (int x : new int[] { getMinX(), getMaxX() })
-			for (int z : new int[] { getMinZ(), getMaxZ() })
-				vertices[i++] = new Vector2D(x, z);
+			for (int y : new int[] { getMinY(), getMaxY() })
+				for (int z : new int[] { getMinZ(), getMaxZ() })
+					vertices.add(new Location(world, x, y, z));
 		return vertices;
 	}
 
 	@Override
 	public boolean contains(int x, int z) {
-		return !isDisjunctX(x, x) && !isDisjunctZ(z, z);
+		return overlapsX(x, x) && overlapsZ(z, z);
 	}
 
 	@Override

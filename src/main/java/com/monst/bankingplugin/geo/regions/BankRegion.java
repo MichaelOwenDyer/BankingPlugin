@@ -39,7 +39,7 @@ public abstract class BankRegion {
 	public abstract Block getCenterPoint();
 
 	public Location getTeleportLocation() {
-		return Utils.getSafeBlock(getCenterPoint()).getLocation().add(0.5, 0,0.5);
+		return Utils.getSafeBlock(getCenterPoint()).getLocation().add(0.5, 0, 0.5);
 	}
 
 	public Location getHighestTeleportLocation() {
@@ -83,6 +83,14 @@ public abstract class BankRegion {
 		return world;
 	}
 
+	public int getLength() {
+		return getMaxX() - getMinX() + 1;
+	}
+
+	public int getWidth() {
+		return getMaxZ() - getMinZ() + 1;
+	}
+
 	public int getHeight() {
 		return getMaxY() - getMinY() + 1;
 	}
@@ -107,26 +115,26 @@ public abstract class BankRegion {
 	 */
 	public abstract boolean overlaps(BankRegion region);
 
+	public final boolean overlapsX(int minX, int maxX) {
+		return maxX >= getMinX() && minX <= getMaxX();
+	}
+
+	public final boolean overlapsY(int minY, int maxY) {
+		return maxY >= getMinY() && minY <= getMaxY();
+	}
+
+	public final boolean overlapsZ(int minZ, int maxZ) {
+		return maxZ >= getMinZ() && minZ <= getMaxZ();
+	}
+
 	/**
 	 * @param region The other region
 	 * @return whether this region *cannot* overlap with the other region
 	 */
 	public final boolean isDisjunct(BankRegion region) {
-		return  isDisjunctX(region.getMinX(), region.getMaxX()) ||
-				isDisjunctY(region.getMinY(), region.getMaxY()) ||
-				isDisjunctZ(region.getMinZ(), region.getMaxZ());
-	}
-
-	public final boolean isDisjunctX(int minX, int maxX) {
-		return getMinX() > maxX || getMaxX() < minX;
-	}
-
-	public final boolean isDisjunctY(int minY, int maxY) {
-		return getMinY() > maxY || getMaxY() < minY;
-	}
-
-	public final boolean isDisjunctZ(int minZ, int maxZ) {
-		return getMinZ() > maxZ || getMaxZ() < minZ;
+		return  !overlapsX(region.getMinX(), region.getMaxX()) &&
+				!overlapsY(region.getMinY(), region.getMaxY()) &&
+				!overlapsZ(region.getMinZ(), region.getMaxZ());
 	}
 
 	public boolean contains(AccountLocation chest) {
@@ -157,7 +165,7 @@ public abstract class BankRegion {
 	 * @return Whether or not the set of coordinates is contained
 	 */
 	public boolean contains(int x, int y, int z) {
-		return y <= getMaxY() && y >= getMinY() && contains(x, z);
+		return overlapsY(y, y) && contains(x, z);
 	}
 
 	/**
@@ -189,27 +197,11 @@ public abstract class BankRegion {
 	}
 
 	/**
-	 * Gets an ordered list of {@link Vector2D}s containing each vertex of this region.
-	 * The order of the elements is region-specific.
-	 * @return a {@link List<Vector2D>} of all vertices of the region.
-	 */
-	public abstract Vector2D[] getVertices();
-
-	/**
 	 * Get all (upper and lower) corner {@link Block}s of this region.
-	 * This will return two blocks per {@link Vector2D} from {@link #getVertices()},
-	 * one at {@link #getMinY()} and the other at {@link #getMaxY()}.
 	 *
 	 * @return a {@link List<Block>} representing all corner {@link Block}s.
 	 */
-	public List<Location> getCorners() {
-		List<Location> vertices = new LinkedList<>();
-		for (Vector2D bv : getVertices()) {
-			vertices.add(new Location(world, bv.getX(), getMinY(), bv.getZ()));
-			vertices.add(new Location(world, bv.getX(), getMaxY(), bv.getZ()));
-		}
-		return vertices;
-	}
+	public abstract List<Location> getCorners();
 
 	public boolean isCuboid() {
 		return false;

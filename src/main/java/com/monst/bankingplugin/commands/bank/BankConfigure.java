@@ -112,19 +112,15 @@ public class BankConfigure extends SubCommand.BankSubCommand {
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
-        else if (args.length == 2 && plugin.getBankRepository().getByIdentifier(args[0]) != null) {
-            return BankField.streamConfigurable()
-                    .map(BankField::toString)
-                    .filter(name -> Utils.containsIgnoreCase(name, args[1]))
-                    .sorted()
-                    .collect(Collectors.toList());
-        } else if (args.length == 3) {
-            Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
-            BankField field = BankField.getByName(args[1]);
-            if (bank != null && field != null)
-                return Collections.singletonList(bank.get(field).getFormatted());
-        }
-        return Collections.emptyList();
+        Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
+        if (bank == null)
+            return Collections.emptyList();
+        if (args.length == 2)
+            return BankField.matchConfigurablePath(args[1]);
+        BankField field = BankField.getByName(args[1]);
+        if (field == null || args.length > 3)
+            return Collections.emptyList();
+        return Collections.singletonList(bank.get(field).getFormatted());
     }
 
 }

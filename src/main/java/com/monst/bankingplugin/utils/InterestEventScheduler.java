@@ -16,25 +16,32 @@ import java.util.*;
  */
 public class InterestEventScheduler {
 
-    private static final BankingPlugin PLUGIN = BankingPlugin.getInstance();
+    private final BankingPlugin plugin;
 
-    // Maps times to the banks that pay interest at that time
-    private static final Map<LocalTime, Set<Bank>> TIME_BANK_MAP = new HashMap<>();
+    // Map times to the banks that pay interest at that time
+    private final Map<LocalTime, Set<Bank>> timeBankMap;
 
-    // Maps banks to the times at which they pay interest
-    private static final Map<Bank, Set<LocalTime>> BANK_TIME_MAP = new HashMap<>();
+    // Map banks to the times at which they pay interest
+    private final Map<Bank, Set<LocalTime>> bankTimeMap;
 
-    // Maps times to the BukkitTask IDs so they can be cancelled later
-    private static final Map<LocalTime, Integer> PAYOUT_TASK_IDS = new HashMap<>();
+    // Map times to the BukkitTask IDs, so they can be cancelled later
+    private final Map<LocalTime, Integer> payoutTaskIds;
+
+    public InterestEventScheduler(BankingPlugin plugin) {
+        this.plugin = plugin;
+        this.timeBankMap = new HashMap<>();
+        this.bankTimeMap = new HashMap<>();
+        this.payoutTaskIds = new HashMap<>();
+    }
 
     /**
      * Schedule the {@link InterestEvent}s of all banks on the server.
      */
-    public static void scheduleAllBanks() {
-        if (!PLUGIN.isEnabled())
+    public void scheduleAllInterestEvents() {
+        if (!plugin.isEnabled())
             return;
-        PLUGIN.debug("Scheduling all interest payments...");
-        PLUGIN.getBankRepository().getAll().forEach(InterestEventScheduler::scheduleBank);
+        plugin.debug("Scheduling all interest payments...");
+        plugin.getBankRepository().getAll().forEach(this::scheduleInterestEvents);
     }
 
     /**
@@ -46,72 +53,72 @@ public class InterestEventScheduler {
      * @see InterestEvent
      * @see InterestEventListener
      */
-    public static void scheduleBank(Bank bank) {
-        if (!PLUGIN.isEnabled() || bank == null)
+    public void scheduleInterestEvents(Bank bank) {
+        if (!plugin.isEnabled() || bank == null)
             return;
-        PLUGIN.debugf("Scheduling interest payments of bank #%d.", bank.getID());
+        plugin.debugf("Scheduling interest payments of bank #%d.", bank.getID());
 
         Set<LocalTime> bankPayoutTimes = bank.interestPayoutTimes().get(); // Get times at which bank pays out
-        BANK_TIME_MAP.putIfAbsent(bank, new HashSet<>()); // Ensure the bank has a time set
-        BANK_TIME_MAP.get(bank).addAll(bankPayoutTimes); // Add all payout times to the bank's time set
+        bankTimeMap.putIfAbsent(bank, new HashSet<>()); // Ensure the bank has a time set
+        bankTimeMap.get(bank).addAll(bankPayoutTimes); // Add all payout times to the bank's time set
 
         for (LocalTime time : bankPayoutTimes) {
-            if (TIME_BANK_MAP.putIfAbsent(time, new HashSet<>()) == null) // No other bank has a payout scheduled at this time already
-                PAYOUT_TASK_IDS.put(time, scheduleRepeatingEventAt(time)); // Therefore, schedule a new payout task
+            if (timeBankMap.putIfAbsent(time, new HashSet<>()) == null) // No other bank has a payout scheduled at this time already
+                payoutTaskIds.put(time, scheduleRepeatingEventAt(time)); // Therefore, schedule a new payout task
             else
-                PLUGIN.debugf("Bank #%d has scheduled an interest payment at %s, task at this time is already scheduled.", bank.getID(), time.toString());
-            TIME_BANK_MAP.get(time).add(bank); // Add the bank to this time's bank set
+                plugin.debugf("Bank #%d has scheduled an interest payment at %s, task at this time is already scheduled.", bank.getID(), time.toString());
+            timeBankMap.get(time).add(bank); // Add the bank to this time's bank set
         }
 
         Set<LocalTime> removedTimes = new HashSet<>(); // Times at which the bank no longer has a payout
-        for (LocalTime time : BANK_TIME_MAP.get(bank))
+        for (LocalTime time : bankTimeMap.get(bank))
             if (!bankPayoutTimes.contains(time)) // The bank previously had a payout at this time, but no longer
                 removedTimes.add(time); // Add it to be removed
-        BANK_TIME_MAP.get(bank).removeAll(removedTimes); // Remove these times from that bank's time set
+        bankTimeMap.get(bank).removeAll(removedTimes); // Remove these times from that bank's time set
 
         Set<LocalTime> emptyTimes = new HashSet<>(); // Times at which no bank has a payout anymore
         for (LocalTime time : removedTimes) {
-            PLUGIN.debugf("Bank #%d no longer has an interest payment scheduled at %s.", bank.getID(), time.toString());
-            Set<Bank> set = TIME_BANK_MAP.get(time); // See which banks are scheduled at this time
+            plugin.debugf("Bank #%d no longer has an interest payment scheduled at %s.", bank.getID(), time.toString());
+            Set<Bank> set = timeBankMap.get(time); // See which banks are scheduled at this time
             set.remove(bank); // This bank no longer pays out at this time; remove it from the set
             if (set.isEmpty()) // Bank set is empty; time is no longer used by any bank
                 emptyTimes.add(time); // Add it to be unscheduled and the entry removed
         }
 
-        emptyTimes.forEach(TIME_BANK_MAP::remove); // Remove entries for empty times
-        if (PLUGIN.isEnabled())
-            emptyTimes.forEach(InterestEventScheduler::unscheduleRepeatingEventAt); // Unschedule empty times' payout tasks
+        emptyTimes.forEach(timeBankMap::remove); // Remove entries for empty times
+        if (plugin.isEnabled())
+            emptyTimes.forEach(this::unscheduleRepeatingEventAt); // Unschedule empty times' payout tasks
 
     }
 
     /**
      * Removes all interest payments associated with the specified bank.
-     * Times which are not used by any bank anymore will be unscheduled.
+     * Times which are no longer used by any bank will be unscheduled.
      *
      * @param bank bank to remove interest payments from
      */
-    public static void unscheduleAll(Bank bank) {
+    public void unscheduleAllInterestEvents(Bank bank) {
         if (bank == null)
             return;
-        PLUGIN.debugf("Unscheduling interest payments of bank #%d.", bank.getID());
+        plugin.debugf("Unscheduling interest payments of bank #%d.", bank.getID());
 
-        BANK_TIME_MAP.remove(bank);
+        bankTimeMap.remove(bank);
         Set<LocalTime> emptyTimes = new HashSet<>();
-        TIME_BANK_MAP.forEach((time, set) -> {
+        timeBankMap.forEach((time, set) -> {
             set.remove(bank);
             if (set.isEmpty())
                 emptyTimes.add(time);
         });
-        emptyTimes.forEach(TIME_BANK_MAP::remove);
-        if (PLUGIN.isEnabled())
-            emptyTimes.forEach(InterestEventScheduler::unscheduleRepeatingEventAt);
+        emptyTimes.forEach(timeBankMap::remove);
+        if (plugin.isEnabled())
+            emptyTimes.forEach(this::unscheduleRepeatingEventAt);
     }
 
-    public static void unscheduleAll() {
-        PAYOUT_TASK_IDS.values().forEach(Bukkit.getScheduler()::cancelTask);
-        PAYOUT_TASK_IDS.clear();
-        TIME_BANK_MAP.clear();
-        BANK_TIME_MAP.clear();
+    public void unscheduleAllInterestEvents() {
+        payoutTaskIds.values().forEach(Bukkit.getScheduler()::cancelTask);
+        payoutTaskIds.clear();
+        timeBankMap.clear();
+        bankTimeMap.clear();
     }
 
     /**
@@ -121,7 +128,7 @@ public class InterestEventScheduler {
      * @param time the time to be scheduled
      * @return the ID of the scheduled task, or -1 if the task was not scheduled
      */
-    private static int scheduleRepeatingEventAt(LocalTime time) {
+    private int scheduleRepeatingEventAt(LocalTime time) {
         // 24 hours/day * 60 minutes/hour * 60 seconds/minute *  20 ticks/second = 1728000 ticks/day
         final long ticksInADay = 1728000L;
 
@@ -140,21 +147,21 @@ public class InterestEventScheduler {
 
         // Schedule task starting at next instance, repeating daily, where an InterestEvent is fired with the scheduled banks
         int id = Bukkit.getScheduler()
-                .scheduleSyncRepeatingTask(PLUGIN, new InterestEvent(Bukkit.getConsoleSender(), getScheduledBanks(time))::fire, ticks, ticksInADay);
-        PLUGIN.debugf((id != -1 ? "Scheduled" : "Failed to schedule") + " interest payment at %s.", time.toString());
+                .scheduleSyncRepeatingTask(plugin, () -> new InterestEvent(Bukkit.getConsoleSender(), getScheduledBanks(time)).fire(), ticks, ticksInADay);
+        plugin.debugf((id != -1 ? "Scheduled" : "Failed to schedule") + " interest payment at %s.", time);
         return id;
     }
 
     /**
-     * Unschedules a repeating task which is no longer being used by any bank.
+     * Removes a repeating task which is no longer being used by any bank.
      * @param time the time to unschedule
      */
-    private static void unscheduleRepeatingEventAt(LocalTime time) {
-        if (!PAYOUT_TASK_IDS.containsKey(time))
+    private void unscheduleRepeatingEventAt(LocalTime time) {
+        if (!payoutTaskIds.containsKey(time))
             return;
-        Bukkit.getScheduler().cancelTask(PAYOUT_TASK_IDS.get(time));
-        PAYOUT_TASK_IDS.remove(time);
-        PLUGIN.debugf("Unscheduled interest payment at %s.", time.toString());
+        Bukkit.getScheduler().cancelTask(payoutTaskIds.get(time));
+        payoutTaskIds.remove(time);
+        plugin.debugf("Unscheduled interest payment at %s.", time.toString());
     }
 
     /**
@@ -162,8 +169,8 @@ public class InterestEventScheduler {
      * @param time the specified time
      * @return a {@link Set} of banks.
      */
-    private static Set<Bank> getScheduledBanks(LocalTime time) {
-        return Optional.ofNullable(TIME_BANK_MAP.get(time)).orElse(Collections.emptySet());
+    private Set<Bank> getScheduledBanks(LocalTime time) {
+        return Optional.ofNullable(timeBankMap.get(time)).orElse(Collections.emptySet());
     }
 
 }

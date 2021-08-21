@@ -6,7 +6,6 @@ import com.monst.bankingplugin.banking.BankField;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.InterestEventScheduler;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.block.Block;
 
@@ -79,10 +78,10 @@ public class BankRepository implements Repository<Bank, BankField> {
 	 */
     @Override
 	public void add(Bank bank, boolean addToDatabase, Callback<Integer> callback) {
-		plugin.debug("Adding/updating bank... (#" + bank.getID() + ")");
+		plugin.debugf("Adding/updating bank #%d...", bank.getID());
 
 		bankMap.put(bank);
-		InterestEventScheduler.scheduleBank(bank);
+		plugin.getScheduler().scheduleInterestEvents(bank);
 
         if (addToDatabase)
 			plugin.getDatabase().addBank(bank, callback);
@@ -104,6 +103,7 @@ public class BankRepository implements Repository<Bank, BankField> {
 		fields.addAll(Arrays.asList(fieldArray));
 
 		if (fields.remove(BankField.REGION)) {
+			BankRegion region = bank.getRegion();
 			fields.add(BankField.WORLD);
 			fields.add(BankField.MIN_X);
 			fields.add(BankField.MAX_X);
@@ -111,7 +111,14 @@ public class BankRepository implements Repository<Bank, BankField> {
 			fields.add(BankField.MAX_Y);
 			fields.add(BankField.MIN_Z);
 			fields.add(BankField.MAX_Z);
-			fields.add(BankField.VERTICES);
+			if (region.isPolygonal()) {
+				fields.add(BankField.POLYGON_VERTICES);
+			} else if (region.isCylindrical()) {
+				fields.add(BankField.CYLINDER_CENTER_X);
+				fields.add(BankField.CYLINDER_CENTER_Z);
+				fields.add(BankField.CYLINDER_RADIUS_X);
+				fields.add(BankField.CYLINDER_RADIUS_Z);
+			}
 			bankMap.put(bank);
 		}
 		plugin.debugf("Updating the following fields of bank #%d in the database: " + fields, bank.getID());
@@ -133,7 +140,7 @@ public class BankRepository implements Repository<Bank, BankField> {
 		bankMap.remove(bank);
 		// Accounts will be deleted from the database automatically if the bank is
 		bank.getAccounts().forEach(account -> plugin.getAccountRepository().remove(account, false));
-		InterestEventScheduler.unscheduleAll(bank);
+		plugin.getScheduler().unscheduleAllInterestEvents(bank);
 
         if (removeFromDatabase)
 			plugin.getDatabase().removeBank(bank, callback);

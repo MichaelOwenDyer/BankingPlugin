@@ -1,10 +1,9 @@
 package com.monst.bankingplugin.geo.locations;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
-import com.monst.bankingplugin.exceptions.ChestNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.ChestNotFoundException;
 import com.monst.bankingplugin.repository.BankRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
@@ -20,8 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 public abstract class AccountLocation implements Iterable<Block> {
-
-    private static final BankRepository BANK_REPO = BankingPlugin.getInstance().getBankRepository();
 
     public static AccountLocation from(InventoryHolder ih) {
         if (ih instanceof DoubleChest) {
@@ -56,6 +53,10 @@ public abstract class AccountLocation implements Iterable<Block> {
         return b1.getWorld();
     }
 
+    public int getY() {
+        return b1.getY();
+    }
+
     public abstract InventoryHolder findChest() throws ChestNotFoundException;
 
     InventoryHolder getChestAt(Block b) {
@@ -76,8 +77,8 @@ public abstract class AccountLocation implements Iterable<Block> {
                 throw new ChestBlockedException();
     }
 
-    public Bank findBank() throws BankNotFoundException {
-        return Optional.ofNullable(BANK_REPO.getAt(this)).orElseThrow(BankNotFoundException::new);
+    public Bank findBank(BankRepository repo) throws BankNotFoundException {
+        return Optional.ofNullable(repo.getAt(this)).orElseThrow(BankNotFoundException::new);
     }
 
     public boolean contains(Block b) {
@@ -87,10 +88,10 @@ public abstract class AccountLocation implements Iterable<Block> {
         return false;
     }
 
+    public abstract Location getTeleportLocation();
+
     public abstract Iterator<Block> iterator();
 
     public abstract byte getSize();
-
-    public abstract Location getTeleportLocation();
 
 }

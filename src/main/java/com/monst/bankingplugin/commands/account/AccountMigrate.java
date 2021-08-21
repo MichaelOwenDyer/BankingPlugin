@@ -7,7 +7,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
-import com.monst.bankingplugin.exceptions.BankNotFoundException;
+import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.Message;
@@ -39,11 +39,11 @@ public class AccountMigrate extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
-        plugin.debug(p.getName() + " wants to migrate an account");
+        Player p = (Player) sender;
+        plugin.debugf("%s wants to migrate an account", p.getName());
 
         if (!p.hasPermission(Permissions.ACCOUNT_MIGRATE)) {
-            plugin.debug(p.getName() + " does not have permission to migrate an account");
+            plugin.debugf("%s does not have permission to migrate an account", p.getName());
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE.translate());
             return true;
         }
@@ -57,7 +57,7 @@ public class AccountMigrate extends SubCommand {
 
         p.sendMessage(Message.CLICK_ACCOUNT_MIGRATE.translate());
         ClickType.setMigrateClickType(p);
-        plugin.debug(p.getName() + " is migrating an account");
+        plugin.debugf("%s is migrating an account", p.getName());
         return true;
     }
 
@@ -97,7 +97,7 @@ public class AccountMigrate extends SubCommand {
         Bank newBank;
         try {
             newAccountLocation.checkSpaceAbove();
-            newBank = newAccountLocation.findBank();
+            newBank = newAccountLocation.findBank(plugin.getBankRepository());
         } catch (ChestBlockedException | BankNotFoundException e) {
             p.sendMessage(e.getMessage());
             plugin.debug(e);

@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.banking.BankingEntity;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -14,12 +13,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class SinglePageGUI<Entity extends BankingEntity> extends GUI<Entity> {
+public abstract class SinglePageGUI<T> extends GUI<T> {
 
-    final Entity guiSubject;
+    final T guiSubject;
     Menu menu;
 
-    SinglePageGUI(Entity guiSubject) {
+    SinglePageGUI(T guiSubject) {
         this.guiSubject = guiSubject;
     }
 
@@ -62,7 +61,7 @@ public abstract class SinglePageGUI<Entity extends BankingEntity> extends GUI<En
 
     @Override
     Observable getSubject() {
-        return guiSubject;
+        return guiSubject instanceof Observable ? (Observable) guiSubject : null;
     }
 
     abstract Menu createMenu();

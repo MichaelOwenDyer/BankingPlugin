@@ -34,10 +34,10 @@ public class BankRename extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " is renaming a bank");
-
         if (args.length < 2)
             return false;
+        
+        plugin.debugf("%s is renaming a bank", sender.getName());
 
         Bank bank;
         StringBuilder sb;
@@ -50,7 +50,7 @@ public class BankRename extends SubCommand.BankSubCommand {
             }
             bank = plugin.getBankRepository().getAt(((Player) sender).getLocation().getBlock());
             if (bank == null) {
-                plugin.debug(sender.getName() + " was not standing in a bank");
+                plugin.debugf("%s was not standing in a bank", sender.getName());
                 sender.sendMessage(Message.MUST_STAND_IN_BANK.translate());
                 return true;
             }
@@ -69,13 +69,13 @@ public class BankRename extends SubCommand.BankSubCommand {
         }
 
         if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
-            plugin.debug(sender.getName() + " does not have permission to change the name of an admin bank");
+            plugin.debugf("%s does not have permission to change the name of an admin bank", sender.getName());
             sender.sendMessage(Message.NO_PERMISSION_BANK_SET_ADMIN.translate());
             return true;
         }
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
                 || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
-            plugin.debug(sender.getName() + " does not have permission to change the name of another player's bank");
+            plugin.debugf("%s does not have permission to change the name of another player's bank", sender.getName());
             sender.sendMessage(Message.NO_PERMISSION_BANK_SET_OTHER.translate());
             return true;
         }
@@ -99,10 +99,10 @@ public class BankRename extends SubCommand.BankSubCommand {
             return true;
         }
 
-        plugin.debug(sender.getName() + " is changing the name of bank " + bank.getName() + " to " + newName);
+        plugin.debugf("%s is changing the name of bank #%d to %s", sender.getName(), bank.getID(), newName);
         sender.sendMessage(Message.NAME_CHANGED.with(Placeholder.BANK_NAME).as(newName).translate());
         bank.setName(newName);
-        plugin.getBankRepository().update(bank, BankField.NAME); // Update bank in database
+        plugin.getBankRepository().update(bank, BankField.NAME);
         return true;
     }
 

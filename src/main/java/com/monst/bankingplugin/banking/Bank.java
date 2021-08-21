@@ -7,7 +7,6 @@ import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
@@ -16,7 +15,6 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Bank extends BankingEntity {
 
@@ -135,7 +133,7 @@ public class Bank extends BankingEntity {
 	}
 
 	/**
-	 * @return a {@link Collection<Account>} containing all accounts at this bank
+	 * @return a {@link Set<Account>} containing all accounts at this bank
 	 */
 	public Set<Account> getAccounts() {
 		return new HashSet<>(accounts);
@@ -214,7 +212,7 @@ public class Bank extends BankingEntity {
 	public Set<OfflinePlayer> getCustomers() {
 		return accounts.stream()
 				.map(Account::getTrustedPlayers)
-				.flatMap(Collection::stream)
+				.flatMap(Set::stream)
 				.collect(Collectors.toSet());
 	}
 
@@ -391,28 +389,6 @@ public class Bank extends BankingEntity {
 
 	public void notifyAccountObservers() {
 		accounts.forEach(Account::notifyObservers);
-	}
-
-	@Override
-	public String toConsolePrintout() {
-		return Stream.of(
-				"\"" + ChatColor.RED + getColorizedName() + ChatColor.GRAY + "\" (#" + getID() + ")",
-				"Owner: " + getOwnerDisplayName(),
-				"Co-owners: " + Utils.map(getCoOwners(), OfflinePlayer::getName),
-				"Interest rate: " + ChatColor.GREEN + interestRate().getFormatted(),
-				"Multipliers: " + Utils.map(Utils.collapseList(multipliers().get()),
-						list -> "" + list.get(0) + (list.size() > 1 ? "(x" + list.size() + ")" : "")).toString(),
-				"Account creation price: " + ChatColor.GREEN + accountCreationPrice().getFormatted(),
-				"Offline payouts: " + ChatColor.AQUA + allowedOfflinePayouts().getFormatted(),
-				"Initial payout delay: " + ChatColor.AQUA + initialInterestDelay().getFormatted(),
-				"Minimum balance: " + ChatColor.GREEN + minimumBalance().getFormatted(),
-						" (" + ChatColor.RED + lowBalanceFee().getFormatted() + ChatColor.GRAY + " fee)",
-				"Accounts: " + ChatColor.AQUA + accounts.size(),
-				"Total account value: " + Utils.formatAndColorize(getTotalValue()),
-				"Average account value: " + Utils.formatAndColorize(getAverageValue()),
-				"Equality score: " + getGiniCoefficient(),
-				"Location: " + ChatColor.AQUA + getRegion().getCoordinates()
-		).map(s -> ChatColor.GRAY + s).collect(Collectors.joining(", "));
 	}
 
 	@Override

@@ -113,7 +113,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
         long volume = bankRegion.getVolume();
         long volumeLimit = Utils.getBankVolumeLimit(p);
         if (!isAdminBank && volumeLimit >= 0 && volume > volumeLimit) {
-            plugin.debug("Bank is too large (" + volume + " blocks, limit: " + volumeLimit + ")");
+            plugin.debugf("Bank is too large (%d blocks, limit: %d)", volume, volumeLimit);
             p.sendMessage(Message.BANK_SELECTION_TOO_LARGE
                     .with(Placeholder.BANK_SIZE).as(volume)
                     .and(Placeholder.MAXIMUM).as(volumeLimit)
@@ -122,7 +122,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
             return true;
         }
         if (!isAdminBank && volume < Config.minimumBankVolume.get()) {
-            plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume.get() + ")");
+            plugin.debugf("Bank is too small (%d blocks, minimum: %d)", volume, Config.minimumBankVolume.get());
             p.sendMessage(Message.BANK_SELECTION_TOO_SMALL
                     .with(Placeholder.BANK_SIZE).as(volume)
                     .and(Placeholder.MINIMUM).as(Config.minimumBankVolume.get())
@@ -173,7 +173,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
         }
 
         plugin.getBankRepository().add(bank, true);
-        plugin.debug(p.getName() + " has created a new " + (bank.isAdminBank() ? "admin " : "") + "bank.");
+        plugin.debugf("%s has created a new%s bank.", p.getName(), bank.isAdminBank() ? "admin " : "");
         p.sendMessage(Message.BANK_CREATED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
         return true;
     }

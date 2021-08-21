@@ -38,13 +38,11 @@ public class AccountConfigure extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player))
-            return true;
         Player executor = (Player) sender;
-        plugin.debug(executor.getName() + " wants to configure an account");
+        plugin.debugf("%s wants to configure an account", executor.getName());
 
         if (!executor.hasPermission(Permissions.ACCOUNT_CONFIGURE)) {
-            plugin.debug(executor.getName() + " does not have permission to configure an account");
+            plugin.debugf("%s does not have permission to configure an account", executor.getName());
             executor.sendMessage(Message.NO_PERMISSION_ACCOUNT_CONFIGURE.translate());
             return true;
         }
@@ -55,7 +53,7 @@ public class AccountConfigure extends SubCommand {
         String property = args[1];
         AccountField field = AccountField.getByName(property);
         if (field == null) {
-            executor.sendMessage(Message.NOT_A_PROPERTY.with(Placeholder.INPUT).as(args[1]).translate());
+            executor.sendMessage(Message.NOT_A_PROPERTY.with(Placeholder.INPUT).as(property).translate());
             return true;
         }
 

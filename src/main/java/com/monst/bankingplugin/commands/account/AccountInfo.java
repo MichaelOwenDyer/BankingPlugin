@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
 public class AccountInfo extends SubCommand {
 
     AccountInfo(BankingPlugin plugin) {
-		super(plugin, "info", false);
+		super(plugin, "info", true);
     }
 
     @Override
@@ -25,59 +25,51 @@ public class AccountInfo extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to retrieve account info");
+        plugin.debugf("%s wants to open an account GUI", sender.getName());
+        Player player = (Player) sender;
 
         if (args.length > 1) {
             try {
                 int id = Integer.parseInt(args[1]);
                 Account account = plugin.getAccountRepository().getByID(id);
                 if (account == null) {
-                    sender.sendMessage(Message.ACCOUNT_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+                    player.sendMessage(Message.ACCOUNT_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
                     return true;
                 }
 
-                plugin.debugf("%s is displaying info for account #%d", sender.getName(), id);
+                plugin.debugf("%s is viewing the GUI of account #%d", player.getName(), id);
 
-                AccountInfoEvent event = new AccountInfoEvent(sender, account);
+                AccountInfoEvent event = new AccountInfoEvent(player, account);
                 event.fire();
                 if (event.isCancelled()) {
                     plugin.debug("Account info event cancelled");
                     return true;
                 }
 
-                if (sender instanceof Player)
-                    new AccountGUI(account).open((Player) sender);
-                else
-                    sender.sendMessage(account.toConsolePrintout());
+                new AccountGUI(account).open(player);
                 return true;
             } catch (NumberFormatException ignored) {}
         }
 
-        if (!(sender instanceof Player)) {
-            plugin.debug(sender.getName() + " is not a player");
-            sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
-            return true;
-        }
-
-        AccountInfoCommandEvent event = new AccountInfoCommandEvent((Player) sender, args);
+        AccountInfoCommandEvent event = new AccountInfoCommandEvent(player, args);
         event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account info command event cancelled");
             return true;
         }
 
-        plugin.debug(sender.getName() + " can now click an account to get info");
-        sender.sendMessage(Message.CLICK_ACCOUNT_INFO.translate());
-        ClickType.setInfoClickType((Player) sender);
+        plugin.debugf("%s can now click an account to see the GUI", player.getName());
+        player.sendMessage(Message.CLICK_ACCOUNT_INFO.translate());
+        ClickType.setInfoClickType(player);
         return true;
     }
 
     public static void info(BankingPlugin plugin, Player p, Account account) {
-        plugin.debugf("%s is viewing account info (#%d)", p.getName(), account.getID());
+        plugin.debugf("%s is viewing the GUI of account #%d", p.getName(), account.getID());
         AccountInfoEvent event = new AccountInfoEvent(p, account);
         event.fire();
         if (event.isCancelled()) {
-            plugin.debugf("Account info event cancelled (#%d)", account.getID());
+            plugin.debugf("Account info event cancelled at account #%d)", account.getID());
             return;
         }
         new AccountGUI(account).open(p);
