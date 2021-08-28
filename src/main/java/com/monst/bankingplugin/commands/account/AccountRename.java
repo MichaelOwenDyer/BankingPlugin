@@ -9,7 +9,7 @@ import com.monst.bankingplugin.events.account.AccountConfigureEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -23,8 +23,8 @@ public class AccountRename extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_RENAME;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_RENAME;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class AccountRename extends SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = ((Player) sender);
-        if (!p.hasPermission(Permissions.ACCOUNT_RENAME)) {
+        if (Permission.ACCOUNT_RENAME.notOwnedBy(p)) {
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_RENAME.translate());
             return true;
         }
@@ -62,7 +62,7 @@ public class AccountRename extends SubCommand {
 
     public static void rename(BankingPlugin plugin, Player executor, Account account, String value) {
         ClickType.removeClickType(executor);
-        if (!(account.isTrusted(executor) || executor.hasPermission(Permissions.ACCOUNT_RENAME_OTHER))) {
+        if (!account.isTrusted(executor) && Permission.ACCOUNT_RENAME_OTHER.notOwnedBy(executor)) {
             plugin.debugf("%s does not have permission to rename another player's account", executor.getName());
             executor.sendMessage(Message.NO_PERMISSION_ACCOUNT_RENAME_OTHER.translate());
             return;

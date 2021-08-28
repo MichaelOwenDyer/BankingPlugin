@@ -178,29 +178,29 @@ public class Utils {
 	}
 
 	public static int getAccountLimit(Player player) {
-		return (int) getLimit(player, Permissions.ACCOUNT_NO_LIMIT, Config.defaultAccountLimit.get());
+		return (int) getLimit(player, Permission.ACCOUNT_NO_LIMIT, Config.defaultAccountLimit.get());
 	}
 
 	public static int getBankLimit(Player player) {
-		return (int) getLimit(player, Permissions.BANK_NO_LIMIT, Config.defaultBankLimit.get());
+		return (int) getLimit(player, Permission.BANK_NO_LIMIT, Config.defaultBankLimit.get());
 	}
 
 	/**
 	 * Gets the bank volume limit of a certain player, to see if the player is allowed to create a bank of a certain size.
 	 */
 	public static long getBankVolumeLimit(Player player) {
-		return getLimit(player, Permissions.BANK_NO_SIZE_LIMIT, Config.maximumBankVolume.get());
+		return getLimit(player, Permission.BANK_NO_SIZE_LIMIT, Config.maximumBankVolume.get());
 	}
 
-	private static long getLimit(Player player, String unlimitedPerm, final long defaultLimit) {
+	private static long getLimit(Player player, Permission unlimitedPerm, final long defaultLimit) {
+		if (unlimitedPerm.ownedBy(player))
+			return -1;
 		long limit = defaultLimit;
-		String permPrefix = unlimitedPerm.substring(0, unlimitedPerm.length() - 1);
+		String permPrefix = unlimitedPerm.toString();
+		permPrefix = permPrefix.substring(0, permPrefix.length() - 1);
 		for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
 			if (!permInfo.getValue())
 				continue;
-			if (permInfo.getPermission().equalsIgnoreCase(unlimitedPerm))
-				return -1;
-
 			String[] split = permInfo.getPermission().split(permPrefix);
 			if (split.length <= 1)
 				continue;

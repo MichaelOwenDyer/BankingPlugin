@@ -6,7 +6,7 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountListEvent;
 import com.monst.bankingplugin.gui.AccountListGUI;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -40,7 +40,7 @@ public class AccountList extends SubCommand {
         }
 
         Supplier<Collection<Account>> getVisibleAccounts;
-        if (!player.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
+        if (Permission.ACCOUNT_LIST_OTHER.notOwnedBy(player))
             getVisibleAccounts = () -> plugin.getAccountRepository().getMatching(account -> account.isTrusted(player));
         else if (args.length == 1)
             getVisibleAccounts = plugin.getAccountRepository()::getAll;
@@ -57,7 +57,7 @@ public class AccountList extends SubCommand {
 
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
-        if (!player.hasPermission(Permissions.ACCOUNT_LIST_OTHER))
+        if (Permission.ACCOUNT_LIST_OTHER.notOwnedBy(player))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
         return Utils.filter(Utils.getOnlinePlayerNames(), name -> !argList.contains(name));

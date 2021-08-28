@@ -6,7 +6,7 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,8 +21,8 @@ public class ControlPayInterest extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.UPDATE;
+    protected Permission getPermission() {
+        return Permission.UPDATE;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class ControlPayInterest extends SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " is triggering an interest payout");
 
-        if (!sender.hasPermission(Permissions.PAY_INTEREST)) {
+        if (Permission.PAY_INTEREST.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to trigger an interest payout");
             sender.sendMessage(Message.NO_PERMISSION_PAY_INTEREST.translate());
             return true;
@@ -62,7 +62,7 @@ public class ControlPayInterest extends SubCommand {
 
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
-        if (!player.hasPermission(Permissions.PAY_INTEREST))
+        if (Permission.PAY_INTEREST.notOwnedBy(player))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
         return plugin.getBankRepository().getAll().stream()

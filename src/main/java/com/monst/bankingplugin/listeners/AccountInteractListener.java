@@ -7,7 +7,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -93,7 +93,7 @@ public class AccountInteractListener extends BankingPluginListener {
 			if (action != Action.RIGHT_CLICK_BLOCK || p.isSneaking())
 				return;
 
-			if (!account.isTrusted(p) && !account.getBank().isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_VIEW_OTHER)) {
+			if (!account.isTrusted(p) && !account.getBank().isOwner(p) && Permission.ACCOUNT_VIEW_OTHER.notOwnedBy(p)) {
 				e.setCancelled(true);
 				p.sendMessage(Message.NO_PERMISSION_ACCOUNT_VIEW_OTHER.translate());
 				plugin.debugf("%s does not have permission to open %s's account chest.", p.getName(), account.getOwnerName());

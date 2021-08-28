@@ -12,7 +12,7 @@ import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.PayrollOffice;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -27,8 +27,8 @@ public class BankCreate extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.BANK_CREATE;
+    protected Permission getPermission() {
+        return Permission.BANK_CREATE;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
         Player p = ((Player) sender);
         plugin.debug(p.getName() + " wants to create a bank");
 
-        if (!p.hasPermission(Permissions.BANK_CREATE)) {
+        if (Permission.BANK_CREATE.notOwnedBy(p)) {
             plugin.debug(p.getName() + " does not have permission to create a bank");
             p.sendMessage(Message.NO_PERMISSION_BANK_CREATE.translate());
             return true;
@@ -87,7 +87,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
 
         boolean isAdminBank = args[args.length - 1].equalsIgnoreCase("admin");
 
-        if (isAdminBank && !p.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
+        if (isAdminBank && Permission.BANK_CREATE_ADMIN.notOwnedBy(p)) {
             plugin.debug(p.getName() + " does not have permission to create an admin bank");
             p.sendMessage(Message.NO_PERMISSION_BANK_CREATE_ADMIN.translate());
             return true;
@@ -166,7 +166,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
 
         BankCreateEvent event = new BankCreateEvent(p, bank);
         event.fire();
-        if (event.isCancelled() && !p.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS)) {
+        if (event.isCancelled() && Permission.BYPASS_EXTERNAL_PLUGINS.notOwnedBy(p)) {
             plugin.debug("No permission to create bank without WorldGuard flag present");
             p.sendMessage(Message.NO_PERMISSION_BANK_CREATE_PROTECTED.translate());
             return true;
@@ -189,7 +189,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
         if (args.length == 1)
             return Collections.singletonList("<name>");
 
-        if (args.length % 3 == 2 && p.hasPermission(Permissions.BANK_CREATE_ADMIN))
+        if (args.length % 3 == 2 && Permission.BANK_CREATE_ADMIN.ownedBy(p))
             returnCompletions.add("admin");
 
         if (args.length >= 8)

@@ -92,9 +92,9 @@ public abstract class BankingPluginCommand {
 	private void sendCommandUsageMessage(CommandSender sender) {
 		plugin.debugf("Sending basic help message to %s", sender.getName());
 		for (SubCommand subCommand : subCommands) {
-			String msg = subCommand.getUsageMessage(sender, name);
-			if (msg != null && !msg.isEmpty())
-				sender.sendMessage(msg);
+			String usageMessage = subCommand.getUsageMessage(sender, name);
+			if (usageMessage != null && !usageMessage.isEmpty())
+				sender.sendMessage(usageMessage);
 		}
 	}
 

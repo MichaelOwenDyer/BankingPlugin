@@ -8,7 +8,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountRemoveAllEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -26,8 +26,8 @@ public class AccountRemoveAll extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_REMOVEALL;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_REMOVEALL;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class AccountRemoveAll extends SubCommand {
 
         plugin.debugf("%s wants to remove all accounts", sender.getName());
 
-        if (!sender.hasPermission(Permissions.ACCOUNT_REMOVEALL)) {
+        if (Permission.ACCOUNT_REMOVEALL.notOwnedBy(sender)) {
             plugin.debugf("%s does not have permission to remove all accounts", sender.getName());
             sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_REMOVEALL.translate());
             return true;
@@ -97,7 +97,7 @@ public class AccountRemoveAll extends SubCommand {
 
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
-        if (!player.hasPermission(Permissions.ACCOUNT_REMOVEALL))
+        if (Permission.ACCOUNT_REMOVEALL.notOwnedBy(player))
             return Collections.emptyList();
         List<String> argList = Arrays.asList(args);
         return Utils.filter(Utils.getOnlinePlayerNames(), name -> !argList.contains(name));

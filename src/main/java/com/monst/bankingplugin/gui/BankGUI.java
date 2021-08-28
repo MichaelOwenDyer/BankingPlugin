@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -37,9 +37,9 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	@Override
 	void evaluateClearance(Player player) {
 		canTP = player.isOp()
-				|| Permissions.hasAny(player, "minecraft.command.tp", "essentials.tp.position");
-		canListAccounts = guiSubject.isTrusted(player)
-				|| player.hasPermission(Permissions.ACCOUNT_LIST_OTHER);
+				|| player.hasPermission("minecraft.command.tp")
+				|| player.hasPermission("essentials.tp.position");
+		canListAccounts = guiSubject.isTrusted(player) || Permission.ACCOUNT_LIST_OTHER.ownedBy(player);
 	}
 
 	@Override

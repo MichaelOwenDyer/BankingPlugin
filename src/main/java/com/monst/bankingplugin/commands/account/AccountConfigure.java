@@ -10,7 +10,7 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Parser;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -27,8 +27,8 @@ public class AccountConfigure extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_CONFIGURE;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_CONFIGURE;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class AccountConfigure extends SubCommand {
         Player executor = (Player) sender;
         plugin.debugf("%s wants to configure an account", executor.getName());
 
-        if (!executor.hasPermission(Permissions.ACCOUNT_CONFIGURE)) {
+        if (Permission.ACCOUNT_CONFIGURE.notOwnedBy(executor)) {
             plugin.debugf("%s does not have permission to configure an account", executor.getName());
             executor.sendMessage(Message.NO_PERMISSION_ACCOUNT_CONFIGURE.translate());
             return true;
@@ -120,7 +120,7 @@ public class AccountConfigure extends SubCommand {
 
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
-        if (args.length != 1 || !player.hasPermission(Permissions.ACCOUNT_CONFIGURE))
+        if (args.length != 1 || Permission.ACCOUNT_CONFIGURE.notOwnedBy(player))
             return Collections.emptyList();
         return Stream.of(AccountField.MULTIPLIER_STAGE, AccountField.DELAY_UNTIL_NEXT_PAYOUT, AccountField.REMAINING_OFFLINE_PAYOUTS)
                 .map(AccountField::toString)

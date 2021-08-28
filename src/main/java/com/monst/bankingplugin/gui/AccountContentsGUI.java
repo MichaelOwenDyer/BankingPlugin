@@ -27,7 +27,7 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
 
 //    @Override
 //    void evaluateClearance(Player player) {
-//        canEdit = player.hasPermission(Permissions.ACCOUNT_EDIT_OTHER);
+//        canEdit = Permission.ACCOUNT_EDIT_OTHER.ownedBy(player);
 //    }
 
     @Override

@@ -7,7 +7,7 @@ import com.monst.bankingplugin.events.bank.BankSelectEvent;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -23,8 +23,8 @@ public class BankSelect extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.BANK_SELECT;
+    protected Permission getPermission() {
+        return Permission.BANK_SELECT;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class BankSelect extends SubCommand.BankSubCommand {
             return true;
         }
 
-        if (!p.hasPermission(Permissions.BANK_SELECT)) {
+        if (Permission.BANK_SELECT.notOwnedBy(p)) {
             plugin.debug(p.getName() + " does not have permission to select a bank");
             p.sendMessage(Message.NO_PERMISSION_BANK_SELECT.translate());
             return true;
@@ -82,7 +82,7 @@ public class BankSelect extends SubCommand.BankSubCommand {
 
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
-        if (args.length == 1 && player.hasPermission(Permissions.BANK_SELECT))
+        if (args.length == 1 && Permission.BANK_SELECT.ownedBy(player))
             return plugin.getBankRepository().getAll().stream()
                     .map(Bank::getName)
                     .sorted()

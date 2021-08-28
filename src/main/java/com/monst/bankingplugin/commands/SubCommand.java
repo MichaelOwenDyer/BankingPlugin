@@ -8,11 +8,10 @@ import com.monst.bankingplugin.geo.regions.CuboidBankRegion;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Parser;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.utils.Permission;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.Collections;
 import java.util.List;
@@ -60,8 +59,8 @@ public abstract class SubCommand {
     /**
      * @return the permission node required to see and execute this command.
      */
-    protected String getPermission() {
-        return "";
+    protected Permission getPermission() {
+        return Permission.NONE;
     }
 
     /**
@@ -75,18 +74,9 @@ public abstract class SubCommand {
      * @return The help message for this subcommand.
      */
     String getUsageMessage(CommandSender sender, String commandName) {
-        if (hasPermission(sender, getPermission()))
+        if (getPermission().ownedBy(sender))
             return getUsageMessage().with(Placeholder.COMMAND).as(commandName).translate();
         return "";
-    }
-
-    protected boolean hasPermission(CommandSender sender, String permission) {
-        if (permission == null || sender == null || permission.isEmpty() || sender.hasPermission(permission))
-            return true;
-        for (PermissionAttachmentInfo permInfo : sender.getEffectivePermissions())
-            if (Utils.startsWithIgnoreCase(permInfo.getPermission(), permission) && permInfo.getValue())
-                return true;
-        return false;
     }
 
     public abstract static class BankSubCommand extends SubCommand {

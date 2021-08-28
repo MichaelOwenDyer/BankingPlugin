@@ -4,7 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -16,8 +16,8 @@ public class BankLimits extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.BANK_CREATE;
+    protected Permission getPermission() {
+        return Permission.BANK_CREATE;
     }
 
     @Override

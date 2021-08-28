@@ -8,7 +8,7 @@ import com.monst.bankingplugin.events.control.PluginConfigureCommandEvent;
 import com.monst.bankingplugin.exceptions.parse.ArgumentParseException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -24,8 +24,8 @@ public class ControlConfigure extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.CONFIG;
+    protected Permission getPermission() {
+        return Permission.CONFIG;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ControlConfigure extends SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debugf("%s wants to configure the plugin: '%s'", sender.getName(), String.join(" ", args));
 
-        if (!sender.hasPermission(Permissions.CONFIG)) {
+        if (Permission.CONFIG.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to configure the plugin");
             sender.sendMessage(Message.NO_PERMISSION_CONFIG.translate());
             return true;
@@ -57,7 +57,7 @@ public class ControlConfigure extends SubCommand {
 
         PluginConfigureCommandEvent event = new PluginConfigureCommandEvent(sender, configValue, input);
         event.fire();
-        if (event.isCancelled() && !sender.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGINS)) {
+        if (event.isCancelled() && Permission.BYPASS_EXTERNAL_PLUGINS.notOwnedBy(sender)) {
             plugin.debug("Plugin configure event cancelled");
             return true;
         }
@@ -88,7 +88,7 @@ public class ControlConfigure extends SubCommand {
 
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
-        if (!player.hasPermission(Permissions.CONFIG))
+        if (Permission.CONFIG.notOwnedBy(player))
             return Collections.emptyList();
         if (args.length == 1)
             return Config.matchPath(args[0]);

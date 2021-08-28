@@ -7,12 +7,15 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountMigrateEvent;
-import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
+import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.PayrollOffice;
+import com.monst.bankingplugin.utils.Permission;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
@@ -28,8 +31,8 @@ public class AccountMigrate extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_CREATE;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_CREATE;
     }
 
     @Override
@@ -42,7 +45,7 @@ public class AccountMigrate extends SubCommand {
         Player p = (Player) sender;
         plugin.debugf("%s wants to migrate an account", p.getName());
 
-        if (!p.hasPermission(Permissions.ACCOUNT_MIGRATE)) {
+        if (Permission.ACCOUNT_MIGRATE.notOwnedBy(p)) {
             plugin.debugf("%s does not have permission to migrate an account", p.getName());
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE.translate());
             return true;
@@ -62,7 +65,7 @@ public class AccountMigrate extends SubCommand {
     }
 
     public static void selectAccount(BankingPlugin plugin, Player p, Account accountToMove) {
-        if (!accountToMove.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_OTHER)) {
+        if (!accountToMove.isOwner(p) && Permission.ACCOUNT_MIGRATE_OTHER.notOwnedBy(p)) {
             if (accountToMove.isTrusted(p)) {
                 plugin.debugf("%s cannot migrate account #%d as a co-owner", p.getName(), accountToMove.getID());
                 p.sendMessage(Message.MUST_BE_OWNER.translate());
@@ -104,7 +107,7 @@ public class AccountMigrate extends SubCommand {
             return;
         }
 
-        if (!Objects.equals(accountToMove.getBank(), newBank) && !p.hasPermission(Permissions.ACCOUNT_MIGRATE_BANK)) {
+        if (!Objects.equals(accountToMove.getBank(), newBank) && Permission.ACCOUNT_MIGRATE_BANK.notOwnedBy(p)) {
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE_BANK.translate());
             plugin.debugf("%s does not have permission to migrate their account to another bank.", p.getName());
             return;
@@ -112,7 +115,7 @@ public class AccountMigrate extends SubCommand {
 
         AccountMigrateEvent event = new AccountMigrateEvent(p, accountToMove, newAccountLocation);
         event.fire();
-        if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+        if (event.isCancelled() && Permission.ACCOUNT_CREATE_PROTECTED.notOwnedBy(p)) {
             plugin.debug("No permission to create account on a protected chest.");
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED.translate());
             return;

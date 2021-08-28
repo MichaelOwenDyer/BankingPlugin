@@ -9,7 +9,10 @@ import com.monst.bankingplugin.events.account.AccountRemoveCommandEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.*;
+import com.monst.bankingplugin.utils.ClickType;
+import com.monst.bankingplugin.utils.PayrollOffice;
+import com.monst.bankingplugin.utils.Permission;
+import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -22,8 +25,8 @@ public class AccountRemove extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_CREATE;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_CREATE;
     }
 
     @Override
@@ -55,7 +58,7 @@ public class AccountRemove extends SubCommand {
      * @param account Account to be removed
      */
     public static void remove(BankingPlugin plugin, Player p, Account account) {
-        if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER) && !account.getBank().isTrusted(p)) {
+        if (!account.isOwner(p) && Permission.ACCOUNT_REMOVE_OTHER.notOwnedBy(p) && !account.getBank().isTrusted(p)) {
             Message message = account.isTrusted(p) ? Message.MUST_BE_OWNER : Message.NO_PERMISSION_ACCOUNT_REMOVE_OTHER;
             p.sendMessage(message.translate());
             ClickType.removeClickType(p);
@@ -79,7 +82,7 @@ public class AccountRemove extends SubCommand {
 
         AccountRemoveEvent event = new AccountRemoveEvent(p, account);
         event.fire();
-        if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_REMOVE_PROTECTED)) {
+        if (event.isCancelled() && Permission.ACCOUNT_REMOVE_PROTECTED.notOwnedBy(p)) {
             plugin.debugf("Remove event cancelled at account #%d", account.getID());
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_REMOVE_PROTECTED.translate());
             return;

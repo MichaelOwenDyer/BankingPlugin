@@ -6,7 +6,7 @@ import com.monst.bankingplugin.events.control.ReloadEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import org.bukkit.command.CommandSender;
 
 public class ControlReload extends SubCommand {
@@ -16,8 +16,8 @@ public class ControlReload extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.RELOAD;
+    protected Permission getPermission() {
+        return Permission.RELOAD;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class ControlReload extends SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " is reloading the plugin");
 
-        if (!sender.hasPermission(Permissions.RELOAD)) {
+        if (Permission.RELOAD.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to reload the plugin");
             sender.sendMessage(Message.NO_PERMISSION_RELOAD.translate());
             return true;

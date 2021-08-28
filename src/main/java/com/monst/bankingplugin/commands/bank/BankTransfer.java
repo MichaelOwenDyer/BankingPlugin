@@ -11,7 +11,7 @@ import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Pair;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -28,8 +28,8 @@ public class BankTransfer extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.BANK_TRANSFER;
+    protected Permission getPermission() {
+        return Permission.BANK_TRANSFER;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class BankTransfer extends SubCommand.BankSubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to transfer bank ownership");
 
-        if (!sender.hasPermission(Permissions.BANK_TRANSFER)) {
+        if (Permission.BANK_TRANSFER.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to transfer bank ownership");
             sender.sendMessage(Message.NO_PERMISSION_BANK_TRANSFER.translate());
             return true;
@@ -75,18 +75,18 @@ public class BankTransfer extends SubCommand.BankSubCommand {
             sender.sendMessage(Message.BANK_ALREADY_ADMIN.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
             return true;
         }
-        if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRANSFER_ADMIN)) {
+        if (bank.isAdminBank() && Permission.BANK_TRANSFER_ADMIN.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to transfer an admin bank");
             sender.sendMessage(Message.NO_PERMISSION_BANK_TRANSFER_ADMIN.translate());
             return true;
         }
-        if (newOwner == null && !sender.hasPermission(Permissions.BANK_CREATE_ADMIN)) {
+        if (newOwner == null && Permission.BANK_CREATE_ADMIN.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to transfer a bank to the admins");
             sender.sendMessage(Message.NO_PERMISSION_BANK_CREATE_ADMIN.translate());
             return true;
         }
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isOwner((Player) sender))
-                || sender.hasPermission(Permissions.BANK_TRANSFER_OTHER))) {
+                || Permission.BANK_TRANSFER_OTHER.ownedBy(sender))) {
             if (sender instanceof Player && bank.isTrusted((Player) sender)) {
                 plugin.debug(sender.getName() + " does not have permission to transfer ownership as a co-owner");
                 sender.sendMessage(Message.MUST_BE_OWNER.translate());
@@ -135,15 +135,15 @@ public class BankTransfer extends SubCommand.BankSubCommand {
         if (args.length == 1)
             return plugin.getBankRepository().getAll().stream()
                     .filter(bank -> bank.isOwner(player)
-                            || (bank.isPlayerBank() && player.hasPermission(Permissions.BANK_TRANSFER_OTHER))
-                            || (bank.isAdminBank() && player.hasPermission(Permissions.BANK_TRANSFER_ADMIN)))
+                            || (bank.isPlayerBank() && Permission.BANK_TRANSFER_OTHER.ownedBy(player))
+                            || (bank.isAdminBank() && Permission.BANK_TRANSFER_ADMIN.ownedBy(player)))
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         else if (args.length == 2) {
             List<String> onlinePlayers = Utils.getOnlinePlayerNames();
-            if (!player.hasPermission(Permissions.BANK_TRANSFER_OTHER) && !player.hasPermission(Permissions.BANK_TRANSFER_ADMIN))
+            if (Permission.BANK_TRANSFER_OTHER.notOwnedBy(player) && Permission.BANK_TRANSFER_ADMIN.notOwnedBy(player))
                 onlinePlayers.remove(player.getName());
             Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
             if (bank != null && bank.isPlayerBank())

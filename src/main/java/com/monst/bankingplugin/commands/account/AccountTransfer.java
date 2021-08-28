@@ -11,7 +11,7 @@ import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -27,8 +27,8 @@ public class AccountTransfer extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_TRANSFER;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_TRANSFER;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class AccountTransfer extends SubCommand {
         Player p = ((Player) sender);
         plugin.debugf("%s wants to transfer ownership of an account", p.getName());
 
-        if (!p.hasPermission(Permissions.ACCOUNT_TRANSFER)) {
+        if (Permission.ACCOUNT_TRANSFER.notOwnedBy(p)) {
             plugin.debugf("%s does not have permission to transfer ownership of an account", p.getName());
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER.translate());
             return true;
@@ -72,7 +72,7 @@ public class AccountTransfer extends SubCommand {
     public static void transfer(BankingPlugin plugin, Player player, Account account, OfflinePlayer newOwner) {
         plugin.debugf("%s is transferring ownership of account #%d to %s", player.getName(), account.getID(), newOwner.getName());
 
-        if (!account.isOwner(player) && !player.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER)) {
+        if (!account.isOwner(player) && Permission.ACCOUNT_TRANSFER_OTHER.notOwnedBy(player)) {
             plugin.debugf("%s does not have permission to transfer the account.", player.getName());
             Message message = account.isTrusted(player) ? Message.MUST_BE_OWNER : Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER;
             player.sendMessage(message.translate());
@@ -120,7 +120,7 @@ public class AccountTransfer extends SubCommand {
         if (args.length != 1)
             return Collections.emptyList();
         List<String> returnCompletions = Utils.getOnlinePlayerNames();
-        if (!player.hasPermission(Permissions.ACCOUNT_TRANSFER_OTHER))
+        if (Permission.ACCOUNT_TRANSFER_OTHER.notOwnedBy(player))
             returnCompletions.remove(player.getName());
         return Utils.filter(returnCompletions, string -> Utils.startsWithIgnoreCase(string, args[0]));
     }

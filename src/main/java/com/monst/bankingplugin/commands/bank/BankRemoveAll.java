@@ -9,7 +9,7 @@ import com.monst.bankingplugin.events.bank.BankRemoveAllEvent;
 import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,8 +24,8 @@ public class BankRemoveAll extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.BANK_REMOVEALL;
+    protected Permission getPermission() {
+        return Permission.BANK_REMOVEALL;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class BankRemoveAll extends SubCommand.BankSubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to remove all banks");
 
-        if (!sender.hasPermission(Permissions.BANK_REMOVEALL)) {
+        if (Permission.BANK_REMOVEALL.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to remove all banks");
             sender.sendMessage(Message.NO_PERMISSION_BANK_REMOVEALL.translate());
             return true;

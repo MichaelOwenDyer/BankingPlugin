@@ -8,7 +8,7 @@ import com.monst.bankingplugin.events.account.AccountUntrustEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -24,8 +24,8 @@ public class AccountUntrust extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_TRUST;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_TRUST;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class AccountUntrust extends SubCommand {
 
         plugin.debugf("%s wants to untrust a player from an account", sender.getName());
 
-        if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
+        if (Permission.ACCOUNT_TRUST.notOwnedBy(sender)) {
             sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST.translate());
             return true;
         }
@@ -69,7 +69,7 @@ public class AccountUntrust extends SubCommand {
     public static void untrust(BankingPlugin plugin, Player executor, Account account, OfflinePlayer playerToUntrust) {
         ClickType.removeClickType(executor);
 
-        if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
+        if (!account.isOwner(executor) && Permission.ACCOUNT_TRUST_OTHER.notOwnedBy(executor)) {
             if (account.isTrusted(executor)) {
                 executor.sendMessage(Message.MUST_BE_OWNER.translate());
                 return;

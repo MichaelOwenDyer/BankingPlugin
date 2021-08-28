@@ -5,7 +5,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -22,8 +22,8 @@ public class BankUntrust extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.BANK_TRUST;
+    protected Permission getPermission() {
+        return Permission.BANK_TRUST;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class BankUntrust extends SubCommand.BankSubCommand {
 
         plugin.debug(sender.getName() + " wants to untrust a player from a bank");
 
-        if (!sender.hasPermission(Permissions.BANK_TRUST)) {
+        if (Permission.BANK_TRUST.notOwnedBy(sender)) {
             sender.sendMessage(Message.NO_PERMISSION_BANK_UNTRUST.translate());
             return true;
         }
@@ -55,7 +55,7 @@ public class BankUntrust extends SubCommand.BankSubCommand {
         }
 
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
-                || sender.hasPermission(Permissions.BANK_TRUST_OTHER))) {
+                || Permission.BANK_TRUST_OTHER.ownedBy(sender))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
                 plugin.debugf("%s does not have permission to untrust a player from bank %s as a co-owner",
                         sender.getName(), bank.getName());
@@ -67,7 +67,7 @@ public class BankUntrust extends SubCommand.BankSubCommand {
             return true;
         }
 
-        if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_TRUST_ADMIN)) {
+        if (bank.isAdminBank() && Permission.BANK_TRUST_ADMIN.notOwnedBy(sender)) {
             plugin.debugf("%s does not have permission to untrust a player from admin bank %s", sender.getName(), bank.getName());
             sender.sendMessage(Message.NO_PERMISSION_BANK_UNTRUST_ADMIN.translate());
             return true;
@@ -92,8 +92,8 @@ public class BankUntrust extends SubCommand.BankSubCommand {
         if (args.length == 1)
             return plugin.getBankRepository().getAll().stream()
                     .filter(bank -> bank.isOwner(player)
-                            || (bank.isPlayerBank() && player.hasPermission(Permissions.BANK_TRUST_OTHER))
-                            || (bank.isAdminBank() && player.hasPermission(Permissions.BANK_TRUST_ADMIN)))
+                            || (bank.isPlayerBank() && Permission.BANK_TRUST_OTHER.ownedBy(player))
+                            || (bank.isAdminBank() && Permission.BANK_TRUST_ADMIN.ownedBy(player)))
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()

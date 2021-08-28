@@ -3,7 +3,7 @@ package com.monst.bankingplugin.gui;
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.exceptions.notfound.ChestNotFoundException;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -38,10 +38,11 @@ public class AccountGUI extends SinglePageGUI<Account> {
 	@Override
 	void evaluateClearance(Player player) {
 		canTP = player.isOp()
-				|| Permissions.hasAny(player, "minecraft.command.tp", "essentials.tp.position");
+				|| player.hasPermission("minecraft.command.tp")
+				|| player.hasPermission("essentials.tp.position");
 		isTrusted = guiSubject.isTrusted(player)
 				|| guiSubject.getBank().isTrusted(player)
-				|| player.hasPermission(Permissions.ACCOUNT_INFO_OTHER);
+				|| Permission.ACCOUNT_INFO_OTHER.ownedBy(player);
 	}
 
 	@Override

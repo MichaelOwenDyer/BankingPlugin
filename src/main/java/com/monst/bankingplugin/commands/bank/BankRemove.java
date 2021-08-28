@@ -10,7 +10,7 @@ import com.monst.bankingplugin.lang.MailingRoom;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.PayrollOffice;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -27,8 +27,8 @@ public class BankRemove extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.BANK_CREATE;
+    protected Permission getPermission() {
+        return Permission.BANK_CREATE;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class BankRemove extends SubCommand.BankSubCommand {
             return true;
 
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
-                || sender.hasPermission(Permissions.BANK_REMOVE_OTHER))) {
+                || Permission.BANK_REMOVE_OTHER.ownedBy(sender))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender))) {
                 plugin.debug(sender.getName() + " does not have permission to remove another player's bank as a co-owner");
                 sender.sendMessage(Message.MUST_BE_OWNER.translate());
@@ -57,7 +57,7 @@ public class BankRemove extends SubCommand.BankSubCommand {
             return true;
         }
 
-        if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_REMOVE_ADMIN)) {
+        if (bank.isAdminBank() && Permission.BANK_REMOVE_ADMIN.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to remove an admin bank");
             sender.sendMessage(Message.NO_PERMISSION_BANK_REMOVE_ADMIN.translate());
             return true;
@@ -104,8 +104,8 @@ public class BankRemove extends SubCommand.BankSubCommand {
         if (args.length == 1) {
             return plugin.getBankRepository().getAll().stream()
                     .filter(bank -> bank.isOwner(player)
-                            || (bank.isPlayerBank() && player.hasPermission(Permissions.BANK_REMOVE_OTHER))
-                            || (bank.isAdminBank() && player.hasPermission(Permissions.BANK_REMOVE_ADMIN)))
+                            || (bank.isPlayerBank() && Permission.BANK_REMOVE_OTHER.ownedBy(player))
+                            || (bank.isAdminBank() && Permission.BANK_REMOVE_ADMIN.ownedBy(player)))
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()

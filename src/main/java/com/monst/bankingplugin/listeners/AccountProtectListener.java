@@ -7,15 +7,15 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountExtendEvent;
 import com.monst.bankingplugin.events.account.AccountRemoveEvent;
-import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
+import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.geo.locations.DoubleAccountLocation;
 import com.monst.bankingplugin.geo.locations.SingleAccountLocation;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.PayrollOffice;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -55,7 +55,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 		Player p = e.getPlayer();
 		plugin.debugf("%s tries to break %s's account #%d", p.getName(), account.getOwnerName(), account.getID());
-		if (!(p.isSneaking() && Utils.hasAxeInHand(p)) || (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_REMOVE_OTHER))) {
+		if (!(p.isSneaking() && Utils.hasAxeInHand(p)) || (!account.isOwner(p) && Permission.ACCOUNT_REMOVE_OTHER.notOwnedBy(p))) {
 			e.setCancelled(true);
 			e.getPlayer().sendMessage(Message.CANNOT_BREAK_ACCOUNT.translate());
 			return;
@@ -146,7 +146,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 		plugin.debugf("%s tries to extend %s's account #%d", p.getName(), account.getOwnerName(), account.getID());
 
-		if (!account.isOwner(p) && !p.hasPermission(Permissions.ACCOUNT_EXTEND_OTHER)) {
+		if (!account.isOwner(p) && Permission.ACCOUNT_EXTEND_OTHER.notOwnedBy(p)) {
 			e.setCancelled(true);
 			p.sendMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_OTHER.translate());
 			return;
@@ -154,7 +154,7 @@ public class AccountProtectListener extends BankingPluginListener {
 
 		AccountExtendEvent event = new AccountExtendEvent(p, account, newLoc);
         event.fire();
-		if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+		if (event.isCancelled() && Permission.ACCOUNT_CREATE_PROTECTED.notOwnedBy(p)) {
             e.setCancelled(true);
 			p.sendMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_PROTECTED.translate());
             return;
@@ -221,7 +221,7 @@ public class AccountProtectListener extends BankingPluginListener {
 		if (account == null)
 			return;
 		Player executor = (Player) e.getWhoClicked();
-		if (!account.isTrusted(executor) && !executor.hasPermission(Permissions.ACCOUNT_EDIT_OTHER)) {
+		if (!account.isTrusted(executor) && Permission.ACCOUNT_EDIT_OTHER.notOwnedBy(executor)) {
 			executor.sendMessage(Message.NO_PERMISSION_ACCOUNT_EDIT_OTHER.translate());
 			e.setCancelled(true);
 		}

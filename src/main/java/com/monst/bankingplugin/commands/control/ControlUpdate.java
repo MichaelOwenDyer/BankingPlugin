@@ -3,7 +3,7 @@ package com.monst.bankingplugin.commands.control;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -14,8 +14,8 @@ public class ControlUpdate extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.UPDATE;
+    protected Permission getPermission() {
+        return Permission.UPDATE;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class ControlUpdate extends SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " is checking for updates");
 
-        if (!sender.hasPermission(Permissions.UPDATE)) {
+        if (Permission.UPDATE.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to update the plugin");
             sender.sendMessage(Message.NO_PERMISSION_UPDATE.translate());
             return true;

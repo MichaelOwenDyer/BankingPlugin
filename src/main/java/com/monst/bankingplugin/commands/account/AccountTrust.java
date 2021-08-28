@@ -8,7 +8,7 @@ import com.monst.bankingplugin.events.account.AccountTrustEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -24,8 +24,8 @@ public class AccountTrust extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_TRUST;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_TRUST;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class AccountTrust extends SubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debugf("%s wants to trust a player to an account", sender.getName());
 
-        if (!sender.hasPermission(Permissions.ACCOUNT_TRUST)) {
+        if (Permission.ACCOUNT_TRUST.notOwnedBy(sender)) {
             sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRUST.translate());
             return true;
         }
@@ -68,7 +68,7 @@ public class AccountTrust extends SubCommand {
     public static void trust(BankingPlugin plugin, Player executor, Account account, OfflinePlayer playerToTrust) {
         ClickType.removeClickType(executor);
 
-        if (!account.isOwner(executor) && !executor.hasPermission(Permissions.ACCOUNT_TRUST_OTHER)) {
+        if (!account.isOwner(executor) && Permission.ACCOUNT_TRUST_OTHER.notOwnedBy(executor)) {
             if (account.isTrusted(executor)) {
                 executor.sendMessage(Message.MUST_BE_OWNER.translate());
                 return;
@@ -102,7 +102,7 @@ public class AccountTrust extends SubCommand {
         if (args.length != 1)
             return Collections.emptyList();
         List<String> onlinePlayers = Utils.getOnlinePlayerNames();
-        if (!player.hasPermission(Permissions.ACCOUNT_TRUST_OTHER))
+        if (Permission.ACCOUNT_TRUST_OTHER.notOwnedBy(player))
             onlinePlayers.remove(player.getName());
         return Utils.filter(onlinePlayers, name -> Utils.startsWithIgnoreCase(name, args[0]));
     }

@@ -6,12 +6,12 @@ import com.monst.bankingplugin.banking.AccountField;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.account.AccountRecoverEvent;
-import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
+import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.gui.AccountRecoveryGUI;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
@@ -25,8 +25,8 @@ public class AccountRecover extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_RECOVER;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_RECOVER;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class AccountRecover extends SubCommand {
 
         AccountRecoverEvent event = new AccountRecoverEvent(p, toRecover, accountLocation);
         event.fire();
-        if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+        if (event.isCancelled() && Permission.ACCOUNT_CREATE_PROTECTED.notOwnedBy(p)) {
             plugin.debug("No permission to recover an account to a protected chest.");
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED.translate());
             return;

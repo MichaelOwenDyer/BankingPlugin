@@ -7,14 +7,14 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.account.AccountCreateCommandEvent;
 import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.exceptions.ChestBlockedException;
+import com.monst.bankingplugin.exceptions.notfound.BankNotFoundException;
 import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.PayrollOffice;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -32,8 +32,8 @@ public class AccountCreate extends SubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.ACCOUNT_CREATE;
+    protected Permission getPermission() {
+        return Permission.ACCOUNT_CREATE;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class AccountCreate extends SubCommand {
         Player p = (Player) sender;
         plugin.debugf("%s wants to create an account", p.getName());
 
-        if (!hasPermission(p, Permissions.ACCOUNT_CREATE)) {
+        if (Permission.ACCOUNT_CREATE.notOwnedBy(sender)) {
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE.translate());
             plugin.debugf("%s is not permitted to create an account", p.getName());
             return true;
@@ -118,7 +118,7 @@ public class AccountCreate extends SubCommand {
 
         AccountCreateEvent event = new AccountCreateEvent(p, account);
         event.fire();
-        if (event.isCancelled() && !p.hasPermission(Permissions.ACCOUNT_CREATE_PROTECTED)) {
+        if (event.isCancelled() && Permission.ACCOUNT_CREATE_PROTECTED.notOwnedBy(p)) {
             plugin.debug("No permission to create account on a protected chest.");
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE_PROTECTED.translate());
             return;

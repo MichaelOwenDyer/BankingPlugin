@@ -7,7 +7,7 @@ import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -23,8 +23,8 @@ public class BankRename extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.BANK_CREATE;
+    protected Permission getPermission() {
+        return Permission.BANK_CREATE;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class BankRename extends SubCommand.BankSubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         if (args.length < 2)
             return false;
-        
+
         plugin.debugf("%s is renaming a bank", sender.getName());
 
         Bank bank;
@@ -68,13 +68,13 @@ public class BankRename extends SubCommand.BankSubCommand {
             newName = sb.toString();
         }
 
-        if (bank.isAdminBank() && !sender.hasPermission(Permissions.BANK_SET_ADMIN)) {
+        if (bank.isAdminBank() && Permission.BANK_SET_ADMIN.notOwnedBy(sender)) {
             plugin.debugf("%s does not have permission to change the name of an admin bank", sender.getName());
             sender.sendMessage(Message.NO_PERMISSION_BANK_SET_ADMIN.translate());
             return true;
         }
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
-                || sender.hasPermission(Permissions.BANK_SET_OTHER))) {
+                || Permission.BANK_SET_OTHER.ownedBy(sender))) {
             plugin.debugf("%s does not have permission to change the name of another player's bank", sender.getName());
             sender.sendMessage(Message.NO_PERMISSION_BANK_SET_OTHER.translate());
             return true;
@@ -115,8 +115,8 @@ public class BankRename extends SubCommand.BankSubCommand {
 
             return plugin.getBankRepository().getAll().stream()
                     .filter(b -> b.isTrusted(player)
-                            || (b.isPlayerBank() && player.hasPermission(Permissions.BANK_SET_OTHER))
-                            || (b.isAdminBank() && player.hasPermission(Permissions.BANK_SET_ADMIN)))
+                            || (b.isPlayerBank() && Permission.BANK_SET_OTHER.ownedBy(player))
+                            || (b.isAdminBank() && Permission.BANK_SET_ADMIN.ownedBy(player)))
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()

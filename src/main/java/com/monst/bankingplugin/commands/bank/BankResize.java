@@ -13,7 +13,7 @@ import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Callback;
-import com.monst.bankingplugin.utils.Permissions;
+import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -30,8 +30,8 @@ public class BankResize extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected String getPermission() {
-        return Permissions.BANK_CREATE;
+    protected Permission getPermission() {
+        return Permission.BANK_CREATE;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class BankResize extends SubCommand.BankSubCommand {
         Player p = ((Player) sender);
         plugin.debug(p.getName() + " wants to resize a bank");
 
-        if (!p.hasPermission(Permissions.BANK_RESIZE)) {
+        if (Permission.BANK_RESIZE.notOwnedBy(p)) {
             plugin.debug(p.getName() + " does not have permission to resize a bank");
             p.sendMessage(Message.NO_PERMISSION_BANK_RESIZE.translate());
             return true;
@@ -88,12 +88,12 @@ public class BankResize extends SubCommand.BankSubCommand {
             p.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
             return true;
         }
-        if (bank.isPlayerBank() && !bank.isOwner(p) && !p.hasPermission(Permissions.BANK_RESIZE_OTHER)) {
+        if (bank.isPlayerBank() && !bank.isOwner(p) && Permission.BANK_RESIZE_OTHER.notOwnedBy(p)) {
             plugin.debug(p.getName() + " does not have permission to resize another player's bank");
             p.sendMessage(Message.NO_PERMISSION_BANK_RESIZE_OTHER.translate());
             return true;
         }
-        if (bank.isAdminBank() && !p.hasPermission(Permissions.BANK_RESIZE_ADMIN)) {
+        if (bank.isAdminBank() && Permission.BANK_RESIZE_ADMIN.notOwnedBy(p)) {
             plugin.debug(p.getName() + " does not have permission to resize an admin bank");
             p.sendMessage(Message.NO_PERMISSION_BANK_RESIZE_ADMIN.translate());
             return true;
