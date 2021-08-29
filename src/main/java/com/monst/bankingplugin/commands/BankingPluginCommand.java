@@ -2,6 +2,7 @@ package com.monst.bankingplugin.commands;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
@@ -92,9 +93,9 @@ public abstract class BankingPluginCommand {
 	private void sendCommandUsageMessage(CommandSender sender) {
 		plugin.debugf("Sending basic help message to %s", sender.getName());
 		for (SubCommand subCommand : subCommands) {
-			String usageMessage = subCommand.getUsageMessage(sender, name);
-			if (usageMessage != null && !usageMessage.isEmpty())
-				sender.sendMessage(usageMessage);
+			if (subCommand.getPermission().notOwnedBy(sender))
+				continue;
+			sender.sendMessage(subCommand.getUsageMessage().with(Placeholder.COMMAND).as(name).translate());
 		}
 	}
 
@@ -118,11 +119,9 @@ public abstract class BankingPluginCommand {
 					}
 					String[] arguments = Arrays.copyOfRange(args, 1, args.length);
 					plugin.debugf("%s is executing command /%s %s %s", sender.getName(), name, subCommand.getName(), arguments);
-					if (!subCommand.execute(sender, arguments)) {
-						String usageMessage = subCommand.getUsageMessage(sender, name);
-						if (usageMessage != null && !usageMessage.isEmpty())
-							sender.sendMessage(usageMessage);
-					}
+					boolean correctSyntax = subCommand.execute(sender, arguments);
+					if (!correctSyntax)
+						sender.sendMessage(subCommand.getUsageMessage().with(Placeholder.COMMAND).as(name).translate());
 					return true;
 				}
 			}

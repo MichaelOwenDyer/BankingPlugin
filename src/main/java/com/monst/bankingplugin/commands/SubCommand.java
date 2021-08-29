@@ -73,17 +73,6 @@ public abstract class SubCommand {
         return Message.NO_PERMISSION;
     }
 
-    /**
-     * Gets a message describing how to use this subcommand
-     * @param sender Sender to receive the help message
-     * @return The help message for this subcommand.
-     */
-    String getUsageMessage(CommandSender sender, String commandName) {
-        if (getPermission().ownedBy(sender))
-            return getUsageMessage().with(Placeholder.COMMAND).as(commandName).translate();
-        return "";
-    }
-
     public abstract static class BankSubCommand extends SubCommand {
 
         protected BankSubCommand(BankingPlugin plugin, String name, boolean playerCommand) {

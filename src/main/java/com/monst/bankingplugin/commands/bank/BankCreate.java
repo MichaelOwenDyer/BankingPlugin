@@ -106,26 +106,27 @@ public class BankCreate extends SubCommand.BankSubCommand {
             return true;
         }
 
-        long volume = bankRegion.getVolume();
-        long volumeLimit = Utils.getBankVolumeLimit(p);
-        if (!isAdminBank && volumeLimit >= 0 && volume > volumeLimit) {
-            plugin.debugf("Bank is too large (%d blocks, limit: %d)", volume, volumeLimit);
-            p.sendMessage(Message.BANK_SELECTION_TOO_LARGE
-                    .with(Placeholder.BANK_SIZE).as(volume)
-                    .and(Placeholder.MAXIMUM).as(volumeLimit)
-                    .and(Placeholder.DIFFERENCE).as(volume - volumeLimit)
-                    .translate());
-            return true;
-        }
-
-        if (!isAdminBank && volume < Config.minimumBankVolume.get()) {
-            plugin.debugf("Bank is too small (%d blocks, minimum: %d)", volume, Config.minimumBankVolume.get());
-            p.sendMessage(Message.BANK_SELECTION_TOO_SMALL
-                    .with(Placeholder.BANK_SIZE).as(volume)
-                    .and(Placeholder.MINIMUM).as(Config.minimumBankVolume.get())
-                    .and(Placeholder.DIFFERENCE).as(Config.minimumBankVolume.get() - volume)
-                    .translate());
-            return true;
+        if (!isAdminBank) {
+            long volume = bankRegion.getVolume();
+            long volumeLimit = Utils.getBankVolumeLimit(p);
+            if (volumeLimit >= 0 && volume > volumeLimit) {
+                plugin.debugf("Bank is too large (%d blocks, limit: %d)", volume, volumeLimit);
+                p.sendMessage(Message.BANK_SELECTION_TOO_LARGE
+                        .with(Placeholder.BANK_SIZE).as(volume)
+                        .and(Placeholder.MAXIMUM).as(volumeLimit)
+                        .and(Placeholder.DIFFERENCE).as(volume - volumeLimit)
+                        .translate());
+                return true;
+            }
+            if (volume < Config.minimumBankVolume.get()) {
+                plugin.debugf("Bank is too small (%d blocks, minimum: %d)", volume, Config.minimumBankVolume.get());
+                p.sendMessage(Message.BANK_SELECTION_TOO_SMALL
+                        .with(Placeholder.BANK_SIZE).as(volume)
+                        .and(Placeholder.MINIMUM).as(Config.minimumBankVolume.get())
+                        .and(Placeholder.DIFFERENCE).as(Config.minimumBankVolume.get() - volume)
+                        .translate());
+                return true;
+            }
         }
 
         String name = args[0];
@@ -180,7 +181,6 @@ public class BankCreate extends SubCommand.BankSubCommand {
 
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
-        Player p = ((Player) player);
         ArrayList<String> returnCompletions = new ArrayList<>();
 
         if (args.length == 0 || Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase("admin")))
@@ -189,13 +189,13 @@ public class BankCreate extends SubCommand.BankSubCommand {
         if (args.length == 1)
             return Collections.singletonList("<name>");
 
-        if (args.length % 3 == 2 && Permission.BANK_CREATE_ADMIN.ownedBy(p))
+        if (args.length % 3 == 2 && Permission.BANK_CREATE_ADMIN.ownedBy(player))
             returnCompletions.add("admin");
 
         if (args.length >= 8)
             return returnCompletions;
 
-        String coord = "" + getCoordLookingAt(p, args.length);
+        String coord = "" + getCoordLookingAt(player, args.length);
         if (coord.startsWith(args[args.length - 1]))
             returnCompletions.add(coord);
         return returnCompletions;
