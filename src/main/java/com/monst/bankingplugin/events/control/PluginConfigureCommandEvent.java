@@ -5,6 +5,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
+/**
+ * Called when a command to configure the plugin is executed.
+ */
 public class PluginConfigureCommandEvent extends ControlEvent implements Cancellable {
 
     private boolean cancelled;

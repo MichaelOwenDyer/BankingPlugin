@@ -5,13 +5,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
- * Any event that involves a single {@link Account}.
+ * An event involving a single {@link Account}.
  */
 public abstract class SingleAccountEvent extends AccountEvent {
 
 	private final Account account;
 
-	public SingleAccountEvent(CommandSender sender, Account account) {
+	protected SingleAccountEvent(CommandSender sender, Account account) {
 		super(sender);
 		this.account = account;
 	}

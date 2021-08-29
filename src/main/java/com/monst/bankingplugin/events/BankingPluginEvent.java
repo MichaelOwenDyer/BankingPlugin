@@ -9,7 +9,7 @@ public abstract class BankingPluginEvent extends Event {
     private boolean fired = false;
     private final CommandSender executor;
 
-    public BankingPluginEvent(CommandSender executor) {
+    protected BankingPluginEvent(CommandSender executor) {
         this.executor = executor;
     }
 

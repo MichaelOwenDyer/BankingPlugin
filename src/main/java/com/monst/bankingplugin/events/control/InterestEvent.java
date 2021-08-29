@@ -8,6 +8,10 @@ import org.bukkit.event.HandlerList;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * The event at the heart of BankingPlugin.
+ * This event is called at the interest payout times of all banks on the server.
+ */
 public class InterestEvent extends ControlEvent implements Cancellable {
 
 	private boolean cancelled;

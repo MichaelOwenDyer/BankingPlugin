@@ -4,6 +4,9 @@ import com.monst.bankingplugin.config.values.ConfigValue;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 
+/**
+ * Called when the plugin is configured from in-game.
+ */
 public class PluginConfigureEvent extends ControlEvent {
 
     private final ConfigValue<?, ?> configValue;

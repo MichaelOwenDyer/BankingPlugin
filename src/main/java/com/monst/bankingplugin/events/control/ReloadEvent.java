@@ -5,7 +5,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
 /**
- * Called when a player reloads the plugin
+ * Called when the plugin is reloaded.
  */
 public class ReloadEvent extends ControlEvent implements Cancellable {
 
