@@ -41,11 +41,10 @@ public class ControlPayInterest extends SubCommand {
         }
 
         Set<Bank> banks;
-        if (args.length == 1)
+        if (args.length == 0)
             banks = plugin.getBankRepository().getAll();
         else
             banks = Arrays.stream(args)
-                    .skip(1)
                     .map(plugin.getBankRepository()::getByIdentifier)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());

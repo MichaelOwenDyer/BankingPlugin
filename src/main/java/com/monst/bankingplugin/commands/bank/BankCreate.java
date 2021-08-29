@@ -23,7 +23,7 @@ import java.util.*;
 public class BankCreate extends SubCommand.BankSubCommand {
 
     BankCreate(BankingPlugin plugin) {
-		super(plugin, "create", true); // TODO: Allow bank creation from console?
+		super(plugin, "create", true);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+        Player p = (Player) sender;
         plugin.debug(p.getName() + " wants to create a bank");
 
         if (Permission.BANK_CREATE.notOwnedBy(p)) {
@@ -47,13 +47,13 @@ public class BankCreate extends SubCommand.BankSubCommand {
             return true;
         }
 
-        if (args.length < 2)
+        if (args.length < 1)
             return false;
 
-        String name = args[1];
+        String name = args[0];
 
         BankRegion bankRegion;
-        if (args.length <= 3) {
+        if (args.length <= 2) {
             if (plugin.isWorldEditIntegrated()) {
                 bankRegion = WorldEditReader.getBankRegion(plugin, p);
                 if (bankRegion == null) {

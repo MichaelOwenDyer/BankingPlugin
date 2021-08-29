@@ -33,7 +33,7 @@ public class BankTrust extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        if (args.length < 3)
+        if (args.length < 2)
             return false;
 
         plugin.debug(sender.getName() + " wants to trust a player to a bank");
@@ -42,13 +42,13 @@ public class BankTrust extends SubCommand.BankSubCommand {
             sender.sendMessage(Message.NO_PERMISSION_BANK_TRUST.translate());
             return true;
         }
-        Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
+        Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
         if (bank == null) {
-            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-            sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+            plugin.debugf("Couldn't find bank with name or ID %s", args[0]);
+            sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
-        OfflinePlayer playerToTrust = Utils.getPlayer(args[2]);
+        OfflinePlayer playerToTrust = Utils.getPlayer(args[1]);
         if (playerToTrust == null) {
             sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
             return true;

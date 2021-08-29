@@ -34,7 +34,7 @@ public class BankSelect extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+        Player p = (Player) sender;
         plugin.debug(p.getName() + " wants to select a bank");
 
         if (!plugin.isWorldEditIntegrated() && !plugin.isGriefPreventionIntegrated()) {
@@ -50,7 +50,7 @@ public class BankSelect extends SubCommand.BankSubCommand {
         }
 
         Bank bank;
-        if (args.length == 1) {
+        if (args.length == 0) {
             bank = plugin.getBankRepository().getAt(p.getLocation().getBlock());
             if (bank == null) {
                 plugin.debug(p.getName() + " wasn't standing in a bank");
@@ -58,10 +58,10 @@ public class BankSelect extends SubCommand.BankSubCommand {
                 return true;
             }
         } else {
-            bank = plugin.getBankRepository().getByIdentifier(args[1]);
+            bank = plugin.getBankRepository().getByIdentifier(args[0]);
             if (bank == null) {
-                plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-                p.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+                plugin.debugf("Couldn't find bank with name or ID %s", args[0]);
+                p.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
                 return true;
             }
         }

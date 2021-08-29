@@ -48,7 +48,7 @@ public class AccountRemoveAll extends SubCommand {
 
         Set<Account> accounts;
 
-        if (args.length == 1) {
+        if (args.length == 0) {
             accounts = plugin.getAccountRepository().getAll();
         } else {
             Map<String, UUID> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
@@ -89,9 +89,11 @@ public class AccountRemoveAll extends SubCommand {
             plugin.debug("Remove all event cancelled");
             return true;
         }
+
+        for (Account account : accounts)
+            plugin.getAccountRepository().remove(account, true);
         plugin.debugf("%s removed account(s) %s", sender.getName(), Utils.map(accounts, a -> "#" + a.getID()));
         sender.sendMessage(Message.ALL_ACCOUNTS_REMOVED.with(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size()).translate());
-        accounts.forEach(account -> plugin.getAccountRepository().remove(account, true));
         return true;
     }
 

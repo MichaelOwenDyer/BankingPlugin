@@ -88,7 +88,7 @@ public abstract class SubCommand {
 
         protected Bank getBank(CommandSender sender, String[] args) {
             Bank bank = null;
-            if (args.length == 1) {
+            if (args.length == 0) {
                 if (sender instanceof Player) {
                     Player p = (Player) sender;
                     bank = plugin.getBankRepository().getAt(p.getLocation().getBlock());
@@ -99,10 +99,10 @@ public abstract class SubCommand {
                 } else
                     sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
             } else {
-                bank = plugin.getBankRepository().getByIdentifier(args[1]);
+                bank = plugin.getBankRepository().getByIdentifier(args[0]);
                 if (bank == null) {
-                    plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-                    sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+                    plugin.debugf("Couldn't find bank with name or ID %s", args[0]);
+                    sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
                 }
             }
             return bank;
@@ -128,17 +128,17 @@ public abstract class SubCommand {
          */
         protected static CuboidBankRegion parseCoordinates(String[] args, Block loc) throws IntegerParseException {
             int x1, y1, z1, x2, y2, z2;
-            if (args.length == 5 || args.length == 6) {
-                x1 = parseCoordinate(args[2], x2 = loc.getX());
-                y1 = parseCoordinate(args[3], y2 = loc.getY());
-                z1 = parseCoordinate(args[4], z2 = loc.getZ());
-            } else if (args.length >= 8) {
-                x1 = parseCoordinate(args[2], loc.getX());
-                y1 = parseCoordinate(args[3], loc.getY());
-                z1 = parseCoordinate(args[4], loc.getZ());
-                x2 = parseCoordinate(args[5], loc.getX());
-                y2 = parseCoordinate(args[6], loc.getY());
-                z2 = parseCoordinate(args[7], loc.getZ());
+            if (args.length == 4 || args.length == 5) {
+                x1 = parseCoordinate(args[1], x2 = loc.getX());
+                y1 = parseCoordinate(args[2], y2 = loc.getY());
+                z1 = parseCoordinate(args[3], z2 = loc.getZ());
+            } else if (args.length >= 7) {
+                x1 = parseCoordinate(args[1], loc.getX());
+                y1 = parseCoordinate(args[2], loc.getY());
+                z1 = parseCoordinate(args[3], loc.getZ());
+                x2 = parseCoordinate(args[4], loc.getX());
+                y2 = parseCoordinate(args[5], loc.getY());
+                z2 = parseCoordinate(args[6], loc.getZ());
             } else
                 return null;
             Vector3D loc1 = new Vector3D(x1, y1, z1);

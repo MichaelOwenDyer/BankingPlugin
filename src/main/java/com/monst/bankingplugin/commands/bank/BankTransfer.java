@@ -47,20 +47,20 @@ public class BankTransfer extends SubCommand.BankSubCommand {
             return true;
         }
 
-        if (args.length < 2)
+        if (args.length < 1)
             return false;
 
-        Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
+        Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
         if (bank == null) {
-            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-            sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+            plugin.debugf("Couldn't find bank with name or ID %s", args[0]);
+            sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
         OfflinePlayer newOwner = null;
-        if (args.length > 2) {
-            newOwner = Utils.getPlayer(args[2]);
+        if (args.length > 1) {
+            newOwner = Utils.getPlayer(args[1]);
             if (newOwner == null) {
-                sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[2]).translate());
+                sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
                 return true;
             }
         }

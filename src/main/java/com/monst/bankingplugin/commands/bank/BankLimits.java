@@ -27,7 +27,7 @@ public class BankLimits extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+        Player p = (Player) sender;
         int banksUsed = plugin.getBankRepository().getOwnedBy(p).size();
         int allowedBanks = Utils.getBankLimit(p);
         long allowedVolume = Utils.getBankVolumeLimit(p);

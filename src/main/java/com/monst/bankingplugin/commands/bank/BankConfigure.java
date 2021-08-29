@@ -39,16 +39,14 @@ public class BankConfigure extends SubCommand.BankSubCommand {
     protected boolean execute(CommandSender sender, String[] args) {
         plugin.debug(sender.getName() + " wants to configure a bank");
 
-        if (args.length < 3)
+        if (args.length < 2)
             return false;
 
-        Bank bank = plugin.getBankRepository().getByIdentifier(args[1]);
-        String fieldName = args[2];
-        String value = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
+        Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
 
         if (bank == null) {
-            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-            sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+            plugin.debugf("Couldn't find bank with name or ID %s", args[0]);
+            sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
@@ -62,6 +60,9 @@ public class BankConfigure extends SubCommand.BankSubCommand {
             sender.sendMessage(Message.NO_PERMISSION_BANK_SET_ADMIN.translate());
             return true;
         }
+
+        String fieldName = args[1];
+        String value = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
 
         BankField field = BankField.getByName(fieldName);
         if (field == null) {

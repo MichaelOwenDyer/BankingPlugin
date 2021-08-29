@@ -36,18 +36,19 @@ public class AccountRemove extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debugf("%s wants to remove an account", sender.getName());
+        Player p = (Player) sender;
+        plugin.debugf("%s wants to remove an account", p.getName());
 
-        AccountRemoveCommandEvent event = new AccountRemoveCommandEvent((Player) sender, args);
+        AccountRemoveCommandEvent event = new AccountRemoveCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account remove command event cancelled");
             return true;
         }
 
-        plugin.debugf("%s can now click a chest to remove an account", sender.getName());
-        sender.sendMessage(Message.CLICK_ACCOUNT_REMOVE.translate());
-        ClickType.setRemoveClickType((Player) sender);
+        plugin.debugf("%s can now click a chest to remove an account", p.getName());
+        p.sendMessage(Message.CLICK_ACCOUNT_REMOVE.translate());
+        ClickType.setRemoveClickType(p);
         return true;
     }
 

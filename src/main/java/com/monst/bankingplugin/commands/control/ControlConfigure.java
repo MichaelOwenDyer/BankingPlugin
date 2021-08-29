@@ -43,17 +43,17 @@ public class ControlConfigure extends SubCommand {
             return true;
         }
 
-        if (args.length < 2)
+        if (args.length < 1)
             return false;
 
-        String path = args[1];
+        String path = args[0];
         ConfigValue<?, ?> configValue = Config.getByPath(path);
         if (configValue == null) {
             sender.sendMessage(Message.NOT_A_CONFIG_VALUE.with(Placeholder.INPUT).as(path).translate());
             return true;
         }
 
-        String input = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
+        String input = Arrays.stream(args).skip(1).collect(Collectors.joining(" "));
 
         PluginConfigureCommandEvent event = new PluginConfigureCommandEvent(sender, configValue, input);
         event.fire();

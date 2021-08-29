@@ -104,13 +104,14 @@ public abstract class BankingPluginCommand {
 		public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, String[] args) {
 			if (args.length > 0) {
 				for (SubCommand subCommand : subCommands) {
-					if (!subCommand.getName().equalsIgnoreCase(args[0]))
+					if (!subCommand.getName().equalsIgnoreCase(label))
 						continue;
 					if (subCommand.isPlayerCommand() && !(sender instanceof Player)) {
 						sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
 						return true;
 					}
-					if (!subCommand.execute(sender, args)) {
+					String[] arguments = Arrays.copyOfRange(args, 1, args.length);
+					if (!subCommand.execute(sender, arguments)) {
 						String usageMessage = subCommand.getUsageMessage(sender, name);
 						if (usageMessage != null && !usageMessage.isEmpty())
 							sender.sendMessage(usageMessage);
@@ -134,16 +135,15 @@ public abstract class BankingPluginCommand {
 			if (args.length == 0)
 				return Collections.emptyList();
 
-			String subCommandName = args[0];
 			if (args.length == 1)
 				return subCommands.stream()
 						.map(SubCommand::getName)
-						.filter(name -> Utils.startsWithIgnoreCase(name, subCommandName))
+						.filter(name -> Utils.startsWithIgnoreCase(name, label))
 						.collect(Collectors.toList());
 
 			String[] arguments = Arrays.copyOfRange(args, 1, args.length);
 			for (SubCommand subCommand : subCommands)
-				if (subCommand.getName().equalsIgnoreCase(subCommandName))
+				if (subCommand.getName().equalsIgnoreCase(label))
 					return subCommand.getTabCompletions((Player) sender, arguments);
 
 			return Collections.emptyList();

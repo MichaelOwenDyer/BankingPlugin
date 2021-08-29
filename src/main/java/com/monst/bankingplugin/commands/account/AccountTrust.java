@@ -35,23 +35,23 @@ public class AccountTrust extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debugf("%s wants to trust a player to an account", sender.getName());
+        Player p = (Player) sender;
+        plugin.debugf("%s wants to trust a player to an account", p.getName());
 
-        if (Permission.ACCOUNT_TRUST.notOwnedBy(sender)) {
-            sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRUST.translate());
+        if (Permission.ACCOUNT_TRUST.notOwnedBy(p)) {
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRUST.translate());
             return true;
         }
 
-        if (args.length < 2)
+        if (args.length < 1)
             return false;
 
-        OfflinePlayer playerToTrust = Utils.getPlayer(args[1]);
+        OfflinePlayer playerToTrust = Utils.getPlayer(args[0]);
         if (playerToTrust == null) {
-            sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+            p.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
 
-        Player p = ((Player) sender);
         AccountTrustCommandEvent event = new AccountTrustCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
@@ -59,9 +59,9 @@ public class AccountTrust extends SubCommand {
             return true;
         }
 
-        sender.sendMessage(Message.CLICK_ACCOUNT_TRUST.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate());
+        p.sendMessage(Message.CLICK_ACCOUNT_TRUST.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate());
         ClickType.setTrustClickType(p, playerToTrust);
-        plugin.debugf("%s is trusting %s to an account", sender.getName(), playerToTrust.getName());
+        plugin.debugf("%s is trusting %s to an account", p.getName(), playerToTrust.getName());
         return true;
     }
 

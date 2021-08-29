@@ -38,7 +38,7 @@ public class AccountTransfer extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+        Player p = (Player) sender;
         plugin.debugf("%s wants to transfer ownership of an account", p.getName());
 
         if (Permission.ACCOUNT_TRANSFER.notOwnedBy(p)) {
@@ -47,12 +47,12 @@ public class AccountTransfer extends SubCommand {
             return true;
         }
 
-        if (args.length < 2)
+        if (args.length < 1)
             return false;
 
-        OfflinePlayer newOwner = Utils.getPlayer(args[1]);
+        OfflinePlayer newOwner = Utils.getPlayer(args[0]);
         if (newOwner == null) {
-            p.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+            p.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
 

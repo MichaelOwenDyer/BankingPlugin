@@ -25,42 +25,42 @@ public class AccountInfo extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debugf("%s wants to open an account GUI", sender.getName());
-        Player player = (Player) sender;
+        Player p = (Player) sender;
+        plugin.debugf("%s wants to open an account GUI", p.getName());
 
-        if (args.length > 1) {
+        if (args.length > 0) {
             try {
-                int id = Integer.parseInt(args[1]);
+                int id = Integer.parseInt(args[0]);
                 Account account = plugin.getAccountRepository().getByID(id);
                 if (account == null) {
-                    player.sendMessage(Message.ACCOUNT_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+                    p.sendMessage(Message.ACCOUNT_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
                     return true;
                 }
 
-                plugin.debugf("%s is viewing the GUI of account #%d", player.getName(), id);
+                plugin.debugf("%s is viewing the GUI of account #%d", p.getName(), id);
 
-                AccountInfoEvent event = new AccountInfoEvent(player, account);
+                AccountInfoEvent event = new AccountInfoEvent(p, account);
                 event.fire();
                 if (event.isCancelled()) {
                     plugin.debug("Account info event cancelled");
                     return true;
                 }
 
-                new AccountGUI(account).open(player);
+                new AccountGUI(account).open(p);
                 return true;
             } catch (NumberFormatException ignored) {}
         }
 
-        AccountInfoCommandEvent event = new AccountInfoCommandEvent(player, args);
+        AccountInfoCommandEvent event = new AccountInfoCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account info command event cancelled");
             return true;
         }
 
-        plugin.debugf("%s can now click an account to see the GUI", player.getName());
-        player.sendMessage(Message.CLICK_ACCOUNT_INFO.translate());
-        ClickType.setInfoClickType(player);
+        plugin.debugf("%s can now click an account to see the GUI", p.getName());
+        p.sendMessage(Message.CLICK_ACCOUNT_INFO.translate());
+        ClickType.setInfoClickType(p);
         return true;
     }
 

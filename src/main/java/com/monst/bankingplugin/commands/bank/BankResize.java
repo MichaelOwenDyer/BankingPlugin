@@ -40,7 +40,7 @@ public class BankResize extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+        Player p = (Player) sender;
         plugin.debug(p.getName() + " wants to resize a bank");
 
         if (Permission.BANK_RESIZE.notOwnedBy(p)) {
@@ -52,10 +52,10 @@ public class BankResize extends SubCommand.BankSubCommand {
         Bank bank;
         BankRegion bankRegion;
 
-        if (args.length == 1)
+        if (args.length == 0)
             return false;
 
-        else if (args.length == 2) {
+        else if (args.length == 1) {
             if (plugin.isWorldEditIntegrated()) {
                 bankRegion = WorldEditReader.getBankRegion(plugin, p);
                 if (bankRegion == null) {
@@ -81,10 +81,10 @@ public class BankResize extends SubCommand.BankSubCommand {
         if (bankRegion == null)
             return false;
 
-        bank = plugin.getBankRepository().getByIdentifier(args[1]);
+        bank = plugin.getBankRepository().getByIdentifier(args[0]);
         if (bank == null) {
-            plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-            p.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+            plugin.debugf("Couldn't find bank with name or ID %s", args[0]);
+            p.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
         if (bank.isPlayerBank() && !bank.isOwner(p) && Permission.BANK_RESIZE_OTHER.notOwnedBy(p)) {

@@ -38,35 +38,35 @@ public class AccountConfigure extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player executor = (Player) sender;
-        plugin.debugf("%s wants to configure an account", executor.getName());
+        Player p = (Player) sender;
+        plugin.debugf("%s wants to configure an account", p.getName());
 
-        if (Permission.ACCOUNT_CONFIGURE.notOwnedBy(executor)) {
-            plugin.debugf("%s does not have permission to configure an account", executor.getName());
-            executor.sendMessage(Message.NO_PERMISSION_ACCOUNT_CONFIGURE.translate());
+        if (Permission.ACCOUNT_CONFIGURE.notOwnedBy(p)) {
+            plugin.debugf("%s does not have permission to configure an account", p.getName());
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CONFIGURE.translate());
             return true;
         }
 
-        if (args.length < 3)
+        if (args.length < 2)
             return false;
 
-        String property = args[1];
+        String property = args[0];
         AccountField field = AccountField.getByName(property);
         if (field == null) {
-            executor.sendMessage(Message.NOT_A_PROPERTY.with(Placeholder.INPUT).as(property).translate());
+            p.sendMessage(Message.NOT_A_PROPERTY.with(Placeholder.INPUT).as(property).translate());
             return true;
         }
 
         int value;
         try {
-            value = Parser.parseInt(args[2]);
+            value = Parser.parseInt(args[1]);
         } catch (IntegerParseException e) {
-            executor.sendMessage(e.getLocalizedMessage());
+            p.sendMessage(e.getLocalizedMessage());
             return true;
         }
 
-        ClickType.setConfigureClickType(executor, field, value);
-        executor.sendMessage(Message.CLICK_ACCOUNT_CONFIGURE
+        ClickType.setConfigureClickType(p, field, value);
+        p.sendMessage(Message.CLICK_ACCOUNT_CONFIGURE
                 .with(Placeholder.PROPERTY).as(property)
                 .and(Placeholder.VALUE).as(value)
                 .translate());

@@ -29,10 +29,10 @@ public class AccountList extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
+        Player p = (Player) sender;
         plugin.debugf("%s wants to list accounts", sender.getName());
 
-        Player player = (Player) sender;
-        AccountListEvent event = new AccountListEvent(player, Collections.emptyList()); // FIXME: Pass accounts being listed
+        AccountListEvent event = new AccountListEvent(p, Collections.emptyList()); // FIXME: Pass accounts being listed
         event.fire();
         if (event.isCancelled()) {
             plugin.debug("Account list event cancelled");
@@ -40,9 +40,9 @@ public class AccountList extends SubCommand {
         }
 
         Supplier<Collection<Account>> getVisibleAccounts;
-        if (Permission.ACCOUNT_LIST_OTHER.notOwnedBy(player))
-            getVisibleAccounts = () -> plugin.getAccountRepository().getMatching(account -> account.isTrusted(player));
-        else if (args.length == 1)
+        if (Permission.ACCOUNT_LIST_OTHER.notOwnedBy(p))
+            getVisibleAccounts = () -> plugin.getAccountRepository().getMatching(account -> account.isTrusted(p));
+        else if (args.length == 0)
             getVisibleAccounts = plugin.getAccountRepository()::getAll;
         else {
             Set<OfflinePlayer> players = Arrays.stream(args)
@@ -51,7 +51,7 @@ public class AccountList extends SubCommand {
                     .collect(Collectors.toSet());
             getVisibleAccounts = () -> plugin.getAccountRepository().getMatching(account -> players.contains(account.getOwner()));
         }
-        new AccountListGUI(getVisibleAccounts).open(player);
+        new AccountListGUI(getVisibleAccounts).open(p);
         return true;
     }
 

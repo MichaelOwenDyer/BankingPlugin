@@ -27,7 +27,7 @@ public class AccountLimits extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+        Player p = (Player) sender;
         int used = plugin.getAccountRepository().getOwnedBy(p).size();
         int accLimit = Utils.getAccountLimit(p);
         String limit = accLimit < 0 ? "∞" : "" + accLimit;

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class BankInfo extends SubCommand.BankSubCommand {
 
     BankInfo(BankingPlugin plugin) {
-		super(plugin, "info", false);
+		super(plugin, "info", true);
     }
 
     @Override
@@ -26,15 +26,15 @@ public class BankInfo extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to show bank info");
-        Player player = (Player) sender;
+        Player p = (Player) sender;
+        plugin.debugf("%s wants to view a bank GUI", p.getName());
 
-        Bank bank = getBank(player, args);
+        Bank bank = getBank(p, args);
         if (bank == null)
             return true;
 
-        plugin.debug(player.getName() + " is displaying bank info");
-        new BankGUI(bank).open(player);
+        plugin.debugf("%s is viewing GUI of bank #%d", p.getName(), bank.getID());
+        new BankGUI(bank).open(p);
         return true;
     }
 

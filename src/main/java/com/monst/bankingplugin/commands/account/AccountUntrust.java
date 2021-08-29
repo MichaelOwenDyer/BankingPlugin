@@ -35,24 +35,23 @@ public class AccountUntrust extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
+        Player p = (Player) sender;
+        plugin.debugf("%s wants to untrust a player from an account", p.getName());
 
-        plugin.debugf("%s wants to untrust a player from an account", sender.getName());
-
-        if (Permission.ACCOUNT_TRUST.notOwnedBy(sender)) {
-            sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST.translate());
+        if (Permission.ACCOUNT_TRUST.notOwnedBy(p)) {
+            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_UNTRUST.translate());
             return true;
         }
 
-        if (args.length < 2)
+        if (args.length < 1)
             return false;
 
-        OfflinePlayer playerToUntrust = Utils.getPlayer(args[1]);
+        OfflinePlayer playerToUntrust = Utils.getPlayer(args[0]);
         if (playerToUntrust == null) {
-            sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+            p.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
 
-        Player p = ((Player) sender);
         AccountUntrustCommandEvent event = new AccountUntrustCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {
@@ -60,9 +59,9 @@ public class AccountUntrust extends SubCommand {
             return true;
         }
 
-        sender.sendMessage(Message.CLICK_ACCOUNT_UNTRUST.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
+        p.sendMessage(Message.CLICK_ACCOUNT_UNTRUST.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate());
         ClickType.setUntrustClickType(p, playerToUntrust);
-        plugin.debugf("%s is untrusting %s from an account", sender.getName(), playerToUntrust.getName());
+        plugin.debugf("%s is untrusting %s from an account", p.getName(), playerToUntrust.getName());
         return true;
     }
 

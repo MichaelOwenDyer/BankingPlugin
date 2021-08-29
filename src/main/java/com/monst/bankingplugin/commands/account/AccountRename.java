@@ -34,19 +34,17 @@ public class AccountRename extends SubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = ((Player) sender);
+        Player p = (Player) sender;
+        plugin.debugf("%s wants to rename an account", p.getName());
+
         if (Permission.ACCOUNT_RENAME.notOwnedBy(p)) {
             p.sendMessage(Message.NO_PERMISSION_ACCOUNT_RENAME.translate());
             return true;
         }
-        StringBuilder sb = new StringBuilder(32);
-        if (args.length >= 2)
-            sb.append(args[1]);
-        for (int i = 2; i < args.length; i++)
-            sb.append(" ").append(args[i]);
-        String nickname = sb.toString();
 
-        if (!nickname.trim().isEmpty() && !Config.nameRegex.matches(nickname)) {
+        String nickname = String.join(" ", args).trim();
+
+        if (!nickname.isEmpty() && !Config.nameRegex.matches(nickname)) {
             plugin.debugf("Name \"%s\" is not allowed", nickname);
             p.sendMessage(Message.NAME_NOT_ALLOWED
                     .with(Placeholder.NAME).as(nickname)

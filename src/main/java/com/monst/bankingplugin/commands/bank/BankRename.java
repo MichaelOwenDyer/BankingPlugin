@@ -12,6 +12,7 @@ import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,15 +35,14 @@ public class BankRename extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        if (args.length < 2)
+        if (args.length < 1)
             return false;
 
         plugin.debugf("%s is renaming a bank", sender.getName());
 
         Bank bank;
-        StringBuilder sb;
         String newName;
-        if (args.length == 2) {
+        if (args.length == 1) {
             if (!(sender instanceof Player)) {
                 plugin.debug("Must be player");
                 sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
@@ -54,18 +54,15 @@ public class BankRename extends SubCommand.BankSubCommand {
                 sender.sendMessage(Message.MUST_STAND_IN_BANK.translate());
                 return true;
             }
-            newName = args[1];
+            newName = args[0];
         } else {
-            bank = plugin.getBankRepository().getByIdentifier(args[1]);
+            bank = plugin.getBankRepository().getByIdentifier(args[0]);
             if (bank == null) {
-                plugin.debugf("Couldn't find bank with name or ID %s", args[1]);
-                sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());
+                plugin.debugf("Couldn't find bank with name or ID %s", args[0]);
+                sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
                 return true;
             }
-            sb = new StringBuilder(args[2]);
-            for (int i = 3; i < args.length; i++)
-                sb.append(" ").append(args[i]);
-            newName = sb.toString();
+            newName = Arrays.stream(args).skip(1).collect(Collectors.joining(" "));
         }
 
         if (bank.isAdminBank() && Permission.BANK_SET_ADMIN.notOwnedBy(sender)) {
