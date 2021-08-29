@@ -29,50 +29,53 @@ public abstract class ConfigValue<V, T> implements ConfigurationValue<V, T> {
         this.plugin = plugin;
         this.path = path;
         this.defaultConfiguration = defaultConfiguration;
-        get(); // Initialize value in memory
+        this.lastSeenValue = load(); // Initialize value in memory
     }
 
     @Override
     public final T get() {
-        if (lastSeenValue != null)
-            return lastSeenValue;
+        if (lastSeenValue == null)
+            lastSeenValue = load();
+        return lastSeenValue;
+    }
+
+    private T load() {
         try {
-            return lastSeenValue = readFromFile();
+            return readFromFile();
         } catch (MissingValueException e) {
             writeToFile(defaultConfiguration);
             plugin.getLogger().info(String.format("Missing config value \"%s\" was added to the config.yml file.", path));
-            return lastSeenValue = defaultConfiguration;
+            return defaultConfiguration;
         } catch (InvalidValueException e) {
             writeToFile(e.getValidatedValue());
             plugin.getLogger().info(String.format("Validated corrupt config value \"%s\" in the config.yml file.", path));
-            return lastSeenValue = e.getValidatedValue();
+            return e.getValidatedValue();
         } catch (CorruptedValueException e) {
             writeToFile(defaultConfiguration);
             plugin.getLogger().info(String.format("Reset corrupt config value \"%s\" to default in the config.yml file.", path));
-            return lastSeenValue = defaultConfiguration;
+            return defaultConfiguration;
         }
     }
 
     public final void set(String input) throws ArgumentParseException {
         plugin.reloadConfig();
-        T newValue = input.isEmpty() && nonOptional() ? defaultConfiguration : parse(input);
+        T newValue = !input.isEmpty() || isOptional() ? parse(input) : defaultConfiguration;
         beforeSet();
-        writeToFile(newValue);
         lastSeenValue = newValue;
+        writeToFile(newValue);
         new PluginConfigureEvent(this, newValue).fire();
         plugin.saveConfig();
     }
 
-    boolean nonOptional() {
-        return true;
+    boolean isOptional() {
+        return false;
     }
 
     void beforeSet() {}
     public void afterSet(CommandSender executor) {}
 
     public final void reload() {
-        lastSeenValue = null;
-        get();
+        lastSeenValue = load();
     }
 
     public boolean isHotSwappable() {

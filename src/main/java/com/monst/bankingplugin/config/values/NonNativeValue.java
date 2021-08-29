@@ -7,7 +7,7 @@ import org.bukkit.configuration.MemoryConfiguration;
 
 /**
  * A configuration value stored non-natively in the config.yml file.
- * The value must be stored in a different type than its own and then reconstructed.
+ * The value must be stored in a different type than its own and then translated back.
  * @param <V> the stored type of the value
  * @param <T> the actual type of the value
  */

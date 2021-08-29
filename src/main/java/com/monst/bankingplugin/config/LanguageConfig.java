@@ -27,11 +27,10 @@ public class LanguageConfig extends FileConfiguration {
     }
 
     public void reload() {
-        Path languageFile = defaultLangFile.resolveSibling(Config.languageFile.get());
-
         if (!Files.exists(defaultLangFile))
             plugin.saveResource("lang/en_US.lang", false);
 
+        Path languageFile = defaultLangFile.resolveSibling(Config.languageFile.get());
         if (!Files.exists(languageFile)) {
             plugin.getLogger().warning("Could not find language file \"" + languageFile.getFileName() + "\".");
             plugin.debugf("Could not find language file \"%s\".", languageFile.getFileName());
@@ -52,10 +51,15 @@ public class LanguageConfig extends FileConfiguration {
         Map<String, String> fileTranslations = mapLines(Files.lines(path));
         EnumSet<Message> missingMessages = EnumSet.noneOf(Message.class);
         for (Message message : Message.values()) {
-            String translation = fileTranslations.get(message.getPath());
+            String translation = fileTranslations.remove(message.getPath());
             if (translation == null) // Value was missing
                 missingMessages.add(message);
             message.setTranslation(translation);
+        }
+        if (!fileTranslations.isEmpty()) {
+            plugin.getLogger().info("There are unused translations in language file \"" + path.getFileName() + "\".");
+            plugin.getLogger().info("See debug log for details.");
+            plugin.debugf("Unused translations found in language file \"%s\": %s", path.getFileName(), fileTranslations.keySet());
         }
         if (missingMessages.isEmpty())
             return;

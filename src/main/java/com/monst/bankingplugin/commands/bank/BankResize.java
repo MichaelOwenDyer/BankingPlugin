@@ -12,7 +12,6 @@ import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.utils.Callback;
 import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.command.CommandSender;
@@ -149,13 +148,9 @@ public class BankResize extends SubCommand.BankSubCommand {
         }
 
         bank.setRegion(bankRegion);
-        plugin.getBankRepository().update(bank, Callback.of(
-                result -> {
-                    plugin.debugf("%s has resized bank #%d", p.getName(), bank.getID());
-                    p.sendMessage(Message.BANK_RESIZED.with(Placeholder.BANK_SIZE).as(volume).translate());
-                },
-                error -> p.sendMessage(Message.ERROR_OCCURRED.with(Placeholder.ERROR).as(error.getLocalizedMessage()).translate())
-        ), BankField.REGION);
+        plugin.getBankRepository().update(bank, BankField.REGION);
+        plugin.debugf("%s has resized bank #%d", p.getName(), bank.getID());
+        p.sendMessage(Message.BANK_RESIZED.with(Placeholder.BANK_SIZE).as(volume).translate());
         return true;
     }
 

@@ -138,6 +138,7 @@ permissions:
         default: op
         children:
             bankingplugin.account.remove.other: true
+            bankingplugin.account.remove.protected: true
 
     bankingplugin.account.rename:
         description: Give an account a custom name.

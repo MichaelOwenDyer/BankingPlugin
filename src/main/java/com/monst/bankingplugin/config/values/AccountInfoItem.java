@@ -26,8 +26,8 @@ public class AccountInfoItem extends ConfigValue<String, Optional<Material>> imp
     }
 
     @Override
-    boolean nonOptional() {
-        return false;
+    boolean isOptional() {
+        return true;
     }
 
 }

@@ -210,7 +210,7 @@ public final class BankingPlugin extends JavaPlugin {
         if (!Config.enableUpdateChecker.get())
             return;
         async(() -> {
-			UpdateChecker uc = new UpdateChecker(BankingPlugin.this);
+			UpdateChecker uc = new UpdateChecker(this);
 			Result result = uc.check();
 
 			if (result == Result.TRUE)
@@ -328,7 +328,7 @@ public final class BankingPlugin extends JavaPlugin {
 					callback.onError(error);
 					getLogger().severe("No database access! Disabling BankingPlugin.");
 					getLogger().severe(error.getMessage());
-					getServer().getPluginManager().disablePlugin(BankingPlugin.this);
+					getServer().getPluginManager().disablePlugin(this);
 				}
 		));
 	}

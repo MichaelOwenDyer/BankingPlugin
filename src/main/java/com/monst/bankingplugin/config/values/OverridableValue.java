@@ -26,8 +26,8 @@ abstract class OverridableValue<V, T> extends ConfigValue<V, T> {
         return new OverriddenValue<>(this, value);
     }
 
-    public static class AllowOverride extends ConfigValue<Boolean, Boolean> implements NativeBoolean {
-        AllowOverride(BankingPlugin plugin, String path) {
+    private static class AllowOverride extends ConfigValue<Boolean, Boolean> implements NativeBoolean {
+        private AllowOverride(BankingPlugin plugin, String path) {
             super(plugin, path + ".allow-override", true);
         }
     }

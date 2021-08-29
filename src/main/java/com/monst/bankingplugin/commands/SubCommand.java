@@ -40,7 +40,7 @@ public abstract class SubCommand {
     }
 
     /**
-     * Execute the sub command
+     * Executes the subcommand
      * @param sender Sender of the command
      * @param args Arguments of the command
      * @return Whether the command syntax was correct
@@ -48,9 +48,10 @@ public abstract class SubCommand {
     protected abstract boolean execute(CommandSender sender, String[] args);
 
     /**
+     * Tab-completes the subcommand
      * @param player Sender of the command
      * @param args Arguments of the command
-     * @return A list of tab completions for the sub command (may be an empty list)
+     * @return A list of tab completions for the subcommand (can be empty)
      */
     protected List<String> getTabCompletions(Player player, String[] args) {
 		return Collections.emptyList();
