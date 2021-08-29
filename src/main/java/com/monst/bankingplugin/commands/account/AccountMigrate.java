@@ -41,16 +41,13 @@ public class AccountMigrate extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_ACCOUNT_MIGRATE;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
-        plugin.debugf("%s wants to migrate an account", p.getName());
-
-        if (Permission.ACCOUNT_MIGRATE.notOwnedBy(p)) {
-            plugin.debugf("%s does not have permission to migrate an account", p.getName());
-            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_MIGRATE.translate());
-            return true;
-        }
-
         AccountMigrateCommandEvent event = new AccountMigrateCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {

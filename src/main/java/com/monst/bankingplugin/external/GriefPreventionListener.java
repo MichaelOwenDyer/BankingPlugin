@@ -9,7 +9,6 @@ import com.monst.bankingplugin.events.account.AccountRecoverEvent;
 import com.monst.bankingplugin.events.bank.BankCreateEvent;
 import com.monst.bankingplugin.events.bank.BankRemoveEvent;
 import com.monst.bankingplugin.events.bank.BankResizeEvent;
-import com.monst.bankingplugin.events.bank.BankSelectEvent;
 import com.monst.bankingplugin.listeners.BankingPluginListener;
 import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
@@ -152,13 +151,6 @@ public class GriefPreventionListener extends BankingPluginListener {
         CommandSender executor = e.getExecutor();
         if (executor instanceof Player)
 	        VisualizationManager.visualizeRegion(((Player) executor), e.getNewRegion(), e.getBank().isAdminBank());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBankSelect(BankSelectEvent e) {
-	    if (!plugin.isGriefPreventionIntegrated())
-	        return;
-        VisualizationManager.visualizeRegion((Player) e.getExecutor(), e.getBank());
     }
 
 }

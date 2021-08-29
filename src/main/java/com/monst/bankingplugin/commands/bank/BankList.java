@@ -20,12 +20,7 @@ public class BankList extends SubCommand.BankSubCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = (Player) sender;
-        plugin.debug(p.getName() + " is listing banks.");
-
-        // TODO: Allow for specific bank searching
-
-        new BankListGUI(plugin.getBankRepository()::getAll).open(p);
+        new BankListGUI(plugin.getBankRepository()::getAll).open((Player) sender);
         return true;
     }
 

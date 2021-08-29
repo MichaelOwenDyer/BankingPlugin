@@ -37,19 +37,16 @@ public class AccountConfigure extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_ACCOUNT_CONFIGURE;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = (Player) sender;
-        plugin.debugf("%s wants to configure an account", p.getName());
-
-        if (Permission.ACCOUNT_CONFIGURE.notOwnedBy(p)) {
-            plugin.debugf("%s does not have permission to configure an account", p.getName());
-            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CONFIGURE.translate());
-            return true;
-        }
-
         if (args.length < 2)
             return false;
 
+        Player p = (Player) sender;
         String property = args[0];
         AccountField field = AccountField.getByName(property);
         if (field == null) {

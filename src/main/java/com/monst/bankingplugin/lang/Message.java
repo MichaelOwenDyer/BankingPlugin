@@ -541,8 +541,12 @@ public enum Message {
             "A player must execute a command for a second time to confirm.",
             "&6Execute again to confirm."
     ),
+    NO_PERMISSION (
+            "A player attempts to execute a command without permission.",
+            "&cYou do not have permission to do that."
+    ),
     NO_PERMISSION_ACCOUNT_CREATE (
-            "A player attempts to create an account without permission.",
+            "A player attempts to use the /account create command without permission.",
             "&cYou do not have permission to create an account."
     ),
     NO_PERMISSION_ACCOUNT_CREATE_PROTECTED (
@@ -550,7 +554,7 @@ public enum Message {
             "&cYou do not have permission to create an account on a protected chest."
     ),
     NO_PERMISSION_ACCOUNT_TRUST (
-            "A player attempts to add another player as a co-owner of their account without permission.",
+            "A player attempts to use the /account trust command without permission.",
             "&cYou do not have permission to add a co-owner to an account."
     ),
     NO_PERMISSION_ACCOUNT_TRUST_OTHER (
@@ -558,12 +562,16 @@ public enum Message {
             "&cYou do not have permission to add a co-owner to someone else's account."
     ),
     NO_PERMISSION_ACCOUNT_UNTRUST (
-            "A player attempts to remove another player as a co-owner of their account without permission.",
+            "A player attempts to use the /account untrust command without permission.",
             "&cYou do not have permission to remove a co-owner from an account."
     ),
     NO_PERMISSION_ACCOUNT_UNTRUST_OTHER (
             "A player attempts to remove another player as a co-owner of someone else's account without permission.",
             "&cYou do not have permission to remove a co-owner from someone else's account."
+    ),
+    NO_PERMISSION_ACCOUNT_REMOVE (
+            "A player attempts to use the /account remove command without permission.",
+            "&cYou do not have permission to remove an account."
     ),
     NO_PERMISSION_ACCOUNT_REMOVE_OTHER (
             "A player attempts to remove someone else's account without permission.",
@@ -574,7 +582,7 @@ public enum Message {
             "&cYou do not have permission to remove a protected account."
     ),
     NO_PERMISSION_ACCOUNT_REMOVEALL (
-            "A player attempts to remove multiple accounts at once without permission.",
+            "A player attempts to use the /account removeall command without permission.",
             "&cYou do not have permission to remove all accounts."
     ),
     NO_PERMISSION_ACCOUNT_VIEW_OTHER (
@@ -586,7 +594,7 @@ public enum Message {
             "&cYou do not have permission to edit someone else's account."
     ),
     NO_PERMISSION_ACCOUNT_MIGRATE (
-            "A player attempts to migrate an account without permission.",
+            "A player attempts to use the /account migrate command without permission.",
             "&cYou do not have permission to migrate an account."
     ),
     NO_PERMISSION_ACCOUNT_MIGRATE_OTHER (
@@ -601,8 +609,12 @@ public enum Message {
             "A player attempts to migrate an account to a protected chest without permission.",
             "&cYou do not have permission to migrate an account to a protected chest."
     ),
+    NO_PERMISSION_ACCOUNT_RECOVER (
+            "A player attempts to use the /account recover command without permission.",
+            "&cYou do not have permission to recover an account."
+    ),
     NO_PERMISSION_ACCOUNT_RENAME (
-            "A player attempts to rename an account without permission.",
+            "A player attempts to use the /account rename command without permission.",
             "&cYou do not have permission to rename an account."
     ),
     NO_PERMISSION_ACCOUNT_RENAME_OTHER (
@@ -610,7 +622,7 @@ public enum Message {
             "&cYou do not have permission to rename someone else's account."
     ),
     NO_PERMISSION_ACCOUNT_TRANSFER (
-            "A player attempts to transfer ownership of an account without permission.",
+            "A player attempts to use the /account transfer command without permission.",
             "&cYou do not have permission to transfer ownership of an account."
     ),
     NO_PERMISSION_ACCOUNT_TRANSFER_OTHER (
@@ -630,11 +642,11 @@ public enum Message {
             "&cYou do not have permission to contract a protected account chest."
     ),
     NO_PERMISSION_ACCOUNT_CONFIGURE (
-            "A player attempts to set the multiplier, interest delay, etc. of an account without permission.",
+            "A player attempts to use the /account configure command without permission.",
             "&cYou do not have permission to set internal account values."
     ),
     NO_PERMISSION_BANK_CREATE (
-            "A player attempts to create a bank without permission.",
+            "A player attempts to use the /bank create command without permission.",
             "&cYou do not have permission to create a bank."
     ),
     NO_PERMISSION_BANK_CREATE_ADMIN (
@@ -642,8 +654,12 @@ public enum Message {
             "&cYou do not have permission to create an admin bank."
     ),
     NO_PERMISSION_BANK_CREATE_PROTECTED (
-            "A player attempts to create a bank on land without the WorldGuard create-bank flag without permission.",
+            "A player attempts to create a bank in a region that lacks the WorldGuard flag \"create-bank\" without permission.",
             "&cYou do not have permission to create a bank there."
+    ),
+    NO_PERMISSION_BANK_REMOVE (
+            "A player attempts to use the /bank remove command without permission.",
+            "&cYou do not have permission to remove a bank."
     ),
     NO_PERMISSION_BANK_REMOVE_OTHER (
             "A player attempts to remove someone else's bank without permission.",
@@ -654,11 +670,11 @@ public enum Message {
             "&cYou do not have permission to remove an admin bank."
     ),
     NO_PERMISSION_BANK_REMOVEALL (
-            "A player attempts to remove multiple banks at once without permission.",
+            "A player attempts to use the /bank removeall command without permission.",
             "&cYou do not have permission to remove all banks."
     ),
     NO_PERMISSION_BANK_RESIZE ( // TODO: Test
-            "A player attempts to resize a bank without permission.",
+            "A player attempts to use the /bank resize command without permission.",
             "&cYou do not have permission to resize a bank."
     ),
     NO_PERMISSION_BANK_RESIZE_OTHER (
@@ -669,8 +685,20 @@ public enum Message {
             "A player attempts to resize an admin bank without permission.",
             "&cYou do not have permission to resize an admin bank."
     ),
+    NO_PERMISSION_BANK_RENAME (
+            "A player attempts to use the /bank rename command without permission",
+            "&cYou do not have permission to rename a bank."
+    ),
+    NO_PERMISSION_BANK_RENAME_OTHER (
+            "A player attempts to rename someone else's bank without permission",
+            "&cYou do not have permission to rename someone else's bank."
+    ),
+    NO_PERMISSION_BANK_RENAME_ADMIN (
+            "A player attempts to rename an admin bank without permission",
+            "&cYou do not have permission to rename an admin bank."
+    ),
     NO_PERMISSION_BANK_TRUST (
-            "A player attempts to add another player as a co-owner of their bank without permission.",
+            "A player attempts to use the /bank trust command without permission.",
             "&cYou do not have permission to add a co-owner to a bank."
     ),
     NO_PERMISSION_BANK_TRUST_OTHER (
@@ -682,7 +710,7 @@ public enum Message {
             "&cYou do not have permission to add a co-owner to an admin bank."
     ),
     NO_PERMISSION_BANK_UNTRUST (
-            "A player attempts to remove another player as a co-owner of their bank without permission.",
+            "A player attempts to use the /bank untrust command without permission.",
             "&cYou do not have permission to remove a co-owner from a bank."
     ),
     NO_PERMISSION_BANK_UNTRUST_OTHER (
@@ -694,7 +722,7 @@ public enum Message {
             "&cYou do not have permission to remove a co-owner from an admin bank."
     ),
     NO_PERMISSION_BANK_TRANSFER (
-            "A player attempts to transfer ownership of a bank without permission.",
+            "A player attempts to use the /bank transfer command without permission.",
             "&cYou do not have permission to transfer ownership of a bank."
     ),
     NO_PERMISSION_BANK_TRANSFER_OTHER (
@@ -705,12 +733,16 @@ public enum Message {
             "A player attempts to transfer ownership of an admin bank without permission.",
             "&cYou do not have permission to transfer ownership of an admin bank."
     ),
-    NO_PERMISSION_BANK_SET_OTHER (
-            "A player attempts to change a property of someone else's bank without permission.",
+    NO_PERMISSION_BANK_CONFIGURE (
+            "A player attempts to use the /bank configure command without permission.",
+            "&cYou do not have permission to configure a bank."
+    ),
+    NO_PERMISSION_BANK_CONFIGURE_OTHER (
+            "A player attempts to configure someone else's bank without permission.",
             "&cYou do not have permission to configure someone else's bank."
     ),
-    NO_PERMISSION_BANK_SET_ADMIN (
-            "A player attempts to change a property of an admin bank without permission.",
+    NO_PERMISSION_BANK_CONFIGURE_ADMIN (
+            "A player attempts to configure an admin bank without permission.",
             "&cYou do not have permission to configure an admin bank."
     ),
     NO_PERMISSION_BANK_SELECT (

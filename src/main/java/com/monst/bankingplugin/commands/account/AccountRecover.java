@@ -35,8 +35,12 @@ public class AccountRecover extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_ACCOUNT_RECOVER;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debugf("%s wants to recover invalid accounts", sender.getName());
         new AccountRecoveryGUI(plugin.getAccountRepository()::getMissingAccounts).open((Player) sender);
         return true;
     }

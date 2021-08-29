@@ -34,17 +34,13 @@ public class BankRemoveAll extends SubCommand.BankSubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_BANK_REMOVEALL;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to remove all banks");
-
-        if (Permission.BANK_REMOVEALL.notOwnedBy(sender)) {
-            plugin.debug(sender.getName() + " does not have permission to remove all banks");
-            sender.sendMessage(Message.NO_PERMISSION_BANK_REMOVEALL.translate());
-            return true;
-        }
-
         Set<Bank> banks = plugin.getBankRepository().getAll();
-
         if (banks.isEmpty()) {
             sender.sendMessage(Message.BANKS_NOT_FOUND.translate());
             return true;

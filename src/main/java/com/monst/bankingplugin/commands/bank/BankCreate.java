@@ -37,21 +37,16 @@ public class BankCreate extends SubCommand.BankSubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_BANK_CREATE;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = (Player) sender;
-        plugin.debug(p.getName() + " wants to create a bank");
-
-        if (Permission.BANK_CREATE.notOwnedBy(p)) {
-            plugin.debug(p.getName() + " does not have permission to create a bank");
-            p.sendMessage(Message.NO_PERMISSION_BANK_CREATE.translate());
-            return true;
-        }
-
         if (args.length < 1)
             return false;
 
-        String name = args[0];
-
+        Player p = (Player) sender;
         BankRegion bankRegion;
         if (args.length <= 2) {
             if (plugin.isWorldEditIntegrated()) {
@@ -75,7 +70,6 @@ public class BankCreate extends SubCommand.BankSubCommand {
                 return false;
             }
         }
-
         if (bankRegion == null)
             return false;
 
@@ -86,12 +80,12 @@ public class BankCreate extends SubCommand.BankSubCommand {
         }
 
         boolean isAdminBank = args[args.length - 1].equalsIgnoreCase("admin");
-
         if (isAdminBank && Permission.BANK_CREATE_ADMIN.notOwnedBy(p)) {
             plugin.debug(p.getName() + " does not have permission to create an admin bank");
             p.sendMessage(Message.NO_PERMISSION_BANK_CREATE_ADMIN.translate());
             return true;
         }
+
         if (!isAdminBank) {
             int limit = Utils.getBankLimit(p);
             if (limit != -1 && plugin.getBankRepository().getOwnedBy(p).size() >= limit) {
@@ -100,6 +94,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
                 return true;
             }
         }
+
         Set<BankRegion> overlappingRegions = plugin.getBankRepository().getOverlappingRegions(bankRegion);
         if (!overlappingRegions.isEmpty()) {
             plugin.debug("Region is not exclusive");
@@ -110,6 +105,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
                 VisualizationManager.visualizeOverlap(p, overlappingRegions);
             return true;
         }
+
         long volume = bankRegion.getVolume();
         long volumeLimit = Utils.getBankVolumeLimit(p);
         if (!isAdminBank && volumeLimit >= 0 && volume > volumeLimit) {
@@ -121,6 +117,7 @@ public class BankCreate extends SubCommand.BankSubCommand {
                     .translate());
             return true;
         }
+
         if (!isAdminBank && volume < Config.minimumBankVolume.get()) {
             plugin.debugf("Bank is too small (%d blocks, minimum: %d)", volume, Config.minimumBankVolume.get());
             p.sendMessage(Message.BANK_SELECTION_TOO_SMALL
@@ -130,11 +127,14 @@ public class BankCreate extends SubCommand.BankSubCommand {
                     .translate());
             return true;
         }
+
+        String name = args[0];
         if (plugin.getBankRepository().getByName(name) != null) {
             plugin.debug("Name is not unique");
             p.sendMessage(Message.NAME_NOT_UNIQUE.with(Placeholder.NAME).as(name).translate());
             return true;
         }
+
         if (!Config.nameRegex.matches(name)) {
             plugin.debug("Name is not allowed");
             p.sendMessage(Message.NAME_NOT_ALLOWED

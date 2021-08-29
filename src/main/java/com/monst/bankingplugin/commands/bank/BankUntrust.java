@@ -32,22 +32,22 @@ public class BankUntrust extends SubCommand.BankSubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_BANK_UNTRUST;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
         if (args.length < 2)
             return false;
 
-        plugin.debug(sender.getName() + " wants to untrust a player from a bank");
-
-        if (Permission.BANK_TRUST.notOwnedBy(sender)) {
-            sender.sendMessage(Message.NO_PERMISSION_BANK_UNTRUST.translate());
-            return true;
-        }
         Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[0]);
             sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
+
         OfflinePlayer playerToUntrust = Utils.getPlayer(args[1]);
         if (playerToUntrust == null) {
             sender.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]).translate());

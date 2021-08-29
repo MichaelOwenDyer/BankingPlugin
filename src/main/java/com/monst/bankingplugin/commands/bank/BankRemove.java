@@ -37,9 +37,12 @@ public class BankRemove extends SubCommand.BankSubCommand {
     }
 
     @Override
-    protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to remove a bank");
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_BANK_REMOVE;
+    }
 
+    @Override
+    protected boolean execute(CommandSender sender, String[] args) {
         Bank bank = getBank(sender, args);
         if (bank == null)
             return true;

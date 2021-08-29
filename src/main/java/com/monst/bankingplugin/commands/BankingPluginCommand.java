@@ -110,7 +110,14 @@ public abstract class BankingPluginCommand {
 						sender.sendMessage(Message.PLAYER_COMMAND_ONLY.translate());
 						return true;
 					}
+					if (subCommand.getPermission().notOwnedBy(sender)) {
+						plugin.debugf("%s does not have permission to execute command /%s %s",
+								sender.getName(), name, subCommand.getName());
+						sender.sendMessage(subCommand.getNoPermissionMessage().translate());
+						return true;
+					}
 					String[] arguments = Arrays.copyOfRange(args, 1, args.length);
+					plugin.debugf("%s is executing command /%s %s %s", sender.getName(), name, subCommand.getName(), arguments);
 					if (!subCommand.execute(sender, arguments)) {
 						String usageMessage = subCommand.getUsageMessage(sender, name);
 						if (usageMessage != null && !usageMessage.isEmpty())

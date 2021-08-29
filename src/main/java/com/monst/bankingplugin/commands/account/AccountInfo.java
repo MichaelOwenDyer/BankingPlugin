@@ -26,8 +26,6 @@ public class AccountInfo extends SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
-        plugin.debugf("%s wants to open an account GUI", p.getName());
-
         if (args.length > 0) {
             try {
                 int id = Integer.parseInt(args[0]);

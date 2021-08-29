@@ -34,18 +34,16 @@ public class AccountTrust extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_ACCOUNT_TRUST;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = (Player) sender;
-        plugin.debugf("%s wants to trust a player to an account", p.getName());
-
-        if (Permission.ACCOUNT_TRUST.notOwnedBy(p)) {
-            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRUST.translate());
-            return true;
-        }
-
         if (args.length < 1)
             return false;
 
+        Player p = (Player) sender;
         OfflinePlayer playerToTrust = Utils.getPlayer(args[0]);
         if (playerToTrust == null) {
             p.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());

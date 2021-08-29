@@ -35,10 +35,13 @@ public class AccountRemove extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_ACCOUNT_REMOVE;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
-        plugin.debugf("%s wants to remove an account", p.getName());
-
         AccountRemoveCommandEvent event = new AccountRemoveCommandEvent(p, args);
         event.fire();
         if (event.isCancelled()) {

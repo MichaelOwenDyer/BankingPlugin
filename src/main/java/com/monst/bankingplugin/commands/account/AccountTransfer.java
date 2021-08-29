@@ -37,19 +37,16 @@ public class AccountTransfer extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_ACCOUNT_TRANSFER;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = (Player) sender;
-        plugin.debugf("%s wants to transfer ownership of an account", p.getName());
-
-        if (Permission.ACCOUNT_TRANSFER.notOwnedBy(p)) {
-            plugin.debugf("%s does not have permission to transfer ownership of an account", p.getName());
-            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_TRANSFER.translate());
-            return true;
-        }
-
         if (args.length < 1)
             return false;
 
+        Player p = (Player) sender;
         OfflinePlayer newOwner = Utils.getPlayer(args[0]);
         if (newOwner == null) {
             p.sendMessage(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());

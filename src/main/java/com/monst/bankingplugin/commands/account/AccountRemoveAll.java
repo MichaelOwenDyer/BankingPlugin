@@ -36,21 +36,16 @@ public class AccountRemoveAll extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_ACCOUNT_REMOVEALL;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-
-        plugin.debugf("%s wants to remove all accounts", sender.getName());
-
-        if (Permission.ACCOUNT_REMOVEALL.notOwnedBy(sender)) {
-            plugin.debugf("%s does not have permission to remove all accounts", sender.getName());
-            sender.sendMessage(Message.NO_PERMISSION_ACCOUNT_REMOVEALL.translate());
-            return true;
-        }
-
         Set<Account> accounts;
-
-        if (args.length == 0) {
+        if (args.length == 0)
             accounts = plugin.getAccountRepository().getAll();
-        } else {
+        else {
             Map<String, UUID> namePlayerMap = plugin.getServer().getOnlinePlayers().stream().collect(
                     Collectors.toMap(
                             HumanEntity::getName,

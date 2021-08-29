@@ -34,11 +34,14 @@ public class BankRename extends SubCommand.BankSubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_BANK_RENAME;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
         if (args.length < 1)
             return false;
-
-        plugin.debugf("%s is renaming a bank", sender.getName());
 
         Bank bank;
         String newName;
@@ -65,28 +68,32 @@ public class BankRename extends SubCommand.BankSubCommand {
             newName = Arrays.stream(args).skip(1).collect(Collectors.joining(" "));
         }
 
-        if (bank.isAdminBank() && Permission.BANK_SET_ADMIN.notOwnedBy(sender)) {
+        if (bank.isAdminBank() && Permission.BANK_CONFIGURE_ADMIN.notOwnedBy(sender)) {
             plugin.debugf("%s does not have permission to change the name of an admin bank", sender.getName());
-            sender.sendMessage(Message.NO_PERMISSION_BANK_SET_ADMIN.translate());
+            sender.sendMessage(Message.NO_PERMISSION_BANK_RENAME_ADMIN.translate());
             return true;
         }
+
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
-                || Permission.BANK_SET_OTHER.ownedBy(sender))) {
+                || Permission.BANK_CONFIGURE_OTHER.ownedBy(sender))) {
             plugin.debugf("%s does not have permission to change the name of another player's bank", sender.getName());
-            sender.sendMessage(Message.NO_PERMISSION_BANK_SET_OTHER.translate());
+            sender.sendMessage(Message.NO_PERMISSION_BANK_RENAME_OTHER.translate());
             return true;
         }
+
         if (bank.getRawName().contentEquals(newName)) {
             plugin.debug("Same name");
             sender.sendMessage(Message.NAME_NOT_CHANGED.with(Placeholder.NAME).as(newName).translate());
             return true;
         }
+
         Bank bankWithSameName = plugin.getBankRepository().getByName(newName);
         if (bankWithSameName != null && !bankWithSameName.equals(bank)) {
             plugin.debug("Name is not unique");
             sender.sendMessage(Message.NAME_NOT_UNIQUE.with(Placeholder.NAME).as(newName).translate());
             return true;
         }
+
         if (!Config.nameRegex.matches(newName)) {
             plugin.debug("Name is not allowed");
             sender.sendMessage(Message.NAME_NOT_ALLOWED
@@ -112,8 +119,8 @@ public class BankRename extends SubCommand.BankSubCommand {
 
             return plugin.getBankRepository().getAll().stream()
                     .filter(b -> b.isTrusted(player)
-                            || (b.isPlayerBank() && Permission.BANK_SET_OTHER.ownedBy(player))
-                            || (b.isAdminBank() && Permission.BANK_SET_ADMIN.ownedBy(player)))
+                            || (b.isPlayerBank() && Permission.BANK_CONFIGURE_OTHER.ownedBy(player))
+                            || (b.isAdminBank() && Permission.BANK_CONFIGURE_ADMIN.ownedBy(player)))
                     .map(Bank::getName)
                     .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
                     .sorted()

@@ -38,15 +38,12 @@ public class BankTransfer extends SubCommand.BankSubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_BANK_TRANSFER;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " wants to transfer bank ownership");
-
-        if (Permission.BANK_TRANSFER.notOwnedBy(sender)) {
-            plugin.debug(sender.getName() + " does not have permission to transfer bank ownership");
-            sender.sendMessage(Message.NO_PERMISSION_BANK_TRANSFER.translate());
-            return true;
-        }
-
         if (args.length < 1)
             return false;
 
@@ -56,6 +53,7 @@ public class BankTransfer extends SubCommand.BankSubCommand {
             sender.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
+
         OfflinePlayer newOwner = null;
         if (args.length > 1) {
             newOwner = Utils.getPlayer(args[1]);
@@ -70,21 +68,25 @@ public class BankTransfer extends SubCommand.BankSubCommand {
             sender.sendMessage(Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(newOwner.getName()).translate());
             return true;
         }
+
         if (newOwner == null && bank.isAdminBank()) {
             plugin.debug("Bank is already an admin bank");
             sender.sendMessage(Message.BANK_ALREADY_ADMIN.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
             return true;
         }
+
         if (bank.isAdminBank() && Permission.BANK_TRANSFER_ADMIN.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to transfer an admin bank");
             sender.sendMessage(Message.NO_PERMISSION_BANK_TRANSFER_ADMIN.translate());
             return true;
         }
+
         if (newOwner == null && Permission.BANK_CREATE_ADMIN.notOwnedBy(sender)) {
             plugin.debug(sender.getName() + " does not have permission to transfer a bank to the admins");
             sender.sendMessage(Message.NO_PERMISSION_BANK_CREATE_ADMIN.translate());
             return true;
         }
+
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isOwner((Player) sender))
                 || Permission.BANK_TRANSFER_OTHER.ownedBy(sender))) {
             if (sender instanceof Player && bank.isTrusted((Player) sender)) {

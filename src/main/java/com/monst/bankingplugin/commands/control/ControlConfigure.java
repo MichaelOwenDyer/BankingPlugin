@@ -34,15 +34,12 @@ public class ControlConfigure extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_CONFIG;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debugf("%s wants to configure the plugin: '%s'", sender.getName(), String.join(" ", args));
-
-        if (Permission.CONFIG.notOwnedBy(sender)) {
-            plugin.debug(sender.getName() + " does not have permission to configure the plugin");
-            sender.sendMessage(Message.NO_PERMISSION_CONFIG.translate());
-            return true;
-        }
-
         if (args.length < 1)
             return false;
 

@@ -24,15 +24,12 @@ public class ControlUpdate extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_UPDATE;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " is checking for updates");
-
-        if (Permission.UPDATE.notOwnedBy(sender)) {
-            plugin.debug(sender.getName() + " does not have permission to update the plugin");
-            sender.sendMessage(Message.NO_PERMISSION_UPDATE.translate());
-            return true;
-        }
-
         sender.sendMessage(ChatColor.RED + "Sorry! That feature is not yet implemented.");
         return true;
     }

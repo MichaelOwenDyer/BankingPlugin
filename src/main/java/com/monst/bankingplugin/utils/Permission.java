@@ -43,8 +43,8 @@ public enum Permission {
     BANK_TRANSFER ("bankingplugin.bank.transfer"),
     BANK_TRANSFER_OTHER ("bankingplugin.bank.transfer.other"),
     BANK_TRANSFER_ADMIN ("bankingplugin.bank.transfer.admin"),
-    BANK_SET_OTHER ("bankingplugin.bank.configure.other"),
-    BANK_SET_ADMIN ("bankingplugin.bank.configure.admin"),
+    BANK_CONFIGURE_OTHER ("bankingplugin.bank.configure.other"),
+    BANK_CONFIGURE_ADMIN ("bankingplugin.bank.configure.admin"),
     BANK_SELECT ("worldedit.selection.pos"),
 
     BYPASS_EXTERNAL_PLUGINS ("bankingplugin.external-bypass"),

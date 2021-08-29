@@ -42,16 +42,13 @@ public class AccountCreate extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_ACCOUNT_CREATE;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
-        plugin.debugf("%s wants to create an account", p.getName());
-
-        if (Permission.ACCOUNT_CREATE.notOwnedBy(sender)) {
-            p.sendMessage(Message.NO_PERMISSION_ACCOUNT_CREATE.translate());
-            plugin.debugf("%s is not permitted to create an account", p.getName());
-            return true;
-        }
-
         int limit = Utils.getAccountLimit(p);
         if (limit != -1 && plugin.getAccountRepository().getOwnedBy(p).size() >= limit) {
             p.sendMessage(Message.ACCOUNT_LIMIT_REACHED.with(Placeholder.LIMIT).as(limit).translate());

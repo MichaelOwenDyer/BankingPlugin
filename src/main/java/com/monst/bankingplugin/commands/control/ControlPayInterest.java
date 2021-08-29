@@ -31,15 +31,12 @@ public class ControlPayInterest extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_PAY_INTEREST;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " is triggering an interest payout");
-
-        if (Permission.PAY_INTEREST.notOwnedBy(sender)) {
-            plugin.debug(sender.getName() + " does not have permission to trigger an interest payout");
-            sender.sendMessage(Message.NO_PERMISSION_PAY_INTEREST.translate());
-            return true;
-        }
-
         Set<Bank> banks;
         if (args.length == 0)
             banks = plugin.getBankRepository().getAll();

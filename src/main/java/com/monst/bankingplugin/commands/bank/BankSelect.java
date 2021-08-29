@@ -4,6 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.commands.SubCommand;
 import com.monst.bankingplugin.events.bank.BankSelectEvent;
+import com.monst.bankingplugin.external.VisualizationManager;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
@@ -33,19 +34,17 @@ public class BankSelect extends SubCommand.BankSubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_BANK_SELECT;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
-        plugin.debug(p.getName() + " wants to select a bank");
 
         if (!plugin.isWorldEditIntegrated() && !plugin.isGriefPreventionIntegrated()) {
-            plugin.debug("Cannot select bank. Neither WorldEdit nor GriefPrevention is enabled.");
+            plugin.debug("Cannot select bank");
             p.sendMessage(Message.CANT_SELECT_BANK.translate());
-            return true;
-        }
-
-        if (Permission.BANK_SELECT.notOwnedBy(p)) {
-            plugin.debug(p.getName() + " does not have permission to select a bank");
-            p.sendMessage(Message.NO_PERMISSION_BANK_SELECT.translate());
             return true;
         }
 
@@ -75,6 +74,8 @@ public class BankSelect extends SubCommand.BankSubCommand {
 
         if (plugin.isWorldEditIntegrated())
             WorldEditReader.setSelection(plugin, bank.getRegion(), p);
+        if (plugin.isGriefPreventionIntegrated())
+            VisualizationManager.visualizeRegion(p, bank);
         plugin.debug(p.getName() + " has selected a bank");
         p.sendMessage(Message.BANK_SELECTED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate());
         return true;

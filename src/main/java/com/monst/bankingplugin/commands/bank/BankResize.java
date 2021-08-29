@@ -39,23 +39,18 @@ public class BankResize extends SubCommand.BankSubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_BANK_RESIZE;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        Player p = (Player) sender;
-        plugin.debug(p.getName() + " wants to resize a bank");
-
-        if (Permission.BANK_RESIZE.notOwnedBy(p)) {
-            plugin.debug(p.getName() + " does not have permission to resize a bank");
-            p.sendMessage(Message.NO_PERMISSION_BANK_RESIZE.translate());
-            return true;
-        }
-
-        Bank bank;
-        BankRegion bankRegion;
-
         if (args.length == 0)
             return false;
 
-        else if (args.length == 1) {
+        Player p = (Player) sender;
+        BankRegion bankRegion;
+        if (args.length == 1) {
             if (plugin.isWorldEditIntegrated()) {
                 bankRegion = WorldEditReader.getBankRegion(plugin, p);
                 if (bankRegion == null) {
@@ -77,31 +72,34 @@ public class BankResize extends SubCommand.BankSubCommand {
                 return false;
             }
         }
-
         if (bankRegion == null)
             return false;
 
-        bank = plugin.getBankRepository().getByIdentifier(args[0]);
+        Bank bank = plugin.getBankRepository().getByIdentifier(args[0]);
         if (bank == null) {
             plugin.debugf("Couldn't find bank with name or ID %s", args[0]);
             p.sendMessage(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]).translate());
             return true;
         }
+
         if (bank.isPlayerBank() && !bank.isOwner(p) && Permission.BANK_RESIZE_OTHER.notOwnedBy(p)) {
             plugin.debug(p.getName() + " does not have permission to resize another player's bank");
             p.sendMessage(Message.NO_PERMISSION_BANK_RESIZE_OTHER.translate());
             return true;
         }
+
         if (bank.isAdminBank() && Permission.BANK_RESIZE_ADMIN.notOwnedBy(p)) {
             plugin.debug(p.getName() + " does not have permission to resize an admin bank");
             p.sendMessage(Message.NO_PERMISSION_BANK_RESIZE_ADMIN.translate());
             return true;
         }
+
         if (Config.disabledWorlds.get().contains(bankRegion.getWorld())) {
             plugin.debug("BankingPlugin is disabled in world " + bankRegion.getWorld().getName());
             p.sendMessage(Message.WORLD_DISABLED.with(Placeholder.WORLD).as(bankRegion.getWorld().getName()).translate());
             return true;
         }
+
         long volume = bankRegion.getVolume();
         long volumeLimit = Utils.getBankVolumeLimit(p);
         if (bank.isPlayerBank() && volumeLimit >= 0 && volume > volumeLimit) {
@@ -113,6 +111,7 @@ public class BankResize extends SubCommand.BankSubCommand {
                     .translate());
             return true;
         }
+
         if (bank.isPlayerBank() && volume < Config.minimumBankVolume.get()) {
             plugin.debug("Bank is too small (" + volume + " blocks, minimum: " + Config.minimumBankVolume.get() + ")");
             p.sendMessage(Message.BANK_SELECTION_TOO_SMALL
@@ -122,6 +121,7 @@ public class BankResize extends SubCommand.BankSubCommand {
                     .translate());
             return true;
         }
+
         Set<BankRegion> overlappingRegions = plugin.getBankRepository().getOverlappingRegions(bankRegion);
         overlappingRegions.remove(bank.getRegion());
         if (!overlappingRegions.isEmpty()) {
@@ -133,7 +133,8 @@ public class BankResize extends SubCommand.BankSubCommand {
                 VisualizationManager.visualizeOverlap(p, overlappingRegions);
             return true;
         }
-        long cutAccounts = bank.getAccounts(account -> !bankRegion.contains(account.getLocation())).size();
+
+        int cutAccounts = bank.getAccounts(account -> !bankRegion.contains(account.getLocation())).size();
         if (cutAccounts > 0) {
             plugin.debug("New region does not contain all accounts");
             p.sendMessage(Message.BANK_SELECTION_CUTS_ACCOUNTS.with(Placeholder.NUMBER_OF_ACCOUNTS).as(cutAccounts).translate());

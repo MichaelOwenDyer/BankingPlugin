@@ -27,12 +27,9 @@ public class BankInfo extends SubCommand.BankSubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
-        plugin.debugf("%s wants to view a bank GUI", p.getName());
-
         Bank bank = getBank(p, args);
         if (bank == null)
             return true;
-
         plugin.debugf("%s is viewing GUI of bank #%d", p.getName(), bank.getID());
         new BankGUI(bank).open(p);
         return true;

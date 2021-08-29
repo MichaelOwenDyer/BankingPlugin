@@ -26,15 +26,12 @@ public class ControlReload extends SubCommand {
     }
 
     @Override
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION_RELOAD;
+    }
+
+    @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        plugin.debug(sender.getName() + " is reloading the plugin");
-
-        if (Permission.RELOAD.notOwnedBy(sender)) {
-            plugin.debug(sender.getName() + " does not have permission to reload the plugin");
-            sender.sendMessage(Message.NO_PERMISSION_RELOAD.translate());
-            return true;
-        }
-
         ReloadEvent event = new ReloadEvent(sender);
         event.fire();
         if (event.isCancelled()) {

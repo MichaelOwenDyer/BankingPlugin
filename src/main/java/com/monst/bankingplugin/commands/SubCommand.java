@@ -69,6 +69,10 @@ public abstract class SubCommand {
      */
     protected abstract Message getUsageMessage();
 
+    protected Message getNoPermissionMessage() {
+        return Message.NO_PERMISSION;
+    }
+
     /**
      * Gets a message describing how to use this subcommand
      * @param sender Sender to receive the help message

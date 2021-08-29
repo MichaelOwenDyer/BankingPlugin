@@ -32,9 +32,7 @@ public class AccountLimits extends SubCommand {
         int accLimit = Utils.getAccountLimit(p);
         String limit = accLimit < 0 ? "∞" : "" + accLimit;
         plugin.debugf("%s is viewing their account limits: %s / %s", p.getName(), used, limit);
-        p.sendMessage(Message.ACCOUNT_LIMIT
-                .with(Placeholder.NUMBER_OF_ACCOUNTS).as(used)
-                .and(Placeholder.LIMIT).as(limit)
+        p.sendMessage(Message.ACCOUNT_LIMIT.with(Placeholder.NUMBER_OF_ACCOUNTS).as(used).and(Placeholder.LIMIT).as(limit)
                 .translate());
         return true;
     }

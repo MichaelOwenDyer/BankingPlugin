@@ -30,8 +30,6 @@ public class AccountList extends SubCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
-        plugin.debugf("%s wants to list accounts", sender.getName());
-
         AccountListEvent event = new AccountListEvent(p, Collections.emptyList()); // FIXME: Pass accounts being listed
         event.fire();
         if (event.isCancelled()) {
