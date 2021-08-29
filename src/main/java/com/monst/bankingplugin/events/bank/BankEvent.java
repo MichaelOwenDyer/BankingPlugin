@@ -9,8 +9,4 @@ public abstract class BankEvent extends BankingPluginEvent {
         super(executor);
     }
 
-    public CommandSender getExecutor() {
-        return super.getSender();
-    }
-
 }

@@ -6,17 +6,21 @@ import org.bukkit.event.Event;
 
 public abstract class BankingPluginEvent extends Event {
 
-    private final CommandSender sender;
+    private boolean fired = false;
+    private final CommandSender executor;
 
-    public BankingPluginEvent(CommandSender sender) {
-        this.sender = sender;
+    public BankingPluginEvent(CommandSender executor) {
+        this.executor = executor;
     }
 
-    protected CommandSender getSender() {
-        return sender;
+    public CommandSender getExecutor() {
+        return executor;
     }
 
     public final void fire() {
+        if (fired)
+            throw new IllegalStateException("Event has already been called!");
+        fired = true;
         Bukkit.getPluginManager().callEvent(this);
     }
 
