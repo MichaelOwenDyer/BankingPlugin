@@ -3,6 +3,7 @@ package com.monst.bankingplugin.events.control;
 import com.monst.bankingplugin.config.values.ConfigValue;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 
 public class PluginConfigureCommandEvent extends ControlEvent implements Cancellable {
 
@@ -14,6 +15,17 @@ public class PluginConfigureCommandEvent extends ControlEvent implements Cancell
         super(sender);
         this.configValue = configValue;
         this.newValue = newValue;
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
     public ConfigValue<?, ?> getConfigValue() {

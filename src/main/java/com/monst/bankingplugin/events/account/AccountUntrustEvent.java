@@ -4,17 +4,27 @@ import com.monst.bankingplugin.banking.Account;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
-
-import javax.annotation.Nonnull;
+import org.bukkit.event.HandlerList;
 
 public class AccountUntrustEvent extends SingleAccountEvent implements Cancellable {
 
     private boolean cancelled;
     private final OfflinePlayer playerToUntrust;
 
-    public AccountUntrustEvent(@Nonnull CommandSender sender, @Nonnull Account account, @Nonnull OfflinePlayer playerToUntrust) {
+    public AccountUntrustEvent(CommandSender sender, Account account, OfflinePlayer playerToUntrust) {
         super(sender, account);
         this.playerToUntrust = playerToUntrust;
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
     public OfflinePlayer getPlayerToUntrust() {

@@ -5,6 +5,7 @@ import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.ClickType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 
 /**
  * This event is fired when a player clicks a chest and a
@@ -18,6 +19,17 @@ public class AccountRecoverEvent extends SingleAccountEvent implements Cancellab
     public AccountRecoverEvent(Player player, Account account, AccountLocation newAccountLocation) {
         super(player, account);
         this.newAccountLocation = newAccountLocation;
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
     public AccountLocation getNewAccountLocation() {

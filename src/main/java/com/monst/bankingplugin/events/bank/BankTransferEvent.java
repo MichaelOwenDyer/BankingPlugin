@@ -4,6 +4,7 @@ import com.monst.bankingplugin.banking.Bank;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 
 public class BankTransferEvent extends SingleBankEvent implements Cancellable {
 
@@ -13,6 +14,17 @@ public class BankTransferEvent extends SingleBankEvent implements Cancellable {
 	public BankTransferEvent(CommandSender sender, Bank bank, OfflinePlayer newOwner) {
 		super(sender, bank);
 		this.newOwner = newOwner;
+	}
+
+	private static final HandlerList HANDLERS = new HandlerList();
+
+	@Override
+	public HandlerList getHandlers() {
+		return HANDLERS;
+	}
+
+	public static HandlerList getHandlerList() {
+		return HANDLERS;
 	}
 
 	public OfflinePlayer getNewOwner() {

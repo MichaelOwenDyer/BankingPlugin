@@ -3,6 +3,7 @@ package com.monst.bankingplugin.events.bank;
 import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.banking.BankField;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.HandlerList;
 
 public class BankConfigureEvent extends SingleBankEvent {
 
@@ -15,6 +16,17 @@ public class BankConfigureEvent extends SingleBankEvent {
         this.field = field;
         this.oldValue = oldValue;
         this.newValue = newValue;
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
     public BankField getField() {

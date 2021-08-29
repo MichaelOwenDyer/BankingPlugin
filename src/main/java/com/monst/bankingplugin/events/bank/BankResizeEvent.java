@@ -4,6 +4,7 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 
 public class BankResizeEvent extends SingleBankEvent implements Cancellable {
 
@@ -13,6 +14,17 @@ public class BankResizeEvent extends SingleBankEvent implements Cancellable {
 	public BankResizeEvent(Player player, Bank bank, BankRegion newBankRegion) {
 		super(player, bank);
 		this.newBankRegion = newBankRegion;
+	}
+
+	private static final HandlerList HANDLERS = new HandlerList();
+
+	@Override
+	public HandlerList getHandlers() {
+		return HANDLERS;
+	}
+
+	public static HandlerList getHandlerList() {
+		return HANDLERS;
 	}
 
 	public BankRegion getPreviousRegion() {

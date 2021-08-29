@@ -3,6 +3,7 @@ package com.monst.bankingplugin.events.bank;
 import com.monst.bankingplugin.banking.Bank;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 
 public class BankRemoveEvent extends SingleBankEvent implements Cancellable {
 
@@ -10,6 +11,17 @@ public class BankRemoveEvent extends SingleBankEvent implements Cancellable {
 
 	public BankRemoveEvent(CommandSender sender, Bank bank) {
 		super(sender, bank);
+	}
+
+	private static final HandlerList HANDLERS = new HandlerList();
+
+	@Override
+	public HandlerList getHandlers() {
+		return HANDLERS;
+	}
+
+	public static HandlerList getHandlerList() {
+		return HANDLERS;
 	}
 
 	@Override

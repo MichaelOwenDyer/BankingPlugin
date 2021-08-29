@@ -5,8 +5,7 @@ import com.monst.bankingplugin.geo.locations.AccountLocation;
 import com.monst.bankingplugin.utils.ClickType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-
-import javax.annotation.Nonnull;
+import org.bukkit.event.HandlerList;
 
 /**
  * This account is fired when a player and a {@link ClickType} of type <b>migrate</b>
@@ -17,9 +16,20 @@ public class AccountMigrateEvent extends SingleAccountEvent implements Cancellab
     private boolean cancelled;
     private final AccountLocation newAccountLocation;
 
-    public AccountMigrateEvent(@Nonnull Player player, @Nonnull Account account, @Nonnull AccountLocation newAccountLocation) {
+    public AccountMigrateEvent(Player player, Account account, AccountLocation newAccountLocation) {
         super(player, account);
         this.newAccountLocation = newAccountLocation;
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
     public AccountLocation getNewAccountLocation() {

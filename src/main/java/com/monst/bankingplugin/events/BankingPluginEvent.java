@@ -3,25 +3,13 @@ package com.monst.bankingplugin.events;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
-public class BankingPluginEvent extends Event {
-
-    private static final HandlerList HANDLERS = new HandlerList();
+public abstract class BankingPluginEvent extends Event {
 
     private final CommandSender sender;
 
     public BankingPluginEvent(CommandSender sender) {
         this.sender = sender;
-    }
-
-    @Override
-    public HandlerList getHandlers() {
-        return HANDLERS;
-    }
-
-    public static HandlerList getHandlerList() {
-        return HANDLERS;
     }
 
     protected CommandSender getSender() {

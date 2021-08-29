@@ -3,7 +3,6 @@ package com.monst.bankingplugin.events.account;
 import com.monst.bankingplugin.banking.Account;
 import org.bukkit.command.CommandSender;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 
 /**
@@ -13,7 +12,7 @@ public abstract class MultiAccountEvent extends AccountEvent {
 
     private final Collection<Account> accounts;
 
-    public MultiAccountEvent(@Nonnull CommandSender sender, @Nonnull Collection<Account> accounts) {
+    public MultiAccountEvent(CommandSender sender, Collection<Account> accounts) {
         super(sender);
         this.accounts = accounts;
     }

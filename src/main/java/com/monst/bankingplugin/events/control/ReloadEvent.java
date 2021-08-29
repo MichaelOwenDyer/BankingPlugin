@@ -2,6 +2,7 @@ package com.monst.bankingplugin.events.control;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 
 /**
  * Called when a player reloads the plugin
@@ -12,6 +13,17 @@ public class ReloadEvent extends ControlEvent implements Cancellable {
 
     public ReloadEvent(CommandSender sender) {
         super(sender);
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
     @Override

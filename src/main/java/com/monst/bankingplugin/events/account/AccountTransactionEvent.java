@@ -2,8 +2,8 @@ package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.banking.Account;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 
-import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 
 /**
@@ -14,19 +14,28 @@ public class AccountTransactionEvent extends SingleAccountEvent {
 	private final BigDecimal amount;
 	private final BigDecimal newBalance;
 
-	public AccountTransactionEvent(@Nonnull Player player, @Nonnull Account account,
-								   @Nonnull BigDecimal amount, @Nonnull BigDecimal newBalance) {
+	public AccountTransactionEvent(Player player, Account account,
+								   BigDecimal amount, BigDecimal newBalance) {
 		super(player, account);
 		this.amount = amount;
 		this.newBalance = newBalance;
 	}
 
-	@Nonnull
+	private static final HandlerList HANDLERS = new HandlerList();
+
+	@Override
+	public HandlerList getHandlers() {
+		return HANDLERS;
+	}
+
+	public static HandlerList getHandlerList() {
+		return HANDLERS;
+	}
+
 	public BigDecimal getAmount() {
 		return amount;
 	}
 
-	@Nonnull
 	public BigDecimal getNewBalance() {
 		return newBalance;
 	}

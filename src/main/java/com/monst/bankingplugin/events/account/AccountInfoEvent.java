@@ -4,8 +4,7 @@ import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.gui.AccountGUI;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
-
-import javax.annotation.Nonnull;
+import org.bukkit.event.HandlerList;
 
 /**
  * This event is fired when info about an {@link Account} is fetched.
@@ -16,8 +15,19 @@ public class AccountInfoEvent extends SingleAccountEvent implements Cancellable 
 
 	private boolean cancelled;
 
-	public AccountInfoEvent(@Nonnull CommandSender sender, @Nonnull Account account) {
+	public AccountInfoEvent(CommandSender sender, Account account) {
 		super(sender, account);
+	}
+
+	private static final HandlerList HANDLERS = new HandlerList();
+
+	@Override
+	public HandlerList getHandlers() {
+		return HANDLERS;
+	}
+
+	public static HandlerList getHandlerList() {
+		return HANDLERS;
 	}
 
 	@Override

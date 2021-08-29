@@ -2,8 +2,7 @@ package com.monst.bankingplugin.events.account;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-
-import javax.annotation.Nonnull;
+import org.bukkit.event.HandlerList;
 
 /**
  * This account is fired when a player uses the
@@ -13,8 +12,19 @@ public class AccountMigrateCommandEvent extends AccountCommandEvent implements C
 
     private boolean cancelled;
 
-    public AccountMigrateCommandEvent(@Nonnull Player player, @Nonnull String[] args) {
+    public AccountMigrateCommandEvent(Player player, String[] args) {
         super(player, args);
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
     @Override

@@ -3,8 +3,8 @@ package com.monst.bankingplugin.events.account;
 import com.monst.bankingplugin.banking.Account;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 
 /**
@@ -15,8 +15,19 @@ public class AccountListEvent extends MultiAccountEvent implements Cancellable {
 
     private boolean cancelled;
 
-    public AccountListEvent(@Nonnull CommandSender sender, @Nonnull Collection<Account> accounts) {
+    public AccountListEvent(CommandSender sender, Collection<Account> accounts) {
         super(sender, accounts);
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
     @Override

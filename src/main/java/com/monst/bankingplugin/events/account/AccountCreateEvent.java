@@ -4,8 +4,7 @@ import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.utils.ClickType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-
-import javax.annotation.Nonnull;
+import org.bukkit.event.HandlerList;
 
 /**
  * This event is fired when a {@link Player} and a {@link ClickType} of type <b>create</b>
@@ -15,8 +14,19 @@ public class AccountCreateEvent extends SingleAccountEvent implements Cancellabl
 
 	private boolean cancelled;
 
-	public AccountCreateEvent(@Nonnull Player player, @Nonnull Account account) {
+	public AccountCreateEvent(Player player, Account account) {
 		super(player, account);
+	}
+
+	private static final HandlerList HANDLERS = new HandlerList();
+
+	@Override
+	public HandlerList getHandlers() {
+		return HANDLERS;
+	}
+
+	public static HandlerList getHandlerList() {
+		return HANDLERS;
 	}
 
 	@Override

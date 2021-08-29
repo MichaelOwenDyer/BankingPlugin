@@ -4,6 +4,7 @@ import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.commands.account.AccountRemoveAll;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 
 import java.util.Collection;
 
@@ -17,6 +18,17 @@ public class AccountRemoveAllEvent extends MultiAccountEvent implements Cancella
 
 	public AccountRemoveAllEvent(CommandSender sender, Collection<Account> accounts) {
 		super(sender, accounts);
+	}
+
+	private static final HandlerList HANDLERS = new HandlerList();
+
+	@Override
+	public HandlerList getHandlers() {
+		return HANDLERS;
+	}
+
+	public static HandlerList getHandlerList() {
+		return HANDLERS;
 	}
 
 	@Override
