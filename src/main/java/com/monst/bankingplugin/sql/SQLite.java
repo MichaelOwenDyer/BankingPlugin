@@ -30,9 +30,8 @@ public class SQLite extends Database {
             return null;
         }
 
-        Path databaseFolder = plugin.getDataFolder().toPath().resolve("database");
-        Path defaultLocation = databaseFolder.resolve("banking.db");
-        Path databaseFile = databaseFolder.resolve(Config.databaseFile.get());
+        Path defaultLocation = plugin.getDataFolder().toPath().resolve("database").resolve("banking.db");
+        Path databaseFile = defaultLocation.resolveSibling(Config.databaseFile.get());
         while (!Files.exists(databaseFile)) {
             try {
                 Files.createDirectories(databaseFile.getParent());

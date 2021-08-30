@@ -48,7 +48,10 @@ public class AccountConfigure extends SubCommand {
 
         Player p = (Player) sender;
         String property = args[0];
-        AccountField field = AccountField.getByName(property);
+        AccountField field = Stream.of(AccountField.MULTIPLIER_STAGE, AccountField.DELAY_UNTIL_NEXT_PAYOUT, AccountField.REMAINING_OFFLINE_PAYOUTS)
+                .filter(f -> f.toString().equalsIgnoreCase(property))
+                .findFirst()
+                .orElse(null);
         if (field == null) {
             p.sendMessage(Message.NOT_A_PROPERTY.with(Placeholder.INPUT).as(property).translate());
             return true;

@@ -50,13 +50,6 @@ public enum AccountField implements BankingEntityField<Account> {
         return VALUES.stream();
     }
 
-    public static AccountField getByName(String name) {
-        return stream()
-                .filter(field -> field.toString().equalsIgnoreCase(name))
-                .findFirst()
-                .orElse(null);
-    }
-
     @Override
     public String toString() {
         return path;
