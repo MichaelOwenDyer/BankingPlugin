@@ -402,12 +402,12 @@ public final class BankingPlugin extends JavaPlugin {
 
 	public void async(Runnable runnable) {
 		if (isEnabled())
-			Utils.bukkitRunnable(runnable).runTaskAsynchronously(this);
+			new BPRunnable(runnable).runTaskAsynchronously(this);
 	}
 
 	public void sync(Runnable runnable) {
 		if (isEnabled())
-			Utils.bukkitRunnable(runnable).runTask(this);
+			new BPRunnable(runnable).runTask(this);
 	}
 
 	/**

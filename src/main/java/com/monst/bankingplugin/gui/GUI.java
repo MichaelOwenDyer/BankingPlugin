@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.utils.BPRunnable;
 import com.monst.bankingplugin.utils.Observable;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.ChatColor;
@@ -38,7 +39,7 @@ public abstract class GUI<T> {
 	boolean needsUpdate = false;
 
 	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) ->
-			Utils.bukkitRunnable(() -> { // TODO: Can remove BukkitRunnable?
+			new BPRunnable(() -> { // TODO: Can remove BukkitRunnable?
 				if (isInForeground() && hasParent()) {
 					parentGUI.inForeground = true;
 					parentGUI.reopen(player);

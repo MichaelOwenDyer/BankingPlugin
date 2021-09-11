@@ -5,8 +5,8 @@ import com.monst.bankingplugin.banking.Bank;
 import com.monst.bankingplugin.geo.Vector2D;
 import com.monst.bankingplugin.geo.regions.BankRegion;
 import com.monst.bankingplugin.geo.regions.PolygonalBankRegion;
+import com.monst.bankingplugin.utils.BPRunnable;
 import com.monst.bankingplugin.utils.Pair;
-import com.monst.bankingplugin.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Visualization;
 import me.ryanhamshire.GriefPrevention.VisualizationElement;
 import org.bukkit.Location;
@@ -40,7 +40,7 @@ public class VisualizationManager {
     }
 
     private static void visualize(Player p, Collection<BankRegion> bankRegions, VisualizationType type) {
-        Utils.bukkitRunnable(() -> {
+        new BPRunnable(() -> {
             Visualization visualization = new Visualization();
             for (BankRegion region : bankRegions)
                 visualization.elements.addAll(getRegionElements(region, type));

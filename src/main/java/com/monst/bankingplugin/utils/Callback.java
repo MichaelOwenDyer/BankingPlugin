@@ -72,7 +72,7 @@ public abstract class Callback<T> {
      */
     public static <T> void callSyncResult(Callback<T> callback, T result) {
         if (callback != null)
-            Utils.bukkitRunnable(() -> callback.onResult(result)).runTask(PLUGIN);
+            PLUGIN.sync(() -> callback.onResult(result));
     }
 
 }

@@ -11,7 +11,6 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -110,15 +109,6 @@ public class Utils {
 
 	public static boolean isChest(Block block) {
 		return block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST;
-	}
-
-	public static BukkitRunnable bukkitRunnable(Runnable runnable) {
-		return new BukkitRunnable() {
-			@Override
-			public void run() {
-				runnable.run();
-			}
-		};
 	}
 
 	/**
