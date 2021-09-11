@@ -285,7 +285,7 @@ public class Account extends BankingEntity {
 	 * correctly being reflected inside the chest inventory.
 	 */
 	public <T> Callback<T> callUpdateChestName() {
-		return Callback.of(result -> setChestName(getChestName()));
+		return Callback.onResult(result -> setChestName(getChestName()));
 	}
 
 	/**

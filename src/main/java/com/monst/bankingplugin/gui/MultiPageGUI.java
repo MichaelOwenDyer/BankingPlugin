@@ -58,7 +58,7 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
     public void open(Player player) {
         subscribe();
         shortenGUIChain();
-        itemAccessor.accept(Callback.of(newElements -> {
+        itemAccessor.accept(Callback.onResult(newElements -> {
             mostRecentItems = newElements;
             menuPages = createMenuPages();
             currentPage().open(player);
@@ -79,7 +79,7 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
             return;
         }
         needsUpdate = false;
-        itemAccessor.accept(Callback.of(newElements -> {
+        itemAccessor.accept(Callback.onResult(newElements -> {
             mostRecentItems = newElements;
             reloadPages();
         }));

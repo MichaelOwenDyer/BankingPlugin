@@ -22,25 +22,25 @@ public class NotifyPlayerOnJoinListener extends BankingPluginListener {
 
         Database database = plugin.getDatabase();
 
-		database.getLastLogout(p, Callback.of(logoutTime -> {
+		database.getLastLogout(p, Callback.onResult(logoutTime -> {
 		    if (logoutTime < 0) {
                 // No logout saved, probably first time joining.
                 return;
             }
 
-            database.getBankProfitEarnedByPlayerSince(p, logoutTime, Callback.of(profit -> {
+            database.getBankProfitEarnedByPlayerSince(p, logoutTime, Callback.onResult(profit -> {
                 if (profit.signum() == 0)
                     return;
                 Message message = profit.signum() > 0 ? Message.BANK_PROFIT_OFFLINE : Message.BANK_LOSS_OFFLINE;
                 p.sendMessage(message.with(Placeholder.AMOUNT).as(profit.abs()).translate());
             }));
 
-            database.getInterestEarnedByPlayerSince(p, logoutTime, Callback.of(interest -> {
+            database.getInterestEarnedByPlayerSince(p, logoutTime, Callback.onResult(interest -> {
                 if (interest.signum() > 0)
                     p.sendMessage(Message.OFFLINE_ACCOUNT_INTEREST.with(Placeholder.AMOUNT).as(interest).translate());
             }));
 
-            database.getLowBalanceFeesPaidByPlayerSince(p, logoutTime, Callback.of(fees -> {
+            database.getLowBalanceFeesPaidByPlayerSince(p, logoutTime, Callback.onResult(fees -> {
                 if (fees.signum() > 0)
                     p.sendMessage(Message.OFFLINE_LOW_BALANCE_FEES_PAID.with(Placeholder.AMOUNT).as(fees).translate());
             }));

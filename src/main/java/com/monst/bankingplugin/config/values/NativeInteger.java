@@ -12,7 +12,7 @@ interface NativeInteger extends NativeValue<Integer> {
     }
 
     @Override
-    default Integer cast(Object o) throws InvalidValueException {
+    default Integer cast(Object o) throws ClassCastException, InvalidValueException {
         Number n = (Number) o;
         if (!(n instanceof Integer))
             throw new InvalidValueException(n.intValue());

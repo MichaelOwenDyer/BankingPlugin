@@ -77,7 +77,7 @@ interface ConfigurationValue<V, T> extends Supplier<T> {
      * @throws ClassCastException if the object is of an unrelated type - the entry will be reset.
      * @throws InvalidValueException if the object is of a related (but still incorrect) type - the entry will be repaired.
      */
-    V cast(Object o) throws InvalidValueException;
+    V cast(Object o) throws ClassCastException, InvalidValueException;
 
     /**
      * Throws an {@link InvalidValueException} if the reconstructed object is somehow outside its bounds, e.g.

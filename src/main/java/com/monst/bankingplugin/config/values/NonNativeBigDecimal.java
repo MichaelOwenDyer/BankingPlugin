@@ -21,7 +21,7 @@ interface NonNativeBigDecimal extends NonNativeValue<Double, BigDecimal> {
     }
 
     @Override
-    default Double cast(Object o) {
+    default Double cast(Object o) throws ClassCastException {
         return ((Number) o).doubleValue();
     }
 

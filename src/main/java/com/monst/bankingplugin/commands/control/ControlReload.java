@@ -39,7 +39,7 @@ public class ControlReload extends SubCommand {
             return true;
         }
 
-        plugin.reload(Callback.of(bankAccountMap -> {
+        plugin.reload(Callback.onResultAndError(bankAccountMap -> {
                     int numberOfBanks = bankAccountMap.size();
                     int numberOfAccounts = bankAccountMap.values().size();
                     sender.sendMessage(Message.RELOADED_PLUGIN

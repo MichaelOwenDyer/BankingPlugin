@@ -30,7 +30,7 @@ public class DatabaseFile extends ConfigValue<String, Path> implements NonNative
 
     @Override
     public void afterSet(CommandSender executor) {
-        plugin.reloadEntities(Callback.of(banksAndAccounts -> {
+        plugin.reloadEntities(Callback.onResult(banksAndAccounts -> {
             int numberOfBanks = banksAndAccounts.size();
             int numberOfAccounts = banksAndAccounts.values().size();
             executor.sendMessage(Message.RELOADED_PLUGIN

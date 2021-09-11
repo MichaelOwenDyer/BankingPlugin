@@ -280,7 +280,7 @@ public final class BankingPlugin extends JavaPlugin {
 	 * Fetches all banks and accounts from the {@link Database}.
 	 */
 	public void reloadEntities(Callback<Map<Bank, Set<Account>>> callback) {
-		getDatabase().connect(Callback.of(
+		getDatabase().connect(Callback.onResultAndError(
 				result -> {
 					Set<Bank> reloadedBanks = new HashSet<>();
 					Set<Account> reloadedAccounts = new HashSet<>();
@@ -290,7 +290,7 @@ public final class BankingPlugin extends JavaPlugin {
 						debugf("Removed bank #%d", bank.getID());
 					}
 
-					getDatabase().getBanksAndAccounts(Callback.of(
+					getDatabase().getBanksAndAccounts(Callback.onResultAndError(
 							bankAccountsMap -> {
 								bankAccountsMap.forEach((bank, bankAccounts) -> {
 									bankRepository.add(bank, false);
@@ -325,9 +325,7 @@ public final class BankingPlugin extends JavaPlugin {
 					));
 				},
 				error -> {
-					callback.onError(error);
 					getLogger().severe("No database access! Disabling BankingPlugin.");
-					getLogger().severe(error.getMessage());
 					getServer().getPluginManager().disablePlugin(this);
 				}
 		));

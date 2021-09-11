@@ -7,10 +7,10 @@ import java.util.function.Consumer;
 public abstract class Callback<T> {
 
     public static <T> Callback<T> doNothing() {
-        return of(result -> {}); // do nothing
+        return onResult(result -> {}); // do nothing
     }
 
-    public static <T> Callback<T> of(Consumer<T> onResult) {
+    public static <T> Callback<T> onResult(Consumer<T> onResult) {
         return new Callback<T>() {
             @Override
             public void onResult(T result) {
@@ -19,7 +19,7 @@ public abstract class Callback<T> {
         };
     }
 
-    public static <T> Callback<T> of(Consumer<T> onResult, Consumer<Throwable> onError) {
+    public static <T> Callback<T> onResultAndError(Consumer<T> onResult, Consumer<Throwable> onError) {
         return new Callback<T>() {
             @Override
             public void onResult(T result) {
