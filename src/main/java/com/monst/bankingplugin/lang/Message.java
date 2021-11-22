@@ -22,7 +22,7 @@ public enum Message {
     ),
     ACCOUNT_CREATE_INSUFFICIENT_FUNDS (
             "A player cannot afford to create an account.",
-            "&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to create an account.",
+            "&cNot enough money. You need &a%AMOUNT_REMAINING%&c more to create an account.",
             Placeholder.PRICE, Placeholder.PLAYER_BALANCE, Placeholder.AMOUNT_REMAINING
     ),
     NO_SELF_BANKING (
@@ -32,27 +32,27 @@ public enum Message {
     ),
     ACCOUNT_CREATE_FEE_PAID (
             "A player is charged money to create an account at a bank.",
-            "&6You have been charged &a%PRICE% &6to create an account at &7%BANK_NAME%&6.",
+            "&6You have been charged &a%PRICE%&6 to create an account at &7%BANK_NAME%&6.",
             Placeholder.PRICE, Placeholder.BANK_NAME
     ),
     ACCOUNT_CREATE_FEE_RECEIVED (
             "A bank owner receives payment from a player who created an account.", // TODO: Test
-            "&6%PLAYER% has paid you &a%AMOUNT% &6to create an account at &7%BANK_NAME%&6.",
+            "&6%PLAYER% has paid you &a%AMOUNT%&6 to create an account at &7%BANK_NAME%&6.",
             Placeholder.PLAYER, Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
     ACCOUNT_EXTEND_INSUFFICIENT_FUNDS (
             "A player cannot afford to extend an account.",
-            "&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to extend an account.",
+            "&cNot enough money. You need &a%AMOUNT_REMAINING%&c more to extend an account.",
             Placeholder.PRICE, Placeholder.PLAYER_BALANCE, Placeholder.AMOUNT_REMAINING
     ),
     ACCOUNT_EXTEND_FEE_PAID (
             "A player is charged money to extend their account chest into a double chest.",
-            "&6You have been charged &a%PRICE% &6to extend an account at &7%BANK_NAME%&6.",
+            "&6You have been charged &a%PRICE%&6 to extend an account at &7%BANK_NAME%&6.",
             Placeholder.PRICE, Placeholder.BANK_NAME
     ),
     ACCOUNT_EXTEND_FEE_RECEIVED (
             "A bank owner receives payment from a player who extended their account.", // TODO: Test
-            "&6%PLAYER% has paid you &a%AMOUNT% &6to extend an account at &7%BANK_NAME%&6.",
+            "&6%PLAYER% has paid you &a%AMOUNT%&6 to extend an account at &7%BANK_NAME%&6.",
             Placeholder.PLAYER, Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
     ACCOUNT_REMOVED (
@@ -62,12 +62,12 @@ public enum Message {
     ),
     ACCOUNT_CONFIRM_REMOVE_ALL (
             "An admin must confirm removing multiple accounts at once.",
-            "&6You are about to remove &b%NUMBER_OF_ACCOUNTS% &6account(s).",
+            "&6You are about to remove &b%NUMBER_OF_ACCOUNTS%&6 account(s).",
             Placeholder.NUMBER_OF_ACCOUNTS
     ),
     ALL_ACCOUNTS_REMOVED (
             "An admin removes multiple accounts at once.",
-            "&6Successfully removed &b%NUMBER_OF_ACCOUNTS% &6account(s).",
+            "&6Successfully removed &b%NUMBER_OF_ACCOUNTS%&6 account(s).",
             Placeholder.NUMBER_OF_ACCOUNTS
     ),
     ACCOUNT_NOT_FOUND (
@@ -144,32 +144,32 @@ public enum Message {
     ),
     ACCOUNT_DEPOSIT (
             "A player puts items into an account chest and closes the chest.", // TODO: Test
-            "&6You deposited &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6.",
+            "&6You deposited &a%AMOUNT%&6 for a new balance of &a%ACCOUNT_BALANCE%&6.",
             Placeholder.AMOUNT, Placeholder.ACCOUNT_BALANCE
     ),
     ACCOUNT_WITHDRAWAL (
             "A player takes items out of an account chest and closes the chest.", // TODO: Test
-            "&6You withdrew &a%AMOUNT% &6for a new balance of &a%ACCOUNT_BALANCE%&6.",
+            "&6You withdrew &a%AMOUNT%&6 for a new balance of &a%ACCOUNT_BALANCE%&6.",
             Placeholder.AMOUNT, Placeholder.ACCOUNT_BALANCE
     ),
     INTEREST_EARNED (
             "A player earns interest on at least one account.",
-            "&6You earned &a%AMOUNT% &6in interest on &b%NUMBER_OF_ACCOUNTS% &6account(s).",
+            "&6You earned &a%AMOUNT%&6 in interest on &b%NUMBER_OF_ACCOUNTS%&6 account(s).",
             Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     OFFLINE_ACCOUNT_INTEREST (
             "A player logs onto the server after having earned interest offline.",
-            "&6You earned &a%AMOUNT% &6in interest while you were offline.",
+            "&6You earned &a%AMOUNT%&6 in interest while you were offline.",
             Placeholder.AMOUNT
     ),
     OFFLINE_LOW_BALANCE_FEES_PAID (
             "A player logs into the server after having paid low balance fees offline.",
-            "&cYou paid &a%AMOUNT% &cin low balance fees while you were offline.",
+            "&cYou paid &a%AMOUNT%&c in low balance fees while you were offline.",
             Placeholder.AMOUNT
     ),
     LOW_BALANCE_FEE_PAID (
             "A player must pay low balance fees on at least one account.",
-            "&cYou paid &a%AMOUNT% &cin low balance fees on &b%NUMBER_OF_ACCOUNTS% &caccount(s).",
+            "&cYou paid &a%AMOUNT%&c in low balance fees on &b%NUMBER_OF_ACCOUNTS%&c account(s).",
             Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     MULTIPLIER_DECREASED (
@@ -200,12 +200,12 @@ public enum Message {
     ),
     BANK_CREATE_INSUFFICIENT_FUNDS (
             "A player cannot afford to create a bank.",
-            "&cNot enough money. You need &a%AMOUNT_REMAINING% &cmore to create a bank.",
+            "&cNot enough money. You need &a%AMOUNT_REMAINING%&c more to create a bank.",
             Placeholder.PRICE, Placeholder.AMOUNT_REMAINING, Placeholder.PLAYER_BALANCE
     ),
     BANK_CREATE_FEE_PAID (
             "A player is charged money to create a bank.",
-            "&6You have been charged &a%PRICE% &6to create a bank.",
+            "&6You have been charged &a%PRICE%&6 to create a bank.",
             Placeholder.PRICE
     ),
     BANK_SELECT_REGION (
@@ -227,17 +227,17 @@ public enum Message {
     ),
     BANK_SELECTION_TOO_LARGE (
             "A player attempts to create a bank and a size that is greater than the maximum defined in the config.",
-            "&cThat selection is too large. It exceeds the maximum bank size by &b%DIFFERENCE% &cblocks.",
+            "&cThat selection is too large. It exceeds the maximum bank size by &b%DIFFERENCE%&c blocks.",
             Placeholder.BANK_SIZE, Placeholder.MAXIMUM, Placeholder.DIFFERENCE
     ),
     BANK_SELECTION_TOO_SMALL (
             "A player attempts to create a bank and a size that is smaller than the minimum defined in the config.",
-            "&cThat selection is too small. It falls short of the minimum bank size by &b%DIFFERENCE% &cblocks.",
+            "&cThat selection is too small. It falls short of the minimum bank size by &b%DIFFERENCE%&c blocks.",
             Placeholder.BANK_SIZE, Placeholder.MINIMUM, Placeholder.DIFFERENCE
     ),
     BANK_SELECTION_OVERLAPS_EXISTING (
             "A player attempts to create a bank that overlaps and at least one existing bank.",
-            "&cThat selection overlaps and &b%NUMBER_OF_BANKS% &cexisting bank(s).",
+            "&cThat selection overlaps and &b%NUMBER_OF_BANKS%&c existing bank(s).",
             Placeholder.NUMBER_OF_BANKS
     ),
     BANK_SELECTION_CUTS_ACCOUNTS (
@@ -247,12 +247,12 @@ public enum Message {
     ),
     BANK_REMOVED (
             "A player removes a bank and all its accounts.",
-            "&6Bank &b%BANK_NAME% &6and &b%NUMBER_OF_ACCOUNTS% &6account(s) were removed.",
+            "&6Bank &b%BANK_NAME%&6 and &b%NUMBER_OF_ACCOUNTS%&6 account(s) were removed.",
             Placeholder.BANK_NAME, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     ALL_BANKS_REMOVED (
             "A player removes multiple banks at once.",
-            "&6Successfully removed &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
+            "&6Successfully removed &b%NUMBER_OF_BANKS%&6 bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     BANK_NOT_FOUND (
@@ -266,7 +266,7 @@ public enum Message {
     ),
     BANK_CONFIRM_REMOVE (
             "An admin must confirm removing one bank or more.",
-            "&6Execute command again to remove &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
+            "&6Execute command again to remove &b%NUMBER_OF_BANKS%&6 bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     MUST_STAND_IN_BANK (
@@ -285,7 +285,7 @@ public enum Message {
     ),
     BANK_CONFIRM_TRANSFER (
             "A player executes a command to transfer a bank to another player and must execute it again to confirm.",
-            "&6Execute command again to confirm transferring ownership of bank &7%BANK_NAME% &6to %PLAYER%.",
+            "&6Execute command again to confirm transferring ownership of bank &7%BANK_NAME%&6 to %PLAYER%.",
             Placeholder.PLAYER, Placeholder.BANK_NAME
     ),
     BANK_TRANSFERRED (
@@ -310,7 +310,7 @@ public enum Message {
     ),
     BANK_PROPERTY_SET (
             "A player sets a property at a bank to a new value.",
-            "&6Changed &b%PROPERTY% &6at bank &7%BANK_NAME% &6from &b%PREVIOUS_VALUE% &6to &b%VALUE%&6.",
+            "&6Changed &b%PROPERTY%&6 at bank &7%BANK_NAME%&6 from&b %PREVIOUS_VALUE% &6to&b %VALUE%&6.",
             Placeholder.PROPERTY, Placeholder.BANK_NAME, Placeholder.PREVIOUS_VALUE, Placeholder.VALUE
     ),
     BANK_PROPERTY_NOT_OVERRIDABLE (
@@ -320,7 +320,7 @@ public enum Message {
     ),
     BANK_SELECTED (
             "A player selects a bank and WorldEdit.",
-            "&6Bank &7%BANK_NAME% &6was selected and WorldEdit.",
+            "&6Bank &7%BANK_NAME%&6 was selected and WorldEdit.",
             Placeholder.BANK_NAME
     ),
     NOT_A_NUMBER (
@@ -395,32 +395,32 @@ public enum Message {
     ),
     INTEREST_PAID (
             "A bank owner pays interest to the account holders at their bank.",
-            "&6You paid account holders &a%AMOUNT% &6in interest.",
+            "&6You paid account holders &a%AMOUNT%&6 in interest.",
             Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     LOW_BALANCE_FEE_RECEIVED (
             "A bank owner receives low balance fee payments from account holders.",
-            "&6You received &a%AMOUNT% &cin low balance fees from &b%NUMBER_OF_ACCOUNTS% &caccount(s).",
+            "&6You received &a%AMOUNT%&c in low balance fees from &b%NUMBER_OF_ACCOUNTS%&c account(s).",
             Placeholder.AMOUNT, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     BANK_REVENUE (
             "A bank owner receives some bank revenue.",
-            "&6You received &a%AMOUNT% &6in bank revenue from &b%NUMBER_OF_BANKS% &6bank(s).",
+            "&6You received &a%AMOUNT%&6 in bank revenue from &b%NUMBER_OF_BANKS%&6 bank(s).",
             Placeholder.AMOUNT, Placeholder.NUMBER_OF_BANKS
     ),
     BANK_PROFIT (
             "A bank owner makes a profit from their bank.",
-            "&6You made a profit of &a%AMOUNT% &6at bank &7%BANK_NAME%&6.",
+            "&6You made a profit of &a%AMOUNT%&6 at bank &7%BANK_NAME%&6.",
             Placeholder.AMOUNT, Placeholder.BANK_NAME
     ),
     BANK_PROFIT_OFFLINE (
             "A bank owner logs onto the server after having made a profit while offline.",
-            "&6You made &a%AMOUNT% &6in bank profit while you were offline.",
+            "&6You made &a%AMOUNT%&6 in bank profit while you were offline.",
             Placeholder.AMOUNT
     ),
     BANK_LOSS_OFFLINE (
             "A bank owner logs onto the server after having made a loss while offline.",
-            "&cYou made &a%AMOUNT% &cin bank losses while you were offline.",
+            "&cYou made &a%AMOUNT%&c in bank losses while you were offline.",
             Placeholder.AMOUNT
     ),
     REIMBURSEMENT_RECEIVED (
@@ -939,17 +939,17 @@ public enum Message {
     ),
     CONFIG_VALUE_ADDED (
             "An admin adds a value to a property in the config.",
-            "&6Added &a%VALUE% &6to &a%PROPERTY%&6.",
+            "&6Added &a%VALUE%&6 to &a%PROPERTY%&6.",
             Placeholder.VALUE, Placeholder.PROPERTY
     ),
     CONFIG_VALUE_REMOVED (
             "An admin removes a value from a property in the config.",
-            "&6Removed &a%VALUE% &6from &a%PROPERTY%&6.",
+            "&6Removed &a%VALUE%&6 from &a%PROPERTY%&6.",
             Placeholder.VALUE, Placeholder.PROPERTY
     ),
     CONFIG_VALUE_SET (
             "An admin sets the value of a property in the config.",
-            "&6Changed &a%PROPERTY% &6from &a%PREVIOUS_VALUE% &6to &a%VALUE%&6.",
+            "&6Changed &a%PROPERTY%&6 from &a%PREVIOUS_VALUE%&6 to &a%VALUE%&6.",
             Placeholder.PROPERTY, Placeholder.PREVIOUS_VALUE, Placeholder.VALUE
     ),
     RESTART_REQUIRED (
@@ -959,17 +959,17 @@ public enum Message {
     ),
     INTEREST_PAYOUT_TRIGGERED (
             "An admin triggers an interest payout.",
-            "&6Triggered an interest payout at &b%NUMBER_OF_BANKS% &6bank(s).",
+            "&6Triggered an interest payout at &b%NUMBER_OF_BANKS%&6 bank(s).",
             Placeholder.NUMBER_OF_BANKS
     ),
     RELOADED_PLUGIN (
             "An admin reloads all banks and accounts on the server.",
-            "&6Successfully reloaded &b%NUMBER_OF_BANKS% &6bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
+            "&6Successfully reloaded &b%NUMBER_OF_BANKS%&6 bank(s) and &b%NUMBER_OF_ACCOUNTS% &6account(s).",
             Placeholder.NUMBER_OF_BANKS, Placeholder.NUMBER_OF_ACCOUNTS
     ),
     UPDATE_AVAILABLE (
             "An admin is notified that an update to BankingPlugin is available.",
-            "&6&lVersion &c%VERSION% &6of &aBanking&2Plugin &6is available.",
+            "&6&lVersion &c%VERSION%&6 of &aBanking&2Plugin&6 is available.",
             Placeholder.VERSION
     ),
     UPDATE_CLICK_TO_DOWNLOAD (
