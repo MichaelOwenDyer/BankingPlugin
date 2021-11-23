@@ -122,9 +122,9 @@ public class Account extends BankingEntity {
 	 * @param bank the new {@link Bank} of this account.
 	 */
 	public void setBank(Bank bank) {
-		getBank().removeAccount(this);
+		this.bank.removeAccount(this);
 		this.bank = bank;
-		getBank().addAccount(this);
+		bank.addAccount(this);
 		notifyObservers();
 	}
 
@@ -148,7 +148,7 @@ public class Account extends BankingEntity {
 	public void reloadBalance() {
 		balance = calculateBalance();
 		notifyObservers();
-		getBank().notifyObservers();
+		bank.notifyObservers();
 		plugin.getAccountRepository().getAccountMap().notifyObservers();
 	}
 

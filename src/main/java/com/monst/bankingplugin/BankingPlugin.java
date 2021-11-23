@@ -31,6 +31,7 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -73,6 +74,14 @@ public final class BankingPlugin extends JavaPlugin {
 	/*	Debug  */
 	private PrintWriter debugWriter;
 
+	/*  Startup Message	 */
+	private final String[] STARTUP_MESSAGE = new String[] {
+			ChatColor.GREEN + "   __ " + ChatColor.DARK_GREEN + "  __",
+			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |__)" + ChatColor.DARK_GREEN + "   BankingPlugin" + ChatColor.AQUA + " v" + getDescription().getVersion(),
+			ChatColor.GREEN + "  |__)" + ChatColor.DARK_GREEN + " |   " + ChatColor.DARK_GRAY  + "        by monst",
+			""
+	};
+
 	/**
 	 * @return an instance of BankingPlugin
 	 */
@@ -87,9 +96,6 @@ public final class BankingPlugin extends JavaPlugin {
 		config = new Config(this);
         languageConfig = new LanguageConfig(this);
 
-        if (Config.enableDebugLog.get())
-            instantiateDebugWriter();
-
         debugf("Loading BankingPlugin version %s", getDescription().getVersion());
 
         worldGuard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
@@ -102,7 +108,8 @@ public final class BankingPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		Config.enableStartupMessage.printIfEnabled();
+		if (Config.enableStartupMessage.get())
+			Bukkit.getServer().getConsoleSender().sendMessage(STARTUP_MESSAGE);
 
 		try {
 			checkForDependencies();

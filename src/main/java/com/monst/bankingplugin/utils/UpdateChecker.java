@@ -39,9 +39,8 @@ public class UpdateChecker {
 
             if (element.isJsonArray()) {
                 JsonObject result = element.getAsJsonArray().get(0).getAsJsonObject();
-                String id = result.get("id").getAsString();
+                link = result.get("id").getAsString();
                 version = result.get("name").getAsString();
-				link = id;
             } else {
                 plugin.debug("Failed to check for updates");
                 plugin.debug("Result: " + element);
