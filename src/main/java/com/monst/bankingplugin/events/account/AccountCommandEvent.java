@@ -1,28 +1,17 @@
 package com.monst.bankingplugin.events.account;
 
-import org.bukkit.command.CommandSender;
-import org.bukkit.event.HandlerList;
+import com.monst.bankingplugin.events.PlayerEvent;
+import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 
-public abstract class AccountCommandEvent extends AccountEvent {
+public abstract class AccountCommandEvent extends AccountEvent implements PlayerEvent {
 
     private final String[] args;
 
-    public AccountCommandEvent(CommandSender executor, String[] args) {
-        super(executor);
+    public AccountCommandEvent(Player player, String[] args) {
+        super(player);
         this.args = Arrays.copyOf(args, args.length);
-    }
-
-    private static final HandlerList HANDLERS = new HandlerList();
-
-    @Override
-    public HandlerList getHandlers() {
-        return HANDLERS;
-    }
-
-    public static HandlerList getHandlerList() {
-        return HANDLERS;
     }
 
     public String[] getArgs() {

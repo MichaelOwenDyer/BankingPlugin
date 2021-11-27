@@ -6,6 +6,7 @@ import com.monst.bankingplugin.commands.account.AccountInfo;
 import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.utils.ClickType;
 import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
@@ -20,8 +21,11 @@ import org.bukkit.inventory.ItemStack;
 
 public class AccountInteractListener extends BankingPluginListener {
 
+	private final AccountRepository accountRepo;
+
 	public AccountInteractListener(BankingPlugin plugin) {
 		super(plugin);
+		this.accountRepo = plugin.getAccountRepository();
 	}
 
 	/**

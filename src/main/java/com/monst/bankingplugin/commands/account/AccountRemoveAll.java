@@ -53,11 +53,11 @@ public class AccountRemoveAll extends SubCommand {
                     )
             );
             Set<UUID> owners = new HashSet<>();
-            for (String arg : args) {
-                if (namePlayerMap.containsKey(arg))
-                    owners.add(namePlayerMap.get(arg));
+            for (String playerName : args) {
+                if (namePlayerMap.containsKey(playerName))
+                    owners.add(namePlayerMap.get(playerName));
                 else {
-                    OfflinePlayer player = Utils.getPlayer(arg);
+                    OfflinePlayer player = Utils.getPlayer(playerName);
                     if (player != null)
                         owners.add(player.getUniqueId());
                 }

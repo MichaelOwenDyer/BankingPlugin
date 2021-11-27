@@ -14,6 +14,7 @@ import com.monst.bankingplugin.geo.locations.DoubleAccountLocation;
 import com.monst.bankingplugin.geo.locations.SingleAccountLocation;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.utils.PayrollOffice;
 import com.monst.bankingplugin.utils.Permission;
 import com.monst.bankingplugin.utils.Utils;
@@ -38,8 +39,11 @@ import java.math.BigDecimal;
 @SuppressWarnings("unused")
 public class AccountProtectListener extends BankingPluginListener {
 
+	private final AccountRepository accountRepo;
+
 	public AccountProtectListener(BankingPlugin plugin) {
         super(plugin);
+		this.accountRepo = plugin.getAccountRepository();
     }
 
 	/**

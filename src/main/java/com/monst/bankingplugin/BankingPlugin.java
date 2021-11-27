@@ -238,18 +238,19 @@ public final class BankingPlugin extends JavaPlugin {
 	 */
 	private void registerListeners() {
     	debug("Registering listeners...");
-		getServer().getPluginManager().registerEvents(new AccountBalanceListener(this), this);
-    	getServer().getPluginManager().registerEvents(new AccountInteractListener(this), this);
-		getServer().getPluginManager().registerEvents(new AccountProtectListener(this), this);
-    	getServer().getPluginManager().registerEvents(new ChestTamperingListener(this), this);
-    	getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
-		getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
+		new AccountBalanceListener(this).register();
+    	new AccountInteractListener(this).register();
+		new AccountProtectListener(this).register();
+    	new ChestTamperingListener(this).register();
+    	new InterestEventListener(this).register();
+		new NotifyPlayerOnJoinListener(this).register();
+
 		getServer().getPluginManager().registerEvents(new MenuFunctionListener(), this); // Third-party GUI listener
 
 		if (isGriefPreventionIntegrated())
-			getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
+			new GriefPreventionListener(this).register();
 		if (isWorldGuardIntegrated())
-			getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);
+			new WorldGuardListener(this).register();
 	}
 
 	/**

@@ -15,7 +15,6 @@ import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -87,9 +86,7 @@ public class GriefPreventionListener extends BankingPluginListener {
 
     private boolean isBlockedByGriefPrevention(Player player, Block block) {
         Claim claim = griefPrevention.dataStore.getClaimAt(block.getLocation(), false, null);
-        if (claim == null)
-            return false;
-        return claim.allowContainers(player) != null;
+        return claim != null && claim.allowContainers(player) != null;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -130,27 +127,21 @@ public class GriefPreventionListener extends BankingPluginListener {
     public void onBankCreate(BankCreateEvent e) {
 	    if (!plugin.isGriefPreventionIntegrated())
 	        return;
-        CommandSender executor = e.getExecutor();
-        if (executor instanceof Player)
-            VisualizationManager.visualizeRegion(((Player) executor), e.getBank());
+        VisualizationManager.visualizeRegion(e.getPlayer(), e.getBank());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankRemove(BankRemoveEvent e) {
-	    if (!plugin.isGriefPreventionIntegrated())
+	    if (!plugin.isGriefPreventionIntegrated() || !(e.getExecutor() instanceof Player))
 	        return;
-        CommandSender executor = e.getExecutor();
-        if (executor instanceof Player)
-            VisualizationManager.revertVisualization((Player) executor);
+        VisualizationManager.revertVisualization((Player) e.getExecutor());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBankResize(BankResizeEvent e) {
 	    if (!plugin.isGriefPreventionIntegrated())
 	        return;
-        CommandSender executor = e.getExecutor();
-        if (executor instanceof Player)
-	        VisualizationManager.visualizeRegion(((Player) executor), e.getNewRegion(), e.getBank().isAdminBank());
+        VisualizationManager.visualizeRegion(e.getPlayer(), e.getNewRegion(), e.getBank().isAdminBank());
     }
 
 }

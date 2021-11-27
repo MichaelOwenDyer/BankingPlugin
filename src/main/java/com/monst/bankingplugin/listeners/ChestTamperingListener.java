@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -15,8 +16,11 @@ import org.bukkit.event.world.StructureGrowEvent;
 @SuppressWarnings("unused")
 public class ChestTamperingListener extends BankingPluginListener {
 
+    private final AccountRepository accountRepo;
+
     public ChestTamperingListener(BankingPlugin plugin) {
         super(plugin);
+        this.accountRepo = plugin.getAccountRepository();
     }
 
     @EventHandler(priority = EventPriority.HIGH)

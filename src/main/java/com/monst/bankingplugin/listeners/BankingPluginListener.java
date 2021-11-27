@@ -1,17 +1,19 @@
 package com.monst.bankingplugin.listeners;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.repository.AccountRepository;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 
-public class BankingPluginListener implements Listener {
+public abstract class BankingPluginListener implements Listener {
 
     protected final BankingPlugin plugin;
-    protected final AccountRepository accountRepo;
 
     protected BankingPluginListener(BankingPlugin plugin) {
         this.plugin = plugin;
-        this.accountRepo = plugin.getAccountRepository();
+    }
+
+    public final void register() {
+        Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
 }

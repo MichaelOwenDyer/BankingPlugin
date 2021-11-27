@@ -4,7 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Event;
 
-public abstract class BankingPluginEvent extends Event {
+public abstract class BankingPluginEvent extends Event implements CommandSenderEvent {
 
     private boolean fired = false;
     private final CommandSender executor;
@@ -13,6 +13,7 @@ public abstract class BankingPluginEvent extends Event {
         this.executor = executor;
     }
 
+    @Override
     public CommandSender getExecutor() {
         return executor;
     }

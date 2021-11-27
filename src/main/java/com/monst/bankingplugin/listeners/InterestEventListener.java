@@ -8,6 +8,7 @@ import com.monst.bankingplugin.config.Config;
 import com.monst.bankingplugin.events.control.InterestEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.sql.logging.AccountInterest;
 import com.monst.bankingplugin.sql.logging.BankIncome;
 import com.monst.bankingplugin.utils.PayrollOffice;
@@ -28,8 +29,11 @@ import java.util.stream.Collectors;
  */
 public class InterestEventListener extends BankingPluginListener {
 
+	private final AccountRepository accountRepo;
+
 	public InterestEventListener(BankingPlugin plugin) {
 		super(plugin);
+		this.accountRepo = plugin.getAccountRepository();
 	}
 
 	@SuppressWarnings("unused")

@@ -2,7 +2,7 @@ package com.monst.bankingplugin.events.account;
 
 import com.monst.bankingplugin.banking.Account;
 import com.monst.bankingplugin.gui.AccountGUI;
-import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
@@ -15,8 +15,8 @@ public class AccountInfoEvent extends SingleAccountEvent implements Cancellable 
 
 	private boolean cancelled;
 
-	public AccountInfoEvent(CommandSender sender, Account account) {
-		super(sender, account);
+	public AccountInfoEvent(Player player, Account account) {
+		super(player, account);
 	}
 
 	private static final HandlerList HANDLERS = new HandlerList();

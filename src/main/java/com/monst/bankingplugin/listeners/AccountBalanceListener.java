@@ -7,6 +7,7 @@ import com.monst.bankingplugin.events.account.AccountContractEvent;
 import com.monst.bankingplugin.events.account.AccountTransactionEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.repository.AccountRepository;
 import com.monst.bankingplugin.sql.logging.AccountTransaction;
 import com.monst.bankingplugin.utils.Utils;
 import org.bukkit.Location;
@@ -22,8 +23,11 @@ import java.math.BigDecimal;
  */
 public class AccountBalanceListener extends BankingPluginListener {
 
+	private final AccountRepository accountRepo;
+
 	public AccountBalanceListener(BankingPlugin plugin) {
 		super(plugin);
+		this.accountRepo = plugin.getAccountRepository();
 	}
 
 	@EventHandler(ignoreCancelled = true)
