@@ -62,59 +62,64 @@ public class LanguageFile extends PathConfigurationValue {
             plugin.debugf("Could not find language file \"%s\".", languageFile.getFileName());
             languageFile = defaultLangFile;
         }
-
-        try {
-            load(languageFile);
-            plugin.getLogger().info("Using locale \"" + removeExtension(languageFile) + "\"");
+    
+        translations.clear();
+    
+        Map<String, String> fileTranslations;
+        try (Stream<String> lines = Files.lines(languageFile)) {
+            fileTranslations = lines
+                    .filter(l -> !l.isEmpty())
+                    .filter(l -> !l.startsWith("#"))
+                    .filter(l -> l.contains("="))
+                    .map(l -> l.split("=", 2))
+                    .collect(Collectors.toMap(s -> s[0], s -> s[1], (first, second) -> second));
         } catch (IOException e) {
             plugin.getLogger().severe("Failed to load language file \"" + languageFile.getFileName() + "\".");
             plugin.debug("Using default language values.");
             plugin.debug(e);
+            return;
         }
-    }
-
-    private static String removeExtension(Path path) {
-        String fileName = path.getFileName().toString();
-        return fileName.substring(0, fileName.length() - 5);
-    }
-
-    private void load(Path path) throws IOException {
-        translations.clear();
-        Map<String, String> fileContents = Files.lines(path)
-                .filter(l -> !l.isEmpty())
-                .filter(l -> !l.startsWith("#"))
-                .filter(l -> l.contains("="))
-                .map(l -> l.split("=", 2))
-                .collect(Collectors.toMap(s -> s[0], s -> s[1], (first, second) -> second));
+    
         EnumSet<Message> missingMessages = EnumSet.allOf(Message.class);
         for (Iterator<Message> it = missingMessages.iterator(); it.hasNext(); ) {
             Message message = it.next();
-            String translation = fileContents.remove(message.getPath());
+            String translation = fileTranslations.remove(message.getPath());
             if (translation != null) {
                 translations.put(message, ChatColor.translateAlternateColorCodes('&', translation));
                 it.remove();
             }
         }
-        if (!fileContents.isEmpty()) {
-            plugin.getLogger().info("There are unused translations in language file \"" + path.getFileName() + "\".");
+    
+        if (!fileTranslations.isEmpty()) {
+            plugin.getLogger().info("There are unused translations in language file \"" + languageFile.getFileName() + "\".");
             plugin.getLogger().info("See debug log for details.");
-            plugin.debugf("Unused translations found in language file \"%s\": %s", path.getFileName(), fileContents.keySet());
+            plugin.debugf("Unused translations found in language file \"%s\": %s", languageFile.getFileName(), fileTranslations.keySet());
         }
-        if (missingMessages.isEmpty())
-            return;
-
-        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.APPEND)) {
-            for (Message message : missingMessages) {
-                writer.write(System.lineSeparator() + "# Example Scenario: " + message.getExampleScenario());
-                writer.write(System.lineSeparator() + "# Available placeholders: " + message.getFormattedPlaceholdersList());
-                writer.write(System.lineSeparator() + message.getPath() + "=" + message.inEnglish().replaceAll("\u00A7", "&") + System.lineSeparator());
-                plugin.getLogger().info("Missing translation for \"" + message.getPath() + "\" has been added to the current language file.");
+    
+        if (!missingMessages.isEmpty()) {
+            try (BufferedWriter writer = Files.newBufferedWriter(languageFile, StandardOpenOption.APPEND)) {
+                for (Message message : missingMessages) {
+                    writer.write(System.lineSeparator() + "# Example Scenario: " + message.getExampleScenario());
+                    writer.write(
+                            System.lineSeparator() + "# Available placeholders: " + message.getFormattedPlaceholdersList());
+                    writer.write(System.lineSeparator() + message.getPath() + "=" + message.inEnglish()
+                            .replaceAll("\u00A7", "&") + System.lineSeparator());
+                    plugin.getLogger()
+                            .info("Missing translation for \"" + message.getPath() + "\" has been added to the current language file.");
+                }
+            } catch (IOException e) {
+                plugin.getLogger().severe("Failed to add missing translation to the language file.");
+                plugin.debug("Failed to add missing translation to the language file.");
+                plugin.debug(e);
             }
-        } catch (IOException e) {
-            plugin.getLogger().severe("Failed to add missing translation to the language file.");
-            plugin.debug("Failed to add missing translation to the language file.");
-            plugin.debug(e);
         }
+    
+        plugin.getLogger().info("Using locale \"" + removeExtension(languageFile) + "\"");
+    }
+
+    private static String removeExtension(Path path) {
+        String fileName = path.getFileName().toString();
+        return fileName.substring(0, fileName.length() - 5);
     }
 
     @Override
@@ -125,8 +130,8 @@ public class LanguageFile extends PathConfigurationValue {
         tabCompletions.accept(toString());
         tabCompletions.accept("en_US.lang");
         Path langFolder = plugin.getDataFolder().toPath().resolve("lang");
-        try {
-            Files.walk(langFolder)
+        try (Stream<Path> folderContents = Files.walk(langFolder)) {
+            folderContents
                     .filter(Files::isRegularFile)
                     .map(langFolder::relativize)
                     .map(Path::toString)
