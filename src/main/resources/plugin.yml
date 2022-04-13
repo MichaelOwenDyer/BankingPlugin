@@ -3,7 +3,7 @@
 name: BankingPlugin
 main: com.monst.bankingplugin.BankingPlugin
 version: ${project.version}
-api-version: 1.15
+api-version: 1.13
 database: true
 author: monst
 depend: [Vault, Essentials]
@@ -20,14 +20,14 @@ permissions:
             bankingplugin.config: true
             bankingplugin.reload: true
             bankingplugin.update: true
-            bankingplugin.payinterest: true
+            bankingplugin.pay-interest: true
 
     bankingplugin.account.*:
         description: Gives access to all account features.
         default: op
         children:
-            bankingplugin.account.create: true
-            bankingplugin.account.create.protected: true
+            bankingplugin.account.open: true
+            bankingplugin.account.open.protected: true
             bankingplugin.account.info.other: true
             bankingplugin.account.list.other: true
             bankingplugin.account.view.other: true
@@ -36,9 +36,9 @@ permissions:
             bankingplugin.account.migrate.other: true
             bankingplugin.account.migrate.bank: true
             bankingplugin.account.recover: true
-            bankingplugin.account.remove.other: true
-            bankingplugin.account.remove.protected: true
-            bankingplugin.account.removeall: true
+            bankingplugin.account.close.other: true
+            bankingplugin.account.close.protected: true
+            bankingplugin.account.close.all: true
             bankingplugin.account.rename: true
             bankingplugin.account.rename.other: true
             bankingplugin.account.configure: true
@@ -57,7 +57,7 @@ permissions:
             bankingplugin.bank.create.admin: true
             bankingplugin.bank.remove.other: true
             bankingplugin.bank.remove.admin: true
-            bankingplugin.bank.removeall: true
+            bankingplugin.bank.remove.all: true
             bankingplugin.bank.limit.*: true
             bankingplugin.bank.size.*: true
             bankingplugin.bank.resize.other: true
@@ -73,15 +73,15 @@ permissions:
 
 
     # ACCOUNT #
-    bankingplugin.account.create:
+    bankingplugin.account.open:
         description: Create, migrate, set nicknames for, and remove accounts of your own.
         default: true
 
-    bankingplugin.account.create.protected:
+    bankingplugin.account.open.protected:
         description: Create (or extend) an account where chest access is prohibited by another plugin.
         default: op
         children:
-            bankingplugin.account.create: true
+            bankingplugin.account.open: true
 
     bankingplugin.account.info.other:
         description: View detailed information about another player's account as if you were owner or co-owner.
@@ -105,40 +105,40 @@ permissions:
         description: Migrate an account chest to a different chest.
         default: op
         children:
-            bankingplugin.account.create: true
+            bankingplugin.account.open: true
 
     bankingplugin.account.migrate.other:
         description: Migrate the account chest of another player to a different chest.
         default: op
         children:
-            bankingplugin.account.create: true
+            bankingplugin.account.open: true
 
     bankingplugin.account.migrate.bank:
         description: Migrate an account to a chest in a different bank.
         default: op
         children:
-            bankingplugin.account.create: true
+            bankingplugin.account.open: true
 
     bankingplugin.account.recover:
         description: Recover an account that was not found on plugin load.
         default: op
         children:
-            bankingplugin.account.create: true
+            bankingplugin.account.open: true
 
-    bankingplugin.account.remove.other:
+    bankingplugin.account.close.other:
         description: Remove or contract another player's account.
         default: op
 
-    bankingplugin.account.remove.protected:
+    bankingplugin.account.close.protected:
         description: Remove or contract an account where chest access is prohibited by another plugin.
         default: op
 
-    bankingplugin.account.removeall:
+    bankingplugin.account.close.all:
         description: Remove all accounts on the server or all accounts of a certain set of players.
         default: op
         children:
-            bankingplugin.account.remove.other: true
-            bankingplugin.account.remove.protected: true
+            bankingplugin.account.close.other: true
+            bankingplugin.account.close.protected: true
 
     bankingplugin.account.rename:
         description: Give an account a custom name.
@@ -151,7 +151,7 @@ permissions:
             bankingplugin.account.rename: true
 
     bankingplugin.account.configure:
-        description: Gives access to configuration of internal account values such as multiplier stage and interest delay.
+        description: Gives access to configuration of internal account values such as interest multiplier stage and interest delay.
         default: op
 
     bankingplugin.account.trust:
@@ -174,17 +174,17 @@ permissions:
         description: Transfer ownership of your account to another player.
         default: true
         children:
-            bankingplugin.account.create: true
+            bankingplugin.account.open: true
 
     bankingplugin.account.extend.other:
         description: Extend another player's account chest.
         default: op
     # NOTE: To extend another player's account chest on protected land, players need both of the following permissions:
     #       - bankingplugin.account.extend-other
-    #       - bankingplugin.account.create.protected
+    #       - bankingplugin.account.open.protected
 
     bankingplugin.account.limit.*:
-        description: Create an unlimited number of accounts.
+        description: Open an unlimited number of accounts.
         default: op
 
     # BANK #
@@ -196,21 +196,21 @@ permissions:
         description: Create, manage, and remove admin banks.
         default: op
         children:
-            bankingplugin.account.create: true
+            bankingplugin.account.open: true
 
     bankingplugin.bank.remove.other:
         description: Remove another player's bank and all accounts at that bank.
         default: op
         children:
-            bankingplugin.account.remove.other: true
+            bankingplugin.account.close.other: true
 
     bankingplugin.bank.remove.admin:
         description: Remove an admin bank and all accounts at that bank.
         default: op
         children:
-            bankingplugin.account.remove.other: true
+            bankingplugin.account.close.other: true
 
-    bankingplugin.bank.removeall:
+    bankingplugin.bank.remove.all:
         description: Remove all banks and all accounts on the server.
         default: op
         children:
@@ -309,6 +309,6 @@ permissions:
         description: Update this plugin.
         default: op
 
-    bankingplugin.payinterest:
+    bankingplugin.pay-interest:
         description: Manually trigger an interest payment.
         default: op

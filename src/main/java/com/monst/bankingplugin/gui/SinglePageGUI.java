@@ -1,7 +1,8 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.utils.Observable;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.lang.ColorStringBuilder;
+import com.monst.bankingplugin.util.Observable;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -11,14 +12,14 @@ import org.ipvp.canvas.slot.Slot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class SinglePageGUI<T> extends GUI<T> {
 
     final T guiSubject;
     Menu menu;
 
-    SinglePageGUI(T guiSubject) {
+    SinglePageGUI(BankingPlugin plugin, T guiSubject) {
+        super(plugin);
         this.guiSubject = guiSubject;
     }
 
@@ -29,7 +30,10 @@ public abstract class SinglePageGUI<T> extends GUI<T> {
         menu = createMenu();
         menu.setCloseHandler(CLOSE_HANDLER);
         evaluateClearance(player);
-        update();
+        for (int i = 0; i < menu.getDimensions().getArea(); i++) {
+            menu.getSlot(i).setItem(createSlotItem(i));
+            menu.getSlot(i).setClickHandler(createClickHandler(i));
+        }
         menu.open(player);
     }
 
@@ -43,7 +47,7 @@ public abstract class SinglePageGUI<T> extends GUI<T> {
 
     @Override
     public void update() {
-        if (!isInForeground()) {
+        if (!isVisible()) {
             needsUpdate = true;
             return;
         }
@@ -66,29 +70,37 @@ public abstract class SinglePageGUI<T> extends GUI<T> {
 
     abstract Menu createMenu();
 
-    void evaluateClearance(Player player) {
-
-    }
+    void evaluateClearance(Player player) {}
 
     abstract ItemStack createSlotItem(int slot);
 
     abstract Slot.ClickHandler createClickHandler(int slot);
 
-    static List<String> getMultiplierLore(List<Integer> multipliers, int highlightStage) {
+    static List<String> getInterestMultiplierLore(List<Integer> interestMultipliers, int highlightStage) {
 
-        if (multipliers.isEmpty())
+        if (interestMultipliers.isEmpty())
             return Collections.singletonList(ChatColor.GREEN + "1x");
 
-        List<List<Integer>> collapsedMultipliers = Utils.collapseList(multipliers);
+        List<List<Integer>> collapsedMultipliers = new ArrayList<>();
+        collapsedMultipliers.add(new ArrayList<>());
+        collapsedMultipliers.get(0).add(interestMultipliers.get(0));
+        int level = 0;
+        for (int i = 1; i < interestMultipliers.size(); i++) {
+            if (interestMultipliers.get(i).equals(collapsedMultipliers.get(level).get(0)))
+                collapsedMultipliers.get(level).add(interestMultipliers.get(i));
+            else {
+                collapsedMultipliers.add(new ArrayList<>());
+                collapsedMultipliers.get(++level).add(interestMultipliers.get(i));
+            }
+        }
 
         int stage = -1;
         if (highlightStage != -1) {
-            for (List<Integer> level : collapsedMultipliers) {
+            for (List<Integer> multiplierGroup : collapsedMultipliers) {
                 stage++;
-                if (highlightStage < level.size())
+                if (highlightStage < multiplierGroup.size())
                     break;
-                else
-                    highlightStage -= level.size();
+                highlightStage -= multiplierGroup.size();
             }
             highlightStage++;
         }
@@ -116,27 +128,29 @@ public abstract class SinglePageGUI<T> extends GUI<T> {
         }
 
         for (int i = lower; i < upper; i++) {
-            StringBuilder line = new StringBuilder("" + ChatColor.GOLD + (i == stage ? ChatColor.BOLD : ""));
+            ColorStringBuilder line = new ColorStringBuilder();
+            if (i == stage)
+                line.bold();
 
-            line.append(" - ").append(collapsedMultipliers.get(i).get(0)).append("x" + ChatColor.DARK_GRAY);
+            line.gold(" - ", collapsedMultipliers.get(i).get(0), "x");
 
             int levelSize = collapsedMultipliers.get(i).size();
             if (levelSize > 1) {
                 if (stage == -1) {
-                    line.append(" (" + ChatColor.GRAY + "x" + ChatColor.AQUA + levelSize + ChatColor.DARK_GRAY + ")");
+                    line.darkGray(" (").gray("x").aqua(levelSize).darkGray(")");
                 } else if (i < stage) {
-                    line.append(" (" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
+                    line.darkGray(" (").green(levelSize).darkGray("/").green(levelSize).darkGray(")");
                 } else if (i > stage) {
-                    line.append(" (" + ChatColor.RED + "0" + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
+                    line.darkGray(" (").red("0").darkGray("/").green(levelSize).darkGray(")");
                 } else {
-                    ChatColor color;
+                    line.darkGray(" (");
                     if (highlightStage * 3 >= levelSize * 2)
-                        color = ChatColor.GREEN; // Over 2/3rds through the group
+                        line.green(highlightStage); // Over 2/3rds through the group
                     else if (highlightStage * 3 >= levelSize)
-                        color = ChatColor.GOLD; // Between 1/3rd and 2/3rds through the group
+                        line.gold(highlightStage); // Between 1/3rd and 2/3rds through the group
                     else
-                        color = ChatColor.RED; // Below 1/3rd through the group
-                    line.append(" (" + color + highlightStage + ChatColor.DARK_GRAY + "/" + ChatColor.GREEN + levelSize + ChatColor.DARK_GRAY + ")");
+                        line.red(highlightStage); // Below 1/3rd through the group
+                    line.darkGray("/").green(levelSize).darkGray(")");
                 }
             }
             lore.add(line.toString());
@@ -144,23 +158,6 @@ public abstract class SinglePageGUI<T> extends GUI<T> {
         if (upper < collapsedMultipliers.size())
             lore.add("...");
         return lore;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        SinglePageGUI<?> other = (SinglePageGUI<?>) o;
-        return inForeground == other.inForeground
-                && getType() == other.getType();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(inForeground, getType());
     }
 
 }

@@ -2,13 +2,13 @@ package com.monst.bankingplugin.lang;
 
 public enum Placeholder {
 
-    PRICE (true),
-    AMOUNT (true),
-    AMOUNT_REMAINING (true),
-    PLAYER_BALANCE (true),
-    ACCOUNT_BALANCE (true),
+    PRICE,
+    AMOUNT,
+    AMOUNT_REMAINING,
+    PLAYER_BALANCE,
+    ACCOUNT_BALANCE,
     BANK_NAME,
-    ACCOUNT_NAME,
+    ACCOUNT_ID,
     NAME,
     PLAYER,
     NUMBER_OF_ACCOUNTS,
@@ -18,38 +18,23 @@ public enum Placeholder {
     MAXIMUM,
     DIFFERENCE,
     NUMBER,
-    MULTIPLIER,
-    MULTIPLIER_STAGE,
+    INTEREST_MULTIPLIER,
+    INTEREST_MULTIPLIER_STAGE,
     INPUT,
-    ERROR,
     LIMIT,
     PROPERTY,
+    POLICY,
     VALUE,
     PREVIOUS_VALUE,
     PATTERN,
     WORLD,
     COMMAND,
     VERSION,
-    LINK;
-
-    private String placeholder = null;
-    private final boolean isMoney;
-
-    Placeholder() {
-        this(false);
-    }
-
-    Placeholder(boolean isMoney) {
-        this.isMoney = isMoney;
-    }
+    URL;
 
     @Override
     public String toString() {
-        return placeholder != null ? placeholder : (placeholder = "%" + name() + "%");
-    }
-
-    public boolean isMoney() {
-        return isMoney;
+        return "%" + name() + "%";
     }
 
 }

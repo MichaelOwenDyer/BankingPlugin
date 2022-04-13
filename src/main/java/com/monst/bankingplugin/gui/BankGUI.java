@@ -1,9 +1,9 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.utils.Permission;
-import com.monst.bankingplugin.utils.Utils;
-import org.bukkit.ChatColor;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.entity.Bank;
+import com.monst.bankingplugin.lang.ColorStringBuilder;
+import com.monst.bankingplugin.util.Permission;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -18,15 +18,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.bukkit.ChatColor.*;
 
 public class BankGUI extends SinglePageGUI<Bank> {
 
 	boolean canTP;
 	boolean canListAccounts;
 
-	public BankGUI(Bank bank) {
-		super(bank);
+	public BankGUI(BankingPlugin plugin, Bank bank) {
+		super(plugin, bank);
 	}
 
 	@Override
@@ -49,37 +52,35 @@ public class BankGUI extends SinglePageGUI<Bank> {
 				if (guiSubject.isPlayerBank())
 					return createSlotItem(guiSubject.getOwner(), "General Information", getGeneralInfoLore());
 				return createSlotItem(Material.PLAYER_HEAD, "General Information", getGeneralInfoLore());
-			case 4:
-				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
 			case 7:
 				if (canListAccounts)
 					return createSlotItem(Material.BOOKSHELF, "Income Log", Collections.emptyList());
 			case 8:
 				if (canListAccounts)
 					return createSlotItem(Material.CHEST, "Account List",
-							Collections.singletonList(guiSubject.hasAccounts() ?
+							Collections.singletonList(guiSubject.getNumberOfAccounts() > 0 ?
 									"Click here to view accounts." : "There are no accounts at this bank."));
 				return createSlotItem(Material.CHEST, "Account List", NO_PERMISSION);
 			case 9:
 				return createSlotItem(Material.ENCHANTED_BOOK, "Account Creation", getCreationLore());
 			case 10:
-				return createSlotItem(Material.NETHER_STAR, "Multipliers", getMultiplierLore());
+				return createSlotItem(Material.NETHER_STAR, "Account Interest Multipliers", getMultipliersLore());
 			case 11:
-				return createSlotItem(Material.IRON_BARS, "Balance Restrictions", getBalanceRestrictionLore());
+				return createSlotItem(Material.IRON_BARS, "Minimum Account Balance", getMinimumBalanceLore());
 			case 12:
-				return createSlotItem(Material.LIGHT_BLUE_BED, "Offline Payouts", getOfflinePayoutsLore());
+				return createSlotItem(Material.RED_BED, "Offline Payouts", getOfflinePayoutsLore());
 			case 13:
-				return createSlotItem(Material.GOLD_INGOT, "Interest Rate", getInterestRateLore());
+				return createSlotItem(Material.DIAMOND, "Interest Rate", getInterestRateLore());
 			case 14:
-				return createSlotItem(Material.COMPASS, "Interest Delay", getInterestDelayLore());
+				return createSlotItem(Material.HOPPER, "Withdrawal Policy", getWithdrawalPolicyLore());
 			case 15:
-				return createSlotItem(Material.BELL, "Withdrawal Policy", getWithdrawalPolicyLore());
-			case 16:
 				return createSlotItem(Material.TOTEM_OF_UNDYING, "Account Limit", getAccountLimitLore());
-			case 17:
+			case 16:
 				return createSlotItem(Material.CLOCK, "Interest Payout Times", getPayoutTimeLore());
+			case 17:
+				return createSlotItem(Material.CAKE, "Statistics", getStatisticsLore());
 			default:
-				return new ItemStack(Material.AIR);
+				return null;
 		}
 	}
 
@@ -90,17 +91,17 @@ public class BankGUI extends SinglePageGUI<Bank> {
 				if (canTP)
 					return (player, info) -> {
 						if (info.getClickType().isLeftClick())
-							Utils.teleport(player, guiSubject.getRegion().getTeleportLocation());
+							teleport(player, guiSubject.getRegion().getTeleportLocation());
 						else if (info.getClickType().isRightClick())
-							Utils.teleport(player, guiSubject.getRegion().getHighestTeleportLocation());
+							teleport(player, guiSubject.getRegion().getHighestTeleportLocation());
 						exit(player);
 					};
 			case 7:
 				if (canListAccounts)
-					return (player, info) -> new BankIncomeGUI(guiSubject).setParentGUI(this).open(player);
+					return (player, info) -> new BankIncomeGUI(plugin, guiSubject).setParentGUI(this).open(player);
 			case 8:
-				if (canListAccounts && guiSubject.hasAccounts())
-					return (player, info) -> new AccountListGUI(guiSubject::getAccounts).setParentGUI(this).open(player);
+				if (canListAccounts && guiSubject.getNumberOfAccounts() > 0)
+					return (player, info) -> new AccountListGUI(plugin, guiSubject).setParentGUI(this).open(player);
 		}
 		return null;
 	}
@@ -113,12 +114,13 @@ public class BankGUI extends SinglePageGUI<Bank> {
 	private List<String> getGeneralInfoLore() {
 		Stream.Builder<String> lore = Stream.builder();
 		lore.add("Bank ID: " + guiSubject.getID());
-		lore.add("Owner: " + ChatColor.GOLD + guiSubject.getOwnerDisplayName());
-		lore.add("Co-owners: " + (guiSubject.getCoOwners().isEmpty()
-				? ChatColor.RED + "[none]"
-				: ChatColor.AQUA + Utils.map(guiSubject.getCoOwners(), OfflinePlayer::getName).toString())
-		);
-		lore.add("Location: " + ChatColor.AQUA + guiSubject.getRegion().getCoordinates());
+		if (guiSubject.isPlayerBank())
+			lore.add("Owner: " + GOLD + guiSubject.getOwner().getName());
+		if (guiSubject.hasCoOwners())
+			lore.add("Co-owners: " + AQUA + guiSubject.getCoOwners().stream()
+					.map(OfflinePlayer::getName)
+					.collect(Collectors.joining(", ")));
+		lore.add("Location: " + AQUA + guiSubject.getRegion().toString());
 		if (canTP)
 			lore.add("Click to teleport to bank.");
 		return wordWrapAll(45, lore.build());
@@ -126,142 +128,110 @@ public class BankGUI extends SinglePageGUI<Bank> {
 
 	private List<String> getStatisticsLore() {
 		return Arrays.asList(
-				"Total account value: " + Utils.formatAndColorize(guiSubject.getTotalValue()),
-				"Average account value: " + Utils.formatAndColorize(guiSubject.getAverageValue()),
-				"Number of accounts: " + ChatColor.AQUA + guiSubject.getAccounts().size(),
-				"Number of account holders: " + ChatColor.AQUA + guiSubject.getAccountHolders().size(),
+				"Total account value: " + formatAndColorize(guiSubject.getTotalValue()),
+				"Average account value: " + formatAndColorize(guiSubject.getAverageValue()),
+				"Number of accounts: " + AQUA + guiSubject.getNumberOfAccounts(),
+				"Number of account holders: " + AQUA + guiSubject.getAccountHolders().size(),
 				"Equality score: " + getEqualityLore(guiSubject)
 		);
 	}
 
 	static String getEqualityLore(Bank bank) {
-		double gini = 1 - bank.getGiniCoefficient();
-		ChatColor color;
-		String assessment = "";
-		switch ((int) (gini * 5)) {
-			case 0:
-				color = ChatColor.DARK_RED;
-				assessment = "(Very Poor)";
-				break;
-			case 1:
-				color = ChatColor.RED;
-				assessment = "(Poor)";
-				break;
-			case 2:
-				color = ChatColor.YELLOW;
-				assessment = "(Good)";
-				break;
-			case 3:
-				color = ChatColor.GREEN;
-				assessment = "(Very Good)";
-				break;
-			case 4: case 5:
-				color = ChatColor.DARK_GREEN;
-				assessment = "(Excellent)";
-				break;
-			default:
-				color = ChatColor.GRAY;
-		}
-		return "" + color + Math.round(gini * 100) + "% " + assessment;
+		ColorStringBuilder builder = new ColorStringBuilder();
+		int gini = BigDecimal.ONE.subtract(bank.getGiniCoefficient()).scaleByPowerOfTen(2).intValue();
+		if (gini < 20)
+			builder.darkRed(gini).append("%").append(" (Very poor)");
+		else if (gini < 40)
+			builder.red(gini).append("%").append(" (Poor)");
+		else if (gini < 60)
+			builder.yellow(gini).append("%").append(" (Good)");
+		else if (gini < 80)
+			builder.green(gini).append("%").append(" (Very good)");
+		else
+			builder.darkGreen(gini).append("%").append(" (Excellent)");
+		return builder.toString();
 	}
 
 	private List<String> getCreationLore() {
-		boolean reimburse = guiSubject.reimburseAccountCreation().get();
+		boolean reimburse = plugin.config().reimburseAccountCreation.at(guiSubject);
 		return Arrays.asList(
-				"Fee per chest: " + ChatColor.GREEN + guiSubject.accountCreationPrice().getFormatted(),
-				"Reimbursed on removal: " + (reimburse ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No")
+				"Fee per chest: " + GREEN + plugin.config().accountCreationPrice.at(guiSubject),
+				"Reimbursed on removal: " + (reimburse ? GREEN + "Yes" : RED + "No")
 		);
 	}
 
-	private List<String> getMultiplierLore() {
-		return getMultiplierLore(guiSubject.multipliers().get(), -1);
+	private List<String> getMultipliersLore() {
+		return getInterestMultiplierLore(plugin.config().interestMultipliers.at(guiSubject), -1);
 	}
 
-	private List<String> getBalanceRestrictionLore() {
-		BigDecimal minBalance = guiSubject.minimumBalance().get();
-		BigDecimal lowBalanceFee = guiSubject.lowBalanceFee().get();
+	private List<String> getMinimumBalanceLore() {
+		BigDecimal minBalance = plugin.config().minimumBalance.at(guiSubject);
+		BigDecimal lowBalanceFee = plugin.config().lowBalanceFee.at(guiSubject);
 		boolean strikethrough = minBalance.signum() == 0;
-		boolean payOnLowBalance = guiSubject.payOnLowBalance().get();
+		boolean payOnLowBalance = plugin.config().payOnLowBalance.at(guiSubject);
 		Stream.Builder<String> lore = Stream.builder();
-		lore.add("Minimum balance: " + ChatColor.GREEN + Utils.format(minBalance));
-		lore.add("Low balance fee: " + ChatColor.RED + (strikethrough ? ChatColor.STRIKETHROUGH : "") + Utils.format(lowBalanceFee));
+		lore.add("Minimum balance: " + GREEN + format(minBalance));
+		lore.add("Low balance fee: " + RED + (strikethrough ? STRIKETHROUGH : "") + format(lowBalanceFee));
 		if (!strikethrough) {
 			lore.add("");
-			lore.add("Interest " + (payOnLowBalance ? ChatColor.GREEN + "will" : ChatColor.RED + "will not")
-					+ " continue " + ChatColor.GRAY + "to be paid out when the account balance is low.");
+			lore.add("Interest " + (payOnLowBalance ? GREEN + "will" : RED + "will not")
+					+ " continue " + GRAY + "to be paid out when the account balance is low.");
 		}
 		return wordWrapAll(38, lore.build());
 	}
 
 	private List<String> getOfflinePayoutsLore() {
-		int offlinePayouts = guiSubject.allowedOfflinePayouts().get();
-		int offlineDecrement = guiSubject.offlineMultiplierDecrement().get();
+		int offlinePayouts = plugin.config().allowedOfflinePayouts.at(guiSubject);
+		int offlineDecrement = plugin.config().offlineMultiplierDecrement.at(guiSubject);
 		Stream.Builder<String> lore = Stream.builder();
-		lore.add("Accounts will " + (offlinePayouts == 0 ? ChatColor.RED + "not generate interest" + ChatColor.GRAY
-				: "generate interest up to " + ChatColor.AQUA + offlinePayouts + ChatColor.GRAY
+		lore.add("Accounts will " + (offlinePayouts == 0 ? RED + "not generate interest" + GRAY
+				: "generate interest up to " + AQUA + offlinePayouts + GRAY
 				+ String.format(" time%s", offlinePayouts == 1 ? "" : "s")) + " while account holders are offline."
 		);
 		lore.add("");
 		lore.add("Account multipliers will " + (offlineDecrement == 0
-				? ChatColor.AQUA + "freeze" + ChatColor.GRAY
-				: "decrease by " + ChatColor.AQUA + offlineDecrement + ChatColor.GRAY + " for every payout")
+				? AQUA + "freeze" + GRAY
+				: "decrease by " + AQUA + offlineDecrement + GRAY + " for every payout")
 			+ " while account holders are offline.");
 		return wordWrapAll(lore.build());
 	}
 
 	private List<String> getInterestRateLore() {
+		BigDecimal ir = plugin.config().interestRate.at(guiSubject);
 		return wordWrapAll(
-			ChatColor.GREEN + guiSubject.interestRate().getFormatted()
+			GREEN + plugin.config().interestRate.format(ir)
 		);
 	}
 
-	private List<String> getInterestDelayLore() {
-		int interestDelay = guiSubject.initialInterestDelay().get();
-		boolean countOffline = guiSubject.countInterestDelayOffline().get();
-		Stream.Builder<String> lore = Stream.builder();
-		lore.add("New accounts will begin to generate interest " + (interestDelay == 0
-				? ChatColor.GREEN + "immediately" + ChatColor.GRAY + " after creation."
-				: "after " + ChatColor.AQUA + interestDelay + ChatColor.GRAY +
-					String.format(" preliminary interest cycle%s.", interestDelay == 1 ? "" : "s")));
-		if (interestDelay != 0) {
-			lore.add("");
-			lore.add("The account owner " + (countOffline
-					? ChatColor.GREEN + "does not have to be online"
-					: ChatColor.RED + "must be online")
-						+ ChatColor.GRAY + " for these cycles to be counted toward the delay.");
-		}
-		return wordWrapAll(lore.build());
-	}
-
 	private List<String> getWithdrawalPolicyLore() {
-		int withdrawalDecrement = guiSubject.withdrawalMultiplierDecrement().get();
+		int withdrawalDecrement = plugin.config().withdrawalMultiplierDecrement.at(guiSubject);
 		return wordWrapAll(
 				"Account multipliers will " + (withdrawalDecrement == 0
-						? ChatColor.GREEN + "not be affected on" + ChatColor.GRAY
-						: "decrease by " + ChatColor.AQUA + withdrawalDecrement + ChatColor.GRAY
+						? GREEN + "not be affected on" + GRAY
+						: "decrease by " + AQUA + withdrawalDecrement + GRAY
 							+ String.format(" stage%s upon each", withdrawalDecrement == 1 ? "" : "s")) + " withdrawal."
 		);
 	}
 
 	private List<String> getAccountLimitLore() {
-		int accountLimit = guiSubject.playerBankAccountLimit().get();
+		int accountLimit = plugin.config().playerBankAccountLimit.at(guiSubject);
 		return wordWrapAll(
 				(accountLimit == 0
-						? "Account creation is currently " + ChatColor.RED + "disabled" + ChatColor.GRAY
+						? "Account creation is currently " + RED + "disabled" + GRAY
 						: "Players may create " + (accountLimit > 0
-								? "up to " + ChatColor.AQUA + accountLimit
-								: ChatColor.GREEN + "unlimited") + ChatColor.GRAY
+								? "up to " + AQUA + accountLimit
+								: GREEN + "unlimited") + GRAY
 						+ String.format(" account%s at this bank.", accountLimit == 1 ? "" : "s"))
 		);
 	}
 
 	private List<String> getPayoutTimeLore() {
-		Set<LocalTime> times = guiSubject.interestPayoutTimes().get();
+		Set<LocalTime> times = plugin.config().interestPayoutTimes.at(guiSubject);
 		Stream.Builder<String> lore = Stream.builder();
 		if (!times.isEmpty()) {
 			lore.add("Accounts will generate interest every day at: ");
 			for (LocalTime time : times)
-				lore.add(ChatColor.GOLD + " - " + time.toString());
+				lore.add(GOLD + " - " + time.toString());
 		} else
 			lore.add("Accounts will not generate interest.");
 		return wordWrapAll(lore.build());

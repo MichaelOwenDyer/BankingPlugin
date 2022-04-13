@@ -1,10 +1,9 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.utils.BPRunnable;
-import com.monst.bankingplugin.utils.Observable;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.util.Observable;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -15,37 +14,46 @@ import org.bukkit.util.ChatPaginator;
 import org.ipvp.canvas.Menu;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * An inventory-based GUI.
- * @param <T> the subject matter of this GUI
+ * @param <T> the subject of this GUI
  */
 public abstract class GUI<T> {
 
 	enum GUIType {
-		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, ACCOUNT_SHULKER_CONTENTS, ACCOUNT_RECOVERY,
-        ACCOUNT_TRANSACTION_LOG, ACCOUNT_INTEREST_LOG, BANK_INCOME_LOG
+		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, SHULKER_BOX, ACCOUNT_RECOVERY,
+        ACCOUNT_TRANSACTION_LOG, ACCOUNT_INTEREST_LOG, BANK_INCOME_LOG, UPDATE
 	}
 
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
 
+	final BankingPlugin plugin;
 	GUI<?> parentGUI;
-	boolean inForeground = true;
+	final int id;
+	boolean isVisible = true;
 	boolean needsUpdate = false;
 
-	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) ->
-			new BPRunnable(() -> { // TODO: Can remove BukkitRunnable?
-				if (isInForeground() && hasParent()) {
-					parentGUI.inForeground = true;
-					parentGUI.reopen(player);
-					unsubscribe();
-				}
-			}).runTask(BankingPlugin.getInstance());
+	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) -> {
+		if (isVisible() && getParent() != null) {
+			getParent().isVisible = true;
+			getParent().reopen(player);
+			unsubscribe();
+		}
+	};
+
+	public GUI(BankingPlugin plugin) {
+		this.plugin = plugin;
+		this.id = new Random().nextInt(100_000);
+	}
 
 	/**
 	 * Gets the {@link Observable} this GUI is observing for updates, or {@code null}
@@ -109,7 +117,7 @@ public abstract class GUI<T> {
 	 */
 	public GUI<T> setParentGUI(@Nullable GUI<?> parentGUI) {
 		if (parentGUI != null)
-			parentGUI.inForeground = false;
+			parentGUI.isVisible = false;
 		this.parentGUI = parentGUI;
 		return this;
 	}
@@ -133,19 +141,18 @@ public abstract class GUI<T> {
 	}
 
 	/**
-	 * Returns whether or not this GUI is in the foreground (as opposed to hidden by another GUI)
+	 * Returns whether this GUI is in the foreground (as opposed to hidden by another GUI)
 	 * @return true if this GUI is in the foreground
 	 */
-	boolean isInForeground() {
-		return inForeground;
+	boolean isVisible() {
+		return isVisible;
 	}
 
 	/**
-	 * Returns whether or not this GUI has a parent GUI.
-	 * @return true if this GUI has a parent
+	 * @return this gui's parent
 	 */
-	boolean hasParent() {
-		return parentGUI != null;
+	private GUI<?> getParent() {
+		return parentGUI;
 	}
 
 	/**
@@ -180,7 +187,7 @@ public abstract class GUI<T> {
 		if (itemMeta == null)
 			return null;
 		itemMeta.setDisplayName("" + ChatColor.GRAY + ChatColor.ITALIC + displayName);
-		itemMeta.setLore(Utils.map(lore, s -> ChatColor.GRAY + s));
+		itemMeta.setLore(lore.stream().map(s -> ChatColor.GRAY + s).collect(Collectors.toList()));
 		item.setItemMeta(itemMeta);
 		return item;
 	}
@@ -193,15 +200,43 @@ public abstract class GUI<T> {
 		return wordWrapAll(30, Stream.of(args));
 	}
 
-	static List<String> wordWrapAll(int lineLength, String... args) {
-		return wordWrapAll(lineLength, Stream.of(args));
-	}
-
 	static List<String> wordWrapAll(int lineLength, Stream<String> lines) {
 		return lines.map(s -> ChatPaginator.wordWrap(s, lineLength))
 				.flatMap(Stream::of)
 				.map(s -> s.replace("" + ChatColor.WHITE, ""))
 				.collect(Collectors.toList());
+	}
+
+	static void teleport(Player player, Location location) {
+		player.teleport(location.setDirection(player.getLocation().getDirection()));
+	}
+
+	String format(BigDecimal bd) {
+		return plugin.getEconomy().format(bd.doubleValue());
+	}
+
+	String formatAndColorize(BigDecimal bd) {
+		if (bd.signum() > 0)
+			return ChatColor.GREEN + format(bd);
+		if (bd.signum() < 0)
+			return ChatColor.RED + format(bd);
+		return ChatColor.GRAY + format(bd);
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		
+		GUI<?> other = (GUI<?>) o;
+		return id == other.id && getType() == other.getType();
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getType(), id);
 	}
 
 }

@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.banking.Account;
-import com.monst.bankingplugin.exceptions.notfound.ChestNotFoundException;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.entity.Account;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -15,14 +15,14 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
     private final InventoryHolder inventoryHolder;
     // boolean canEdit; TODO: Implement remote editing
 
-    public AccountContentsGUI(Account account) throws ChestNotFoundException {
-        super(account);
-        this.inventoryHolder = account.getLocation().findChest();
+    public AccountContentsGUI(BankingPlugin plugin, Account account) throws IllegalArgumentException {
+        super(plugin, account);
+        this.inventoryHolder = account.getLocation().findChest().orElseThrow(IllegalArgumentException::new);
     }
 
     @Override
     Menu createMenu() {
-        return ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getChestName()).redraw(true).build();
+        return ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getName()).redraw(true).build();
     }
 
 //    @Override
@@ -42,11 +42,7 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
             BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
             if (im.getBlockState() instanceof ShulkerBox) {
                 ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
-                return (player, info) -> {
-                    try {
-                        new ShulkerContentsGUI(guiSubject, shulkerBox).setParentGUI(this).open(player);
-                    } catch (ChestNotFoundException ignored) {}
-                };
+                return (player, info) -> new ShulkerBoxGUI(plugin, shulkerBox).setParentGUI(this).open(player);
             }
         }
         return null;
@@ -71,38 +67,4 @@ public class AccountContentsGUI extends SinglePageGUI<Account> {
         return GUIType.ACCOUNT_CONTENTS;
     }
 
-    private static class ShulkerContentsGUI extends AccountContentsGUI {
-
-        private final ShulkerBox shulkerBox;
-
-        public ShulkerContentsGUI(Account account, ShulkerBox shulkerBox) throws ChestNotFoundException {
-            super(account);
-            this.shulkerBox = shulkerBox;
-        }
-
-        @Override
-        Menu createMenu() {
-            return ChestMenu.builder(3).title("Shulker Box").redraw(true).build();
-//                    shulkerBox.getCustomName() != null ?
-//                            shulkerBox.getCustomName() : // TODO: Figure out why always null
-//                            WordUtils.capitalizeFully(shulkerBox.getColor().toString())
-//                       FIXME: shulkerBox.getColor() throws NullPointerException when Shulker Box default color
-
-        }
-
-        @Override
-        ItemStack createSlotItem(int slot) {
-            return shulkerBox.getInventory().getItem(slot);
-        }
-
-        @Override
-        Slot.ClickHandler createClickHandler(int slot) {
-            return null;
-        }
-
-        @Override
-        GUIType getType() {
-            return GUIType.ACCOUNT_SHULKER_CONTENTS;
-        }
-    }
 }

@@ -1,16 +1,12 @@
 package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.banking.Bank;
-import com.monst.bankingplugin.events.account.AccountCreateEvent;
-import com.monst.bankingplugin.events.account.AccountExtendEvent;
-import com.monst.bankingplugin.events.account.AccountMigrateEvent;
-import com.monst.bankingplugin.events.account.AccountRecoverEvent;
-import com.monst.bankingplugin.events.bank.BankCreateEvent;
-import com.monst.bankingplugin.events.bank.BankRemoveEvent;
-import com.monst.bankingplugin.events.bank.BankResizeEvent;
-import com.monst.bankingplugin.listeners.BankingPluginListener;
-import com.monst.bankingplugin.utils.Utils;
+import com.monst.bankingplugin.entity.Bank;
+import com.monst.bankingplugin.event.account.AccountExtendEvent;
+import com.monst.bankingplugin.event.account.AccountMigrateEvent;
+import com.monst.bankingplugin.event.account.AccountOpenEvent;
+import com.monst.bankingplugin.event.account.AccountRecoverEvent;
+import com.monst.bankingplugin.util.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Material;
@@ -18,29 +14,30 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 
-public class GriefPreventionListener extends BankingPluginListener {
+public class GriefPreventionListener implements Listener {
 
+    private final BankingPlugin plugin;
     private final GriefPrevention griefPrevention;
 
 	public GriefPreventionListener(BankingPlugin plugin) {
-        super(plugin);
+        this.plugin = plugin;
         this.griefPrevention = plugin.getGriefPrevention();
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onAccountCreate(AccountCreateEvent e) {
+	public void onAccountCreate(AccountOpenEvent e) {
         if (!plugin.isGriefPreventionIntegrated())
             return;
 
         for (Block block : e.getAccount().getLocation())
 			if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
 				e.setCancelled(true);
-				plugin.debug("Account create event cancelled by GriefPrevention");
+				plugin.debug("Account open event cancelled by GriefPrevention");
                 return;
 			}
     }
@@ -98,50 +95,24 @@ public class GriefPreventionListener extends BankingPluginListener {
 	    if (e.getHand() != EquipmentSlot.HAND)
 	        return;
 
-        ItemStack itemInHand = Utils.getItemInMainHand(e.getPlayer());
-        if (itemInHand == null)
-            return;
-        if (itemInHand.getType() != griefPrevention.config_claims_investigationTool)
+        if (e.getPlayer().getInventory().getItemInMainHand().getType() != griefPrevention.config_claims_investigationTool)
             return;
 
-        Block clickedBlock;
+        Block clickedBlock = null;
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK)
             clickedBlock = e.getClickedBlock();
         else if (e.getAction() == Action.RIGHT_CLICK_AIR)
-            clickedBlock = e.getPlayer().getTargetBlock(null, 100);
-        else
-            return;
+            clickedBlock = e.getPlayer().getTargetBlock(null, 300);
         if (clickedBlock == null || clickedBlock.getType() == Material.AIR)
             return;
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK && Utils.isChest(clickedBlock))
             return;
 
-        Bank bank = plugin.getBankRepository().getAt(clickedBlock);
+        Bank bank = plugin.getBankService().findContaining(clickedBlock);
         if (bank == null)
             return;
 
-        VisualizationManager.visualizeRegion(e.getPlayer(), bank);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBankCreate(BankCreateEvent e) {
-	    if (!plugin.isGriefPreventionIntegrated())
-	        return;
-        VisualizationManager.visualizeRegion(e.getPlayer(), e.getBank());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBankRemove(BankRemoveEvent e) {
-	    if (!plugin.isGriefPreventionIntegrated() || !(e.getExecutor() instanceof Player))
-	        return;
-        VisualizationManager.revertVisualization((Player) e.getExecutor());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBankResize(BankResizeEvent e) {
-	    if (!plugin.isGriefPreventionIntegrated())
-	        return;
-        VisualizationManager.visualizeRegion(e.getPlayer(), e.getNewRegion(), e.getBank().isAdminBank());
+        new BankVisualization(plugin, bank).show(e.getPlayer());
     }
 
 }

@@ -4,10 +4,10 @@
 
 # Set the command names to be used for account management, bank management, and plugin control.
 # Type: String
-# Defaults: "account", "bank", "bp"
-command-name-account: account
-command-name-bank: bank
-command-name-control: bp
+# Defaults: account, bank, bp
+account-command-name: account
+bank-command-name: bank
+plugin-command-name: bp
 
 # Set the daily times at which customers should receive interest payments from their accounts.
 # The time zone will be that of the server, not of the individual players.
@@ -17,13 +17,13 @@ command-name-control: bp
 # Default: [09:00, 12:00, 15:00, 18:00]
 interest-payout-times:
     default:
-    - '09:00'
-    - '12:00'
-    - '15:00'
-    - '18:00'
+    - 09:00
+    - 12:00
+    - 15:00
+    - 18:00
     allow-override: true # This boolean determines whether individual banks have permission to override the default value.
 
-# Set the base interest rate for all bank accounts on the server.
+# Set the base interest rate for bank accounts.
 # Value should be a floating point number greater than 0.
 # Type: double
 # Default: 0.01 (for 1% interest)
@@ -37,7 +37,6 @@ interest-rate:
 # At least the first value should be 1, so that the baseline interest rate is used.
 # For example: setting the sequence [1, 2, 2, 3, 3, 3, 4, 4, 4, 4] would result in one 1x multiplier stage,
 # two 2x stages, three 3x stages, and four 4x stages.
-# An account multiplier will never go past the final stage, nor further back than the first stage.
 # Type: List of integers
 # Default: [1, 2, 3, 4, 5]
 interest-multipliers:
@@ -49,24 +48,6 @@ interest-multipliers:
         - 5
     allow-override: true
 
-# Set the number of interest payout events a player must own their account for
-# before they start collecting interest on that account.
-# Set to 0 to start collecting interest immediately after creating the account.
-# Type: int
-# Default: 0
-initial-interest-delay:
-    default: 0
-    allow-override: true
-
-# Whether to decrement the interest delay period while a player is offline.
-# Set this to false to only decrement the delay period when a player is online for
-# an interest payout event, and not while offline.
-# Type: boolean
-# Default: false
-count-interest-delay-offline:
-    default: false
-    allow-override: true
-
 # Set the number of consecutive times a player may collect interest on their accounts while offline.
 # Set this to 0 for no interest while offline.
 # Type: int
@@ -75,15 +56,15 @@ allowed-offline-payouts:
     default: 1
     allow-override: true
 
-# Set the behavior of account interest multipliers when all account holders are offline for an interest payout.
+# Set the behavior of account interest multipliers when all account holders are offline for an interest event.
 # Setting this value to X causes the multiplier to decrease by X stages per payout cycle while the player is offline.
 # Setting this value to 0 causes the multiplier to freeze until the player comes back online.
 # Setting this value to -1 causes the multiplier to reset on offline payouts.
 # This will only trigger if neither the account owner nor any account co-owners are online at the time of the payout.
 # Type: int
-# Default: 0
+# Default: 1
 offline-multiplier-decrement:
-    default: 0
+    default: 1
     allow-override: true
 
 # Set the behavior of account interest multipliers when the player makes a withdrawal.
@@ -101,10 +82,10 @@ withdrawal-multiplier-decrement:
 # Set the item with which a player can click an account to retrieve information.
 # You can set this to an empty string ("") to disable this feature.
 # Type: String, converted to Material
-# Default: 'STICK'
-account-info-item: 'STICK'
+# Default: STICK
+account-info-item: STICK
 
-# Set the price a player has to pay in order to create an account.
+# Set the price a player has to pay in order to open an account.
 # Set this to 0 to disable creation fees.
 # Type: double
 # Default: 2500.0
@@ -112,7 +93,7 @@ account-creation-price:
     default: 2500.0
     allow-override: true
 
-# Set whether the (current) creation price should be refunded when the bank or account is removed.
+# Set whether the (current) creation price should be refunded when an account is closed.
 # Type: boolean
 # Default: false
 reimburse-account-creation:
@@ -125,7 +106,7 @@ reimburse-account-creation:
 # Default: 100000.0
 bank-creation-price: 100000.0
 
-# Set whether or not the (current) bank creation price should be reimbursed when a bank is removed.
+# Set whether the (current) bank creation price should be reimbursed when a bank is removed.
 # This only applies to player banks.
 # Type: boolean
 # Default: false
@@ -147,7 +128,7 @@ low-balance-fee:
     default: 1000.0
     allow-override: true
 
-# Set whether or not interest should still be paid to the account owner if the account balance is below the minimum.
+# Set whether interest should still be paid to the account owner if the account balance is below the minimum.
 # If this is set to false, no interest will be earned and the account owner will only pay the low balance fee.
 # Type: boolean
 # Default: false
@@ -171,52 +152,47 @@ player-bank-account-limit:
 # A player with permission "bankingplugin.bank.limit.X" has a limit of X banks.
 # A player with permission "bankingplugin.bank.limit.*" does not have a bank limit.
 # Type: int, int
-# Default: 1, 2
+# Default: 1, 3
 default-limits:
-    # Set the amount of accounts that anyone who doesn't have a
-    # specific permission may have.
+    # Set the amount of accounts that anyone who doesn't have a specific permission may have.
     # If you don't want players to have a limit by default set the value to -1.
     bank: 1
-    account: 2
+    account: 3
 
 # Bank volume limits are handled with permissions.
 # A player with permission "bankingplugin.bank.size.X" can create banks with a volume of up to X.
 # A player with permission "bankingplugin.bank.size.*" can create banks with unlimited volume.
 # Set the volume limit for anyone who doesn't have a specific permission here.
-# The minimum volume cannot by bypassed by a permission.
+# The minimum volume cannot be bypassed by a permission.
 # Admin banks are exempt from these restrictions.
-# Type: int, long
+# Type: int, int
 # Default: 125, 100000
 bank-size-limits:
-    minimum: 125
-    maximum: 100000
+    minimum: 125 # e.g. a 5x5x5 cuboid
+    maximum: 100000 # e.g. a 100x100x10 cuboid
 
-# Determines how bank configurations should behave when the server defaults change.
-# This concerns only non-custom configuration values which are inherited from this config on bank creation.
-# This has no effect on the ability of bank owners to configure their banks with custom values.
-# Set this value to true to make banks remember their default settings even when the server defaults change.
-# Set this value to false to make banks follow along with the server when the server defaults change
-# (e.g. configuration values which have not been explicitly set are inherited dynamically from the server).
+# Determines whether default bank policies configured here should "stick to" banks
+# where no custom bank policy is set.
 # Type: boolean
 # Default: false
-stubborn-banks: false
+sticky-defaults: false
 
-# Whether a bank owner should be able to create an account at their own bank.
+# Whether a bank owner should be able to open an account at their own bank.
 # Type: boolean
 # Default: false
 allow-self-banking: false
 
-# Set whether to require confirmation of remove commands.
+# Set whether to require confirmation of bank remove/account close commands.
 # Type: boolean
 # Default: true
 confirm-on-remove: true
 
-# Set whether to require confirmation of removeall commands.
+# Set whether to require confirmation of bank removeall/account closeall commands.
 # Type: boolean
 # Default: true
 confirm-on-remove-all: true
 
-# Set whether to require confirmation of account transfer ownership commands.
+# Set whether to require confirmation on transferring ownership of a bank or account.
 # Type: boolean
 # Default: true
 confirm-on-transfer: true
@@ -226,29 +202,37 @@ confirm-on-transfer: true
 # Default: false
 trust-on-transfer: false
 
-# Set whether the plugin will check for updates on server start
-# and notify permitted players on join.
-# The command is not affected by this setting and will continue to
-# check for updates.
+# Set whether the plugin will check for updates on server start.
 # Type: boolean
 # Default: true
-enable-update-checker: true
+enable-startup-update-check: true
 
-# Set whether deposits/withdrawals, interest payouts, and bank profits/losses should be saved in the database.
-# Debug log is stored in the file system and may become quite large!
+# Set whether the plugin will automatically download updates when a new one is found.
 # Type: boolean
-# Default: true, true, true, false
-enable-account-transaction-log: true
-enable-account-interest-log: true
-enable-bank-income-log: true
+# Default: true
+download-updates-automatically: true
+
+# Set which updates should be ignored based on whether they contain one of the following strings.
+# Updates will always follow the following naming convention: BankingPlugin v[major].[minor].[patch](-[tag])
+# Updates without a tag are full releases and updates with a tag are pre-releases.
+# Type: list of strings
+# Default: [] (empty)
+ignore-updates-containing: []
+    # - "DEV"
+    # - "SNAPSHOT"
+    # - "RC"
+
+# Set whether to enable the debug log. This is stored in the file system and may become quite large!
+# Type: boolean
+# Default: false
 enable-debug-log: false
 
-# Set the maximum age for log entries in days.
-# All log entries older than this will be deleted on server start.
-# Set this to 0 to disable this feature.
+# Set the maximum age for banking log entries in days.
+# All log entries older than this will be deleted on plugin start / reload.
+# Set this to -1 to disable this feature.
 # Type: int
-# Default: 90
-cleanup-log-days: 90
+# Default: -1
+cleanup-log-days: -1
 
 # Set whether various protection plugins should be hooked into (if installed)
 # in order to allow or deny bank or account creation in certain locations.
@@ -264,10 +248,10 @@ enable-griefprevention-integration: true
 # Default: true
 enable-worldedit-integration: true
 
-# Set whether the WorldGuard flag create-bank should be allowed by default.
-# Type: boolean
-# Default: false
-worldguard-default-flag-value: false
+# Set the default state of the custom WorldGuard flag "create-bank".
+# Type: allow | deny
+# Default: deny
+worldguard-default-flag-value: deny
 
 # Set whether accounts should automatically be removed from the database if
 # an error occurred while loading.
@@ -277,28 +261,28 @@ worldguard-default-flag-value: false
 remove-account-on-error: false
 
 # Set the items for which a player will earn no interest in their account.
-# Type: List of material names
+# Type: List of item names
 # Default: [] (empty)
 blacklist: []
     # - "DIORITE"
 
-# Set this value to customize how much revenue banks owners should earn, considering a variety of variables.
-# The available variables are as follows:
+# Set this mathematical expression to customize how much revenue banks owners should earn, considering a variety of variables.
+# The available variables to use in the expression are as follows:
 #
-# x = total value of all accounts at the bank
+# x = total value of all accounts at the bank (ranges [0, ∞))
 #
-# a = average value of all accounts at the bank
+# a = average value of all accounts at the bank (range [0, ∞))
 #
-# n = number of accounts at the bank
+# n = number of accounts at the bank (range [0, ∞))
 #
-# c = number of account owners (customers) at the bank
+# c = number of account owners (customers) at the bank (range [0, ∞))
 #
-# g = gini coefficient (wealth equality) of accounts at the bank https://en.wikipedia.org/wiki/Gini_coefficient
+# g = gini coefficient (wealth equality) of accounts at the bank (range [0, 1]) - https://en.wikipedia.org/wiki/Gini_coefficient
 #
-# View the graph of the default function here: https://www.desmos.com/calculator/rlob3j4pff
-# Type: Function
-# Default: '(0.10 * x) * (1 - g) * ln(c)'
-bank-revenue-function: '(0.10 * x) * (1 - g) * ln(c)'
+# View the graph of the default expression here: https://www.desmos.com/calculator/rlob3j4pff
+# Type: Mathematical expression
+# Default: (0.10 * x) * (1 - g) * log(c)
+bank-revenue-expression: (0.10 * x) * (1 - g) * log(c)
 
 # Set the worlds in which banking should be disabled.
 # Please ensure the names are spelled exactly how they exist in the server folder.
@@ -312,8 +296,8 @@ disabled-worlds: []
 # Set the regex pattern that bank names and account nicknames should be matched against.
 # Players will not be allowed to set names that fail to match with this pattern.
 # Type: String
-# Default: '.*' (no restriction)
-name-regex: '.*'
+# Default: .* (no restriction)
+name-regex: .*
 
 # Set whether BankingPlugin should display a splash message in the console upon server start.
 # Type: boolean
@@ -322,10 +306,9 @@ enable-startup-message: true
 
 # Set the language file to use for plugin messages.
 # Type: .lang file
-# Default: 'en_US.lang'
-language-file: 'en_US.lang'
+# Default: en_US.lang
+language-file: en_US.lang
 
-# Set the database file to store banks and accounts in.
-# Type: .db file
-# Default: 'banking.db'
-database-file: 'banking.db'
+# Set which database inside plugins/BankingPlugin/database should be used.
+# Default: banking
+database-file: banking

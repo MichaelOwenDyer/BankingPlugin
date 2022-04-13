@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.gui;
 
-import com.monst.bankingplugin.utils.Callback;
+import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.util.Callback;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.ipvp.canvas.ClickInformation;
@@ -16,7 +17,6 @@ import org.ipvp.canvas.type.ChestMenu;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -27,39 +27,30 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
 
     private static final int PREV_PAGE_SLOT = 27;
     private static final int NEXT_PAGE_SLOT = 35;
-    private static final int FILTER_SLOT = 29;
-    private static final int SORTER_SLOT = 33;
 
     private final Consumer<Callback<Collection<T>>> itemAccessor;
     private Collection<T> mostRecentItems;
 
-    private final PaginatedMenuBuilder builder;
+    private final PaginatedMenuBuilder pageBuilder;
 
-    private final ItemFilterer itemFilterer;
-    private final ItemSorter itemSorter;
+    private final ItemFilterSlot itemFilterSlot = new ItemFilterSlot();
+    private final ItemSorterSlot itemSorterSlot = new ItemSorterSlot();
 
     private List<Menu> menuPages;
     private int currentPage;
 
-    MultiPageGUI(Consumer<Callback<Collection<T>>> asynchronousAccessor,
-                 List<MenuItemFilter<? super T>> filters, List<MenuItemSorter<? super T>> sorters) {
-        this.itemAccessor = asynchronousAccessor;
-        this.itemFilterer = new ItemFilterer(filters);
-        this.itemSorter = new ItemSorter(sorters);
-        this.builder = createBuilder();
-    }
-
-    MultiPageGUI(Supplier<Collection<T>> synchronousAccessor,
-                 List<MenuItemFilter<? super T>> filters, List<MenuItemSorter<? super T>> sorters) {
-        this(callback -> callback.onResult(synchronousAccessor.get()), filters, sorters);
+    MultiPageGUI(BankingPlugin plugin, Consumer<Callback<Collection<T>>> itemAccessor) {
+        super(plugin);
+        this.itemAccessor = itemAccessor;
+        this.pageBuilder = createBuilder();
     }
 
     @Override
     public void open(Player player) {
-        subscribe();
-        shortenGUIChain();
-        itemAccessor.accept(Callback.onResult(newElements -> {
+        itemAccessor.accept(Callback.of(plugin, newElements -> {
             mostRecentItems = newElements;
+            subscribe();
+            shortenGUIChain();
             menuPages = createMenuPages();
             currentPage().open(player);
         }));
@@ -74,13 +65,13 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
 
     @Override
     public void update() {
-        if (!isInForeground()) {
+        if (!isVisible()) {
             needsUpdate = true;
             return;
         }
-        needsUpdate = false;
-        itemAccessor.accept(Callback.onResult(newElements -> {
+        itemAccessor.accept(Callback.of(plugin, newElements -> {
             mostRecentItems = newElements;
+            needsUpdate = false;
             reloadPages();
         }));
     }
@@ -141,19 +132,21 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
         try {
             Field field = PaginatedMenuBuilder.class.getDeclaredField("items");
             field.setAccessible(true);
-            field.set(builder, getMenuItems());
-        } catch (NoSuchFieldException | IllegalAccessException ignored) {}
-        List<Menu> menuPages = builder.build();
-        itemFilterer.apply(menuPages, FILTER_SLOT);
-        itemSorter.apply(menuPages, SORTER_SLOT);
+            field.set(pageBuilder, getMenuItems());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            plugin.debug(e);
+        }
+        List<Menu> menuPages = pageBuilder.build();
+        itemFilterSlot.addToPagesAtSlot(menuPages, 29);
+        itemSorterSlot.addToPagesAtSlot(menuPages, 33);
         linkPages(menuPages);
         return menuPages;
     }
 
     private List<SlotSettings> getMenuItems() {
         return mostRecentItems.stream()
-                .filter(itemFilterer.getCurrent())
-                .sorted(itemSorter.getCurrent())
+                .filter(itemFilterSlot.getCurrent())
+                .sorted(itemSorterSlot.getCurrent())
                 .map(this::createSlotSettings)
                 .collect(Collectors.toList());
     }
@@ -182,8 +175,8 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
     }
 
     private abstract class ItemManager<C extends MenuItemController> {
-        List<C> list;
-        int current;
+        private final List<C> list;
+        private int currentIndex;
         ItemManager(C neutralController, List<C> controllers) {
             list = new ArrayList<>();
             list.add(neutralController);
@@ -191,19 +184,19 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
         }
         void click(Player player, ClickInformation click) {
             if (click.getClickType().isLeftClick()) {
-                current++;
-                current %= list.size();
+                currentIndex++;
+                currentIndex %= list.size();
                 reloadPages();
             } else if (click.getClickType().isRightClick()) {
-                current += list.size() - 1;
-                current %= list.size();
+                currentIndex += list.size() - 1;
+                currentIndex %= list.size();
                 reloadPages();
             }
         }
         C getCurrent() {
-            return list.get(current);
+            return list.get(currentIndex);
         }
-        void apply(List<Menu> menuPages, int slotIndex) {
+        void addToPagesAtSlot(List<Menu> menuPages, int slotIndex) {
             SlotSettings slotSettings = SlotSettings.builder()
                     .itemTemplate(getSlotItem())
                     .clickHandler(this::click)
@@ -214,23 +207,9 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
         abstract StaticItemTemplate getSlotItem();
     }
 
-    private class ItemSorter extends ItemManager<MenuItemSorter<? super T>> {
-        ItemSorter(List<MenuItemSorter<? super T>> sorters) {
-            super(MenuItemSorter.unsorted(), sorters);
-        }
-        @Override
-        StaticItemTemplate getSlotItem() {
-            return new StaticItemTemplate(createSlotItem(
-                    Material.POLISHED_ANDESITE_STAIRS,
-                    "Sorting:",
-                    Collections.singletonList(getCurrent().getName())
-            ));
-        }
-    }
-
-    private class ItemFilterer extends ItemManager<MenuItemFilter<? super T>> {
-        ItemFilterer(List<MenuItemFilter<? super T>> filters) {
-            super(MenuItemFilter.all(), filters);
+    private class ItemFilterSlot extends ItemManager<MenuItemFilter<? super T>> {
+        ItemFilterSlot() {
+            super(MenuItemFilter.all(), getFilters());
         }
         @Override
         StaticItemTemplate getSlotItem() {
@@ -242,22 +221,26 @@ abstract class MultiPageGUI<T> extends GUI<Collection<T>> {
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        MultiPageGUI<?> other = (MultiPageGUI<?>) o;
-        return inForeground == other.inForeground
-                && currentPage == other.currentPage
-                && getType() == other.getType();
+    List<MenuItemFilter<? super T>> getFilters() {
+        return Collections.emptyList();
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(itemFilterer, itemSorter, inForeground, currentPage, getType());
+    private class ItemSorterSlot extends ItemManager<MenuItemSorter<? super T>> {
+        ItemSorterSlot() {
+            super(MenuItemSorter.unsorted(), getSorters());
+        }
+        @Override
+        StaticItemTemplate getSlotItem() {
+            return new StaticItemTemplate(createSlotItem(
+                    Material.QUARTZ_STAIRS,
+                    "Sorting:",
+                    Collections.singletonList(getCurrent().getName())
+            ));
+        }
+    }
+
+    List<MenuItemSorter<? super T>> getSorters() {
+        return Collections.emptyList();
     }
 
 }
