@@ -100,12 +100,11 @@ public class LanguageFile extends PathConfigurationValue {
             try (BufferedWriter writer = Files.newBufferedWriter(languageFile, StandardOpenOption.APPEND)) {
                 for (Message message : missingMessages) {
                     writer.write(System.lineSeparator() + "# Example Scenario: " + message.getExampleScenario());
-                    writer.write(
-                            System.lineSeparator() + "# Available placeholders: " + message.getFormattedPlaceholdersList());
+                    writer.write(System.lineSeparator() + "# Available placeholders: " + message.getFormattedPlaceholdersList());
                     writer.write(System.lineSeparator() + message.getPath() + "=" + message.inEnglish()
                             .replaceAll("\u00A7", "&") + System.lineSeparator());
-                    plugin.getLogger()
-                            .info("Missing translation for \"" + message.getPath() + "\" has been added to the current language file.");
+                    plugin.getLogger().info("Missing translation for \"" + message.getPath() +
+                            "\" has been added to the current language file.");
                 }
             } catch (IOException e) {
                 plugin.getLogger().severe("Failed to add missing translation to the language file.");

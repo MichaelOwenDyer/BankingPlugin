@@ -292,14 +292,9 @@ public class BankingPlugin extends JavaPlugin {
             // If an update package already exists, replace it if the found version is even newer
             if (updatePackage == null || fileName.compareTo(updatePackage.getVersion()) > 0) {
                 debug("Creating new update package.");
-                try {
-                    if (updatePackage != null)
-                        updatePackage.setOutdated();
-                    updatePackage = new UpdatePackage(this, update);
-                } catch (IOException e) {
-                    callback.callSyncError("Failed to create update package.", e);
-                    return;
-                }
+                if (updatePackage != null)
+                    updatePackage.setOutdated();
+                updatePackage = new UpdatePackage(this, update);
             }
 
             callback.callSyncResult(updatePackage); // Return the update package, replaced or not

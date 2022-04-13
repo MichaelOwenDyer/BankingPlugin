@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -49,20 +50,21 @@ public class UpdatePackage implements Observable {
     private final BankingPlugin plugin;
     private final String version;
     private final String remoteChecksum;
-    private final URL fileUrl;
+    private final String downloadLink;
 
     private State state = State.INITIAL;
+    private URL fileUrl;
     private Long fileSize;
     private long bytesDownloaded = 0;
     private int downloadPercentage = 0;
 
     private final Set<GUI<?>> observers = new HashSet<>();
 
-    public UpdatePackage(BankingPlugin plugin, JsonObject response) throws IOException {
+    public UpdatePackage(BankingPlugin plugin, JsonObject response) {
         this.plugin = plugin;
         this.version = response.get("name").getAsString();
         this.remoteChecksum = response.get("md5").getAsString();
-        this.fileUrl = followRedirects(new URL(response.get("downloadUrl").getAsString()));
+        this.downloadLink = response.get("downloadUrl").getAsString();
     }
 
     private URL followRedirects(URL url) throws IOException {
@@ -80,7 +82,7 @@ public class UpdatePackage implements Observable {
      * If the download is successful, the update package is marked as {@link State#COMPLETED completed}.
      * If the download fails, the update package is placed in an {@link State#ERROR error} state and can be restarted.
      *
-     * @param callback Called 100 times during the download, once for every percentage of the download.
+     * @param callback Called when the state changes.
      */
     public void download(Callback<State> callback) {
         if (!(state == State.INITIAL || state == State.PAUSED || state == State.ERROR))
@@ -105,7 +107,22 @@ public class UpdatePackage implements Observable {
                 setState(State.ERROR);
                 return;
             }
-
+            
+            // Find the URL to download from
+            if (fileUrl == null) {
+                try {
+                    fileUrl = followRedirects(new URL(downloadLink));
+                } catch (MalformedURLException e) {
+                    callback.callSyncError("Failed to parse download link: " + downloadLink, e);
+                    setState(State.ERROR);
+                    return;
+                } catch (IOException e) {
+                    callback.callSyncError("Failed to follow redirects to download url: " + downloadLink, e);
+                    setState(State.ERROR);
+                    return;
+                }
+            }
+    
             // Establish a connection with the server
             URLConnection con;
             try {
