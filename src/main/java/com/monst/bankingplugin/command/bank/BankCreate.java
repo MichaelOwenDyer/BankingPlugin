@@ -52,7 +52,7 @@ public class BankCreate extends PlayerSubCommand {
         BankRegion bankRegion = parseBankRegion(player, args);
 
         if (plugin.config().disabledWorlds.contains(bankRegion.getWorld()))
-            throw new ExecutionException(plugin, Message.WORLD_DISABLED.with(Placeholder.WORLD).as(bankRegion.getWorld().getName()));
+            throw new ExecutionException(plugin, Message.WORLD_DISABLED);
 
         boolean isAdminBank = args[args.length - 1].equalsIgnoreCase("admin");
         if (isAdminBank && Permission.BANK_CREATE_ADMIN.notOwnedBy(player))

@@ -15,9 +15,7 @@
 # %MINIMUM% = A minimum amount.
 # %MAXIMUM% = A maximum amount.
 # %DIFFERENCE% = A difference between two numbers.
-# %NUMBER% = A generic integer.
 # %INTEREST_MULTIPLIER% = An account interest multiplier.
-# %INTEREST_MULTIPLIER_STAGE% = An index in the list of interest multipliers at a bank.
 # %INPUT% = Something that was typed by the player as a command argument.
 # %LIMIT% = An integer bank or account limit.
 # %PROPERTY% = The name of a configuration value.
@@ -25,7 +23,6 @@
 # %VALUE% = The state of a configuration value.
 # %PREVIOUS_VALUE% = The previous state of a configuration value, before it was changed.
 # %PATTERN% = A regular expression.
-# %WORLD% = A world name.
 # %COMMAND% = A command and sub-command.
 # %VERSION% = The plugin version.
 # %URL% = A URL.
@@ -64,8 +61,8 @@ message.account-extend-fee-paid=&6You have been charged &a%PRICE%&6 to extend an
 message.account-extend-fee-received=&6%PLAYER%&6 has paid you &a%AMOUNT%&6 to extend an account at &7%BANK_NAME%&6.
 
 # Example Scenario: A player is about to close an account.
-# Available placeholders: %BANK_NAME%, %ACCOUNT_ID%
-message.account-about-to-close=&6You are about to close account &7%ACCOUNT_ID%&6 at bank &7%BANK_NAME%&6.
+# Available placeholders: %ACCOUNT_ID%, %BANK_NAME%
+message.about-to-close-account=&6You are about to close account &7%ACCOUNT_ID%&6 at bank &7%BANK_NAME%&6.
 
 # Example Scenario: A player closes an account at a bank.
 # Available placeholders: %BANK_NAME%
@@ -73,7 +70,7 @@ message.account-closed=&6Account closed.
 
 # Example Scenario: An admin must confirm closing multiple accounts at once.
 # Available placeholders: %NUMBER_OF_ACCOUNTS%
-message.account-about-to-close-all=&6You are about to close &a%NUMBER_OF_ACCOUNTS%&6 account(s).
+message.about-to-close-all-accounts=&6You are about to close &a%NUMBER_OF_ACCOUNTS%&6 account(s).
 
 # Example Scenario: An admin removes multiple accounts at once.
 # Available placeholders: %NUMBER_OF_ACCOUNTS%
@@ -96,16 +93,16 @@ message.account-limit=&6You own &a%NUMBER_OF_ACCOUNTS%/%LIMIT%&6 allowed account
 message.account-limit-reached=&cYou are not allowed to open any more accounts!
 
 # Example Scenario: A player sets an account nickname.
-# Available placeholders: %ACCOUNT_NAME%
-message.account-renamed=&6Account renamed to &7%ACCOUNT_NAME%&6.
+# Available placeholders: %NAME%
+message.account-renamed=&6Account nicknamed &7%NAME%&6.
 
-# Example Scenario: An admin sets the multiplier of an account.
-# Available placeholders: %MULTIPLIER%, %MULTIPLIER_STAGE%
-message.account-set-multiplier=&6Account multiplier set to &a%MULTIPLIER%x&6.
+# Example Scenario: An admin sets the interest multiplier of an account.
+# Available placeholders: %INTEREST_MULTIPLIER%
+message.account-set-interest-multiplier=&6Account interest multiplier set to &a%INTEREST_MULTIPLIER%x&6.
 
 # Example Scenario: A player sets the remaining offline payouts at an account.
-# Available placeholders: %NUMBER%
-message.account-set-remaining-offline=&6Account remaining offline payouts set to &a%NUMBER%&6.
+# Available placeholders: %VALUE%
+message.account-set-remaining-offline=&6Account remaining offline payouts set to &a%VALUE%&6.
 
 # Example Scenario: A player clicks an account to transfer it to another player and must click again to confirm.
 # Available placeholders: %ACCOUNT_ID%, %PLAYER%
@@ -117,7 +114,7 @@ message.account-transferred=&6You transferred %PLAYER%&6 ownership of an account
 
 # Example Scenario: A player is transferred ownership of an account by another player.
 # Available placeholders: %PLAYER%
-message.account-transferred-to-you=&6%PLAYER% transferred you ownership of an account.
+message.account-transferred-to-you=&6%PLAYER%&6 transferred you ownership of an account.
 
 # Example Scenario: A player clicks a chest to migrate an account into it.
 # Available placeholders:
@@ -141,23 +138,23 @@ message.account-withdrawal=&6You withdrew &a%AMOUNT%&6 for a new balance of &a%A
 
 # Example Scenario: A player earns interest on at least one account.
 # Available placeholders: %AMOUNT%, %NUMBER_OF_ACCOUNTS%
-message.interest-earned=&6You earned &a%AMOUNT%&6 in interest on &a%NUMBER_OF_ACCOUNTS%&6 account(s).
+message.account-interest-earned=&6You earned &a%AMOUNT%&6 in interest on &a%NUMBER_OF_ACCOUNTS%&6 account(s).
 
 # Example Scenario: A player logs onto the server after having earned interest offline.
 # Available placeholders: %AMOUNT%
-message.offline-account-interest=&6You earned &a%AMOUNT%&6 in interest while you were offline.
-
-# Example Scenario: A player logs into the server after having paid low balance fees offline.
-# Available placeholders: %AMOUNT%
-message.offline-low-balance-fees-paid=&cYou paid &a%AMOUNT%&c in low balance fees while you were offline.
+message.account-interest-earned-offline=&6You earned &a%AMOUNT%&6 in interest while you were offline.
 
 # Example Scenario: A player must pay low balance fees on at least one account.
 # Available placeholders: %AMOUNT%, %NUMBER_OF_ACCOUNTS%
-message.low-balance-fee-paid=&cYou paid &a%AMOUNT%&c in low balance fees on &a%NUMBER_OF_ACCOUNTS%&c account(s).
+message.account-low-balance-fees-paid=&cYou paid &a%AMOUNT%&c in low balance fees on &a%NUMBER_OF_ACCOUNTS%&c account(s).
 
-# Example Scenario: A player removes too much worth from their account chest and causes the multiplier to decrease.
-# Available placeholders: %MULTIPLIER%
-message.multiplier-decreased=&cAccount multiplier decreased to &a%MULTIPLIER%&ax&c.
+# Example Scenario: A player logs into the server after having paid low balance fees offline.
+# Available placeholders: %AMOUNT%
+message.account-low-balance-fees-paid-offline=&cYou paid &a%AMOUNT%&c in low balance fees while you were offline.
+
+# Example Scenario: A player removes too much worth from their account chest and causes the interest multiplier to decrease.
+# Available placeholders: %INTEREST_MULTIPLIER%
+message.account-interest-multiplier-decreased=&cAccount interest multiplier decreased to &a%INTEREST_MULTIPLIER%&ax&c.
 
 # Example Scenario: A player attempts to open an account on a chest that cannot be opened due to an obstruction.
 # Available placeholders:
@@ -169,7 +166,7 @@ message.chest-already-account=&c&cChest is already an account.
 
 # Example Scenario: A player attempts to break an account chest.
 # Available placeholders:
-message.cannot-break-account=&c&cYou cannot break that account chest.
+message.cannot-break-account-chest=&c&cYou cannot break that account chest.
 
 # Example Scenario: A player attempts to open an account at a chest not located in a bank.
 # Available placeholders:
@@ -192,7 +189,7 @@ message.bank-create-fee-paid=&6You have been charged &a%PRICE%&6 to create a ban
 message.cant-select-bank=&cWorldEdit must be enabled to select a bank.
 
 # Example Scenario: A player attempts to create a bank in world that is disabled in the config.
-# Available placeholders: %WORLD%
+# Available placeholders:
 message.world-disabled=&cBank creation is disabled in this world.
 
 # Example Scenario: A player attempts to create a bank and a size that is greater than the maximum defined in the config.
@@ -211,9 +208,17 @@ message.bank-selection-overlaps-existing=&cThat selection overlaps with &a%NUMBE
 # Available placeholders: %NUMBER_OF_ACCOUNTS%
 message.bank-selection-cuts-accounts=&cThat selection does not include all accounts at the bank.
 
+# Example Scenario: An admin must confirm removing one bank or more.
+# Available placeholders: %BANK_NAME%, %NUMBER_OF_ACCOUNTS%
+message.bank-about-to-remove=&6You are about to remove bank &7%BANK_NAME%&6 and its &a%NUMBER_OF_ACCOUNTS%&6 account(s).
+
 # Example Scenario: A player removes a bank and all its accounts.
 # Available placeholders: %BANK_NAME%, %NUMBER_OF_ACCOUNTS%
 message.bank-removed=&6Bank &7%BANK_NAME%&6 and &a%NUMBER_OF_ACCOUNTS%&6 account(s) were removed.
+
+# Example Scenario: An admin must confirm removing multiple banks.
+# Available placeholders: %NUMBER_OF_ACCOUNTS%, %NUMBER_OF_BANKS%
+message.about-to-remove-all-banks=&6You are about to remove &a%NUMBER_OF_BANKS%&6 bank(s) and their &a%NUMBER_OF_ACCOUNTS%&6 account(s).
 
 # Example Scenario: A player removes multiple banks at once.
 # Available placeholders: %NUMBER_OF_ACCOUNTS%, %NUMBER_OF_BANKS%
@@ -227,17 +232,9 @@ message.bank-not-found=&cCould not find bank with the name "%INPUT%".
 # Available placeholders:
 message.banks-not-found=&cNo banks found.
 
-# Example Scenario: An admin must confirm removing one bank or more.
-# Available placeholders: %BANK_NAME%, %NUMBER_OF_ACCOUNTS%
-message.bank-about-to-remove=&6You are about to remove bank &7%BANK_NAME%&6 and its &a%NUMBER_OF_ACCOUNTS%&6 account(s).
-
-# Example Scenario: An admin must confirm removing multiple banks.
-# Available placeholders: %NUMBER_OF_ACCOUNTS%, %NUMBER_OF_BANKS%
-message.bank-about-to-remove-all=&6You are about to remove &a%NUMBER_OF_BANKS%&6 bank(s) and their &a%NUMBER_OF_ACCOUNTS%&6 account(s).
-
 # Example Scenario: A player attempts to open a GUI of a bank, but is not standing in a bank.
 # Available placeholders:
-message.must-stand-in-bank=&cYou must stand in or specify the name of a bank.
+message.must-stand-in-or-specify-bank=&cYou must stand in or specify the name of a bank.
 
 # Example Scenario: A player executes the /bank limits command.
 # Available placeholders: %NUMBER_OF_BANKS%, %BANK_SIZE%, %LIMIT%
@@ -249,7 +246,7 @@ message.bank-limit-reached=&cYou are not allowed to create any more banks!
 
 # Example Scenario: A player executes a command to transfer a bank to another player and must execute it again to confirm.
 # Available placeholders: %BANK_NAME%, %PLAYER%
-message.bank-about-to-transfer=&6You are about to transfer ownership of bank &7%BANK_NAME%&6 to %PLAYER%&6.
+message.about-to-transfer-bank=&6You are about to transfer ownership of bank &7%BANK_NAME%&6 to %PLAYER%&6.
 
 # Example Scenario: A player transfers ownership of a bank to nobody, making it an admin bank.
 # Available placeholders: %BANK_NAME%
@@ -273,11 +270,11 @@ message.bank-resized=&6Bank resized.
 
 # Example Scenario: A player configures a policy at a bank to a new value.
 # Available placeholders: %BANK_NAME%, %POLICY%, %VALUE%, %PREVIOUS_VALUE%
-message.bank-property-set=&6The policy &a%POLICY%&6 at bank &7%BANK_NAME%&6 has been changed from &a%PREVIOUS_VALUE%&6 to &a%VALUE%&6.
+message.bank-policy-set=&6The policy &a%POLICY%&6 at bank &7%BANK_NAME%&6 has been changed from &a%PREVIOUS_VALUE%&6 to &a%VALUE%&6.
 
 # Example Scenario: A player attempts to configure a bank policy that is not overridable.
 # Available placeholders: %POLICY%
-message.bank-property-not-overridable=&cThat policy is not currently overridable. Your changes will be saved, but will not take effect.
+message.bank-policy-not-overridable=&cThat policy is not currently overridable. Your changes will be saved, but will not take effect.
 
 # Example Scenario: A player selects a bank with WorldEdit and/or WorldGuard.
 # Available placeholders: %BANK_NAME%
@@ -307,9 +304,9 @@ message.not-a-regular-expression=&c"%INPUT%" is not a valid regular expression.
 # Available placeholders: %INPUT%
 message.not-a-filename=&c"%INPUT%" is not a valid filename.
 
-# Example Scenario: A player attempts to set a configuration property to a mathematical function, but provided a string that was not a valid function.
+# Example Scenario: A player attempts to set a configuration property to a mathematical expression, but provided a string that was not a valid expression.
 # Available placeholders: %INPUT%
-message.not-a-function=&c"%INPUT%" is not a valid function.
+message.not-an-expression=&c"%INPUT%" is not a valid expression.
 
 # Example Scenario: A player attempts to set a configuration property to a time, but provided a string that was not a time.
 # Available placeholders: %INPUT%
@@ -328,7 +325,7 @@ message.not-a-bank-policy=&c"%INPUT%" is not a bank policy.
 message.not-a-property=&c"%INPUT%" is not a property.
 
 # Example Scenario: A player attempts to create or rename a bank with a name already in use by another bank.
-# Available placeholders: %NAME%
+# Available placeholders: %BANK_NAME%
 message.name-not-unique=&cA bank with that name already exists.
 
 # Example Scenario: A player attempts to create or rename a bank or account with a name that does not match the name-regex pattern in the config.
@@ -341,35 +338,35 @@ message.name-changed=&6The bank was successfully renamed to &7%BANK_NAME%&6.
 
 # Example Scenario: A bank owner pays interest to the account holders at their bank.
 # Available placeholders: %AMOUNT%, %NUMBER_OF_ACCOUNTS%
-message.interest-paid=&6You paid account holders &a%AMOUNT%&6 in interest.
+message.account-interest-paid=&6You paid account holders &a%AMOUNT%&6 in interest.
 
 # Example Scenario: A bank owner receives low balance fee payments from account holders.
 # Available placeholders: %AMOUNT%, %NUMBER_OF_ACCOUNTS%
-message.low-balance-fee-received=&6You received &a%AMOUNT%&6 in low balance fees from &a%NUMBER_OF_ACCOUNTS%&6 account(s).
+message.account-low-balance-fees-received=&6You received &a%AMOUNT%&6 in low balance fees from &a%NUMBER_OF_ACCOUNTS%&6 account(s).
 
 # Example Scenario: A bank owner receives some bank revenue.
 # Available placeholders: %AMOUNT%, %NUMBER_OF_BANKS%
-message.bank-revenue=&6You received &a%AMOUNT%&6 in bank revenue from &a%NUMBER_OF_BANKS%&6 bank(s).
+message.bank-revenue-earned=&6You received &a%AMOUNT%&6 in bank revenue from &a%NUMBER_OF_BANKS%&6 bank(s).
 
 # Example Scenario: A bank owner makes a profit from their bank.
 # Available placeholders: %AMOUNT%, %BANK_NAME%
-message.bank-profit=&6You made a profit of &a%AMOUNT%&6 at bank &7%BANK_NAME%&6.
+message.bank-profit-made=&6You made a profit of &a%AMOUNT%&6 at bank &7%BANK_NAME%&6.
 
 # Example Scenario: A bank owner logs onto the server after having made a profit while offline.
 # Available placeholders: %AMOUNT%
-message.bank-profit-offline=&6You made &a%AMOUNT%&6 in bank profit while you were offline.
+message.bank-profit-earned-offline=&6You made &a%AMOUNT%&6 in bank profit while you were offline.
 
 # Example Scenario: A bank owner logs onto the server after having made a loss while offline.
 # Available placeholders: %AMOUNT%
-message.bank-loss-offline=&cYou made &a%AMOUNT%&c in bank losses while you were offline.
+message.bank-loss-made-offline=&cYou made &a%AMOUNT%&c in bank losses while you were offline.
 
 # Example Scenario: A player is reimbursed by the bank owner after removing an account.
 # Available placeholders: %AMOUNT%
-message.reimbursement-received=&6You have been reimbursed &a%AMOUNT%&6.
+message.account-reimbursement-received=&6You have been reimbursed &a%AMOUNT%&6.
 
 # Example Scenario: A bank owner reimburses a player who removed an account at their bank.
 # Available placeholders: %AMOUNT%, %PLAYER%
-message.reimbursement-paid=&6You reimbursed %PLAYER% &a%AMOUNT%&6.
+message.account-reimbursement-paid=&6You reimbursed %PLAYER% &a%AMOUNT%&6.
 
 # Example Scenario: A player adds another player as a co-owner of an account or a bank.
 # Available placeholders: %PLAYER%
@@ -391,7 +388,7 @@ message.not-a-co-owner=&c%PLAYER%&c is not a co-owner.
 # Available placeholders: %PLAYER%
 message.already-owner=&c%PLAYER%&c is already owner.
 
-# Example Scenario: A co-owner attempts to perform an action on a bank or account that only the owner can perfom.
+# Example Scenario: A co-owner attempts to perform an action on a bank or account that only the owner can perform.
 # Available placeholders:
 message.must-be-owner=&cYou must be the owner to do that.
 
@@ -423,7 +420,7 @@ message.click-account-info=&6Click an account chest to view info.
 # Available placeholders:
 message.click-account-migrate=&6Click an account chest to migrate it.
 
-# Example Scenario: A player is migrating an account and and may click another chest.
+# Example Scenario: A player is migrating an account and and may click another chest to migrate to.
 # Available placeholders:
 message.click-chest-migrate=&6Click a chest to migrate the account to.
 
@@ -665,7 +662,7 @@ message.no-permission-reload=&cYou do not have permission to reload the plugin.
 
 # Example Scenario: A player attempts to configure the plugin without permission.
 # Available placeholders:
-message.no-permission-config=&cYou do not have permission to configure the plugin.
+message.no-permission-configure=&cYou do not have permission to configure the plugin.
 
 # Example Scenario: A player attempts to update the plugin without permission.
 # Available placeholders:
@@ -843,17 +840,29 @@ message.update-checking=&6&lChecking for updates...
 # Available placeholders: %VERSION%
 message.update-available=&6&lVersion &c%VERSION%&6 of &aBanking&2Plugin&6 is available.
 
-# Example Scenario: An admin is notified of the download location for the update.
-# Available placeholders: %URL%
-message.update-click-to-download=&6Click to download: &a%URL%
-
 # Example Scenario: An admin is notified that no new updates are available.
 # Available placeholders:
 message.no-update-available=&6&lNo new version available.
 
 # Example Scenario: An admin is notified that an error occurred while checking for updates.
 # Available placeholders:
-message.update-error=&c&lError while checking for updates.
+message.update-check-error=&c&lError while checking for updates.
+
+# Example Scenario: An admin is notified that an update to BankingPlugin is being downloaded.
+# Available placeholders:
+message.update-downloading=&6&lDownloading update...
+
+# Example Scenario: An admin is notified that a downloaded update to BankingPlugin is being validated.
+# Available placeholders:
+message.update-validating=&6&lValidating download...
+
+# Example Scenario: An admin is notified that an update to BankingPlugin was successfully downloaded.
+# Available placeholders:
+message.update-download-complete=&6&lDownload successful.
+
+# Example Scenario: An admin is notified that an update to BankingPlugin could not be downloaded.
+# Available placeholders:
+message.update-download-failed=&c&lDownload failed.
 
 # Example Scenario: A player executes the donate command and they are shown the donation link.
 # Available placeholders: %URL%

@@ -17,10 +17,10 @@ plugin-command-name: bp
 # Default: [09:00, 12:00, 15:00, 18:00]
 interest-payout-times:
     default:
-    - 09:00
-    - 12:00
-    - 15:00
-    - 18:00
+    - '09:00'
+    - '12:00'
+    - '15:00'
+    - '18:00'
     allow-override: true # This boolean determines whether individual banks have permission to override the default value.
 
 # Set the base interest rate for bank accounts.

@@ -104,12 +104,12 @@ public enum Message {
     ACCOUNT_SET_INTEREST_MULTIPLIER(
             "An admin sets the interest multiplier of an account.", // TODO: Test
             gold("Account interest multiplier set to ").green(INTEREST_MULTIPLIER + "x").gold("."),
-            INTEREST_MULTIPLIER, INTEREST_MULTIPLIER_STAGE
+            INTEREST_MULTIPLIER
     ),
     ACCOUNT_SET_REMAINING_OFFLINE(
             "A player sets the remaining offline payouts at an account.",
-            gold("Account remaining offline payouts set to ").green(NUMBER).gold("."),
-            NUMBER
+            gold("Account remaining offline payouts set to ").green(VALUE).gold("."),
+            VALUE
     ),
     ACCOUNT_ABOUT_TO_TRANSFER(
             "A player clicks an account to transfer it to another player and must click again to confirm.",
@@ -211,8 +211,7 @@ public enum Message {
     ),
     WORLD_DISABLED(
             "A player attempts to create a bank in world that is disabled in the config.",
-            red("Bank creation is disabled in this world."),
-            WORLD
+            red("Bank creation is disabled in this world.")
     ),
     BANK_SELECTION_TOO_LARGE(
             "A player attempts to create a bank and a size that is greater than the maximum defined in the config.",

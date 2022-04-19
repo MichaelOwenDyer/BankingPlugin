@@ -68,7 +68,7 @@ public class BankResize extends PlayerSubCommand {
             throw new ExecutionException(plugin, Message.NO_PERMISSION_BANK_RESIZE_ADMIN);
 
         if (plugin.config().disabledWorlds.contains(bankRegion.getWorld()))
-            throw new ExecutionException(plugin, Message.WORLD_DISABLED.with(Placeholder.WORLD).as(bankRegion.getWorld().getName()));
+            throw new ExecutionException(plugin, Message.WORLD_DISABLED);
 
         long volume = bankRegion.getVolume();
         if (bank.isPlayerBank()) {
