@@ -9,7 +9,7 @@ public class ColorStringBuilder {
     private final StringBuilder builder;
 
     public ColorStringBuilder() {
-        this.builder = new StringBuilder();
+        this.builder = new StringBuilder(32);
     }
 
     public ColorStringBuilder(int capacity) {

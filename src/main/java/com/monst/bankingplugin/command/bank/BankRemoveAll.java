@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.command.CommandCache;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.Bank;
@@ -48,7 +47,7 @@ public class BankRemoveAll extends SubCommand {
 
         List<Account> accounts = plugin.getAccountService().findByBanks(banks);
         if (sender instanceof Player && plugin.config().confirmOnRemoveAll.get()
-                && CommandCache.isFirstUsage((Player) sender, Objects.hash("removeAll", new HashSet<>(banks)))) {
+                && isFirstUsage((Player) sender, Objects.hash("removeAll", new HashSet<>(banks)))) {
             sender.sendMessage(Message.ABOUT_TO_REMOVE_ALL_BANKS
                     .with(Placeholder.NUMBER_OF_BANKS).as(banks.size())
                     .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size())

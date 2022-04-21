@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.command.CommandCache;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.bank.BankTransferEvent;
@@ -80,7 +79,7 @@ public class BankTransfer extends SubCommand {
         }
 
         if (sender instanceof Player && plugin.config().confirmOnTransfer.get()
-                && CommandCache.isFirstUsage((Player) sender, Objects.hash("transfer", bank, newOwner))) {
+                && isFirstUsage((Player) sender, Objects.hash("transfer", bank, newOwner))) {
             sender.sendMessage(Message.ABOUT_TO_TRANSFER_BANK
                     .with(Placeholder.PLAYER).as(newOwner != null ? newOwner.getName() : "ADMIN")
                     .and(Placeholder.BANK_NAME).as(bank.getColorizedName())

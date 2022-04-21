@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.command.CommandCache;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.Bank;
@@ -69,8 +68,8 @@ public class AccountCloseAll extends SubCommand {
         if (accounts.isEmpty())
             throw new ExecutionException(plugin, Message.ACCOUNTS_NOT_FOUND);
 
-        if (sender instanceof Player && plugin.config().confirmOnRemoveAll.get() &&
-                CommandCache.isFirstUsage((Player) sender, Objects.hash("closeAll", new HashSet<>(accounts)))) {
+        if (sender instanceof Player && plugin.config().confirmOnRemoveAll.get()
+                && isFirstUsage((Player) sender, Objects.hash("closeAll", new HashSet<>(accounts)))) {
             sender.sendMessage(Message.ABOUT_TO_CLOSE_ALL_ACCOUNTS
                     .with(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size())
                     .translate(plugin));

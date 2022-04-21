@@ -3,7 +3,7 @@ package com.monst.bankingplugin;
 import com.earth2me.essentials.Essentials;
 import com.google.gson.*;
 import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.command.CommandCache;
+import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.command.account.AccountCommand;
 import com.monst.bankingplugin.command.bank.BankCommand;
 import com.monst.bankingplugin.command.plugin.BPCommand;
@@ -30,7 +30,9 @@ import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.ipvp.canvas.MenuFunctionListener;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -117,7 +119,7 @@ public class BankingPlugin extends JavaPlugin {
         debug("Disabling BankingPlugin...");
 
         ClickAction.clear();
-        CommandCache.clear();
+        SubCommand.clearCache();
 
         if (debugWriter != null)
             debugWriter.close();

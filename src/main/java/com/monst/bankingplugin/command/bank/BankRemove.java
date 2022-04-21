@@ -1,7 +1,6 @@
 package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.command.CommandCache;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.bank.BankRemoveEvent;
@@ -71,7 +70,7 @@ public class BankRemove extends SubCommand {
 
         if (sender instanceof Player) {
             Player executor = (Player) sender;
-            if (plugin.config().confirmOnRemove.get() && CommandCache.isFirstUsage(executor, Objects.hash("remove", bank))) {
+            if (plugin.config().confirmOnRemove.get() && isFirstUsage(executor, Objects.hash("remove", bank))) {
                 sender.sendMessage(Message.BANK_ABOUT_TO_REMOVE
                         .with(Placeholder.BANK_NAME).as(bank.getName())
                         .and(Placeholder.NUMBER_OF_ACCOUNTS).as(bank.getNumberOfAccounts())

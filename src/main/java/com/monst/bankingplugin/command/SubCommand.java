@@ -1,5 +1,7 @@
 package com.monst.bankingplugin.command;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.exception.CancelledException;
 import com.monst.bankingplugin.exception.ExecutionException;
@@ -10,8 +12,14 @@ import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public abstract class SubCommand {
+    
+    private static final Cache<UUID, Integer> PLAYER_COMMAND_CACHE = CacheBuilder.newBuilder()
+            .expireAfterWrite(15, TimeUnit.SECONDS)
+            .build();
 
     protected final BankingPlugin plugin;
 	private final String name;
@@ -79,6 +87,17 @@ public abstract class SubCommand {
 
     protected int getMinimumArguments() {
         return 0;
+    }
+    
+    public static void clearCache() {
+        PLAYER_COMMAND_CACHE.invalidateAll();
+    }
+    
+    protected static boolean isFirstUsage(Player sender, int commandHash) {
+        if (PLAYER_COMMAND_CACHE.asMap().remove(sender.getUniqueId(), commandHash))
+            return false;
+        PLAYER_COMMAND_CACHE.put(sender.getUniqueId(), commandHash);
+        return true;
     }
 
 }
