@@ -55,7 +55,10 @@ public class UpdateGUI extends SinglePageGUI<UpdatePackage> {
                 lore.add(ChatColor.RED + "Validating... ");
                 break;
             case COMPLETED:
-                lore.add(ChatColor.GREEN + "Download complete.");
+                if (guiSubject.isValidated())
+                    lore.add(ChatColor.GREEN + "Download complete. File successfully validated.");
+                else
+                    lore.add(ChatColor.GREEN + "Download complete.");
                 break;
             case ERROR:
                 lore.add(ChatColor.DARK_RED + "Download failed. Click to retry.");
@@ -76,7 +79,7 @@ public class UpdateGUI extends SinglePageGUI<UpdatePackage> {
                     case INITIAL:
                     case PAUSED:
                     case ERROR:
-                        guiSubject.download(new Callback<>(plugin));
+                        guiSubject.download(Callback.of(plugin, state -> update()));
                 }
             };
         return null;

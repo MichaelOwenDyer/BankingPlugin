@@ -35,10 +35,9 @@ public class PaymentService {
         switch (response.type) {
             case SUCCESS:
                 return true;
-            case FAILURE:
-                return false;
             case NOT_IMPLEMENTED:
                 plugin.debug(new IllegalStateException(response.errorMessage));
+            case FAILURE:
                 return false;
             default:
                 throw new IllegalStateException("Transaction failed!");

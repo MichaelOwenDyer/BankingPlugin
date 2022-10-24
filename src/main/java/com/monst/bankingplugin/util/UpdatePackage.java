@@ -1,13 +1,11 @@
 package com.monst.bankingplugin.util;
 
-import com.google.gson.JsonObject;
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.gui.GUI;
 import org.bukkit.Bukkit;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -15,12 +13,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import static java.nio.file.StandardOpenOption.*;
 
-public class UpdatePackage implements Observable {
+public class UpdatePackage {
+    
+    private static final Semaphore DOWNLOAD_PERMITTER = new Semaphore(1);
 
     private static final Path DOWNLOAD_PATH = Bukkit.getServer().getUpdateFolderFile().toPath().resolve("bankingplugin.incomplete");
 
@@ -40,7 +39,7 @@ public class UpdatePackage implements Observable {
         /** The file has been successfully downloaded and validated.*/
         COMPLETED,
 
-        /** The download failed and may be restarted.*/
+        /** The download failed and may be retried.*/
         ERROR,
 
         /** The update is no longer the latest available version.*/
@@ -49,42 +48,36 @@ public class UpdatePackage implements Observable {
 
     private final BankingPlugin plugin;
     private final String version;
-    private final String remoteChecksum;
-    private final String downloadLink;
+    private final URL fileURL;
+    private final String remoteChecksum; // Nullable
+    private final long filesize;
 
     private State state = State.INITIAL;
-    private URL fileUrl;
-    private Long fileSize;
-    private long bytesDownloaded = 0;
-    private int downloadPercentage = 0;
+    private long bytesDownloaded;
+    private int downloadPercentage;
+    private boolean validated = false;
 
-    private final Set<GUI<?>> observers = new HashSet<>();
-
-    public UpdatePackage(BankingPlugin plugin, JsonObject response) {
+    public UpdatePackage(BankingPlugin plugin, String version, URL fileURL, String remoteChecksum, long filesize) {
         this.plugin = plugin;
-        this.version = response.get("name").getAsString();
-        this.remoteChecksum = response.get("md5").getAsString();
-        this.downloadLink = response.get("downloadUrl").getAsString();
-    }
-
-    private URL followRedirects(URL url) throws IOException {
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setInstanceFollowRedirects(false);
-        con.setConnectTimeout(5000);
-        con.connect();
-        if (con.getResponseCode() == HttpURLConnection.HTTP_MOVED_PERM || con.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP)
-            return followRedirects(new URL(con.getHeaderField("Location")));
-        return url;
+        this.version = version;
+        this.fileURL = fileURL;
+        this.remoteChecksum = remoteChecksum;
+        this.filesize = filesize;
     }
 
     /**
      * Downloads the update to the server's update folder under the same name as the current jar file.
      * If the download is successful, the update package is marked as {@link State#COMPLETED completed}.
-     * If the download fails, the update package is placed in an {@link State#ERROR error} state and can be restarted.
+     * If the download fails, the update package is placed in an {@link State#ERROR error} state and can be retried.
      *
      * @param callback Called when the state changes.
      */
     public void download(Callback<State> callback) {
+        if (!DOWNLOAD_PERMITTER.tryAcquire()) {
+            plugin.debug("Download already in progress, skipping download");
+            return;
+        }
+        
         if (!(state == State.INITIAL || state == State.PAUSED || state == State.ERROR))
             return; // Only continue if the package is in one of these states
 
@@ -94,8 +87,8 @@ public class UpdatePackage implements Observable {
             bytesDownloaded = 0; // Reset the bytes downloaded counter
             downloadPercentage = 0; // Reset the download percentage
         }
-
-        setState(State.DOWNLOADING);
+    
+        this.state = State.DOWNLOADING;
         callback.onResult(state);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 
@@ -104,41 +97,26 @@ public class UpdatePackage implements Observable {
                 Files.createDirectories(DOWNLOAD_PATH.getParent());
             } catch (IOException e) {
                 callback.callSyncError("Failed to create update folder.", e);
-                setState(State.ERROR);
+                this.state = State.ERROR;
+                DOWNLOAD_PERMITTER.release();
                 return;
             }
             
-            // Find the URL to download from
-            if (fileUrl == null) {
-                try {
-                    fileUrl = followRedirects(new URL(downloadLink));
-                } catch (MalformedURLException e) {
-                    callback.callSyncError("Failed to parse download link: " + downloadLink, e);
-                    setState(State.ERROR);
-                    return;
-                } catch (IOException e) {
-                    callback.callSyncError("Failed to follow redirects to download url: " + downloadLink, e);
-                    setState(State.ERROR);
-                    return;
-                }
-            }
-    
             // Establish a connection with the server
             URLConnection con;
             try {
-                con = fileUrl.openConnection();
+                con = fileURL.openConnection();
+                con.setRequestProperty("Accept", "application/octet-stream");
                 if (bytesDownloaded > 0) // If the download is being resumed, only request the remaining bytes
                     con.setRequestProperty("Range", "bytes=" + bytesDownloaded + "-");
                 con.setConnectTimeout(5000);
                 con.connect();
             } catch (IOException e) {
                 callback.callSyncError("Could not create connection to download URL: ", e);
-                setState(State.ERROR);
+                this.state = State.ERROR;
+                DOWNLOAD_PERMITTER.release();
                 return;
             }
-
-            if (fileSize == null) // If the file size is not known yet, get it from the server
-                fileSize = con.getContentLengthLong();
 
             // Open an input stream from the connection and an output stream to the file
             try (InputStream urlIn = con.getInputStream();
@@ -149,62 +127,65 @@ public class UpdatePackage implements Observable {
                 byte[] buffer = new byte[8 * 1024];
                 for (int bytesRead = urlIn.read(buffer); bytesRead != -1; bytesRead = urlIn.read(buffer)) {
                     fileOut.write(buffer, 0, bytesRead);
-                    int newPercentage = (int) (100 * (bytesDownloaded += bytesRead) / fileSize);
+                    int newPercentage = (int) (100 * (bytesDownloaded += bytesRead) / filesize);
                     if (newPercentage != downloadPercentage) {
                         this.downloadPercentage = newPercentage;
-                        notifyObservers();
-                        try { Thread.sleep(50); } catch (InterruptedException ignored) {}
+                        callback.callSyncResult(State.DOWNLOADING);
                     }
                     // If the download has been paused or set outdated, stop the download
-                    if (state == State.PAUSED || state == State.OUTDATED)
+                    if (state == State.PAUSED || state == State.OUTDATED) {
+                        callback.callSyncResult(state);
+                        DOWNLOAD_PERMITTER.release();
                         return;
+                    }
                 }
             } catch (IOException e) {
                 callback.callSyncError("Could not download update.", e);
-                setState(State.ERROR);
+                this.state = State.ERROR;
+                DOWNLOAD_PERMITTER.release();
                 return;
             }
 
-            // Compare the downloaded file's checksum against the one on the server
-            setState(State.VALIDATING);
-            callback.callSyncResult(state);
-            try { Thread.sleep(1000); } catch (InterruptedException ignored) {} // Wait a second for better UX
-            try {
-                // Get an MD5 digest instance for calculating the checksum
-                MessageDigest md5 = MessageDigest.getInstance("MD5");
-                md5.update(Files.readAllBytes(DOWNLOAD_PATH));
-                String localChecksum = toHexString(md5.digest());
-                if (!localChecksum.equals(remoteChecksum)) {
-                    callback.callSyncError("Checksum mismatch: " + localChecksum + " != " + remoteChecksum, new IllegalStateException());
-                    setState(State.ERROR);
-                    return;
+            if (remoteChecksum != null) {
+                // Compare the downloaded file's checksum against the one on the server
+                this.state = State.VALIDATING;
+                callback.callSyncResult(state);
+                try {Thread.sleep(1000);} catch (InterruptedException ignored) {} // Wait one second for better UX :)
+                try {
+                    // Get an MD5 digest instance for calculating the checksum
+                    MessageDigest md5 = MessageDigest.getInstance("MD5");
+                    md5.update(Files.readAllBytes(DOWNLOAD_PATH));
+                    String localChecksum = toHexString(md5.digest());
+                    if (!localChecksum.equals(remoteChecksum)) {
+                        callback.callSyncError("Checksum mismatch!", new IllegalStateException(localChecksum + " != " + remoteChecksum));
+                        this.state = State.ERROR;
+                        DOWNLOAD_PERMITTER.release();
+                        return;
+                    }
+                    validated = true;
+                } catch (NoSuchAlgorithmException | IOException ignored) {
+                    // Could not validate, everything is probably fine so just continue
                 }
-            } catch (NoSuchAlgorithmException e) { // Should not happen
-                callback.callSyncError("MD5 algorithm not available.", e);
-                setState(State.ERROR);
-                return;
-            } catch (IOException e) {
-                callback.callSyncError("Could not read downloaded file to validate it.", e);
-                setState(State.ERROR);
-                return;
             }
 
             // Rename incomplete file to the plugin jar file name, replacing any existing file in the update folder with that name
             try {
                 Files.move(DOWNLOAD_PATH, DOWNLOAD_PATH.resolveSibling(plugin.getJarFile().getFileName()), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
+            } catch (IOException e) { // Should never happen!
                 callback.callSyncError("Could not rename update file.", e);
-            }
-
-            if (state == State.PAUSED || state == State.OUTDATED)
+                this.state = State.ERROR;
+                DOWNLOAD_PERMITTER.release();
                 return;
-            setState(State.COMPLETED);
+            }
+    
+            this.state = State.COMPLETED;
             callback.callSyncResult(state);
+            DOWNLOAD_PERMITTER.release();
         });
     }
 
     private static String toHexString(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(32);
         for (byte b : bytes)
             sb.append(String.format("%02x", b));
         return sb.toString();
@@ -215,34 +196,27 @@ public class UpdatePackage implements Observable {
      */
     public void pauseDownload() {
         if (state == State.DOWNLOADING)
-            setState(State.PAUSED);
-        // Thread.join()
-        // This should be a blocking operation until the download is paused
+            state = State.PAUSED;
     }
 
     public void setOutdated() {
-        setState(State.OUTDATED);
-    }
-
-    public int getDownloadPercentage() {
-        return downloadPercentage;
+        state = State.OUTDATED;
     }
 
     public State getState() {
         return state;
     }
-
-    private void setState(State state) {
-        this.state = state;
-        notifyObservers();
-    }
-
+    
     public String getVersion() {
         return version;
     }
-
-    public Set<GUI<?>> getObservers() {
-        return observers;
+    
+    public int getDownloadPercentage() {
+        return downloadPercentage;
+    }
+    
+    public boolean isValidated() {
+        return validated;
     }
 
 }

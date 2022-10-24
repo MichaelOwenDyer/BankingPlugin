@@ -14,7 +14,10 @@ import com.monst.bankingplugin.lang.ColorStringBuilder;
 import com.monst.bankingplugin.listener.*;
 import com.monst.bankingplugin.persistence.PersistenceManager;
 import com.monst.bankingplugin.persistence.service.*;
-import com.monst.bankingplugin.util.*;
+import com.monst.bankingplugin.util.Callback;
+import com.monst.bankingplugin.util.PaymentService;
+import com.monst.bankingplugin.util.SchedulerService;
+import com.monst.bankingplugin.util.UpdatePackage;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
@@ -33,6 +36,7 @@ import org.ipvp.canvas.MenuFunctionListener;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -232,7 +236,7 @@ public class BankingPlugin extends JavaPlugin {
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             JsonElement response;
             try {
-                URL url = new URL("https://api.curseforge.com/servermods/files?projectIds=31043");
+                URL url = new URL("https://api.github.com/repos/FreshLlamanade/BankingPlugin/releases");
                 URLConnection con = url.openConnection();
                 con.setConnectTimeout(5000);
                 con.setRequestProperty("User-Agent", "BankingPlugin");
@@ -240,64 +244,78 @@ public class BankingPlugin extends JavaPlugin {
 
                 response = new JsonParser().parse(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
             } catch (JsonIOException | JsonSyntaxException | IOException e) {
-                callback.callSyncError("Failed to query CurseForge API.", e);
+                callback.callSyncError("Failed to query GitHub API.", e);
                 return;
             }
 
-            JsonArray versions;
+            JsonArray releases;
             try {
-                versions = response.getAsJsonArray();
+                releases = response.getAsJsonArray();
             } catch (IllegalStateException e) {
                 callback.callSyncError("Received element was not a Json array. Response: " + response, e);
                 return;
             }
 
-            if (versions.size() == 0) {
+            if (releases.size() == 0) {
                 // No versions available
                 callback.callSyncResult(null);
                 return;
             }
 
-            JsonObject update = null;
-            for (int i = versions.size() - 1; i >= 0; i--) {
-                JsonObject version = versions.get(i).getAsJsonObject();
-                String fileName = version.get("name").getAsString();
-                debug("Checking version " + fileName);
+            String versionNumber = null;
+            JsonObject jar = null;
+            for (int i = releases.size() - 1; i >= 0; i--) {
+                JsonObject version = releases.get(i).getAsJsonObject();
+                versionNumber = version.get("name").getAsString();
+                debug("Checking version " + versionNumber);
 
-                if (fileName.compareTo(getDescription().getVersion()) <= 0) {
+                if (versionNumber.compareTo(getDescription().getVersion()) <= 0) {
                     // This version is no newer than current version
                     // No need to check further
                     callback.callSyncResult(null);
                     return;
                 }
 
-                if (config().ignoreUpdatesContaining.ignore(fileName)) { // This version is ignored
-                    debug("Skipping version " + fileName + " because it contains an ignored tag.");
+                if (config().ignoreUpdatesContaining.ignore(versionNumber)) { // This version is ignored
+                    debug("Skipping version " + versionNumber + " because it contains an ignored tag.");
                     continue;
                 }
-
-                // Found the latest non-ignored version available, and it is newer than the current version
-                update = version;
-                break;
+    
+                for (JsonElement asset : version.get("assets").getAsJsonArray()) {
+                    if (((JsonObject) asset).get("name").getAsString().endsWith(".jar")) {
+                        // Found the latest non-ignored jar available, and it is newer than the current version
+                        jar = (JsonObject) asset;
+                        break;
+                    }
+                }
             }
 
-            if (update == null) {
+            if (jar == null) {
                 // No suitable update found
                 callback.callSyncResult(null);
                 return;
             }
 
-            String fileName = update.get("name").getAsString();
-            debug("Found latest version: " + fileName);
+            debug("Found latest version: " + versionNumber);
+            
+            // An update package already exists newer or equal to this one
+            if (updatePackage != null && updatePackage.getVersion().compareTo(versionNumber) > 0) {
+                callback.callSyncResult(updatePackage);
+                return;
+            }
+            if (updatePackage != null)
+                updatePackage.setOutdated();
 
             // Create a new update package
-            // If an update package already exists, replace it if the found version is even newer
-            if (updatePackage == null || fileName.compareTo(updatePackage.getVersion()) > 0) {
-                debug("Creating new update package.");
-                if (updatePackage != null)
-                    updatePackage.setOutdated();
-                updatePackage = new UpdatePackage(this, update);
-            }
+            debug("Creating new update package.");
+            URL fileURL;
+            try {
+                fileURL = new URL(jar.get("browser_download_url").getAsString());
+            } catch (MalformedURLException e) { return; } // Shouldn't happen
+            String checksum = Optional.ofNullable(jar.get("md5")).map(JsonElement::getAsString).orElse(null);
+            int filesize = jar.get("size").getAsInt();
+    
+            updatePackage = new UpdatePackage(this, versionNumber, fileURL, checksum, filesize);
 
             callback.callSyncResult(updatePackage); // Return the update package, replaced or not
         });

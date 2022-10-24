@@ -180,19 +180,19 @@ public enum Message {
     ),
     CHEST_ALREADY_ACCOUNT(
             "A player attempts to open an account on a chest that is already an account.",
-            red("&cChest is already an account.")
+            red("Chest is already an account.")
     ),
     CANNOT_BREAK_ACCOUNT_CHEST(
             "A player attempts to break an account chest.",
-            red("&cYou cannot break that account chest.")
+            red("You cannot break that account chest.")
     ),
     CHEST_NOT_IN_BANK(
             "A player attempts to open an account at a chest not located in a bank.",
-            red("&cChest is not in a bank.")
+            red("Chest is not in a bank.")
     ),
     BANK_CREATED(
             "A player creates a bank.",
-            gold("&6Bank created!"),
+            gold("Bank created!"),
             BANK_NAME
     ),
     BANK_CREATE_INSUFFICIENT_FUNDS(
