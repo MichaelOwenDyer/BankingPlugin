@@ -1,7 +1,8 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.pluginconfiguration.validation.Bound;
+import com.monst.bankingplugin.configuration.type.IntegerConfigurationValue;
+import com.monst.bankingplugin.configuration.validation.Bound;
 
 public class MaximumBankVolume extends IntegerConfigurationValue {
 

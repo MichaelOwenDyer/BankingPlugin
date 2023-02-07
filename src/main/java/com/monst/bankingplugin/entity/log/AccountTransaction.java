@@ -1,51 +1,49 @@
 package com.monst.bankingplugin.entity.log;
 
-import com.monst.bankingplugin.converter.OfflinePlayerConverter;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.Bank;
-import jakarta.persistence.*;
 import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@Entity
-@Table(name = "account_transaction")
 public class AccountTransaction extends FinancialStatement {
 
-    @ManyToOne
-    private Account account;
-    @ManyToOne
-    private Bank bank;
-    @Column(nullable = false)
-    @Convert(converter = OfflinePlayerConverter.class)
-    private OfflinePlayer executor;
-    @Column(nullable = false, precision = 16, scale = 2)
-    private BigDecimal newBalance;
-    @Column(nullable = false, precision = 16, scale = 2)
-    private BigDecimal previousBalance;
-    @Column(nullable = false, precision = 16, scale = 2)
-    private BigDecimal difference;
+    private final int accountID;
+    private final int bankID;
+    private final OfflinePlayer executor;
+    private final BigDecimal previousBalance;
+    private final BigDecimal amount;
+    private final BigDecimal newBalance;
 
-    public AccountTransaction() {
-    }
-
-    public AccountTransaction(Account account, Bank bank, OfflinePlayer executor, BigDecimal newBalance, BigDecimal previousBalance, BigDecimal difference) {
-        super(Instant.now());
-        this.account = account;
-        this.bank = bank;
+    public AccountTransaction(int id, Instant timestamp, int accountID, int bankID, OfflinePlayer executor,
+                              BigDecimal previousBalance, BigDecimal amount, BigDecimal newBalance) {
+        super(id, timestamp);
+        this.accountID = accountID;
+        this.bankID = bankID;
         this.executor = executor;
-        this.newBalance = newBalance;
         this.previousBalance = previousBalance;
-        this.difference = difference;
+        this.amount = amount;
+        this.newBalance = newBalance;
     }
 
-    public Account getAccount() {
-        return account;
+    public AccountTransaction(Account account, Bank bank, OfflinePlayer executor,
+                              BigDecimal previousBalance, BigDecimal amount, BigDecimal newBalance) {
+        super(Instant.now());
+        this.accountID = account.getID();
+        this.bankID = bank.getID();
+        this.executor = executor;
+        this.previousBalance = previousBalance;
+        this.amount = amount;
+        this.newBalance = newBalance;
     }
 
-    public Bank getBank() {
-        return bank;
+    public int getAccountID() {
+        return accountID;
+    }
+
+    public int getBankID() {
+        return bankID;
     }
 
     public OfflinePlayer getExecutor() {
@@ -64,19 +62,19 @@ public class AccountTransaction extends FinancialStatement {
      * Gets the amount by which the account balance changed, positive or negative.
      * @return the change in account balance.
      */
-    public BigDecimal getDifference() {
-        return difference;
+    public BigDecimal getAmount() {
+        return amount;
     }
 
     @Override
     public String toString() {
         return "AccountTransaction{" +
-                "account=" + account.getID() +
-                ", bank=" + bank.getID() +
+                "account=" + accountID +
+                ", bank=" + bankID +
                 ", player=" + executor +
                 ", newBalance=" + newBalance +
                 ", previousBalance=" + previousBalance +
-                ", difference=" + difference +
+                ", difference=" + amount +
                 "} " + super.toString();
     }
 }

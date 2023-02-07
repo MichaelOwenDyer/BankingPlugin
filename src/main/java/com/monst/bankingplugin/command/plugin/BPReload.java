@@ -1,12 +1,13 @@
 package com.monst.bankingplugin.command.plugin;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.event.control.ReloadEvent;
-import com.monst.bankingplugin.exception.CancelledException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.command.CommandSender;
 
 public class BPReload extends SubCommand {
@@ -17,7 +18,7 @@ public class BPReload extends SubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.RELOAD;
+        return Permissions.RELOAD;
     }
 
     @Override
@@ -31,7 +32,7 @@ public class BPReload extends SubCommand {
     }
 
     @Override
-    protected void execute(CommandSender sender, String[] args) throws CancelledException {
+    protected void execute(CommandSender sender, String[] args) throws EventCancelledException {
         new ReloadEvent(sender).fire();
         plugin.reload();
 

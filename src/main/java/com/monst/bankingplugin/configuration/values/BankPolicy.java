@@ -1,8 +1,13 @@
 package com.monst.bankingplugin.configuration.values;
 
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
 
+/**
+ * Represents a configuration policy that a bank may or may not set.
+ * If a bank sets a particular policy, it overrides the global policy in the configuration.
+ * @param <T>
+ */
 public interface BankPolicy<T> {
 
     T at(Bank bank);
@@ -10,6 +15,8 @@ public interface BankPolicy<T> {
     boolean parseAndSetAt(Bank bank, String input) throws ArgumentParseException;
 
     String toStringAt(Bank bank);
+    
+    AllowOverride getAllowOverride();
 
     static String defaultPath(String path) {
         return path + ".default";

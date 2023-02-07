@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.pluginconfiguration.ConfigurationCollection;
+import com.monst.bankingplugin.configuration.type.ConfigurationCollection;
 
 import java.util.Collections;
 import java.util.HashSet;

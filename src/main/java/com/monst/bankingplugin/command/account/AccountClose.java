@@ -1,18 +1,18 @@
 package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.ClickAction;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.account.AccountCloseCommandEvent;
 import com.monst.bankingplugin.event.account.AccountCloseEvent;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
@@ -25,7 +25,7 @@ public class AccountClose extends PlayerSubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.ACCOUNT_OPEN;
+        return Permissions.ACCOUNT_OPEN;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class AccountClose extends PlayerSubCommand {
     }
 
     @Override
-    protected void execute(Player player, String[] args) throws CancelledException {
+    protected void execute(Player player, String[] args) throws EventCancelledException {
         new AccountCloseCommandEvent(player, args).fire();
 
         plugin.debugf("%s can now click a chest to close an account", player.getName());
@@ -53,12 +53,12 @@ public class AccountClose extends PlayerSubCommand {
      * @param player  Player who executed the command
      * @param account Account to be removed
      */
-    private void close(Player player, Account account) throws ExecutionException {
-        if (!account.isOwner(player) && Permission.ACCOUNT_CLOSE_OTHER.notOwnedBy(player) && !account.getBank().isTrusted(player)) {
+    private void close(Player player, Account account) throws CommandExecutionException {
+        if (!account.isOwner(player) && Permissions.ACCOUNT_CLOSE_OTHER.notOwnedBy(player) && !account.getBank().isTrusted(player)) {
             ClickAction.remove(player);
             if (account.isTrusted(player))
-                throw new ExecutionException(Message.MUST_BE_OWNER.translate(plugin));
-            throw new ExecutionException(Message.NO_PERMISSION_ACCOUNT_CLOSE_OTHER.translate(plugin));
+                throw err(Message.MUST_BE_OWNER);
+            throw err(Message.NO_PERMISSION_ACCOUNT_CLOSE_OTHER);
         }
 
         boolean balanceRemaining = account.getBalance().signum() > 0;
@@ -96,10 +96,12 @@ public class AccountClose extends PlayerSubCommand {
                             .with(Placeholder.AMOUNT).as(plugin.getEconomy().format(finalReimbursement))
                             .translate(plugin));
                     if (bank.isPlayerBank() && plugin.getPaymentService().withdraw(bank.getOwner(), finalReimbursement)) {
-                        Utils.message(bank.getOwner(), Message.ACCOUNT_REIMBURSEMENT_PAID
-                                .with(Placeholder.PLAYER).as(account.getOwner().getName())
-                                .and(Placeholder.AMOUNT).as(plugin.getEconomy().format(finalReimbursement))
-                                .translate(plugin));
+                        if (bank.getOwner().isOnline()) {
+                            bank.getOwner().getPlayer().sendMessage(Message.ACCOUNT_REIMBURSEMENT_PAID
+                                    .with(Placeholder.PLAYER).as(account.getOwner().getName())
+                                    .and(Placeholder.AMOUNT).as(plugin.getEconomy().format(finalReimbursement))
+                                    .translate(plugin));
+                        }
                     }
                 }
             }
@@ -108,9 +110,8 @@ public class AccountClose extends PlayerSubCommand {
         account.resetChestTitle();
         bank.removeAccount(account);
         plugin.getAccountService().remove(account);
-        plugin.getBankService().update(bank);
         player.sendMessage(Message.ACCOUNT_CLOSED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate(plugin));
-        plugin.debugf("Removed account #%d", account.getID());
+        plugin.debugf("Removed account %s", account);
     }
 
 }

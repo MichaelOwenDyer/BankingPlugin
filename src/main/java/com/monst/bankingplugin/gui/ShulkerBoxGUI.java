@@ -1,41 +1,41 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
+import org.bukkit.Bukkit;
 import org.bukkit.block.ShulkerBox;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.Slot;
-import org.ipvp.canvas.type.ChestMenu;
 
-public class ShulkerBoxGUI extends SinglePageGUI<ShulkerBox> {
+import java.util.HashMap;
+import java.util.Map;
 
-    public ShulkerBoxGUI(BankingPlugin plugin, ShulkerBox guiSubject) {
-        super(plugin, guiSubject);
+public class ShulkerBoxGUI extends SinglePageGUI {
+    
+    private final ShulkerBox shulkerBox;
+
+    public ShulkerBoxGUI(BankingPlugin plugin, Player player, ShulkerBox shulkerBox) {
+        super(plugin, player);
+        this.shulkerBox = shulkerBox;
     }
-
+    
     @Override
-    Menu createMenu() {
-        return ChestMenu.builder(3).title("Shulker Box").redraw(true).build();
-//                    shulkerBox.getCustomName() != null ?
-//                            shulkerBox.getCustomName() : // TODO: Figure out why always null
-//                            WordUtils.capitalizeFully(shulkerBox.getColor().toString())
-//                       FIXME: shulkerBox.getColor() throws NullPointerException when Shulker Box default color
-
+    Inventory createInventory() {
+        return Bukkit.createInventory(this, 3 * 9,
+                shulkerBox.getCustomName() != null ? shulkerBox.getCustomName() : "Shulker Box");
     }
-
+    
     @Override
-    ItemStack createSlotItem(int slot) {
-        return guiSubject.getInventory().getItem(slot);
+    Map<Integer, ItemStack> createItems(Player player) {
+        Map<Integer, ItemStack> items = new HashMap<>();
+        ItemStack[] contents = shulkerBox.getInventory().getContents();
+        for (int slot = 0; slot < contents.length; slot++) {
+            ItemStack item = contents[slot];
+            if (item == null)
+                continue;
+            items.put(slot, item);
+        }
+        return items;
     }
-
-    @Override
-    Slot.ClickHandler createClickHandler(int slot) {
-        return null;
-    }
-
-    @Override
-    GUIType getType() {
-        return GUIType.SHULKER_BOX;
-    }
-
+    
 }

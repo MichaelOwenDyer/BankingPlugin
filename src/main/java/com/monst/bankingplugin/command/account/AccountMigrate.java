@@ -1,19 +1,19 @@
 package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.ClickAction;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.entity.geo.location.AccountLocation;
 import com.monst.bankingplugin.event.account.AccountMigrateCommandEvent;
 import com.monst.bankingplugin.event.account.AccountMigrateEvent;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -30,7 +30,7 @@ public class AccountMigrate extends PlayerSubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.ACCOUNT_OPEN;
+        return Permissions.ACCOUNT_OPEN;
     }
 
     @Override
@@ -44,55 +44,50 @@ public class AccountMigrate extends PlayerSubCommand {
     }
 
     @Override
-    protected void execute(Player player, String[] args) throws CancelledException {
+    protected void execute(Player player, String[] args) throws EventCancelledException {
         new AccountMigrateCommandEvent(player, args).fire();
         player.sendMessage(Message.CLICK_ACCOUNT_MIGRATE.translate(plugin));
         ClickAction.setAccountClickAction(player, account -> selectAccount(player, account));
         plugin.debugf("%s is migrating an account", player.getName());
     }
 
-    private void selectAccount(Player player, Account accountToMove) throws ExecutionException {
+    private void selectAccount(Player player, Account accountToMove) throws CommandExecutionException {
         ClickAction.remove(player);
-        if (!accountToMove.isOwner(player) && Permission.ACCOUNT_MIGRATE_OTHER.notOwnedBy(player)) {
+        if (!accountToMove.isOwner(player) && Permissions.ACCOUNT_MIGRATE_OTHER.notOwnedBy(player)) {
             if (accountToMove.isTrusted(player))
-                throw new ExecutionException(plugin, Message.MUST_BE_OWNER);
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER);
+                throw err(Message.MUST_BE_OWNER);
+            throw err(Message.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER);
         }
 
         plugin.debugf("%s wants to migrate account #%d", player.getName(), accountToMove.getID());
-        ClickAction.setBlockClickAction(player, block -> selectNewChest(player, accountToMove.getID(), block));
+        ClickAction.setBlockClickAction(player, chest -> selectNewChest(player, accountToMove, chest));
         player.sendMessage(Message.CLICK_CHEST_MIGRATE.translate(plugin));
     }
 
-    private void selectNewChest(Player player, int toMoveID, Block targetBlock) throws ExecutionException {
+    private void selectNewChest(Player player, Account accountToMove, Block targetChest) throws CommandExecutionException {
         ClickAction.remove(player);
-        Account clickedAccount = plugin.getAccountService().findAt(targetBlock);
+        Account clickedAccount = plugin.getAccountService().findAtChest(targetChest);
         if (clickedAccount != null) {
-            if (clickedAccount.getID() == toMoveID)
-                throw new ExecutionException(plugin, Message.SAME_CHEST);
-            throw new ExecutionException(plugin, Message.CHEST_ALREADY_ACCOUNT);
+            if (clickedAccount.equals(accountToMove))
+                throw err(Message.SAME_CHEST);
+            throw err(Message.CHEST_ALREADY_ACCOUNT);
         }
 
-        Chest c = (Chest) targetBlock.getState();
-        AccountLocation newAccountLocation = AccountLocation.toAccountLocation(c.getInventory().getHolder());
-
-        if (newAccountLocation.isBlocked())
-            throw new ExecutionException(plugin, Message.CHEST_BLOCKED);
+        Chest c = (Chest) targetChest.getState();
+        AccountLocation newAccountLocation = AccountLocation.from(c.getInventory().getHolder());
 
         Bank newBank = plugin.getBankService().findContaining(newAccountLocation);
         if (newBank == null)
-            throw new ExecutionException(plugin, Message.CHEST_NOT_IN_BANK);
+            throw err(Message.CHEST_NOT_IN_BANK);
 
-        Account accountToMove = plugin.getAccountService().findByID(toMoveID);
-
-        if (!Objects.equals(accountToMove.getBank(), newBank) && Permission.ACCOUNT_MIGRATE_BANK.notOwnedBy(player))
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_ACCOUNT_MIGRATE_BANK);
+        if (!Objects.equals(accountToMove.getBank(), newBank) && Permissions.ACCOUNT_MIGRATE_BANK.notOwnedBy(player))
+            throw err(Message.NO_PERMISSION_ACCOUNT_MIGRATE_BANK);
 
         try {
             new AccountMigrateEvent(player, accountToMove, newAccountLocation).fire();
-        } catch (CancelledException e) {
-            if (Permission.ACCOUNT_CREATE_PROTECTED.notOwnedBy(player))
-                throw new ExecutionException(plugin, Message.NO_PERMISSION_ACCOUNT_OPEN_PROTECTED);
+        } catch (EventCancelledException e) {
+            if (Permissions.ACCOUNT_CREATE_PROTECTED.notOwnedBy(player))
+                throw err(Message.NO_PERMISSION_ACCOUNT_OPEN_PROTECTED);
         }
 
         Bank oldBank = accountToMove.getBank();
@@ -113,7 +108,7 @@ public class AccountMigrate extends PlayerSubCommand {
         double finalDifference = difference.doubleValue();
         if (!plugin.getPaymentService().transact(player, finalDifference)) {
             double balance = plugin.getEconomy().getBalance(player);
-            throw new ExecutionException(plugin, Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS
+            throw err(Message.ACCOUNT_CREATE_INSUFFICIENT_FUNDS
                     .with(Placeholder.PRICE).as(plugin.getEconomy().format(finalDifference))
                     .and(Placeholder.PLAYER_BALANCE).as(plugin.getEconomy().format(balance))
                     .and(Placeholder.AMOUNT_REMAINING).as(plugin.getEconomy().format(
@@ -129,11 +124,14 @@ public class AccountMigrate extends PlayerSubCommand {
                     .translate(plugin));
             // Bank owner of old account pays reimbursement
             OfflinePlayer oldOwner = oldBank.getOwner();
-            if (oldBank.isPlayerBank() && plugin.getPaymentService().withdraw(oldOwner, finalReimbursement))
-                Utils.message(oldOwner, Message.ACCOUNT_REIMBURSEMENT_PAID
-                        .with(Placeholder.PLAYER).as(player.getName())
-                        .and(Placeholder.AMOUNT).as(plugin.getEconomy().format(finalReimbursement))
-                        .translate(plugin));
+            if (oldBank.isPlayerBank() && plugin.getPaymentService().withdraw(oldOwner, finalReimbursement)) {
+                if (oldOwner.isOnline()) {
+                    oldOwner.getPlayer().sendMessage(Message.ACCOUNT_REIMBURSEMENT_PAID
+                            .with(Placeholder.PLAYER).as(player.getName())
+                            .and(Placeholder.AMOUNT).as(plugin.getEconomy().format(finalReimbursement))
+                            .translate(plugin));
+                }
+            }
         }
         if (creationPrice.signum() > 0) {
             double finalCreationPrice = creationPrice.doubleValue();
@@ -143,18 +141,20 @@ public class AccountMigrate extends PlayerSubCommand {
                     .and(Placeholder.BANK_NAME).as(newBank.getColorizedName())
                     .translate(plugin));
             // Bank owner of new account receives account creation fee
-            if (newBank.isPlayerBank() && plugin.getPaymentService().deposit(newBank.getOwner(), finalCreationPrice))
-                Utils.message(newBank.getOwner(), Message.ACCOUNT_CREATE_FEE_RECEIVED
-                        .with(Placeholder.PLAYER).as(player.getName())
-                        .and(Placeholder.AMOUNT).as(plugin.getEconomy().format(finalCreationPrice))
-                        .and(Placeholder.BANK_NAME).as(newBank.getColorizedName())
-                        .translate(plugin));
+            if (newBank.isPlayerBank() && plugin.getPaymentService().deposit(newBank.getOwner(), finalCreationPrice)) {
+                if (newBank.getOwner().isOnline()) {
+                    newBank.getOwner().getPlayer().sendMessage(Message.ACCOUNT_CREATE_FEE_RECEIVED
+                            .with(Placeholder.PLAYER).as(player.getName())
+                            .and(Placeholder.AMOUNT).as(plugin.getEconomy().format(finalCreationPrice))
+                            .and(Placeholder.BANK_NAME).as(newBank.getColorizedName())
+                            .translate(plugin));
+                }
+            }
         }
 
         accountToMove.resetChestTitle();
         accountToMove.setLocation(newAccountLocation);
-        oldBank.removeAccount(accountToMove);
-        newBank.addAccount(accountToMove);
+        accountToMove.setBank(newBank);
         accountToMove.updateChestTitle();
         plugin.getAccountService().update(accountToMove);
         player.sendMessage(Message.ACCOUNT_MIGRATED.translate(plugin));

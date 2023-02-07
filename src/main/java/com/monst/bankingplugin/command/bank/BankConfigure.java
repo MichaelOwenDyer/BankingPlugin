@@ -1,70 +1,57 @@
 package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.SubCommand;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.type.ConfigurationValue;
 import com.monst.bankingplugin.configuration.values.BankPolicy;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.bank.BankConfigureEvent;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
+import com.monst.bankingplugin.command.Permissions;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class BankConfigure extends SubCommand {
-
-    public enum PolicyType {
-        REIMBURSE_ACCOUNT_CREATION (plugin -> plugin.config().reimburseAccountCreation),
-        PAY_ON_LOW_BALANCE (plugin -> plugin.config().payOnLowBalance),
-        INTEREST_RATE (plugin -> plugin.config().interestRate),
-        ACCOUNT_CREATION_PRICE (plugin -> plugin.config().accountCreationPrice),
-        MINIMUM_BALANCE (plugin -> plugin.config().minimumBalance),
-        LOW_BALANCE_FEE (plugin -> plugin.config().lowBalanceFee),
-        ALLOWED_OFFLINE_PAYOUTS (plugin -> plugin.config().allowedOfflinePayouts),
-        OFFLINE_MULTIPLIER_DECREMENT (plugin -> plugin.config().offlineMultiplierDecrement),
-        WITHDRAWAL_MULTIPLIER_DECREMENT (plugin -> plugin.config().withdrawalMultiplierDecrement),
-        PLAYER_BANK_ACCOUNT_LIMIT (plugin -> plugin.config().playerBankAccountLimit),
-        INTEREST_MULTIPLIERS (plugin -> plugin.config().interestMultipliers),
-        INTEREST_PAYOUT_TIMES (plugin -> plugin.config().interestPayoutTimes);
-
-        private final Function<BankingPlugin, BankPolicy<?>> getter;
-        PolicyType(Function<BankingPlugin, BankPolicy<?>> getter) {
-            this.getter = getter;
-        }
-
-        static BankPolicy<?> lookUp(BankingPlugin plugin, String name) {
-            return Stream.of(values())
-                    .filter(field -> field.toString().equalsIgnoreCase(name))
-                    .findFirst()
-                    .map(p -> p.getter.apply(plugin))
-                    .orElse(null);
-        }
-
-        @Override
-        public String toString() {
-            return name().toLowerCase().replace('_', '-');
-        }
-
-    }
+    
+    private final Map<String, BankPolicy<?>> policies;
 
     BankConfigure(BankingPlugin plugin) {
 		super(plugin, "configure");
+        policies = Stream.of(
+                        plugin.config().interestRate,
+                        plugin.config().accountCreationPrice,
+                        plugin.config().minimumBalance,
+                        plugin.config().lowBalanceFee,
+                        plugin.config().allowedOfflinePayouts,
+                        plugin.config().offlineMultiplierDecrement,
+                        plugin.config().withdrawalMultiplierDecrement,
+                        plugin.config().playerBankAccountLimit,
+                        plugin.config().reimburseAccountCreation,
+                        plugin.config().payOnLowBalance,
+                        plugin.config().interestMultipliers,
+                        plugin.config().interestPayoutTimes
+                )
+                .collect(Collectors.toMap(ConfigurationValue::getPath, Function.identity()));
     }
 
     @Override
     protected Permission getPermission() {
-        return Permission.BANK_CREATE;
+        return Permissions.BANK_CREATE;
     }
 
     @Override
@@ -83,23 +70,23 @@ public class BankConfigure extends SubCommand {
     }
 
     @Override
-    protected void execute(CommandSender sender, String[] args) throws ExecutionException, CancelledException {
+    protected void execute(CommandSender sender, String[] args) throws CommandExecutionException, EventCancelledException {
         String bankName = args[0];
         Bank bank = plugin.getBankService().findByName(bankName);
         if (bank == null)
-            throw new ExecutionException(plugin, Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(bankName));
+            throw err(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(bankName));
 
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isTrusted((Player) sender))
-                || Permission.BANK_CONFIGURE_OTHER.ownedBy(sender)))
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_BANK_CONFIGURE_OTHER);
+                || Permissions.BANK_CONFIGURE_OTHER.ownedBy(sender)))
+            throw err(Message.NO_PERMISSION_BANK_CONFIGURE_OTHER);
 
-        if (bank.isAdminBank() && Permission.BANK_CONFIGURE_ADMIN.notOwnedBy(sender))
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_BANK_CONFIGURE_ADMIN);
+        if (bank.isAdminBank() && Permissions.BANK_CONFIGURE_ADMIN.notOwnedBy(sender))
+            throw err(Message.NO_PERMISSION_BANK_CONFIGURE_ADMIN);
 
         String policyName = args[1].toLowerCase();
-        BankPolicy<?> policy = PolicyType.lookUp(plugin, policyName);
+        BankPolicy<?> policy = policies.get(policyName);
         if (policy == null)
-            throw new ExecutionException(plugin, Message.NOT_A_BANK_POLICY.with(Placeholder.INPUT).as(policyName));
+            throw err(Message.NOT_A_BANK_POLICY.with(Placeholder.INPUT).as(policyName));
 
         String input = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
         String previousValue = policy.toStringAt(bank);
@@ -110,7 +97,7 @@ public class BankConfigure extends SubCommand {
                         .with(Placeholder.POLICY).as(policyName)
                         .translate(plugin));
         } catch (ArgumentParseException e) {
-            throw new ExecutionException(e.getLocalizedMessage());
+            throw err(e.getTranslatableMessage());
         }
 
         String newValue = policy.toStringAt(bank);
@@ -131,21 +118,22 @@ public class BankConfigure extends SubCommand {
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length == 1)
-            return plugin.getBankService().findByPlayerAllowedToModify(player, Permission.BANK_CONFIGURE_OTHER, Permission.BANK_CONFIGURE_ADMIN, false)
+            return plugin.getBankService().findNamesByPlayerAllowedToModify(player,
+                            Permissions.BANK_CONFIGURE_OTHER.ownedBy(player),
+                            Permissions.BANK_CONFIGURE_ADMIN.ownedBy(player), false)
                     .stream()
-                    .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+                    .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         Bank bank = plugin.getBankService().findByName(args[0]);
         if (bank == null)
             return Collections.emptyList();
         if (args.length == 2)
-            return Stream.of(PolicyType.values())
-                    .map(String::valueOf)
-                    .filter(field -> Utils.containsIgnoreCase(field, args[1]))
+            return policies.keySet().stream()
+                    .filter(policyName -> StringUtils.startsWithIgnoreCase(policyName, args[1])) // TODO: Use a containsIgnoreCase method instead
+                    .sorted()
                     .collect(Collectors.toList());
-        BankPolicy<?> policy = PolicyType.lookUp(plugin, args[1]);
+        BankPolicy<?> policy = policies.get(args[1]);
         if (policy == null || args.length > 3)
             return Collections.emptyList();
         return Collections.singletonList(policy.toStringAt(bank));

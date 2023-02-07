@@ -1,10 +1,11 @@
 package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.entity.Player;
 
 public class BankLimits extends PlayerSubCommand {
@@ -15,7 +16,7 @@ public class BankLimits extends PlayerSubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.BANK_CREATE;
+        return Permissions.BANK_CREATE;
     }
 
     @Override
@@ -25,9 +26,9 @@ public class BankLimits extends PlayerSubCommand {
 
     @Override
     protected void execute(Player player, String[] args) {
-        int banksUsed = plugin.getBankService().findByOwner(player).size();
-        long allowedBanks = getPermissionLimit(player, Permission.BANK_NO_LIMIT, plugin.config().defaultBankLimit.get());
-        long allowedVolume = getPermissionLimit(player, Permission.BANK_NO_SIZE_LIMIT, plugin.config().maximumBankVolume.get());
+        int banksUsed = plugin.getBankService().countByOwner(player);
+        long allowedBanks = getPermissionLimit(player, Permissions.BANK_NO_LIMIT, plugin.config().defaultBankLimit.get());
+        long allowedVolume = getPermissionLimit(player, Permissions.BANK_NO_SIZE_LIMIT, plugin.config().maximumBankVolume.get());
         String bankLimit = allowedBanks < 0 ? "∞" : "" + allowedBanks;
         String volumeLimit = allowedVolume < 0 ? "∞" : "" + allowedVolume;
         plugin.debugf("%s is viewing their bank limits: %d / %s, max volume: %d", player.getName(), banksUsed, bankLimit, allowedVolume);

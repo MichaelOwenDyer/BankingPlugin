@@ -1,14 +1,15 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.type.BooleanConfigurationValue;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
 
 import java.util.Optional;
 
 public class PayOnLowBalance extends BooleanConfigurationValue implements BankPolicy<Boolean> {
 
-    public final AllowOverride allowOverride;
+    private final AllowOverride allowOverride;
 
     public PayOnLowBalance(BankingPlugin plugin) {
         super(plugin, BankPolicy.defaultPath("pay-interest-on-low-balance"), true);
@@ -17,12 +18,12 @@ public class PayOnLowBalance extends BooleanConfigurationValue implements BankPo
 
     @Override
     public Boolean at(Bank bank) {
-        if (bank.getPayOnLowBalance() == null) {
+        if (bank.paysOnLowBalance() == null) {
             if (plugin.config().stickyDefaults.get())
                 bank.setPayOnLowBalance(get());
             return get();
         }
-        return allowOverride.get() ? bank.getPayOnLowBalance() : get();
+        return allowOverride.get() ? bank.paysOnLowBalance() : get();
     }
 
     @Override
@@ -37,7 +38,12 @@ public class PayOnLowBalance extends BooleanConfigurationValue implements BankPo
 
     @Override
     public String toStringAt(Bank bank) {
-        return format(Optional.ofNullable(bank.getPayOnLowBalance()).orElseGet(this));
+        return format(Optional.ofNullable(bank.paysOnLowBalance()).orElseGet(this));
     }
-
+    
+    @Override
+    public AllowOverride getAllowOverride() {
+        return allowOverride;
+    }
+    
 }

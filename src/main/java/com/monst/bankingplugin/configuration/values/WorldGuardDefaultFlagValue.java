@@ -1,7 +1,7 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.pluginconfiguration.ConfigurationValue;
+import com.monst.bankingplugin.configuration.type.ConfigurationValue;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 
 public class WorldGuardDefaultFlagValue extends ConfigurationValue<WrappedState> {
@@ -20,7 +20,7 @@ public class WorldGuardDefaultFlagValue extends ConfigurationValue<WrappedState>
     }
 
     @Override
-    protected Object convertToFileData(WrappedState wrappedState) {
+    protected Object convertToYamlType(WrappedState wrappedState) {
         return wrappedState.name().toLowerCase();
     }
 

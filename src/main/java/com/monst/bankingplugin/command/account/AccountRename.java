@@ -1,14 +1,15 @@
 package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountRenameEvent;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.util.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.entity.Player;
 
 public class AccountRename extends PlayerSubCommand {
@@ -19,7 +20,7 @@ public class AccountRename extends PlayerSubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.ACCOUNT_RENAME;
+        return Permissions.ACCOUNT_RENAME;
     }
 
     @Override
@@ -33,10 +34,10 @@ public class AccountRename extends PlayerSubCommand {
     }
 
     @Override
-    protected void execute(Player player, String[] args) throws ExecutionException {
+    protected void execute(Player player, String[] args) throws CommandExecutionException {
         String nickname = String.join(" ", args).trim();
         if (!nickname.isEmpty() && plugin.config().nameRegex.doesNotMatch(nickname))
-            throw new ExecutionException(plugin, Message.NAME_NOT_ALLOWED
+            throw err(Message.NAME_NOT_ALLOWED
                     .with(Placeholder.NAME).as(nickname)
                     .and(Placeholder.PATTERN).as(plugin.config().nameRegex.get()));
 
@@ -44,10 +45,10 @@ public class AccountRename extends PlayerSubCommand {
         player.sendMessage(Message.CLICK_ACCOUNT_RENAME.translate(plugin));
     }
 
-    private void rename(Player executor, Account account, String newName) throws ExecutionException {
+    private void rename(Player executor, Account account, String newName) throws CommandExecutionException {
         ClickAction.remove(executor);
-        if (!account.isTrusted(executor) && Permission.ACCOUNT_RENAME_OTHER.notOwnedBy(executor))
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_ACCOUNT_RENAME_OTHER);
+        if (!account.isTrusted(executor) && Permissions.ACCOUNT_RENAME_OTHER.notOwnedBy(executor))
+            throw err(Message.NO_PERMISSION_ACCOUNT_RENAME_OTHER);
 
         if (newName.isEmpty()) {
             plugin.debugf("%s has reset nickname of account #%d", executor.getName(), account.getID());

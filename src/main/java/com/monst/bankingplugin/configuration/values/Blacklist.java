@@ -1,10 +1,10 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.type.ConfigurationCollection;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.pluginconfiguration.ConfigurationCollection;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -16,11 +16,8 @@ import java.util.stream.Collectors;
  */
 public class Blacklist extends ConfigurationCollection<Material, Set<Material>> {
 
-    private final BankingPlugin plugin;
-
     public Blacklist(BankingPlugin plugin) {
         super(plugin, "blacklist", EnumSet.noneOf(Material.class));
-        this.plugin = plugin;
     }
 
     @Override
@@ -30,12 +27,13 @@ public class Blacklist extends ConfigurationCollection<Material, Set<Material>> 
 
     @Override
     public Material parseElement(String input) throws ArgumentParseException {
-        return Optional.ofNullable(input).map(Material::matchMaterial).orElseThrow(
-                () -> new ArgumentParseException(Message.NOT_A_MATERIAL.with(Placeholder.INPUT).as(input).translate(plugin)));
+        return Optional.ofNullable(input)
+                .map(Material::matchMaterial)
+                .orElseThrow(() -> new ArgumentParseException(Message.NOT_A_MATERIAL.with(Placeholder.INPUT).as(input)));
     }
 
     @Override
-    protected Object convertToFileData(Set<Material> materials) {
+    protected Object convertToYamlType(Set<Material> materials) {
         return materials.stream().map(Material::name).collect(Collectors.toList());
     }
 

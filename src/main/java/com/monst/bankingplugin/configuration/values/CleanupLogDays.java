@@ -1,7 +1,8 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.pluginconfiguration.validation.Bound;
+import com.monst.bankingplugin.configuration.type.IntegerConfigurationValue;
+import com.monst.bankingplugin.configuration.validation.Bound;
 
 /**
  * The number of days old that database logs are allowed to become before they are automatically deleted.

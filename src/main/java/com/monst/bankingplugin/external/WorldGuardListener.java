@@ -4,7 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.event.bank.BankCreateEvent;
 import com.monst.bankingplugin.event.bank.BankResizeEvent;
 import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.util.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
@@ -42,7 +42,7 @@ public class WorldGuardListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onCreateBank(BankCreateEvent e) {
-		if (bankCreateFlag == null || !plugin.isWorldGuardIntegrated() || Permission.BYPASS_EXTERNAL_PLUGINS.ownedBy(e.getPlayer()))
+		if (bankCreateFlag == null || !plugin.isWorldGuardIntegrated() || Permissions.BYPASS_EXTERNAL_PLUGINS.ownedBy(e.getPlayer()))
 			return;
 
 		for (Block block : e.getBank().getRegion().getCorners())
@@ -55,7 +55,7 @@ public class WorldGuardListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onResizeBank(BankResizeEvent e) {
-		if (bankCreateFlag == null || !plugin.isWorldGuardIntegrated() || Permission.BYPASS_EXTERNAL_PLUGINS.ownedBy(e.getPlayer()))
+		if (bankCreateFlag == null || !plugin.isWorldGuardIntegrated() || Permissions.BYPASS_EXTERNAL_PLUGINS.ownedBy(e.getPlayer()))
 			return;
 
 		for (Block block : e.getNewRegion().getCorners())

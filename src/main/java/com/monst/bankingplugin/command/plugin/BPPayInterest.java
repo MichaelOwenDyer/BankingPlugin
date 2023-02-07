@@ -1,20 +1,22 @@
 package com.monst.bankingplugin.command.plugin;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.control.InterestEvent;
-import com.monst.bankingplugin.exception.CancelledException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BPPayInterest extends SubCommand {
@@ -25,7 +27,7 @@ public class BPPayInterest extends SubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.UPDATE;
+        return Permissions.UPDATE;
     }
 
     @Override
@@ -39,14 +41,14 @@ public class BPPayInterest extends SubCommand {
     }
 
     @Override
-    protected void execute(CommandSender sender, String[] args) throws CancelledException {
-        List<Bank> banks;
+    protected void execute(CommandSender sender, String[] args) throws EventCancelledException {
+        Set<Bank> banks;
         if (args.length == 0)
             banks = plugin.getBankService().findAll();
         else
-            banks = plugin.getBankService().findByNameIn(Arrays.asList(args));
+            banks = plugin.getBankService().findByNames(new HashSet<>(Arrays.asList(args)));
 
-        plugin.debugf("%s has triggered an interest payment at %s", sender.getName(), banks.stream().map(Bank::getName).collect(Collectors.toList()));
+        plugin.debugf("%s has triggered an interest payment at %s", sender.getName(), banks);
         sender.sendMessage(Message.INTEREST_PAYOUT_TRIGGERED.with(Placeholder.NUMBER_OF_BANKS).as(banks.size()).translate(plugin));
 
         new InterestEvent(sender, new HashSet<>(banks)).fire();
@@ -55,10 +57,9 @@ public class BPPayInterest extends SubCommand {
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
         List<String> argList = Arrays.asList(args);
-        return plugin.getBankService().findAll().stream()
-                .map(Bank::getName)
+        return plugin.getBankService().findAllNames().stream()
                 .filter(name -> !argList.contains(name))
-                .filter(name -> Utils.startsWithIgnoreCase(name, args[args.length - 1]))
+                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[args.length - 1]))
                 .sorted()
                 .collect(Collectors.toList());
     }

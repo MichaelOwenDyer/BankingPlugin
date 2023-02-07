@@ -1,15 +1,16 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.type.IntegerConfigurationValue;
+import com.monst.bankingplugin.configuration.validation.Bound;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
-import com.monst.pluginconfiguration.validation.Bound;
 
 import java.util.Optional;
 
 public class WithdrawalMultiplierDecrement extends IntegerConfigurationValue implements BankPolicy<Integer> {
 
-    public final AllowOverride allowOverride;
+    private final AllowOverride allowOverride;
 
     public WithdrawalMultiplierDecrement(BankingPlugin plugin) {
         super(plugin, BankPolicy.defaultPath("withdrawal-multiplier-decrement"), 1);
@@ -45,5 +46,10 @@ public class WithdrawalMultiplierDecrement extends IntegerConfigurationValue imp
     public String toStringAt(Bank bank) {
         return format(Optional.ofNullable(bank.getWithdrawalMultiplierDecrement()).orElseGet(this));
     }
-
+    
+    @Override
+    public AllowOverride getAllowOverride() {
+        return allowOverride;
+    }
+    
 }

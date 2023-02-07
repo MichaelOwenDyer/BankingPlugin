@@ -19,7 +19,7 @@ public class BankList extends PlayerSubCommand {
 
     @Override
     protected void execute(Player player, String[] args) {
-        new BankListGUI(plugin).open(player);
+        new BankListGUI(player, plugin).open();
     }
 
 }

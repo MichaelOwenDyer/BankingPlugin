@@ -1,10 +1,13 @@
 package com.monst.bankingplugin.configuration;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.type.ConfigurationValue;
 import com.monst.bankingplugin.configuration.values.*;
-import com.monst.pluginconfiguration.ConfigurationValue;
 
-import java.util.stream.Stream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public final class Configuration {
 
@@ -238,122 +241,79 @@ public final class Configuration {
 	 * The path to use for the database file.
 	 */
 	public final DatabaseFile databaseFile;
+	
+	private final Map<String, ConfigurationValue<?>> configurationValueMap = new HashMap<>();
 
 	public Configuration(BankingPlugin plugin) {
 		plugin.saveDefaultConfig();
-		accountCommandName = new AccountCommandName(plugin);
-		bankCommandName = new BankCommandName(plugin);
-		pluginCommandName = new PluginCommandName(plugin);
-		interestPayoutTimes = new InterestPayoutTimes(plugin);
-		interestRate = new InterestRate(plugin);
-		interestMultipliers = new InterestMultipliers(plugin);
-		allowedOfflinePayouts = new AllowedOfflinePayouts(plugin);
-		offlineMultiplierDecrement = new OfflineMultiplierDecrement(plugin);
-		withdrawalMultiplierDecrement = new WithdrawalMultiplierDecrement(plugin);
-		accountCreationPrice = new AccountCreationPrice(plugin);
-		reimburseAccountCreation = new ReimburseAccountCreation(plugin);
-		bankCreationPrice = new BankCreationPrice(plugin);
-		reimburseBankCreation = new ReimburseBankCreation(plugin);
-		minimumBalance = new MinimumBalance(plugin);
-		lowBalanceFee = new LowBalanceFee(plugin);
-		payOnLowBalance = new PayOnLowBalance(plugin);
-		playerBankAccountLimit = new PlayerBankAccountLimit(plugin);
-		defaultBankLimit = new DefaultBankLimit(plugin);
-		defaultAccountLimit = new DefaultAccountLimit(plugin);
-		minimumBankVolume = new MinimumBankVolume(plugin);
-		maximumBankVolume = new MaximumBankVolume(plugin);
-		stickyDefaults = new StickyDefaults(plugin);
-		allowSelfBanking = new AllowSelfBanking(plugin);
-		confirmOnRemove = new ConfirmOnRemove(plugin);
-		confirmOnRemoveAll = new ConfirmOnRemoveAll(plugin);
-		confirmOnTransfer = new ConfirmOnTransfer(plugin);
-		trustOnTransfer = new TrustOnTransfer(plugin);
-		accountInfoItem = new AccountInfoItem(plugin);
-		enableStartupUpdateCheck = new EnableStartupUpdateCheck(plugin);
-		downloadUpdatesAutomatically = new DownloadUpdatesAutomatically(plugin);
-		ignoreUpdatesContaining = new IgnoreUpdatesContaining(plugin);
-		enableDebugLog = new EnableDebugLog(plugin);
-		cleanupLogDays = new CleanupLogDays(plugin);
-		enableWorldGuardIntegration = new EnableWorldGuardIntegration(plugin);
-		enableGriefPreventionIntegration = new EnableGriefPreventionIntegration(plugin);
-		enableWorldEditIntegration = new EnableWorldEditIntegration(plugin);
-		worldGuardDefaultFlagValue = new WorldGuardDefaultFlagValue(plugin);
-		blacklist = new Blacklist(plugin);
-		bankRevenueExpression = new BankRevenueExpression(plugin);
-		disabledWorlds = new DisabledWorlds(plugin);
-		nameRegex = new NameRegex(plugin);
-		enableStartupMessage = new EnableStartupMessage(plugin);
-		languageFile = new LanguageFile(plugin);
-		databaseFile = new DatabaseFile(plugin);
+		accountCommandName = add(new AccountCommandName(plugin));
+		bankCommandName = add(new BankCommandName(plugin));
+		pluginCommandName = add(new PluginCommandName(plugin));
+		interestPayoutTimes = add(new InterestPayoutTimes(plugin));
+		interestRate = add(new InterestRate(plugin));
+		interestMultipliers = add(new InterestMultipliers(plugin));
+		allowedOfflinePayouts = add(new AllowedOfflinePayouts(plugin));
+		offlineMultiplierDecrement = add(new OfflineMultiplierDecrement(plugin));
+		withdrawalMultiplierDecrement = add(new WithdrawalMultiplierDecrement(plugin));
+		accountCreationPrice = add(new AccountCreationPrice(plugin));
+		reimburseAccountCreation = add(new ReimburseAccountCreation(plugin));
+		bankCreationPrice = add(new BankCreationPrice(plugin));
+		reimburseBankCreation = add(new ReimburseBankCreation(plugin));
+		minimumBalance = add(new MinimumBalance(plugin));
+		lowBalanceFee = add(new LowBalanceFee(plugin));
+		payOnLowBalance = add(new PayOnLowBalance(plugin));
+		playerBankAccountLimit = add(new PlayerBankAccountLimit(plugin));
+		defaultBankLimit = add(new DefaultBankLimit(plugin));
+		defaultAccountLimit = add(new DefaultAccountLimit(plugin));
+		minimumBankVolume = add(new MinimumBankVolume(plugin));
+		maximumBankVolume = add(new MaximumBankVolume(plugin));
+		stickyDefaults = add(new StickyDefaults(plugin));
+		allowSelfBanking = add(new AllowSelfBanking(plugin));
+		confirmOnRemove = add(new ConfirmOnRemove(plugin));
+		confirmOnRemoveAll = add(new ConfirmOnRemoveAll(plugin));
+		confirmOnTransfer = add(new ConfirmOnTransfer(plugin));
+		trustOnTransfer = add(new TrustOnTransfer(plugin));
+		accountInfoItem = add(new AccountInfoItem(plugin));
+		enableStartupUpdateCheck = add(new EnableStartupUpdateCheck(plugin));
+		downloadUpdatesAutomatically = add(new DownloadUpdatesAutomatically(plugin));
+		ignoreUpdatesContaining = add(new IgnoreUpdatesContaining(plugin));
+		enableDebugLog = add(new EnableDebugLog(plugin));
+		cleanupLogDays = add(new CleanupLogDays(plugin));
+		enableWorldGuardIntegration = add(new EnableWorldGuardIntegration(plugin));
+		enableGriefPreventionIntegration = add(new EnableGriefPreventionIntegration(plugin));
+		enableWorldEditIntegration = add(new EnableWorldEditIntegration(plugin));
+		worldGuardDefaultFlagValue = add(new WorldGuardDefaultFlagValue(plugin));
+		blacklist = add(new Blacklist(plugin));
+		bankRevenueExpression = add(new BankRevenueExpression(plugin));
+		disabledWorlds = add(new DisabledWorlds(plugin));
+		nameRegex = add(new NameRegex(plugin));
+		enableStartupMessage = add(new EnableStartupMessage(plugin));
+		languageFile = add(new LanguageFile(plugin));
+		databaseFile = add(new DatabaseFile(plugin));
 		plugin.saveConfig();
 	}
-
-	/**
-	 * Constructs an ordered stream of all configuration values, including allow-override values, in this class.
-	 * @return an ordered stream of all configuration values
-	 */
-	public Stream<ConfigurationValue<?>> stream() {
-		return Stream.of(
-				accountCommandName,
-				bankCommandName,
-				pluginCommandName,
-				interestPayoutTimes,
-				interestPayoutTimes.allowOverride,
-				interestRate,
-				interestRate.allowOverride,
-                interestMultipliers,
-				interestMultipliers.allowOverride,
-				allowedOfflinePayouts,
-				allowedOfflinePayouts.allowOverride,
-				offlineMultiplierDecrement,
-				offlineMultiplierDecrement.allowOverride,
-				withdrawalMultiplierDecrement,
-				withdrawalMultiplierDecrement.allowOverride,
-				accountCreationPrice,
-				accountCreationPrice.allowOverride,
-				reimburseAccountCreation,
-				reimburseAccountCreation.allowOverride,
-				bankCreationPrice,
-				reimburseBankCreation,
-				minimumBalance,
-				minimumBalance.allowOverride,
-				lowBalanceFee,
-				lowBalanceFee.allowOverride,
-				payOnLowBalance,
-				payOnLowBalance.allowOverride,
-				playerBankAccountLimit,
-				playerBankAccountLimit.allowOverride,
-				defaultBankLimit,
-				defaultAccountLimit,
-				minimumBankVolume,
-				maximumBankVolume,
-				stickyDefaults,
-				allowSelfBanking,
-				confirmOnRemove,
-				confirmOnRemoveAll,
-				confirmOnTransfer,
-				trustOnTransfer,
-				accountInfoItem,
-				enableStartupUpdateCheck,
-				downloadUpdatesAutomatically,
-				enableDebugLog,
-				cleanupLogDays,
-				enableWorldGuardIntegration,
-				enableGriefPreventionIntegration,
-				enableWorldEditIntegration,
-				worldGuardDefaultFlagValue,
-				blacklist,
-                bankRevenueExpression,
-				disabledWorlds,
-				nameRegex,
-				enableStartupMessage,
-				languageFile,
-				databaseFile
-		);
+	
+	private <C extends ConfigurationValue<?>> C add(C configurationValue) {
+		configurationValueMap.put(configurationValue.getPath(), configurationValue);
+		if (configurationValue instanceof BankPolicy<?>)
+			configurationValueMap.put(((BankPolicy<?>) configurationValue).getAllowOverride().getPath(), configurationValue);
+		return configurationValue;
 	}
-
+	
 	public void reload() {
-		stream().forEach(ConfigurationValue::reload);
+		values().forEach(ConfigurationValue::reload);
+	}
+	
+	public Collection<ConfigurationValue<?>> values() {
+		return configurationValueMap.values();
+	}
+	
+	public ConfigurationValue<?> findByPath(String path) {
+		return configurationValueMap.get(path);
+	}
+	
+	public Set<String> paths() {
+		return configurationValueMap.keySet();
 	}
 
 }

@@ -1,11 +1,10 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.type.ConfigurationCollection;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Utils;
-import com.monst.pluginconfiguration.ConfigurationCollection;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -15,11 +14,8 @@ import java.util.stream.Collectors;
 
 public class DisabledWorlds extends ConfigurationCollection<World, Set<World>> {
 
-    private final BankingPlugin plugin;
-
     public DisabledWorlds(BankingPlugin plugin) {
         super(plugin, "disabled-worlds", Collections.emptySet());
-        this.plugin = plugin;
     }
 
     @Override
@@ -29,8 +25,9 @@ public class DisabledWorlds extends ConfigurationCollection<World, Set<World>> {
 
     @Override
     public World parseElement(String input) throws ArgumentParseException {
-        return Optional.ofNullable(input).map(Bukkit::getWorld).orElseThrow(
-                () -> new ArgumentParseException(Message.NOT_A_WORLD.with(Placeholder.INPUT).as(input).translate(plugin)));
+        return Optional.ofNullable(input)
+                .map(Bukkit::getWorld)
+                .orElseThrow(() -> new ArgumentParseException(Message.NOT_A_WORLD.with(Placeholder.INPUT).as(input)));
     }
 
     @Override
@@ -39,7 +36,7 @@ public class DisabledWorlds extends ConfigurationCollection<World, Set<World>> {
     }
 
     @Override
-    protected Object convertToFileData(Set<World> worlds) {
+    protected Object convertToYamlType(Set<World> worlds) {
         return worlds.stream().map(World::getName).collect(Collectors.toList());
     }
 
@@ -49,7 +46,7 @@ public class DisabledWorlds extends ConfigurationCollection<World, Set<World>> {
         return Bukkit.getWorlds().stream()
                 .map(World::getName)
                 .filter(name -> !argsList.contains(name))
-                .filter(name -> Utils.containsIgnoreCase(name, args[args.length - 1]))
+                .filter(name -> name.toLowerCase().contains(args[args.length - 1]))
                 .collect(Collectors.toList());
     }
 

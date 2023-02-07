@@ -37,10 +37,6 @@ public class AccountBalanceListener implements Listener {
 
 	@EventHandler
 	public void onAccountInventoryClose(InventoryCloseEvent e) {
-		// Some inventory was closed
-		if (!(e.getPlayer() instanceof Player))
-			return;
-		// Some inventory was closed by a player
 		Inventory inv = e.getInventory();
 		if (inv.getType() != InventoryType.CHEST)
 			return;
@@ -48,7 +44,7 @@ public class AccountBalanceListener implements Listener {
 		if (loc == null)
 			return;
 		// The inventory was of a chest
-		Account account = plugin.getAccountService().findAt(loc.getBlock());
+		Account account = plugin.getAccountService().findAtChest(loc.getBlock());
 		if (account == null)
 			return;
 		// The chest was an account
@@ -59,12 +55,13 @@ public class AccountBalanceListener implements Listener {
 	private void evaluateAccountTransaction(Player executor, Account account) {
 
 		BigDecimal oldBalance = account.getBalance();
-		plugin.getAccountService().appraise(account);
-		BigDecimal newBalance = account.getBalance();
+		BigDecimal newBalance = plugin.getWorths().appraise(account);
 		BigDecimal difference = newBalance.subtract(oldBalance);
 
 		if (difference.signum() == 0)
 			return;
+		
+		account.setBalance(newBalance);
 
 		plugin.debugf("Appraised balance of account #d: %s, difference to previous: %s",
 				account.getID(), newBalance, difference);
@@ -90,10 +87,10 @@ public class AccountBalanceListener implements Listener {
 		new AccountTransactionEvent(executor, account, difference, newBalance).fire();
 
 		if (account.getOwner().isOnline())
-			plugin.getLastSeenService().updateLastSeen(account.getOwner());
+			plugin.getLastSeenService().updateLastSeenTime(account.getOwner());
 
 		plugin.getAccountTransactionService().save(
-				new AccountTransaction(account, account.getBank(), executor, newBalance, oldBalance, difference));
+				new AccountTransaction(account, account.getBank(), executor, oldBalance, difference, newBalance));
 	}
 
 }

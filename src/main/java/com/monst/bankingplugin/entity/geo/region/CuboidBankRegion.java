@@ -1,98 +1,93 @@
 package com.monst.bankingplugin.entity.geo.region;
 
-import com.monst.bankingplugin.entity.geo.Vector2;
-import com.monst.bankingplugin.entity.geo.Vector3;
-import jakarta.persistence.*;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
+import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * This class represents a region of space in the shape of a rectangular prism. It is defined by a {@link World} and
- * a minimum and a maximum {@link Vector3} point in space.
+ * a minimum and a maximum point in space.
  */
-@Entity
-@DiscriminatorValue(value = "Cuboid")
 public class CuboidBankRegion extends BankRegion {
 
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "x", column = @Column(name = "x1")),
-			@AttributeOverride(name = "y", column = @Column(name = "y1")),
-			@AttributeOverride(name = "z", column = @Column(name = "z1"))
-	})
-	private Vector3 min;
-
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "x", column = @Column(name = "x2")),
-			@AttributeOverride(name = "y", column = @Column(name = "y2")),
-			@AttributeOverride(name = "z", column = @Column(name = "z2"))
-	})
-	private Vector3 max;
-
-	public CuboidBankRegion() {}
-
+	private final int minX;
+	private final int minY;
+	private final int minZ;
+	private final int maxX;
+	private final int maxY;
+	private final int maxZ;
+	
 	/**
 	 * @param world the world the region is in
-	 * @param v1 the first corner bound (any combination of upper/lower x, y, z values)
-	 * @param v2 the other corner bound
+	 * @param x1 the minimum x-coordinate of the region
+	 * @param y1 the minimum y-coordinate of the region
+	 * @param z1 the minimum z-coordinate of the region
+	 * @param x2 the maximum x-coordinate of the region
+	 * @param y2 the maximum y-coordinate of the region
+	 * @param z2 the maximum z-coordinate of the region
+	 *
 	 */
-	public CuboidBankRegion(World world, Vector3 v1, Vector3 v2) {
+	public CuboidBankRegion(World world, int x1, int y1, int z1, int x2, int y2, int z2) {
 		super(world);
-		this.min = Vector3.min(v1, v2);
-		this.max = Vector3.max(v1, v2);
+		this.minX = Math.min(x1, x2);
+		this.minY = Math.min(y1, y2);
+		this.minZ = Math.min(z1, z2);
+		this.maxX = Math.max(x1, x2);
+		this.maxY = Math.max(y1, y2);
+		this.maxZ = Math.max(z1, z2);
 	}
 
 	@Override
-	public Vector3 getCenterPoint() {
-		int centerX = (getMaxX() + getMinX()) / 2;
-		int centerY = (getMaxY() + getMinY()) / 2;
-		int centerZ = (getMaxZ() + getMinZ()) / 2;
-		return new Vector3(centerX, centerY, centerZ);
+	public Block getCenterBlock() {
+		int centerX = (maxX + minX) / 2;
+		int centerY = (maxY + minY) / 2;
+		int centerZ = (maxZ + minZ) / 2;
+		return world.getBlockAt(centerX, centerY, centerZ);
 	}
-
+	
 	@Override
-	public int getMinX() { return min.getX(); }
+	public int getMinX() {
+		return minX;
+	}
+	
 	@Override
-	public int getMaxX() { return max.getX(); }
+	public int getMinY() {
+		return minY;
+	}
+	
 	@Override
-	public int getMinY() { return min.getY(); }
+	public int getMinZ() {
+		return minZ;
+	}
+	
 	@Override
-	public int getMaxY() { return max.getY(); }
+	public int getMaxX() {
+		return maxX;
+	}
+	
 	@Override
-	public int getMinZ() { return min.getZ(); }
+	public int getMaxY() {
+		return maxY;
+	}
+	
 	@Override
-	public int getMaxZ() { return max.getZ(); }
-
+	public int getMaxZ() {
+		return maxZ;
+	}
+	
 	@Override
 	public long getVolume() {
 		return (long) getLength() * getWidth() * getHeight();
 	}
-
+	
 	@Override
-	public boolean overlaps(BankRegion region) {
-		if (isDisjunct(region))
-			return false;
-		Set<Vector2> blocks = getFootprint();
-		return region.getFootprint().stream().anyMatch(blocks::contains);
+	Shape getShape() {
+		return new Rectangle(minX, minZ, getWidth(), getLength());
 	}
-
-	@Override
-	public Set<Vector2> getFootprint() {
-		Set<Vector2> blocks = new HashSet<>();
-		int maxX = getMaxX();
-		int maxZ = getMaxZ();
-		for (int x = getMinX(); x <= maxX; x++)
-			for (int z = getMinZ(); z <= maxZ; z++)
-				blocks.add(new Vector2(x, z));
-		return blocks;
-	}
-
+	
 	@Override
 	public List<Block> getCorners() {
 		List<Block> vertices = new ArrayList<>();

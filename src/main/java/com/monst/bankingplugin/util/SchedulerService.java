@@ -3,7 +3,7 @@ package com.monst.bankingplugin.util;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.control.InterestEvent;
-import com.monst.bankingplugin.exception.CancelledException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import org.bukkit.Bukkit;
 
 import java.time.*;
@@ -13,13 +13,12 @@ import java.util.stream.Collectors;
 public class SchedulerService {
 
     private final BankingPlugin plugin;
-    private final Set<LocalTime> currentPayoutTimes;
-    private final Map<LocalTime, Integer> taskIds;
+    private final Map<LocalTime, Integer> payoutTimeTaskIDs;
 
     public SchedulerService(BankingPlugin plugin) {
         this.plugin = plugin;
-        this.currentPayoutTimes = new HashSet<>();
-        this.taskIds = new HashMap<>();
+        this.payoutTimeTaskIDs = new HashMap<>();
+        scheduleAll();
     }
 
     private Set<LocalTime> queryAllDistinctTimes() {
@@ -31,17 +30,16 @@ public class SchedulerService {
 
     public void scheduleAll() {
         plugin.debug("Scheduling all interest payments...");
-        Set<LocalTime> newTimes = queryAllDistinctTimes();
-        for (Iterator<LocalTime> iterator = currentPayoutTimes.iterator(); iterator.hasNext();) {
+        Set<LocalTime> currentDistinctTimes = queryAllDistinctTimes();
+        for (Iterator<LocalTime> iterator = payoutTimeTaskIDs.keySet().iterator(); iterator.hasNext();) {
             LocalTime time = iterator.next();
-            if (!newTimes.contains(time)) {
+            if (!currentDistinctTimes.contains(time)) {
                 unschedule(time);
                 iterator.remove();
             }
         }
-        for (LocalTime newTime : newTimes)
-            if (currentPayoutTimes.add(newTime))
-                taskIds.put(newTime, schedule(newTime));
+        for (LocalTime time : currentDistinctTimes)
+            payoutTimeTaskIDs.computeIfAbsent(time, this::schedule);
     }
 
     private int schedule(LocalTime time) {
@@ -60,21 +58,22 @@ public class SchedulerService {
 
     private void unschedule(LocalTime time) {
         plugin.debugf("Unscheduling interest payment at %s...", time);
-        Bukkit.getScheduler().cancelTask(taskIds.get(time));
-        taskIds.remove(time);
+        Integer taskID = payoutTimeTaskIDs.remove(time);
+        if (taskID != null)
+            Bukkit.getScheduler().cancelTask(taskID);
     }
 
     public void unscheduleAll() {
         plugin.debug("Unscheduling all interest payments...");
-        taskIds.values().forEach(Bukkit.getScheduler()::cancelTask);
-        taskIds.clear();
+        payoutTimeTaskIDs.values().forEach(Bukkit.getScheduler()::cancelTask);
+        payoutTimeTaskIDs.clear();
     }
 
     private void throwEvent(LocalTime time) {
         plugin.debugf("Triggering scheduled InterestEvent at %s...", time);
         try {
             new InterestEvent(Bukkit.getConsoleSender(), findBanksAtTime(time)).fire();
-        } catch (CancelledException e) {
+        } catch (EventCancelledException e) {
             plugin.debug("InterestEvent cancelled");
         }
     }

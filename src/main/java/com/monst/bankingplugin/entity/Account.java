@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.entity;
 
-import com.monst.bankingplugin.converter.OfflinePlayerConverter;
 import com.monst.bankingplugin.entity.geo.location.AccountLocation;
-import jakarta.persistence.*;
+import com.monst.bankingplugin.util.Observable;
+import com.monst.bankingplugin.util.Observer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -14,54 +14,52 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
 import java.math.BigDecimal;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-@Entity
-public class Account extends AbstractEntity implements Ownable {
-
-    @ManyToOne(optional = false, cascade = CascadeType.MERGE)
+public class Account extends Entity implements Ownable, Observable {
+    
     private Bank bank;
-    @Column(nullable = false)
-    @Convert(converter = OfflinePlayerConverter.class)
     private OfflinePlayer owner;
-    @ElementCollection
-    @CollectionTable(name = "co_owns_account",
-            joinColumns = @JoinColumn(name = "account_id", referencedColumnName = "id")
-    )
-    @Column(name = "co_owner_id")
-    @Convert(converter = OfflinePlayerConverter.class)
-    private Set<OfflinePlayer> co_owners;
-    @OneToOne(optional = false, cascade = CascadeType.ALL)
+    private final Set<OfflinePlayer> co_owners = new HashSet<>();
     private AccountLocation location;
-    @Column(nullable = false, precision = 16, scale = 2)
-    private BigDecimal balance; // Persist balance so that it does not have to be appraised constantly during runtime
-    @Column(nullable = false, precision = 16, scale = 2)
-    private BigDecimal previousBalance;
+    private BigDecimal balance = BigDecimal.ZERO;
+    private BigDecimal previousBalance = BigDecimal.ZERO;
     private int multiplierStage;
     private int remainingOfflinePayouts;
     private String customName;
-
-    public Account() {}
-
-    public Account(OfflinePlayer owner, AccountLocation loc) {
-        this.generateID();
+    
+    public Account(Bank bank, OfflinePlayer owner, AccountLocation loc) {
+        this.bank = bank;
         this.owner = owner;
-        this.co_owners = new HashSet<>();
         this.location = loc;
-        this.balance = BigDecimal.ZERO;
-        this.previousBalance = BigDecimal.ZERO;
-        this.multiplierStage = 0;
     }
-
+    
+    public Account(int id, Bank bank, OfflinePlayer owner, Set<OfflinePlayer> coOwners, AccountLocation location,
+                   BigDecimal balance, BigDecimal previousBalance, int multiplierStage, int remainingOfflinePayouts,
+                   String customName) {
+        super(id);
+        this.bank = bank;
+        this.owner = owner;
+        this.co_owners.addAll(coOwners);
+        this.location = location;
+        this.balance = balance;
+        this.previousBalance = previousBalance;
+        this.multiplierStage = multiplierStage;
+        this.remainingOfflinePayouts = remainingOfflinePayouts;
+        this.customName = customName;
+    }
+    
     public Bank getBank() {
         return bank;
     }
 
     public void setBank(Bank bank) {
+        if (this.bank.equals(bank))
+            return;
+        this.bank.removeAccount(this);
         this.bank = bank;
+        this.bank.addAccount(this);
+        notifyObservers();
     }
 
     public BigDecimal getBalance() {
@@ -70,6 +68,7 @@ public class Account extends AbstractEntity implements Ownable {
 
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
+        notifyObservers();
     }
 
     public BigDecimal getPreviousBalance() {
@@ -86,11 +85,17 @@ public class Account extends AbstractEntity implements Ownable {
 
     public void setLocation(AccountLocation location) {
         this.location = location;
+        notifyObservers();
     }
 
     public void setCustomName(String customName) {
         this.customName = customName;
         updateChestTitle();
+        // Would notify observers here, but cannot update the name of an inventory
+    }
+    
+    public String getCustomName() {
+        return customName;
     }
 
     public String getName() {
@@ -108,13 +113,13 @@ public class Account extends AbstractEntity implements Ownable {
     }
 
     private void setChestTitle(String name) {
-        InventoryHolder ih = location.findChest().orElse(null);
-        if (ih == null)
+        Optional<InventoryHolder> chest = location.findChest();
+        if (!chest.isPresent())
             return;
         if (isDoubleChest()) {
-            DoubleChest dc = (DoubleChest) ih;
-            Chest left = (Chest) dc.getLeftSide();
-            Chest right = (Chest) dc.getRightSide();
+            DoubleChest doubleChest = (DoubleChest) chest.get();
+            Chest left = (Chest) doubleChest.getLeftSide();
+            Chest right = (Chest) doubleChest.getRightSide();
             if (left != null) {
                 left.setCustomName(name);
                 left.update();
@@ -124,14 +129,14 @@ public class Account extends AbstractEntity implements Ownable {
                 right.update();
             }
         } else {
-            Chest chest = (Chest) ih;
-            chest.setCustomName(name);
-            chest.update();
+            Chest singleChest = (Chest) chest.get();
+            singleChest.setCustomName(name);
+            singleChest.update();
         }
     }
 
-    public EnumMap<Material, Integer> getContents() {
-        EnumMap<Material, Integer> contents = new EnumMap<>(Material.class);
+    public Map<Material, Integer> getContents() {
+        Map<Material, Integer> contents = new EnumMap<>(Material.class);
         InventoryHolder ih = location.findChest().orElse(null);
         if (ih == null)
             return contents;
@@ -139,7 +144,7 @@ public class Account extends AbstractEntity implements Ownable {
             if (item == null) // Individual items may be null
                 continue;
             contents.putIfAbsent(item.getType(), 0);
-            contents.put(item.getType(), contents.get(item.getType()) + item.getAmount());
+            contents.computeIfPresent(item.getType(), (type, current) -> current + item.getAmount());
             if (item.getItemMeta() instanceof BlockStateMeta) {
                 BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
                 if (im.getBlockState() instanceof ShulkerBox) {
@@ -148,7 +153,7 @@ public class Account extends AbstractEntity implements Ownable {
                         if (innerItem == null)
                             continue;
                         contents.putIfAbsent(innerItem.getType(), 0);
-                        contents.put(innerItem.getType(), contents.get(innerItem.getType()) + innerItem.getAmount());
+                        contents.computeIfPresent(innerItem.getType(), (type, current) -> current + innerItem.getAmount());
                     }
                 }
             }
@@ -170,10 +175,12 @@ public class Account extends AbstractEntity implements Ownable {
      */
     public void setMultiplierStage(int multiplierStage) {
         this.multiplierStage = Math.max(0, multiplierStage);
+        notifyObservers();
     }
 
     public void incrementMultiplierByOne(int max) {
         multiplierStage = Math.min(multiplierStage + 1, max);
+        notifyObservers();
     }
 
     public void decrementMultiplier(int decrement) {
@@ -181,6 +188,7 @@ public class Account extends AbstractEntity implements Ownable {
             multiplierStage = Math.max(0, multiplierStage - decrement);
         else if (decrement < 0)
             multiplierStage = 0;
+        notifyObservers();
     }
 
     public int getInterestMultiplier(List<Integer> multipliers) {
@@ -208,6 +216,7 @@ public class Account extends AbstractEntity implements Ownable {
      */
     public void setRemainingOfflinePayouts(int remaining) {
         remainingOfflinePayouts = remaining;
+        notifyObservers();
     }
 
     public String getCoordinates() {
@@ -235,17 +244,20 @@ public class Account extends AbstractEntity implements Ownable {
     public void setOwner(OfflinePlayer newOwner) {
         owner = newOwner;
         untrustPlayer(newOwner); // Remove from co-owners if new owner was a co-owner
+        notifyObservers();
     }
 
     @Override
     public Set<OfflinePlayer> getCoOwners() {
         return new HashSet<>(co_owners);
     }
+    
     @Override
     public void trustPlayer(OfflinePlayer player) {
         if (player == null)
             return;
         getCoOwners().add(player);
+        notifyObservers();
     }
 
     @Override
@@ -253,18 +265,27 @@ public class Account extends AbstractEntity implements Ownable {
         if (player == null)
             return;
         getCoOwners().remove(player);
+        notifyObservers();
+    }
+    
+    private final Set<Observer> observers = new HashSet<>();
+    @Override
+    public Set<Observer> getObservers() {
+        return observers;
     }
 
     @Override
     public String toString() {
         return "Account{" +
-                "id=" + getID() +
-                ", bank=" + bank +
-                ", owner=" + owner +
+                "id=" + id +
+                ", bank=" + bank.getName() +
+                ", owner=" + owner.getName() +
                 ", location=" + location +
                 ", balance=" + balance +
                 ", customName='" + customName + '\'' +
+                ", multiplierStage=" + multiplierStage +
+                ", remainingOfflinePayouts=" + remainingOfflinePayouts +
                 '}';
     }
-
+    
 }

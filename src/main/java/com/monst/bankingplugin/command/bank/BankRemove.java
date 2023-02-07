@@ -1,18 +1,19 @@
 package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.bank.BankRemoveEvent;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.external.BankVisualization;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,7 @@ public class BankRemove extends SubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.BANK_CREATE;
+        return Permissions.BANK_CREATE;
     }
 
     @Override
@@ -46,27 +47,27 @@ public class BankRemove extends SubCommand {
     }
 
     @Override
-    protected void execute(CommandSender sender, String[] args) throws ExecutionException, CancelledException {
+    protected void execute(CommandSender sender, String[] args) throws CommandExecutionException, EventCancelledException {
         Bank bank;
         if (args.length == 0 && sender instanceof Player) {
             bank = plugin.getBankService().findContaining((Player) sender);
             if (bank == null)
-                throw new ExecutionException(plugin, Message.MUST_STAND_IN_OR_SPECIFY_BANK);
+                throw err(Message.MUST_STAND_IN_OR_SPECIFY_BANK);
         } else {
             bank = plugin.getBankService().findByName(args[0]);
             if (bank == null)
-                throw new ExecutionException(plugin, Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
+                throw err(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
         }
 
         if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender))
-                || Permission.BANK_REMOVE_OTHER.ownedBy(sender))) {
+                || Permissions.BANK_REMOVE_OTHER.ownedBy(sender))) {
             if (sender instanceof Player && bank.isTrusted(((Player) sender)))
-                throw new ExecutionException(plugin, Message.MUST_BE_OWNER);
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_BANK_REMOVE_OTHER);
+                throw err(Message.MUST_BE_OWNER);
+            throw err(Message.NO_PERMISSION_BANK_REMOVE_OTHER);
         }
 
-        if (bank.isAdminBank() && Permission.BANK_REMOVE_ADMIN.notOwnedBy(sender))
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_BANK_REMOVE_ADMIN);
+        if (bank.isAdminBank() && Permissions.BANK_REMOVE_ADMIN.notOwnedBy(sender))
+            throw err(Message.NO_PERMISSION_BANK_REMOVE_ADMIN);
 
         if (sender instanceof Player) {
             Player executor = (Player) sender;
@@ -108,10 +109,11 @@ public class BankRemove extends SubCommand {
         if (args.length != 1)
             return Collections.emptyList();
         return plugin.getBankService()
-                .findByPlayerAllowedToModify(player, Permission.BANK_REMOVE_OTHER, Permission.BANK_REMOVE_ADMIN, true)
+                .findNamesByPlayerAllowedToModify(player,
+                        Permissions.BANK_REMOVE_OTHER.ownedBy(player),
+                        Permissions.BANK_REMOVE_ADMIN.ownedBy(player), true)
                 .stream()
-                .map(Bank::getName)
-                .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                 .sorted()
                 .collect(Collectors.toList());
     }

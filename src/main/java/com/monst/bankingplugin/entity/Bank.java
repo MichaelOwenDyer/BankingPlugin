@@ -1,10 +1,8 @@
 package com.monst.bankingplugin.entity;
 
-import com.monst.bankingplugin.converter.InterestPayoutTimesConverter;
-import com.monst.bankingplugin.converter.MultipliersConverter;
-import com.monst.bankingplugin.converter.OfflinePlayerConverter;
 import com.monst.bankingplugin.entity.geo.region.BankRegion;
-import jakarta.persistence.*;
+import com.monst.bankingplugin.util.Observable;
+import com.monst.bankingplugin.util.Observer;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -19,60 +17,58 @@ import java.util.stream.Collectors;
  * Represents a bank.
  * A bank is a collection of {@link Account}s.
  */
-@Entity
-public class Bank extends AbstractEntity implements Ownable {
-
-    @OneToMany(mappedBy = "bank")
-    private Set<Account> accounts;
-    @Convert(converter = OfflinePlayerConverter.class)
-    private OfflinePlayer owner;
-    @ElementCollection
-    @CollectionTable(name = "co_owns_bank",
-            joinColumns = @JoinColumn(name = "bank_id", referencedColumnName = "id")
-    )
-    @Column(name = "co_owner_id")
-    @Convert(converter = OfflinePlayerConverter.class)
-    private Set<OfflinePlayer> co_owners;
-    @OneToOne(cascade = CascadeType.ALL, optional = false)
-    private BankRegion region;
-    @Column(nullable = false, unique = true)
+public class Bank extends Entity implements Ownable, Observable {
+    
+    private enum Policy {
+        INTEREST_RATE,
+        ACCOUNT_CREATION_PRICE,
+        MINIMUM_BALANCE,
+        LOW_BALANCE_FEE,
+        ALLOWED_OFFLINE_PAYOUTS,
+        OFFLINE_MULTIPLIER_DECREMENT,
+        WITHDRAWAL_MULTIPLIER_DECREMENT,
+        PLAYER_BANK_ACCOUNT_LIMIT,
+        REIMBURSE_ACCOUNT_CREATION,
+        PAY_ON_LOW_BALANCE,
+        INTEREST_MULTIPLIERS,
+        INTEREST_PAYOUT_TIMES
+    }
+    
     private String name;
-
-    private Boolean reimburseAccountCreation;
-    private Boolean payOnLowBalance;
-    @Column(precision = 8, scale = 4)
-    private BigDecimal interestRate;
-    @Column(precision = 16, scale = 2)
-    private BigDecimal accountCreationPrice;
-    @Column(precision = 16, scale = 2)
-    private BigDecimal minimumBalance;
-    @Column(precision = 16, scale = 2)
-    private BigDecimal lowBalanceFee;
-    private Integer allowedOfflinePayouts;
-    private Integer offlineMultiplierDecrement;
-    private Integer withdrawalMultiplierDecrement;
-    private Integer playerBankAccountLimit;
-    @Convert(converter = MultipliersConverter.class)
-    private List<Integer> interestMultipliers;
-    @Convert(converter = InterestPayoutTimesConverter.class)
-    private Set<LocalTime> interestPayoutTimes;
-
-    public Bank() {}
-
-    /**
-     * @param name the name of the bank
-     * @param owner the owner of the bank
-     * @param region the {@link BankRegion} representing the bounds of the bank
-     */
-    public Bank(String name, OfflinePlayer owner, BankRegion region) {
-
-        this.generateID();
+    private OfflinePlayer owner;
+    private BankRegion region;
+    private final Set<OfflinePlayer> co_owners = new HashSet<>();
+    private final Set<Account> accounts = new HashSet<>();
+    private final Map<Policy, Object> policies = new EnumMap<>(Policy.class);
+    
+    public Bank(int id, String name, OfflinePlayer owner, BankRegion region, Set<OfflinePlayer> coOwners,
+                BigDecimal interestRate, BigDecimal accountCreationPrice, BigDecimal minimumBalance, BigDecimal lowBalanceFee,
+                Integer allowedOfflinePayouts, Integer offlineMultiplierDecrement, Integer withdrawalMultiplierDecrement,
+                Integer playerBankAccountLimit, Boolean reimburseAccountCreation, Boolean payOnLowBalance,
+                List<Integer> interestMultipliers, Set<LocalTime> interestPayoutTimes) {
+        super(id);
         this.name = name;
         this.owner = owner;
-        this.co_owners = new HashSet<>();
         this.region = region;
-        this.accounts = new HashSet<>();
-
+        this.co_owners.addAll(coOwners);
+        setInterestRate(interestRate);
+        setAccountCreationPrice(accountCreationPrice);
+        setMinimumBalance(minimumBalance);
+        setLowBalanceFee(lowBalanceFee);
+        setAllowedOfflinePayouts(allowedOfflinePayouts);
+        setOfflineMultiplierDecrement(offlineMultiplierDecrement);
+        setWithdrawalMultiplierDecrement(withdrawalMultiplierDecrement);
+        setPlayerBankAccountLimit(playerBankAccountLimit);
+        setReimburseAccountCreation(reimburseAccountCreation);
+        setPayOnLowBalance(payOnLowBalance);
+        setInterestMultipliers(interestMultipliers);
+        setInterestPayoutTimes(interestPayoutTimes);
+    }
+    
+    public Bank(String name, OfflinePlayer owner, BankRegion region) {
+        this.name = name;
+        this.owner = owner;
+        this.region = region;
     }
 
     public Set<Account> getAccounts() {
@@ -84,16 +80,13 @@ public class Bank extends AbstractEntity implements Ownable {
     }
 
     public void addAccount(Account account) {
-        if (account.getBank() != null)
-            throw new IllegalStateException("Must remove account from original bank before adding it to a new one!");
         accounts.add(account);
-        account.setBank(this);
+        notifyObservers();
     }
 
     public void removeAccount(Account account) {
-        if (!accounts.remove(account))
-            throw new IllegalStateException("Account is not located at this bank!");
-        account.setBank(null);
+        accounts.remove(account);
+        notifyObservers();
     }
 
     /**
@@ -128,10 +121,9 @@ public class Bank extends AbstractEntity implements Ownable {
      * and account co-owners at this bank.
      */
     public Set<OfflinePlayer> getCustomers() {
-        Set<OfflinePlayer> customers = new HashSet<>();
-        for (Account account : accounts)
-            customers.addAll(account.getTrustedPlayers());
-        return customers;
+        return accounts.stream()
+                .flatMap(account -> account.getTrustedPlayers().stream())
+                .collect(Collectors.toSet());
     }
 
     public Set<CommandSender> getMailingList(CommandSender sender) {
@@ -152,102 +144,110 @@ public class Bank extends AbstractEntity implements Ownable {
 
     public void setRegion(BankRegion region) {
         this.region = region;
+        notifyObservers();
     }
 
-    public Boolean getReimburseAccountCreation() {
-        return reimburseAccountCreation;
+    public Boolean reimbursesAccountCreation() {
+        return (Boolean) policies.get(Policy.REIMBURSE_ACCOUNT_CREATION);
     }
 
     public void setReimburseAccountCreation(Boolean reimburseAccountCreation) {
-        this.reimburseAccountCreation = reimburseAccountCreation;
+        set(Policy.REIMBURSE_ACCOUNT_CREATION, reimburseAccountCreation);
     }
 
-    public Boolean getPayOnLowBalance() {
-        return payOnLowBalance;
+    public Boolean paysOnLowBalance() {
+        return (Boolean) policies.get(Policy.PAY_ON_LOW_BALANCE);
     }
 
     public void setPayOnLowBalance(Boolean payOnLowBalance) {
-        this.payOnLowBalance = payOnLowBalance;
+        set(Policy.PAY_ON_LOW_BALANCE, payOnLowBalance);
     }
 
     public BigDecimal getInterestRate() {
-        return interestRate;
+        return (BigDecimal) policies.get(Policy.INTEREST_RATE);
     }
 
     public void setInterestRate(BigDecimal interestRate) {
-        this.interestRate = interestRate;
+        set(Policy.INTEREST_RATE, interestRate);
     }
 
     public BigDecimal getAccountCreationPrice() {
-        return accountCreationPrice;
+        return (BigDecimal) policies.get(Policy.ACCOUNT_CREATION_PRICE);
     }
 
     public void setAccountCreationPrice(BigDecimal accountCreationPrice) {
-        this.accountCreationPrice = accountCreationPrice;
+        set(Policy.ACCOUNT_CREATION_PRICE, accountCreationPrice);
     }
 
     public BigDecimal getMinimumBalance() {
-        return minimumBalance;
+        return (BigDecimal) policies.get(Policy.MINIMUM_BALANCE);
     }
 
     public void setMinimumBalance(BigDecimal minimumBalance) {
-        this.minimumBalance = minimumBalance;
+        set(Policy.MINIMUM_BALANCE, minimumBalance);
     }
 
     public BigDecimal getLowBalanceFee() {
-        return lowBalanceFee;
+        return (BigDecimal) policies.get(Policy.LOW_BALANCE_FEE);
     }
 
     public void setLowBalanceFee(BigDecimal lowBalanceFee) {
-        this.lowBalanceFee = lowBalanceFee;
+        set(Policy.LOW_BALANCE_FEE, lowBalanceFee);
     }
 
     public Integer getAllowedOfflinePayouts() {
-        return allowedOfflinePayouts;
+        return (Integer) policies.get(Policy.ALLOWED_OFFLINE_PAYOUTS);
     }
 
     public void setAllowedOfflinePayouts(Integer allowedOfflinePayouts) {
-        this.allowedOfflinePayouts = allowedOfflinePayouts;
+        set(Policy.ALLOWED_OFFLINE_PAYOUTS, allowedOfflinePayouts);
     }
 
     public Integer getOfflineMultiplierDecrement() {
-        return offlineMultiplierDecrement;
+        return (Integer) policies.get(Policy.OFFLINE_MULTIPLIER_DECREMENT);
     }
 
     public void setOfflineMultiplierDecrement(Integer offlineMultiplierDecrement) {
-        this.offlineMultiplierDecrement = offlineMultiplierDecrement;
+        set(Policy.OFFLINE_MULTIPLIER_DECREMENT, offlineMultiplierDecrement);
     }
 
     public Integer getWithdrawalMultiplierDecrement() {
-        return withdrawalMultiplierDecrement;
+        return (Integer) policies.get(Policy.WITHDRAWAL_MULTIPLIER_DECREMENT);
     }
 
     public void setWithdrawalMultiplierDecrement(Integer withdrawalMultiplierDecrement) {
-        this.withdrawalMultiplierDecrement = withdrawalMultiplierDecrement;
+        set(Policy.WITHDRAWAL_MULTIPLIER_DECREMENT, withdrawalMultiplierDecrement);
     }
 
     public Integer getPlayerBankAccountLimit() {
-        return playerBankAccountLimit;
+        return (Integer) policies.get(Policy.PLAYER_BANK_ACCOUNT_LIMIT);
     }
 
     public void setPlayerBankAccountLimit(Integer playerBankAccountLimit) {
-        this.playerBankAccountLimit = playerBankAccountLimit;
+        set(Policy.PLAYER_BANK_ACCOUNT_LIMIT, playerBankAccountLimit);
     }
 
+    @SuppressWarnings("unchecked")
     public List<Integer> getInterestMultipliers() {
-        return interestMultipliers;
+        return (List<Integer>) policies.get(Policy.INTEREST_MULTIPLIERS);
     }
 
     public void setInterestMultipliers(List<Integer> interestMultipliers) {
-        this.interestMultipliers = interestMultipliers;
+        set(Policy.INTEREST_MULTIPLIERS, interestMultipliers);
     }
 
+    @SuppressWarnings("unchecked")
     public Set<LocalTime> getInterestPayoutTimes() {
-        return interestPayoutTimes;
+        return (Set<LocalTime>) policies.get(Policy.INTEREST_PAYOUT_TIMES);
     }
 
     public void setInterestPayoutTimes(Set<LocalTime> interestPayoutTimes) {
-        this.interestPayoutTimes = interestPayoutTimes;
+        set(Policy.INTEREST_PAYOUT_TIMES, interestPayoutTimes);
+    }
+    
+    private void set(Policy policy, Object value) {
+        policies.put(policy, value);
+        notifyObservers();
     }
 
     public String getName() {
@@ -256,6 +256,7 @@ public class Bank extends AbstractEntity implements Ownable {
 
     public void setName(String name) {
         this.name = name;
+        notifyObservers();
     }
 
     public String getColorizedName() {
@@ -271,6 +272,7 @@ public class Bank extends AbstractEntity implements Ownable {
     public void setOwner(OfflinePlayer newOwner) {
         owner = newOwner;
         untrustPlayer(newOwner); // Remove from co-owners if new owner was a co-owner
+        notifyObservers();
     }
 
     @Override
@@ -283,6 +285,7 @@ public class Bank extends AbstractEntity implements Ownable {
         if (player == null)
             return;
         getCoOwners().add(player);
+        notifyObservers();
     }
 
     @Override
@@ -290,6 +293,7 @@ public class Bank extends AbstractEntity implements Ownable {
         if (player == null)
             return;
         getCoOwners().remove(player);
+        notifyObservers();
     }
 
     /**
@@ -328,14 +332,23 @@ public class Bank extends AbstractEntity implements Ownable {
         BigDecimal bottomSum = totalValue.multiply(BigDecimal.valueOf(balances.length));
         return topSum.divide(bottomSum, RoundingMode.HALF_EVEN);
     }
+    
+    private final Set<Observer> observers = new HashSet<>();
+    @Override
+    public Set<Observer> getObservers() {
+        return observers;
+    }
 
     @Override
     public String toString() {
         return "Bank{" +
-                "id=" + getID() +
-                ", owner=" + owner +
+                "id=" + id +
                 ", name='" + name + '\'' +
+                ", owner=" + (owner == null ? "none" : owner.getName()) +
+                ", region=" + region +
+                ", accounts=" + accounts +
+                ", policies=" + policies +
                 '}';
     }
-
+    
 }

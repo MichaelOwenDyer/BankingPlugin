@@ -1,24 +1,20 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.type.MonetaryConfigurationValue;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
 public class LowBalanceFee extends MonetaryConfigurationValue implements BankPolicy<BigDecimal> {
 
-    public final AllowOverride allowOverride;
+    private final AllowOverride allowOverride;
 
     public LowBalanceFee(BankingPlugin plugin) {
         super(plugin, BankPolicy.defaultPath("low-balance-fee"), BigDecimal.valueOf(1000));
         this.allowOverride = new AllowOverride(plugin, "low-balance-fee");
-    }
-
-    @Override
-    public String format(BigDecimal value) {
-        return plugin.getEconomy().format(value.doubleValue());
     }
 
     @Override
@@ -45,5 +41,10 @@ public class LowBalanceFee extends MonetaryConfigurationValue implements BankPol
     public String toStringAt(Bank bank) {
         return format(Optional.ofNullable(bank.getLowBalanceFee()).orElseGet(this));
     }
-
+    
+    @Override
+    public AllowOverride getAllowOverride() {
+        return allowOverride;
+    }
+    
 }

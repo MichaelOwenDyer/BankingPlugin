@@ -1,13 +1,9 @@
 package com.monst.bankingplugin.entity.geo.location;
 
-import com.monst.bankingplugin.entity.geo.Vector2;
-import com.monst.bankingplugin.entity.geo.Vector3;
-import jakarta.persistence.*;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.InventoryHolder;
 
 import java.util.Arrays;
@@ -15,49 +11,35 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 
-@Entity
-@DiscriminatorValue(value = "Double")
 public class DoubleAccountLocation extends AccountLocation {
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "x", column = @Column(name = "x2")),
-            @AttributeOverride(name = "z", column = @Column(name = "z2"))
-    })
-    private Vector2 v2;
-
-    public DoubleAccountLocation() {}
-
-    public DoubleAccountLocation(DoubleChest dc) {
-        super(dc.getWorld(), new Vector3(((Chest) dc.getLeftSide()).getBlock()));
-        this.v2 = new Vector2(((Chest) dc.getRightSide()).getBlock());
-    }
+    private final int maxX;
+    private final int maxZ;
 
     public DoubleAccountLocation(Block block, BlockFace direction) {
-        super(block.getWorld(), new Vector3(block));
-        this.v2 = new Vector2(block.getRelative(direction));
+        this(block.getWorld(), block.getX(), block.getY(), block.getZ(), block.getRelative(direction).getX(), block.getRelative(direction).getZ());
     }
-
+    
+    DoubleAccountLocation(World world, int x1, int y, int z1, int x2, int z2) {
+        super(world, Math.min(x1, x2), y, Math.min(z1, z2));
+        this.maxX = Math.max(x1, x2);
+        this.maxZ = Math.max(z1, z2);
+    }
+    
     @Override
-    public Vector3 getMinimumBlock() {
-        BlockFace direction = v1.getFace(v2);
-        if (direction == BlockFace.SOUTH || direction == BlockFace.EAST)
-            return v1;
-        return v2.toVector3(v1.getY());
+    public int getMaxX() {
+        return maxX;
     }
-
+    
     @Override
-    public Vector3 getMaximumBlock() {
-        BlockFace direction = v1.getFace(v2);
-        if (direction == BlockFace.NORTH || direction == BlockFace.WEST)
-            return v1;
-        return v2.toVector3(v1.getY());
+    public int getMaxZ() {
+        return maxZ;
     }
-
+    
     @Override
     public Optional<InventoryHolder> findChest() {
-        InventoryHolder ih1 = getChestAt(v1);
-        InventoryHolder ih2 = getChestAt(v2.toVector3(v1.getY()));
+        InventoryHolder ih1 = getChestAt(getMinimumBlock());
+        InventoryHolder ih2 = getChestAt(getMaximumBlock());
         if (ih1 == null || ih2 == null || !isSameChest(ih1, ih2))
             return Optional.empty();
         return Optional.of(ih1);
@@ -66,34 +48,27 @@ public class DoubleAccountLocation extends AccountLocation {
     private boolean isSameChest(InventoryHolder ih1, InventoryHolder ih2) {
         Location loc1 = ih1.getInventory().getLocation();
         Location loc2 = ih2.getInventory().getLocation();
-        return Objects.equals(loc1.getBlock(), loc2.getBlock());
+        return Objects.equals(loc1, loc2);
     }
 
     @Override
     public Iterator<Block> iterator() {
-        return Arrays.asList(getMinimumBlock().toBlock(world), getMaximumBlock().toBlock(world)).iterator();
+        return Arrays.asList(getMinimumBlock(), getMaximumBlock()).iterator();
     }
 
     @Override
     public Location getTeleportLocation() {
-        switch (v1.getFace(v2)) {
-            case NORTH:
-            case SOUTH:
-                return new Location(getWorld(), v1.getX() + 0.5, v1.getY() + 1, getMaximumBlock().getZ());
-            case EAST:
-            case WEST:
-                return new Location(getWorld(), getMaximumBlock().getX(), v1.getY() + 1, v1.getZ() + 0.5);
-        }
-        return null;
+        if (minX == maxX)
+            return getMaximumBlock().getLocation().add(0.5, 1, 0);
+        return getMaximumBlock().getLocation().add(0, 1, 0.5);
     }
 
-    public SingleAccountLocation contract(Block block) {
-        Vector3 leaveBehind = new Vector3(block);
-        if (Objects.equals(v1, leaveBehind))
-            return new SingleAccountLocation(world, v2.toVector3(v1.getY()));
-        if (Objects.equals(v2.toVector3(v1.getY()), leaveBehind))
-            return new SingleAccountLocation(world, v1);
-        throw new IllegalArgumentException("Block not contained in AccountLocation cannot be removed!");
+    public AccountLocation contract(Block block) {
+        if (block.getX() == minX && block.getZ() == minZ)
+            return new AccountLocation(world, maxX, y, maxZ);
+        if (block.getX() == maxX && block.getZ() == maxZ)
+            return new AccountLocation(world, minX, y, minZ);
+        throw new IllegalArgumentException("AccountLocation could not be contracted because the specified block was not part of it.");
     }
 
     @Override
@@ -103,13 +78,13 @@ public class DoubleAccountLocation extends AccountLocation {
 
     public String toString() {
         return "(" +
-                v1.getX() + ", " +
-                v1.getY() + ", " +
-                v1.getZ() +
+                minX + ", " +
+                y + ", " +
+                minZ +
                 "), (" +
-                v2.getX() + ", " +
-                v1.getY() + ", " +
-                v2.getZ() +
+                maxX + ", " +
+                y + ", " +
+                maxZ +
                 ")";
     }
 

@@ -1,35 +1,30 @@
 package com.monst.bankingplugin.entity.geo.region;
 
-import com.monst.bankingplugin.converter.WorldConverter;
-import com.monst.bankingplugin.entity.AbstractEntity;
-import com.monst.bankingplugin.entity.geo.Vector2;
-import com.monst.bankingplugin.entity.geo.Vector3;
+import com.monst.bankingplugin.entity.Entity;
 import com.monst.bankingplugin.entity.geo.location.AccountLocation;
-import jakarta.persistence.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
-import java.util.HashSet;
+import java.awt.*;
+import java.awt.geom.Area;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
-@Entity
-@Table(name = "bank_region")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "shape")
-public abstract class BankRegion extends AbstractEntity {
+public abstract class BankRegion extends Entity {
 
-    @Convert(converter = WorldConverter.class)
-    World world;
+    final World world;
 
-    public BankRegion() {}
+    public static BankRegion fromDatabase(World world, Integer x1, int y1, Integer z1, Integer x2, int y2, Integer z2,
+                                          int[] pointsX, int[] pointsZ) {
+        if (x1 == null || z1 == null || x2 == null || z2 == null)
+            return new PolygonalBankRegion(world, pointsX, pointsZ, y1, y2);
+        return new CuboidBankRegion(world, x1, y1, z1, x2, y2, z2);
+    }
 
     BankRegion(World world) {
-        this.generateID();
         this.world = world;
     }
 
@@ -38,7 +33,7 @@ public abstract class BankRegion extends AbstractEntity {
      *
      * @return the center point
      */
-    public abstract Vector3 getCenterPoint();
+    public abstract Block getCenterBlock();
 
     /**
      * @return the minimum x-coordinate of this {@link BankRegion}
@@ -100,28 +95,22 @@ public abstract class BankRegion extends AbstractEntity {
      * @param region The other region
      * @return whether or not this region overlaps and another one
      */
-    public abstract boolean overlaps(BankRegion region);
+    public boolean overlaps(BankRegion region) {
+        Area area = new Area(getShape());
+        area.intersect(new Area(region.getShape()));
+        return !area.isEmpty();
+    }
 
     public final boolean overlapsX(int minX, int maxX) {
-        return maxX >= getMinX() && minX <= getMaxX();
+        return !(maxX < getMinX() || minX > getMaxX());
     }
 
     public final boolean overlapsY(int minY, int maxY) {
-        return maxY >= getMinY() && minY <= getMaxY();
+        return !(maxY < getMinY() || minY > getMaxY());
     }
-
+    
     public final boolean overlapsZ(int minZ, int maxZ) {
-        return maxZ >= getMinZ() && minZ <= getMaxZ();
-    }
-
-    /**
-     * @param region The other region
-     * @return whether this region *cannot* overlap with the other region
-     */
-    public final boolean isDisjunct(BankRegion region) {
-        return  !overlapsX(region.getMinX(), region.getMaxX()) &&
-                !overlapsY(region.getMinY(), region.getMaxY()) &&
-                !overlapsZ(region.getMinZ(), region.getMaxZ());
+        return !(maxZ < getMinZ() || minZ > getMaxZ());
     }
 
     public boolean contains(AccountLocation chest) {
@@ -145,10 +134,6 @@ public abstract class BankRegion extends AbstractEntity {
         return contains(block.getX(), block.getY(), block.getZ());
     }
 
-    public boolean contains(Vector3 v) {
-        return contains(v.getX(), v.getY(), v.getZ());
-    }
-
     /**
      * Returns true if this region contains this set of coordinates, assuming the same {@link World}.
      *
@@ -161,10 +146,6 @@ public abstract class BankRegion extends AbstractEntity {
         return overlapsY(y, y) && contains(x, z);
     }
 
-    public boolean contains(Vector2 v) {
-        return contains(v.getX(), v.getZ());
-    }
-
     /**
      * Returns true if this region contains this (x,z) coordinate pair, assuming the same {@link World} and a compatible y-coordinate.
      *
@@ -173,25 +154,9 @@ public abstract class BankRegion extends AbstractEntity {
      * @return Whether or not the coordinate pair is contained
      */
     public abstract boolean contains(int x, int z);
-
-    /**
-     * Gets a {@link Set <Vector2>} containing a horizontal cross-section
-     * of this region and no y-coordinate.
-     *
-     * @return a set and every {@link Vector2} in this region
-     */
-    public Set<Vector2> getFootprint() {
-        Set<Vector2> blocks = new HashSet<>();
-        int maxX = getMaxX();
-        int maxZ = getMaxZ();
-        for (int x = getMinX(); x <= maxX; x++) {
-            for (int z = getMinZ(); z <= maxZ; z++) {
-                if (contains(x, z))
-                    blocks.add(new Vector2(x, z));
-            }
-        }
-        return blocks;
-    }
+    
+    @SuppressWarnings("unused")
+    abstract Shape getShape(); // TODO: Use this as a replacement for getFootprint()?
 
     /**
      * Get all (upper and lower) corner {@link Block}s of this region.
@@ -201,11 +166,11 @@ public abstract class BankRegion extends AbstractEntity {
     public abstract List<Block> getCorners();
 
     public Location getTeleportLocation() {
-        return getSafeBlock(getCenterPoint().toBlock(world)).getLocation().add(0.5, 0, 0.5);
+        return getSafeBlock(getCenterBlock()).getLocation().add(0.5, 0, 0.5);
     }
 
     public Location getHighestTeleportLocation() {
-        return world.getHighestBlockAt(getCenterPoint().toLocation(world)).getLocation().add(0.5, 1.0, 0.5);
+        return world.getHighestBlockAt(getCenterBlock().getLocation()).getLocation().add(0.5, 1.0, 0.5);
     }
 
     public boolean isCuboid() {
@@ -231,7 +196,8 @@ public abstract class BankRegion extends AbstractEntity {
      * @return a {@link Block} at or directly below the given block that is safe to stand on
      */
     static Block getSafeBlock(Block start) {
-        for (Block block = start; start.getY() > 0; block = block.getRelative(BlockFace.DOWN))
+        // Check all the way down to -64 to support later versions of Minecraft
+        for (Block block = start; block.getY() > -64; block = block.getRelative(BlockFace.DOWN))
             if (isSafeBlock(block))
                 return block;
         return start;

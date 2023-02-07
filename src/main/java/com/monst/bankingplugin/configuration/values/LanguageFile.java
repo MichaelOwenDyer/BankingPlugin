@@ -1,43 +1,38 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.type.PathConfigurationValue;
+import com.monst.bankingplugin.configuration.validation.Bound;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
-import com.monst.pluginconfiguration.impl.PathConfigurationValue;
-import com.monst.pluginconfiguration.validation.Bound;
-import com.monst.pluginconfiguration.validation.PathValidation;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LanguageFile extends PathConfigurationValue {
 
-    private final BankingPlugin plugin;
     private final Path langFolder;
-    private final EnumMap<Message, String> translations;
+    private final Map<Message, String> translations;
 
     public LanguageFile(BankingPlugin plugin) {
         super(plugin, "language-file", Paths.get("en_US.lang"));
-        this.plugin = plugin;
         this.langFolder = plugin.getDataFolder().toPath().resolve("lang");
         this.translations = new EnumMap<>(Message.class);
-    }
-
-    @Override
-    protected ArgumentParseException createArgumentParseException(String input) {
-        return new ArgumentParseException(Message.NOT_A_FILENAME.with(Placeholder.INPUT).as(input).translate(plugin));
+        loadTranslations();
     }
 
     @Override
     protected Bound<Path> getBound() {
-        return PathValidation.isFile("lang");
+        return Bound.requiring(path -> path.toString().endsWith(".lang"),
+                path -> path.resolveSibling(path.getFileName() + ".lang"));
     }
 
     @Override
@@ -101,9 +96,9 @@ public class LanguageFile extends PathConfigurationValue {
             try (BufferedWriter writer = Files.newBufferedWriter(languageFile, StandardOpenOption.APPEND)) {
                 for (Message message : missingMessages) {
                     writer.write("\n# Example Scenario: " + message.getExampleScenario());
-                    writer.write("\n# Available placeholders: " + message.getFormattedPlaceholdersList());
+                    writer.write("\n# Available placeholders: " + message.getAvailablePlaceholders());
                     writer.write("\n" + message.getPath() + "=" + message.inEnglish()
-                            .replaceAll("\u00A7", "&") + "\n");
+                            .replace("§", "&") + "\n"); // Replace § with & for color codes
                     plugin.getLogger().info("Missing translation for \"" + message.getPath() +
                             "\" has been added to the current language file.");
                 }

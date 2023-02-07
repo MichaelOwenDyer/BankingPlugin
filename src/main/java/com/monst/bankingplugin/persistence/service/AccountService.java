@@ -1,113 +1,183 @@
 package com.monst.bankingplugin.persistence.service;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.Bank;
+import com.monst.bankingplugin.entity.geo.location.AccountLocation;
+import com.monst.bankingplugin.persistence.ConnectionSupplier;
+import com.monst.bankingplugin.persistence.repository.AccountCoOwnerRepository;
 import com.monst.bankingplugin.persistence.repository.AccountRepository;
-import com.monst.bankingplugin.util.Callback;
-import com.monst.bankingplugin.util.Utils;
-import jakarta.persistence.EntityManager;
-import org.bukkit.Material;
+import com.monst.bankingplugin.util.Observable;
+import com.monst.bankingplugin.util.Observer;
+import com.monst.bankingplugin.util.Promise;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
-import org.bukkit.inventory.ItemStack;
 
-import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class AccountService extends EntityService<Account, AccountRepository> {
+public class AccountService extends Service implements Observable {
+    
+    private BankService bankService;
 
-    public AccountService(BankingPlugin plugin, Supplier<EntityManager> emf) {
-        super(plugin, emf, new AccountRepository(emf));
-        initializeAll();
+    private final AccountRepository accountRepo;
+    private final AccountCoOwnerRepository coOwnerRepo;
+    
+    private final Cache<Integer, Account> accountsById = CacheBuilder.newBuilder().softValues().build();
+    private final Cache<Block, Account> accountsByBlock = CacheBuilder.newBuilder().softValues().build();
+    
+    private final Set<Observer> observers;
+
+    public AccountService(BankingPlugin plugin, ConnectionSupplier connectionSupplier) {
+        super(plugin, connectionSupplier);
+        this.accountRepo = new AccountRepository(this::reconstruct); // Caching is done in this method
+        this.coOwnerRepo = new AccountCoOwnerRepository();
+        this.observers = new HashSet<>();
     }
-
-    /**
-     * Initializes all accounts in the database, first by appraising them, then by updating their titles.
-     */
-    public void initializeAll() {
-        for (Account account : findAll()) {
-            appraise(account);
-            account.updateChestTitle();
-        }
+    
+    public void setBankService(BankService bankService) {
+        this.bankService = bankService;
     }
-
-    /**
-     * Resets all account chest titles.
-     */
-    public void resetAllChestTitles() {
-        for (Account account : findAll())
-            account.resetChestTitle();
+    
+    @Override
+    public Set<Observer> getObservers() {
+        return observers;
     }
-
-    /**
-     * @return the number of accounts in the database
-     */
+    
+    @Override
+    public void createTables() {
+        execute(accountRepo::createTable);
+        execute(coOwnerRepo::createTable);
+    }
+    
     public int count() {
-        return repo.count();
+        return query(accountRepo::count).orElse(0);
+    }
+    
+    public void save(Account account) {
+        plugin.debugf("Saving account %s to the database.", account);
+        transact(con -> {
+            accountRepo.save(con, account);
+            if (account.hasCoOwners())
+                coOwnerRepo.saveAll(con, account.getCoOwners(), account.getID());
+        });
+        cache(account);
     }
 
-    /**
-     * @param id the ID of the account to find
-     * @return the account with the given ID, if it exists
-     */
-    public Account findByID(int id) {
-        return repo.findByID(id);
+    public void update(Account account) {
+        plugin.debugf("Updating account %d in the database.", account.getID());
+        transact(con -> accountRepo.update(con, account));
     }
 
-    /**
-     * @param player the owner of the accounts
-     * @return the number of accounts in the database owned by the given player
-     */
-    public int countByOwner(OfflinePlayer player) {
-        return repo.countByOwner(player);
+    public void updateAll(Collection<Account> accounts) {
+        for (Account account : accounts)
+            plugin.debugf("Updating account %d in the database.", account.getID());
+        transact(con -> accountRepo.updateAll(con, accounts));
     }
 
-    /**
-     * Finds the accounts owned by the given players.
-     * @param players the owners of the accounts
-     * @return the accounts owned by the given players
-     */
-    public List<Account> findByOwnerIn(Set<OfflinePlayer> players) {
-        return repo.findByOwnerIn(players);
+    public void remove(Account account) {
+        int accountID = account.getID();
+        plugin.debugf("Deleting account %s from the database.", account);
+        transact(con -> {
+            coOwnerRepo.delete(con, accountID); // Delete co-owners first to avoid violating referential integrity
+            accountRepo.delete(con, accountID);
+        });
+        uncache(account);
+    }
+    
+    public void removeAll(Collection<Account> accounts) {
+        Set<Integer> accountIDs = accounts.stream().map(Account::getID).collect(Collectors.toSet());
+        plugin.debugf("Deleting accounts with IDs %s from the database.", accountIDs);
+        transact(con -> {
+            coOwnerRepo.deleteAll(con, accountIDs); // Delete co-owners first to avoid violating referential integrity
+            accountRepo.deleteAll(con, accountIDs);
+        });
+        accounts.forEach(this::uncache);
     }
 
-    /**
-     * Finds the accounts owned by the given players. Runs asynchronously.
-     * @param players the owners of the accounts
-     * @param callback the callback to call when the accounts are found
-     */
-    public void findByOwnerIn(Set<OfflinePlayer> players, Callback<Collection<Account>> callback) {
-        async(() -> repo.findByOwnerIn(players), callback);
+    public Set<Account> findAll() {
+        plugin.debug("Fetching all accounts from the database.");
+        return query(accountRepo::findAll).orElse(Collections.emptySet());
+    }
+    
+    public Promise<List<Account>> findAll(int offset, int limit) {
+        plugin.debug("Fetching all accounts from the database asynchronously.");
+        return async(con -> accountRepo.findAll(con, offset, limit));
     }
 
-    /**
-     * Finds the accounts that the given player is owner or co-owner of. Runs asynchronously.
-     * @param player the trusted player
-     * @param callback the callback to call when the accounts are found
-     */
-    public void findByTrustedPlayer(OfflinePlayer player, Callback<Collection<Account>> callback) {
-        async(() -> repo.findByTrustedPlayer(player), callback);
+    public int countByOwner(OfflinePlayer owner) {
+        plugin.debugf("Counting accounts owned by %s in the database.", owner.getName());
+        return query(con -> accountRepo.countByOwner(con, owner.getUniqueId())).orElse(0);
+    }
+    
+    public int countByTrustedPlayer(OfflinePlayer trusted) {
+        plugin.debugf("Counting accounts where %s is trusted in the database asynchronously.", trusted.getName());
+        return query(con -> accountRepo.countByTrustedPlayer(con, trusted.getUniqueId())).orElse(0);
+    }
+    
+    public Promise<List<Account>> findByTrustedPlayer(OfflinePlayer trusted, int offset, int limit) {
+        plugin.debugf("Fetching accounts where %s is trusted from the database.", trusted.getName());
+        return async(con -> accountRepo.findByTrustedPlayer(con, trusted.getUniqueId(), offset, limit));
+    }
+    
+    public int countByOwners(Collection<OfflinePlayer> owners) {
+        plugin.debugf("Counting accounts owned by %s in the database.", owners);
+        return query(con -> accountRepo.countByOwners(con, owners)).orElse(0);
+    }
+    
+    public Promise<List<Account>> findByOwners(Set<OfflinePlayer> owners, int offset, int limit) {
+        plugin.debugf("Fetching accounts owned by %s from the database asynchronously.", owners);
+        return async(con -> accountRepo.findByOwners(con, owners, offset, limit));
     }
 
+    public Set<Account> findByOwners(Collection<OfflinePlayer> owners) {
+        plugin.debugf("Fetching accounts owned by %s from the database.", owners);
+        return query(con -> accountRepo.findByOwners(con, owners)).orElse(Collections.emptySet());
+    }
+
+    public Set<Account> findByBanks(Collection<Bank> banks) {
+        plugin.debugf("Fetching accounts at banks %s from the database.", banks);
+        return query(con -> accountRepo.findByBanks(con, banks.stream().map(Bank::getID).collect(Collectors.toList())))
+                .orElse(Collections.emptySet());
+    }
+    
+    public int countByBankAndOwner(Bank bank, OfflinePlayer owner) {
+        plugin.debugf("Counting accounts at bank %s owned by %s in the database.", bank, owner.getName());
+        return query(con -> accountRepo.countByBankAndOwner(con, bank.getID(), owner.getUniqueId())).orElse(0);
+    }
+
+    public Promise<List<Account>> findAllMissing(int offset, int limit) {
+        plugin.debug("Fetching all missing accounts from the database asynchronously.");
+        return async(con -> accountRepo.findAll(con).stream()
+                .filter(account -> !account.getLocation().findChest().isPresent())
+                .skip(offset)
+                .limit(limit)
+                .collect(Collectors.toList()));
+    }
+
+    public Account findAtChest(Block chest) {
+        plugin.debugf("Fetching account at chest %s from the database.", chest);
+        return query(con -> accountRepo.findAtChest(con, chest)).orElse(null);
+    }
+    
     /**
      * Returns whether the given block is an account.
      * @param block the block to check
      * @return whether the given block is an account
      */
     public boolean isAccount(Block block) {
-        return findAt(block) != null;
+        return query(con -> accountRepo.isAccount(con, block)).orElse(false);
     }
 
-    /**
-     * Returns whether any of the given blocks are accounts.
-     * @param blocks the blocks to check
-     * @return whether any of the given blocks are accounts
-     */
-    public boolean isAnyAccount(Block... blocks) {
-        return isAnyAccount(Arrays.asList(blocks));
+    public Set<Account> findAtBlocks(Collection<Block> chests) {
+        plugin.debugf("Fetching accounts at chests %s from the database.", chests);
+        return query(con -> accountRepo.findAtChests(con, chests)).orElse(Collections.emptySet());
     }
 
     /**
@@ -116,101 +186,54 @@ public class AccountService extends EntityService<Account, AccountRepository> {
      * @return whether any of the given blocks are accounts
      */
     public boolean isAnyAccount(Collection<Block> blocks) {
-        return !findAt(blocks).isEmpty();
+        // If cache contains any of the blocks, then it's an account
+        return query(con -> accountRepo.countAccountsAtChests(con, blocks)).orElse(0) > 0;
     }
 
-    /**
-     * Finds the account located at the given block.
-     * If the block is not a chest, null is returned.
-     * @param block the block to check
-     * @return the Account located at the given block, or null if the block is not a chest or the chest is not an account
-     */
-    public Account findAt(Block block) {
-        if (!Utils.isChest(block))
-            return null;
-        return repo.findAt(block);
+    private Account reconstruct(ResultSet rs, Connection con) throws SQLException {
+        int accountID = rs.getInt("account_id");
+        Account cached = accountsById.getIfPresent(accountID);
+        if (cached != null)
+            return cached;
+        Bank bank = bankService.findByID(rs.getInt("bank_id"));
+        Account account = new Account(
+                accountID,
+                bank,
+                Bukkit.getOfflinePlayer(rs.getObject("owner_uuid", UUID.class)),
+                coOwnerRepo.findByAccount(con, accountID),
+                reconstructLocation(rs),
+                rs.getBigDecimal("balance"),
+                rs.getBigDecimal("previous_balance"),
+                rs.getInt("multiplier_stage"),
+                rs.getInt("remaining_offline_payouts"),
+                rs.getString("custom_name")
+        );
+        bank.addAccount(account);
+        cache(account);
+        return account;
     }
 
-    /**
-     * Finds all accounts that are located at the given blocks.
-     * Only blocks that are chests will be checked.
-     * @param blocks the blocks to check
-     * @return a list of accounts that are located at the given blocks
-     */
-    public List<Account> findAt(Collection<Block> blocks) {
-        List<Block> chests = blocks.stream().filter(Utils::isChest).collect(Collectors.toList());
-        if (chests.isEmpty())
-            return Collections.emptyList();
-        if (chests.size() == 1)
-            return Collections.singletonList(repo.findAt(chests.get(0)));
-        return repo.findAt(chests);
+    private AccountLocation reconstructLocation(ResultSet rs) throws SQLException {
+        return AccountLocation.fromDatabase(
+                Bukkit.getWorld(rs.getString("world")),
+                rs.getInt("x1"),
+                rs.getInt("y"),
+                rs.getInt("z1"),
+                (Integer) rs.getObject("x2"), // Nullable
+                (Integer) rs.getObject("z2") // Nullable
+        );
     }
-
-    /**
-     * Finds all accounts at the given banks.
-     * @param banks the banks to get the accounts from
-     * @return the accounts at the given banks
-     */
-    public List<Account> findByBanks(Collection<Bank> banks) {
-        return repo.findByBanks(banks);
+    
+    private void cache(Account account) {
+        accountsById.put(account.getID(), account);
+        for (Block block : account.getLocation())
+            accountsByBlock.put(block, account);
     }
-
-    /**
-     * Finds all accounts at the given bank owned by the given player.
-     * @param bank the bank to get the accounts from
-     * @param owner the owner of the accounts
-     * @return the accounts at the given bank owned by the given player
-     */
-    public List<Account> findByBankAndOwner(Bank bank, OfflinePlayer owner) {
-        return repo.findByBankAndOwner(bank, owner);
-    }
-
-    /**
-     * Finds all accounts whose chest cannot be found in the world.
-     * @param callback the callback to call when the accounts are found
-     */
-    public void findAllMissing(Callback<Collection<Account>> callback) {
-        async(() -> repo.findAll().stream()
-                .filter(account -> !account.getLocation().findChest().isPresent())
-                .collect(Collectors.toList()), callback);
-    }
-
-    /**
-     * Removes the given account from the database.
-     * @param account the account to remove
-     */
-    public void remove(Account account) {
-        transaction(em -> em.remove(em.getReference(Account.class, account.getID())));
-    }
-
-    /**
-     * Removes the given accounts from the database.
-     * @param accounts the accounts to remove
-     */
-    public void removeAll(Collection<Account> accounts) {
-        transaction(em -> accounts.stream().map(account -> em.getReference(Account.class, account.getID())).forEach(em::remove));
-    }
-
-    /**
-     * Appraises the contents of the given account, assuming its chest can be found.
-     * The account balance is then updated.
-     * @param account the account to appraise
-     * @see Account#getContents()
-     */
-    public void appraise(Account account) {
-        EnumMap<Material, Integer> contents = account.getContents();
-        BigDecimal balance = contents.entrySet().stream()
-                .map(content -> {
-                    if (plugin.config().blacklist.contains(content.getKey()))
-                        return BigDecimal.ZERO;
-                    BigDecimal worth = plugin.getEssentials().getWorth().getPrice(plugin.getEssentials(), new ItemStack(content.getKey()));
-                    if (worth == null)
-                        return BigDecimal.ZERO;
-                    return worth.multiply(BigDecimal.valueOf(content.getValue()));
-                })
-                .reduce(BigDecimal::add)
-                .orElse(BigDecimal.ZERO);
-        account.setBalance(balance);
+    
+    private void uncache(Account account) {
+        accountsById.invalidate(account.getID());
+        for (Block block : account.getLocation())
+            accountsByBlock.invalidate(block);
     }
 
 }

@@ -1,158 +1,107 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.util.Observable;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.util.ChatPaginator;
-import org.ipvp.canvas.Menu;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * An inventory-based GUI.
- * @param <T> the subject of this GUI
  */
-public abstract class GUI<T> {
-
-	enum GUIType {
-		BANK, BANK_LIST, ACCOUNT, ACCOUNT_LIST, ACCOUNT_CONTENTS, SHULKER_BOX, ACCOUNT_RECOVERY,
-        ACCOUNT_TRANSACTION_LOG, ACCOUNT_INTEREST_LOG, BANK_INCOME_LOG, UPDATE
-	}
-
+public abstract class GUI implements InventoryHolder {
+	
 	static final List<String> NO_PERMISSION = Collections.singletonList("You do not have permission to view this.");
-
+	
 	final BankingPlugin plugin;
-	GUI<?> parentGUI;
-	final int id;
-	boolean isVisible = true;
-	boolean needsUpdate = false;
-
-	final Menu.CloseHandler CLOSE_HANDLER = (player, menu) -> {
-		if (isVisible() && getParent() != null) {
-			getParent().isVisible = true;
-			getParent().reopen(player);
-			unsubscribe();
-		}
-	};
-
-	public GUI(BankingPlugin plugin) {
+	final Player player;
+	Inventory inventory;
+	
+	GUI parentGUI;
+	boolean visible = true;
+	
+	public GUI(BankingPlugin plugin, Player player) {
 		this.plugin = plugin;
-		this.id = new Random().nextInt(100_000);
+		this.player = player;
 	}
-
-	/**
-	 * Gets the {@link Observable} this GUI is observing for updates, or {@code null}
-	 * if this GUI will not be automatically updated.
-	 * @return the subject of this GUI, or null
-	 */
-	abstract Observable getSubject();
-
-	void subscribe() {
-		Observable observable = getSubject();
-		if (observable != null)
-			observable.addObserver(this);
-	}
-
-	void unsubscribe() {
-		Observable observable = getSubject();
-		if (observable != null)
-			observable.removeObserver(this);
-	}
-
+	
 	/**
 	 * Opens this GUI for the specified player, shortening the GUI chain.
 	 * This should be used when opening a new GUI.
 	 */
-	public abstract void open(Player player);
+	public abstract void open();
+	
+	abstract Inventory createInventory();
+	
+	@Override
+	public Inventory getInventory() {
+		return inventory;
+	}
 
 	/**
 	 * Opens this GUI for the specified player without shortening the GUI chain.
 	 * This should be used when returning to a previous GUI in the chain.
 	 */
-	abstract void reopen(Player player);
-
-	/**
-	 * Reloads the information in this GUI.
-	 * This will only affect GUIs already open in the foreground; background GUIs will not be updated.
-	 */
-	public abstract void update();
-
-	/**
-	 * Closes the GUI for the player, opening the parent GUI if it exists.
-	 * @param player the player to close this GUI for
-	 */
-	abstract void close(Player player);
-
+	void reopen() {
+		visible = true;
+		player.openInventory(inventory);
+	}
+	
+	public void click(int slot, ClickType type) {}
+	
 	/**
 	 * Exits the GUI for the player, ignoring the parent GUI.
-	 * @param player the player to exit this GUI for
 	 */
-	void exit(Player player) {
+	void exit() {
 		parentGUI = null;
-		close(player);
+		player.closeInventory();
 	}
 
-	abstract GUIType getType();
-
 	/**
-	 * Sets the parent, or the "source GUI", of this GUI.
-	 * The parent will be reopened after this GUI is closed.
-	 * @param parentGUI the parent GUI
-	 * @return this GUI, to be opened
+	 * Upon closing of this GUI, open the parent GUI if it exists.
 	 */
-	public GUI<T> setParentGUI(@Nullable GUI<?> parentGUI) {
-		if (parentGUI != null)
-			parentGUI.isVisible = false;
-		this.parentGUI = parentGUI;
-		return this;
+	public void onClose() {
+		// FIXME: Could this have something to do with the flickering on close?
+		if (visible && parentGUI != null)
+			Bukkit.getScheduler().runTask(plugin, parentGUI::reopen);
+	}
+	
+	/**
+	 * Marks the provided GUI as a child of this GUI.
+	 * This GUI will no longer be in the foreground when the child GUI is open.
+	 */
+	GUI child(GUI child) {
+		visible = false;
+		child.parentGUI = this;
+		return child;
 	}
 
 	/**
-	 * Descends down the list of previous open GUIs, and severs the link when it
+	 * Descends the list of previous open GUIs, and severs the link when it
 	 * finds a GUI of a type it has seen before. This prevents the GUI chain
 	 * from becoming too long and unwieldy.
 	 */
 	void shortenGUIChain() {
-		shortenGUIChain(parentGUI, EnumSet.of(getType()));
+		shortenGUIChain(parentGUI, new HashSet<>(Collections.singleton(getClass())));
 	}
 
-	private void shortenGUIChain(GUI<?> gui, EnumSet<GUIType> types) {
+	private void shortenGUIChain(GUI gui, Set<Class<?>> types) {
 		if (gui == null)
 			return;
-		if (types.add(gui.getType()))
+		if (types.add(gui.getClass()))
 			shortenGUIChain(gui.parentGUI, types);
 		else
 			gui.parentGUI = null;
-	}
-
-	/**
-	 * Returns whether this GUI is in the foreground (as opposed to hidden by another GUI)
-	 * @return true if this GUI is in the foreground
-	 */
-	boolean isVisible() {
-		return isVisible;
-	}
-
-	/**
-	 * @return this gui's parent
-	 */
-	private GUI<?> getParent() {
-		return parentGUI;
 	}
 
 	/**
@@ -162,30 +111,37 @@ public abstract class GUI<T> {
 	 * @param lore the description of the GUI item
 	 * @return a custom player head {@link ItemStack}
 	 */
-	static ItemStack createSlotItem(OfflinePlayer owner, String displayName, List<String> lore) {
+	static ItemStack head(OfflinePlayer owner, String displayName, List<String> lore) {
 		ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-		SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-		if (skullMeta != null)
+		if (owner != null) {
+			SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
 			skullMeta.setOwningPlayer(owner);
-		skull.setItemMeta(skullMeta);
-		return createSlotItem(skull, displayName, lore);
+			skull.setItemMeta(skullMeta);
+		}
+		return setTitleAndLore(skull, displayName, lore);
+	}
+	
+	static ItemStack head(OfflinePlayer owner, String displayName, String... lore) {
+		return head(owner, displayName, Arrays.asList(lore));
 	}
 
 	/**
 	 * Create an {@link ItemStack} to be placed in the GUI.
 	 * @param material the {@link Material} that should be used for the item
-	 * @param displayName the name of the GUI item
+	 * @param title the name of the GUI item
 	 * @param lore the description of the GUI item
 	 * @return a custom {@link ItemStack}
 	 */
-	static ItemStack createSlotItem(Material material, String displayName, List<String> lore) {
-		return createSlotItem(new ItemStack(material), displayName, lore);
+	static ItemStack item(Material material, String title, List<String> lore) {
+		return setTitleAndLore(new ItemStack(material), title, lore);
+	}
+	
+	static ItemStack item(Material material, String title, String... lore) {
+		return setTitleAndLore(new ItemStack(material), title, Arrays.asList(lore));
 	}
 
-	private static ItemStack createSlotItem(ItemStack item, String displayName, List<String> lore) {
+	private static ItemStack setTitleAndLore(ItemStack item, String displayName, List<String> lore) {
 		ItemMeta itemMeta = item.getItemMeta();
-		if (itemMeta == null)
-			return null;
 		itemMeta.setDisplayName("" + ChatColor.GRAY + ChatColor.ITALIC + displayName);
 		itemMeta.setLore(lore.stream().map(s -> ChatColor.GRAY + s).collect(Collectors.toList()));
 		item.setItemMeta(itemMeta);
@@ -225,18 +181,14 @@ public abstract class GUI<T> {
 	
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		
-		GUI<?> other = (GUI<?>) o;
-		return id == other.id && getType() == other.getType();
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		GUI gui = (GUI) o;
+		return visible == gui.visible && player.equals(gui.player);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(getType(), id);
+		return Objects.hash(player, visible);
 	}
-
 }

@@ -5,8 +5,8 @@ import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountInfoCommandEvent;
 import com.monst.bankingplugin.event.account.AccountInfoEvent;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.gui.AccountGUI;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.command.ClickAction;
@@ -24,7 +24,7 @@ public class AccountInfo extends PlayerSubCommand {
     }
 
     @Override
-    protected void execute(Player player, String[] args) throws ExecutionException, CancelledException {
+    protected void execute(Player player, String[] args) throws CommandExecutionException, EventCancelledException {
         new AccountInfoCommandEvent(player, args).fire();
 
         plugin.debugf("%s can now click an account to see the GUI", player.getName());
@@ -32,11 +32,11 @@ public class AccountInfo extends PlayerSubCommand {
         ClickAction.setAccountClickAction(player, account -> info(player, account));
     }
 
-    private void info(Player player, Account account) throws CancelledException {
+    private void info(Player player, Account account) throws EventCancelledException {
         ClickAction.remove(player);
         plugin.debugf("%s is viewing the GUI of account #%d", player.getName(), account.getID());
         new AccountInfoEvent(player, account).fire();
-        new AccountGUI(plugin, account).open(player);
+        new AccountGUI(plugin, player, account).open();
     }
 
 }

@@ -2,7 +2,6 @@ package com.monst.bankingplugin.external;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.bankingplugin.entity.geo.Vector2;
 import com.monst.bankingplugin.entity.geo.region.BankRegion;
 import com.monst.bankingplugin.entity.geo.region.PolygonalBankRegion;
 import me.ryanhamshire.GriefPrevention.Visualization;
@@ -63,7 +62,7 @@ public class BankVisualization {
             for (Bank bank : banks)
                 visualization.elements.addAll(getRegionElements(bank.getRegion(), type));
             visualization.elements.removeIf(element -> outOfRange(player.getLocation(), element.location));
-            Visualization.Apply(player, visualization);
+            Bukkit.getScheduler().runTask(plugin, () -> Visualization.Apply(player, visualization));
         });
     }
 
@@ -116,23 +115,26 @@ public class BankVisualization {
                 yBuilder.accept(y);
             final int[] allYs = yBuilder.build().toArray();
 
-            List<Vector2> points = ((PolygonalBankRegion) sel).getVertices();
-            for (int vertex = 0; vertex < points.size(); vertex++) {
+            int[] pointsX = ((PolygonalBankRegion) sel).getPointsX();
+            int[] pointsZ = ((PolygonalBankRegion) sel).getPointsZ();
+            for (int index = 0; index < pointsX.length; index++) {
 
-                Vector2 current = points.get(vertex);
+                int currentX = pointsX[index];
+                int currentZ = pointsZ[index];
 
                 for (int y : allYs) {
                     // Add blocks that are immediately vertically adjacent to corner blocks
                     // Add blocks that form the vertical lines at the corners in intervals of the integer "step"
-                    Location loc = new Location(world, current.getX(), y, current.getZ());
+                    Location loc = new Location(world, currentX, y, currentZ);
                     newElements.add(new AccentElement(loc, type));
                 }
 
                 // Get the vertex after the current one; will eventually loop back to the first vertex
-                Vector2 next = points.get((vertex + 1) % points.size());
+                int nextX = pointsX[(index + 1) % pointsX.length];
+                int nextZ = pointsZ[(index + 1) % pointsZ.length];
 
-                int diffX = next.getX() - current.getX();
-                int diffZ = next.getZ() - current.getZ();
+                int diffX = nextX - currentX;
+                int diffZ = nextZ - currentZ;
                 double distanceToNext = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffZ, 2));
 
                 // These two doubles store the direction from the current vertex to the next. Through vector addition they form a diagonal of length 1
@@ -142,11 +144,11 @@ public class BankVisualization {
                 // The following blocks are placed at minY and maxY
                 for (int y : minMaxYs) {
                     // Add the block that is immediately adjacent to the current vertex and pointing in the direction of the next vertex
-                    Location unitAway = new Location(world, current.getX() + 0.5 + unitX, y, current.getZ() + 0.5 + unitZ);
+                    Location unitAway = new Location(world, currentX + 0.5 + unitX, y, currentZ + 0.5 + unitZ);
                     newElements.add(new AccentElement(unitAway, type));
 
                     // Add the block that is immediately adjacent to the next vertex and pointing in the direction of the current vertex
-                    Location unitAwayNext = new Location(world, next.getX() + 0.5 - unitX, y, next.getZ() + 0.5 - unitZ);
+                    Location unitAwayNext = new Location(world, nextX + 0.5 - unitX, y, nextZ + 0.5 - unitZ);
                     newElements.add(new AccentElement(unitAwayNext, type));
                 }
 
@@ -157,13 +159,13 @@ public class BankVisualization {
                 // Add blocks that form the lines between the vertices in intervals of the integer "step"
                 final double stepX = step * unitX;
                 final double stepZ = step * unitZ;
-                double nextX = current.getX() + 0.5 + stepX;
-                double nextZ = current.getZ() + 0.5 + stepZ;
+                double nextXStep = currentX + 0.5 + stepX;
+                double nextZStep = currentZ + 0.5 + stepZ;
                 for (int hop = step; hop < stopAt; hop += step) {
                     for (int y : allYs)
-                        newElements.add(new AccentElement(new Location(world, (int) nextX, y, (int) nextZ), type));
-                    nextX += stepX;
-                    nextZ += stepZ;
+                        newElements.add(new AccentElement(new Location(world, (int) nextXStep, y, (int) nextZStep), type));
+                    nextXStep += stepX;
+                    nextZStep += stepZ;
                 }
             }
         }

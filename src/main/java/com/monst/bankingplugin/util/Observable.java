@@ -1,23 +1,21 @@
 package com.monst.bankingplugin.util;
 
-import com.monst.bankingplugin.gui.GUI;
-
 import java.util.Set;
 
 public interface Observable {
 
-    Set<GUI<?>> getObservers();
+    Set<Observer> getObservers();
 
-    default void addObserver(GUI<?> observer) {
+    default void subscribe(Observer observer) {
         getObservers().add(observer);
     }
 
-    default void removeObserver(GUI<?> observer) {
+    default void unsubscribe(Observer observer) {
         getObservers().remove(observer);
     }
 
     default void notifyObservers() {
-        getObservers().forEach(GUI::update);
+        getObservers().forEach(Observer::update);
     }
 
 }

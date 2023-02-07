@@ -8,7 +8,6 @@ import com.monst.bankingplugin.entity.log.BankIncome;
 import com.monst.bankingplugin.event.control.InterestEvent;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -96,7 +95,8 @@ public class InterestEventListener implements Listener {
 			}
 		});
 
-		plugin.getAccountService().updateAll(banksAndAccounts.values().stream().flatMap(Set::stream).collect(Collectors.toList()));
+		for (Set<Account> accounts : banksAndAccounts.values())
+			plugin.getAccountService().updateAll(accounts); // Update accounts by-bank TODO: altogether?
 
 		Map<Bank, BigDecimal> revenueTracker = new HashMap<>(); // Revenues by bank
 
@@ -173,7 +173,7 @@ public class InterestEventListener implements Listener {
 		notifyAll(totalRevenueReceivableByPlayer, Message.BANK_REVENUE_EARNED);
 
 		// Log last seen time for all players receiving a message
-		plugin.getLastSeenService().updateLastSeen(finalPayments.keySet());
+		plugin.getLastSeenService().updateLastSeenTime(finalPayments.keySet());
 
 		finalPayments.forEach((player, payment) -> {
 			plugin.getPaymentService().transact(player, payment.doubleValue());
@@ -182,11 +182,15 @@ public class InterestEventListener implements Listener {
 	}
 
 	private void notifyAll(PaymentCounter map, Message message) {
-		map.forEach((player, counter) -> Utils.message(player, message
-				.with(Placeholder.AMOUNT).as(plugin.getEconomy().format(counter.total.doubleValue()))
-				.and(Placeholder.NUMBER_OF_ACCOUNTS).as(counter.paymentCount)
-				.and(Placeholder.NUMBER_OF_BANKS).as(counter.paymentCount)
-				.translate(plugin))
+		map.forEach((player, counter) -> {
+					if (!player.isOnline())
+						return;
+					player.getPlayer().sendMessage(message
+							.with(Placeholder.AMOUNT).as(plugin.getEconomy().format(counter.total.doubleValue()))
+							.and(Placeholder.NUMBER_OF_ACCOUNTS).as(counter.paymentCount)
+							.and(Placeholder.NUMBER_OF_BANKS).as(counter.paymentCount)
+							.translate(plugin));
+				}
 		);
 	}
 

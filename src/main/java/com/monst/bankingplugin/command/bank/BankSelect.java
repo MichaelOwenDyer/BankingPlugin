@@ -1,18 +1,19 @@
 package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.bank.BankSelectEvent;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.external.BankVisualization;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +27,7 @@ public class BankSelect extends PlayerSubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.BANK_SELECT;
+        return Permissions.BANK_SELECT;
     }
 
     @Override
@@ -40,19 +41,19 @@ public class BankSelect extends PlayerSubCommand {
     }
 
     @Override
-    protected void execute(Player player, String[] args) throws ExecutionException, CancelledException {
+    protected void execute(Player player, String[] args) throws CommandExecutionException, EventCancelledException {
         if (!plugin.isWorldEditIntegrated() && !plugin.isGriefPreventionIntegrated())
-            throw new ExecutionException(plugin, Message.CANT_SELECT_BANK);
+            throw err(Message.CANT_SELECT_BANK);
 
         Bank bank;
         if (args.length == 0) {
             bank = plugin.getBankService().findContaining(player);
             if (bank == null)
-                throw new ExecutionException(plugin, Message.MUST_STAND_IN_OR_SPECIFY_BANK);
+                throw err(Message.MUST_STAND_IN_OR_SPECIFY_BANK);
         } else {
             bank = plugin.getBankService().findByName(args[0]);
             if (bank == null)
-                throw new ExecutionException(plugin, Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
+                throw err(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
         }
 
         new BankSelectEvent(player, bank).fire();
@@ -69,10 +70,9 @@ public class BankSelect extends PlayerSubCommand {
     protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length != 1)
             return Collections.emptyList();
-        return plugin.getBankService().findAll().stream()
-                .map(Bank::getName)
+        return plugin.getBankService().findAllNames().stream()
                 .sorted()
-                .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                 .collect(Collectors.toList());
     }
 

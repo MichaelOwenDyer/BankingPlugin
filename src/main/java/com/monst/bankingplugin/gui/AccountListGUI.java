@@ -1,43 +1,65 @@
 package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.entity.Account;
-import com.monst.bankingplugin.entity.Bank;
-import com.monst.bankingplugin.util.Callback;
-import com.monst.bankingplugin.util.Observable;
+import com.monst.bankingplugin.gui.option.MenuItemFilter;
+import com.monst.bankingplugin.gui.option.MenuItemSorter;
+import com.monst.bankingplugin.util.Promise;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.ipvp.canvas.slot.Slot;
-import org.ipvp.canvas.slot.SlotSettings;
-import org.ipvp.canvas.template.ItemStackTemplate;
-import org.ipvp.canvas.template.StaticItemTemplate;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class AccountListGUI extends MultiPageGUI<Account> {
+    
+    private final Set<OfflinePlayer> owners;
 
-    public AccountListGUI(BankingPlugin plugin, Consumer<Callback<Collection<Account>>> source) {
-        super(plugin, source);
+    public AccountListGUI(BankingPlugin plugin, Player player, Set<OfflinePlayer> owners) {
+        super(plugin, player);
+        this.owners = owners;
+        // TODO: Subscribe to account repository changes
     }
-
-    public AccountListGUI(BankingPlugin plugin, Bank bank) {
-        this(plugin, callback -> callback.onResult(bank.getAccounts()));
+    
+    @Override
+    Promise<Integer> countItems() {
+        if (owners.isEmpty())
+            return Promise.sync(() -> plugin.getAccountService().countByTrustedPlayer(player));
+        if (Permissions.ACCOUNT_LIST_OTHER.ownedBy(player))
+            return Promise.sync(() -> plugin.getAccountService().countByOwners(owners));
+        if (owners.contains(player))
+            return Promise.sync(() -> plugin.getAccountService().countByOwners(Collections.singleton(player)));
+        return Promise.fulfill(0);
     }
-
+    
+    @Override
+    Promise<List<Account>> fetchItems(int offset, int limit) {
+        if (owners.isEmpty())
+            return plugin.getAccountService().findByTrustedPlayer(player, offset, limit);
+        if (Permissions.ACCOUNT_LIST_OTHER.ownedBy(player))
+            return plugin.getAccountService().findByOwners(owners, offset, limit);
+        if (owners.contains(player))
+            return plugin.getAccountService().findByOwners(Collections.singleton(player), offset, limit);
+        return Promise.fulfill(Collections.emptyList());
+    }
+    
     @Override
     String getTitle() {
         return "Account List";
     }
-
+    
     @Override
-    SlotSettings createSlotSettings(Account account) {
-        ItemStack item = createSlotItem(account.getOwner(), account.getName(),
-                Collections.singletonList("Owner: " + account.getOwner().getName()));
-        ItemStackTemplate template = new StaticItemTemplate(item);
-        Slot.ClickHandler clickHandler = (player, info) -> new AccountGUI(plugin, account).setParentGUI(this).open(player);
-        return SlotSettings.builder().itemTemplate(template).clickHandler(clickHandler).build();
+    ItemStack createItem(Account account) {
+        return GUI.head(account.getOwner(), account.getName(), "Owner: " + account.getOwner().getName());
     }
-
+    
+    @Override
+    void click(Account account, ClickType click) {
+        child(new AccountGUI(plugin, player, account)).open();
+    }
+    
     @Override
     List<MenuItemFilter<? super Account>> getFilters() {
         return Arrays.asList(
@@ -60,15 +82,5 @@ public class AccountListGUI extends MultiPageGUI<Account> {
                 MenuItemSorter.of("Bank Name Z-A", BY_BANK_NAME.reversed())
         );
     }
-
-    @Override
-    Observable getSubject() {
-        return plugin.getAccountService();
-    }
-
-    @Override
-    GUIType getType() {
-        return GUIType.ACCOUNT_LIST;
-    }
-
+    
 }

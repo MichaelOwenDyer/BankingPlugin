@@ -1,6 +1,7 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.type.BooleanConfigurationValue;
 
 /**
  * Configuration value for whether to confirm on removal of a bank or account.

@@ -1,9 +1,10 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.type.IntegerConfigurationValue;
+import com.monst.bankingplugin.configuration.validation.Bound;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
-import com.monst.pluginconfiguration.validation.Bound;
 
 import java.util.Optional;
 
@@ -13,7 +14,7 @@ import java.util.Optional;
  */
 public class AllowedOfflinePayouts extends IntegerConfigurationValue implements BankPolicy<Integer> {
 
-    public final AllowOverride allowOverride;
+    private final AllowOverride allowOverride;
 
     public AllowedOfflinePayouts(BankingPlugin plugin) {
         super(plugin, BankPolicy.defaultPath("allowed-offline-payouts"), 1);
@@ -49,5 +50,10 @@ public class AllowedOfflinePayouts extends IntegerConfigurationValue implements 
     public String toStringAt(Bank bank) {
         return format(Optional.ofNullable(bank.getAllowedOfflinePayouts()).orElseGet(this));
     }
-
+    
+    @Override
+    public AllowOverride getAllowOverride() {
+        return allowOverride;
+    }
+    
 }

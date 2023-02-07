@@ -1,15 +1,16 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.type.IntegerConfigurationValue;
+import com.monst.bankingplugin.configuration.validation.Bound;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
-import com.monst.pluginconfiguration.validation.Bound;
 
 import java.util.Optional;
 
 public class OfflineMultiplierDecrement extends IntegerConfigurationValue implements BankPolicy<Integer> {
 
-    public final AllowOverride allowOverride;
+    private final AllowOverride allowOverride;
 
     public OfflineMultiplierDecrement(BankingPlugin plugin) {
         super(plugin, BankPolicy.defaultPath("offline-multiplier-decrement"), 0);
@@ -45,5 +46,10 @@ public class OfflineMultiplierDecrement extends IntegerConfigurationValue implem
     public String toStringAt(Bank bank) {
         return format(Optional.ofNullable(bank.getOfflineMultiplierDecrement()).orElseGet(this));
     }
-
+    
+    @Override
+    public AllowOverride getAllowOverride() {
+        return allowOverride;
+    }
+    
 }

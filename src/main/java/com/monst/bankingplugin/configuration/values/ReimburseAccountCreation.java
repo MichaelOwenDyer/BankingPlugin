@@ -1,14 +1,15 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.type.BooleanConfigurationValue;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
 
 import java.util.Optional;
 
 public class ReimburseAccountCreation extends BooleanConfigurationValue implements BankPolicy<Boolean> {
 
-    public final AllowOverride allowOverride;
+    private final AllowOverride allowOverride;
 
     public ReimburseAccountCreation(BankingPlugin plugin) {
         super(plugin, BankPolicy.defaultPath("reimburse-account-creation"), false);
@@ -17,12 +18,12 @@ public class ReimburseAccountCreation extends BooleanConfigurationValue implemen
 
     @Override
     public Boolean at(Bank bank) {
-        if (bank.getReimburseAccountCreation() == null) {
+        if (bank.reimbursesAccountCreation() == null) {
             if (plugin.config().stickyDefaults.get())
                 bank.setReimburseAccountCreation(get());
             return get();
         }
-        return allowOverride.get() ? bank.getReimburseAccountCreation() : get();
+        return allowOverride.get() ? bank.reimbursesAccountCreation() : get();
     }
 
     @Override
@@ -37,7 +38,12 @@ public class ReimburseAccountCreation extends BooleanConfigurationValue implemen
 
     @Override
     public String toStringAt(Bank bank) {
-        return format(Optional.ofNullable(bank.getReimburseAccountCreation()).orElseGet(this));
+        return format(Optional.ofNullable(bank.reimbursesAccountCreation()).orElseGet(this));
     }
-
+    
+    @Override
+    public AllowOverride getAllowOverride() {
+        return allowOverride;
+    }
+    
 }

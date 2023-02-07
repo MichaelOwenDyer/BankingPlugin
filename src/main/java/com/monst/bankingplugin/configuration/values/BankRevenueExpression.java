@@ -1,10 +1,10 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.type.ConfigurationValue;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.pluginconfiguration.ConfigurationValue;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
@@ -16,11 +16,8 @@ import java.math.BigDecimal;
  */
 public class BankRevenueExpression extends ConfigurationValue<BankRevenueExpression.ExpressionWrapper> {
 
-    private final BankingPlugin plugin;
-
     public BankRevenueExpression(BankingPlugin plugin) {
         super(plugin, "bank-revenue-expression", expressionOf("(0.10 * x) * (1 - g) * log(c)"));
-        this.plugin = plugin;
     }
 
     @Override
@@ -29,8 +26,10 @@ public class BankRevenueExpression extends ConfigurationValue<BankRevenueExpress
             ExpressionWrapper e = expressionOf(input);
             if (e.isValidSyntax())
                 return e;
-        } catch (IllegalArgumentException ignored) {}
-        throw new ArgumentParseException(Message.NOT_AN_EXPRESSION.with(Placeholder.INPUT).as(input).translate(plugin));
+        } catch (IllegalArgumentException ignored) {
+            // String was empty, continue to throw ArgumentParseException
+        }
+        throw new ArgumentParseException(Message.NOT_AN_EXPRESSION.with(Placeholder.INPUT).as(input));
     }
 
     @Override
@@ -39,7 +38,7 @@ public class BankRevenueExpression extends ConfigurationValue<BankRevenueExpress
     }
 
     @Override
-    protected Object convertToFileData(ExpressionWrapper e) {
+    protected Object convertToYamlType(ExpressionWrapper e) {
         return format(e);
     }
 

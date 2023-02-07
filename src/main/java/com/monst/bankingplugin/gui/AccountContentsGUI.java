@@ -2,69 +2,71 @@ package com.monst.bankingplugin.gui;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.entity.Account;
+import org.bukkit.Bukkit;
 import org.bukkit.block.ShulkerBox;
-import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.Slot;
-import org.ipvp.canvas.type.ChestMenu;
 
-public class AccountContentsGUI extends SinglePageGUI<Account> {
+import java.util.HashMap;
+import java.util.Map;
 
-    private final InventoryHolder inventoryHolder;
-    // boolean canEdit; TODO: Implement remote editing
+public class AccountContentsGUI extends SinglePageGUI {
 
-    public AccountContentsGUI(BankingPlugin plugin, Account account) throws IllegalArgumentException {
-        super(plugin, account);
-        this.inventoryHolder = account.getLocation().findChest().orElseThrow(IllegalArgumentException::new);
+    private final Account account;
+    private final Inventory accountInventory;
+    private final Map<Integer, Runnable> clickHandlers;
+    // TODO: Implement remote editing
+
+    public AccountContentsGUI(BankingPlugin plugin, Player player, Account account) throws IllegalArgumentException {
+        super(plugin, player);
+        this.account = account;
+        this.accountInventory = account.getLocation().findChest().orElseThrow(IllegalArgumentException::new).getInventory();
+        this.clickHandlers = createClickHandlers(accountInventory.getContents());
+        // TODO: Subscribe to account changes?
     }
-
+    
     @Override
-    Menu createMenu() {
-        return ChestMenu.builder(guiSubject.getSize() * 3).title(guiSubject.getName()).redraw(true).build();
+    Inventory createInventory() {
+        return Bukkit.createInventory(this, accountInventory.getSize(), account.getName());
     }
-
-//    @Override
-//    void evaluateClearance(Player player) {
-//        canEdit = Permission.ACCOUNT_EDIT_OTHER.ownedBy(player);
-//    }
-
+    
     @Override
-    ItemStack createSlotItem(int slot) {
-        return inventoryHolder.getInventory().getItem(slot);
-    }
-
-    @Override
-    Slot.ClickHandler createClickHandler(int slot) {
-        ItemStack item = inventoryHolder.getInventory().getItem(slot);
-        if (item != null && item.getItemMeta() instanceof BlockStateMeta) {
-            BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
-            if (im.getBlockState() instanceof ShulkerBox) {
-                ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
-                return (player, info) -> new ShulkerBoxGUI(plugin, shulkerBox).setParentGUI(this).open(player);
-            }
+    Map<Integer, ItemStack> createItems(Player player) {
+        Map<Integer, ItemStack> items = new HashMap<>();
+        ItemStack[] contents = accountInventory.getContents();
+        for (int slot = 0; slot < contents.length; slot++) {
+            ItemStack item = contents[slot];
+            if (item == null)
+                continue;
+            items.put(slot, item);
         }
-        return null;
-//        if (canEdit)
-//            gui.getSlot(i).setClickOptions(ClickOptions.ALLOW_ALL);
-//        return (player, info) -> {
-//            ItemStack item = gui.getSlot(i).getItem(player);
-//            guiSubject.getInventoryHolder().getInventory().setItem(i, item);
-//            if (guiSubject.isDoubleChest()) {
-//                DoubleChest dc = (DoubleChest) guiSubject.getInventoryHolder();
-//                ((Chest) dc.getRightSide()).update();
-//                ((Chest) dc.getLeftSide()).update();
-//            } else {
-//                Chest chest = (Chest) guiSubject.getInventoryHolder();
-//                chest.update();
-//            }
-//        };
+        return items;
     }
-
+    
+    Map<Integer, Runnable> createClickHandlers(ItemStack[] contents) {
+        Map<Integer, Runnable> clickHandlers = new HashMap<>();
+        for (int slot = 0; slot < contents.length; slot++) {
+            ItemStack item = contents[slot];
+            if (item == null)
+                continue;
+            if (!(item.getItemMeta() instanceof BlockStateMeta))
+                continue;
+            BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
+            if (!(im.getBlockState() instanceof ShulkerBox))
+                continue;
+            ShulkerBox shulkerBox = (ShulkerBox) im.getBlockState();
+            clickHandlers.put(slot, () -> child(new ShulkerBoxGUI(plugin, player, shulkerBox)).open());
+        }
+        return clickHandlers;
+    }
+    
     @Override
-    GUIType getType() {
-        return GUIType.ACCOUNT_CONTENTS;
+    public void click(int slot, ClickType type) {
+        if (clickHandlers.containsKey(slot))
+            clickHandlers.get(slot).run();
     }
-
+    
 }

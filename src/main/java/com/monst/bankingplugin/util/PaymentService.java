@@ -31,7 +31,7 @@ public class PaymentService {
         if (amount > 0)
             response = plugin.getEconomy().depositPlayer(player, amount);
         else
-            response = plugin.getEconomy().withdrawPlayer(player, Math.abs(amount));
+            response = plugin.getEconomy().withdrawPlayer(player, amount * -1);
         switch (response.type) {
             case SUCCESS:
                 return true;
@@ -40,7 +40,7 @@ public class PaymentService {
             case FAILURE:
                 return false;
             default:
-                throw new IllegalStateException("Transaction failed!");
+                throw new IllegalStateException("Unknown EconomyResponse type: " + response.type);
         }
     }
 

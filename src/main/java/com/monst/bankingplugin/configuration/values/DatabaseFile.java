@@ -1,10 +1,7 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
-import com.monst.pluginconfiguration.impl.PathConfigurationValue;
+import com.monst.bankingplugin.configuration.type.PathConfigurationValue;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
@@ -18,23 +15,16 @@ import java.util.stream.Stream;
 
 public class DatabaseFile extends PathConfigurationValue {
 
-    private final BankingPlugin plugin;
     private final Path databaseFolder;
 
     public DatabaseFile(BankingPlugin plugin) {
         super(plugin, "database-file", Paths.get("banking"));
-        this.plugin = plugin;
         this.databaseFolder = plugin.getDataFolder().toPath().resolve("database");
     }
 
     @Override
-    protected ArgumentParseException createArgumentParseException(String input) {
-        return new ArgumentParseException(Message.NOT_A_FILENAME.with(Placeholder.INPUT).as(input).translate(plugin));
-    }
-
-    @Override
     protected void afterSet() {
-        plugin.reloadPersistenceManager();
+        plugin.reloadDatabase();
     }
 
     @Override
@@ -44,9 +34,8 @@ public class DatabaseFile extends PathConfigurationValue {
         Stream.Builder<String> tabCompletions = Stream.builder();
         tabCompletions.accept(toString());
         tabCompletions.accept("banking");
-        try {
-            Files.walk(databaseFolder, 1)
-                    .filter(Files::isDirectory)
+        try (Stream<Path> children = Files.walk(databaseFolder, 1)) {
+            children.filter(Files::isDirectory)
                     .map(databaseFolder::relativize)
                     .map(Path::toString)
                     .forEach(tabCompletions);

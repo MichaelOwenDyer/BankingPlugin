@@ -1,0 +1,2 @@
+jdbcUrl=jdbc:hsqldb:file:C:/Users/Michael/git/BankingPlugin/testdb/;shutdown=true
+connectionTestQuery=CALL NOW()

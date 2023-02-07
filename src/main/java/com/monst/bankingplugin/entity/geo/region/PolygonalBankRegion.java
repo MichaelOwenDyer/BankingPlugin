@@ -1,52 +1,55 @@
 package com.monst.bankingplugin.entity.geo.region;
 
-import com.monst.bankingplugin.converter.VerticesConverter;
-import com.monst.bankingplugin.entity.geo.Vector2;
-import com.monst.bankingplugin.entity.geo.Vector3;
 import com.monst.polylabel.PolyLabel;
-import jakarta.persistence.Convert;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.Collections;
+import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This class represents a region of space in the shape of a polygonal prism. It is defined by a {@link World},
- * a minimum and a maximum y-coordinate, and an ordered list of {@link Vector2} (x,z) coordinate pairs to
+ * a minimum and a maximum y-coordinate, and an ordered list of (x,z) coordinate pairs to
  * represent the vertices. An edge of this region is a line formed between two neighboring coordinate pairs on the list.
  */
-@Entity
-@DiscriminatorValue(value = "Polygon")
 public class PolygonalBankRegion extends BankRegion {
+	
+	private static final int MAX_COORDS_IN_TOSTRING = 5;
 
-	@Convert(converter = VerticesConverter.class)
-	private List<Vector2> vertices;
-	private int minY;
-	private int maxY;
-
-	public PolygonalBankRegion() {}
-
+	private final int[] pointsX;
+	private final int[] pointsZ;
+	private final int nPoints;
+	private final int minY;
+	private final int maxY;
+	
+	// Lazy initialization
+	private Integer minX;
+	private Integer minZ;
+	private Integer maxX;
+	private Integer maxZ;
+	private Block centerBlock;
+	
 	/**
 	 * Creates a new {@link PolygonalBankRegion} with the specified attributes
 	 *
 	 * @param world the world the region is in
-	 * @param vertices the vertices of the region
-	 * @param minY the lower y-coordinate bound
-	 * @param maxY the upper y-coordinate bound
+	 * @param pointsX the x vertices of the region
+	 * @param pointsZ the z vertices of the region
+	 * @param y1 the lower y-coordinate bound
+	 * @param y2 the upper y-coordinate bound
 	 */
-	public PolygonalBankRegion(World world, List<Vector2> vertices, int minY, int maxY) {
+	public PolygonalBankRegion(World world, int[] pointsX, int[] pointsZ, int y1, int y2) {
 		super(world);
-		if (vertices == null || vertices.size() < 3)
-			throw new IllegalArgumentException("Vertices cannot be fewer than 3!");
-		this.vertices = Collections.unmodifiableList(vertices);
-		this.minY = minY;
-		this.maxY = maxY;
+		if (pointsX == null || pointsZ == null || pointsX.length < 3 || pointsZ.length < 3)
+			throw new IllegalArgumentException("Points cannot be fewer than 3!");
+		if (pointsX.length != pointsZ.length)
+			throw new IllegalArgumentException("Points must be of equal length!");
+		this.pointsX = pointsX;
+		this.pointsZ = pointsZ;
+		this.nPoints = pointsX.length;
+		this.minY = Math.min(y1, y2);
+		this.maxY = Math.max(y1, y2);
 	}
 
 	/**
@@ -56,33 +59,53 @@ public class PolygonalBankRegion extends BankRegion {
 	 * @return the pole of inaccessibility of this PolygonalBankRegion
 	 */
 	@Override
-	public Vector3 getCenterPoint() {
-		Integer[][][] polygon = new Integer[1][vertices.size()][2];
-		for (int i = 0; i < vertices.size(); i++)
-			polygon[0][i] = new Integer[] { vertices.get(i).getX(), vertices.get(i).getZ() };
-		PolyLabel result = PolyLabel.polyLabel(polygon);
-		return new Vector3((int) Math.round(result.getX()), (maxY + minY) / 2, (int) Math.round(result.getY()));
+	public Block getCenterBlock() {
+		if (centerBlock == null) {
+			Integer[][][] polygon = new Integer[1][nPoints][2];
+			for (int i = 0; i < nPoints; i++)
+				polygon[0][i] = new Integer[] { pointsX[i], pointsZ[i] };
+			PolyLabel result = PolyLabel.polyLabel(polygon);
+			centerBlock = world.getBlockAt((int) result.getX(), (maxY + minY) / 2, (int) result.getY());
+		}
+		return centerBlock;
 	}
 
-	private transient Integer minX = null;
 	@Override
 	public int getMinX() {
-		if (minX == null)
-			minX = vertices.stream().mapToInt(Vector2::getX).min().orElseThrow(IllegalStateException::new);
+		if (minX == null) {
+			minX = pointsX[0];
+			for (int x : pointsX)
+				if (x < minX)
+					minX = x;
+		}
 		return minX;
 	}
-
-	private transient Integer maxX = null;
-	@Override
-	public int getMaxX() {
-		if (maxX == null)
-			maxX = vertices.stream().mapToInt(Vector2::getX).max().orElseThrow(IllegalStateException::new);
-		return maxX;
-	}
-
+	
 	@Override
 	public int getMinY() {
 		return minY;
+	}
+	
+	@Override
+	public int getMinZ() {
+		if (minZ == null) {
+			minZ = pointsZ[0];
+			for (int z : pointsZ)
+				if (z < minZ)
+					minZ = z;
+		}
+		return minZ;
+	}
+
+	@Override
+	public int getMaxX() {
+		if (maxX == null) {
+			maxX = pointsX[0];
+			for (int x : pointsX)
+				if (x > maxX)
+					maxX = x;
+		}
+		return maxX;
 	}
 
 	@Override
@@ -90,60 +113,65 @@ public class PolygonalBankRegion extends BankRegion {
 		return maxY;
 	}
 
-	private transient Integer minZ = null;
-	@Override
-	public int getMinZ() {
-		if (minZ == null)
-			minZ = vertices.stream().mapToInt(Vector2::getZ).min().orElseThrow(IllegalStateException::new);
-		return minZ;
-	}
-
-	private transient Integer maxZ = null;
 	@Override
 	public int getMaxZ() {
-		if (maxZ == null)
-			maxZ = vertices.stream().mapToInt(Vector2::getZ).max().orElseThrow(IllegalStateException::new);
+		if (maxZ == null) {
+			maxZ = pointsZ[0];
+			for (int z : pointsZ)
+				if (z > maxZ)
+					maxZ = z;
+		}
 		return maxZ;
 	}
 
-	public List<Vector2> getVertices() {
-		return vertices;
+	public int[] getPointsX() {
+		return pointsX;
+	}
+	
+	public int[] getPointsZ() {
+		return pointsZ;
 	}
 
 	@Override
 	public List<Block> getCorners() {
-		List<Block> vertices = new LinkedList<>();
-		for (Vector2 v : this.vertices) {
-			vertices.add(world.getBlockAt(v.getX(), getMinY(), v.getZ()));
-			vertices.add(world.getBlockAt(v.getX(), getMaxY(), v.getZ()));
+		List<Block> corners = new LinkedList<>();
+		for (int i = 0; i < nPoints; i++) {
+			corners.add(world.getBlockAt(pointsX[i], getMinY(), pointsZ[i]));
+			corners.add(world.getBlockAt(pointsX[i], getMaxY(), pointsZ[i]));
 		}
-		return vertices;
+		return corners;
 	}
-
+	
+	@Override
+	Shape getShape() {
+		return new Polygon(pointsX, pointsZ, nPoints);
+	}
+	
 	@Override
 	public long getVolume() {
-		return (long) getFootprint().size() * getHeight();
+		return (long) getArea() * getHeight();
 	}
-
-	@Override
-	public boolean overlaps(BankRegion region) {
-		if (isDisjunct(region))
-			return false;
-		Set<Vector2> footprint = region.getFootprint();
-		return getFootprint().stream().anyMatch(footprint::contains);
+	
+	private int getArea() {
+		int area = 0;
+		for (int i = 0; i < nPoints; i++) {
+			int j = (i + 1) % nPoints;
+			area += pointsX[i] * pointsZ[j] - pointsX[j] * pointsZ[i];
+		}
+		return Math.abs(area / 2);
 	}
 
 	@Override
 	public boolean contains(int pointX, int pointZ) {
 		int nextX, nextZ, x1, z1, x2, z2;
-		int prevX = vertices.get(vertices.size() - 1).getX();
-		int prevZ = vertices.get(vertices.size() - 1).getZ();
+		int prevX = pointsX[nPoints - 1];
+		int prevZ = pointsZ[nPoints - 1];
 
 		long crossProduct;
 		boolean inside = false;
-		for (Vector2 point : vertices) {
-			nextX = point.getX();
-			nextZ = point.getZ();
+		for (int i = 0; i < nPoints; i++) {
+			nextX = pointsX[i];
+			nextZ = pointsZ[i];
 			if (nextX == pointX && nextZ == pointZ) // Location is on a vertex
 				return true;
 			if (nextX > prevX) {
@@ -180,13 +208,14 @@ public class PolygonalBankRegion extends BankRegion {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(64);
-		sb.append(vertices.stream()
-				.limit(8)
-				.map(vertex -> "(" + vertex.getX() + ", " + vertex.getZ() + ")")
-				.collect(Collectors.joining(", "))
-		);
-		if (vertices.size() > 8)
-			sb.append(", ...");
+		for (int i = 0; i < nPoints && i <= MAX_COORDS_IN_TOSTRING; i++) {
+			sb.append(pointsX[i]);
+			sb.append(", ");
+			sb.append(pointsZ[i]);
+			sb.append("; ");
+		}
+		if (nPoints > MAX_COORDS_IN_TOSTRING)
+			sb.append("... (").append(nPoints).append(" total)");
 		sb.append(" at ").append(minY).append(" ≤ y ≤ ").append(maxY);
 		return sb.toString();
 	}

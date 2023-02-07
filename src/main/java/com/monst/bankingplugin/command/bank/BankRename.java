@@ -1,15 +1,16 @@
 package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,7 +25,7 @@ public class BankRename extends SubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.BANK_CREATE;
+        return Permissions.BANK_CREATE;
     }
 
     @Override
@@ -43,25 +44,25 @@ public class BankRename extends SubCommand {
     }
 
     @Override
-    protected void execute(CommandSender sender, String[] args) throws ExecutionException {
+    protected void execute(CommandSender sender, String[] args) throws CommandExecutionException {
         Bank bank = plugin.getBankService().findByName(args[0]);
         if (bank == null)
-            throw new ExecutionException(plugin, Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
+            throw err(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
 
-        if (bank.isAdminBank() && Permission.BANK_CONFIGURE_ADMIN.notOwnedBy(sender))
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_BANK_RENAME_ADMIN);
+        if (bank.isAdminBank() && Permissions.BANK_CONFIGURE_ADMIN.notOwnedBy(sender))
+            throw err(Message.NO_PERMISSION_BANK_RENAME_ADMIN);
 
         if (!(bank.isAdminBank() || (sender instanceof Player && bank.isTrusted((Player) sender))
-                || Permission.BANK_CONFIGURE_OTHER.ownedBy(sender)))
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_BANK_RENAME_OTHER);
+                || Permissions.BANK_CONFIGURE_OTHER.ownedBy(sender)))
+            throw err(Message.NO_PERMISSION_BANK_RENAME_OTHER);
 
         String newName = Arrays.stream(args).skip(1).collect(Collectors.joining(" "));
         Bank bankWithSameName = plugin.getBankService().findByName(newName);
         if (bankWithSameName != null && !bankWithSameName.equals(bank))
-            throw new ExecutionException(plugin, Message.NAME_NOT_UNIQUE.with(Placeholder.BANK_NAME).as(newName));
+            throw err(Message.NAME_NOT_UNIQUE.with(Placeholder.BANK_NAME).as(newName));
 
         if (plugin.config().nameRegex.doesNotMatch(newName))
-            throw new ExecutionException(plugin, Message.NAME_NOT_ALLOWED
+            throw err(Message.NAME_NOT_ALLOWED
                     .with(Placeholder.NAME).as(newName)
                     .and(Placeholder.PATTERN).as(plugin.config().nameRegex.get()));
 
@@ -75,10 +76,11 @@ public class BankRename extends SubCommand {
     protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length == 1)
             return plugin.getBankService()
-                    .findByPlayerAllowedToModify(player, Permission.BANK_CONFIGURE_OTHER, Permission.BANK_CONFIGURE_ADMIN, false)
+                    .findNamesByPlayerAllowedToModify(player,
+                            Permissions.BANK_CONFIGURE_OTHER.ownedBy(player),
+                            Permissions.BANK_CONFIGURE_ADMIN.ownedBy(player), false)
                     .stream()
-                    .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+                    .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         return Collections.emptyList();

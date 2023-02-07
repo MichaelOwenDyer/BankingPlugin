@@ -1,11 +1,11 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.type.ConfigurationCollection;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.pluginconfiguration.ConfigurationCollection;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -20,12 +20,10 @@ import java.util.stream.Collectors;
  */
 public class InterestPayoutTimes extends ConfigurationCollection<LocalTime, Set<LocalTime>> implements BankPolicy<Set<LocalTime>> {
 
-    private final BankingPlugin plugin;
-    public final AllowOverride allowOverride;
+    private final AllowOverride allowOverride;
 
     public InterestPayoutTimes(BankingPlugin plugin) {
         super(plugin, BankPolicy.defaultPath("interest-payout-times"), Collections.emptySet());
-        this.plugin = plugin;
         this.allowOverride = new AllowOverride(plugin, "interest-payout-times") {
             @Override
             protected void afterSet() {
@@ -44,7 +42,7 @@ public class InterestPayoutTimes extends ConfigurationCollection<LocalTime, Set<
         try {
             return LocalTime.parse(input);
         } catch (DateTimeParseException e) {
-            throw new ArgumentParseException(Message.NOT_A_TIME.with(Placeholder.INPUT).as(input).translate(plugin));
+            throw new ArgumentParseException(Message.NOT_A_TIME.with(Placeholder.INPUT).as(input));
         }
     }
 
@@ -54,7 +52,7 @@ public class InterestPayoutTimes extends ConfigurationCollection<LocalTime, Set<
     }
 
     @Override
-    protected Object convertToFileData(Set<LocalTime> localTimes) {
+    protected Object convertToYamlType(Set<LocalTime> localTimes) {
         return localTimes.stream().map(LocalTime::toString).collect(Collectors.toList());
     }
 
@@ -82,5 +80,10 @@ public class InterestPayoutTimes extends ConfigurationCollection<LocalTime, Set<
     public String toStringAt(Bank bank) {
         return format(Optional.ofNullable(bank.getInterestPayoutTimes()).orElseGet(this));
     }
-
+    
+    @Override
+    public AllowOverride getAllowOverride() {
+        return allowOverride;
+    }
+    
 }

@@ -1,8 +1,9 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.type.MonetaryConfigurationValue;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -14,16 +15,11 @@ import java.util.Optional;
  */
 public class AccountCreationPrice extends MonetaryConfigurationValue implements BankPolicy<BigDecimal> {
 
-    public final AllowOverride allowOverride;
+    private final AllowOverride allowOverride;
 
     public AccountCreationPrice(BankingPlugin plugin) {
         super(plugin, BankPolicy.defaultPath("account-creation-price"), BigDecimal.valueOf(2500));
         this.allowOverride = new AllowOverride(plugin, "account-creation-price");
-    }
-
-    @Override
-    public String format(BigDecimal value) {
-        return plugin.getEconomy().format(value.doubleValue());
     }
 
     @Override
@@ -50,5 +46,10 @@ public class AccountCreationPrice extends MonetaryConfigurationValue implements 
     public String toStringAt(Bank bank) {
         return format(Optional.ofNullable(bank.getAccountCreationPrice()).orElseGet(this));
     }
-
+    
+    @Override
+    public AllowOverride getAllowOverride() {
+        return allowOverride;
+    }
+    
 }

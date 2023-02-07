@@ -1,97 +1,116 @@
 package com.monst.bankingplugin.entity.geo.location;
 
-import com.monst.bankingplugin.converter.WorldConverter;
-import com.monst.bankingplugin.entity.AbstractEntity;
-import com.monst.bankingplugin.entity.geo.Vector3;
-import com.monst.bankingplugin.util.Utils;
-import jakarta.persistence.*;
+import com.monst.bankingplugin.entity.Entity;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.InventoryHolder;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Optional;
 
-@Entity
-@Table(name = "account_location")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "size")
-public abstract class AccountLocation extends AbstractEntity implements Iterable<Block> {
+public class AccountLocation extends Entity implements Iterable<Block> {
+    
+    public static AccountLocation fromDatabase(World world, int x1, int y, int z1, Integer x2, Integer z2) {
+        if (x2 == null || z2 == null)
+            return new AccountLocation(world, x1, y, z1);
+        return new DoubleAccountLocation(world, x1, y, z1, x2, z2);
+    }
 
-    public static AccountLocation toAccountLocation(InventoryHolder ih) {
-        if (ih instanceof DoubleChest)
-            return new DoubleAccountLocation((DoubleChest) ih);
-        else if (ih instanceof Chest)
-            return new SingleAccountLocation((Chest) ih);
+    public static AccountLocation from(InventoryHolder ih) {
+        if (ih instanceof DoubleChest) {
+            DoubleChest dc = (DoubleChest) ih;
+            Chest left = (Chest) dc.getLeftSide();
+            Chest right = (Chest) dc.getRightSide();
+            return new DoubleAccountLocation(dc.getWorld(), left.getX(), left.getY(), left.getZ(), right.getX(), right.getZ());
+        }
+        if (ih instanceof Chest) {
+            Chest chest = (Chest) ih;
+            return new AccountLocation(chest.getWorld(), chest.getX(), chest.getY(), chest.getZ());
+        }
         throw new IllegalArgumentException("InventoryHolder must be a chest!");
     }
+    
+    final World world;
+    final int minX;
+    final int y;
+    final int minZ;
 
-    @Convert(converter = WorldConverter.class)
-    World world;
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "x", column = @Column(name = "x1")),
-            @AttributeOverride(name = "z", column = @Column(name = "z1"))
-    })
-    Vector3 v1;
-
-    public AccountLocation() {}
-
-    AccountLocation(World world, Vector3 v1) {
-        this.generateID();
+    AccountLocation(World world, int minX, int y, int minZ) {
         this.world = world;
-        this.v1 = v1;
+        this.minX = minX;
+        this.y = y;
+        this.minZ = minZ;
+    }
+    
+    public Block getMinimumBlock() {
+        return world.getBlockAt(getMinX(), getY(), getMinZ());
     }
 
-    public abstract Vector3 getMinimumBlock();
-
-    public abstract Vector3 getMaximumBlock();
-
-    public abstract Optional<InventoryHolder> findChest();
-
-    InventoryHolder getChestAt(Vector3 vector) {
-        if (world == null)
-            return null;
-        Block block = vector.toBlock(world);
-        if (!Utils.isChest(block))
-            return null;
-        return ((Chest) block.getState()).getInventory().getHolder();
+    public Block getMaximumBlock() {
+        return world.getBlockAt(getMaxX(), getY(), getMaxZ());
     }
-
-    /**
-     * Ensures that the account chest is openable.
-     *
-     * @see Utils#isTransparent(Block)
-     */
-    public boolean isBlocked() {
-        for (Block chestSide : this)
-            if (!Utils.isTransparent(chestSide.getRelative(BlockFace.UP)))
-                return true;
-        return false;
-    }
-
+    
     public World getWorld() {
         return world;
     }
-
+    
+    public int getMinX() {
+        return minX;
+    }
+    
     public int getY() {
-        return v1.getY();
+        return y;
+    }
+    
+    public int getMinZ() {
+        return minZ;
+    }
+    
+    public int getMaxX() {
+        return minX;
+    }
+    
+    public int getMaxZ() {
+        return minZ;
     }
 
-    public boolean contains(Vector3 v) {
-        if (v.getY() != getY())
-            return false;
-        for (Block chest : this)
-            if (chest.getX() == v.getX() && chest.getZ() == v.getZ())
-                return true;
-        return false;
+    public Optional<InventoryHolder> findChest() {
+        return Optional.ofNullable(getChestAt(getMinimumBlock()));
     }
 
-    public abstract Location getTeleportLocation();
+    InventoryHolder getChestAt(Block block) {
+        if (block.getWorld() == null)
+            return null;
+        if (block.getType() != Material.CHEST && block.getType() != Material.TRAPPED_CHEST)
+            return null;
+        return ((Chest) block.getState()).getInventory().getHolder();
+    }
+    
+    @Override
+    public Iterator<Block> iterator() {
+        return Collections.singleton(getMinimumBlock()).iterator();
+    }
+    
+    public Location getTeleportLocation() {
+        return getMinimumBlock().getLocation().add(0.5, 1, 0.5);
+    }
 
-    public abstract byte getSize();
+    public byte getSize() {
+        return 1;
+    }
+    
+    @Override
+    public String toString() {
+        return "(" +
+                minX + ", " +
+                y + ", " +
+                minZ +
+                ")";
+    }
 
 }

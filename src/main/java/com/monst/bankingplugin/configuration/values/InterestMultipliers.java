@@ -1,15 +1,14 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.exception.UnreadableValueException;
+import com.monst.bankingplugin.configuration.exception.ValueOutOfBoundsException;
+import com.monst.bankingplugin.configuration.type.ConfigurationCollection;
+import com.monst.bankingplugin.configuration.validation.Bound;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.pluginconfiguration.ConfigurationCollection;
-import com.monst.pluginconfiguration.exception.ArgumentParseException;
-import com.monst.pluginconfiguration.exception.UnreadableValueException;
-import com.monst.pluginconfiguration.exception.ValueOutOfBoundsException;
-import com.monst.pluginconfiguration.validation.Bound;
-import com.monst.pluginconfiguration.validation.IntegerValidation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,12 +20,10 @@ import java.util.Optional;
  */
 public class InterestMultipliers extends ConfigurationCollection<Integer, List<Integer>> implements BankPolicy<List<Integer>> {
 
-    private final BankingPlugin plugin;
-    public final AllowOverride allowOverride;
+    private final AllowOverride allowOverride;
 
     public InterestMultipliers(BankingPlugin plugin) {
         super(plugin, BankPolicy.defaultPath("interest-multipliers"), Collections.singletonList(1));
-        this.plugin = plugin;
         this.allowOverride = new AllowOverride(plugin, "interest-multipliers");
     }
 
@@ -40,7 +37,7 @@ public class InterestMultipliers extends ConfigurationCollection<Integer, List<I
         try {
             return Integer.parseInt(input);
         } catch (NumberFormatException e) {
-            throw new ArgumentParseException(Message.NOT_AN_INTEGER.with(Placeholder.INPUT).as(input).translate(plugin));
+            throw new ArgumentParseException(Message.NOT_AN_INTEGER.with(Placeholder.INPUT).as(input));
         }
     }
 
@@ -64,7 +61,7 @@ public class InterestMultipliers extends ConfigurationCollection<Integer, List<I
 
     @Override
     protected Bound<Integer> getElementBound() {
-        return IntegerValidation.absolute();
+        return Bound.requiring(i -> i >= 0, Math::abs);
     }
 
     @Override
@@ -91,5 +88,10 @@ public class InterestMultipliers extends ConfigurationCollection<Integer, List<I
     public String toStringAt(Bank bank) {
         return format(Optional.ofNullable(bank.getInterestMultipliers()).orElseGet(this));
     }
-
+    
+    @Override
+    public AllowOverride getAllowOverride() {
+        return allowOverride;
+    }
+    
 }

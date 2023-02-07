@@ -1,13 +1,12 @@
 package com.monst.bankingplugin.event.account;
 
-import com.monst.bankingplugin.command.account.AccountOpen;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
 /**
  * This event is fired when a player uses the
- * {@link AccountOpen} command.
+ * {@link com.monst.bankingplugin.command.account.AccountOpen} command.
  */
 public class AccountOpenCommandEvent extends AccountCommandEvent implements Cancellable {
 

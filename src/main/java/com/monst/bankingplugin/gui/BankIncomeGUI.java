@@ -4,32 +4,46 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.entity.log.BankIncome;
 import com.monst.bankingplugin.entity.log.FinancialStatement;
-import com.monst.bankingplugin.util.Observable;
+import com.monst.bankingplugin.gui.option.MenuItemFilter;
+import com.monst.bankingplugin.gui.option.MenuItemSorter;
+import com.monst.bankingplugin.util.Promise;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.ipvp.canvas.slot.SlotSettings;
-import org.ipvp.canvas.template.StaticItemTemplate;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
 public class BankIncomeGUI extends MultiPageGUI<BankIncome> {
+    
+    private final Bank bank;
 
-    public BankIncomeGUI(BankingPlugin plugin, Bank bank) {
-        super(plugin, callback -> plugin.getBankIncomeService().findByBank(bank, callback));
+    public BankIncomeGUI(BankingPlugin plugin, Player player, Bank bank) {
+        super(plugin, player);
+        this.bank = bank;
     }
-
+    
+    @Override
+    Promise<Integer> countItems() {
+        return Promise.sync(() -> plugin.getBankIncomeService().countByBank(bank));
+    }
+    
+    @Override
+    Promise<List<BankIncome>> fetchItems(int offset, int limit) {
+        return plugin.getBankIncomeService().findByBank(bank, offset, limit);
+    }
+    
     @Override
     String getTitle() {
         return "Bank Income Log";
     }
-
+    
     @Override
-    SlotSettings createSlotSettings(BankIncome income) {
+    ItemStack createItem(BankIncome income) {
         Material icon = income.getNetIncome().signum() >= 0 ? Material.LIME_CONCRETE : Material.RED_CONCRETE;
-        ItemStack item = createSlotItem(icon, "Income #" + income.getID(), Arrays.asList(
+        return GUI.item(icon, "Income #" + income.getID(), Arrays.asList(
                 income.getTimestamp(),
                 "  Gross Income: " + ChatColor.GREEN + format(income.getRevenue()),
                 "+ Fees Received: " + ChatColor.GREEN + format(income.getLowBalanceFees()),
@@ -37,9 +51,8 @@ public class BankIncomeGUI extends MultiPageGUI<BankIncome> {
                 "                 ------------",
                 "  Net Profit:    " + formatAndColorize(income.getNetIncome())
         ));
-        return SlotSettings.builder().itemTemplate(new StaticItemTemplate(item)).build();
     }
-
+    
     @Override
     List<MenuItemFilter<? super BankIncome>> getFilters() {
         return Arrays.asList(
@@ -67,16 +80,6 @@ public class BankIncomeGUI extends MultiPageGUI<BankIncome> {
                 MenuItemSorter.of("Most Low Balance Fees", BY_LOW_BALANCE_FEES.reversed()),
                 MenuItemSorter.of("Least Low Balance Fees", BY_LOW_BALANCE_FEES)
         );
-    }
-
-    @Override
-    GUIType getType() {
-        return GUIType.BANK_INCOME_LOG;
-    }
-
-    @Override
-    Observable getSubject() {
-        return plugin.getBankIncomeService();
     }
 
 }

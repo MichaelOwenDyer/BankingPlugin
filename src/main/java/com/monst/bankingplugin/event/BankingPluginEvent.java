@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.event;
 
-import com.monst.bankingplugin.exception.CancelledException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
@@ -19,10 +19,10 @@ public abstract class BankingPluginEvent extends Event implements CommandSenderE
         return executor;
     }
 
-    public void fire() throws CancelledException {
+    public void fire() throws EventCancelledException {
         callEvent();
         if (this instanceof Cancellable && ((Cancellable) this).isCancelled())
-            throw new CancelledException();
+            throw new EventCancelledException();
     }
 
     protected void callEvent() {

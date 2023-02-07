@@ -1,23 +1,26 @@
 package com.monst.bankingplugin;
 
 import com.earth2me.essentials.Essentials;
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.monst.bankingplugin.command.ClickAction;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.command.account.AccountCommand;
 import com.monst.bankingplugin.command.bank.BankCommand;
 import com.monst.bankingplugin.command.plugin.BPCommand;
 import com.monst.bankingplugin.configuration.Configuration;
+import com.monst.bankingplugin.entity.Account;
+import com.monst.bankingplugin.exception.MissingDependencyException;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardListener;
 import com.monst.bankingplugin.lang.ColorStringBuilder;
 import com.monst.bankingplugin.listener.*;
-import com.monst.bankingplugin.persistence.PersistenceManager;
+import com.monst.bankingplugin.persistence.Database;
 import com.monst.bankingplugin.persistence.service.*;
-import com.monst.bankingplugin.util.Callback;
-import com.monst.bankingplugin.util.PaymentService;
-import com.monst.bankingplugin.util.SchedulerService;
-import com.monst.bankingplugin.util.UpdatePackage;
+import com.monst.bankingplugin.util.*;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
@@ -31,17 +34,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
-import org.ipvp.canvas.MenuFunctionListener;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -51,16 +51,16 @@ public class BankingPlugin extends JavaPlugin {
     /*	Configuration  */
     private Configuration configuration;
 
-    /*	Entity Utils  */
-    private PersistenceManager persistenceManager;
+    /*	Database  */
+    private Database database;
 
     /*  Services  */
     private SchedulerService schedulerService;
     private PaymentService paymentService;
+    private Worths worths;
 
     /*	Hard Dependencies  */
     private Economy economy;
-    private Essentials essentials;
 
     /*	Soft Dependencies  */
     private Plugin worldGuard;
@@ -68,7 +68,7 @@ public class BankingPlugin extends JavaPlugin {
     private WorldEditPlugin worldEdit;
 
     /*	Update Package  */
-    private UpdatePackage updatePackage;
+    private Update update;
 
     /*	Debug  */
     private PrintWriter debugWriter;
@@ -93,26 +93,43 @@ public class BankingPlugin extends JavaPlugin {
     public void onEnable() {
         if (config().enableStartupMessage.get())
             printStartupMessage();
-
-        if (!checkForDependencies()) {
+        
+        try {
+            economy = findEconomy();
+            worths = new Worths(this, findEssentials());
+        } catch (MissingDependencyException e) {
+            getLogger().severe(e.getMessage());
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
         checkServerVersion();
-        loadExternalPlugins();
+        loadSoftDependencies();
 
-        persistenceManager = new PersistenceManager(this);
+        database = new Database(this);
+        
+        // TODO: Necessary? Maybe lazy load?
+        for (Account account : getAccountService().findAll()) {
+            account.setBalance(worths.appraise(account));
+            account.updateChestTitle();
+        }
+        
         schedulerService = new SchedulerService(this);
-        schedulerService.scheduleAll();
         paymentService = new PaymentService(this);
 
-        new AccountCommand(this).register();
-        new BankCommand(this).register();
-        new BPCommand(this).register();
+        new AccountCommand(this);
+        new BankCommand(this);
+        new BPCommand(this);
 
-        if (config().enableStartupUpdateCheck.get())
-		    checkForUpdates();
+        if (config().enableStartupUpdateCheck.get()) {
+            checkForUpdates().then(update -> {
+                if (update == null)
+                    return;
+                getLogger().warning("Version " + update.getVersion() + " of BankingPlugin is available!");
+                if (config().downloadUpdatesAutomatically.get())
+                    update.download();
+            }).catchError(error -> getLogger().warning("Failed to check for updates!"));
+        }
 
         registerListeners();
         enableMetrics();
@@ -121,14 +138,17 @@ public class BankingPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         debug("Disabling BankingPlugin...");
+        
+        for (Account account : getAccountService().findAll())
+            account.resetChestTitle();
 
         ClickAction.clear();
         SubCommand.clearCache();
 
         if (debugWriter != null)
             debugWriter.close();
-        if (persistenceManager != null)
-            persistenceManager.shutdown();
+        if (database != null)
+            database.shutdown();
         if (schedulerService != null)
             schedulerService.unscheduleAll();
     }
@@ -145,23 +165,22 @@ public class BankingPlugin extends JavaPlugin {
     public void printStartupMessage() {
         Bukkit.getServer().getConsoleSender().sendMessage(STARTUP_MESSAGE);
     }
-
-    private boolean checkForDependencies() {
+    
+    private Economy findEconomy() throws MissingDependencyException {
         Plugin vault = getServer().getPluginManager().getPlugin("Vault");
-        if (vault == null || !vault.isEnabled()) {
-            getLogger().severe("Could not find dependency 'Vault'!");
-            return false;
-        }
-
-        Plugin essentials = getServer().getPluginManager().getPlugin("Essentials");
+        if (vault == null || !vault.isEnabled())
+            throw new MissingDependencyException("Could not find dependency 'Vault'!");
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (essentials == null || rsp == null || !essentials.isEnabled() || !(essentials instanceof Essentials)) {
-            getLogger().severe("Could not find dependency 'Essentials'!");
-            return false;
-        }
-        this.economy = rsp.getProvider();
-        this.essentials = (Essentials) essentials;
-        return true;
+        if (rsp == null)
+            throw new MissingDependencyException("Could not find Vault economy provider!");
+        return rsp.getProvider();
+    }
+    
+    private Essentials findEssentials() throws MissingDependencyException {
+        Plugin essentials = getServer().getPluginManager().getPlugin("Essentials");
+        if (essentials == null || !essentials.isEnabled() || !(essentials instanceof Essentials))
+            throw new MissingDependencyException("Could not find dependency 'Essentials'!");
+        return (Essentials) essentials;
     }
 
     private void checkServerVersion() {
@@ -185,7 +204,7 @@ public class BankingPlugin extends JavaPlugin {
     /**
      * Find other plugins running on the server that BankingPlugin can integrate with.
      */
-    private void loadExternalPlugins() {
+    private void loadSoftDependencies() {
         Plugin griefPreventionPlugin = Bukkit.getServer().getPluginManager().getPlugin("GriefPrevention");
         if (griefPreventionPlugin instanceof GriefPrevention)
             griefPrevention = (GriefPrevention) griefPreventionPlugin;
@@ -198,69 +217,27 @@ public class BankingPlugin extends JavaPlugin {
             WorldGuardWrapper.getInstance().registerEvents(this);
     }
 
-    private void checkForUpdates() {
-        checkForUpdates(Callback.of(this,
-                updatePackage -> {
-                    if (updatePackage == null)
-                        return;
-                    getLogger().warning("Version " + updatePackage.getVersion() + " of BankingPlugin is available!");
-                    if (config().downloadUpdatesAutomatically.get()) {
-                        getLogger().info("Downloading update...");
-                        updatePackage.download(Callback.of(this,
-                                state -> {
-                                    switch (state) {
-                                        case VALIDATING:
-                                            getLogger().info("Validating download...");
-                                            break;
-                                        case COMPLETED:
-                                            getLogger().info("Download complete! Restart the server to apply the update.");
-                                            break;
-                                    }
-                                },
-                                error -> getLogger().severe("Auto-update failed. Please run /bp update manually.")
-                        ));
-                    }
-                },
-                error -> getLogger().warning("Failed to check for updates!")
-        ));
-    }
-
     /**
-     * Checks if an update is needed
-     *
-     * @param callback callback that will return {@code null} if no update is needed,
-     *                 or an {@link UpdatePackage} if an update is needed
+     * Checks if an update is needed.
      */
-    public void checkForUpdates(Callback<UpdatePackage> callback) {
+    public Promise<Update> checkForUpdates() {
         debug("Checking for updates...");
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+        return Promise.async(this, () -> {
             JsonElement response;
-            try {
-                URL url = new URL("https://api.github.com/repos/FreshLlamanade/BankingPlugin/releases");
-                URLConnection con = url.openConnection();
-                con.setConnectTimeout(5000);
-                con.setRequestProperty("User-Agent", "BankingPlugin");
-                con.setDoOutput(true);
+            URL url = new URL("https://api.github.com/repos/FreshLlamanade/BankingPlugin/releases");
+            URLConnection con = url.openConnection();
+            con.setConnectTimeout(5000);
+            con.setRequestProperty("User-Agent", "BankingPlugin");
+            con.setDoOutput(true);
 
-                response = new JsonParser().parse(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
-            } catch (JsonIOException | JsonSyntaxException | IOException e) {
-                callback.callSyncError("Failed to query GitHub API.", e);
-                return;
-            }
+            response = new JsonParser().parse(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
 
-            JsonArray releases;
-            try {
-                releases = response.getAsJsonArray();
-            } catch (IllegalStateException e) {
-                callback.callSyncError("Received element was not a Json array. Response: " + response, e);
-                return;
-            }
+            // Releases are sorted by date, newest first
+            JsonArray releases = response.getAsJsonArray();
 
-            if (releases.size() == 0) {
+            if (releases.size() == 0)
                 // No versions available
-                callback.callSyncResult(null);
-                return;
-            }
+                return update;
 
             String versionNumber = null;
             JsonObject jar = null;
@@ -272,8 +249,7 @@ public class BankingPlugin extends JavaPlugin {
                 if (versionNumber.compareTo(getDescription().getVersion()) <= 0) {
                     // This version is no newer than current version
                     // No need to check further
-                    callback.callSyncResult(null);
-                    return;
+                    return update;
                 }
 
                 if (config().ignoreUpdatesContaining.ignore(versionNumber)) { // This version is ignored
@@ -290,39 +266,32 @@ public class BankingPlugin extends JavaPlugin {
                 }
             }
 
-            if (jar == null) {
+            if (jar == null)
                 // No suitable update found
-                callback.callSyncResult(null);
-                return;
-            }
+                return update;
 
             debug("Found latest version: " + versionNumber);
             
-            // An update package already exists newer or equal to this one
-            if (updatePackage != null && updatePackage.getVersion().compareTo(versionNumber) > 0) {
-                callback.callSyncResult(updatePackage);
-                return;
-            }
-            if (updatePackage != null)
-                updatePackage.setOutdated();
+            // An update already exists newer or equal to this one
+            if (update != null && update.getVersion().compareTo(versionNumber) > 0)
+                return update;
+            
+            if (update != null)
+                update.setOutdated();
 
             // Create a new update package
             debug("Creating new update package.");
             URL fileURL;
-            try {
-                fileURL = new URL(jar.get("browser_download_url").getAsString());
-            } catch (MalformedURLException e) { return; } // Shouldn't happen
+            fileURL = new URL(jar.get("browser_download_url").getAsString());
             String checksum = Optional.ofNullable(jar.get("md5")).map(JsonElement::getAsString).orElse(null);
-            int filesize = jar.get("size").getAsInt();
+            int downloadSize = jar.get("size").getAsInt();
     
-            updatePackage = new UpdatePackage(this, versionNumber, fileURL, checksum, filesize);
-
-            callback.callSyncResult(updatePackage); // Return the update package, replaced or not
+            return update = new Update(this, versionNumber, fileURL, checksum, downloadSize);
         });
     }
 
-    public UpdatePackage getUpdatePackage() {
-        return updatePackage;
+    public Update getUpdate() {
+        return update;
     }
 
     /**
@@ -340,7 +309,7 @@ public class BankingPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new AccountProtectListener(this), this);
         getServer().getPluginManager().registerEvents(new InterestEventListener(this), this);
         getServer().getPluginManager().registerEvents(new NotifyPlayerOnJoinListener(this), this);
-        getServer().getPluginManager().registerEvents(new MenuFunctionListener(), this); // Third-party GUI listener
+        getServer().getPluginManager().registerEvents(new GUIActionListener(), this);
 
         if (griefPrevention != null && griefPrevention.isEnabled())
             getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
@@ -354,7 +323,7 @@ public class BankingPlugin extends JavaPlugin {
     public void reload() {
         debug("Reloading...");
         reloadPluginConfig();
-        reloadPersistenceManager();
+        database.reload();
     }
 
     public void reloadPluginConfig() {
@@ -365,9 +334,9 @@ public class BankingPlugin extends JavaPlugin {
         saveConfig();
     }
 
-    public void reloadPersistenceManager() {
-        debug("Reloading persistence manager...");
-        persistenceManager.reload();
+    public void reloadDatabase() {
+        debug("Reloading database...");
+        database.reload();
     }
 
     private void enableMetrics() {
@@ -376,8 +345,8 @@ public class BankingPlugin extends JavaPlugin {
         Metrics metrics = new Metrics(this, 8474);
         metrics.addCustomChart(new AdvancedPie("bank_types", () -> {
             Map<String, Integer> bankTypes = new HashMap<>();
-            bankTypes.put("Player", getBankService().findPlayerBanks().size());
-            bankTypes.put("Admin", getBankService().findAdminBanks().size());
+            bankTypes.put("Player", getBankService().countPlayerBanks());
+            bankTypes.put("Admin", getBankService().countAdminBanks());
             return bankTypes;
         }));
         metrics.addCustomChart(new SimplePie("account_info_item",
@@ -392,23 +361,18 @@ public class BankingPlugin extends JavaPlugin {
      * @param message the message to be printed
      */
     public void debug(String message) {
-        if (!config().enableDebugLog.get())
+        if (!prepareDebug())
             return;
-
-        if (debugWriter == null)
-            instantiateDebugWriter();
-
-        debugWriter.printf("[%s] %s%n", LocalTime.now().truncatedTo(ChronoUnit.SECONDS).toString(), message);
-
-        if (debugWriter.checkError())
-            getLogger().severe("Failed to print debug message.");
+        printDebug(message);
     }
 
     /**
      * Prints a message with special formatting to the debug file.
      */
     public void debugf(String message, Object... format) {
-        debug(String.format(message, format));
+        if (!prepareDebug())
+            return;
+        printDebug(String.format(message, format));
     }
 
     /**
@@ -418,24 +382,38 @@ public class BankingPlugin extends JavaPlugin {
      * @param throwable the {@link Throwable} of which the stacktrace will be printed
      */
     public void debug(Throwable throwable) {
-        if (!config().enableDebugLog.get())
+        if (!prepareDebug())
             return;
-
-        if (debugWriter == null)
-            instantiateDebugWriter();
-
         throwable.printStackTrace(debugWriter);
         debugWriter.flush();
     }
+    
+    private boolean prepareDebug() {
+        if (config() == null || !config().enableDebugLog.get())
+            return false;
 
-    private void instantiateDebugWriter() {
-        try {
-            Path debugLogFile = getDataFolder().toPath().resolve("debug.txt");
-            debugWriter = new PrintWriter(Files.newOutputStream(debugLogFile), true);
-        } catch (IOException e) {
-            getLogger().info("Failed to instantiate FileWriter.");
-            e.printStackTrace();
+        if (debugWriter == null) {
+            try {
+                debugWriter = createDebugWriter();
+            } catch (IOException e) {
+                getLogger().severe("Failed to create debug writer.");
+                e.printStackTrace();
+                return false;
+            }
         }
+
+        return true;
+    }
+
+    private PrintWriter createDebugWriter() throws IOException {
+        return new PrintWriter(
+                Files.newOutputStream(getDataFolder().toPath().resolve("debug.txt")), true);
+    }
+    
+    private void printDebug(String message) {
+        debugWriter.printf("[%s] %s%n", LocalTime.now().truncatedTo(ChronoUnit.SECONDS).toString(), message);
+        if (debugWriter.checkError())
+            getLogger().severe("Failed to print debug message.");
     }
 
     /**
@@ -462,29 +440,33 @@ public class BankingPlugin extends JavaPlugin {
     public GriefPrevention getGriefPrevention() {
         return griefPrevention;
     }
-
+    
+    public Database getDatabase() {
+        return database;
+    }
+    
     public AccountService getAccountService() {
-        return persistenceManager.getAccountService();
+        return database.getAccountService();
     }
 
     public BankService getBankService() {
-        return persistenceManager.getBankService();
+        return database.getBankService();
     }
 
     public LastSeenService getLastSeenService() {
-        return persistenceManager.getLastSeenService();
+        return database.getLastSeenService();
     }
 
     public AccountInterestService getAccountInterestService() {
-        return persistenceManager.getAccountInterestService();
+        return database.getAccountInterestService();
     }
 
     public AccountTransactionService getAccountTransactionService() {
-        return persistenceManager.getAccountTransactionService();
+        return database.getAccountTransactionService();
     }
 
     public BankIncomeService getBankIncomeService() {
-        return persistenceManager.getBankIncomeService();
+        return database.getBankIncomeService();
     }
 
     public SchedulerService getSchedulerService() {
@@ -499,20 +481,20 @@ public class BankingPlugin extends JavaPlugin {
         return economy;
     }
 
-    public Essentials getEssentials() {
-        return essentials;
+    public Worths getWorths() {
+        return worths;
     }
 
-    public WorldEditPlugin getWorldEdit() {
-        return worldEdit;
+    public WorldEdit getWorldEdit() {
+        return worldEdit.getWorldEdit();
     }
 
     public Configuration config() {
         return configuration;
     }
 
-    public Path getJarFile() {
-        return getFile().toPath();
+    public String getFileName() {
+        return getFile().getName();
     }
 
 }

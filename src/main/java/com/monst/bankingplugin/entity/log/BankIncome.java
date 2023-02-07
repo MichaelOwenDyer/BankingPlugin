@@ -1,35 +1,34 @@
 package com.monst.bankingplugin.entity.log;
 
-import com.monst.bankingplugin.converter.OfflinePlayerConverter;
 import com.monst.bankingplugin.entity.Bank;
-import jakarta.persistence.*;
 import org.bukkit.OfflinePlayer;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@Entity
-@Table(name = "bank_income")
 public class BankIncome extends FinancialStatement {
 
-    @ManyToOne
-    private Bank bank;
-    @Convert(converter = OfflinePlayerConverter.class)
-    private OfflinePlayer recipient;
-    @Column(nullable = false, precision = 16, scale = 2)
-    private BigDecimal revenue;
-    @Column(nullable = false, precision = 16, scale = 2)
-    private BigDecimal interest;
-    @Column(nullable = false, precision = 16, scale = 2)
-    private BigDecimal lowBalanceFees;
-    @Column(nullable = false, precision = 16, scale = 2)
-    private BigDecimal netIncome;
+    private final int bankID;
+    private final OfflinePlayer recipient;
+    private final BigDecimal revenue;
+    private final BigDecimal interest;
+    private final BigDecimal lowBalanceFees;
+    private final BigDecimal netIncome;
 
-    public BankIncome() {}
+    public BankIncome(int id, Instant timestamp, int bankID, OfflinePlayer recipient,
+                      BigDecimal revenue, BigDecimal interest, BigDecimal lowBalanceFees, BigDecimal netIncome) {
+        super(id, timestamp);
+        this.bankID = bankID;
+        this.recipient = recipient;
+        this.revenue = revenue;
+        this.interest = interest;
+        this.lowBalanceFees = lowBalanceFees;
+        this.netIncome = netIncome;
+    }
 
     public BankIncome(Bank bank, BigDecimal revenue, BigDecimal interest, BigDecimal lowBalanceFees) {
         super(Instant.now());
-        this.bank = bank;
+        this.bankID = bank.getID();
         this.recipient = bank.getOwner();
         this.revenue = revenue;
         this.interest = interest;
@@ -37,8 +36,8 @@ public class BankIncome extends FinancialStatement {
         this.netIncome = revenue.add(lowBalanceFees).subtract(interest);
     }
 
-    public Bank getBank() {
-        return bank;
+    public int getBankID() {
+        return bankID;
     }
 
     public OfflinePlayer getRecipient() {
@@ -81,7 +80,7 @@ public class BankIncome extends FinancialStatement {
     @Override
     public String toString() {
         return "BankIncome{" +
-                "bank=" + bank.getID() +
+                "bank=" + bankID +
                 ", owner=" + recipient +
                 ", revenue=" + revenue +
                 ", interest=" + interest +

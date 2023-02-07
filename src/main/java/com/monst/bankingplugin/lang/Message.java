@@ -2,10 +2,7 @@ package com.monst.bankingplugin.lang;
 
 import com.monst.bankingplugin.BankingPlugin;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.monst.bankingplugin.lang.Placeholder.*;
@@ -15,7 +12,7 @@ import static com.monst.bankingplugin.lang.Placeholder.*;
  * Every message is accompanied by a sample scenario in which it would be sent, a default english message text,
  * and a list of placeholder variables that are available for use within the text.
  */
-public enum Message {
+public enum Message implements Translatable {
 
     ACCOUNT_OPENED(
             "A player opens an account at a bank.",
@@ -985,13 +982,13 @@ public enum Message {
     private final String path;
     private final String scenario;
     private final String defaultMessage;
-    private final EnumSet<Placeholder> possiblePlaceholders = EnumSet.noneOf(Placeholder.class);
+    private final Set<Placeholder> availablePlaceholders = EnumSet.noneOf(Placeholder.class);
 
-    Message(String scenario, ColorStringBuilder defaultMessage, Placeholder... possiblePlaceholders) {
+    Message(String scenario, ColorStringBuilder defaultMessage, Placeholder... availablePlaceholders) {
         this.path = "message." + toString().toLowerCase().replace("_", "-");
         this.scenario = scenario;
         this.defaultMessage = defaultMessage.toString();
-        this.possiblePlaceholders.addAll(Arrays.asList(possiblePlaceholders));
+        this.availablePlaceholders.addAll(Arrays.asList(availablePlaceholders));
     }
 
     public String getPath() {
@@ -1002,17 +999,17 @@ public enum Message {
         return scenario;
     }
 
-    public String getFormattedPlaceholdersList() {
-        return possiblePlaceholders.stream().map(Placeholder::toString).collect(Collectors.joining(", "));
+    public String getAvailablePlaceholders() {
+        return availablePlaceholders.stream().map(Placeholder::toString).collect(Collectors.joining(", "));
     }
 
     public ValuedMessage.ReplacementBuilder with(Placeholder placeholder) {
         return new ValuedMessage().and(placeholder);
     }
 
-    public class ValuedMessage {
+    public class ValuedMessage implements Translatable {
 
-        private final List<Replacement> replacements = new ArrayList<>();
+        private final List<Replacement> replacements = new ArrayList<>(4);
 
         public ReplacementBuilder and(Placeholder placeholder) {
             return new ReplacementBuilder(placeholder);
@@ -1032,11 +1029,12 @@ public enum Message {
             }
         }
 
+        @Override
         public String translate(BankingPlugin plugin) {
             if (plugin == null)
                 return inEnglish();
             String translation = plugin.config().languageFile.getTranslation(Message.this, defaultMessage);
-            EnumSet<Placeholder> remainingPlaceholders = EnumSet.copyOf(possiblePlaceholders);
+            Set<Placeholder> remainingPlaceholders = EnumSet.copyOf(availablePlaceholders);
             for (Replacement replacement : replacements) {
                 Placeholder placeholder = replacement.getPlaceholder();
                 if (remainingPlaceholders.remove(placeholder))
@@ -1049,9 +1047,10 @@ public enum Message {
             return translation;
         }
 
+        @Override
         public String inEnglish() {
             String translation = defaultMessage;
-            EnumSet<Placeholder> remainingPlaceholders = EnumSet.copyOf(possiblePlaceholders);
+            Set<Placeholder> remainingPlaceholders = EnumSet.copyOf(availablePlaceholders);
             for (Replacement replacement : replacements) {
                 Placeholder placeholder = replacement.getPlaceholder();
                 if (!remainingPlaceholders.remove(placeholder))
@@ -1063,14 +1062,16 @@ public enum Message {
 
     }
 
+    @Override
     public String translate(BankingPlugin plugin) {
-        if (!possiblePlaceholders.isEmpty()) {
+        if (!availablePlaceholders.isEmpty()) {
             plugin.getLogger().warning("Bug! Message " + path + " has unfilled placeholders! See debug log for details.");
-            plugin.debug(new IllegalStateException("Bug! Message " + path + " has unfilled placeholders! " + possiblePlaceholders));
+            plugin.debug(new IllegalStateException("Bug! Message " + path + " has unfilled placeholders! " + availablePlaceholders));
         }
         return plugin.config().languageFile.getTranslation(this, defaultMessage);
     }
 
+    @Override
     public String inEnglish() {
         return defaultMessage;
     }

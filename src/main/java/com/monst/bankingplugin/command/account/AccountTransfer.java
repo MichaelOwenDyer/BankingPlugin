@@ -1,20 +1,21 @@
 package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.ClickAction;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountTransferCommandEvent;
 import com.monst.bankingplugin.event.account.AccountTransferEvent;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +29,7 @@ public class AccountTransfer extends PlayerSubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.ACCOUNT_TRANSFER;
+        return Permissions.ACCOUNT_TRANSFER;
     }
 
     @Override
@@ -47,10 +48,10 @@ public class AccountTransfer extends PlayerSubCommand {
     }
 
     @Override
-    protected void execute(Player player, String[] args) throws ExecutionException, CancelledException {
-        OfflinePlayer newOwner = Utils.getPlayer(args[0]);
+    protected void execute(Player player, String[] args) throws CommandExecutionException, EventCancelledException {
+        OfflinePlayer newOwner = getPlayer(args[0]);
         if (newOwner == null)
-            throw new ExecutionException(plugin, Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
+            throw err(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
 
         new AccountTransferCommandEvent(player, args).fire();
 
@@ -59,19 +60,19 @@ public class AccountTransfer extends PlayerSubCommand {
         plugin.debugf("%s is transferring ownership of an account to %s", player.getName(), newOwner.getName());
     }
 
-    private void transfer(Player player, Account account, OfflinePlayer newOwner) throws ExecutionException, CancelledException {
+    private void transfer(Player player, Account account, OfflinePlayer newOwner) throws CommandExecutionException, EventCancelledException {
         plugin.debugf("%s is transferring ownership of account #%d to %s", player.getName(), account.getID(), newOwner.getName());
 
-        if (!account.isOwner(player) && Permission.ACCOUNT_TRANSFER_OTHER.notOwnedBy(player)) {
+        if (!account.isOwner(player) && Permissions.ACCOUNT_TRANSFER_OTHER.notOwnedBy(player)) {
             ClickAction.remove(player);
             if (account.isTrusted(player))
-                throw new ExecutionException(plugin, Message.MUST_BE_OWNER);
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER);
+                throw err(Message.MUST_BE_OWNER);
+            throw err(Message.NO_PERMISSION_ACCOUNT_TRANSFER_OTHER);
         }
 
         if (account.isOwner(newOwner)) {
             ClickAction.remove(player);
-            throw new ExecutionException(plugin, Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(newOwner.getName()));
+            throw err(Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(newOwner.getName()));
         }
 
         if (plugin.config().confirmOnTransfer.get() && ClickAction.mustConfirm(player)) {
@@ -93,8 +94,11 @@ public class AccountTransfer extends PlayerSubCommand {
         account.updateChestTitle();
         plugin.getAccountService().update(account);
         player.sendMessage(Message.ACCOUNT_TRANSFERRED.with(Placeholder.PLAYER).as(newOwner.getName()).translate(plugin));
-        if (!player.getUniqueId().equals(newOwner.getUniqueId()))
-            Utils.message(newOwner, Message.ACCOUNT_TRANSFERRED_TO_YOU.with(Placeholder.PLAYER).as(player.getName()).translate(plugin));
+        if (newOwner.isOnline() && !newOwner.getUniqueId().equals(player.getUniqueId())) {
+            newOwner.getPlayer().sendMessage(Message.ACCOUNT_TRANSFERRED_TO_YOU
+                    .with(Placeholder.PLAYER).as(player.getName())
+                    .translate(plugin));
+        }
     }
 
     @Override
@@ -103,7 +107,7 @@ public class AccountTransfer extends PlayerSubCommand {
             return Collections.emptyList();
         return Bukkit.getServer().getOnlinePlayers().stream()
                 .map(Player::getName)
-                .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                 .sorted()
                 .collect(Collectors.toList());
     }

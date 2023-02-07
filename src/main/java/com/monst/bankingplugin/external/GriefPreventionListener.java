@@ -6,7 +6,6 @@ import com.monst.bankingplugin.event.account.AccountExtendEvent;
 import com.monst.bankingplugin.event.account.AccountMigrateEvent;
 import com.monst.bankingplugin.event.account.AccountOpenEvent;
 import com.monst.bankingplugin.event.account.AccountRecoverEvent;
-import com.monst.bankingplugin.util.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Material;
@@ -105,7 +104,8 @@ public class GriefPreventionListener implements Listener {
             clickedBlock = e.getPlayer().getTargetBlock(null, 300);
         if (clickedBlock == null || clickedBlock.getType() == Material.AIR)
             return;
-        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && Utils.isChest(clickedBlock))
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK &&
+                clickedBlock.getType() != Material.CHEST && clickedBlock.getType() != Material.TRAPPED_CHEST)
             return;
 
         Bank bank = plugin.getBankService().findContaining(clickedBlock);

@@ -1,20 +1,21 @@
 package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.ClickAction;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountTrustCommandEvent;
 import com.monst.bankingplugin.event.account.AccountTrustEvent;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +29,7 @@ public class AccountTrust extends PlayerSubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.ACCOUNT_TRUST;
+        return Permissions.ACCOUNT_TRUST;
     }
 
     @Override
@@ -47,10 +48,10 @@ public class AccountTrust extends PlayerSubCommand {
     }
 
     @Override
-    protected void execute(Player player, String[] args) throws ExecutionException, CancelledException {
-        OfflinePlayer playerToTrust = Utils.getPlayer(args[0]);
+    protected void execute(Player player, String[] args) throws CommandExecutionException, EventCancelledException {
+        OfflinePlayer playerToTrust = getPlayer(args[0]);
         if (playerToTrust == null)
-            throw new ExecutionException(plugin, Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
+            throw err(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
 
         new AccountTrustCommandEvent(player, args).fire();
 
@@ -59,20 +60,19 @@ public class AccountTrust extends PlayerSubCommand {
         plugin.debugf("%s is trusting %s to an account", player.getName(), playerToTrust.getName());
     }
 
-    private void trust(Player executor, Account account, OfflinePlayer playerToTrust) throws ExecutionException, CancelledException {
+    private void trust(Player executor, Account account, OfflinePlayer playerToTrust) throws CommandExecutionException, EventCancelledException {
         ClickAction.remove(executor);
 
-        if (!account.isOwner(executor) && Permission.ACCOUNT_TRUST_OTHER.notOwnedBy(executor)) {
+        if (!account.isOwner(executor) && Permissions.ACCOUNT_TRUST_OTHER.notOwnedBy(executor)) {
             if (account.isTrusted(executor))
-                throw new ExecutionException(plugin, Message.MUST_BE_OWNER);
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_ACCOUNT_TRUST_OTHER);
+                throw err(Message.MUST_BE_OWNER);
+            throw err(Message.NO_PERMISSION_ACCOUNT_TRUST_OTHER);
         }
-
-        if (account.isTrusted(playerToTrust)) {
-            if (account.isOwner(playerToTrust))
-                throw new ExecutionException(plugin, Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
-            throw new ExecutionException(plugin, Message.ALREADY_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
-        }
+    
+        if (account.isOwner(playerToTrust))
+            throw err(Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
+        if (account.isCoOwner(playerToTrust))
+            throw err(Message.ALREADY_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
 
         new AccountTrustEvent(executor, account, playerToTrust).fire();
 
@@ -87,7 +87,7 @@ public class AccountTrust extends PlayerSubCommand {
             return Collections.emptyList();
         return Bukkit.getServer().getOnlinePlayers().stream()
                 .map(Player::getName)
-                .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                 .sorted()
                 .collect(Collectors.toList());
     }

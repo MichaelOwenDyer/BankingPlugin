@@ -16,11 +16,11 @@ import java.util.Set;
 public class InterestEvent extends ControlEvent implements Cancellable {
 
 	private boolean cancelled;
-	private final Set<Bank> bankIds;
+	private final Set<Bank> banks;
 
 	public InterestEvent(CommandSender sender, Collection<Bank> banks) {
 		super(sender);
-		this.bankIds = new HashSet<>(banks);
+		this.banks = new HashSet<>(banks);
 	}
 
 	private static final HandlerList HANDLERS = new HandlerList();
@@ -35,7 +35,7 @@ public class InterestEvent extends ControlEvent implements Cancellable {
 	}
 
 	public Set<Bank> getBanks() {
-		return bankIds;
+		return banks;
 	}
 
 	@Override

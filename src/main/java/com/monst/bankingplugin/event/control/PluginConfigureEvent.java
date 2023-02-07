@@ -1,6 +1,6 @@
 package com.monst.bankingplugin.event.control;
 
-import com.monst.pluginconfiguration.ConfigurationValue;
+import com.monst.bankingplugin.configuration.type.ConfigurationValue;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 

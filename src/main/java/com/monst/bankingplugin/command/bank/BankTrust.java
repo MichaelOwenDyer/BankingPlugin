@@ -1,17 +1,18 @@
 package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +26,7 @@ public class BankTrust extends SubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.BANK_TRUST;
+        return Permissions.BANK_TRUST;
     }
 
     @Override
@@ -44,28 +45,28 @@ public class BankTrust extends SubCommand {
     }
 
     @Override
-    protected void execute(CommandSender sender, String[] args) throws ExecutionException {
+    protected void execute(CommandSender sender, String[] args) throws CommandExecutionException {
         Bank bank = plugin.getBankService().findByName(args[0]);
         if (bank == null)
-            throw new ExecutionException(plugin, Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
+            throw err(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
 
-        OfflinePlayer playerToTrust = Utils.getPlayer(args[1]);
+        OfflinePlayer playerToTrust = getPlayer(args[1]);
         if (playerToTrust == null)
-            throw new ExecutionException(plugin, Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]));
+            throw err(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[1]));
 
-        if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender)) || Permission.BANK_TRUST_OTHER.ownedBy(sender))) {
+        if (bank.isPlayerBank() && !((sender instanceof Player && bank.isOwner((Player) sender)) || Permissions.BANK_TRUST_OTHER.ownedBy(sender))) {
             if (sender instanceof Player && bank.isTrusted((Player) sender))
-                throw new ExecutionException(plugin, Message.MUST_BE_OWNER);
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_BANK_TRUST_OTHER);
+                throw err(Message.MUST_BE_OWNER);
+            throw err(Message.NO_PERMISSION_BANK_TRUST_OTHER);
         }
 
-        if (bank.isAdminBank() && Permission.BANK_TRUST_ADMIN.notOwnedBy(sender))
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_BANK_TRUST_ADMIN);
+        if (bank.isAdminBank() && Permissions.BANK_TRUST_ADMIN.notOwnedBy(sender))
+            throw err(Message.NO_PERMISSION_BANK_TRUST_ADMIN);
 
         if (bank.isTrusted(playerToTrust)) {
             if (bank.isOwner(playerToTrust))
-                throw new ExecutionException(plugin, Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
-            throw new ExecutionException(plugin, Message.ALREADY_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
+                throw err(Message.ALREADY_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
+            throw err(Message.ALREADY_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
         }
 
         plugin.debugf("%s has trusted %s to bank #%d", sender.getName(), playerToTrust.getName(), bank.getID());
@@ -77,16 +78,17 @@ public class BankTrust extends SubCommand {
     protected List<String> getTabCompletions(Player player, String[] args) {
         if (args.length == 1)
             return plugin.getBankService()
-                    .findByPlayerAllowedToModify(player, Permission.BANK_TRUST_OTHER, Permission.BANK_TRUST_ADMIN, true)
+                    .findNamesByPlayerAllowedToModify(player,
+                            Permissions.BANK_TRUST_OTHER.ownedBy(player),
+                            Permissions.BANK_TRUST_ADMIN.ownedBy(player), true)
                     .stream()
-                    .map(Bank::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+                    .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         if (args.length == 2 && plugin.getBankService().findByName(args[0]) != null)
             return Bukkit.getServer().getOnlinePlayers().stream()
                     .map(Player::getName)
-                    .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+                    .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         return Collections.emptyList();

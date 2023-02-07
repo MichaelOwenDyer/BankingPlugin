@@ -1,15 +1,15 @@
 package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.ClickAction;
+import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountConfigureEvent;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
@@ -32,10 +32,11 @@ public class AccountConfigure extends PlayerSubCommand {
     AccountConfigure(BankingPlugin plugin) {
 		super(plugin, "configure");
     }
-
+    
     @Override
-    protected boolean hasPermission(Player player) {
-        return Permission.ACCOUNT_CONFIGURE.ownedBy(player) || !plugin.getBankService().findByTrustedPlayer(player).isEmpty();
+    protected Permission getPermission() {
+        return Permissions.ACCOUNT_CONFIGURE
+                .or(permissible -> plugin.getBankService().countByTrustedPlayer((Player) permissible) > 0);
     }
 
     @Override
@@ -54,20 +55,18 @@ public class AccountConfigure extends PlayerSubCommand {
     }
 
     @Override
-    protected void execute(Player player, String[] args) throws ExecutionException {
+    protected void execute(Player player, String[] args) throws CommandExecutionException {
         String property = args[0];
         AccountField field = Stream.of(AccountField.values())
                 .filter(f -> f.toString().equalsIgnoreCase(property))
                 .findFirst()
-                .orElse(null);
-        if (field == null)
-            throw new ExecutionException(plugin, Message.NOT_A_PROPERTY.with(Placeholder.INPUT).as(property));
+                .orElseThrow(() -> err(Message.NOT_A_PROPERTY.with(Placeholder.INPUT).as(property)));
 
         int value;
         try {
             value = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
-            throw new ExecutionException(plugin, Message.NOT_AN_INTEGER.with(Placeholder.INPUT).as(args[1]));
+            throw err(Message.NOT_AN_INTEGER.with(Placeholder.INPUT).as(args[1]));
         }
 
         ClickAction.setAccountClickAction(player, account -> configure(player, account, field, value));
@@ -77,11 +76,11 @@ public class AccountConfigure extends PlayerSubCommand {
                 .translate(plugin));
     }
 
-    private void configure(Player executor, Account account, AccountField field, int value) throws ExecutionException {
+    private void configure(Player executor, Account account, AccountField field, int value) throws CommandExecutionException {
         ClickAction.remove(executor);
 
-        if (Permission.ACCOUNT_CONFIGURE.notOwnedBy(executor) && !account.getBank().isTrusted(executor))
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_ACCOUNT_CONFIGURE);
+        if (Permissions.ACCOUNT_CONFIGURE.notOwnedBy(executor) && !account.getBank().isTrusted(executor))
+            throw err(Message.NO_PERMISSION_ACCOUNT_CONFIGURE);
 
         switch (field) {
 
@@ -120,7 +119,7 @@ public class AccountConfigure extends PlayerSubCommand {
             return Collections.emptyList();
         return Stream.of(AccountField.values())
                 .map(AccountField::toString)
-                .filter(field -> Utils.containsIgnoreCase(field, args[0]))
+                .filter(field -> field.toLowerCase().contains(args[0].toLowerCase()))
                 .collect(Collectors.toList());
     }
 

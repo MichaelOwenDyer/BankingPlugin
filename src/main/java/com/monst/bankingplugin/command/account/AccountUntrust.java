@@ -1,20 +1,21 @@
 package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
+import com.monst.bankingplugin.command.ClickAction;
+import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountUntrustCommandEvent;
 import com.monst.bankingplugin.event.account.AccountUntrustEvent;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.util.Permission;
-import com.monst.bankingplugin.util.Utils;
+import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +29,7 @@ public class AccountUntrust extends PlayerSubCommand {
 
     @Override
     protected Permission getPermission() {
-        return Permission.ACCOUNT_TRUST;
+        return Permissions.ACCOUNT_TRUST;
     }
 
     @Override
@@ -47,10 +48,10 @@ public class AccountUntrust extends PlayerSubCommand {
     }
 
     @Override
-    protected void execute(Player player, String[] args) throws ExecutionException, CancelledException {
-        OfflinePlayer playerToUntrust = Utils.getPlayer(args[0]);
+    protected void execute(Player player, String[] args) throws CommandExecutionException, EventCancelledException {
+        OfflinePlayer playerToUntrust = getPlayer(args[0]);
         if (playerToUntrust == null)
-            throw new ExecutionException(plugin, Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
+            throw err(Message.PLAYER_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
 
         new AccountUntrustCommandEvent(player, args).fire();
 
@@ -59,17 +60,17 @@ public class AccountUntrust extends PlayerSubCommand {
         plugin.debugf("%s is untrusting %s from an account", player.getName(), playerToUntrust.getName());
     }
 
-    private void untrust(Player executor, Account account, OfflinePlayer playerToUntrust) throws ExecutionException, CancelledException {
+    private void untrust(Player executor, Account account, OfflinePlayer playerToUntrust) throws CommandExecutionException, EventCancelledException {
         ClickAction.remove(executor);
 
-        if (!account.isOwner(executor) && Permission.ACCOUNT_TRUST_OTHER.notOwnedBy(executor)) {
+        if (!account.isOwner(executor) && Permissions.ACCOUNT_TRUST_OTHER.notOwnedBy(executor)) {
             if (account.isTrusted(executor))
-                throw new ExecutionException(plugin, Message.MUST_BE_OWNER);
-            throw new ExecutionException(plugin, Message.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER);
+                throw err(Message.MUST_BE_OWNER);
+            throw err(Message.NO_PERMISSION_ACCOUNT_UNTRUST_OTHER);
         }
 
         if (!account.isCoOwner(playerToUntrust))
-            throw new ExecutionException(plugin, Message.NOT_A_CO_OWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()));
+            throw err(Message.NOT_A_CO_OWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()));
 
         new AccountUntrustEvent(executor, account, playerToUntrust).fire();
 
@@ -84,7 +85,7 @@ public class AccountUntrust extends PlayerSubCommand {
             return Collections.emptyList();
         return Bukkit.getServer().getOnlinePlayers().stream()
                 .map(Player::getName)
-                .filter(name -> Utils.startsWithIgnoreCase(name, args[0]))
+                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                 .sorted()
                 .collect(Collectors.toList());
     }

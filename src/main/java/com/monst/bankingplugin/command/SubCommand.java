@@ -3,15 +3,18 @@ package com.monst.bankingplugin.command;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.util.Permission;
+import com.monst.bankingplugin.lang.Translatable;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +34,7 @@ public abstract class SubCommand {
 
     SubCommand(BankingPlugin plugin, String name, boolean playerOnly) {
         this.plugin = plugin;
-        this.name = name;
+        this.name = name.toLowerCase(Locale.US);
         this.playerOnly = playerOnly;
     }
 
@@ -50,10 +53,10 @@ public abstract class SubCommand {
      * Executes the subcommand, if the sender has permission.
      * @param sender Sender of the command, can be a player or the console
      * @param args Arguments of the command, excluding the subcommand name
-     * @throws ExecutionException if an exception was encountered while executing the command
-     * @throws CancelledException if the command event was cancelled by a plugin
+     * @throws CommandExecutionException if an exception was encountered while executing the command
+     * @throws EventCancelledException if the command event was cancelled by a plugin
      */
-    protected abstract void execute(CommandSender sender, String[] args) throws ExecutionException, CancelledException;
+    protected abstract void execute(CommandSender sender, String[] args) throws CommandExecutionException, EventCancelledException;
 
     /**
      * Tab-completes the subcommand
@@ -65,15 +68,11 @@ public abstract class SubCommand {
 		return Collections.emptyList();
     }
 
-    protected boolean hasPermission(CommandSender sender) {
-        return getPermission().ownedBy(sender);
-    }
-
     /**
      * @return the permission node required to see and execute this command.
      */
     protected Permission getPermission() {
-        return Permission.NONE;
+        return Permission.none();
     }
 
     /**
@@ -98,6 +97,18 @@ public abstract class SubCommand {
             return false;
         PLAYER_COMMAND_CACHE.put(sender.getUniqueId(), commandHash);
         return true;
+    }
+    
+    @SuppressWarnings("deprecation") // TODO: Non-deprecated way to look up players by name?
+    protected static OfflinePlayer getPlayer(String name) {
+        OfflinePlayer player = Bukkit.getPlayer(name);
+        if (player == null)
+            player = Bukkit.getOfflinePlayer(name);
+        return player.hasPlayedBefore() ? player : null;
+    }
+    
+    protected CommandExecutionException err(Translatable message) {
+        return new CommandExecutionException(plugin, message);
     }
 
 }

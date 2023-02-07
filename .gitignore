@@ -1,4 +1,5 @@
 /target/
+/testdb/
 /.idea/
 *.iml
 .classpath

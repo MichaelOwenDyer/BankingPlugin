@@ -3,8 +3,8 @@ package com.monst.bankingplugin.command;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.monst.bankingplugin.entity.Account;
-import com.monst.bankingplugin.exception.CancelledException;
-import com.monst.bankingplugin.exception.ExecutionException;
+import com.monst.bankingplugin.exception.EventCancelledException;
+import com.monst.bankingplugin.exception.CommandExecutionException;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -14,23 +14,23 @@ import java.util.concurrent.TimeUnit;
 public abstract class ClickAction {
 
 	@FunctionalInterface
-	public interface BlockAction {
-		void onClick(Block block) throws ExecutionException, CancelledException;
+	public interface ChestAction {
+		void onClick(Block chest) throws CommandExecutionException, EventCancelledException;
 	}
 
 	@FunctionalInterface
 	public interface AccountAction {
-		void onClick(Account account) throws ExecutionException, CancelledException;
+		void onClick(Account account) throws CommandExecutionException, EventCancelledException;
 	}
 
 	private static final Cache<UUID, ClickAction> PLAYER_CLICK_ACTIONS = CacheBuilder.newBuilder()
 			.expireAfterWrite(15, TimeUnit.SECONDS)
 			.build();
 
-	public static void setBlockClickAction(Player player, BlockAction action) {
+	public static void setBlockClickAction(Player player, ChestAction action) {
 		PLAYER_CLICK_ACTIONS.asMap().put(player.getUniqueId(), new ClickAction(true) {
 			@Override
-			public void onClick(Block block) throws ExecutionException, CancelledException {
+			public void onClick(Block block) throws CommandExecutionException, EventCancelledException {
 				action.onClick(block);
 			}
 		});
@@ -39,7 +39,7 @@ public abstract class ClickAction {
 	public static void setAccountClickAction(Player player, AccountAction action) {
 		PLAYER_CLICK_ACTIONS.asMap().put(player.getUniqueId(), new ClickAction(false) {
 			@Override
-			public void onClick(Account account) throws ExecutionException, CancelledException {
+			public void onClick(Account account) throws CommandExecutionException, EventCancelledException {
 				action.onClick(account);
 			}
 		});
@@ -56,9 +56,13 @@ public abstract class ClickAction {
 		return isBlockAction;
 	}
 
-	public void onClick(Account account) throws ExecutionException, CancelledException {}
+	public void onClick(Account account) throws CommandExecutionException, EventCancelledException {
+		// Do nothing
+	}
 
-	public void onClick(Block block) throws ExecutionException, CancelledException {}
+	public void onClick(Block block) throws CommandExecutionException, EventCancelledException {
+		// Do nothing
+	}
 
     /**
      * Clear all click actions, cancel timers

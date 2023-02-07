@@ -4,57 +4,65 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.log.AccountTransaction;
 import com.monst.bankingplugin.entity.log.FinancialStatement;
-import com.monst.bankingplugin.util.Observable;
+import com.monst.bankingplugin.gui.option.MenuItemFilter;
+import com.monst.bankingplugin.gui.option.MenuItemSorter;
+import com.monst.bankingplugin.util.Promise;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.SlotSettings;
-import org.ipvp.canvas.template.StaticItemTemplate;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class AccountTransactionGUI extends MultiPageGUI<AccountTransaction> {
 
     private static final int SWITCH_VIEW_SLOT = 31;
 
-    private final SlotSettings switchViewSlot;
+    private final Account account;
 
-    public AccountTransactionGUI(BankingPlugin plugin, Account account) {
-        super(plugin, callback -> plugin.getAccountTransactionService().findByAccount(account, callback));
-        this.switchViewSlot = createSwitchViewSlot(account);
+    public AccountTransactionGUI(BankingPlugin plugin, Player player, Account account) {
+        super(plugin, player);
+        this.account = account;
+        // TODO: Subscribe to account transaction service changes
     }
-
+    
+    @Override
+    Promise<Integer> countItems() {
+        return Promise.sync(() -> plugin.getAccountTransactionService().countByAccount(account));
+    }
+    
+    @Override
+    Promise<List<AccountTransaction>> fetchItems(int offset, int limit) {
+        return plugin.getAccountTransactionService().findByAccount(account, offset, limit);
+    }
+    
     @Override
     String getTitle() {
         return "Account Transaction Log";
     }
-
+    
     @Override
-    SlotSettings createSlotSettings(AccountTransaction transaction) {
-        Material material = transaction.getDifference().signum() >= 0 ? Material.LIME_CONCRETE : Material.RED_CONCRETE;
-        ItemStack item = createSlotItem(material, "Transaction #" + transaction.getID(), Arrays.asList(
+    ItemStack createItem(AccountTransaction transaction) {
+        Material material = transaction.getAmount().signum() >= 0 ? Material.LIME_CONCRETE : Material.RED_CONCRETE;
+        return item(material, "Transaction #" + transaction.getID(), Arrays.asList(
                 transaction.getTimestamp(),
                 "Player: " + transaction.getExecutor().getName(),
-                "Amount: " + formatAndColorize(transaction.getDifference())
+                "Amount: " + formatAndColorize(transaction.getAmount())
         ));
-        return SlotSettings.builder().itemTemplate(new StaticItemTemplate(item)).build();
     }
-
+    
     @Override
     List<MenuItemFilter<? super AccountTransaction>> getFilters() {
         return Arrays.asList(
-                MenuItemFilter.of("Deposits", t -> t.getDifference().signum() > 0),
-                MenuItemFilter.of("Withdrawals", t -> t.getDifference().signum() < 0)
+                MenuItemFilter.of("Deposits", t -> t.getAmount().signum() > 0),
+                MenuItemFilter.of("Withdrawals", t -> t.getAmount().signum() < 0)
         );
     }
 
     @Override
     List<MenuItemSorter<? super AccountTransaction>> getSorters() {
         Comparator<AccountTransaction> BY_TIME = Comparator.comparing(FinancialStatement::getInstant);
-        Comparator<AccountTransaction> BY_AMOUNT = Comparator.comparing(t -> t.getDifference().abs());
+        Comparator<AccountTransaction> BY_AMOUNT = Comparator.comparing(t -> t.getAmount().abs());
         Comparator<AccountTransaction> BY_EXECUTOR = Comparator.comparing(t -> t.getExecutor().getName());
         return Arrays.asList(
                 MenuItemSorter.of("Newest", BY_TIME.reversed()),
@@ -65,32 +73,21 @@ public class AccountTransactionGUI extends MultiPageGUI<AccountTransaction> {
                 MenuItemSorter.of("Player Name Z-A", BY_EXECUTOR.reversed())
         );
     }
-
+    
     @Override
-    void modify(Menu page) {
-        page.getSlot(SWITCH_VIEW_SLOT).setSettings(switchViewSlot);
-    }
-
-    private SlotSettings createSwitchViewSlot(Account account) {
-        ItemStack item = createSlotItem(
+    Map<Integer, ItemStack> createExtraItems() {
+        return Collections.singletonMap(SWITCH_VIEW_SLOT, item(
                 Material.BOOK,
                 "Account Interest Log",
-                Collections.singletonList("Click to view the interest log.")
-        );
-        return SlotSettings.builder()
-                .itemTemplate(new StaticItemTemplate(item))
-                .clickHandler((player, info) -> new AccountInterestGUI(plugin, account).setParentGUI(parentGUI).open(player))
-                .build();
+                "Click to view the interest log."
+        ));
     }
-
+    
     @Override
-    GUIType getType() {
-        return GUIType.ACCOUNT_TRANSACTION_LOG;
-    }
-
-    @Override
-    Observable getSubject() {
-        return plugin.getAccountTransactionService();
+    public void click(int slot, ClickType clickType) {
+        super.click(slot, clickType);
+        if (slot == SWITCH_VIEW_SLOT)
+            parentGUI.child(new AccountInterestGUI(plugin, player, account)).open();
     }
 
 }

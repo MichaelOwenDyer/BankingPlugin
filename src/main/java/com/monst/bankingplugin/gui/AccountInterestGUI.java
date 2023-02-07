@@ -4,35 +4,46 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.log.AccountInterest;
 import com.monst.bankingplugin.entity.log.FinancialStatement;
-import com.monst.bankingplugin.util.Observable;
+import com.monst.bankingplugin.gui.option.MenuItemFilter;
+import com.monst.bankingplugin.gui.option.MenuItemSorter;
+import com.monst.bankingplugin.util.Promise;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.slot.SlotSettings;
-import org.ipvp.canvas.template.StaticItemTemplate;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class AccountInterestGUI extends MultiPageGUI<AccountInterest> {
-
+    
     private static final int SWITCH_VIEW_SLOT = 31;
 
-    private final SlotSettings switchViewSlot;
+    private final Account account;
 
-    AccountInterestGUI(BankingPlugin plugin, Account account) {
-        super(plugin, callback -> plugin.getAccountInterestService().findByAccount(account, callback));
-        this.switchViewSlot = createSwitchViewSlot(account);
+    AccountInterestGUI(BankingPlugin plugin, Player player, Account account) {
+        super(plugin, player);
+        this.account = account;
+        // TODO: Subscribe to account interest service changes
+    }
+    
+    @Override
+    Promise<Integer> countItems() {
+        return Promise.sync(() -> plugin.getAccountInterestService().countByAccount(account));
+    }
+    
+    @Override
+    Promise<List<AccountInterest>> fetchItems(int offset, int limit) {
+        return plugin.getAccountInterestService().findByAccount(account, offset, limit);
     }
 
     @Override
     String getTitle() {
         return "Account Interest Log";
     }
-
+    
     @Override
-    SlotSettings createSlotSettings(AccountInterest interest) {
+    ItemStack createItem(AccountInterest interest) {
         Material material = interest.getFinalPayment().signum() >= 0 ? Material.LIME_CONCRETE : Material.RED_CONCRETE;
         List<String> lore = new ArrayList<>();
         lore.add(interest.getTimestamp());
@@ -41,10 +52,9 @@ public class AccountInterestGUI extends MultiPageGUI<AccountInterest> {
             lore.add("Low Balance Fee: " + ChatColor.RED + format(interest.getLowBalanceFee()));
             lore.add("Final Amount: " + formatAndColorize(interest.getFinalPayment()));
         }
-        ItemStack item = createSlotItem(material, "Interest #" + interest.getID(), lore);
-        return SlotSettings.builder().itemTemplate(new StaticItemTemplate(item)).build();
+        return GUI.item(material, "Interest #" + interest.getID(), lore);
     }
-
+    
     @Override
     List<MenuItemFilter<? super AccountInterest>> getFilters() {
         return Arrays.asList(
@@ -64,33 +74,21 @@ public class AccountInterestGUI extends MultiPageGUI<AccountInterest> {
                 MenuItemSorter.of("Smallest Value", BY_TOTAL_VALUE)
         );
     }
-
+    
     @Override
-    void modify(Menu page) {
-        page.getSlot(SWITCH_VIEW_SLOT).setSettings(switchViewSlot);
-    }
-
-    private SlotSettings createSwitchViewSlot(Account account) {
-        ItemStack item = createSlotItem(
+    Map<Integer, ItemStack> createExtraItems() {
+        return Collections.singletonMap(SWITCH_VIEW_SLOT, item(
                 Material.BOOK,
                 "Account Transaction Log",
-                Collections.singletonList("Click to view the transaction log.")
-        );
-        return SlotSettings.builder()
-                .itemTemplate(new StaticItemTemplate(item))
-                .clickHandler((player, info) -> new AccountTransactionGUI(plugin, account).setParentGUI(parentGUI).open(player))
-                .build();
+                "Click to view the transaction log."
+        ));
     }
-
+    
     @Override
-    GUIType getType() {
-        return GUIType.ACCOUNT_INTEREST_LOG;
-    }
-
-    @Nullable
-    @Override
-    Observable getSubject() {
-        return plugin.getAccountInterestService();
+    public void click(int slot, ClickType clickType) {
+        super.click(slot, clickType);
+        if (slot == SWITCH_VIEW_SLOT)
+            parentGUI.child(new AccountTransactionGUI(plugin, player, account)).open();
     }
 
 }
