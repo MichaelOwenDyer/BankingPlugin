@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -56,8 +57,7 @@ public abstract class BankingPluginCommand implements CommandExecutor, TabComple
 			pluginCommand.setTabCompleter(this);
 
 		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-			plugin.getLogger().severe("Failed to create command \"" + name + "\"!");
-			plugin.debug("Failed to create command \"%s\"!", name);
+			plugin.log(Level.SEVERE, "Failed to create command '" + name + "'!");
 			plugin.debug(e);
 			return;
 		}
@@ -70,8 +70,7 @@ public abstract class BankingPluginCommand implements CommandExecutor, TabComple
 			CommandMap commandMap = (CommandMap) commandMapField.get(Bukkit.getPluginManager());
 			commandMap.register(plugin.getName(), pluginCommand);
 		} catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
-			plugin.getLogger().severe("Failed to register command \"" + name + "\"!");
-			plugin.debug("Failed to register command \"%s\"!", name);
+			plugin.log(Level.SEVERE, "Failed to register command '" + name + "'!");
 			plugin.debug(e);
 		}
 	}
@@ -105,7 +104,7 @@ public abstract class BankingPluginCommand implements CommandExecutor, TabComple
 		plugin.debug("%s is executing command /%s %s %s",
 				sender.getName(), name, subCommand.getName(), String.join(" ", arguments));
 		if (arguments.length < subCommand.getMinimumArguments()) {
-			plugin.debug("Too few arguments");
+			plugin.debug("Too few arguments. Sending usage message to " + sender.getName());
 			sender.sendMessage(subCommand.getUsageMessage()
 					.with(Placeholder.COMMAND).as(name + " " + subCommand.getName())
 					.translate(plugin));

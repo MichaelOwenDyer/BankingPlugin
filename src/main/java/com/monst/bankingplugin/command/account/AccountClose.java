@@ -42,7 +42,7 @@ public class AccountClose extends PlayerSubCommand {
     protected void execute(Player player, String[] args) throws EventCancelledException {
         new AccountCloseCommandEvent(player, args).fire();
 
-        plugin.debug("%s can now click a chest to close an account", player.getName());
+        plugin.debug("%s can now click a chest to close an account.", player.getName());
         player.sendMessage(Message.CLICK_ACCOUNT_CLOSE.translate(plugin));
         ClickAction.setAccountClickAction(player, account -> close(player, account));
     }
@@ -63,7 +63,7 @@ public class AccountClose extends PlayerSubCommand {
 
         boolean balanceRemaining = account.getBalance().signum() > 0;
         if ((balanceRemaining || plugin.config().confirmOnRemove.get()) && ClickAction.mustConfirm(player)) {
-            plugin.debug("Account removal needs confirmation");
+            plugin.debug("Account removal needs confirmation.");
             if (balanceRemaining)
                 player.sendMessage(Message.ACCOUNT_BALANCE_NOT_ZERO
                         .with(Placeholder.ACCOUNT_BALANCE).as(plugin.getEconomy().format(account.getBalance().doubleValue()))
@@ -77,7 +77,7 @@ public class AccountClose extends PlayerSubCommand {
         }
         ClickAction.remove(player);
 
-        plugin.debug("%s is removing account #%d", player.getName(), account.getID());
+        plugin.debug("%s is removing account %s", player.getName(), account);
 
         new AccountCloseEvent(player, account).fire();
 

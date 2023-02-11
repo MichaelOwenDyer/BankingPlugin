@@ -64,10 +64,10 @@ public class BankUntrust extends SubCommand {
 
         if (!bank.isTrusted(playerToUntrust))
             throw err(Message.NOT_A_CO_OWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()));
-
-        plugin.debug("%s has untrusted %s from bank #%d", sender.getName(), playerToUntrust.getName(), bank.getID());
-        sender.sendMessage(Message.REMOVED_CO_OWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate(plugin));
+    
         bank.untrustPlayer(playerToUntrust);
+        sender.sendMessage(Message.REMOVED_CO_OWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate(plugin));
+        plugin.debug("%s has untrusted %s from bank %s", sender.getName(), playerToUntrust.getName(), bank);
     }
 
     @Override

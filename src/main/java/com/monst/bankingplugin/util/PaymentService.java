@@ -35,12 +35,12 @@ public class PaymentService {
         switch (response.type) {
             case SUCCESS:
                 return true;
-            case NOT_IMPLEMENTED:
-                plugin.debug(new IllegalStateException(response.errorMessage));
             case FAILURE:
                 return false;
+            case NOT_IMPLEMENTED:
+                plugin.debug(response.errorMessage);
             default:
-                throw new IllegalStateException("Unknown EconomyResponse type: " + response.type);
+                throw new IllegalStateException("Economy action failed! Error message: '" + response.errorMessage + "'");
         }
     }
 

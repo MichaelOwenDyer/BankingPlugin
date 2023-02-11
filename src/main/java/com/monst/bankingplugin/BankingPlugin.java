@@ -44,6 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Level;
 
 public class BankingPlugin extends JavaPlugin {
 
@@ -70,7 +71,7 @@ public class BankingPlugin extends JavaPlugin {
     private Update update;
 
     /*	Debug  */
-    private Logger logger = Logger.NO_OP; // Default to no-op logger, will be replaced by a real logger if debug is enabled
+    private Logger debugger = Logger.NO_OP; // Default to no-op logger, will be replaced by a real logger if debug is enabled
 
     /*  Startup Message	 */
     private final String[] STARTUP_MESSAGE = new String[] {
@@ -96,7 +97,7 @@ public class BankingPlugin extends JavaPlugin {
             economy = findEconomy();
             worths = new Worths(this, findEssentials());
         } catch (MissingDependencyException e) {
-            getLogger().severe(e.getMessage());
+            log(Level.SEVERE, e.getMessage());
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -123,7 +124,7 @@ public class BankingPlugin extends JavaPlugin {
             checkForUpdates().then(update -> {
                 if (update == null)
                     return;
-                getLogger().warning("Version " + update.getVersion() + " of BankingPlugin is available!");
+                log(Level.WARNING, "Version " + update.getVersion() + " of BankingPlugin is available!");
                 if (config().downloadUpdatesAutomatically.get())
                     update.download();
             }).catchError(error -> getLogger().warning("Failed to check for updates!"));
@@ -192,8 +193,7 @@ public class BankingPlugin extends JavaPlugin {
         String packageName = Bukkit.getServer().getClass().getPackage().getName();
         String serverVersion = packageName.substring(packageName.lastIndexOf('.') + 1);
         if (!testedVersions.contains(serverVersion)) {
-            debug("Server version not officially supported: %s!", serverVersion);
-            getLogger().warning("Server version not officially supported: " + serverVersion + "!");
+            log(Level.WARNING, "Server version not officially supported: " + serverVersion + "!");
             getLogger().warning("Plugin may still work, but more errors are expected!");
         }
     }
@@ -352,20 +352,31 @@ public class BankingPlugin extends JavaPlugin {
         metrics.addCustomChart(new SimplePie("self_banking", config().allowSelfBanking::toString));
         metrics.addCustomChart(new SimplePie("language_file", config().languageFile::toString));
     }
-
+    
+    public void log(Level level, String message) {
+        getLogger().log(level, message);
+        debug(message);
+    }
+    
+    public void log(Level level, String message, Object... format) {
+        String formatted = String.format(message, format);
+        getLogger().log(level, formatted);
+        debug(formatted);
+    }
+    
     /**
      * Prints a message to the <i>/plugins/BankingPlugin/debug.txt</i> file.
      * @param message the message to be printed
      */
     public void debug(String message) {
-        logger.log(message);
+        debugger.log(message);
     }
 
     /**
      * Prints a message with special formatting to the debug file.
      */
     public void debug(String message, Object... format) {
-        logger.log(String.format(message, format));
+        debugger.log(String.format(message, format));
     }
 
     /**
@@ -375,22 +386,22 @@ public class BankingPlugin extends JavaPlugin {
      * @param throwable the {@link Throwable} of which the stacktrace will be printed
      */
     public void debug(Throwable throwable) {
-        logger.log(throwable);
+        debugger.log(throwable);
     }
     
     public void setDebugLogEnabled(boolean enabled) {
-        logger.close();
+        debugger.close();
         if (enabled) {
             Path debugFile = getDataFolder().toPath().resolve("debug.txt");
             try {
                 PrintWriter debugWriter = new PrintWriter(Files.newOutputStream(debugFile), true);
-                logger = Logger.printingTo(debugWriter);
+                debugger = Logger.printingTo(debugWriter);
                 return;
             } catch (IOException e) {
-                getLogger().severe("Failed to create debug writer.");
+                getLogger().severe("Failed to create debug file.");
             }
         }
-        logger = Logger.NO_OP;
+        debugger = Logger.NO_OP;
     }
 
     /**

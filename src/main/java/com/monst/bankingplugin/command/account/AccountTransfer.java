@@ -61,7 +61,7 @@ public class AccountTransfer extends PlayerSubCommand {
     }
 
     private void transfer(Player player, Account account, OfflinePlayer newOwner) throws CommandExecutionException, EventCancelledException {
-        plugin.debug("%s is transferring ownership of account #%d to %s", player.getName(), account.getID(), newOwner.getName());
+        plugin.debug("%s is transferring ownership of account %s", player.getName(), account);
 
         if (!account.isOwner(player) && Permissions.ACCOUNT_TRANSFER_OTHER.notOwnedBy(player)) {
             ClickAction.remove(player);
@@ -76,7 +76,7 @@ public class AccountTransfer extends PlayerSubCommand {
         }
 
         if (plugin.config().confirmOnTransfer.get() && ClickAction.mustConfirm(player)) {
-            plugin.debug("Account transfer needs confirmation");
+            plugin.debug("Account transfer needs confirmation.");
             player.sendMessage(Message.ACCOUNT_ABOUT_TO_TRANSFER
                     .with(Placeholder.PLAYER).as(newOwner.getName())
                     .and(Placeholder.ACCOUNT_ID).as(account.getID())

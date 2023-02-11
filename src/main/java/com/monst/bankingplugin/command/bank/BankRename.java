@@ -66,9 +66,9 @@ public class BankRename extends SubCommand {
                     .with(Placeholder.NAME).as(newName)
                     .and(Placeholder.PATTERN).as(plugin.config().nameRegex.get()));
 
-        plugin.debug("%s is changing the name of bank #%d to %s", sender.getName(), bank.getID(), newName);
-        sender.sendMessage(Message.NAME_CHANGED.with(Placeholder.BANK_NAME).as(newName).translate(plugin));
         bank.setName(newName);
+        sender.sendMessage(Message.NAME_CHANGED.with(Placeholder.BANK_NAME).as(newName).translate(plugin));
+        plugin.debug("%s is changing the name of bank %s", sender.getName(), bank);
         plugin.getBankService().update(bank);
     }
 

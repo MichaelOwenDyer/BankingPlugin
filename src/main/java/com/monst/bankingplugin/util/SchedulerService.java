@@ -74,7 +74,7 @@ public class SchedulerService {
         try {
             new InterestEvent(Bukkit.getConsoleSender(), findBanksAtTime(time)).fire();
         } catch (EventCancelledException e) {
-            plugin.debug("InterestEvent cancelled");
+            plugin.debug("InterestEvent cancelled.");
         }
     }
 

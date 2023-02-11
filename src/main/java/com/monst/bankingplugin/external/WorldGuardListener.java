@@ -19,6 +19,8 @@ import org.codemc.worldguardwrapper.event.WrappedUseBlockEvent;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 
+import java.util.logging.Level;
+
 public class WorldGuardListener implements Listener {
 
 	private final BankingPlugin plugin;
@@ -31,13 +33,10 @@ public class WorldGuardListener implements Listener {
         this.wgWrapper = WorldGuardWrapper.getInstance();
         this.bankCreateFlag = wgWrapper.getFlag("create-bank", WrappedState.class).orElse(null);
 		this.chestAccessFlag = wgWrapper.getFlag("chest-access", WrappedState.class).orElse(null);
-        if (bankCreateFlag == null) {
-			plugin.getLogger().severe("Failed to find WorldGuard state flag 'create-bank'");
-			plugin.debug("WorldGuard state flag 'create-bank' is not present!");
-		}
-		if (chestAccessFlag == null) {
-			plugin.debug("WorldGuard state flag 'chest-access' is not present!");
-		}
+        if (bankCreateFlag == null)
+			plugin.log(Level.SEVERE, "Failed to find WorldGuard state flag 'create-bank'");
+		if (chestAccessFlag == null)
+			plugin.log(Level.WARNING, "WorldGuard state flag 'chest-access' is not present!");
     }
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -48,7 +47,7 @@ public class WorldGuardListener implements Listener {
 		for (Block block : e.getBank().getRegion().getCorners())
 			if (isBankCreationBlockedByWorldGuard(e.getPlayer(), block)) {
 				e.setCancelled(true);
-				plugin.debug("Bank create event cancelled by WorldGuard");
+				plugin.debug("Bank create event cancelled by WorldGuard.");
 				return;
 			}
 	}
@@ -61,7 +60,7 @@ public class WorldGuardListener implements Listener {
 		for (Block block : e.getNewRegion().getCorners())
 			if (isBankCreationBlockedByWorldGuard(e.getPlayer(), block)) {
 				e.setCancelled(true);
-				plugin.debug("Bank resize event cancelled by WorldGuard");
+				plugin.debug("Bank resize event cancelled by WorldGuard.");
 				return;
 			}
     }

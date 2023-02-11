@@ -63,7 +63,7 @@ public class AccountProtectListener implements Listener {
 			return;
 
 		Player player = e.getPlayer();
-		plugin.debug("%s tries to break %s's account #%d", player.getName(), account.getOwner().getName(), account.getID());
+		plugin.debug("%s tries to break account %s", player.getName(), account);
   
 		boolean canBreak = player.isSneaking();
         if (canBreak)
@@ -77,8 +77,7 @@ public class AccountProtectListener implements Listener {
 		}
   
 		if (!canBreak) {
-            plugin.debug("%s cannot break %s's account #%d",
-                    player.getName(), account.getOwner().getName(), account.getID());
+            plugin.debug("%s cannot break account %s", player.getName(), account);
 			e.setCancelled(true);
 			e.getPlayer().sendMessage(Message.CANNOT_BREAK_ACCOUNT_CHEST.translate(plugin));
 			return;
@@ -113,7 +112,7 @@ public class AccountProtectListener implements Listener {
 			new AccountCloseEvent(player, account).fire();
 			bank.removeAccount(account);
 			plugin.getAccountService().remove(account);
-			plugin.debug("%s broke %s's account #%d", player.getName(), account.getOwner().getName(), account.getID());
+			plugin.debug("%s broke account %s", player.getName(), account);
 			player.sendMessage(Message.ACCOUNT_CLOSED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate(plugin));
 		}
 	}
@@ -160,13 +159,13 @@ public class AccountProtectListener implements Listener {
 		Player player = e.getPlayer();
 		Bank bank = plugin.getBankService().findContaining(placedBlock);
 		if (bank == null || !bank.equals(account.getBank())) {
-			plugin.debug("Chest not in bank");
+			plugin.debug("Chest not in bank.");
 			player.sendMessage(Message.CHEST_NOT_IN_BANK.translate(plugin));
 			e.setCancelled(true);
 			return;
 		}
 
-		plugin.debug("%s tries to extend %s's account #%d", player.getName(), account.getOwner().getName(), account.getID());
+		plugin.debug("%s tries to extend account %s", player.getName(), account);
 
 		if (!account.isOwner(player) && Permissions.ACCOUNT_EXTEND_OTHER.notOwnedBy(player)) {
 			player.sendMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_OTHER.translate(plugin));

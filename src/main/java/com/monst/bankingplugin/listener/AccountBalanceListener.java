@@ -83,7 +83,7 @@ public class AccountBalanceListener implements Listener {
 		}
 
 		plugin.getAccountService().update(account);
-		plugin.debug("Account #%d has been updated with a new balance of %s", account.getID(), newBalance);
+		plugin.debug("Account has been updated with a new balance: " + account);
 		new AccountTransactionEvent(executor, account, difference, newBalance).fire();
 
 		if (account.getOwner().isOnline())

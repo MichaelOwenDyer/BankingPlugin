@@ -9,6 +9,7 @@ import com.monst.bankingplugin.util.Promise;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.logging.Level;
 
 public abstract class Service {
     
@@ -27,6 +28,7 @@ public abstract class Service {
         try (Connection con = connectionSupplier.get()) {
             writeAction.accept(con);
         } catch (SQLException e) {
+            plugin.log(Level.SEVERE, "Failed to execute write on database!");
             plugin.debug(e);
         }
     }
@@ -47,6 +49,7 @@ public abstract class Service {
                 throw e;
             }
         } catch (SQLException e) {
+            plugin.log(Level.SEVERE, "Failed to execute transaction on database!");
             plugin.debug(e);
         }
     }
@@ -56,6 +59,7 @@ public abstract class Service {
         try (Connection con = connectionSupplier.get()) {
             return Optional.ofNullable(query.apply(con));
         } catch (SQLException e) {
+            plugin.log(Level.SEVERE, "Failed to execute query on database!");
             plugin.debug(e);
             return Optional.empty();
         }

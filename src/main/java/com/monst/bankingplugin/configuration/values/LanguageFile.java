@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,8 +54,7 @@ public class LanguageFile extends PathConfigurationValue {
 
         Path languageFile = langFolder.resolve(get());
         if (!Files.exists(languageFile)) {
-            plugin.getLogger().warning("Could not find language file \"" + languageFile.getFileName() + "\".");
-            plugin.debug("Could not find language file \"%s\".", languageFile.getFileName());
+            plugin.log(Level.WARNING, "Could not find language file '" + languageFile.getFileName() + "'.");
             languageFile = defaultLangFile;
         }
     
@@ -70,8 +70,7 @@ public class LanguageFile extends PathConfigurationValue {
                     .map(l -> l.split("=", 2))
                     .collect(Collectors.toMap(s -> s[0], s -> s[1], (first, second) -> second));
         } catch (IOException e) {
-            plugin.getLogger().severe("Failed to load language file \"" + fileName + "\".");
-            plugin.debug("Using default language values.");
+            plugin.log(Level.SEVERE, "Failed to load language file '" + fileName + "'. Using default locale.");
             plugin.debug(e);
             return;
         }
@@ -87,9 +86,9 @@ public class LanguageFile extends PathConfigurationValue {
         }
     
         if (!fileTranslations.isEmpty()) {
-            plugin.getLogger().info("There are unused translations in language file \"" + fileName + "\".");
+            plugin.log(Level.INFO, "There are unused translations in language file '" + fileName + "'.");
             plugin.getLogger().info("See debug log for details.");
-            plugin.debug("Unused translations found in language file \"%s\": %s", fileName, fileTranslations.keySet());
+            plugin.debug(fileTranslations.keySet().toString());
         }
     
         if (!missingMessages.isEmpty()) {
@@ -97,14 +96,14 @@ public class LanguageFile extends PathConfigurationValue {
                 for (Message message : missingMessages) {
                     writer.write("\n# Example Scenario: " + message.getExampleScenario());
                     writer.write("\n# Available placeholders: " + message.getAvailablePlaceholders());
-                    writer.write("\n" + message.getPath() + "=" + message.inEnglish()
-                            .replace("§", "&") + "\n"); // Replace § with & for color codes
-                    plugin.getLogger().info("Missing translation for \"" + message.getPath() +
-                            "\" has been added to the current language file.");
+                    // Replace § with & for color codes
+                    writer.write("\n" + message.getPath() + "=" + message.inEnglish().replace("§", "&") + "\n");
+                    plugin.log(Level.INFO,
+                            "Missing translation for '%s' has been added to the current language file.", message.getPath());
                 }
             } catch (IOException e) {
-                plugin.getLogger().severe("Failed to add missing translation(s) to the language file.");
-                plugin.debug("Failed to add missing translation(s) to the language file.");
+                plugin.log(Level.SEVERE, "Failed to add missing translation(s) to the language file.");
+                plugin.debug("Missing translation(s): " + missingMessages);
                 plugin.debug(e);
             }
         }

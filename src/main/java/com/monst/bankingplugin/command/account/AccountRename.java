@@ -51,12 +51,12 @@ public class AccountRename extends PlayerSubCommand {
             throw err(Message.NO_PERMISSION_ACCOUNT_RENAME_OTHER);
 
         if (newName.isEmpty()) {
-            plugin.debug("%s has reset nickname of account #%d", executor.getName(), account.getID());
             account.setCustomName(null);
+            plugin.debug("%s has reset nickname of account %s", executor.getName(), account);
             newName = account.getName();
         } else {
-            plugin.debug("%s has renamed account #%d to \"%s\"", executor.getName(), account.getID(), newName);
             account.setCustomName(newName);
+            plugin.debug("%s has renamed account %s", executor.getName(), account);
         }
         executor.sendMessage(Message.ACCOUNT_RENAMED.with(Placeholder.NAME).as(newName).translate(plugin));
         new AccountRenameEvent(executor, account, newName).fire();

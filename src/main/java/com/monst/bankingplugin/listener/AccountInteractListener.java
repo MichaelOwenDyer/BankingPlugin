@@ -122,7 +122,7 @@ public class AccountInteractListener implements Listener {
 		}
 
 		e.setCancelled(false); // Ensure that the chest is opened.
-		plugin.debug("%s is opening account #%d", player.getName(), account.getID());
+		plugin.debug("%s is opening account %s", player.getName(), account);
 
 	}
 }

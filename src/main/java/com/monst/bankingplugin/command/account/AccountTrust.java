@@ -75,10 +75,10 @@ public class AccountTrust extends PlayerSubCommand {
             throw err(Message.ALREADY_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
 
         new AccountTrustEvent(executor, account, playerToTrust).fire();
-
-        plugin.debug("%s has trusted %s to account #%d", executor.getName(), playerToTrust.getName(), account.getID());
-        executor.sendMessage(Message.ADDED_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate(plugin));
+    
         account.trustPlayer(playerToTrust);
+        executor.sendMessage(Message.ADDED_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate(plugin));
+        plugin.debug("%s has trusted %s to account %s", executor.getName(), playerToTrust.getName(), account);
     }
 
     @Override

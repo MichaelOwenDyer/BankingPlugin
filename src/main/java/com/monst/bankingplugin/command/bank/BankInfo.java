@@ -37,7 +37,7 @@ public class BankInfo extends PlayerSubCommand {
             if (bank == null)
                 throw err(Message.BANK_NOT_FOUND.with(Placeholder.INPUT).as(args[0]));
         }
-        plugin.debug("%s is viewing GUI of bank #%d", player.getName(), bank.getID());
+        plugin.debug("%s is viewing GUI of bank %s", player.getName(), bank);
         new BankGUI(plugin, player, bank).open();
     }
 

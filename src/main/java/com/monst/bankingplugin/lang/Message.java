@@ -3,6 +3,7 @@ package com.monst.bankingplugin.lang;
 import com.monst.bankingplugin.BankingPlugin;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static com.monst.bankingplugin.lang.Placeholder.*;
@@ -1041,8 +1042,8 @@ public enum Message implements Translatable {
                     translation = translation.replace(placeholder.toString(), replacement.getReplacement());
             }
             if (!remainingPlaceholders.isEmpty()) {
-                plugin.getLogger().warning("Bug! Message " + path + " has unfilled placeholders! See debug log for details.");
-                plugin.debug(new IllegalStateException("Bug! Message " + path + " has unfilled placeholders! " + remainingPlaceholders));
+                plugin.log(Level.WARNING, "Notify author! Message " + path + " has unfilled placeholders!");
+                plugin.debug(remainingPlaceholders.toString());
             }
             return translation;
         }
@@ -1065,8 +1066,8 @@ public enum Message implements Translatable {
     @Override
     public String translate(BankingPlugin plugin) {
         if (!availablePlaceholders.isEmpty()) {
-            plugin.getLogger().warning("Bug! Message " + path + " has unfilled placeholders! See debug log for details.");
-            plugin.debug(new IllegalStateException("Bug! Message " + path + " has unfilled placeholders! " + availablePlaceholders));
+            plugin.log(Level.WARNING, "Notify author! Message " + path + " has unfilled placeholders!");
+            plugin.debug(availablePlaceholders.toString());
         }
         return plugin.config().languageFile.getTranslation(this, defaultMessage);
     }

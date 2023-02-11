@@ -36,7 +36,7 @@ public class GriefPreventionListener implements Listener {
         for (Block block : e.getAccount().getLocation())
 			if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
 				e.setCancelled(true);
-				plugin.debug("Account open event cancelled by GriefPrevention");
+				plugin.debug("Account open event cancelled by GriefPrevention.");
                 return;
 			}
     }
@@ -49,7 +49,7 @@ public class GriefPreventionListener implements Listener {
 		for (Block block : e.getNewAccountLocation())
             if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
                 e.setCancelled(true);
-                plugin.debug("Account extend event cancelled by GriefPrevention");
+                plugin.debug("Account extend event cancelled by GriefPrevention.");
                 return;
             }
     }
@@ -62,7 +62,7 @@ public class GriefPreventionListener implements Listener {
 	    for (Block block : e.getNewAccountLocation())
             if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
                 e.setCancelled(true);
-                plugin.debug("Account migrate event cancelled by GriefPrevention");
+                plugin.debug("Account migrate event cancelled by GriefPrevention.");
                 return;
             }
     }
@@ -75,7 +75,7 @@ public class GriefPreventionListener implements Listener {
 	    for (Block block : e.getNewAccountLocation())
             if (isBlockedByGriefPrevention(e.getPlayer(), block)) {
                 e.setCancelled(true);
-                plugin.debug("Account recover event cancelled by GriefPrevention");
+                plugin.debug("Account recover event cancelled by GriefPrevention.");
                 return;
             }
     }

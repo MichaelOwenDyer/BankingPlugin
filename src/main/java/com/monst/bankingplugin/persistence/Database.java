@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.logging.Level;
 
 public class Database {
 
@@ -93,8 +94,8 @@ public class Database {
              Statement stmt = con.createStatement()) {
             stmt.execute("SHUTDOWN");
         } catch (SQLException e) {
+            plugin.log(Level.SEVERE, "Failed to shut down database.");
             plugin.debug(e);
-            plugin.getLogger().severe("Failed to shut down database.");
         }
         dataSource.close();
         dataSource = null;

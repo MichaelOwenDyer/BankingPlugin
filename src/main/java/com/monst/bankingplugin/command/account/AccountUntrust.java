@@ -73,10 +73,10 @@ public class AccountUntrust extends PlayerSubCommand {
             throw err(Message.NOT_A_CO_OWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()));
 
         new AccountUntrustEvent(executor, account, playerToUntrust).fire();
-
-        plugin.debug("%s has untrusted %s from account #%d", executor.getName(), playerToUntrust.getName(), account.getID());
-        executor.sendMessage(Message.REMOVED_CO_OWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate(plugin));
+    
         account.untrustPlayer(playerToUntrust);
+        executor.sendMessage(Message.REMOVED_CO_OWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate(plugin));
+        plugin.debug("%s has untrusted %s from account %s", executor.getName(), playerToUntrust.getName(), account);
     }
 
     @Override

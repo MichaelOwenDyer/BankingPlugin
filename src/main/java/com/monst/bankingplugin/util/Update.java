@@ -14,6 +14,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 import static java.nio.file.StandardOpenOption.*;
 
@@ -137,13 +138,12 @@ public class Update {
                 validate();
                 rename();
                 setState(State.COMPLETED);
-                plugin.getLogger().info("Download complete! Restart the server to apply the update.");
+                plugin.log(Level.INFO, "Download complete! Restart the server to apply the update.");
             } catch (IOException e) {
                 setState(State.ERROR);
-                plugin.debug("Failed to download update version " + version);
+                plugin.log(Level.SEVERE, "Download failed. Try again or update the plugin manually (version " + version + ").");
                 plugin.debug(e);
                 exception = e;
-                plugin.getLogger().severe("Download failed. Try again or update the plugin manually.");
                 if (onRejected != null)
                     onRejected.accept(e);
             }
@@ -165,8 +165,7 @@ public class Update {
         }
         
         private boolean downloadFile(URLConnection con) throws IOException {
-            plugin.debug("Downloading BankingPlugin v" + version + "... (state = " + state + ")");
-            plugin.getLogger().info("Downloading BankingPlugin v" + version + "...");
+            plugin.log(Level.INFO, "Downloading BankingPlugin v" + version + "...");
             boolean resume = state == State.PAUSED; // If the download was paused, continue from where it left off. Otherwise, start over.
             if (!resume) {
                 bytesDownloaded = 0; // Reset the bytes downloaded counter

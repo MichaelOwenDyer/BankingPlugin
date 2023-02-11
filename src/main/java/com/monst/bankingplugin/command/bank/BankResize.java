@@ -111,8 +111,8 @@ public class BankResize extends PlayerSubCommand {
         plugin.getBankService().update(bank);
         if (plugin.isGriefPreventionIntegrated())
             new BankVisualization(plugin, bank).show(player);
-        plugin.debug("%s has resized bank #%d", player.getName(), bank.getID());
         player.sendMessage(Message.BANK_RESIZED.with(Placeholder.BANK_SIZE).as(volume).translate(plugin));
+        plugin.debug("%s has resized bank %s", player.getName(), bank);
     }
 
     @Override
