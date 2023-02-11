@@ -72,7 +72,7 @@ public class WorldEditReader {
 		} else
 			throw new IllegalStateException();
 
-		plugin.debugf("%s has selected the bank at %s", player.getName(), region.toString());
+		plugin.debug("%s has selected the bank at %s", player.getName(), region.toString());
 		regionSelector.setWorld(BukkitAdapter.adapt(region.getWorld()));
 		plugin.getWorldEdit().getSessionManager().get(BukkitAdapter.adapt(player))
 				.setRegionSelector(BukkitAdapter.adapt(region.getWorld()), regionSelector);

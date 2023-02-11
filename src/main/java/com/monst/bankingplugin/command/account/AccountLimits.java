@@ -29,7 +29,7 @@ public class AccountLimits extends PlayerSubCommand {
         int used = plugin.getAccountService().countByOwner(player);
         long accLimit = PlayerSubCommand.getPermissionLimit(player, Permissions.ACCOUNT_NO_LIMIT, plugin.config().defaultAccountLimit.get());
         String limit = accLimit < 0 ? "∞" : "" + accLimit;
-        plugin.debugf("%s is viewing their account limits: %s / %s", player.getName(), used, limit);
+        plugin.debug("%s is viewing their account limits: %s / %s", player.getName(), used, limit);
         player.sendMessage(Message.ACCOUNT_LIMIT
                 .with(Placeholder.NUMBER_OF_ACCOUNTS).as(used)
                 .and(Placeholder.LIMIT).as(limit)

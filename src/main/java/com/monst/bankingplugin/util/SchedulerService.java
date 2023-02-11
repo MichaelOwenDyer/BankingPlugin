@@ -50,14 +50,14 @@ public class SchedulerService {
         Duration until = Duration.between(Instant.now(), nextOccurrence);
         long ticks = until.getSeconds() * 20; // Get number of ticks between now and next instance
 
-        plugin.debugf("Scheduling interest payment at %s, %d minutes from now", time, until.toMinutes());
+        plugin.debug("Scheduling interest payment at %s, %d minutes from now", time, until.toMinutes());
         // Schedule task starting at next instance, repeating daily, where an InterestEvent is fired with the scheduled banks
         // 24 hours/day * 60 minutes/hour * 60 seconds/minute * 20 ticks/second = 1728000 ticks/day
         return Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> throwEvent(time), ticks, 1728000L);
     }
 
     private void unschedule(LocalTime time) {
-        plugin.debugf("Unscheduling interest payment at %s...", time);
+        plugin.debug("Unscheduling interest payment at %s...", time);
         Integer taskID = payoutTimeTaskIDs.remove(time);
         if (taskID != null)
             Bukkit.getScheduler().cancelTask(taskID);
@@ -70,7 +70,7 @@ public class SchedulerService {
     }
 
     private void throwEvent(LocalTime time) {
-        plugin.debugf("Triggering scheduled InterestEvent at %s...", time);
+        plugin.debug("Triggering scheduled InterestEvent at %s...", time);
         try {
             new InterestEvent(Bukkit.getConsoleSender(), findBanksAtTime(time)).fire();
         } catch (EventCancelledException e) {

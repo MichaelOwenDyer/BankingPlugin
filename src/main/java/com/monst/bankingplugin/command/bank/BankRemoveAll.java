@@ -58,11 +58,11 @@ public class BankRemoveAll extends SubCommand {
 
         if (!accounts.isEmpty()) {
             plugin.getAccountService().removeAll(accounts);
-            plugin.debugf("Account(s) %s removed from the database.", accounts);
+            plugin.debug("Account(s) %s removed from the database.", accounts);
             accounts.forEach(Account::resetChestTitle);
         }
         plugin.getBankService().removeAll(banks);
-        plugin.debugf("Bank(s) %s removed from the database.", banks);
+        plugin.debug("Bank(s) %s removed from the database.", banks);
         sender.sendMessage(Message.ALL_BANKS_REMOVED
                 .with(Placeholder.NUMBER_OF_BANKS).as(banks.size())
                 .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size())

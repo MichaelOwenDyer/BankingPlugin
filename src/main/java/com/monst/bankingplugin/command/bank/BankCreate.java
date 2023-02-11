@@ -124,7 +124,7 @@ public class BankCreate extends PlayerSubCommand {
         plugin.getSchedulerService().scheduleAll();
         if (plugin.isGriefPreventionIntegrated())
             new BankVisualization(plugin, bank).show(player);
-        plugin.debugf("%s has created a new%s bank.", player.getName(), bank.isAdminBank() ? "admin " : "");
+        plugin.debug("%s has created a new%s bank.", player.getName(), bank.isAdminBank() ? "admin " : "");
         player.sendMessage(Message.BANK_CREATED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate(plugin));
     }
 

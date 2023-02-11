@@ -85,7 +85,7 @@ public class BankingPlugin extends JavaPlugin {
     public void onLoad() {
         configuration = new Configuration(this);
         config().languageFile.loadTranslations();
-        debugf("Loading BankingPlugin version %s", getDescription().getVersion());
+        debug("Loading BankingPlugin version %s", getDescription().getVersion());
         registerWorldGuardFlag();
     }
 
@@ -195,7 +195,7 @@ public class BankingPlugin extends JavaPlugin {
         String packageName = Bukkit.getServer().getClass().getPackage().getName();
         String serverVersion = packageName.substring(packageName.lastIndexOf('.') + 1);
         if (!testedVersions.contains(serverVersion)) {
-            debugf("Server version not officially supported: %s!", serverVersion);
+            debug("Server version not officially supported: %s!", serverVersion);
             getLogger().warning("Server version not officially supported: " + serverVersion + "!");
             getLogger().warning("Plugin may still work, but more errors are expected!");
         }
@@ -369,7 +369,7 @@ public class BankingPlugin extends JavaPlugin {
     /**
      * Prints a message with special formatting to the debug file.
      */
-    public void debugf(String message, Object... format) {
+    public void debug(String message, Object... format) {
         if (!prepareDebug())
             return;
         printDebug(String.format(message, format));

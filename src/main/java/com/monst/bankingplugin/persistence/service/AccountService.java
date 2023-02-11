@@ -57,7 +57,7 @@ public class AccountService extends Service implements Observable {
     }
     
     public void save(Account account) {
-        plugin.debugf("Saving account %s to the database.", account);
+        plugin.debug("Saving account %s to the database.", account);
         transact(con -> {
             accountRepo.save(con, account);
             if (account.hasCoOwners())
@@ -67,19 +67,19 @@ public class AccountService extends Service implements Observable {
     }
 
     public void update(Account account) {
-        plugin.debugf("Updating account %d in the database.", account.getID());
+        plugin.debug("Updating account %d in the database.", account.getID());
         transact(con -> accountRepo.update(con, account));
     }
 
     public void updateAll(Collection<Account> accounts) {
         for (Account account : accounts)
-            plugin.debugf("Updating account %d in the database.", account.getID());
+            plugin.debug("Updating account %d in the database.", account.getID());
         transact(con -> accountRepo.updateAll(con, accounts));
     }
 
     public void remove(Account account) {
         int accountID = account.getID();
-        plugin.debugf("Deleting account %s from the database.", account);
+        plugin.debug("Deleting account %s from the database.", account);
         transact(con -> {
             coOwnerRepo.delete(con, accountID); // Delete co-owners first to avoid violating referential integrity
             accountRepo.delete(con, accountID);
@@ -89,7 +89,7 @@ public class AccountService extends Service implements Observable {
     
     public void removeAll(Collection<Account> accounts) {
         Set<Integer> accountIDs = accounts.stream().map(Account::getID).collect(Collectors.toSet());
-        plugin.debugf("Deleting accounts with IDs %s from the database.", accountIDs);
+        plugin.debug("Deleting accounts with IDs %s from the database.", accountIDs);
         transact(con -> {
             coOwnerRepo.deleteAll(con, accountIDs); // Delete co-owners first to avoid violating referential integrity
             accountRepo.deleteAll(con, accountIDs);
@@ -112,53 +112,53 @@ public class AccountService extends Service implements Observable {
     }
 
     public int countByOwner(OfflinePlayer owner) {
-        plugin.debugf("Counting accounts owned by %s in the database.", owner.getName());
+        plugin.debug("Counting accounts owned by %s in the database.", owner.getName());
         return query(con -> accountRepo.countByOwner(con, owner.getUniqueId())).orElse(0);
     }
     
     public Promise<Integer> countByTrustedPlayer(OfflinePlayer trusted) {
-        plugin.debugf("Counting accounts where %s is trusted in the database asynchronously.", trusted.getName());
+        plugin.debug("Counting accounts where %s is trusted in the database asynchronously.", trusted.getName());
         return async(con -> accountRepo.countByTrustedPlayer(con, trusted.getUniqueId()));
     }
     
     public Promise<List<Account>> findByTrustedPlayer(OfflinePlayer trusted, int offset, int limit) {
-        plugin.debugf("Fetching accounts where %s is trusted from the database.", trusted.getName());
+        plugin.debug("Fetching accounts where %s is trusted from the database.", trusted.getName());
         return async(con -> accountRepo.findByTrustedPlayer(con, trusted.getUniqueId(), offset, limit));
     }
     
     public Promise<Integer> countByOwners(Collection<OfflinePlayer> owners) {
-        plugin.debugf("Counting accounts owned by %s in the database.", owners);
+        plugin.debug("Counting accounts owned by %s in the database.", owners);
         return async(con -> accountRepo.countByOwners(con, owners));
     }
     
     public Promise<List<Account>> findByOwners(Set<OfflinePlayer> owners, int offset, int limit) {
-        plugin.debugf("Fetching accounts owned by %s from the database asynchronously.", owners);
+        plugin.debug("Fetching accounts owned by %s from the database asynchronously.", owners);
         return async(con -> accountRepo.findByOwners(con, owners, offset, limit));
     }
 
     public Set<Account> findByOwners(Collection<OfflinePlayer> owners) {
-        plugin.debugf("Fetching accounts owned by %s from the database.", owners);
+        plugin.debug("Fetching accounts owned by %s from the database.", owners);
         return query(con -> accountRepo.findByOwners(con, owners)).orElse(Collections.emptySet());
     }
     
     public Promise<Integer> countByBank(Bank bank) {
-        plugin.debugf("Counting accounts at bank %s in the database asynchronously.", bank);
+        plugin.debug("Counting accounts at bank %s in the database asynchronously.", bank);
         return async(con -> accountRepo.countByBank(con, bank.getID()));
     }
     
     public Promise<List<Account>> findByBank(Bank bank, int offset, int limit) {
-        plugin.debugf("Fetching accounts at bank %s from the database asynchronously.", bank);
+        plugin.debug("Fetching accounts at bank %s from the database asynchronously.", bank);
         return async(con -> accountRepo.findByBank(con, bank.getID(), offset, limit));
     }
 
     public Set<Account> findByBanks(Collection<Bank> banks) {
-        plugin.debugf("Fetching accounts at banks %s from the database.", banks);
+        plugin.debug("Fetching accounts at banks %s from the database.", banks);
         return query(con -> accountRepo.findByBanks(con, banks.stream().map(Bank::getID).collect(Collectors.toList())))
                 .orElse(Collections.emptySet());
     }
     
     public int countByBankAndOwner(Bank bank, OfflinePlayer owner) {
-        plugin.debugf("Counting accounts at bank %s owned by %s in the database.", bank, owner.getName());
+        plugin.debug("Counting accounts at bank %s owned by %s in the database.", bank, owner.getName());
         return query(con -> accountRepo.countByBankAndOwner(con, bank.getID(), owner.getUniqueId())).orElse(0);
     }
 
@@ -172,7 +172,7 @@ public class AccountService extends Service implements Observable {
     }
 
     public Account findAtChest(Block chest) {
-        plugin.debugf("Fetching account at chest %s from the database.", chest);
+        plugin.debug("Fetching account at chest %s from the database.", chest);
         return query(con -> accountRepo.findAtChest(con, chest)).orElse(null);
     }
     
@@ -186,7 +186,7 @@ public class AccountService extends Service implements Observable {
     }
 
     public Set<Account> findAtBlocks(Collection<Block> chests) {
-        plugin.debugf("Fetching accounts at chests %s from the database.", chests);
+        plugin.debug("Fetching accounts at chests %s from the database.", chests);
         return query(con -> accountRepo.findAtChests(con, chests)).orElse(Collections.emptySet());
     }
 

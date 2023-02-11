@@ -63,7 +63,7 @@ public class AccountRecover extends PlayerSubCommand {
                 throw err(Message.NO_PERMISSION_ACCOUNT_OPEN_PROTECTED);
         }
 
-        plugin.debugf("Recovered account %s", accountToRecover);
+        plugin.debug("Recovered account %s", accountToRecover);
         accountToRecover.setBank(bank);
         accountToRecover.setLocation(newLocation);
         accountToRecover.updateChestTitle();

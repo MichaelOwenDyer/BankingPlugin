@@ -69,7 +69,7 @@ public class BankTrust extends SubCommand {
             throw err(Message.ALREADY_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()));
         }
 
-        plugin.debugf("%s has trusted %s to bank #%d", sender.getName(), playerToTrust.getName(), bank.getID());
+        plugin.debug("%s has trusted %s to bank #%d", sender.getName(), playerToTrust.getName(), bank.getID());
         sender.sendMessage(Message.ADDED_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate(plugin));
         bank.trustPlayer(playerToTrust);
     }

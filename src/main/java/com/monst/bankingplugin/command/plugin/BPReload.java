@@ -42,7 +42,7 @@ public class BPReload extends SubCommand {
                 .with(Placeholder.NUMBER_OF_BANKS).as(numberOfBanks)
                 .and(Placeholder.NUMBER_OF_ACCOUNTS).as(numberOfAccounts)
                 .translate(plugin));
-        plugin.debugf("%s has reloaded %d banks and %d accounts.", sender.getName(), numberOfBanks, numberOfAccounts);
+        plugin.debug("%s has reloaded %d banks and %d accounts.", sender.getName(), numberOfBanks, numberOfAccounts);
     }
 
 }

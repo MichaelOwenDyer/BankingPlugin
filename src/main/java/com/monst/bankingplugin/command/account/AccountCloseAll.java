@@ -72,7 +72,7 @@ public class AccountCloseAll extends SubCommand {
             account.resetChestTitle();
         }
         plugin.getAccountService().removeAll(accounts);
-        plugin.debugf("%s removed account(s) %s", sender.getName(), accounts);
+        plugin.debug("%s removed account(s) %s", sender.getName(), accounts);
         sender.sendMessage(Message.ALL_ACCOUNTS_CLOSED.with(Placeholder.NUMBER_OF_ACCOUNTS).as(accounts.size()).translate(plugin));
     }
 

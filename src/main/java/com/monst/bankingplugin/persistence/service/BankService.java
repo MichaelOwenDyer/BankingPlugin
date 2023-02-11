@@ -80,7 +80,7 @@ public class BankService extends Service {
     }
     
     public void save(Bank bank) {
-        plugin.debugf("Saving bank %s to the database.", bank);
+        plugin.debug("Saving bank %s to the database.", bank);
         transact(con -> {
             bankRepo.save(con, bank);
             if (bank.hasCoOwners())
@@ -90,12 +90,12 @@ public class BankService extends Service {
     }
     
     public void update(Bank bank) {
-        plugin.debugf("Updating bank %d in the database.", bank.getID());
+        plugin.debug("Updating bank %d in the database.", bank.getID());
         transact(con -> bankRepo.update(con, bank));
     }
     
     public void remove(Bank bank) {
-        plugin.debugf("Deleting bank %s from the database.", bank);
+        plugin.debug("Deleting bank %s from the database.", bank);
         transact(con -> {
             bankCoOwnerRepo.delete(con, bank.getID()); // Delete co-owners first to avoid violating referential integrity
             bankRepo.delete(con, bank.getID());
@@ -105,7 +105,7 @@ public class BankService extends Service {
     
     public void removeAll(Collection<Bank> banks) {
         Set<Integer> bankIDs = banks.stream().map(Bank::getID).collect(Collectors.toSet());
-        plugin.debugf("Deleting banks with IDs %s from the database.", bankIDs);
+        plugin.debug("Deleting banks with IDs %s from the database.", bankIDs);
         transact(con -> {
             bankCoOwnerRepo.deleteAll(con, bankIDs); // Delete co-owners first to avoid violating referential integrity
             bankRepo.deleteAll(con, bankIDs);
@@ -124,19 +124,19 @@ public class BankService extends Service {
     }
     
     public Promise<List<Bank>> findAll(int offset, int limit) {
-        plugin.debugf("Fetching banks %d to %d from the database.", offset, offset + limit);
+        plugin.debug("Fetching banks %d to %d from the database.", offset, offset + limit);
         return async(con -> bankRepo.findAll(con, offset, limit));
     }
     
     public Bank findByID(int id) {
         Optional<Bank> cached = cache.getByID(id);
-        plugin.debugf("Fetching bank with ID %d from the %s.", id, cached.isPresent() ? "cache" : "database");
+        plugin.debug("Fetching bank with ID %d from the %s.", id, cached.isPresent() ? "cache" : "database");
         return cached.orElseGet(() -> query(con -> bankRepo.findByID(con, id)).orElse(null));
     }
     
     public Bank findByName(String name) {
         Optional<Bank> bank = cache.getByName(name);
-        plugin.debugf("Fetching bank with name %s from the %s.", name, bank.isPresent() ? "cache" : "database");
+        plugin.debug("Fetching bank with name %s from the %s.", name, bank.isPresent() ? "cache" : "database");
         return bank.orElseGet(() -> query(con -> bankRepo.findByName(con, name)).orElse(null));
     }
     
@@ -150,10 +150,10 @@ public class BankService extends Service {
         Set<String> cachedNames = cached.stream().map(Bank::getName).collect(Collectors.toSet());
         names.removeAll(cachedNames);
         if (!cachedNames.isEmpty())
-            plugin.debugf("Fetching banks with names %s from the cache.", cachedNames);
+            plugin.debug("Fetching banks with names %s from the cache.", cachedNames);
         if (names.isEmpty())
             return cached;
-        plugin.debugf("Fetching banks with names %s from the database.", names);
+        plugin.debug("Fetching banks with names %s from the database.", names);
         Set<Bank> fromDatabase = query(con -> bankRepo.findByNames(con, names)).orElse(Collections.emptySet());
         fromDatabase.forEach(cache::put);
         cached.addAll(fromDatabase);
@@ -161,22 +161,22 @@ public class BankService extends Service {
     }
     
     public int countByOwner(OfflinePlayer owner) {
-        plugin.debugf("Counting banks owned by %s in the database.", owner.getName());
+        plugin.debug("Counting banks owned by %s in the database.", owner.getName());
         return query(con -> bankRepo.countByOwner(con, owner.getUniqueId())).orElse(0);
     }
     
     public int countByTrustedPlayer(OfflinePlayer trusted) {
-        plugin.debugf("Counting banks where %s is trusted in the database.", trusted.getName());
+        plugin.debug("Counting banks where %s is trusted in the database.", trusted.getName());
         return query(con -> bankRepo.countByTrustedPlayer(con, trusted.getUniqueId())).orElse(0);
     }
     
     public Set<String> findNamesByOwner(OfflinePlayer owner) {
-        plugin.debugf("Fetching names of banks owned by %s from the database.", owner);
+        plugin.debug("Fetching names of banks owned by %s from the database.", owner);
         return query(con -> bankRepo.findNamesByOwner(con, owner.getUniqueId())).orElse(Collections.emptySet());
     }
     
     public Set<String> findNamesByTrustedPlayer(OfflinePlayer trusted) {
-        plugin.debugf("Fetching bank names where %s is trusted from the database.", trusted);
+        plugin.debug("Fetching bank names where %s is trusted from the database.", trusted);
         return query(con -> bankRepo.findNamesByTrustedPlayer(con, trusted.getUniqueId())).orElse(Collections.emptySet());
     }
     

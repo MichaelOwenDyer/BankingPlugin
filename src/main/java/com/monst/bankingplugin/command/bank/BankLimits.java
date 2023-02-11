@@ -31,7 +31,7 @@ public class BankLimits extends PlayerSubCommand {
         long allowedVolume = getPermissionLimit(player, Permissions.BANK_NO_SIZE_LIMIT, plugin.config().maximumBankVolume.get());
         String bankLimit = allowedBanks < 0 ? "∞" : "" + allowedBanks;
         String volumeLimit = allowedVolume < 0 ? "∞" : "" + allowedVolume;
-        plugin.debugf("%s is viewing their bank limits: %d / %s, max volume: %d", player.getName(), banksUsed, bankLimit, allowedVolume);
+        plugin.debug("%s is viewing their bank limits: %d / %s, max volume: %d", player.getName(), banksUsed, bankLimit, allowedVolume);
         player.sendMessage(Message.BANK_LIMIT
                 .with(Placeholder.NUMBER_OF_BANKS).as(banksUsed)
                 .and(Placeholder.LIMIT).as(bankLimit)

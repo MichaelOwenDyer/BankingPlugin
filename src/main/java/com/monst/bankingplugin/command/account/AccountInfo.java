@@ -27,14 +27,14 @@ public class AccountInfo extends PlayerSubCommand {
     protected void execute(Player player, String[] args) throws CommandExecutionException, EventCancelledException {
         new AccountInfoCommandEvent(player, args).fire();
 
-        plugin.debugf("%s can now click an account to see the GUI", player.getName());
+        plugin.debug("%s can now click an account to see the GUI", player.getName());
         player.sendMessage(Message.CLICK_ACCOUNT_INFO.translate(plugin));
         ClickAction.setAccountClickAction(player, account -> info(player, account));
     }
 
     private void info(Player player, Account account) throws EventCancelledException {
         ClickAction.remove(player);
-        plugin.debugf("%s is viewing the GUI of account #%d", player.getName(), account.getID());
+        plugin.debug("%s is viewing the GUI of account #%d", player.getName(), account.getID());
         new AccountInfoEvent(player, account).fire();
         new AccountGUI(plugin, player, account).open();
     }

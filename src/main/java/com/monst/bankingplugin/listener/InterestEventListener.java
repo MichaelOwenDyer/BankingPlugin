@@ -34,7 +34,7 @@ public class InterestEventListener implements Listener {
 		if (e.getBanks().isEmpty())
 			return;
 
-		plugin.debugf("Interest payout event occurring now at bank(s) %s.", e.getBanks());
+		plugin.debug("Interest payout event occurring now at bank(s) %s.", e.getBanks());
 
 		Map<Bank, Set<Account>> banksAndAccounts = e.getBanks().stream()
 				.collect(Collectors.toMap(bank -> bank, Bank::getAccounts));

@@ -104,7 +104,7 @@ public class BankConfigure extends SubCommand {
 
         new BankConfigureEvent(sender, bank, policy, newValue, previousValue).fire();
         plugin.getBankService().update(bank);
-        plugin.debugf( "%s has changed %s at %s from %s to %s.",
+        plugin.debug( "%s has changed %s at %s from %s to %s.",
                 sender.getName(), policyName, bank.getName(), previousValue, newValue);
         String message = Message.BANK_POLICY_SET
                 .with(Placeholder.POLICY).as(policyName)

@@ -63,7 +63,7 @@ public class AccountProtectListener implements Listener {
 			return;
 
 		Player player = e.getPlayer();
-		plugin.debugf("%s tries to break %s's account #%d", player.getName(), account.getOwner().getName(), account.getID());
+		plugin.debug("%s tries to break %s's account #%d", player.getName(), account.getOwner().getName(), account.getID());
   
 		boolean canBreak = player.isSneaking();
         if (canBreak)
@@ -77,7 +77,7 @@ public class AccountProtectListener implements Listener {
 		}
   
 		if (!canBreak) {
-            plugin.debugf("%s cannot break %s's account #%d",
+            plugin.debug("%s cannot break %s's account #%d",
                     player.getName(), account.getOwner().getName(), account.getID());
 			e.setCancelled(true);
 			e.getPlayer().sendMessage(Message.CANNOT_BREAK_ACCOUNT_CHEST.translate(plugin));
@@ -113,7 +113,7 @@ public class AccountProtectListener implements Listener {
 			new AccountCloseEvent(player, account).fire();
 			bank.removeAccount(account);
 			plugin.getAccountService().remove(account);
-			plugin.debugf("%s broke %s's account #%d", player.getName(), account.getOwner().getName(), account.getID());
+			plugin.debug("%s broke %s's account #%d", player.getName(), account.getOwner().getName(), account.getID());
 			player.sendMessage(Message.ACCOUNT_CLOSED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate(plugin));
 		}
 	}
@@ -166,7 +166,7 @@ public class AccountProtectListener implements Listener {
 			return;
 		}
 
-		plugin.debugf("%s tries to extend %s's account #%d", player.getName(), account.getOwner().getName(), account.getID());
+		plugin.debug("%s tries to extend %s's account #%d", player.getName(), account.getOwner().getName(), account.getID());
 
 		if (!account.isOwner(player) && Permissions.ACCOUNT_EXTEND_OTHER.notOwnedBy(player)) {
 			player.sendMessage(Message.NO_PERMISSION_ACCOUNT_EXTEND_OTHER.translate(plugin));

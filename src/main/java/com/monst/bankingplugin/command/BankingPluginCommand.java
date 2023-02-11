@@ -44,7 +44,7 @@ public abstract class BankingPluginCommand implements CommandExecutor, TabComple
 	private void register() {
 
 		PluginCommand pluginCommand;
-		plugin.debugf("Creating plugin command \"%s\"", name);
+		plugin.debug("Creating plugin command \"%s\"", name);
 		try {
 			Constructor<PluginCommand> constructor = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
 			constructor.setAccessible(true);
@@ -57,12 +57,12 @@ public abstract class BankingPluginCommand implements CommandExecutor, TabComple
 
 		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
 			plugin.getLogger().severe("Failed to create command \"" + name + "\"!");
-			plugin.debugf("Failed to create command \"%s\"!", name);
+			plugin.debug("Failed to create command \"%s\"!", name);
 			plugin.debug(e);
 			return;
 		}
 
-		plugin.debugf("Registering command \"%s\"", name);
+		plugin.debug("Registering command \"%s\"", name);
 		try {
 			Field commandMapField = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
 			commandMapField.setAccessible(true);
@@ -71,7 +71,7 @@ public abstract class BankingPluginCommand implements CommandExecutor, TabComple
 			commandMap.register(plugin.getName(), pluginCommand);
 		} catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
 			plugin.getLogger().severe("Failed to register command \"" + name + "\"!");
-			plugin.debugf("Failed to register command \"%s\"!", name);
+			plugin.debug("Failed to register command \"%s\"!", name);
 			plugin.debug(e);
 		}
 	}
@@ -96,16 +96,16 @@ public abstract class BankingPluginCommand implements CommandExecutor, TabComple
 			return true;
 		}
 		if (subCommand.getPermission().notOwnedBy(sender)) {
-			plugin.debugf("%s does not have permission to execute command /%s %s",
+			plugin.debug("%s does not have permission to execute command /%s %s",
 					sender.getName(), name, subCommand.getName());
 			sender.sendMessage(subCommand.getNoPermissionMessage().translate(plugin));
 			return true;
 		}
 		String[] arguments = Arrays.copyOfRange(args, 1, args.length);
-		plugin.debugf("%s is executing command /%s %s %s",
+		plugin.debug("%s is executing command /%s %s %s",
 				sender.getName(), name, subCommand.getName(), String.join(" ", arguments));
 		if (arguments.length < subCommand.getMinimumArguments()) {
-			plugin.debugf("Too few arguments");
+			plugin.debug("Too few arguments");
 			sender.sendMessage(subCommand.getUsageMessage()
 					.with(Placeholder.COMMAND).as(name + " " + subCommand.getName())
 					.translate(plugin));
@@ -115,7 +115,7 @@ public abstract class BankingPluginCommand implements CommandExecutor, TabComple
 			subCommand.execute(sender, arguments);
 		} catch (CommandExecutionException e) {
 			sender.sendMessage(e.getLocalizedMessage());
-			plugin.debugf("Could not execute %s's command: %s", sender.getName(), e.getMessage());
+			plugin.debug("Could not execute %s's command: %s", sender.getName(), e.getMessage());
 		} catch (EventCancelledException e) {
 			plugin.debug("Command cancelled: " + e);
 		}

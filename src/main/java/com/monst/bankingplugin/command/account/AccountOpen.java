@@ -51,7 +51,7 @@ public class AccountOpen extends PlayerSubCommand {
 
         new AccountOpenCommandEvent(player, args).fire();
 
-        plugin.debugf("%s can now click a chest to open an account", player.getName());
+        plugin.debug("%s can now click a chest to open an account", player.getName());
         player.sendMessage(Message.CLICK_CHEST_OPEN.translate(plugin));
         ClickAction.setBlockClickAction(player, chest -> create(player, chest));
     }
@@ -134,7 +134,7 @@ public class AccountOpen extends PlayerSubCommand {
         account.updateChestTitle();
         account.setBalance(plugin.getWorths().appraise(account));
         plugin.getAccountService().save(account);
-        plugin.debugf("Created account %s", account);
+        plugin.debug("Created account %s", account);
         player.sendMessage(Message.ACCOUNT_OPENED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate(plugin));
     }
 }

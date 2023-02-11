@@ -76,7 +76,7 @@ public class BPConfigure extends SubCommand {
 
         String newValue = configValue.toString();
 
-        plugin.debugf("%s has configured %s from %s to %s", sender.getName(), configValue.getPath(), previousValue, newValue);
+        plugin.debug("%s has configured %s from %s to %s", sender.getName(), configValue.getPath(), previousValue, newValue);
         sender.sendMessage(Message.CONFIGURATION_VALUE_SET
                 .with(Placeholder.PROPERTY).as(path)
                 .and(Placeholder.PREVIOUS_VALUE).as(previousValue)

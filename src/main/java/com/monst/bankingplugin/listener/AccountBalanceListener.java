@@ -63,7 +63,7 @@ public class AccountBalanceListener implements Listener {
 		
 		account.setBalance(newBalance);
 
-		plugin.debugf("Appraised balance of account #d: %s, difference to previous: %s",
+		plugin.debug("Appraised balance of account #d: %s, difference to previous: %s",
 				account.getID(), newBalance, difference);
 
 		Message message = difference.signum() > 0 ? Message.ACCOUNT_DEPOSIT : Message.ACCOUNT_WITHDRAWAL;
@@ -83,7 +83,7 @@ public class AccountBalanceListener implements Listener {
 		}
 
 		plugin.getAccountService().update(account);
-		plugin.debugf("Account #%d has been updated with a new balance of %s", account.getID(), newBalance);
+		plugin.debug("Account #%d has been updated with a new balance of %s", account.getID(), newBalance);
 		new AccountTransactionEvent(executor, account, difference, newBalance).fire();
 
 		if (account.getOwner().isOnline())

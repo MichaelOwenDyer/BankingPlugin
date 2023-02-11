@@ -48,7 +48,7 @@ public class AccountMigrate extends PlayerSubCommand {
         new AccountMigrateCommandEvent(player, args).fire();
         player.sendMessage(Message.CLICK_ACCOUNT_MIGRATE.translate(plugin));
         ClickAction.setAccountClickAction(player, account -> selectAccount(player, account));
-        plugin.debugf("%s is migrating an account", player.getName());
+        plugin.debug("%s is migrating an account", player.getName());
     }
 
     private void selectAccount(Player player, Account accountToMove) throws CommandExecutionException {
@@ -59,7 +59,7 @@ public class AccountMigrate extends PlayerSubCommand {
             throw err(Message.NO_PERMISSION_ACCOUNT_MIGRATE_OTHER);
         }
 
-        plugin.debugf("%s wants to migrate account #%d", player.getName(), accountToMove.getID());
+        plugin.debug("%s wants to migrate account #%d", player.getName(), accountToMove.getID());
         ClickAction.setBlockClickAction(player, chest -> selectNewChest(player, accountToMove, chest));
         player.sendMessage(Message.CLICK_CHEST_MIGRATE.translate(plugin));
     }
@@ -158,7 +158,7 @@ public class AccountMigrate extends PlayerSubCommand {
         accountToMove.updateChestTitle();
         plugin.getAccountService().update(accountToMove);
         player.sendMessage(Message.ACCOUNT_MIGRATED.translate(plugin));
-        plugin.debugf("Migrated account #%d", accountToMove.getID());
+        plugin.debug("Migrated account #%d", accountToMove.getID());
     }
 
 }

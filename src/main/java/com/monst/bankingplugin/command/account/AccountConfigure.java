@@ -93,7 +93,7 @@ public class AccountConfigure extends PlayerSubCommand {
                 executor.sendMessage(Message.ACCOUNT_SET_INTEREST_MULTIPLIER
                         .with(Placeholder.INTEREST_MULTIPLIER).as(account.getInterestMultiplier(multipliers))
                         .translate(plugin));
-                plugin.debugf("%s has set the multiplier stage of account #%d to %d",
+                plugin.debug("%s has set the multiplier stage of account #%d to %d",
                         executor.getName(), account.getID(), account.getInterestMultiplierStage());
                 break;
 
@@ -101,7 +101,7 @@ public class AccountConfigure extends PlayerSubCommand {
 
                 account.setRemainingOfflinePayouts(value);
 
-                plugin.debugf("%s has set the remaining offline payouts of account #%d to %d.",
+                plugin.debug("%s has set the remaining offline payouts of account #%d to %d.",
                         executor.getName(), account.getID(), account.getRemainingOfflinePayouts());
                 executor.sendMessage(Message.ACCOUNT_SET_REMAINING_OFFLINE
                         .with(Placeholder.VALUE).as(account.getRemainingOfflinePayouts())

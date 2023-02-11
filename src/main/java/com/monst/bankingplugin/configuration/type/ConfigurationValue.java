@@ -75,10 +75,10 @@ public abstract class ConfigurationValue<T> implements Supplier<T> {
         try {
             return read(plugin.getConfig(), path);
         } catch (MissingValueException | UnreadableValueException e) {
-            plugin.debugf("Value of %s was missing or uninterpretable. Writing default value %s", path, format(defaultValue));
+            plugin.debug("Value of %s was missing or uninterpretable. Writing default value %s", path, format(defaultValue));
             return write(defaultValue);
         } catch (ValueOutOfBoundsException e) {
-            plugin.debugf("Value of %s was outside its bounds. Writing replacement value %s", path, format(e.getReplacement()));
+            plugin.debug("Value of %s was outside its bounds. Writing replacement value %s", path, format(e.getReplacement()));
             return write(e.getReplacement());
         }
     }
@@ -96,7 +96,7 @@ public abstract class ConfigurationValue<T> implements Supplier<T> {
     public void parseAndSet(String input) throws ArgumentParseException {
         plugin.reloadConfig();
         T newValue = parse(input);
-        plugin.debugf("Setting configuration value %s to %s, parsed from %s", path, format(newValue), input);
+        plugin.debug("Setting configuration value %s to %s, parsed from %s", path, format(newValue), input);
         set(newValue);
         plugin.saveConfig();
     }
@@ -113,7 +113,7 @@ public abstract class ConfigurationValue<T> implements Supplier<T> {
     public void set(T newValue) {
         newValue = validate(newValue);
         beforeSet();
-        plugin.debugf("Setting configuration value %s to %s", path, format(newValue));
+        plugin.debug("Setting configuration value %s to %s", path, format(newValue));
         loadedValue = write(newValue);
         afterSet();
     }
@@ -129,7 +129,7 @@ public abstract class ConfigurationValue<T> implements Supplier<T> {
     @SuppressWarnings("unused")
     public void reset() {
         beforeSet();
-        plugin.debugf("Resetting configuration value %s to default value %s", path, format(defaultValue));
+        plugin.debug("Resetting configuration value %s to default value %s", path, format(defaultValue));
         loadedValue = write(defaultValue);
         afterSet();
     }
@@ -143,7 +143,7 @@ public abstract class ConfigurationValue<T> implements Supplier<T> {
      */
     protected T validate(T value) {
         try {
-            plugin.debugf("Validating value %s for path %s", format(value), path);
+            plugin.debug("Validating value %s for path %s", format(value), path);
             validate(value, getBounds());
             return value;
         } catch (ValueOutOfBoundsException e) {

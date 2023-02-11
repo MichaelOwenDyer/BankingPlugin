@@ -42,7 +42,7 @@ public class AccountClose extends PlayerSubCommand {
     protected void execute(Player player, String[] args) throws EventCancelledException {
         new AccountCloseCommandEvent(player, args).fire();
 
-        plugin.debugf("%s can now click a chest to close an account", player.getName());
+        plugin.debug("%s can now click a chest to close an account", player.getName());
         player.sendMessage(Message.CLICK_ACCOUNT_CLOSE.translate(plugin));
         ClickAction.setAccountClickAction(player, account -> close(player, account));
     }
@@ -77,7 +77,7 @@ public class AccountClose extends PlayerSubCommand {
         }
         ClickAction.remove(player);
 
-        plugin.debugf("%s is removing account #%d", player.getName(), account.getID());
+        plugin.debug("%s is removing account #%d", player.getName(), account.getID());
 
         new AccountCloseEvent(player, account).fire();
 
@@ -111,7 +111,7 @@ public class AccountClose extends PlayerSubCommand {
         bank.removeAccount(account);
         plugin.getAccountService().remove(account);
         player.sendMessage(Message.ACCOUNT_CLOSED.with(Placeholder.BANK_NAME).as(bank.getColorizedName()).translate(plugin));
-        plugin.debugf("Removed account %s", account);
+        plugin.debug("Removed account %s", account);
     }
 
 }

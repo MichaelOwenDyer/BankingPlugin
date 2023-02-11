@@ -48,7 +48,7 @@ public class BPPayInterest extends SubCommand {
         else
             banks = plugin.getBankService().findByNames(new HashSet<>(Arrays.asList(args)));
 
-        plugin.debugf("%s has triggered an interest payment at %s", sender.getName(), banks);
+        plugin.debug("%s has triggered an interest payment at %s", sender.getName(), banks);
         sender.sendMessage(Message.INTEREST_PAYOUT_TRIGGERED.with(Placeholder.NUMBER_OF_BANKS).as(banks.size()).translate(plugin));
 
         new InterestEvent(sender, new HashSet<>(banks)).fire();

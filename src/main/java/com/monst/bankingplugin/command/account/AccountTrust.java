@@ -57,7 +57,7 @@ public class AccountTrust extends PlayerSubCommand {
 
         player.sendMessage(Message.CLICK_ACCOUNT_TRUST.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate(plugin));
         ClickAction.setAccountClickAction(player, account -> trust(player, account, playerToTrust));
-        plugin.debugf("%s is trusting %s to an account", player.getName(), playerToTrust.getName());
+        plugin.debug("%s is trusting %s to an account", player.getName(), playerToTrust.getName());
     }
 
     private void trust(Player executor, Account account, OfflinePlayer playerToTrust) throws CommandExecutionException, EventCancelledException {
@@ -76,7 +76,7 @@ public class AccountTrust extends PlayerSubCommand {
 
         new AccountTrustEvent(executor, account, playerToTrust).fire();
 
-        plugin.debugf("%s has trusted %s to account #%d", executor.getName(), playerToTrust.getName(), account.getID());
+        plugin.debug("%s has trusted %s to account #%d", executor.getName(), playerToTrust.getName(), account.getID());
         executor.sendMessage(Message.ADDED_CO_OWNER.with(Placeholder.PLAYER).as(playerToTrust.getName()).translate(plugin));
         account.trustPlayer(playerToTrust);
     }

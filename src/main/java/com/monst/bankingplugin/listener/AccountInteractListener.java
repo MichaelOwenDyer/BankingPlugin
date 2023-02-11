@@ -113,7 +113,7 @@ public class AccountInteractListener implements Listener {
 				// Player is not owner of the bank either, and does not have permission to open other players' accounts.
 				e.setCancelled(true); // Do not open the chest
 				player.sendMessage(Message.NO_PERMISSION_ACCOUNT_VIEW_OTHER.translate(plugin)); // Show the no permission message
-				plugin.debugf("%s does not have permission to open %s's account chest.", player.getName(), account.getOwner().getName());
+				plugin.debug("%s does not have permission to open %s's account chest.", player.getName(), account.getOwner().getName());
 				return;
 			}
 			// Player has permission to open the account despite not being trusted on the account.
@@ -122,7 +122,7 @@ public class AccountInteractListener implements Listener {
 		}
 
 		e.setCancelled(false); // Ensure that the chest is opened.
-		plugin.debugf("%s is opening account #%d", player.getName(), account.getID());
+		plugin.debug("%s is opening account #%d", player.getName(), account.getID());
 
 	}
 }

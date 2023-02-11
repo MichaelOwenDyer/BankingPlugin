@@ -57,7 +57,7 @@ public class AccountUntrust extends PlayerSubCommand {
 
         player.sendMessage(Message.CLICK_ACCOUNT_UNTRUST.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate(plugin));
         ClickAction.setAccountClickAction(player, account -> untrust(player, account, playerToUntrust));
-        plugin.debugf("%s is untrusting %s from an account", player.getName(), playerToUntrust.getName());
+        plugin.debug("%s is untrusting %s from an account", player.getName(), playerToUntrust.getName());
     }
 
     private void untrust(Player executor, Account account, OfflinePlayer playerToUntrust) throws CommandExecutionException, EventCancelledException {
@@ -74,7 +74,7 @@ public class AccountUntrust extends PlayerSubCommand {
 
         new AccountUntrustEvent(executor, account, playerToUntrust).fire();
 
-        plugin.debugf("%s has untrusted %s from account #%d", executor.getName(), playerToUntrust.getName(), account.getID());
+        plugin.debug("%s has untrusted %s from account #%d", executor.getName(), playerToUntrust.getName(), account.getID());
         executor.sendMessage(Message.REMOVED_CO_OWNER.with(Placeholder.PLAYER).as(playerToUntrust.getName()).translate(plugin));
         account.untrustPlayer(playerToUntrust);
     }

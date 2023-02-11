@@ -54,7 +54,7 @@ public class LanguageFile extends PathConfigurationValue {
         Path languageFile = langFolder.resolve(get());
         if (!Files.exists(languageFile)) {
             plugin.getLogger().warning("Could not find language file \"" + languageFile.getFileName() + "\".");
-            plugin.debugf("Could not find language file \"%s\".", languageFile.getFileName());
+            plugin.debug("Could not find language file \"%s\".", languageFile.getFileName());
             languageFile = defaultLangFile;
         }
     
@@ -89,7 +89,7 @@ public class LanguageFile extends PathConfigurationValue {
         if (!fileTranslations.isEmpty()) {
             plugin.getLogger().info("There are unused translations in language file \"" + fileName + "\".");
             plugin.getLogger().info("See debug log for details.");
-            plugin.debugf("Unused translations found in language file \"%s\": %s", fileName, fileTranslations.keySet());
+            plugin.debug("Unused translations found in language file \"%s\": %s", fileName, fileTranslations.keySet());
         }
     
         if (!missingMessages.isEmpty()) {
