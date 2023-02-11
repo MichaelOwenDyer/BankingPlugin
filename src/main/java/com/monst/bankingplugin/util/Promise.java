@@ -8,17 +8,11 @@ import java.util.function.Consumer;
 
 public interface Promise<T> {
     
-    default Promise<T> then(Consumer<T> onResult) {
-        return this;
-    }
+    Promise<T> then(Consumer<T> onResult);
     
-    default Promise<T> catchError(Consumer<Exception> onError) {
-        return this;
-    }
+    Promise<T> catchError(Consumer<Exception> onError);
     
-    default Promise<T> finallyDo(Runnable runnable) {
-        return this;
-    }
+    Promise<T> finallyDo(Runnable runnable);
     
     // TODO: Add Plugin parameter to sync() method?
     static <T> Promise<T> sync(Callable<T> task) {
@@ -65,48 +59,63 @@ public interface Promise<T> {
             private Consumer<Exception> onRejected;
             private Runnable finallyDo;
             
+            private final Object lock = new Object();
+            
             {
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                     try {
-                        this.result = task.call();
-                        if (onFulfilled != null)
-                            Bukkit.getScheduler().runTask(plugin, () -> onFulfilled.accept(result));
+                        T localResult = task.call();
+                        synchronized (lock) {
+                            this.result = localResult;
+                            if (onFulfilled != null)
+                                Bukkit.getScheduler().runTask(plugin, () -> onFulfilled.accept(result));
+                        }
                     } catch (Exception e) {
-                        this.exception = e;
+                        synchronized (lock) {
+                            this.exception = e;
+                            if (onRejected != null)
+                                Bukkit.getScheduler().runTask(plugin, () -> onRejected.accept(exception));
+                        }
                         plugin.debug(exception);
-                        if (onRejected != null)
-                            Bukkit.getScheduler().runTask(plugin, () -> onRejected.accept(exception));
                     } finally {
-                        if (finallyDo != null)
-                            Bukkit.getScheduler().runTask(plugin, finallyDo);
+                        synchronized (lock) {
+                            if (finallyDo != null)
+                                Bukkit.getScheduler().runTask(plugin, finallyDo);
+                        }
                     }
                 });
             }
             
             @Override
             public Promise<T> then(Consumer<T> onFulfilled) {
-                if (result == null)
-                    this.onFulfilled = onFulfilled;
-                else
-                    onFulfilled.accept(result);
+                synchronized (lock) {
+                    if (result != null)
+                        onFulfilled.accept(result);
+                    else
+                        this.onFulfilled = onFulfilled;
+                }
                 return this;
             }
     
             @Override
             public Promise<T> catchError(Consumer<Exception> onRejected) {
-                if (exception == null)
-                    this.onRejected = onRejected;
-                else
-                    onRejected.accept(exception);
+                synchronized (lock) {
+                    if (exception != null)
+                        onRejected.accept(exception);
+                    else
+                        this.onRejected = onRejected;
+                }
                 return this;
             }
             
             @Override
             public Promise<T> finallyDo(Runnable finallyDo) {
-                if (result == null && exception == null)
-                    this.finallyDo = finallyDo;
-                else
-                    finallyDo.run();
+                synchronized (lock) {
+                    if (result != null || exception != null)
+                        finallyDo.run();
+                    else
+                        this.finallyDo = finallyDo;
+                }
                 return this;
             }
         };
@@ -119,33 +128,18 @@ public interface Promise<T> {
                 onFulfilled.accept(t);
                 return this;
             }
-            
+    
+            @Override
+            public Promise<T> catchError(Consumer<Exception> onError) {
+                return this;
+            }
+    
             @Override
             public Promise<T> finallyDo(Runnable finallyDo) {
                 finallyDo.run();
                 return this;
             }
         };
-    }
-    
-    static <T> Promise<T> reject(Exception e) {
-        return new Promise<T>() {
-            @Override
-            public Promise<T> catchError(Consumer<Exception> onRejected) {
-                onRejected.accept(e);
-                return this;
-            }
-            
-            @Override
-            public Promise<T> finallyDo(Runnable runnable) {
-                runnable.run();
-                return this;
-            }
-        };
-    }
-    
-    static <T> Promise<T> empty() {
-        return new Promise<T>() {};
     }
     
 }
