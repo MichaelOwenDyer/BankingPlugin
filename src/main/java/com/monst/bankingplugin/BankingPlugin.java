@@ -42,8 +42,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
+import java.nio.file.Path;
 import java.util.*;
 
 public class BankingPlugin extends JavaPlugin {
@@ -71,7 +70,7 @@ public class BankingPlugin extends JavaPlugin {
     private Update update;
 
     /*	Debug  */
-    private PrintWriter debugWriter;
+    private Logger logger = Logger.NO_OP; // Default to no-op logger, will be replaced by a real logger if debug is enabled
 
     /*  Startup Message	 */
     private final String[] STARTUP_MESSAGE = new String[] {
@@ -84,7 +83,6 @@ public class BankingPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         configuration = new Configuration(this);
-        config().languageFile.loadTranslations();
         debug("Loading BankingPlugin version %s", getDescription().getVersion());
         registerWorldGuardFlag();
     }
@@ -145,8 +143,7 @@ public class BankingPlugin extends JavaPlugin {
         ClickAction.clear();
         SubCommand.clearCache();
 
-        if (debugWriter != null)
-            debugWriter.close();
+        setDebugLogEnabled(false);
         if (database != null)
             database.shutdown();
         if (schedulerService != null)
@@ -361,18 +358,14 @@ public class BankingPlugin extends JavaPlugin {
      * @param message the message to be printed
      */
     public void debug(String message) {
-        if (!prepareDebug())
-            return;
-        printDebug(message);
+        logger.log(message);
     }
 
     /**
      * Prints a message with special formatting to the debug file.
      */
     public void debug(String message, Object... format) {
-        if (!prepareDebug())
-            return;
-        printDebug(String.format(message, format));
+        logger.log(String.format(message, format));
     }
 
     /**
@@ -382,38 +375,22 @@ public class BankingPlugin extends JavaPlugin {
      * @param throwable the {@link Throwable} of which the stacktrace will be printed
      */
     public void debug(Throwable throwable) {
-        if (!prepareDebug())
-            return;
-        throwable.printStackTrace(debugWriter);
-        debugWriter.flush();
+        logger.log(throwable);
     }
     
-    private boolean prepareDebug() {
-        if (config() == null || !config().enableDebugLog.get())
-            return false;
-
-        if (debugWriter == null) {
+    public void setDebugLogEnabled(boolean enabled) {
+        logger.close();
+        if (enabled) {
+            Path debugFile = getDataFolder().toPath().resolve("debug.txt");
             try {
-                debugWriter = createDebugWriter();
+                PrintWriter debugWriter = new PrintWriter(Files.newOutputStream(debugFile), true);
+                logger = Logger.printingTo(debugWriter);
+                return;
             } catch (IOException e) {
                 getLogger().severe("Failed to create debug writer.");
-                e.printStackTrace();
-                return false;
             }
         }
-
-        return true;
-    }
-
-    private PrintWriter createDebugWriter() throws IOException {
-        return new PrintWriter(
-                Files.newOutputStream(getDataFolder().toPath().resolve("debug.txt")), true);
-    }
-    
-    private void printDebug(String message) {
-        debugWriter.printf("[%s] %s%n", LocalTime.now().truncatedTo(ChronoUnit.SECONDS).toString(), message);
-        if (debugWriter.checkError())
-            getLogger().severe("Failed to print debug message.");
+        logger = Logger.NO_OP;
     }
 
     /**

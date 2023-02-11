@@ -7,18 +7,12 @@ public class EnableDebugLog extends BooleanConfigurationValue {
 
     public EnableDebugLog(BankingPlugin plugin) {
         super(plugin, "enable-debug-log", false);
-    }
-
-    @Override
-    protected void beforeSet() {
-        if (!get())
-            plugin.debug("Debug log disabled.");
+        plugin.setDebugLogEnabled(get());
     }
 
     @Override
     protected void afterSet() {
-        if (get())
-            plugin.debug("Debug log enabled.");
+        plugin.setDebugLogEnabled(get());
     }
 
 }

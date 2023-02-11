@@ -246,6 +246,7 @@ public final class Configuration {
 
 	public Configuration(BankingPlugin plugin) {
 		plugin.saveDefaultConfig();
+		enableDebugLog = add(new EnableDebugLog(plugin)); // Must be first to ensure debug log is created if enabled
 		accountCommandName = add(new AccountCommandName(plugin));
 		bankCommandName = add(new BankCommandName(plugin));
 		pluginCommandName = add(new PluginCommandName(plugin));
@@ -277,7 +278,6 @@ public final class Configuration {
 		enableStartupUpdateCheck = add(new EnableStartupUpdateCheck(plugin));
 		downloadUpdatesAutomatically = add(new DownloadUpdatesAutomatically(plugin));
 		ignoreUpdatesContaining = add(new IgnoreUpdatesContaining(plugin));
-		enableDebugLog = add(new EnableDebugLog(plugin));
 		cleanupLogDays = add(new CleanupLogDays(plugin));
 		enableWorldGuardIntegration = add(new EnableWorldGuardIntegration(plugin));
 		enableGriefPreventionIntegration = add(new EnableGriefPreventionIntegration(plugin));
