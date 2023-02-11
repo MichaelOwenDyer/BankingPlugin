@@ -56,10 +56,6 @@ public class AccountService extends Service implements Observable {
         execute(coOwnerRepo::createTable);
     }
     
-    public int count() {
-        return query(accountRepo::count).orElse(0);
-    }
-    
     public void save(Account account) {
         plugin.debugf("Saving account %s to the database.", account);
         transact(con -> {
@@ -100,6 +96,10 @@ public class AccountService extends Service implements Observable {
         });
         accounts.forEach(this::uncache);
     }
+    
+    public int count() {
+        return query(accountRepo::count).orElse(0);
+    }
 
     public Set<Account> findAll() {
         plugin.debug("Fetching all accounts from the database.");
@@ -116,9 +116,9 @@ public class AccountService extends Service implements Observable {
         return query(con -> accountRepo.countByOwner(con, owner.getUniqueId())).orElse(0);
     }
     
-    public int countByTrustedPlayer(OfflinePlayer trusted) {
+    public Promise<Integer> countByTrustedPlayer(OfflinePlayer trusted) {
         plugin.debugf("Counting accounts where %s is trusted in the database asynchronously.", trusted.getName());
-        return query(con -> accountRepo.countByTrustedPlayer(con, trusted.getUniqueId())).orElse(0);
+        return async(con -> accountRepo.countByTrustedPlayer(con, trusted.getUniqueId()));
     }
     
     public Promise<List<Account>> findByTrustedPlayer(OfflinePlayer trusted, int offset, int limit) {
@@ -126,9 +126,9 @@ public class AccountService extends Service implements Observable {
         return async(con -> accountRepo.findByTrustedPlayer(con, trusted.getUniqueId(), offset, limit));
     }
     
-    public int countByOwners(Collection<OfflinePlayer> owners) {
+    public Promise<Integer> countByOwners(Collection<OfflinePlayer> owners) {
         plugin.debugf("Counting accounts owned by %s in the database.", owners);
-        return query(con -> accountRepo.countByOwners(con, owners)).orElse(0);
+        return async(con -> accountRepo.countByOwners(con, owners));
     }
     
     public Promise<List<Account>> findByOwners(Set<OfflinePlayer> owners, int offset, int limit) {
@@ -139,6 +139,16 @@ public class AccountService extends Service implements Observable {
     public Set<Account> findByOwners(Collection<OfflinePlayer> owners) {
         plugin.debugf("Fetching accounts owned by %s from the database.", owners);
         return query(con -> accountRepo.findByOwners(con, owners)).orElse(Collections.emptySet());
+    }
+    
+    public Promise<Integer> countByBank(Bank bank) {
+        plugin.debugf("Counting accounts at bank %s in the database asynchronously.", bank);
+        return async(con -> accountRepo.countByBank(con, bank.getID()));
+    }
+    
+    public Promise<List<Account>> findByBank(Bank bank, int offset, int limit) {
+        plugin.debugf("Fetching accounts at bank %s from the database asynchronously.", bank);
+        return async(con -> accountRepo.findByBank(con, bank.getID(), offset, limit));
     }
 
     public Set<Account> findByBanks(Collection<Bank> banks) {

@@ -115,16 +115,16 @@ abstract class MultiPageGUI<T> extends GUI {
     
     @Override
     public void click(int slot, ClickType clickType) {
-        if (displayedItems.containsKey(slot))
-            click(displayedItems.get(slot), clickType);
+        if (slot == NEXT_PAGE_SLOT)
+            nextPage();
         else if (slot == PREV_PAGE_SLOT)
             previousPage();
-        else if (slot == NEXT_PAGE_SLOT)
-            nextPage();
         else if (slot == 36)
             itemFilter.click(clickType);
         else if (slot == 44)
             itemSorterSlot.click(clickType);
+        else if (displayedItems.containsKey(slot))
+            click(displayedItems.get(slot), clickType);
     }
     
     void click(T t, ClickType click) {

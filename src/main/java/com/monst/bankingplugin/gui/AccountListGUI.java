@@ -26,11 +26,11 @@ public class AccountListGUI extends MultiPageGUI<Account> {
     @Override
     Promise<Integer> countItems() {
         if (owners.isEmpty())
-            return Promise.sync(() -> plugin.getAccountService().countByTrustedPlayer(player));
+            return plugin.getAccountService().countByTrustedPlayer(player);
         if (Permissions.ACCOUNT_LIST_OTHER.ownedBy(player))
-            return Promise.sync(() -> plugin.getAccountService().countByOwners(owners));
+            return plugin.getAccountService().countByOwners(owners);
         if (owners.contains(player))
-            return Promise.sync(() -> plugin.getAccountService().countByOwners(Collections.singleton(player)));
+            return plugin.getAccountService().countByOwners(Collections.singleton(player));
         return Promise.fulfill(0);
     }
     

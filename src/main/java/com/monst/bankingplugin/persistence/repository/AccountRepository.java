@@ -151,6 +151,19 @@ public class AccountRepository {
                 .asSet(con, reconstructor);
     }
     
+    public int countByBank(Connection con, int bankID) throws SQLException {
+        return Query.of("SELECT COUNT(*) FROM Account WHERE bank_id = ?")
+                .with(bankID)
+                .asOne(con, Integer.class);
+    }
+    
+    public List<Account> findByBank(Connection con, int bankID, int offset, int limit) throws SQLException {
+        return Query.of("SELECT * FROM Account WHERE bank_id = ? ORDER BY account_id OFFSET ? ROWS LIMIT ?")
+                .with(bankID)
+                .and(offset, limit)
+                .asList(con, reconstructor);
+    }
+    
     public Set<Account> findByBanks(Connection con, Collection<Integer> bankIDs) throws SQLException {
         return Query.of("SELECT * FROM Account WHERE bank_id IN (%s)")
                 .in(bankIDs)

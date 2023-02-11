@@ -13,7 +13,6 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 class BankAccountsGUI extends MultiPageGUI<Account> {
     
@@ -26,12 +25,12 @@ class BankAccountsGUI extends MultiPageGUI<Account> {
     
     @Override
     Promise<Integer> countItems() {
-        return Promise.fulfill(bank.getAccounts().size());
+        return plugin.getAccountService().countByBank(bank);
     }
     
     @Override
     Promise<List<Account>> fetchItems(int offset, int limit) {
-        return Promise.fulfill(bank.getAccounts().stream().skip(offset).limit(limit).collect(Collectors.toList()));
+        return plugin.getAccountService().findByBank(bank, offset, limit);
     }
     
     @Override
