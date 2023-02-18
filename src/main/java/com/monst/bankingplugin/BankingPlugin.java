@@ -1,12 +1,6 @@
 package com.monst.bankingplugin;
 
 import com.earth2me.essentials.Essentials;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.monst.bankingplugin.command.ClickAction;
-import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.command.account.AccountCommand;
 import com.monst.bankingplugin.command.bank.BankCommand;
 import com.monst.bankingplugin.command.plugin.BPCommand;
@@ -36,11 +30,7 @@ import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -55,6 +45,7 @@ public class BankingPlugin extends JavaPlugin {
     private Database database;
 
     /*  Services  */
+    private UpdaterService updaterService;
     private SchedulerService schedulerService;
     private PaymentService paymentService;
     private Worths worths;
@@ -66,9 +57,6 @@ public class BankingPlugin extends JavaPlugin {
     private Plugin worldGuard;
     private GriefPrevention griefPrevention;
     private WorldEditPlugin worldEdit;
-
-    /*	Update Package  */
-    private Update update;
 
     /*	Debug  */
     private Logger debugger = Logger.NO_OP; // Default to no-op logger, will be replaced by a real logger if debug is enabled
@@ -113,15 +101,12 @@ public class BankingPlugin extends JavaPlugin {
             account.updateChestTitle();
         }
         
+        updaterService = new UpdaterService(this);
         schedulerService = new SchedulerService(this);
         paymentService = new PaymentService(this);
-
-        new AccountCommand(this);
-        new BankCommand(this);
-        new BPCommand(this);
-
+    
         if (config().enableStartupUpdateCheck.get()) {
-            checkForUpdates().then(update -> {
+            updaterService.checkForUpdate().then(update -> {
                 if (update == null)
                     return;
                 log(Level.WARNING, "Version " + update.getVersion() + " of BankingPlugin is available!");
@@ -129,6 +114,10 @@ public class BankingPlugin extends JavaPlugin {
                     update.download();
             }).catchError(error -> getLogger().warning("Failed to check for updates!"));
         }
+
+        new AccountCommand(this);
+        new BankCommand(this);
+        new BPCommand(this);
 
         registerListeners();
         enableMetrics();
@@ -140,9 +129,6 @@ public class BankingPlugin extends JavaPlugin {
         
         for (Account account : getAccountService().findAll())
             account.resetChestTitle();
-
-        ClickAction.clear();
-        SubCommand.clearCache();
 
         setDebugLogEnabled(false);
         if (database != null)
@@ -212,83 +198,6 @@ public class BankingPlugin extends JavaPlugin {
 
         if (isWorldGuardIntegrated())
             WorldGuardWrapper.getInstance().registerEvents(this);
-    }
-
-    /**
-     * Checks if an update is needed.
-     */
-    public Promise<Update> checkForUpdates() {
-        debug("Checking for updates...");
-        return Promise.async(this, () -> {
-            JsonElement response;
-            URL url = new URL("https://api.github.com/repos/FreshLlamanade/BankingPlugin/releases");
-            URLConnection con = url.openConnection();
-            con.setConnectTimeout(5000);
-            con.setRequestProperty("User-Agent", "BankingPlugin");
-            con.setDoOutput(true);
-
-            response = new JsonParser().parse(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
-
-            // Releases are sorted by date, newest first
-            JsonArray releases = response.getAsJsonArray();
-
-            if (releases.size() == 0)
-                // No versions available
-                return update;
-
-            String versionNumber = null;
-            JsonObject jar = null;
-            for (int i = releases.size() - 1; i >= 0; i--) {
-                JsonObject version = releases.get(i).getAsJsonObject();
-                versionNumber = version.get("name").getAsString();
-                debug("Checking version " + versionNumber);
-
-                if (versionNumber.compareTo(getDescription().getVersion()) <= 0) {
-                    // This version is no newer than current version
-                    // No need to check further
-                    return update;
-                }
-
-                if (config().ignoreUpdatesContaining.ignore(versionNumber)) { // This version is ignored
-                    debug("Skipping version " + versionNumber + " because it contains an ignored tag.");
-                    continue;
-                }
-    
-                for (JsonElement asset : version.get("assets").getAsJsonArray()) {
-                    if (((JsonObject) asset).get("name").getAsString().endsWith(".jar")) {
-                        // Found the latest non-ignored jar available, and it is newer than the current version
-                        jar = (JsonObject) asset;
-                        break;
-                    }
-                }
-            }
-
-            if (jar == null)
-                // No suitable update found
-                return update;
-
-            debug("Found latest version: " + versionNumber);
-            
-            // An update already exists newer or equal to this one
-            if (update != null && update.getVersion().compareTo(versionNumber) > 0)
-                return update;
-            
-            if (update != null)
-                update.setOutdated();
-
-            // Create a new update package
-            debug("Creating new update package.");
-            URL fileURL;
-            fileURL = new URL(jar.get("browser_download_url").getAsString());
-            String checksum = Optional.ofNullable(jar.get("md5")).map(JsonElement::getAsString).orElse(null);
-            int downloadSize = jar.get("size").getAsInt();
-    
-            return update = new Update(this, versionNumber, fileURL, checksum, downloadSize);
-        });
-    }
-
-    public Update getUpdate() {
-        return update;
     }
 
     /**
@@ -455,6 +364,10 @@ public class BankingPlugin extends JavaPlugin {
 
     public BankIncomeService getBankIncomeService() {
         return database.getBankIncomeService();
+    }
+    
+    public UpdaterService getUpdaterService() {
+        return updaterService;
     }
 
     public SchedulerService getSchedulerService() {

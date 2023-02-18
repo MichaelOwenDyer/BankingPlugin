@@ -34,23 +34,21 @@ public class BPUpdate extends SubCommand {
     @Override
     protected void execute(CommandSender sender, String[] args) {
         sender.sendMessage(Message.UPDATE_CHECKING.translate(plugin));
-
-        plugin.checkForUpdates().catchError(error -> {
-            sender.sendMessage(Message.UPDATE_CHECK_ERROR.translate(plugin));
-            plugin.debug(error);
-        }).then(update -> {
+    
+        plugin.getUpdaterService().checkForUpdate().then(update -> {
             if (update == null) {
                 sender.sendMessage(Message.NO_UPDATE_AVAILABLE.translate(plugin));
                 return;
             }
-            boolean download = args.length > 0 && args[0].equalsIgnoreCase("download");
+            boolean download = plugin.config().downloadUpdatesAutomatically.get()
+                    || args.length > 0 && args[0].equalsIgnoreCase("download");
             if (sender instanceof Player) {
                 new UpdateGUI(plugin, (Player) sender, update).open();
-                if (plugin.config().downloadUpdatesAutomatically.get() || download)
+                if (download)
                     update.download();
             } else {
                 sender.sendMessage(Message.UPDATE_AVAILABLE.with(Placeholder.VERSION).as(update.getVersion()).translate(plugin));
-                if (plugin.config().downloadUpdatesAutomatically.get() || download) {
+                if (download) {
                     sender.sendMessage(Message.UPDATE_DOWNLOADING.translate(plugin));
                     update.download()
                             .onValidating(() -> sender.sendMessage(Message.UPDATE_VALIDATING.translate(plugin)))
@@ -58,7 +56,7 @@ public class BPUpdate extends SubCommand {
                             .catchError(error -> sender.sendMessage(Message.UPDATE_DOWNLOAD_FAILED.translate(plugin)));
                 }
             }
-        });
+        }).catchError(error -> sender.sendMessage(Message.UPDATE_CHECK_ERROR.translate(plugin)));
     }
 
 

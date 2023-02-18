@@ -25,10 +25,10 @@ public class NotifyPlayerOnJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
 
-        Update update = plugin.getUpdate();
+        Update update = plugin.getUpdaterService().getUpdateIfAvailable();
         if (update != null && !update.isCompleted() && Permissions.UPDATE.ownedBy(player))
             player.sendMessage(Message.UPDATE_AVAILABLE
-                    .with(Placeholder.VERSION).as(plugin.getUpdate().getVersion())
+                    .with(Placeholder.VERSION).as(update.getVersion())
                     .translate(plugin));
 
 		Instant lastSeenTime = plugin.getLastSeenService().getLastSeenTime(player);
