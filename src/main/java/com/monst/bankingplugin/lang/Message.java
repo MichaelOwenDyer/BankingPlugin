@@ -958,22 +958,6 @@ public enum Message implements Translatable {
             "An admin is notified that an error occurred while checking for updates.",
             red().bold("Error while checking for updates.")
     ),
-    UPDATE_DOWNLOADING(
-            "An admin is notified that an update to BankingPlugin is being downloaded.",
-            gold().bold("Downloading update...")
-    ),
-    UPDATE_VALIDATING(
-            "An admin is notified that a downloaded update to BankingPlugin is being validated.",
-            gold().bold("Validating download...")
-    ),
-    UPDATE_DOWNLOAD_COMPLETE(
-            "An admin is notified that an update to BankingPlugin was successfully downloaded.",
-            gold().bold("Download successful.")
-    ),
-    UPDATE_DOWNLOAD_FAILED(
-            "An admin is notified that an update to BankingPlugin could not be downloaded.",
-            red().bold("Download failed.")
-    ),
     CLICK_TO_DONATE(
             "A player executes the donate command and they are shown the donation link.",
             gold().bold("Thank you! Click to donate: ").green(URL),

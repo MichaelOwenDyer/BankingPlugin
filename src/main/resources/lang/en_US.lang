@@ -848,22 +848,6 @@ message.no-update-available=&6&lNo new version available.
 # Available placeholders:
 message.update-check-error=&c&lError while checking for updates.
 
-# Example Scenario: An admin is notified that an update to BankingPlugin is being downloaded.
-# Available placeholders:
-message.update-downloading=&6&lDownloading update...
-
-# Example Scenario: An admin is notified that a downloaded update to BankingPlugin is being validated.
-# Available placeholders:
-message.update-validating=&6&lValidating download...
-
-# Example Scenario: An admin is notified that an update to BankingPlugin was successfully downloaded.
-# Available placeholders:
-message.update-download-complete=&6&lDownload successful.
-
-# Example Scenario: An admin is notified that an update to BankingPlugin could not be downloaded.
-# Available placeholders:
-message.update-download-failed=&c&lDownload failed.
-
 # Example Scenario: A player executes the donate command and they are shown the donation link.
 # Available placeholders: %URL%
 message.click-to-donate=&6&lThank you! Click to donate: &a%URL%

@@ -4,7 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.util.Update;
+import com.monst.bankingplugin.update.Update;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,7 +26,7 @@ public class NotifyPlayerOnJoinListener implements Listener {
         Player player = e.getPlayer();
 
         Update update = plugin.getUpdaterService().getUpdateIfAvailable();
-        if (update != null && !update.isCompleted() && Permissions.UPDATE.ownedBy(player))
+        if (update != null && !update.isDownloaded() && Permissions.UPDATE.ownedBy(player))
             player.sendMessage(Message.UPDATE_AVAILABLE
                     .with(Placeholder.VERSION).as(update.getVersion())
                     .translate(plugin));

@@ -13,6 +13,7 @@ import com.monst.bankingplugin.lang.ColorStringBuilder;
 import com.monst.bankingplugin.listener.*;
 import com.monst.bankingplugin.persistence.Database;
 import com.monst.bankingplugin.persistence.service.*;
+import com.monst.bankingplugin.update.UpdaterService;
 import com.monst.bankingplugin.util.*;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -105,15 +106,8 @@ public class BankingPlugin extends JavaPlugin {
         schedulerService = new SchedulerService(this);
         paymentService = new PaymentService(this);
     
-        if (config().enableStartupUpdateCheck.get()) {
-            updaterService.checkForUpdate().then(update -> {
-                if (update == null)
-                    return;
-                log(Level.WARNING, "Version " + update.getVersion() + " of BankingPlugin is available!");
-                if (config().downloadUpdatesAutomatically.get())
-                    update.download();
-            }).catchError(error -> getLogger().warning("Failed to check for updates!"));
-        }
+        if (config().enableStartupUpdateCheck.get())
+            updaterService.checkForUpdate().catchError(error -> getLogger().warning("Failed to check for updates!"));
 
         new AccountCommand(this);
         new BankCommand(this);
