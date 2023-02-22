@@ -39,7 +39,7 @@ public class UpdateGUI extends SinglePageGUI implements Observer {
     Map<Integer, ItemStack> createItems(Player player) {
         Map<Integer, ItemStack> items = new HashMap<>();
         items.put(0, item(Material.BOOK, "Current Version", plugin.getDescription().getVersion()));
-        items.put(4, item(Material.ENCHANTED_BOOK, "New Version", clickToDownload()));
+        items.put(4, item(Material.ENCHANTED_BOOK, "New Version", getUpdateLore()));
         return items;
     }
     
@@ -52,40 +52,47 @@ public class UpdateGUI extends SinglePageGUI implements Observer {
                 update.pauseDownload();
                 break;
             case INITIAL:
-            case DOWNLOAD_FAILED:
             case PAUSED:
+            case DOWNLOAD_FAILED:
+            case VALIDATION_FAILED:
+            case SUCCESS:
                 update.download();
+                break;
         }
     }
     
     @Override
     public void update() {
-        switch (update.getState()) {
-            case INITIAL:
-                setStatus(clickToDownload()); break;
-            case DOWNLOADING:
-                setStatus(downloading(update.getDownload().getPercentComplete())); break;
-            case PAUSED:
-                setStatus(paused(update.getDownload().getPercentComplete())); break;
-            case VALIDATING:
-                setStatus(validating(update.getDownload().getDuration())); break;
-            case SUCCESS:
-                setStatus(updateComplete(update.getDownload().getDuration(), update.getDownload().isValidated())); break;
-            case DOWNLOAD_FAILED:
-                setStatus(downloadError()); break;
-        }
-    }
-    
-    private void setStatus(List<String> lore) {
         ItemStack item = inventory.getItem(4);
         ItemMeta meta = item.getItemMeta();
-        meta.setLore(lore);
+        meta.setLore(getUpdateLore());
         item.setItemMeta(meta);
         inventory.setItem(4, item); // TODO: Line necessary, or does setItemMeta() already update the inventory?
     }
     
-    private List<String> clickToDownload() {
-        return lore(GREEN + "Click to download.");
+    private List<String> getUpdateLore() {
+        switch (update.getState()) {
+            case INITIAL:
+                return clickToDownload(update.getFileSizeBytes());
+            case DOWNLOADING:
+                return downloading(update.getDownload().getPercentComplete());
+            case PAUSED:
+                return paused(update.getDownload().getPercentComplete());
+            case VALIDATING:
+                return validating(update.getDownload().getDuration());
+            case SUCCESS:
+                return updateComplete(update.getDownload().getDuration(), update.getDownload().isChecksumValidated());
+            case DOWNLOAD_FAILED:
+                return downloadError();
+            case VALIDATION_FAILED:
+                return validationError(update.getFileSizeBytes());
+            default:
+                return new ArrayList<>();
+        }
+    }
+    
+    private List<String> clickToDownload(long fileSizeBytes) {
+        return lore(GREEN + "Click to download. (" + formatFileSize(fileSizeBytes) + ")");
     }
     
     private List<String> downloading(int percentage) {
@@ -114,7 +121,7 @@ public class UpdateGUI extends SinglePageGUI implements Observer {
         List<String> lore = new ArrayList<>(versionLore);
         lore.add(GREEN + "Download complete. (" + formatDuration(duration) + ")");
         if (validated)
-            lore.add(GREEN + "Update successfully validated.");
+            lore.add(GREEN + "Update successfully validated with MD5 checksum.");
         return lore;
     }
     
@@ -122,10 +129,19 @@ public class UpdateGUI extends SinglePageGUI implements Observer {
         return lore(DARK_RED + "Download failed. Click to retry.");
     }
     
+    private List<String> validationError(long fileSizeBytes) {
+        return lore(DARK_RED + "File failed to validate. Click to retry download. (" + formatFileSize(fileSizeBytes) + ")");
+    }
+    
     private List<String> lore(String... lines) {
         List<String> lore = new ArrayList<>(versionLore);
         lore.addAll(Arrays.asList(lines));
         return lore;
+    }
+    
+    private static String formatFileSize(long fileSizeBytes) {
+        // format as "xx.x MB"
+        return String.format("%.1f MB", fileSizeBytes / 1_000_000.0);
     }
     
     private static String formatDuration(Duration duration) {

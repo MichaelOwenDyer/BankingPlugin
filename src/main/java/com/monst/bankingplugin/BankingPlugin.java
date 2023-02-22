@@ -106,8 +106,17 @@ public class BankingPlugin extends JavaPlugin {
         schedulerService = new SchedulerService(this);
         paymentService = new PaymentService(this);
     
-        if (config().enableStartupUpdateCheck.get())
-            updaterService.checkForUpdate().catchError(error -> getLogger().warning("Failed to check for updates!"));
+        if (config().enableStartupUpdateCheck.get()) {
+            getLogger().info("Checking for updates...");
+            updaterService.checkForUpdate()
+                    .then(update -> {
+                        if (update != null)
+                            log(Level.WARNING, "BankingPlugin version " + update.getVersion() + " is available!");
+                        else
+                            log(Level.INFO, "No new version available.");
+                    })
+                    .catchError(error -> getLogger().warning("Failed to check for updates!"));
+        }
 
         new AccountCommand(this);
         new BankCommand(this);

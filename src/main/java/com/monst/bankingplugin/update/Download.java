@@ -21,17 +21,19 @@ import static java.nio.file.StandardOpenOption.*;
 public class Download {
     
     private static class DownloadInterruptedException extends Exception {}
+    private static class ValidationFailedException extends Exception {}
     
-    private static final Path DOWNLOAD_PATH = Bukkit.getServer().getUpdateFolderFile().toPath().resolve("bankingplugin.download");
+    private static final Path UPDATE_FOLDER = Bukkit.getServer().getUpdateFolderFile().toPath();
     
     private final BankingPlugin plugin;
     private final Update update;
     
+    private Path filePath = UPDATE_FOLDER.resolve("bankingplugin.download");
     private boolean isRunning;
     private Duration duration = Duration.ZERO;
     private long bytesDownloaded;
     private int percentComplete;
-    private Boolean validated; // Null if not yet attempted, true if validated, false if validation attempt failed (not necessarily invalid)
+    private Boolean checksumValidated; // Null if not yet attempted, true if validated, false if validation attempt failed (not necessarily invalid)
     private Exception exception;
     
     Download(BankingPlugin plugin, Update update) {
@@ -40,11 +42,9 @@ public class Download {
     }
     
     void start() {
-        if (!isRunning && !isCompleted() && !failed()) {
-            plugin.log(Level.INFO, "Downloading update " + update.getVersion() + "...");
-            update.setState(Update.State.DOWNLOADING);
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, this::run);
-        }
+        plugin.log(Level.INFO, "Downloading update " + update.getVersion() + "...");
+        update.setState(Update.State.DOWNLOADING);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, this::run);
     }
     
     void pause() {
@@ -52,17 +52,9 @@ public class Download {
     }
     
     private void run() {
-        long startTime = System.currentTimeMillis();
         isRunning = true;
         try {
-            if (!Files.exists(DOWNLOAD_PATH)) // If the download file doesn't exist, be sure the directory does
-                Files.createDirectories(DOWNLOAD_PATH.getParent());
-            
-            else if (Files.size(DOWNLOAD_PATH) != bytesDownloaded) {
-                // If the incomplete file exists and its size is not equal to the number of bytes downloaded, delete it
-                plugin.debug("Overwriting incomplete download file because its size was unexpected. Starting over...");
-                bytesDownloaded = 0; // Don't need to delete the file, just reset the number of bytes downloaded
-            }
+            Files.createDirectories(UPDATE_FOLDER);
             
             // Establish a connection with the server
             URLConnection con = requestBytesAtURL(update.getURL(), bytesDownloaded);
@@ -70,19 +62,26 @@ public class Download {
             validate();
             
             // Rename incomplete file to the plugin jar file name, replacing any existing file in the update folder with that name
-            Files.move(DOWNLOAD_PATH, DOWNLOAD_PATH.resolveSibling(plugin.getFileName()), REPLACE_EXISTING);
+            Path newLocation = UPDATE_FOLDER.resolve(plugin.getFileName());
+            Files.move(filePath, newLocation, REPLACE_EXISTING);
+            filePath = newLocation;
             
-            duration = duration.plusMillis((System.currentTimeMillis() - startTime));
             update.setState(Update.State.SUCCESS);
-            plugin.log(Level.INFO, "Download complete! Restart the server to apply the update.");
-        } catch (DownloadInterruptedException ignored) {
-            duration = duration.plusMillis(System.currentTimeMillis() - startTime);
+            plugin.log(Level.WARNING, "Update successful! Restart the server to apply the update.");
         } catch (IOException e) {
             exception = e;
             update.setState(Update.State.DOWNLOAD_FAILED);
-            plugin.log(Level.SEVERE, "Download failed. Try again or update the plugin manually (version " + update.getVersion() + ").", e);
+            plugin.log(Level.SEVERE, "Download failed. "
+                    + "Try again or update the plugin manually (version " + update.getVersion() + ").", e);
+        } catch (ValidationFailedException e) {
+            exception = e;
+            update.setState(Update.State.VALIDATION_FAILED);
+            plugin.log(Level.SEVERE, "Downloaded file was corrupted and must be reaquired. "
+                    + "Try again or update the plugin manually (version " + update.getVersion() + ").", e);
+        } catch (DownloadInterruptedException ignored) {
+        } finally {
+            isRunning = false;
         }
-        isRunning = false;
     }
     
     private static URLConnection requestBytesAtURL(URL url, long resumeFrom) throws IOException {
@@ -97,10 +96,11 @@ public class Download {
     
     private void streamBytesToDownloadFile(URLConnection con) throws IOException, DownloadInterruptedException {
         long bytesPerPercentageStep = update.getFileSizeBytes() / 100;
+        long startTime = System.currentTimeMillis();
         // Open an input stream from the connection and an output stream to the file
         try (InputStream urlIn = con.getInputStream();
              // If the download is being resumed, append to what was already downloaded. Otherwise, overwrite.
-             OutputStream fileOut = Files.newOutputStream(DOWNLOAD_PATH, CREATE, bytesDownloaded > 0 ? APPEND : TRUNCATE_EXISTING)) {
+             OutputStream fileOut = Files.newOutputStream(filePath, CREATE, bytesDownloaded > 0 ? APPEND : TRUNCATE_EXISTING)) {
             
             // Download the data 8KiB at a time
             byte[] buffer = new byte[8 * 1024];
@@ -111,7 +111,10 @@ public class Download {
                     percentComplete = (int) (bytesDownloaded / bytesPerPercentageStep);
                     update.notifyObservers();
                     if (percentComplete % 14 == 0)
-                        plugin.log(Level.INFO, "Downloaded " + percentComplete + "%");
+                        plugin.log(Level.INFO, "Downloading... (" + percentComplete + "%)");
+                    try {
+                        Thread.sleep(25); // Wait 25ms for better UX :)
+                    } catch (InterruptedException ignored) {}
                 }
                 // If the download has been paused or set outdated, stop the download
                 if (!isRunning && bytesDownloaded < update.getFileSizeBytes()) {
@@ -121,44 +124,55 @@ public class Download {
                 }
             }
             plugin.log(Level.INFO, "Download complete.");
+        } finally {
+            duration = duration.plusMillis(System.currentTimeMillis() - startTime);
         }
     }
     
-    private void validate() throws IOException {
-        String remoteChecksum = update.getRemoteChecksum();
-        if (remoteChecksum == null) {
-            plugin.debug("No checksum provided by server. Skipping validation.");
-            validated = false;
-            return;
-        }
-        
+    private void validate() throws ValidationFailedException {
         update.setState(Update.State.VALIDATING);
         plugin.log(Level.INFO, "Validating download...");
         try {
             Thread.sleep(1000); // Wait one second for better UX :)
         } catch (InterruptedException ignored) {}
         
+        // Perform file size check first
+        try {
+            long fileSize = Files.size(filePath);
+            if (fileSize != update.getFileSizeBytes())
+                throw new ValidationFailedException();
+        } catch (IOException e) {
+            throw new ValidationFailedException();
+        }
+    
+        String remoteChecksum = update.getRemoteChecksum();
+        if (remoteChecksum == null) {
+            plugin.debug("No checksum provided by server. Skipping checksum validation.");
+            checksumValidated = false;
+            return;
+        }
+        
         String checksum;
         try {
             // Get an MD5 digest instance for calculating the checksum
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            md5.update(Files.readAllBytes(DOWNLOAD_PATH));
+            md5.update(Files.readAllBytes(filePath));
             checksum = toHexString(md5.digest());
         } catch (NoSuchAlgorithmException | IOException e) {
             // MD5 is guaranteed to be supported by all Java implementations, so NoSuchAlgorithmException should never be thrown
             // If we were still not able to validate the file for some reason, just log the error and return
             plugin.log(Level.WARNING, "Attempted to validate the download, but an error occurred. Skipping validation.", e);
-            validated = false;
+            checksumValidated = false;
             return;
         }
         
         // Compare the downloaded file's checksum against the one on the server
         // If they don't match, throw an exception and force the user to download the file again
         if (!checksum.equals(remoteChecksum))
-            throw new IOException("Downloaded file's checksum does not match the one on the server.");
+            throw new ValidationFailedException();
         
-        validated = true;
-        plugin.log(Level.INFO, "Download validated.");
+        checksumValidated = true;
+        plugin.log(Level.INFO, "Download validated with MD5 checksum.");
     }
     
     private String toHexString(byte[] bytes) {
@@ -168,13 +182,17 @@ public class Download {
         return sb.toString();
     }
     
-    public boolean isCompleted() {
-        // Return true if file is fully downloaded and was at least attempted to be validated
-        return bytesDownloaded == update.getFileSizeBytes() && validated != null;
+    boolean failed() {
+        return exception != null;
     }
     
-    public boolean failed() {
-        return exception != null;
+    boolean isCompleted() {
+        // Return true if the download is complete, the file was at least attempted to be validated, and the file exists
+        return bytesDownloaded == update.getFileSizeBytes() && checksumValidated != null && Files.exists(filePath);
+    }
+    
+    boolean isRunning() {
+        return isRunning;
     }
     
     public int getPercentComplete() {
@@ -185,8 +203,8 @@ public class Download {
         return duration;
     }
     
-    public boolean isValidated() {
-        return validated != null && validated;
+    public boolean isChecksumValidated() {
+        return checksumValidated != null && checksumValidated;
     }
     
 }

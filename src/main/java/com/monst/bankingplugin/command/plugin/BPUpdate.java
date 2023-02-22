@@ -6,6 +6,7 @@ import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.gui.UpdateGUI;
 import com.monst.bankingplugin.lang.Message;
+import com.monst.bankingplugin.lang.Placeholder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -39,6 +40,8 @@ public class BPUpdate extends SubCommand {
                 sender.sendMessage(Message.NO_UPDATE_AVAILABLE.translate(plugin));
                 return;
             }
+            
+            sender.sendMessage(Message.UPDATE_AVAILABLE.with(Placeholder.VERSION).as(update.getVersion()).translate(plugin));
             
             if (sender instanceof Player)
                 new UpdateGUI(plugin, (Player) sender, update).open();

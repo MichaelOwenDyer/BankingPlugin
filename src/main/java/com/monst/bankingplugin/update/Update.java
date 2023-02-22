@@ -28,6 +28,9 @@ public class Update implements Observable {
         
         /** The download failed and may be retried.*/
         DOWNLOAD_FAILED,
+        
+        /** The downloaded file was corrupted and must be downloaded again.*/
+        VALIDATION_FAILED
     }
 
     private final BankingPlugin plugin;
@@ -55,7 +58,7 @@ public class Update implements Observable {
     public void download() {
         if (download == null || download.failed())
             download = new Download(plugin, this);
-        if (!download.isCompleted())
+        if (!download.isCompleted() && !download.isRunning())
             download.start();
     }
     
@@ -64,7 +67,7 @@ public class Update implements Observable {
     }
     
     public void pauseDownload() {
-        if (download != null && state == State.DOWNLOADING)
+        if (download != null)
             download.pause();
     }
     
@@ -85,12 +88,12 @@ public class Update implements Observable {
         return version;
     }
     
-    URL getURL() {
-        return url;
+    public long getFileSizeBytes() {
+        return fileSizeBytes;
     }
     
-    long getFileSizeBytes() {
-        return fileSizeBytes;
+    URL getURL() {
+        return url;
     }
     
     String getRemoteChecksum() {
