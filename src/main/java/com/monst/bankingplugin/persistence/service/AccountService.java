@@ -67,19 +67,19 @@ public class AccountService extends Service implements Observable {
     }
 
     public void update(Account account) {
-        plugin.debug("Updating account %d in the database.", account.getID());
+        plugin.debug("Updating account in the database: " + account);
         transact(con -> accountRepo.update(con, account));
     }
 
     public void updateAll(Collection<Account> accounts) {
         for (Account account : accounts)
-            plugin.debug("Updating account %d in the database.", account.getID());
+            plugin.debug("Updating account in the database: " + account);
         transact(con -> accountRepo.updateAll(con, accounts));
     }
 
     public void remove(Account account) {
         int accountID = account.getID();
-        plugin.debug("Deleting account %s from the database.", account);
+        plugin.debug("Deleting account from the database: " + account);
         transact(con -> {
             coOwnerRepo.delete(con, accountID); // Delete co-owners first to avoid violating referential integrity
             accountRepo.delete(con, accountID);

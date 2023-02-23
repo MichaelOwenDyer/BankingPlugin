@@ -24,7 +24,7 @@ public class AccountRepository {
     public void createTable(Connection con) throws SQLException {
         Query.of("CREATE TABLE IF NOT EXISTS ACCOUNT("
                         + "account_id INTEGER NOT NULL PRIMARY KEY,"
-                        + "bank_id INTEGER NOT NULL REFERENCES BANK(bank_id),"
+                        + "bank_id INTEGER NOT NULL REFERENCES BANK(bank_id) ON DELETE CASCADE,"
                         + "owner_uuid UUID NOT NULL,"
                         + "balance NUMERIC(16,2) NOT NULL,"
                         + "previous_balance NUMERIC(16,2) NOT NULL,"

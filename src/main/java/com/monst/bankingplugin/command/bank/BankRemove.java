@@ -96,7 +96,6 @@ public class BankRemove extends SubCommand {
         plugin.getSchedulerService().scheduleAll();
         if (sender instanceof Player && plugin.isGriefPreventionIntegrated())
             BankVisualization.revert((Player) sender);
-        plugin.debug("Bank %s and %d accounts removed from the database.", bank, accountsRemoved);
         String message = Message.BANK_REMOVED
                 .with(Placeholder.BANK_NAME).as(bank.getColorizedName())
                 .and(Placeholder.NUMBER_OF_ACCOUNTS).as(accountsRemoved)

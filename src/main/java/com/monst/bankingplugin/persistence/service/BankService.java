@@ -80,7 +80,7 @@ public class BankService extends Service {
     }
     
     public void save(Bank bank) {
-        plugin.debug("Saving bank %s to the database.", bank);
+        plugin.debug("Saving bank to the database: " + bank);
         transact(con -> {
             bankRepo.save(con, bank);
             if (bank.hasCoOwners())
@@ -90,12 +90,12 @@ public class BankService extends Service {
     }
     
     public void update(Bank bank) {
-        plugin.debug("Updating bank %d in the database.", bank.getID());
+        plugin.debug("Updating bank in the database: " + bank);
         transact(con -> bankRepo.update(con, bank));
     }
     
     public void remove(Bank bank) {
-        plugin.debug("Deleting bank %s from the database.", bank);
+        plugin.debug("Deleting bank from the database: " + bank);
         transact(con -> {
             bankCoOwnerRepo.delete(con, bank.getID()); // Delete co-owners first to avoid violating referential integrity
             bankRepo.delete(con, bank.getID());
@@ -124,7 +124,7 @@ public class BankService extends Service {
     }
     
     public Promise<List<Bank>> findAll(int offset, int limit) {
-        plugin.debug("Fetching banks %d to %d from the database.", offset, offset + limit);
+        plugin.debug("Fetching banks (%d to %d) from the database.", offset, offset + limit);
         return async(con -> bankRepo.findAll(con, offset, limit));
     }
     
