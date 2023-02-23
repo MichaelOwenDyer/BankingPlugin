@@ -31,7 +31,8 @@ public class LastSeenService extends Service {
     }
     
     public void updateLastSeenTime(Set<OfflinePlayer> players) {
-        execute(con -> repo.updateLastSeenTime(con, players));
+        if (!players.isEmpty())
+            execute(con -> repo.updateLastSeenTime(con, players));
     }
     
     public void deleteUnused() {
