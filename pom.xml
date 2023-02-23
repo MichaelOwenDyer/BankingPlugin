@@ -6,7 +6,7 @@
 
     <groupId>com.monst</groupId>
     <artifactId>BankingPlugin</artifactId>
-    <version>3.0.1-ALPHA</version>
+    <version>2.9.9-ALPHA</version>
 
     <name>BankingPlugin</name>
     <description>Create bank accounts in bank vault chests and earn interest on your investments!</description>

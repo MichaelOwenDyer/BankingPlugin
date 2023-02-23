@@ -71,9 +71,16 @@ public abstract class GUI implements InventoryHolder {
 	 * Upon closing of this GUI, open the parent GUI if it exists.
 	 */
 	public void onClose() {
-		// FIXME: Could this have something to do with the flickering on close?
+		unsubscribe();
 		if (visible && parentGUI != null)
-			Bukkit.getScheduler().runTask(plugin, parentGUI::reopen);
+			Bukkit.getScheduler().runTask(plugin, parentGUI::reopen); // Delay to prevent inventory closing issues
+	}
+	
+	/**
+	 * Subclasses should override this method to unsubscribe from any observables.
+	 */
+	void unsubscribe() {
+	
 	}
 	
 	/**

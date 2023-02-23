@@ -36,17 +36,19 @@ public class Update implements Observable {
     private final BankingPlugin plugin;
     private final String version;
     private final URL url;
-    private final String remoteChecksum; // Nullable
     private final long fileSizeBytes;
+    private String releaseNotes;
+    private String checksum; // Nullable
 
     private State state = State.INITIAL;
     private Download download;
     
-    public Update(BankingPlugin plugin, String version, URL url, String remoteChecksum, long fileSizeBytes) {
+    public Update(BankingPlugin plugin, String version, URL url, String releaseNotes, String checksum, long fileSizeBytes) {
         this.plugin = plugin;
         this.version = version;
         this.url = url;
-        this.remoteChecksum = remoteChecksum;
+        this.releaseNotes = releaseNotes;
+        this.checksum = checksum;
         this.fileSizeBytes = fileSizeBytes;
     }
     
@@ -88,16 +90,36 @@ public class Update implements Observable {
         return version;
     }
     
-    public long getFileSizeBytes() {
-        return fileSizeBytes;
-    }
-    
     URL getURL() {
         return url;
     }
     
-    String getRemoteChecksum() {
-        return remoteChecksum;
+    public String getReleaseNotes() {
+        return releaseNotes;
+    }
+    
+    void setReleaseNotes(String releaseNotes) {
+        this.releaseNotes = releaseNotes;
+    }
+    
+    String getChecksum() {
+        return checksum;
+    }
+    
+    void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+    
+    public long getFileSizeBytes() {
+        return fileSizeBytes;
+    }
+    
+    boolean isOlderThan(String version) {
+        return this.version.compareTo(version) < 0;
+    }
+    
+    boolean isSameVersion(String version) {
+        return this.version.equals(version);
     }
     
     private final Set<Observer> observers = new HashSet<>();

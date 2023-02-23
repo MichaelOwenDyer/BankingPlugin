@@ -67,7 +67,11 @@ public class UpdateGUI extends SinglePageGUI implements Observer {
         ItemMeta meta = item.getItemMeta();
         meta.setLore(getUpdateLore());
         item.setItemMeta(meta);
-        inventory.setItem(4, item); // TODO: Line necessary, or does setItemMeta() already update the inventory?
+    }
+    
+    @Override
+    void unsubscribe() {
+        update.unsubscribe(this);
     }
     
     private List<String> getUpdateLore() {
@@ -83,7 +87,7 @@ public class UpdateGUI extends SinglePageGUI implements Observer {
             case SUCCESS:
                 return updateComplete(update.getDownload().getDuration(), update.getDownload().isChecksumValidated());
             case DOWNLOAD_FAILED:
-                return downloadError();
+                return downloadError(update.getFileSizeBytes());
             case VALIDATION_FAILED:
                 return validationError(update.getFileSizeBytes());
             default:
@@ -110,7 +114,6 @@ public class UpdateGUI extends SinglePageGUI implements Observer {
     }
     
     private List<String> validating(Duration duration) {
-        // Display duration formatted as "mm:ss.ss"
         return lore(
                 GREEN + "Download complete. (" + formatDuration(duration) + ")",
                 RED + "Validating... "
@@ -119,18 +122,18 @@ public class UpdateGUI extends SinglePageGUI implements Observer {
     
     private List<String> updateComplete(Duration duration, boolean validated) {
         List<String> lore = new ArrayList<>(versionLore);
-        lore.add(GREEN + "Download complete. (" + formatDuration(duration) + ")");
+        lore.add(GREEN + "Update complete. (" + formatDuration(duration) + ")");
         if (validated)
-            lore.add(GREEN + "Update successfully validated with MD5 checksum.");
+            lore.add(GREEN + "Validated with MD5.");
         return lore;
     }
     
-    private List<String> downloadError() {
-        return lore(DARK_RED + "Download failed. Click to retry.");
+    private List<String> downloadError(long fileSizeBytes) {
+        return lore(DARK_RED + "Download failed. Click to retry. (" + formatFileSize(fileSizeBytes) + ")");
     }
     
     private List<String> validationError(long fileSizeBytes) {
-        return lore(DARK_RED + "File failed to validate. Click to retry download. (" + formatFileSize(fileSizeBytes) + ")");
+        return lore(DARK_RED + "Validation failed. Click to retry. (" + formatFileSize(fileSizeBytes) + ")");
     }
     
     private List<String> lore(String... lines) {
@@ -146,7 +149,7 @@ public class UpdateGUI extends SinglePageGUI implements Observer {
     
     private static String formatDuration(Duration duration) {
         // format as "mm:ss.ss"
-        return String.format("%02d:%02d.%02d", duration.toMinutes(), duration.getSeconds() % 60, duration.getNano() / 10_000_000) + "s";
+        return String.format("%02d:%02d.%02ds", duration.toMinutes(), duration.getSeconds() % 60, duration.getNano() / 10_000_000);
     }
     
 }

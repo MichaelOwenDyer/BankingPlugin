@@ -13,8 +13,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UpdaterService {
+    
+    private static final Pattern MD5_PATTERN = Pattern.compile("[a-fA-F0-9]{32}");
     
     private final BankingPlugin plugin;
     private Update latestUpdate;
@@ -54,6 +58,7 @@ public class UpdaterService {
         plugin.debug("Found " + releases.size() + " releases: " + releases);
     
         String version = null;
+        String releaseNotes = null;
         JsonObject jar = null;
         Iterator<JsonElement> releaseIterator = releases.iterator();
         while (jar == null) {
@@ -65,6 +70,7 @@ public class UpdaterService {
             
             JsonObject release = releaseIterator.next().getAsJsonObject();
             version = release.get("name").getAsString();
+            releaseNotes = release.get("body").getAsString();
             plugin.debug("Checking update version " + version);
     
             if (version.compareTo(plugin.getDescription().getVersion()) <= 0) {
@@ -81,16 +87,21 @@ public class UpdaterService {
     
             jar = searchForJar(release.get("assets").getAsJsonArray());
         }
+        
+        // Get checksum from release notes if available
+        String checksum = searchForChecksum(releaseNotes);
     
         Update update = latestUpdate;
         // This update is newer than any currently available update
-        if (latestUpdate == null || latestUpdate.getVersion().compareTo(version) < 0) {
+        if (latestUpdate == null || latestUpdate.isOlderThan(version)) {
             plugin.debug("Creating update.");
-        
-            // Create a new update object
             URL url = new URL(jar.get("browser_download_url").getAsString());
             int downloadSize = jar.get("size").getAsInt();
-            update = new Update(plugin, version, url, null, downloadSize);
+            update = new Update(plugin, version, url, releaseNotes, checksum, downloadSize);
+        } else if (latestUpdate.isSameVersion(version)) {
+            // Set release notes and checksum
+            update.setReleaseNotes(releaseNotes);
+            update.setChecksum(checksum);
         }
     
         if (plugin.config().downloadUpdatesAutomatically.get())
@@ -99,10 +110,19 @@ public class UpdaterService {
     }
     
     private JsonObject searchForJar(JsonArray assets) {
-        for (JsonElement asset : assets) {
-            JsonObject assetObject = asset.getAsJsonObject();
-            if (assetObject.get("name").getAsString().endsWith(".jar"))
-                return assetObject;
+        for (JsonElement assetElement : assets) {
+            JsonObject asset = assetElement.getAsJsonObject();
+            if (asset.get("name").getAsString().endsWith(".jar"))
+                return asset;
+        }
+        return null;
+    }
+    
+    private String searchForChecksum(String releaseNotes) {
+        for (String line : releaseNotes.split("\r?\n")) {
+            Matcher matcher = MD5_PATTERN.matcher(line);
+            if (matcher.find())
+                return matcher.group();
         }
         return null;
     }

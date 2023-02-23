@@ -30,7 +30,7 @@ public class Download {
     
     private Path filePath = UPDATE_FOLDER.resolve("bankingplugin.download");
     private boolean isRunning;
-    private Duration duration = Duration.ZERO;
+    private Duration downloadDuration = Duration.ZERO;
     private long bytesDownloaded;
     private int percentComplete;
     private Boolean checksumValidated; // Null if not yet attempted, true if validated, false if validation attempt failed (not necessarily invalid)
@@ -71,12 +71,12 @@ public class Download {
         } catch (IOException e) {
             exception = e;
             update.setState(Update.State.DOWNLOAD_FAILED);
-            plugin.log(Level.SEVERE, "Download failed. "
+            plugin.log(Level.SEVERE, "Download failed! "
                     + "Try again or update the plugin manually (version " + update.getVersion() + ").", e);
         } catch (ValidationFailedException e) {
             exception = e;
             update.setState(Update.State.VALIDATION_FAILED);
-            plugin.log(Level.SEVERE, "Downloaded file was corrupted and must be reaquired. "
+            plugin.log(Level.SEVERE, "Validation failed! "
                     + "Try again or update the plugin manually (version " + update.getVersion() + ").", e);
         } catch (DownloadInterruptedException ignored) {
         } finally {
@@ -110,10 +110,12 @@ public class Download {
                 if (bytesDownloaded >= bytesPerPercentageStep * (percentComplete + 1)) {
                     percentComplete = (int) (bytesDownloaded / bytesPerPercentageStep);
                     update.notifyObservers();
+                    
                     if (percentComplete % 14 == 0)
                         plugin.log(Level.INFO, "Downloading... (" + percentComplete + "%)");
+                    
                     try {
-                        Thread.sleep(25); // Wait 25ms for better UX :)
+                        Thread.sleep(25); // Artificially slow down the download to make it more noticeable in the UI
                     } catch (InterruptedException ignored) {}
                 }
                 // If the download has been paused or set outdated, stop the download
@@ -125,7 +127,7 @@ public class Download {
             }
             plugin.log(Level.INFO, "Download complete.");
         } finally {
-            duration = duration.plusMillis(System.currentTimeMillis() - startTime);
+            downloadDuration = downloadDuration.plusMillis(System.currentTimeMillis() - startTime);
         }
     }
     
@@ -145,8 +147,8 @@ public class Download {
             throw new ValidationFailedException();
         }
     
-        String remoteChecksum = update.getRemoteChecksum();
-        if (remoteChecksum == null) {
+        String serverChecksum = update.getChecksum();
+        if (serverChecksum == null) {
             plugin.debug("No checksum provided by server. Skipping checksum validation.");
             checksumValidated = false;
             return;
@@ -168,11 +170,11 @@ public class Download {
         
         // Compare the downloaded file's checksum against the one on the server
         // If they don't match, throw an exception and force the user to download the file again
-        if (!checksum.equals(remoteChecksum))
+        if (!checksum.equals(serverChecksum))
             throw new ValidationFailedException();
         
         checksumValidated = true;
-        plugin.log(Level.INFO, "Download validated with MD5 checksum.");
+        plugin.log(Level.INFO, "Download integrity validated with MD5 checksum.");
     }
     
     private String toHexString(byte[] bytes) {
@@ -200,7 +202,7 @@ public class Download {
     }
     
     public Duration getDuration() {
-        return duration;
+        return downloadDuration;
     }
     
     public boolean isChecksumValidated() {
