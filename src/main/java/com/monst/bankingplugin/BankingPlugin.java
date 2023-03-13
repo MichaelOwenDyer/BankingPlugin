@@ -6,7 +6,6 @@ import com.monst.bankingplugin.command.bank.BankCommand;
 import com.monst.bankingplugin.command.plugin.BPCommand;
 import com.monst.bankingplugin.configuration.Configuration;
 import com.monst.bankingplugin.entity.Account;
-import com.monst.bankingplugin.exception.MissingDependencyException;
 import com.monst.bankingplugin.external.GriefPreventionListener;
 import com.monst.bankingplugin.external.WorldGuardListener;
 import com.monst.bankingplugin.lang.ColorStringBuilder;
@@ -41,6 +40,12 @@ import java.util.*;
 import java.util.logging.Level;
 
 public class BankingPlugin extends JavaPlugin {
+    
+    private static class MissingDependencyException extends Exception {
+        private MissingDependencyException(String message) {
+            super(message);
+        }
+    }
 
     /*	Configuration  */
     private Configuration configuration;

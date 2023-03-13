@@ -8,7 +8,7 @@ import com.monst.bankingplugin.entity.geo.location.DoubleAccountLocation;
 import com.monst.bankingplugin.event.account.AccountCloseEvent;
 import com.monst.bankingplugin.event.account.AccountContractEvent;
 import com.monst.bankingplugin.event.account.AccountExtendEvent;
-import com.monst.bankingplugin.exception.EventCancelledException;
+import com.monst.bankingplugin.event.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.command.Permissions;

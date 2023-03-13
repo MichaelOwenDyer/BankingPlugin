@@ -6,7 +6,7 @@ import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.control.InterestEvent;
-import com.monst.bankingplugin.exception.EventCancelledException;
+import com.monst.bankingplugin.event.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import org.bukkit.command.CommandSender;

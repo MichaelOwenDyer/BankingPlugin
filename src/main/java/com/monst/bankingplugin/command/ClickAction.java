@@ -3,8 +3,7 @@ package com.monst.bankingplugin.command;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.monst.bankingplugin.entity.Account;
-import com.monst.bankingplugin.exception.EventCancelledException;
-import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.event.EventCancelledException;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -63,13 +62,6 @@ public abstract class ClickAction {
 	public void onClick(Block block) throws CommandExecutionException, EventCancelledException {
 		// Do nothing
 	}
-
-    /**
-     * Clear all click actions, cancel timers
-     */
-    public static void clear() {
-		PLAYER_CLICK_ACTIONS.invalidateAll();
-    }
 
 	/**
 	 * Gets the click action of a player

@@ -1,6 +1,5 @@
 package com.monst.bankingplugin.event;
 
-import com.monst.bankingplugin.exception.EventCancelledException;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;

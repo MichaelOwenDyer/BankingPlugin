@@ -5,7 +5,7 @@ import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.command.CommandExecutionException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import org.bukkit.OfflinePlayer;

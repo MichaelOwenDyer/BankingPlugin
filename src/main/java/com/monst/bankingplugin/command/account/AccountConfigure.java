@@ -7,7 +7,7 @@ import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountConfigureEvent;
-import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.command.CommandExecutionException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import org.bukkit.entity.Player;

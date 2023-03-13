@@ -1,4 +1,4 @@
-package com.monst.bankingplugin.exception;
+package com.monst.bankingplugin.command;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.lang.Translatable;

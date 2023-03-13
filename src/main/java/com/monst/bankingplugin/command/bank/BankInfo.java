@@ -3,7 +3,7 @@ package com.monst.bankingplugin.command.bank;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.command.CommandExecutionException;
 import com.monst.bankingplugin.gui.BankGUI;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;

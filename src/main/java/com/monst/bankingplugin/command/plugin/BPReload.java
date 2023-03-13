@@ -4,7 +4,7 @@ import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.event.control.ReloadEvent;
-import com.monst.bankingplugin.exception.EventCancelledException;
+import com.monst.bankingplugin.event.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.command.Permissions;

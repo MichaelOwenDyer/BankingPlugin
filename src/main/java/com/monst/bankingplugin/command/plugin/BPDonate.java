@@ -2,8 +2,8 @@ package com.monst.bankingplugin.command.plugin;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.SubCommand;
-import com.monst.bankingplugin.exception.EventCancelledException;
-import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.event.EventCancelledException;
+import com.monst.bankingplugin.command.CommandExecutionException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import org.bukkit.command.CommandSender;

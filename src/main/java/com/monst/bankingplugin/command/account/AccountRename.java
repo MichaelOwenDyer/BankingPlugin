@@ -5,7 +5,7 @@ import com.monst.bankingplugin.command.Permission;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountRenameEvent;
-import com.monst.bankingplugin.exception.CommandExecutionException;
+import com.monst.bankingplugin.command.CommandExecutionException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import com.monst.bankingplugin.command.ClickAction;

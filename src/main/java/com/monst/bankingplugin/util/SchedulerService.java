@@ -3,7 +3,7 @@ package com.monst.bankingplugin.util;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.control.InterestEvent;
-import com.monst.bankingplugin.exception.EventCancelledException;
+import com.monst.bankingplugin.event.EventCancelledException;
 import org.bukkit.Bukkit;
 
 import java.time.*;
