@@ -11,19 +11,12 @@ import java.util.function.Predicate;
  * @param <T> the type of the value to check
  */
 @FunctionalInterface
-public interface Bound<T> {
-
-    /**
-     * Check if a value falls within the {@link Bound}, throwing a {@link ValueOutOfBoundsException} if not.
-     * @param t the value to check
-     * @throws ValueOutOfBoundsException if the provided value does not comply with this {@link Bound}
-     */
-    void check(T t) throws ValueOutOfBoundsException;
+public interface Bound<T> extends Bounds<T> {
 
     /**
      * @return a {@link Bound} that always passes
      */
-    static <T> Bound<T> alwaysPasses() {
+    static <T> Bound<T> none() {
         return t -> {};
     }
 

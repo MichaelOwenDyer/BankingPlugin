@@ -1,59 +1,30 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
-import com.monst.bankingplugin.configuration.type.IntegerConfigurationValue;
-import com.monst.bankingplugin.configuration.validation.Bound;
+import com.monst.bankingplugin.configuration.ConfigurationPolicy;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
+import com.monst.bankingplugin.configuration.transform.IntegerTransformer;
 import com.monst.bankingplugin.entity.Bank;
-
-import java.util.Optional;
 
 /**
  * The number of times in a row that an account can pay out interest while all account holders are offline.
  * -1 -> no limit
  */
-public class AllowedOfflinePayouts extends IntegerConfigurationValue implements BankPolicy<Integer> {
-
-    private final AllowOverride allowOverride;
+public class AllowedOfflinePayouts extends ConfigurationPolicy<Integer> {
 
     public AllowedOfflinePayouts(BankingPlugin plugin) {
-        super(plugin, BankPolicy.defaultPath("allowed-offline-payouts"), 1);
-        this.allowOverride = new AllowOverride(plugin, "allowed-offline-payouts");
-    }
-
-    @Override
-    protected Bound<Integer> getBound() {
-        return Bound.atLeast(-1);
-    }
-
-    @Override
-    public Integer at(Bank bank) {
-        if (bank.getAllowedOfflinePayouts() == null) {
-            if (plugin.config().stickyDefaults.get())
-                bank.setAllowedOfflinePayouts(get());
-            return get();
-        }
-        return allowOverride.get() ? bank.getAllowedOfflinePayouts() : get();
-    }
-
-    @Override
-    public boolean parseAndSetAt(Bank bank, String input) throws ArgumentParseException {
-        if (input == null || input.isEmpty()) {
-            bank.setAllowedOfflinePayouts(plugin.config().stickyDefaults.get() ? get() : null);
-            return true;
-        }
-        bank.setAllowedOfflinePayouts(parse(input));
-        return allowOverride.get();
-    }
-
-    @Override
-    public String toStringAt(Bank bank) {
-        return format(Optional.ofNullable(bank.getAllowedOfflinePayouts()).orElseGet(this));
+        super(plugin, "allowed-offline-payouts",
+                new ConfigurationValue<>(plugin, "default", 1, new IntegerTransformer().atLeast(-1)));
     }
     
     @Override
-    public AllowOverride getAllowOverride() {
-        return allowOverride;
+    protected Integer get(Bank bank) {
+        return bank.getAllowedOfflinePayouts();
+    }
+    
+    @Override
+    protected void set(Bank bank, Integer value) {
+        bank.setAllowedOfflinePayouts(value);
     }
     
 }

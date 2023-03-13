@@ -1,7 +1,8 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.configuration.type.PathConfigurationValue;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
+import com.monst.bankingplugin.configuration.transform.PathTransformer;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
@@ -13,12 +14,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DatabaseFile extends PathConfigurationValue {
+public class DatabaseFile extends ConfigurationValue<Path> {
 
     private final Path databaseFolder;
 
     public DatabaseFile(BankingPlugin plugin) {
-        super(plugin, "database-file", Paths.get("banking"));
+        super(plugin, "database-file", Paths.get("banking"), new PathTransformer());
         this.databaseFolder = plugin.getDataFolder().toPath().resolve("database");
     }
 

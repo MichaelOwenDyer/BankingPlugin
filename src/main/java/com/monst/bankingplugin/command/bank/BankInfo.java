@@ -8,7 +8,6 @@ import com.monst.bankingplugin.gui.BankGUI;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +45,7 @@ public class BankInfo extends PlayerSubCommand {
         if (args.length == 1)
             return plugin.getBankService().findAllNames()
                     .stream()
-                    .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
+                    .filter(name -> containsIgnoreCase(name, args[0]))
                     .collect(Collectors.toList());
         return Collections.emptyList();
     }

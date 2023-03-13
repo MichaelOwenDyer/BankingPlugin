@@ -2,6 +2,7 @@ package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.bank.BankSelectEvent;
@@ -11,9 +12,7 @@ import com.monst.bankingplugin.external.BankVisualization;
 import com.monst.bankingplugin.external.WorldEditReader;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -71,8 +70,8 @@ public class BankSelect extends PlayerSubCommand {
         if (args.length != 1)
             return Collections.emptyList();
         return plugin.getBankService().findAllNames().stream()
+                .filter(name -> containsIgnoreCase(name, args[0]))
                 .sorted()
-                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                 .collect(Collectors.toList());
     }
 

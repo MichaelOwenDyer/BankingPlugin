@@ -5,9 +5,10 @@
 # Set the command names to be used for account management, bank management, and plugin control.
 # Type: String
 # Defaults: account, bank, bp
-account-command-name: account
-bank-command-name: bank
-plugin-command-name: bp
+command-names:
+    account: account
+    bank: bank
+    plugin: bp
 
 # Set the daily times at which customers should receive interest payments from their accounts.
 # The time zone will be that of the server, not of the individual players.
@@ -16,11 +17,7 @@ plugin-command-name: bp
 # Type: List of times
 # Default: [09:00, 12:00, 15:00, 18:00]
 interest-payout-times:
-    default:
-    - '09:00'
-    - '12:00'
-    - '15:00'
-    - '18:00'
+    default: [09:00, 12:00, 15:00, 18:00]
     allow-override: true # This boolean determines whether individual banks have permission to override the default value.
 
 # Set the base interest rate for bank accounts.
@@ -40,12 +37,7 @@ interest-rate:
 # Type: List of integers
 # Default: [1, 2, 3, 4, 5]
 interest-multipliers:
-    default:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
+    default: [1, 2, 3, 4, 5]
     allow-override: true
 
 # Set the number of consecutive times a player may collect interest on their accounts while offline.
@@ -152,12 +144,11 @@ player-bank-account-limit:
 # A player with permission "bankingplugin.bank.limit.X" has a limit of X banks.
 # A player with permission "bankingplugin.bank.limit.*" does not have a bank limit.
 # Type: int, int
-# Default: 1, 3
 default-limits:
     # Set the amount of accounts that anyone who doesn't have a specific permission may have.
     # If you don't want players to have a limit by default set the value to -1.
-    bank: 1
-    account: 3
+    account:
+    bank:
 
 # Bank volume limits are handled with permissions.
 # A player with permission "bankingplugin.bank.size.X" can create banks with a volume of up to X.
@@ -225,28 +216,24 @@ ignore-updates-containing: []
 # Set whether to enable the debug log. This is stored in the file system and may become quite large!
 # Type: boolean
 # Default: false
-enable-debug-log: false
+enable-debug-log: true
 
 # Set the maximum age for banking log entries in days.
 # All log entries older than this will be deleted on plugin start / reload.
-# Set this to -1 to disable this feature.
+# Leave this empty to disable automatic log cleanup.
 # Type: int
-# Default: -1
-cleanup-log-days: -1
+# Default: 30
+cleanup-log-days: 30
 
-# Set whether various protection plugins should be hooked into (if installed)
-# in order to allow or deny bank or account creation in certain locations.
+# Set whether various plugins should be hooked into (if installed).
 # Type: boolean
 # Default: true, true
-enable-worldguard-integration: true
-enable-griefprevention-integration: true
-
-# Set whether WorldEdit should be hooked into (if installed).
-# WorldEdit integration offers easier bank creation, banks with polygonal regions,
-# and the /bank select command.
-# Type: boolean
-# Default: true
-enable-worldedit-integration: true
+integrations:
+    worldguard: true
+    griefprevention: true
+    # WorldEdit integration offers easier bank creation, banks with polygonal regions,
+    # and the '/bank select' command.
+    worldedit: true
 
 # Set the default state of the custom WorldGuard flag "create-bank".
 # Type: allow | deny
@@ -254,8 +241,8 @@ enable-worldedit-integration: true
 worldguard-default-flag-value: deny
 
 # Set whether accounts should automatically be removed from the database if
-# an error occurred while loading.
-# (e.g. no chest, no space above chest, or unknown world)
+# the account chest could not be found at the saved location.
+# (e.g. no chest found, or unknown world)
 # Type: boolean
 # Default: false
 remove-account-on-error: false
@@ -295,9 +282,10 @@ disabled-worlds: []
 
 # Set the regex pattern that bank names and account nicknames should be matched against.
 # Players will not be allowed to set names that fail to match with this pattern.
-# Type: String
-# Default: .* (no restriction)
-name-regex: .*
+# Leave this empty to disable the regex check.
+# Type: Regular expression string
+# Default: null
+name-regex: null
 
 # Set whether BankingPlugin should display a splash message in the console upon server start.
 # Type: boolean

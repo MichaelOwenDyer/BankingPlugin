@@ -1,89 +1,47 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.configuration.type.ConfigurationCollection;
-import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.ConfigurationPolicy;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
+import com.monst.bankingplugin.configuration.transform.LocalTimeTransformer;
 import com.monst.bankingplugin.entity.Bank;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
 
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * An ordered set of times of the day.
  */
-public class InterestPayoutTimes extends ConfigurationCollection<LocalTime, Set<LocalTime>> implements BankPolicy<Set<LocalTime>> {
-
-    private final AllowOverride allowOverride;
-
+public class InterestPayoutTimes extends ConfigurationPolicy<Set<LocalTime>> {
+    
     public InterestPayoutTimes(BankingPlugin plugin) {
-        super(plugin, BankPolicy.defaultPath("interest-payout-times"), Collections.emptySet());
-        this.allowOverride = new AllowOverride(plugin, "interest-payout-times") {
-            @Override
-            protected void afterSet() {
-                InterestPayoutTimes.this.afterSet();
-            }
-        };
+        super(plugin, "interest-payout-times", new Default(plugin));
     }
-
-    @Override
-    public Set<LocalTime> createCollection() {
-        return new LinkedHashSet<>();
-    }
-
-    @Override
-    public LocalTime parseElement(String input) throws ArgumentParseException {
-        try {
-            return LocalTime.parse(input);
-        } catch (DateTimeParseException e) {
-            throw new ArgumentParseException(Message.NOT_A_TIME.with(Placeholder.INPUT).as(input));
+    
+    private static class Default extends ConfigurationValue<Set<LocalTime>> {
+    
+        private Default(BankingPlugin plugin) {
+            super(plugin, "default", Collections.emptySet(),
+                    new LocalTimeTransformer().collect(LinkedHashSet::new));
         }
-    }
-
-    @Override
-    public void afterSet() {
-        plugin.getSchedulerService().scheduleAll();
-    }
-
-    @Override
-    protected Object convertToYamlType(Set<LocalTime> localTimes) {
-        return localTimes.stream().map(LocalTime::toString).collect(Collectors.toList());
-    }
-
-    @Override
-    public Set<LocalTime> at(Bank bank) {
-        if (bank.getInterestPayoutTimes() == null) {
-            if (plugin.config().stickyDefaults.get())
-                bank.setInterestPayoutTimes(get());
-            return get();
+    
+        @Override
+        public void afterSet() {
+            plugin.getSchedulerService().scheduleAll();
         }
-        return allowOverride.get() ? bank.getInterestPayoutTimes() : get();
-    }
-
-    @Override
-    public boolean parseAndSetAt(Bank bank, String input) throws ArgumentParseException {
-        if (input == null || input.isEmpty()) {
-            bank.setInterestPayoutTimes(plugin.config().stickyDefaults.get() ? get() : null);
-            return true;
-        }
-        bank.setInterestPayoutTimes(parse(input));
-        return allowOverride.get();
-    }
-
-    @Override
-    public String toStringAt(Bank bank) {
-        return format(Optional.ofNullable(bank.getInterestPayoutTimes()).orElseGet(this));
+    
     }
     
     @Override
-    public AllowOverride getAllowOverride() {
-        return allowOverride;
+    protected Set<LocalTime> get(Bank bank) {
+        return bank.getInterestPayoutTimes();
+    }
+    
+    @Override
+    protected void set(Bank bank, Set<LocalTime> value) {
+        bank.setInterestPayoutTimes(value);
     }
     
 }

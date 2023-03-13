@@ -57,24 +57,24 @@ public class BankCreate extends PlayerSubCommand {
             throw err(Message.NO_PERMISSION_BANK_CREATE_ADMIN);
 
         if (!isAdminBank) {
-            long bankLimit = PlayerSubCommand.getPermissionLimit(player, Permissions.BANK_NO_LIMIT, plugin.config().defaultBankLimit.get());
-            if (bankLimit >= 0 && plugin.getBankService().countByOwner(player) >= bankLimit)
+            Optional<Integer> bankLimit = getBankLimit(player);
+            if (bankLimit.isPresent() && plugin.getBankService().countByOwner(player) >= bankLimit.get())
                 throw err(Message.BANK_LIMIT_REACHED.with(Placeholder.LIMIT).as(bankLimit));
 
-            long regionVolume = bankRegion.getVolume();
-            long volumeLimit = PlayerSubCommand.getPermissionLimit(player, Permissions.BANK_NO_SIZE_LIMIT, plugin.config().maximumBankVolume.get());
-            if (volumeLimit >= 0 && regionVolume > volumeLimit)
+            long volume = bankRegion.getVolume();
+            Optional<Long> maximum = getBankVolumeLimit(player);
+            if (maximum.isPresent() && volume > maximum.get())
                 throw err(Message.BANK_SELECTION_TOO_LARGE
-                        .with(Placeholder.BANK_SIZE).as(regionVolume)
-                        .and(Placeholder.MAXIMUM).as(volumeLimit)
-                        .and(Placeholder.DIFFERENCE).as(regionVolume - volumeLimit));
+                        .with(Placeholder.BANK_SIZE).as(volume)
+                        .and(Placeholder.MAXIMUM).as(maximum)
+                        .and(Placeholder.DIFFERENCE).as(volume - maximum.get()));
 
-            long minimumVolume = plugin.config().minimumBankVolume.get();
-            if (regionVolume < minimumVolume)
+            Optional<Long> minimum = plugin.config().bankSizeLimits.minimum.get();
+            if (minimum.isPresent() && volume < minimum.get())
                 throw err(Message.BANK_SELECTION_TOO_SMALL
-                        .with(Placeholder.BANK_SIZE).as(regionVolume)
-                        .and(Placeholder.MINIMUM).as(minimumVolume)
-                        .and(Placeholder.DIFFERENCE).as(minimumVolume - regionVolume));
+                        .with(Placeholder.BANK_SIZE).as(volume)
+                        .and(Placeholder.MINIMUM).as(minimum)
+                        .and(Placeholder.DIFFERENCE).as(minimum.get() - volume));
         }
 
         Set<Bank> overlappingBanks = plugin.getBankService().findOverlapping(bankRegion);
@@ -89,7 +89,7 @@ public class BankCreate extends PlayerSubCommand {
         if (plugin.getBankService().findByName(name) != null)
             throw err(Message.NAME_NOT_UNIQUE.with(Placeholder.BANK_NAME).as(name));
 
-        if (plugin.config().nameRegex.doesNotMatch(name))
+        if (!plugin.config().nameRegex.allows(name))
             throw err(Message.NAME_NOT_ALLOWED
                     .with(Placeholder.NAME).as(name)
                     .and(Placeholder.PATTERN).as(plugin.config().nameRegex.get()));

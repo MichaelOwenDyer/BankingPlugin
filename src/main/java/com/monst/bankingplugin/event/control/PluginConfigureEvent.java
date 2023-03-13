@@ -1,21 +1,21 @@
 package com.monst.bankingplugin.event.control;
 
-import com.monst.bankingplugin.configuration.type.ConfigurationValue;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 
 /**
  * Called when the plugin is configured from in-game.
  */
-public class PluginConfigureEvent extends ControlEvent {
+public class PluginConfigureEvent<T> extends ControlEvent {
 
-    private final ConfigurationValue<?> configValue;
-    private final Object newValue;
+    private final ConfigurationValue<T> configValue;
+    private final T newValue;
 
-    public <T> PluginConfigureEvent(ConfigurationValue<T> configValue, T newValue) {
+    public PluginConfigureEvent(ConfigurationValue<T> configValue) {
         super(Bukkit.getConsoleSender());
         this.configValue = configValue;
-        this.newValue = newValue;
+        this.newValue = configValue.get();
     }
 
     private static final HandlerList HANDLERS = new HandlerList();
@@ -29,11 +29,11 @@ public class PluginConfigureEvent extends ControlEvent {
         return HANDLERS;
     }
 
-    public ConfigurationValue<?> getConfigValue() {
+    public ConfigurationValue<T> getConfigValue() {
         return configValue;
     }
 
-    public Object getNewValue() {
+    public T getNewValue() {
         return newValue;
     }
 

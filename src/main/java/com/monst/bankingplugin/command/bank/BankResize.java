@@ -2,6 +2,7 @@ package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.Bank;
@@ -12,13 +13,12 @@ import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.external.BankVisualization;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,19 +74,19 @@ public class BankResize extends PlayerSubCommand {
 
         long volume = bankRegion.getVolume();
         if (bank.isPlayerBank()) {
-            long volumeLimit = PlayerSubCommand.getPermissionLimit(player, Permissions.BANK_NO_SIZE_LIMIT, plugin.config().maximumBankVolume.get());
-            if (volumeLimit >= 0 && volume > volumeLimit)
+            Optional<Long> maximum = getBankVolumeLimit(player);
+            if (maximum.isPresent() && volume > maximum.get())
                 throw err(Message.BANK_SELECTION_TOO_LARGE
                         .with(Placeholder.BANK_SIZE).as(volume)
-                        .and(Placeholder.MAXIMUM).as(volumeLimit)
-                        .and(Placeholder.DIFFERENCE).as(volume - volumeLimit));
+                        .and(Placeholder.MAXIMUM).as(maximum)
+                        .and(Placeholder.DIFFERENCE).as(volume - maximum.get()));
 
-            long minimumVolume = plugin.config().minimumBankVolume.get();
-            if (volume < minimumVolume)
+            Optional<Long> minimum = plugin.config().bankSizeLimits.minimum.get();
+            if (minimum.isPresent() && volume < minimum.get())
                 throw err(Message.BANK_SELECTION_TOO_SMALL
                         .with(Placeholder.BANK_SIZE).as(volume)
-                        .and(Placeholder.MINIMUM).as(minimumVolume)
-                        .and(Placeholder.DIFFERENCE).as(minimumVolume - volume));
+                        .and(Placeholder.MINIMUM).as(minimum)
+                        .and(Placeholder.DIFFERENCE).as(minimum.get() - volume));
         }
 
         Set<Bank> overlappingBanks = plugin.getBankService().findOverlapping(bankRegion);
@@ -123,7 +123,7 @@ public class BankResize extends PlayerSubCommand {
                             Permissions.BANK_RESIZE_OTHER.ownedBy(player),
                             Permissions.BANK_RESIZE_ADMIN.ownedBy(player), true)
                     .stream()
-                    .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
+                    .filter(name -> containsIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         Block lookingAt = player.getTargetBlock(null, 300);

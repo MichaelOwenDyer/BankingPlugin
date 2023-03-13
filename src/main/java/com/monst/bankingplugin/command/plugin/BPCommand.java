@@ -7,7 +7,7 @@ import com.monst.bankingplugin.lang.Message;
 public class BPCommand extends BankingPluginCommand {
 
     public BPCommand(BankingPlugin plugin) {
-        super(plugin, plugin.config().pluginCommandName.get(), Message.CONTROL_COMMAND_DESC,
+        super(plugin, plugin.config().commandNames.plugin.get(), Message.CONTROL_COMMAND_DESC,
                 new BPConfigure(plugin),
                 new BPPayInterest(plugin),
                 new BPReload(plugin),

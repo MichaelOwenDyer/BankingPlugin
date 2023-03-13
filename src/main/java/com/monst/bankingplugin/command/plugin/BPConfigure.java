@@ -2,16 +2,18 @@ package com.monst.bankingplugin.command.plugin;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.SubCommand;
+import com.monst.bankingplugin.configuration.ConfigurationBranch;
+import com.monst.bankingplugin.configuration.ConfigurationNode;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
 import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
-import com.monst.bankingplugin.configuration.type.ConfigurationValue;
 import com.monst.bankingplugin.event.control.PluginConfigureCommandEvent;
+import com.monst.bankingplugin.event.control.PluginConfigureEvent;
 import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -48,12 +50,17 @@ public class BPConfigure extends SubCommand {
 
     @Override
     protected void execute(CommandSender sender, String[] args) throws CommandExecutionException, EventCancelledException {
-        String path = args[0];
-        ConfigurationValue<?> configValue = plugin.config().findByPath(path);
-        if (configValue == null)
+        int arg = 0;
+        ConfigurationNode targetNode = plugin.config();
+        while (targetNode instanceof ConfigurationBranch && arg < args.length)
+            targetNode = ((ConfigurationBranch) targetNode).getChild(args[arg++]);
+        String path = String.join(".", Arrays.copyOfRange(args, 0, arg));
+        if (!(targetNode instanceof ConfigurationValue))
             throw err(Message.NOT_A_CONFIGURATION_VALUE.with(Placeholder.INPUT).as(path));
-
-        String input = Arrays.stream(args).skip(1).collect(Collectors.joining(" "));
+        
+        ConfigurationValue<?> configValue = (ConfigurationValue<?>) targetNode;
+    
+        String input = arg >= args.length ? null : String.join(" ", Arrays.copyOfRange(args, arg, args.length));
 
         try {
             new PluginConfigureCommandEvent(sender, configValue, input).fire();
@@ -64,19 +71,18 @@ public class BPConfigure extends SubCommand {
 
         String previousValue = configValue.toString();
 
-        if (input.isEmpty()) {
-            configValue.reset();
-        } else {
-            try {
-                configValue.parseAndSet(input);
-            } catch (ArgumentParseException e) {
-                throw err(e.getTranslatableMessage());
-            }
+        try {
+            configValue.feed(input);
+        } catch (ArgumentParseException e) {
+            throw err(e.getTranslatableMessage());
         }
+        
+        new PluginConfigureEvent<>(configValue).fire();
 
         String newValue = configValue.toString();
 
-        plugin.debug("%s has configured %s from %s to %s", sender.getName(), configValue.getPath(), previousValue, newValue);
+        plugin.debug("%s has configured %s from %s to %s",
+                sender.getName(), configValue.getKey(), previousValue, newValue);
         sender.sendMessage(Message.CONFIGURATION_VALUE_SET
                 .with(Placeholder.PROPERTY).as(path)
                 .and(Placeholder.PREVIOUS_VALUE).as(previousValue)
@@ -88,15 +94,20 @@ public class BPConfigure extends SubCommand {
 
     @Override
     protected List<String> getTabCompletions(Player player, String[] args) {
-        if (args.length == 1)
-            return plugin.config().paths().stream()
-                    .filter(path -> StringUtils.startsWithIgnoreCase(path, args[0])) // TODO: Use a containsIgnoreCase method instead
-                    .sorted()
-                    .collect(Collectors.toList());
-        ConfigurationValue<?> configValue = plugin.config().findByPath(args[0]);
-        if (configValue == null)
-            return Collections.emptyList();
-        return configValue.getTabCompletions(player, args);
+        return getTabCompletions(plugin.config(), player, args, 0);
     }
-
+    
+    private List<String> getTabCompletions(ConfigurationBranch branch, Player player, String[] args, int arg) {
+        if (arg >= args.length - 1)
+            return branch.getChildren().keySet().stream()
+                    .filter(name -> containsIgnoreCase(name, args[args.length - 1]))
+                    .collect(Collectors.toList());
+        ConfigurationNode node = branch.getChild(args[arg]);
+        if (node instanceof ConfigurationBranch)
+            return getTabCompletions((ConfigurationBranch) node, player, args, arg + 1);
+        if (node instanceof ConfigurationValue)
+            return ((ConfigurationValue<?>) node).getTabCompletions(player, args);
+        return Collections.emptyList();
+    }
+    
 }

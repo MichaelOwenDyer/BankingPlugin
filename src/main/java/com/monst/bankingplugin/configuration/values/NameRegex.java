@@ -1,31 +1,21 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.configuration.type.ConfigurationValue;
-import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
+import com.monst.bankingplugin.configuration.transform.PatternTransformer;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
-public class NameRegex extends ConfigurationValue<Pattern> {
+public class NameRegex extends ConfigurationValue<Optional<Pattern>> {
 
     public NameRegex(BankingPlugin plugin) {
-        super(plugin, "name-regex", Pattern.compile(".*"));
+        super(plugin, "name-regex", Optional.empty(), new PatternTransformer().optional());
     }
 
-    @Override
-    public Pattern parse(String input) throws ArgumentParseException {
-        try {
-            return Pattern.compile(input);
-        } catch (PatternSyntaxException e) {
-            throw new ArgumentParseException(Message.NOT_A_REGULAR_EXPRESSION.with(Placeholder.INPUT).as(input));
-        }
-    }
-
-    public boolean doesNotMatch(String name) {
-        return !get().matcher(name).matches();
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean allows(String name) {
+        return get().map(pattern -> pattern.matcher(name).matches()).orElse(true);
     }
 
 }

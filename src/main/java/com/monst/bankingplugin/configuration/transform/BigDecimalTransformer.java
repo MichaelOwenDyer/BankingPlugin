@@ -1,23 +1,17 @@
-package com.monst.bankingplugin.configuration.type;
+package com.monst.bankingplugin.configuration.transform;
 
-import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.validation.Bound;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
-/**
- * A configuration value of the type {@link BigDecimal}.
- */
-public abstract class BigDecimalConfigurationValue extends ConfigurationValue<BigDecimal> {
-
-    public BigDecimalConfigurationValue(BankingPlugin plugin, String path, BigDecimal defaultValue) {
-        super(plugin, path, defaultValue);
-    }
-
+public class BigDecimalTransformer implements Transformer<BigDecimal> {
+    
     @Override
-    protected BigDecimal parse(String input) throws ArgumentParseException {
+    public BigDecimal parse(String input) throws ArgumentParseException {
         try {
             return new BigDecimal(input);
         } catch (NumberFormatException e) {
@@ -32,11 +26,19 @@ public abstract class BigDecimalConfigurationValue extends ConfigurationValue<Bi
      * @return a Double or String representing this value
      */
     @Override
-    protected Object convertToYamlType(BigDecimal bd) {
+    public Object toYaml(BigDecimal bd) {
         Double d = bd.doubleValue();
         if (d.isInfinite() || d.isNaN())
             return bd.toString(); // Store as a string if it cannot be stored as a Double
         return d;
     }
-
+    
+    public static Bound<BigDecimal> positive() {
+        return Bound.requiring(b -> b.signum() >= 0, BigDecimal::abs);
+    }
+    
+    public static Bound<BigDecimal> scale(int scale) {
+        return Bound.requiring(b -> b.scale() == scale, b -> b.setScale(scale, RoundingMode.HALF_EVEN));
+    }
+    
 }

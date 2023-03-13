@@ -1,55 +1,36 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
-import com.monst.bankingplugin.configuration.type.MonetaryConfigurationValue;
+import com.monst.bankingplugin.configuration.ConfigurationPolicy;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
+import com.monst.bankingplugin.configuration.transform.MoneyTransformer;
 import com.monst.bankingplugin.entity.Bank;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+
+import static com.monst.bankingplugin.configuration.transform.BigDecimalTransformer.positive;
 
 /**
  * Represents the default price of creating an account.
  * Can be overridden by {@link Bank}s.
  * @see Bank#getAccountCreationPrice()
  */
-public class AccountCreationPrice extends MonetaryConfigurationValue implements BankPolicy<BigDecimal> {
-
-    private final AllowOverride allowOverride;
+public class AccountCreationPrice extends ConfigurationPolicy<BigDecimal> {
 
     public AccountCreationPrice(BankingPlugin plugin) {
-        super(plugin, BankPolicy.defaultPath("account-creation-price"), BigDecimal.valueOf(2500));
-        this.allowOverride = new AllowOverride(plugin, "account-creation-price");
-    }
-
-    @Override
-    public BigDecimal at(Bank bank) {
-        if (bank.getAccountCreationPrice() == null) {
-            if (plugin.config().stickyDefaults.get())
-                bank.setAccountCreationPrice(get());
-            return get();
-        }
-        return allowOverride.get() ? bank.getAccountCreationPrice() : get();
-    }
-
-    @Override
-    public boolean parseAndSetAt(Bank bank, String input) throws ArgumentParseException {
-        if (input == null || input.isEmpty()) {
-            bank.setAccountCreationPrice(plugin.config().stickyDefaults.get() ? get() : null);
-            return true;
-        }
-        bank.setAccountCreationPrice(parse(input));
-        return allowOverride.get();
-    }
-
-    @Override
-    public String toStringAt(Bank bank) {
-        return format(Optional.ofNullable(bank.getAccountCreationPrice()).orElseGet(this));
+        super(plugin, "account-creation-price",
+                new ConfigurationValue<>(plugin, "default", BigDecimal.valueOf(2500),
+                        new MoneyTransformer(plugin).bounded(positive())));
     }
     
     @Override
-    public AllowOverride getAllowOverride() {
-        return allowOverride;
+    protected BigDecimal get(Bank bank) {
+        return bank.getAccountCreationPrice();
+    }
+    
+    @Override
+    protected void set(Bank bank, BigDecimal value) {
+        bank.setAccountCreationPrice(value);
     }
     
 }

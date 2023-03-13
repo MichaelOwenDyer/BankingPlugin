@@ -36,7 +36,7 @@ public class AccountRename extends PlayerSubCommand {
     @Override
     protected void execute(Player player, String[] args) throws CommandExecutionException {
         String nickname = String.join(" ", args).trim();
-        if (!nickname.isEmpty() && plugin.config().nameRegex.doesNotMatch(nickname))
+        if (!nickname.isEmpty() && !plugin.config().nameRegex.allows(nickname))
             throw err(Message.NAME_NOT_ALLOWED
                     .with(Placeholder.NAME).as(nickname)
                     .and(Placeholder.PATTERN).as(plugin.config().nameRegex.get()));

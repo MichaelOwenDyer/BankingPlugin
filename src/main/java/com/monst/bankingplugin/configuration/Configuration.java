@@ -1,30 +1,14 @@
 package com.monst.bankingplugin.configuration;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.configuration.type.ConfigurationValue;
 import com.monst.bankingplugin.configuration.values.*;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-public final class Configuration {
-
+public final class Configuration extends ConfigurationRoot {
+	
 	/**
-	 * The account command of BankingPlugin <i>(default: account)</i>
-	 **/
-	public final AccountCommandName accountCommandName;
-
-    /**
-     * The bank command of BankingPlugin <i>(default: bank)</i>
-     **/
-	public final BankCommandName bankCommandName;
-
-    /**
-     * The control command of BankingPlugin <i>(default: bp)</i>
-     **/
-    public final PluginCommandName pluginCommandName;
+	 * Contains the names of this plugin's commands.
+	 */
+	public final CommandNames commandNames;
 
     /**
      * The real-life times for account interest payouts.
@@ -94,28 +78,17 @@ public final class Configuration {
 	/**
 	 * The default account limit per player per bank.
 	 */
-	public final PlayerBankAccountLimit playerBankAccountLimit;
-
-    /**
-     * The default bank ownership limit for players whose limit is not set via a permission.
-     **/
-	public final DefaultBankLimit defaultBankLimit;
-
-    /**
-     * The default account ownership limit for players whose limit is not set via a permission.
-     **/
-	public final DefaultAccountLimit defaultAccountLimit;
-
+	public final PlayerAccountPerBankLimit playerAccountPerBankLimit;
+	
 	/**
-	 * The minimum bank volume.
+	 * Contains default limits for ownership of accounts and banks.
 	 */
-	public final MinimumBankVolume minimumBankVolume;
-
+	public final DefaultLimits defaultLimits;
+	
 	/**
-	 * The default bank volume limit for players whose limit is not set via a
-	 * permission.
+	 * Contains the maximum and minimum bank volume limits.
 	 */
-	public final MaximumBankVolume maximumBankVolume;
+	public final BankSizeLimits bankSizeLimits;
 
 	/**
 	 * Determines how default bank configuration values should behave on server default change.
@@ -180,21 +153,11 @@ public final class Configuration {
      * If this is equal to {@code 0}, the log will not be cleaned.
      **/
 	public final CleanupLogDays cleanupLogDays;
-
+	
 	/**
-	 * Whether WorldGuard integration should be enabled.
-	 **/
-	public final EnableWorldGuardIntegration enableWorldGuardIntegration;
-
-    /**
-     * Whether GriefPrevention integration should be enabled.
-     **/
-	public final EnableGriefPreventionIntegration enableGriefPreventionIntegration;
-
-	/**
-	 * Whether WorldEdit integration should be enabled.
-	 **/
-	public final EnableWorldEditIntegration enableWorldEditIntegration;
+	 * Contains whether to enable the plugin's integrations with WorldGuard, WorldEdit and GriefPrevention.
+	 */
+	public final Integrations integrations;
 
 	/**
 	 * The default value for the custom WorldGuard flag 'create-bank'
@@ -242,78 +205,48 @@ public final class Configuration {
 	 */
 	public final DatabaseFile databaseFile;
 	
-	private final Map<String, ConfigurationValue<?>> configurationValueMap = new HashMap<>();
-
 	public Configuration(BankingPlugin plugin) {
-		plugin.saveDefaultConfig();
-		enableDebugLog = add(new EnableDebugLog(plugin)); // Must be first to ensure debug log is created if enabled
-		accountCommandName = add(new AccountCommandName(plugin));
-		bankCommandName = add(new BankCommandName(plugin));
-		pluginCommandName = add(new PluginCommandName(plugin));
-		interestPayoutTimes = add(new InterestPayoutTimes(plugin));
-		interestRate = add(new InterestRate(plugin));
-		interestMultipliers = add(new InterestMultipliers(plugin));
-		allowedOfflinePayouts = add(new AllowedOfflinePayouts(plugin));
-		offlineMultiplierDecrement = add(new OfflineMultiplierDecrement(plugin));
-		withdrawalMultiplierDecrement = add(new WithdrawalMultiplierDecrement(plugin));
-		accountCreationPrice = add(new AccountCreationPrice(plugin));
-		reimburseAccountCreation = add(new ReimburseAccountCreation(plugin));
-		bankCreationPrice = add(new BankCreationPrice(plugin));
-		reimburseBankCreation = add(new ReimburseBankCreation(plugin));
-		minimumBalance = add(new MinimumBalance(plugin));
-		lowBalanceFee = add(new LowBalanceFee(plugin));
-		payOnLowBalance = add(new PayOnLowBalance(plugin));
-		playerBankAccountLimit = add(new PlayerBankAccountLimit(plugin));
-		defaultBankLimit = add(new DefaultBankLimit(plugin));
-		defaultAccountLimit = add(new DefaultAccountLimit(plugin));
-		minimumBankVolume = add(new MinimumBankVolume(plugin));
-		maximumBankVolume = add(new MaximumBankVolume(plugin));
-		stickyDefaults = add(new StickyDefaults(plugin));
-		allowSelfBanking = add(new AllowSelfBanking(plugin));
-		confirmOnRemove = add(new ConfirmOnRemove(plugin));
-		confirmOnRemoveAll = add(new ConfirmOnRemoveAll(plugin));
-		confirmOnTransfer = add(new ConfirmOnTransfer(plugin));
-		trustOnTransfer = add(new TrustOnTransfer(plugin));
-		accountInfoItem = add(new AccountInfoItem(plugin));
-		enableStartupUpdateCheck = add(new EnableStartupUpdateCheck(plugin));
-		downloadUpdatesAutomatically = add(new DownloadUpdatesAutomatically(plugin));
-		ignoreUpdatesContaining = add(new IgnoreUpdatesContaining(plugin));
-		cleanupLogDays = add(new CleanupLogDays(plugin));
-		enableWorldGuardIntegration = add(new EnableWorldGuardIntegration(plugin));
-		enableGriefPreventionIntegration = add(new EnableGriefPreventionIntegration(plugin));
-		enableWorldEditIntegration = add(new EnableWorldEditIntegration(plugin));
-		worldGuardDefaultFlagValue = add(new WorldGuardDefaultFlagValue(plugin));
-		blacklist = add(new Blacklist(plugin));
-		bankRevenueExpression = add(new BankRevenueExpression(plugin));
-		disabledWorlds = add(new DisabledWorlds(plugin));
-		nameRegex = add(new NameRegex(plugin));
-		enableStartupMessage = add(new EnableStartupMessage(plugin));
-		languageFile = add(new LanguageFile(plugin));
-		databaseFile = add(new DatabaseFile(plugin));
-		plugin.saveConfig();
+		super(plugin, "config.yml");
+		
+		this.enableDebugLog = addChild(new EnableDebugLog(plugin)); // Must be first to ensure debug log is created if enabled
+		this.commandNames = addChild(new CommandNames(plugin));
+		this.interestPayoutTimes = addChild(new InterestPayoutTimes(plugin));
+		this.interestRate = addChild(new InterestRate(plugin));
+		this.interestMultipliers = addChild(new InterestMultipliers(plugin));
+		this.allowedOfflinePayouts = addChild(new AllowedOfflinePayouts(plugin));
+		this.offlineMultiplierDecrement = addChild(new OfflineMultiplierDecrement(plugin));
+		this.withdrawalMultiplierDecrement = addChild(new WithdrawalMultiplierDecrement(plugin));
+		this.accountCreationPrice = addChild(new AccountCreationPrice(plugin));
+		this.reimburseAccountCreation = addChild(new ReimburseAccountCreation(plugin));
+		this.bankCreationPrice = addChild(new BankCreationPrice(plugin));
+		this.reimburseBankCreation = addChild(new ReimburseBankCreation(plugin));
+		this.minimumBalance = addChild(new MinimumBalance(plugin));
+		this.lowBalanceFee = addChild(new LowBalanceFee(plugin));
+		this.payOnLowBalance = addChild(new PayOnLowBalance(plugin));
+		this.playerAccountPerBankLimit = addChild(new PlayerAccountPerBankLimit(plugin));
+		this.defaultLimits = addChild(new DefaultLimits(plugin));
+		this.bankSizeLimits = addChild(new BankSizeLimits(plugin));
+		this.stickyDefaults = addChild(new StickyDefaults(plugin));
+		this.allowSelfBanking = addChild(new AllowSelfBanking(plugin));
+		this.confirmOnRemove = addChild(new ConfirmOnRemove(plugin));
+		this.confirmOnRemoveAll = addChild(new ConfirmOnRemoveAll(plugin));
+		this.confirmOnTransfer = addChild(new ConfirmOnTransfer(plugin));
+		this.trustOnTransfer = addChild(new TrustOnTransfer(plugin));
+		this.accountInfoItem = addChild(new AccountInfoItem(plugin));
+		this.enableStartupUpdateCheck = addChild(new EnableStartupUpdateCheck(plugin));
+		this.downloadUpdatesAutomatically = addChild(new DownloadUpdatesAutomatically(plugin));
+		this.ignoreUpdatesContaining = addChild(new IgnoreUpdatesContaining(plugin));
+		this.cleanupLogDays = addChild(new CleanupLogDays(plugin));
+		this.integrations = addChild(new Integrations(plugin));
+		this.worldGuardDefaultFlagValue = addChild(new WorldGuardDefaultFlagValue(plugin));
+		this.blacklist = addChild(new Blacklist(plugin));
+		this.bankRevenueExpression = addChild(new BankRevenueExpression(plugin));
+		this.disabledWorlds = addChild(new DisabledWorlds(plugin));
+		this.nameRegex = addChild(new NameRegex(plugin));
+		this.enableStartupMessage = addChild(new EnableStartupMessage(plugin));
+		this.languageFile = addChild(new LanguageFile(plugin));
+		this.databaseFile = addChild(new DatabaseFile(plugin));
+		super.reload();
 	}
 	
-	private <C extends ConfigurationValue<?>> C add(C configurationValue) {
-		configurationValueMap.put(configurationValue.getPath(), configurationValue);
-		if (configurationValue instanceof BankPolicy<?>)
-			configurationValueMap.put(((BankPolicy<?>) configurationValue).getAllowOverride().getPath(), configurationValue);
-		return configurationValue;
-	}
-	
-	public void reload() {
-		values().forEach(ConfigurationValue::reload);
-	}
-	
-	public Collection<ConfigurationValue<?>> values() {
-		return configurationValueMap.values();
-	}
-	
-	public ConfigurationValue<?> findByPath(String path) {
-		return configurationValueMap.get(path);
-	}
-	
-	public Set<String> paths() {
-		return configurationValueMap.keySet();
-	}
-
 }

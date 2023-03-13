@@ -7,7 +7,7 @@ import com.monst.bankingplugin.lang.Message;
 public class AccountCommand extends BankingPluginCommand {
 
 	public AccountCommand(BankingPlugin plugin) {
-		super(plugin, plugin.config().accountCommandName.get(), Message.ACCOUNT_COMMAND_DESC,
+		super(plugin, plugin.config().commandNames.account.get(), Message.ACCOUNT_COMMAND_DESC,
 				new AccountOpen(plugin),
 				new AccountInfo(plugin),
 				new AccountLimits(plugin),

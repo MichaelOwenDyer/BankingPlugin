@@ -2,6 +2,7 @@ package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountCloseAllEvent;
@@ -9,14 +10,15 @@ import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AccountCloseAll extends SubCommand {
@@ -81,8 +83,8 @@ public class AccountCloseAll extends SubCommand {
         List<String> argList = Arrays.asList(args);
         return Bukkit.getServer().getOnlinePlayers().stream()
                 .map(Player::getName)
-                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                 .filter(name -> !argList.contains(name))
+                .filter(name -> containsIgnoreCase(name, args[0]))
                 .sorted()
                 .collect(Collectors.toList());
     }

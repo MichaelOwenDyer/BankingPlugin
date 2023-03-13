@@ -2,6 +2,7 @@ package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.bank.BankRemoveEvent;
@@ -10,10 +11,8 @@ import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.external.BankVisualization;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -112,7 +111,7 @@ public class BankRemove extends SubCommand {
                         Permissions.BANK_REMOVE_OTHER.ownedBy(player),
                         Permissions.BANK_REMOVE_ADMIN.ownedBy(player), true)
                 .stream()
-                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
+                .filter(name -> containsIgnoreCase(name, args[0]))
                 .sorted()
                 .collect(Collectors.toList());
     }

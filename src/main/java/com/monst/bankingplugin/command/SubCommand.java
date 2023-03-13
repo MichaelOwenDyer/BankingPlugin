@@ -88,10 +88,6 @@ public abstract class SubCommand {
         return 0;
     }
     
-    public static void clearCache() {
-        PLAYER_COMMAND_CACHE.invalidateAll();
-    }
-    
     protected static boolean isFirstUsage(Player sender, int commandHash) {
         if (PLAYER_COMMAND_CACHE.asMap().remove(sender.getUniqueId(), commandHash))
             return false;
@@ -105,6 +101,15 @@ public abstract class SubCommand {
         if (player == null)
             player = Bukkit.getOfflinePlayer(name);
         return player.hasPlayedBefore() ? player : null;
+    }
+    
+    protected static boolean containsIgnoreCase(String string, String substring) {
+        int len = substring.length();
+        int max = string.length() - len;
+        for (int i = 0; i <= max; i++)
+            if (string.regionMatches(true, i, substring, 0, len))
+                return true;
+        return false;
     }
     
     protected CommandExecutionException err(Translatable message) {

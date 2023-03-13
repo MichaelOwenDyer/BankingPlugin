@@ -2,16 +2,15 @@ package com.monst.bankingplugin.command.plugin;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.event.control.InterestEvent;
 import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -59,7 +58,7 @@ public class BPPayInterest extends SubCommand {
         List<String> argList = Arrays.asList(args);
         return plugin.getBankService().findAllNames().stream()
                 .filter(name -> !argList.contains(name))
-                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[args.length - 1]))
+                .filter(name -> containsIgnoreCase(name, args[args.length - 1]))
                 .sorted()
                 .collect(Collectors.toList());
     }

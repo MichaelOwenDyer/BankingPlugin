@@ -8,7 +8,6 @@ import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.util.Promise;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,8 +39,8 @@ public class AccountList extends PlayerSubCommand {
         List<String> argList = Arrays.asList(args);
         return Bukkit.getServer().getOnlinePlayers().stream()
                 .map(Player::getName)
-                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
                 .filter(name -> !argList.contains(name))
+                .filter(name -> containsIgnoreCase(name, args[0]))
                 .sorted()
                 .collect(Collectors.toList());
     }

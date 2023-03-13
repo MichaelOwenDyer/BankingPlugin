@@ -13,6 +13,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
+import java.util.Optional;
+
 public abstract class PlayerSubCommand extends SubCommand {
 
     protected PlayerSubCommand(BankingPlugin plugin, String name) {
@@ -34,6 +36,7 @@ public abstract class PlayerSubCommand extends SubCommand {
      */
     protected abstract void execute(Player player, String[] args) throws CommandExecutionException, EventCancelledException;
 
+    @Deprecated
     protected static long getPermissionLimit(Player player, Permissions unlimitedPerm, long defaultLimit) {
         if (unlimitedPerm.ownedBy(player))
             return -1;
@@ -56,6 +59,46 @@ public abstract class PlayerSubCommand extends SubCommand {
             }
         }
         return Math.max(limit, -1);
+    }
+    
+    protected Optional<Integer> getAccountLimit(Player player) {
+        Optional<Integer> permissionLimit = getPermissionLimit(player, Permissions.ACCOUNT_NO_LIMIT).map(Long::intValue);
+        return permissionLimit.isPresent() ? permissionLimit : plugin.config().defaultLimits.account.get();
+    }
+    
+    protected Optional<Integer> getBankLimit(Player player) {
+        Optional<Integer> permissionLimit = getPermissionLimit(player, Permissions.BANK_NO_LIMIT).map(Long::intValue);
+        return permissionLimit.isPresent() ? permissionLimit : plugin.config().defaultLimits.bank.get();
+    }
+    
+    protected Optional<Long> getBankVolumeLimit(Player player) {
+        Optional<Long> permissionLimit = getPermissionLimit(player, Permissions.BANK_VOLUME_NO_LIMIT);
+        return permissionLimit.isPresent() ? permissionLimit : plugin.config().bankSizeLimits.maximum.get();
+    }
+    
+    protected static Optional<Long> getPermissionLimit(Player player, Permissions unlimitedPerm) {
+        if (unlimitedPerm.ownedBy(player))
+            return Optional.empty();
+        String permPrefix = unlimitedPerm.toString();
+        permPrefix = permPrefix.substring(0, permPrefix.length() - 1); // Remove the trailing "*"
+        Optional<Long> limit = Optional.empty();
+        for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+            if (!permInfo.getValue())
+                continue;
+            String[] split = permInfo.getPermission().split(permPrefix);
+            if (split.length <= 1)
+                continue;
+            try {
+                long newLimit = Long.parseLong(split[1]);
+                if (newLimit < 0)
+                    return Optional.empty();
+                if (!limit.isPresent() || newLimit > limit.get())
+                    limit = Optional.of(newLimit);
+            } catch (NumberFormatException ignored) {
+                // Someone has a permission like "bankingplugin.bank.limit.abc"
+            }
+        }
+        return limit;
     }
 
     protected BankRegion parseBankRegion(Player player, String[] args) throws CommandExecutionException {

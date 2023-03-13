@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.logging.Level;
 
 public class Database {
@@ -70,10 +71,10 @@ public class Database {
     }
 
     private void cleanupLogs() {
-        int days = plugin.config().cleanupLogDays.get();
-        if (days < 0)
+        Optional<Integer> days = plugin.config().cleanupLogDays.get();
+        if (!days.isPresent())
             return;
-        final Instant oldest = ZonedDateTime.now().minusDays(days).toInstant();
+        final Instant oldest = ZonedDateTime.now().minusDays(days.get()).toInstant();
         lastSeenService.deleteUnused();
         accountInterestService.deleteBefore(oldest);
         accountTransactionService.deleteBefore(oldest);

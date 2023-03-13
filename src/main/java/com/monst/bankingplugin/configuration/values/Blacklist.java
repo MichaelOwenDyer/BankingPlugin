@@ -1,47 +1,34 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.configuration.type.ConfigurationCollection;
-import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
-import com.monst.bankingplugin.lang.Message;
-import com.monst.bankingplugin.lang.Placeholder;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
+import com.monst.bankingplugin.configuration.transform.MaterialTransformer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * A collection of {@link Material}s that are blacklisted from generating value in an account.
  */
-public class Blacklist extends ConfigurationCollection<Material, Set<Material>> {
+public class Blacklist extends ConfigurationValue<Set<Material>> {
+    
+    private final EnumSet<Material> materials = EnumSet.allOf(Material.class);
 
     public Blacklist(BankingPlugin plugin) {
-        super(plugin, "blacklist", EnumSet.noneOf(Material.class));
-    }
-
-    @Override
-    public Set<Material> createCollection() {
-        return EnumSet.noneOf(Material.class);
-    }
-
-    @Override
-    public Material parseElement(String input) throws ArgumentParseException {
-        return Optional.ofNullable(input)
-                .map(Material::matchMaterial)
-                .orElseThrow(() -> new ArgumentParseException(Message.NOT_A_MATERIAL.with(Placeholder.INPUT).as(input)));
-    }
-
-    @Override
-    protected Object convertToYamlType(Set<Material> materials) {
-        return materials.stream().map(Material::name).collect(Collectors.toList());
+        super(plugin, "blacklist", EnumSet.noneOf(Material.class),
+                new MaterialTransformer().collect(() -> EnumSet.noneOf(Material.class)));
     }
 
     @Override
     public List<String> getTabCompletions(Player player, String[] args) {
-        if (args.length > 2)
-            return Collections.emptyList();
-        return super.getTabCompletions(player, args);
+        return materials.stream()
+                .map(Material::name)
+                .filter(name -> name.startsWith(args[args.length - 1].toUpperCase()))
+                .collect(Collectors.toList());
     }
 
     public boolean contains(Material item) {

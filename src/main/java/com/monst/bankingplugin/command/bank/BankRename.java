@@ -2,15 +2,14 @@ package com.monst.bankingplugin.command.bank;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.SubCommand;
 import com.monst.bankingplugin.entity.Bank;
 import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +60,7 @@ public class BankRename extends SubCommand {
         if (bankWithSameName != null && !bankWithSameName.equals(bank))
             throw err(Message.NAME_NOT_UNIQUE.with(Placeholder.BANK_NAME).as(newName));
 
-        if (plugin.config().nameRegex.doesNotMatch(newName))
+        if (!plugin.config().nameRegex.allows(newName))
             throw err(Message.NAME_NOT_ALLOWED
                     .with(Placeholder.NAME).as(newName)
                     .and(Placeholder.PATTERN).as(plugin.config().nameRegex.get()));
@@ -80,7 +79,7 @@ public class BankRename extends SubCommand {
                             Permissions.BANK_CONFIGURE_OTHER.ownedBy(player),
                             Permissions.BANK_CONFIGURE_ADMIN.ownedBy(player), false)
                     .stream()
-                    .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
+                    .filter(name -> containsIgnoreCase(name, args[0]))
                     .sorted()
                     .collect(Collectors.toList());
         return Collections.emptyList();

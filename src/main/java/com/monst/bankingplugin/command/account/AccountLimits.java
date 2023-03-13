@@ -2,10 +2,10 @@ package com.monst.bankingplugin.command.account;
 
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.entity.Player;
 
 public class AccountLimits extends PlayerSubCommand {
@@ -27,8 +27,7 @@ public class AccountLimits extends PlayerSubCommand {
     @Override
     protected void execute(Player player, String[] args) {
         int used = plugin.getAccountService().countByOwner(player);
-        long accLimit = PlayerSubCommand.getPermissionLimit(player, Permissions.ACCOUNT_NO_LIMIT, plugin.config().defaultAccountLimit.get());
-        String limit = accLimit < 0 ? "∞" : "" + accLimit;
+        String limit = getAccountLimit(player).map(String::valueOf).orElse("∞");
         plugin.debug("%s is viewing their account limits: %s / %s", player.getName(), used, limit);
         player.sendMessage(Message.ACCOUNT_LIMIT
                 .with(Placeholder.NUMBER_OF_ACCOUNTS).as(used)

@@ -1,8 +1,9 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.configuration.type.ConfigurationValue;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
 import com.monst.bankingplugin.configuration.exception.ArgumentParseException;
+import com.monst.bankingplugin.configuration.transform.Transformer;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
 import net.objecthunter.exp4j.Expression;
@@ -17,37 +18,33 @@ import java.math.BigDecimal;
 public class BankRevenueExpression extends ConfigurationValue<BankRevenueExpression.ExpressionWrapper> {
 
     public BankRevenueExpression(BankingPlugin plugin) {
-        super(plugin, "bank-revenue-expression", expressionOf("(0.10 * x) * (1 - g) * log(c)"));
+        super(plugin, "bank-revenue-expression",
+                expressionOf("(0.10 * x) * (1 - g) * log(c)"),
+                createTransformer());
     }
-
-    @Override
-    public ExpressionWrapper parse(String input) throws ArgumentParseException {
-        try {
-            ExpressionWrapper e = expressionOf(input);
-            if (e.isValidSyntax())
-                return e;
-        } catch (IllegalArgumentException ignored) {
-            // String was empty, continue to throw ArgumentParseException
-        }
-        throw new ArgumentParseException(Message.NOT_AN_EXPRESSION.with(Placeholder.INPUT).as(input));
-    }
-
-    @Override
-    public String format(ExpressionWrapper e) {
-        return e.expressionString;
-    }
-
-    @Override
-    protected Object convertToYamlType(ExpressionWrapper e) {
-        return format(e);
-    }
-
-    public BigDecimal evaluate(double totalValue, double avgValue, int accounts, int accountHolders, double giniCoefficient) {
-        try {
-            return get().withValues(totalValue, avgValue, accounts, accountHolders, giniCoefficient).evaluate();
-        } catch (IllegalArgumentException e) {
-            return BigDecimal.ZERO;
-        }
+    
+    private static Transformer<ExpressionWrapper> createTransformer() {
+        return new Transformer<ExpressionWrapper>() {
+            @Override
+            public ExpressionWrapper parse(String input) throws ArgumentParseException {
+                try {
+                    ExpressionWrapper e = expressionOf(input);
+                    if (e.isValidSyntax())
+                        return e;
+                } catch (IllegalArgumentException ignored) {}
+                throw new ArgumentParseException(Message.NOT_AN_EXPRESSION.with(Placeholder.INPUT).as(input));
+            }
+    
+            @Override
+            public String format(ExpressionWrapper value) {
+                return value.expressionString;
+            }
+    
+            @Override
+            public Object toYaml(ExpressionWrapper value) {
+                return value.expressionString;
+            }
+        };
     }
 
     private static ExpressionWrapper expressionOf(String expressionString) {
@@ -89,6 +86,14 @@ public class BankRevenueExpression extends ConfigurationValue<BankRevenueExpress
 
         BigDecimal evaluate() {
             return BigDecimal.valueOf(expression.evaluate());
+        }
+    }
+    
+    public BigDecimal evaluate(double totalValue, double avgValue, int accounts, int accountHolders, double giniCoefficient) {
+        try {
+            return get().withValues(totalValue, avgValue, accounts, accountHolders, giniCoefficient).evaluate();
+        } catch (IllegalArgumentException e) {
+            return BigDecimal.ZERO;
         }
     }
 

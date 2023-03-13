@@ -1,17 +1,17 @@
 package com.monst.bankingplugin.event.bank;
 
-import com.monst.bankingplugin.configuration.values.BankPolicy;
+import com.monst.bankingplugin.configuration.ConfigurationPolicy;
 import com.monst.bankingplugin.entity.Bank;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
 
 public class BankConfigureEvent extends SingleBankEvent {
 
-    private final BankPolicy<?> policy;
+    private final ConfigurationPolicy<?> policy;
     private final String oldValue;
     private final String newValue;
 
-    public BankConfigureEvent(CommandSender sender, Bank bank, BankPolicy<?> policy, String newValue, String oldValue) {
+    public BankConfigureEvent(CommandSender sender, Bank bank, ConfigurationPolicy<?> policy, String newValue, String oldValue) {
         super(sender, bank);
         this.policy = policy;
         this.oldValue = oldValue;
@@ -29,7 +29,7 @@ public class BankConfigureEvent extends SingleBankEvent {
         return HANDLERS;
     }
 
-    public BankPolicy<?> getPolicy() {
+    public ConfigurationPolicy<?> getPolicy() {
         return policy;
     }
 

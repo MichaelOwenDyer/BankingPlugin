@@ -3,6 +3,7 @@ package com.monst.bankingplugin.command.account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.ClickAction;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.event.account.AccountTrustCommandEvent;
@@ -11,11 +12,9 @@ import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -87,7 +86,7 @@ public class AccountTrust extends PlayerSubCommand {
             return Collections.emptyList();
         return Bukkit.getServer().getOnlinePlayers().stream()
                 .map(Player::getName)
-                .filter(name -> StringUtil.startsWithIgnoreCase(name, args[0]))
+                .filter(name -> containsIgnoreCase(name, args[0]))
                 .sorted()
                 .collect(Collectors.toList());
     }

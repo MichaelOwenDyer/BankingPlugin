@@ -32,7 +32,7 @@ public enum Permissions implements Permission {
     BANK_REMOVE_ADMIN("bankingplugin.bank.remove.admin"),
     BANK_REMOVE_ALL("bankingplugin.bank.remove.all"),
     BANK_NO_LIMIT("bankingplugin.bank.limit.*"),
-    BANK_NO_SIZE_LIMIT("bankingplugin.bank.size.*"),
+    BANK_VOLUME_NO_LIMIT("bankingplugin.bank.size.*"),
     BANK_RESIZE("bankingplugin.bank.resize"),
     BANK_RESIZE_OTHER("bankingplugin.bank.resize.other"),
     BANK_RESIZE_ADMIN("bankingplugin.bank.resize.admin"),

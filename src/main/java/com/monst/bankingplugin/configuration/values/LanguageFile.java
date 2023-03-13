@@ -1,8 +1,8 @@
 package com.monst.bankingplugin.configuration.values;
 
 import com.monst.bankingplugin.BankingPlugin;
-import com.monst.bankingplugin.configuration.type.PathConfigurationValue;
-import com.monst.bankingplugin.configuration.validation.Bound;
+import com.monst.bankingplugin.configuration.ConfigurationValue;
+import com.monst.bankingplugin.configuration.transform.PathTransformer;
 import com.monst.bankingplugin.lang.Message;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -18,27 +18,16 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class LanguageFile extends PathConfigurationValue {
+public class LanguageFile extends ConfigurationValue<Path> {
 
     private final Path langFolder;
     private final Map<Message, String> translations;
 
     public LanguageFile(BankingPlugin plugin) {
-        super(plugin, "language-file", Paths.get("en_US.lang"));
+        super(plugin, "language-file", Paths.get("en_US.lang"),
+                new PathTransformer().fileType(".lang"));
         this.langFolder = plugin.getDataFolder().toPath().resolve("lang");
         this.translations = new EnumMap<>(Message.class);
-        loadTranslations();
-    }
-
-    @Override
-    protected Bound<Path> getBound() {
-        return Bound.requiring(path -> path.toString().endsWith(".lang"),
-                path -> path.resolveSibling(path.getFileName() + ".lang"));
-    }
-
-    @Override
-    public void reload() {
-        super.reload();
         loadTranslations();
     }
 

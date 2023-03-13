@@ -3,6 +3,7 @@ package com.monst.bankingplugin.command.account;
 import com.monst.bankingplugin.BankingPlugin;
 import com.monst.bankingplugin.command.ClickAction;
 import com.monst.bankingplugin.command.Permission;
+import com.monst.bankingplugin.command.Permissions;
 import com.monst.bankingplugin.command.PlayerSubCommand;
 import com.monst.bankingplugin.entity.Account;
 import com.monst.bankingplugin.entity.Bank;
@@ -13,7 +14,6 @@ import com.monst.bankingplugin.exception.CommandExecutionException;
 import com.monst.bankingplugin.exception.EventCancelledException;
 import com.monst.bankingplugin.lang.Message;
 import com.monst.bankingplugin.lang.Placeholder;
-import com.monst.bankingplugin.command.Permissions;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class AccountOpen extends PlayerSubCommand {
 
@@ -45,8 +46,8 @@ public class AccountOpen extends PlayerSubCommand {
 
     @Override
     protected void execute(Player player, String[] args) throws CommandExecutionException, EventCancelledException {
-        long limit = PlayerSubCommand.getPermissionLimit(player, Permissions.ACCOUNT_NO_LIMIT, plugin.config().defaultAccountLimit.get());
-        if (limit >= 0 && plugin.getAccountService().countByOwner(player) >= limit)
+        Optional<Integer> limit = getAccountLimit(player);
+        if (limit.isPresent() && plugin.getAccountService().countByOwner(player) >= limit.get())
             throw err(Message.ACCOUNT_LIMIT_REACHED.with(Placeholder.LIMIT).as(limit));
 
         new AccountOpenCommandEvent(player, args).fire();
@@ -77,7 +78,7 @@ public class AccountOpen extends PlayerSubCommand {
         if (!plugin.config().allowSelfBanking.get() && bank.isOwner(player))
             throw err(Message.NO_SELF_BANKING.with(Placeholder.BANK_NAME).as(bank.getColorizedName()));
 
-        int playerAccountLimit = plugin.config().playerBankAccountLimit.at(bank);
+        int playerAccountLimit = plugin.config().playerAccountPerBankLimit.at(bank);
         if (playerAccountLimit > 0 && plugin.getAccountService().countByBankAndOwner(bank, player) >= playerAccountLimit)
             throw err(Message.ACCOUNT_LIMIT_AT_BANK_REACHED
                     .with(Placeholder.BANK_NAME).as(bank.getColorizedName())

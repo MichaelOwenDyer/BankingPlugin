@@ -251,9 +251,8 @@ public class BankGUI extends SinglePageGUI implements Observer {
 	}
 
 	private List<String> getInterestRateLore() {
-		BigDecimal ir = plugin.config().interestRate.at(bank);
 		return wordWrapAll(
-			ChatColor.GREEN + plugin.config().interestRate.format(ir)
+			ChatColor.GREEN + plugin.config().interestRate.toStringAt(bank)
 		);
 	}
 
@@ -268,7 +267,7 @@ public class BankGUI extends SinglePageGUI implements Observer {
 	}
 
 	private List<String> getAccountLimitLore() {
-		int accountLimit = plugin.config().playerBankAccountLimit.at(bank);
+		int accountLimit = plugin.config().playerAccountPerBankLimit.at(bank);
 		return wordWrapAll(
 				(accountLimit == 0
 						? "Account creation is currently " + ChatColor.RED + "disabled" + ChatColor.GRAY

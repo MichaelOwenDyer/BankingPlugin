@@ -14,7 +14,10 @@ import com.monst.bankingplugin.listener.*;
 import com.monst.bankingplugin.persistence.Database;
 import com.monst.bankingplugin.persistence.service.*;
 import com.monst.bankingplugin.update.UpdaterService;
-import com.monst.bankingplugin.util.*;
+import com.monst.bankingplugin.util.Logger;
+import com.monst.bankingplugin.util.PaymentService;
+import com.monst.bankingplugin.util.SchedulerService;
+import com.monst.bankingplugin.util.Worths;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -231,16 +234,8 @@ public class BankingPlugin extends JavaPlugin {
      */
     public void reload() {
         debug("Reloading...");
-        reloadPluginConfig();
+        configuration.reload();
         database.reload();
-    }
-
-    public void reloadPluginConfig() {
-        debug("Reloading plugin configuration...");
-        saveDefaultConfig();
-        reloadConfig();
-        config().reload();
-        saveConfig();
     }
 
     public void reloadDatabase() {
@@ -320,21 +315,21 @@ public class BankingPlugin extends JavaPlugin {
      * @return whether the plugin is integrated with WorldEdit
      */
     public boolean isWorldEditIntegrated() {
-        return worldEdit != null && worldEdit.isEnabled() && config().enableWorldEditIntegration.get();
+        return worldEdit != null && worldEdit.isEnabled() && config().integrations.worldEdit.get();
     }
 
     /**
      * @return whether the plugin is integrated with WorldGuard
      */
     public boolean isWorldGuardIntegrated() {
-        return worldGuard != null && worldGuard.isEnabled() && config().enableWorldGuardIntegration.get();
+        return worldGuard != null && worldGuard.isEnabled() && config().integrations.worldGuard.get();
     }
 
     /**
      * @return whether the plugin is integrated with {@link GriefPrevention}
      */
     public boolean isGriefPreventionIntegrated() {
-        return griefPrevention != null && griefPrevention.isEnabled() && config().enableGriefPreventionIntegration.get();
+        return griefPrevention != null && griefPrevention.isEnabled() && config().integrations.griefPrevention.get();
     }
 
     public GriefPrevention getGriefPrevention() {
@@ -400,5 +395,5 @@ public class BankingPlugin extends JavaPlugin {
     public String getFileName() {
         return getFile().getName();
     }
-
+    
 }
